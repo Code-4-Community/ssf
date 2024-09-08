@@ -1,16 +1,17 @@
-import { Entity, Column, ObjectIdColumn, ObjectId } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-import type { Status } from './types';
+import { Status } from './types';
 
 @Entity()
 export class User {
-  @ObjectIdColumn()
-  _id: ObjectId;
-
-  @Column({ primary: true })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: Status.STANDARD,
+  })
   status: Status;
 
   @Column()

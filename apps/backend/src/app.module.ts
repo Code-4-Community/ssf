@@ -5,22 +5,20 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { PluralNamingStrategy } from './strategies/plural-naming.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import typeorm from './config/typeorm';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mongodb',
-      host: '127.0.0.1',
-      port: 27017,
-      database: 'c4cOpsTest',
-      // username: 'root',
-      // password: 'root',
-      autoLoadEntities: true,
-      // entities: [join(__dirname, '**/**.entity.{ts,js}')],
-      // Setting synchronize: true shouldn't be used in production - otherwise you can lose production data
-      synchronize: true,
-      namingStrategy: new PluralNamingStrategy(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [typeorm],
+    }),
+    // Load TypeORM config async so we can target the config file (config/typeorm.ts) for migrations
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) =>
+        configService.get('typeorm'),
     }),
     UsersModule,
     AuthModule,

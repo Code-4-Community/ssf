@@ -1,22 +1,10 @@
-import { DefaultNamingStrategy, NamingStrategyInterface } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
-export class PluralNamingStrategy
-  extends DefaultNamingStrategy
-  implements NamingStrategyInterface
-{
-  tableName(targetName: string, userSpecifiedName: string | undefined): string {
-    return userSpecifiedName || targetName.toLowerCase() + 's'; // Pluralize the table name
-  }
-
-  columnName(
-    propertyName: string,
-    customName: string,
-    embeddedPrefixes: string[],
-  ): string {
-    return propertyName;
-  }
-
-  relationName(propertyName: string): string {
-    return propertyName;
+// Extend SnakeNamingStrategy to follow Postgres naming conventions
+export class PluralNamingStrategy extends SnakeNamingStrategy {
+  tableName(targetName: string, userSpecifiedName: string): string {
+    return (
+      userSpecifiedName || super.tableName(targetName, userSpecifiedName) + 's'
+    ); // Pluralize the table name
   }
 }
