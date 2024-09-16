@@ -12,8 +12,8 @@ export class AddTables1726524792261 implements MigrationInterface {
                 pantry_representative_id INT NOT NULL,
                 restrictions TEXT[] NOT NULL,
 
-                CONSTRAINT fk_ssf_representative_id FOREIGN KEY(ssf_representative_id) REFERENCES user(id),
-                CONSTRAINT fk_pantry_representative_id FOREIGN KEY(pantry_representative_id) REFERENCES user(id),
+                CONSTRAINT fk_ssf_representative_id FOREIGN KEY(ssf_representative_id) REFERENCES users(id),
+                CONSTRAINT fk_pantry_representative_id FOREIGN KEY(pantry_representative_id) REFERENCES users(id)
             );
 
             CREATE TABLE IF NOT EXISTS donations (
@@ -25,7 +25,7 @@ export class AddTables1726524792261 implements MigrationInterface {
                 feedback TEXT,
                 contents TEXT NOT NULL,
 
-                CONSTRAINT fk_pantry_id FOREIGN KEY(pantry_id) REFERENCES pantry(id),
+                CONSTRAINT fk_pantry_id FOREIGN KEY(pantry_id) REFERENCES pantries(id)
             );
             `,
     );
