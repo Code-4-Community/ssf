@@ -1,5 +1,11 @@
+import Header from '@components/Header';
+
 const Root: React.FC = () => {
-  return <>Welcome to scaffolding!</>;
+  return (
+    <>
+      <Header />
+    </>
+  );
 };
 
 export default Root;
