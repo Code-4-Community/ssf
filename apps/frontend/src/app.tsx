@@ -5,6 +5,8 @@ import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import Test from '@containers/test';
+import RequestFood from '@containers/foodRequest';
+import { submitFoodRequestForm } from '@components/forms/foodRequestForm';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +17,11 @@ const router = createBrowserRouter([
   {
     path: '/test',
     element: <Test />,
+  },
+  {
+    path: '/food-request',
+    element: <RequestFood />,
+    action: submitFoodRequestForm,
   },
 ]);
 
