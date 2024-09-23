@@ -1,5 +1,12 @@
+import { Outlet } from 'react-router-dom';
+import Header from '../../components/Header';
 const Root: React.FC = () => {
-  return <>Welcome to scaffolding!</>;
+  return (
+    <div>
+      <Header />
+      <Outlet />
+    </div>
+  );
 };
 
 export default Root;
