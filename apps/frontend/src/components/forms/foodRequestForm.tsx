@@ -1,11 +1,3 @@
-// Information Needed:
-// restrictions (pre-populate from pantries table)
-// due date
-// donation contents
-//  donation type
-//  donation size
-//  running low on any foods?
-
 import {
   Flex,
   Box,
@@ -24,6 +16,7 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  CheckboxGroup,
 } from '@chakra-ui/react';
 import {
   Form,
@@ -32,25 +25,12 @@ import {
   ActionFunctionArgs,
 } from 'react-router-dom';
 
-const FoodRequestForm: React.FC = () => {
-  const renderAllergens = () => {
-    const allergens = [
-      'Milk',
-      'Eggs',
-      'Fish',
-      'Shellfish',
-      'Tree Nuts',
-      'Peanuts',
-      'Wheat',
-      'Soybeans',
-      'Sesame',
-    ];
-    return allergens.map((a) => <Checkbox>{a}</Checkbox>);
-  };
-  const menu = {
+// should be an API call, dummy data for now
+const getMenu = () => {
+  return {
     Dairy: [
       'Whole Milk',
-      'Lactose-Free Skim Milk',
+      'Lactose-Free Milk',
       'Salted Butter',
       'Eggs',
       'Yogurt',
@@ -91,12 +71,38 @@ const FoodRequestForm: React.FC = () => {
       'Rum',
     ],
   };
+};
+
+// might be an API call, dummy data for now
+const getAllergens = () => {
+  return [
+    'Milk',
+    'Eggs',
+    'Fish',
+    'Shellfish',
+    'Tree Nuts',
+    'Peanuts',
+    'Wheat',
+    'Soybeans',
+    'Sesame',
+    'Other (specify in notes)',
+  ];
+};
+
+const FoodRequestForm: React.FC = () => {
+  const renderAllergens = () => {
+    return getAllergens().map((a) => (
+      <Checkbox name="restrictions" value={a}>
+        {a}
+      </Checkbox>
+    ));
+  };
+
   const renderMenuSection = (sectionItems: Array<string>) => {
     return (
-      <SimpleGrid spacing={1} columns={3}>
+      <SimpleGrid spacing={4} columns={4}>
         {sectionItems.map((x) => (
-          <Flex>
-            <h3>{x}</h3>
+          <Flex gap={6}>
             <NumberInput
               step={1}
               defaultValue={0}
@@ -104,25 +110,30 @@ const FoodRequestForm: React.FC = () => {
               max={100}
               size="s"
               maxW="4em"
+              name={x}
             >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
+              <NumberInputField size={2} />
+              <NumberInputStepper boxSize={0}>
+                <NumberIncrementStepper border={0} marginTop={-1} boxSize={6} />
+                <NumberDecrementStepper border={0} boxSize={6} />
               </NumberInputStepper>
             </NumberInput>
+            <h3>{x}</h3>
           </Flex>
         ))}
       </SimpleGrid>
     );
   };
 
-  const renderMenu = (menu: Map<string, Array<string>>) => {
+  const renderMenu = () => {
+    const menu: Map<string, Array<string>> = new Map(Object.entries(getMenu()));
     const menuSections: JSX.Element[] = [];
     menu.forEach((v, k) => {
       menuSections.push(
         <div>
-          <h2>{k}</h2>
+          <Heading size="md" paddingY={2}>
+            {k}
+          </Heading>
           {renderMenuSection(v)}
         </div>,
       );
@@ -133,27 +144,40 @@ const FoodRequestForm: React.FC = () => {
   return (
     <Box minW="35em" maxW="50em" m="5em">
       <Form method="post" action="/food-request">
+        <Heading size={'2xl'} marginY={8}>
+          SSF Food Request Form
+        </Heading>
         <FormControl isRequired mb="2em">
-          <FormLabel>Requested Delivery Date</FormLabel>
+          <FormLabel fontSize={25} fontWeight={700}>
+            Requested Delivery Date
+          </FormLabel>
           <Input maxW="20em" name="requestedDeliveryDate" type="date" />
           <FormHelperText>
             We'll reach out to confirm a date and time
           </FormHelperText>
         </FormControl>
         <FormControl mb="2em">
-          <FormLabel>Dietary Restrictions</FormLabel>
-          <SimpleGrid spacing={5} columns={3}>
-            {renderAllergens()}
-            <Checkbox>Other</Checkbox>
-          </SimpleGrid>
+          <FormLabel fontSize={25} fontWeight={700}>
+            Dietary Restrictions
+          </FormLabel>
+          <CheckboxGroup>
+            <SimpleGrid spacing={2} columns={3}>
+              {renderAllergens()}
+            </SimpleGrid>
+          </CheckboxGroup>
         </FormControl>
         <FormControl mb="2em">
-          <FormLabel>Requested Items</FormLabel>
-          <Stack>{renderMenu(new Map(Object.entries(menu)))}</Stack>
+          <FormLabel fontSize={25} fontWeight={700}>
+            Requested Items
+          </FormLabel>
+          <Stack>{renderMenu()}</Stack>
         </FormControl>
         <FormControl mb="2em">
-          <FormLabel>Additional Comments</FormLabel>
+          <FormLabel fontSize={25} fontWeight={700}>
+            Additional Comments
+          </FormLabel>
           <Textarea
+            name="notes"
             placeholder="Anything else we should know about"
             size="sm"
           />
@@ -167,11 +191,27 @@ const FoodRequestForm: React.FC = () => {
 export const submitFoodRequestForm: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
-  const data = await request.formData();
-  const foodRequest = {};
-  // API Call to backend
+  const form = await request.formData();
 
-  console.log(foodRequest);
+  const nonMenuNames = ['requestedDeliveryDate', 'notes'];
+  const foodRequestData = new Map();
+  for (let i = 0; i < nonMenuNames.length; i++) {
+    const name = nonMenuNames[i];
+    foodRequestData.set(name, form.get(name));
+    form.delete(name);
+  }
+
+  foodRequestData.set('restrictions', form.getAll('restrictions'));
+  form.delete('restrictions');
+
+  const foodItems = Array.from(form.entries())
+    .map((x) => [x[0], parseInt(x[1] as string)])
+    .filter(([k, v]) => v !== 0);
+  foodRequestData.set('items', Object.fromEntries(foodItems));
+  const data = Object.fromEntries(foodRequestData);
+
+  // TODO: API Call to update database
+  console.log(data);
   return redirect('/');
 };
 
