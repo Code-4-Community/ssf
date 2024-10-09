@@ -4,10 +4,14 @@ import { Repository } from 'typeorm';
 
 import { User } from './user.entity';
 import { Status } from './types';
+import { Pantry } from './pantry.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private repo: Repository<User>,
+    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+  ) {}
 
   async create(email: string, firstName: string, lastName: string) {
     const userId = (await this.repo.count()) + 1;
@@ -54,5 +58,25 @@ export class UsersService {
     }
 
     return this.repo.remove(user);
+  }
+  async getSSFContactByPantryId(pantryId: number) {
+    const pantry = await this.pantryRepo.findOne({
+      where: { id: pantryId },
+      relations: ['ssfRepresentative'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException('Pantry not found');
+    }
+
+    const ssfContact = pantry.ssfRepresentative;
+    if (!ssfContact) {
+      throw new NotFoundException('SSF contact not found');
+    }
+
+    return {
+      contactName: `${ssfContact.firstName} ${ssfContact.lastName}`,
+      contactEmail: ssfContact.email,
+    };
   }
 }
