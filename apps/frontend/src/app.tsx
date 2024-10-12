@@ -49,6 +49,7 @@ const router = createBrowserRouter([
 
 export const App: React.FC = () => {
   useEffect(() => {
+    document.title = 'SSF';
     apiClient.getHello().then((res) => console.log(res));
   }, []);
 
