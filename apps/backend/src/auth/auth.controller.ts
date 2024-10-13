@@ -60,13 +60,9 @@ export class AuthController {
     return this.authService.signin(signInDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('/refresh')
-  refresh(
-    @Body() refreshDto: RefreshTokenDto,
-    @Request() request,
-  ): Promise<SignInResponseDto> {
-    return this.authService.refreshToken(refreshDto, request.user.idUser);
+  refresh(@Body() refreshDto: RefreshTokenDto): Promise<SignInResponseDto> {
+    return this.authService.refreshToken(refreshDto);
   }
 
   @Post('/forgotPassword')

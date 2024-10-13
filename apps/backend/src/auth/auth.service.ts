@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
+  AdminInitiateAuthCommand,
   AttributeType,
   CognitoIdentityProviderClient,
   ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
-  InitiateAuthCommand,
   ListUsersCommand,
   SignUpCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -98,9 +98,10 @@ export class AuthService {
   }
 
   async signin({ email, password }: SignInDto): Promise<SignInResponseDto> {
-    const signInCommand = new InitiateAuthCommand({
-      AuthFlow: 'USER_PASSWORD_AUTH',
+    const signInCommand = new AdminInitiateAuthCommand({
+      AuthFlow: 'ADMIN_USER_PASSWORD_AUTH',
       ClientId: CognitoAuthConfig.clientId,
+      UserPoolId: CognitoAuthConfig.userPoolId,
       AuthParameters: {
         USERNAME: email,
         PASSWORD: password,
@@ -118,13 +119,14 @@ export class AuthService {
   }
 
   // Refresh token hash uses a user's sub (unique ID), not their username (typically their email)
-  async refreshToken(
-    { refreshToken }: RefreshTokenDto,
-    userSub: string,
-  ): Promise<SignInResponseDto> {
-    const refreshCommand = new InitiateAuthCommand({
+  async refreshToken({
+    refreshToken,
+    userSub,
+  }: RefreshTokenDto): Promise<SignInResponseDto> {
+    const refreshCommand = new AdminInitiateAuthCommand({
       AuthFlow: 'REFRESH_TOKEN_AUTH',
       ClientId: CognitoAuthConfig.clientId,
+      UserPoolId: CognitoAuthConfig.userPoolId,
       AuthParameters: {
         REFRESH_TOKEN: refreshToken,
         SECRET_HASH: this.calculateHash(userSub),
