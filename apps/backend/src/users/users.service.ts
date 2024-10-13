@@ -9,9 +9,14 @@ import { Status } from './types';
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  async create(email: string, firstName: string, lastName: string) {
+  async create(
+    email: string,
+    firstName: string,
+    lastName: string,
+    status: Status = Status.STANDARD,
+  ) {
     const user = this.repo.create({
-      status: Status.STANDARD,
+      status,
       firstName,
       lastName,
       email,

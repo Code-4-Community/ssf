@@ -22,6 +22,7 @@ import { SignInDto } from './dtos/sign-in.dto';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';
 import { createHmac } from 'crypto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { Status } from '../users/types';
 
 @Injectable()
 export class AuthService {
@@ -67,12 +68,10 @@ export class AuthService {
     return Users[0].Attributes;
   }
 
-  async signup({
-    firstName,
-    lastName,
-    email,
-    password,
-  }: SignUpDto): Promise<boolean> {
+  async signup(
+    { firstName, lastName, email, password }: SignUpDto,
+    status: Status = Status.STANDARD,
+  ): Promise<boolean> {
     // Needs error handling
     const signUpCommand = new SignUpCommand({
       ClientId: CognitoAuthConfig.clientId,
@@ -84,9 +83,11 @@ export class AuthService {
           Name: 'name',
           Value: `${firstName} ${lastName}`,
         },
+        // Optional: add a custom Cognito attribute called "role" that also stores the user's status/role
+        // If you choose to do so, you'll have to first add this custom attribute in your user pool
         {
           Name: 'custom:role',
-          Value: 'STANDARD', // TODO: pass role as a parameter
+          Value: status,
         },
       ],
     });
