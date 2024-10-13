@@ -10,9 +10,7 @@ export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
   async create(email: string, firstName: string, lastName: string) {
-    const userId = (await this.repo.count()) + 1;
     const user = this.repo.create({
-      id: userId,
       status: Status.STANDARD,
       firstName,
       lastName,
