@@ -1,4 +1,11 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
@@ -8,6 +15,10 @@ import { VerifyUserDto } from './dtos/verify-user.dto';
 import { DeleteUserDto } from './dtos/delete-user.dto';
 import { User } from '../users/user.entity';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +29,7 @@ export class AuthController {
 
   @Post('/signup')
   async createUser(@Body() signUpDto: SignUpDto): Promise<User> {
+    // By default, creates a standard user
     try {
       await this.authService.signup(signUpDto);
     } catch (e) {
@@ -48,8 +60,24 @@ export class AuthController {
     return this.authService.signin(signInDto);
   }
 
-  // TODO implement change/forgotPassword endpoint
-  // https://dev.to/fstbraz/authentication-with-aws-cognito-passport-and-nestjs-part-iii-2da5
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/refresh')
+  refresh(
+    @Body() refreshDto: RefreshTokenDto,
+    @Request() request,
+  ): Promise<SignInResponseDto> {
+    return this.authService.refreshToken(refreshDto, request.user.idUser);
+  }
+
+  @Post('/forgotPassword')
+  forgotPassword(@Body() body: ForgotPasswordDto): Promise<void> {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('/confirmPassword')
+  confirmPassword(@Body() body: ConfirmPasswordDto): Promise<void> {
+    return this.authService.confirmForgotPassword(body);
+  }
 
   @Post('/delete')
   async delete(@Body() body: DeleteUserDto): Promise<void> {
