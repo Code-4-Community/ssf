@@ -49,7 +49,7 @@ export class AuthController {
   @Post('/verify')
   verifyUser(@Body() body: VerifyUserDto): void {
     try {
-      this.authService.verifyUser(body.email, String(body.verificationCode));
+      this.authService.verifyUser(body.email, body.verificationCode);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
