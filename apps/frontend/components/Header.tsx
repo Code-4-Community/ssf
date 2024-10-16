@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Header = () => {
-  return <h2>Securing Safe Food</h2>;
+  return <h1>Securing Safe Food</h1>;
 };
 
 export default Header;
