@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { User } from './user.entity';
 import { Status } from './types';
-import { Pantry } from './pantry.entity';
+import { Pantry } from '../pantries/pantry.entity';
 
 @Injectable()
 export class UsersService {

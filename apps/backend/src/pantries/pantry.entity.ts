@@ -5,17 +5,23 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../users/user.entity';
 
 @Entity()
 export class Pantry {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   name: string;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   address: string;
 
   @Column()
