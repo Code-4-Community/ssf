@@ -24,6 +24,9 @@ export class Pantry {
   })
   address: string;
 
+  @Column()
+  approved: boolean;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'ssf_representative_id' })
   ssf_representative_id: number;
