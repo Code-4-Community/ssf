@@ -12,7 +12,22 @@ export class PantriesService {
     if (!id) {
       return null;
     }
-
     return this.repo.findOneBy({ id });
+  }
+
+  approve(id: number) {
+    this.repo
+      .createQueryBuilder()
+      .update(Pantry)
+      .set({ approved: true })
+      .where('id = :id', { id: id })
+      .execute();
+  }
+  getNonApprovedPantries() {
+    return this.repo.find({
+      where: {
+        approved: false,
+      },
+    });
   }
 }
