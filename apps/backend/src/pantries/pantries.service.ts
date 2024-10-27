@@ -8,7 +8,7 @@ import { Pantry } from './pantry.entity';
 export class PantriesService {
   constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
 
-  findOne(id: number) {
+  async findOne(id: number) {
     if (!id) {
       return null;
     }
