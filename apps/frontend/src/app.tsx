@@ -23,7 +23,10 @@ const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
-        path: '/pantry-overview',
+        path: '/pantry-overview/:id',
+        loader: async ({ params }) => {
+          return await apiClient.getPantryInfo(params.id!);
+        },
         element: <PantryOverview />,
       },
       {
