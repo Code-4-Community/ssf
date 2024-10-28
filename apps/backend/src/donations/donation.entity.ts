@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 import { DonationStatus } from './types';
 
 @Entity()
@@ -10,7 +10,7 @@ export class Donation {
   restrictions: string[];
 
   @Column({ type: 'timestamp' })
-  due_date: Date;
+  due_date: Timestamp;
 
   @Column({ type: 'int' })
   pantry_id: number;

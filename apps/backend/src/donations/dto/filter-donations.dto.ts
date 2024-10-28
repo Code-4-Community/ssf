@@ -1,11 +1,12 @@
-import { IsDate, IsEnum, IsInt } from 'class-validator';
+import { IsDate, IsDateString, IsEnum, IsInt } from 'class-validator';
 import { DonationStatus } from '../types';
+import { Timestamp } from 'typeorm';
 
 export class FilterDonationsDto {
-  @IsDate()
+  @IsDateString()
   due_date_start: Date;
 
-  @IsDate()
+  @IsDateString()
   due_date_end: Date;
 
   @IsInt({ each: true })

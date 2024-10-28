@@ -13,10 +13,17 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { FilterDonationsDto } from './dto/filter-donations.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Logger } from '@nestjs/common';
 
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
+
+  @Get('orders')
+  filter(@Body() filterDonationsDto: FilterDonationsDto) {
+    console.log('HERE');
+    return this.donationsService.filter(filterDonationsDto);
+  }
 
   @Post()
   create(@Body() createDonationDto: CreateDonationDto) {
@@ -44,11 +51,5 @@ export class DonationsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.donationsService.remove(+id);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/orders')
-  filter(@Body() filterDonationsDto: FilterDonationsDto) {
-    return this.donationsService.filter(filterDonationsDto);
   }
 }
