@@ -21,7 +21,6 @@ export class DonationsController {
 
   @Get('orders')
   filter(@Body() filterDonationsDto: FilterDonationsDto) {
-    console.log('HERE');
     return this.donationsService.filter(filterDonationsDto);
   }
 

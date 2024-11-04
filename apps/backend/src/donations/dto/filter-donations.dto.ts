@@ -1,17 +1,27 @@
-import { IsDate, IsDateString, IsEnum, IsInt } from 'class-validator';
+import {
+  IsDate,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+} from 'class-validator';
 import { DonationStatus } from '../types';
 import { Timestamp } from 'typeorm';
 
 export class FilterDonationsDto {
   @IsDateString()
+  @IsOptional()
   due_date_start: Date;
 
   @IsDateString()
+  @IsOptional()
   due_date_end: Date;
 
   @IsInt({ each: true })
+  @IsOptional()
   pantry_ids: number[];
 
   @IsEnum(DonationStatus)
+  @IsOptional()
   status: string;
 }

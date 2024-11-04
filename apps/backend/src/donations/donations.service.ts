@@ -30,16 +30,29 @@ export class DonationsService {
     return `This action removes a #${id} donation`;
   }
 
-  filter(filterDonationsDto: FilterDonationsDto) {
-    return this.repo.find({
-      where: {
-        pantry_id: In(filterDonationsDto.pantry_ids),
+  async filter(filterDonationsDto: FilterDonationsDto) {
+    let query = this.repo.createQueryBuilder('donation');
+    if (filterDonationsDto.pantry_ids != null) {
+      query = query.where('donation.pantry_id IN (:...ids)', {
+        ids: filterDonationsDto.pantry_ids,
+      });
+    }
+    if (filterDonationsDto.status != null) {
+      query = query.andWhere('donation.status = :status', {
         status: filterDonationsDto.status,
-        due_date: Between(
-          filterDonationsDto.due_date_start,
-          filterDonationsDto.due_date_end,
-        ),
-      },
-    });
+      });
+    }
+    if (filterDonationsDto.due_date_start != null) {
+      query = query.andWhere('donation.due_date >= :start', {
+        start: filterDonationsDto.due_date_start,
+      });
+    }
+    if (filterDonationsDto.due_date_end != null) {
+      query = query.andWhere('donation.due_date <= :end', {
+        end: filterDonationsDto.due_date_end,
+      });
+    }
+    const donations = await query.getMany();
+    return donations;
   }
 }
