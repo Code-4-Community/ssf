@@ -30,6 +30,16 @@ export class DonationsService {
     return `This action removes a #${id} donation`;
   }
 
+  async confirmReceived(id: number) {
+    const query = this.repo.createQueryBuilder();
+    const res = await query
+      .update(Donation)
+      .set({ status: 'RECEIVED' })
+      .where('id = :id', { id: id })
+      .execute();
+    return res;
+  }
+
   async filter(filterDonationsDto: FilterDonationsDto) {
     let query = this.repo.createQueryBuilder('donation');
     if (filterDonationsDto.pantry_ids != null) {

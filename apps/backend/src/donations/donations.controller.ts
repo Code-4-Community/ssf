@@ -24,6 +24,11 @@ export class DonationsController {
     return this.donationsService.filter(filterDonationsDto);
   }
 
+  @Patch('confirm/:id')
+  confirm(@Param('id') id: string) {
+    return this.donationsService.confirmReceived(+id);
+  }
+
   @Post()
   create(@Body() createDonationDto: CreateDonationDto) {
     return this.donationsService.create(createDonationDto);

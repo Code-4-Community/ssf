@@ -1,12 +1,5 @@
-import {
-  IsDate,
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsOptional } from 'class-validator';
 import { DonationStatus } from '../types';
-import { Timestamp } from 'typeorm';
 
 export class FilterDonationsDto {
   @IsDateString()
