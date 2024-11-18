@@ -8,6 +8,7 @@ import { PantriesModule } from './pantries/pantries.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
+import { PantryReqsModule } from './pantryRequests/pantryRequests.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import typeorm from './config/typeorm';
     UsersModule,
     AuthModule,
     PantriesModule,
+    PantryReqsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
