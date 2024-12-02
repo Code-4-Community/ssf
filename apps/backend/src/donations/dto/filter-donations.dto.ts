@@ -6,7 +6,6 @@ import {
   IsOptional,
 } from 'class-validator';
 import { DonationStatus } from '../types';
-import { Timestamp } from 'typeorm';
 
 export class FilterDonationsDto {
   @IsDateString()
