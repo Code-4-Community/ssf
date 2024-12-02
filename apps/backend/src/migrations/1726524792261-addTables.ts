@@ -18,12 +18,13 @@ export class AddTables1726524792261 implements MigrationInterface {
 
             CREATE TABLE IF NOT EXISTS donations (
                 id SERIAL PRIMARY KEY,
-                restrictions TEXT[] NOT NULL,
                 due_date TIMESTAMP NOT NULL,
                 pantry_id INT NOT NULL,
                 status VARCHAR(50) NOT NULL,
                 feedback TEXT,
-                contents TEXT NOT NULL,
+                contents TEXT[] NOT NULL,
+                shipment_size TEXT NOT NULL,
+                additional_info TEXT, 
 
                 CONSTRAINT fk_pantry_id FOREIGN KEY(pantry_id) REFERENCES pantries(id)
             );
