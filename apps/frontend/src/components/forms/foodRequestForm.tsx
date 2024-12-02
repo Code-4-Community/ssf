@@ -1,5 +1,6 @@
 import {
   Flex,
+  Text,
   Box,
   Heading,
   FormControl,
@@ -147,6 +148,12 @@ const FoodRequestForm: React.FC = () => {
         <Heading size={'2xl'} marginY={8}>
           SSF Food Request Form
         </Heading>
+        <Text
+          whiteSpace={'break-spaces'}
+        >{`Request a shipment of allergen-free food from SSF. You will be placed on our waiting list for incoming donations targeted to your needs.`}</Text>
+        <Text
+          whiteSpace={'break-spaces'}
+        >{`Please keep in mind that we may not be able to accommodate specific food requests at all times, but we will do our best to match your preferences.`}</Text>
         <FormControl isRequired mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
             Requested Delivery Date
@@ -158,7 +165,7 @@ const FoodRequestForm: React.FC = () => {
         </FormControl>
         <FormControl mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
-            Dietary Restrictions
+            Requested Size of Shipment
           </FormLabel>
           <CheckboxGroup>
             <SimpleGrid spacing={2} columns={3}>
@@ -168,13 +175,13 @@ const FoodRequestForm: React.FC = () => {
         </FormControl>
         <FormControl mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
-            Requested Items
+            Requested Shipment
           </FormLabel>
           <Stack>{renderMenu()}</Stack>
         </FormControl>
         <FormControl mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
-            Additional Comments
+            Additional Information
           </FormLabel>
           <Textarea
             name="notes"
