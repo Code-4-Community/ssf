@@ -36,6 +36,11 @@ const router = createBrowserRouter([
         element: <Pantries />,
       },
       {
+        path: '/pantry-application',
+        element: <PantryApplication />,
+        action: submitPantryApplicationForm,
+      },
+      {
         path: '/orders',
         element: <Orders />,
       },
