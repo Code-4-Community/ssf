@@ -27,10 +27,16 @@ const PantryApplicationForm: React.FC = () => {
   return (
     <Box minW="35em" maxW="50em" m="5em">
       <Form method="post" action="/pantry-application">
-        {/* TODO: add intro text */}
-        <Heading size="2xl" marginY={8}>
+        <Heading size="2xl" mb=".5em">
           SSF Pantry Sign-Up Form
         </Heading>
+        <Box as="section" mb="1em">
+          <Text>
+            Welcome! We are excited to have you join us in our mission to secure
+            allergen-safe food and promote food equity.
+          </Text>
+          <Text>Please fill out the following information to get started.</Text>
+        </Box>
         <FormControl isRequired mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
             First and Last Name
