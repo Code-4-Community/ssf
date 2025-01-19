@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from './user.entity';
-import { Status } from './types';
+import { Role } from './types';
 
 @Injectable()
 export class UsersService {
@@ -13,12 +13,12 @@ export class UsersService {
     email: string,
     firstName: string,
     lastName: string,
-    status: Status = Status.STANDARD,
+    role: Role = Role.VOLUNTEER,
   ) {
     const userId = (await this.repo.count()) + 1;
     const user = this.repo.create({
       id: userId,
-      status,
+      role,
       firstName,
       lastName,
       email,

@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-import { Status } from './types';
+import { Role } from './types';
 
 @Entity()
 export class User {
@@ -10,9 +10,9 @@ export class User {
   @Column({
     type: 'varchar',
     length: 20,
-    default: Status.STANDARD,
+    default: Role.VOLUNTEER,
   })
-  status: Status;
+  role: Role;
 
   @Column()
   firstName: string;
