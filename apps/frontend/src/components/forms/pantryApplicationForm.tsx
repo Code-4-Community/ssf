@@ -18,6 +18,18 @@ import { ActionFunction, ActionFunctionArgs, Form } from 'react-router-dom';
 import { useState } from 'react';
 
 const PantryApplicationForm: React.FC = () => {
+  // Option values and state here are for options that, when selected,
+  // cause a new form question to appear.
+
+  const numClientsExactOption: string = 'I have an exact number';
+  const otherDietaryRestrictionsOptions: string[] = [
+    'Other allergy (e.g., yeast, sunflower, etc.)',
+    'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
+    'Other dietary restriction',
+  ];
+  const willingToReserveYesOption: string = 'Yes';
+  const willingToReserveSomeOption: string = 'Some';
+
   const [numClients, setNumClients] = useState<string | undefined>();
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [willingToReserve, setWillingToReserve] = useState<
@@ -137,14 +149,14 @@ const PantryApplicationForm: React.FC = () => {
                 '50 to 100',
                 '> 100',
                 "I'm not sure",
-                'I have an exact number',
+                numClientsExactOption,
               ].map((value) => (
                 <Radio value={value}>{value}</Radio>
               ))}
             </Stack>
           </RadioGroup>
         </FormControl>
-        {numClients === 'I have an exact number' && (
+        {numClients === numClientsExactOption && (
           <FormControl mb="2em">
             <FormLabel fontSize={20} fontWeight={700}>
               Please provide the exact number, if known:
@@ -180,10 +192,8 @@ const PantryApplicationForm: React.FC = () => {
                 'Wheat allergy',
                 'Celiac disease',
                 'Gluten sensitivity (not celiac disease)',
-                'Other allergy (e.g., yeast, sunflower, etc.)',
-                'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
                 "Gastrointestinal illness (IBS, Crohn's, gastroparesis, etc.)",
-                'Other dietary restriction',
+                ...otherDietaryRestrictionsOptions,
                 'Unsure',
               ].map((value) => (
                 <Checkbox name="dietaryRestrictions" value={value}>
@@ -193,13 +203,9 @@ const PantryApplicationForm: React.FC = () => {
             </Stack>
           </CheckboxGroup>
         </FormControl>
-        {(dietaryRestrictions.includes(
-          'Other allergy (e.g., yeast, sunflower, etc.)',
-        ) ||
-          dietaryRestrictions.includes(
-            'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
-          ) ||
-          dietaryRestrictions.includes('Other dietary restriction')) && (
+        {dietaryRestrictions.find((option) =>
+          otherDietaryRestrictionsOptions.includes(option),
+        ) && (
           <FormControl mb="2em">
             <FormLabel fontSize={20} fontWeight={700}>
               If you selected "Other," please specify:
@@ -235,13 +241,17 @@ const PantryApplicationForm: React.FC = () => {
             onChange={setWillingToReserve}
           >
             <Stack>
-              {['Yes', 'Some', 'No'].map((value) => (
+              {[
+                willingToReserveYesOption,
+                willingToReserveSomeOption,
+                'No',
+              ].map((value) => (
                 <Radio value={value}>{value}</Radio>
               ))}
             </Stack>
           </RadioGroup>
         </FormControl>
-        {willingToReserve === 'Yes' && (
+        {willingToReserve === willingToReserveYesOption && (
           <FormControl isRequired mb="2em">
             <FormLabel fontSize={20} fontWeight={700}>
               Please explain how you would do this:
@@ -249,7 +259,7 @@ const PantryApplicationForm: React.FC = () => {
             <Textarea maxW="20em" name="howWillReserveYes" />
           </FormControl>
         )}
-        {willingToReserve === 'Some' && (
+        {willingToReserve === willingToReserveSomeOption && (
           <FormControl mb="2em">
             <FormLabel fontSize={20} fontWeight={700}>
               If you chose "some," please explain:
