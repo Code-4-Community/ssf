@@ -21,7 +21,7 @@ const PantryApplicationForm: React.FC = () => {
   // Option values and state here are for options that, when selected,
   // cause a new form question to appear.
 
-  const numClientsExactOption: string = 'I have an exact number';
+  const allergenAvoidantClientsExactOption: string = 'I have an exact number';
   const otherDietaryRestrictionsOptions: string[] = [
     'Other allergy (e.g., yeast, sunflower, etc.)',
     'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
@@ -30,7 +30,9 @@ const PantryApplicationForm: React.FC = () => {
   const willingToReserveYesOption: string = 'Yes';
   const willingToReserveSomeOption: string = 'Some';
 
-  const [numClients, setNumClients] = useState<string | undefined>();
+  const [allergenAvoidantClients, setAllergenAvoidantClients] = useState<
+    string | undefined
+  >();
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [willingToReserve, setWillingToReserve] = useState<
     string | undefined
@@ -137,9 +139,9 @@ const PantryApplicationForm: React.FC = () => {
             needs.
           </FormHelperText>
           <RadioGroup
-            name="numClients"
-            value={numClients}
-            onChange={setNumClients}
+            name="allergenAvoidantClients"
+            value={allergenAvoidantClients}
+            onChange={setAllergenAvoidantClients}
           >
             <Stack>
               {[
@@ -149,19 +151,23 @@ const PantryApplicationForm: React.FC = () => {
                 '50 to 100',
                 '> 100',
                 "I'm not sure",
-                numClientsExactOption,
+                allergenAvoidantClientsExactOption,
               ].map((value) => (
                 <Radio value={value}>{value}</Radio>
               ))}
             </Stack>
           </RadioGroup>
         </FormControl>
-        {numClients === numClientsExactOption && (
+        {allergenAvoidantClients === allergenAvoidantClientsExactOption && (
           <FormControl mb="2em">
             <FormLabel fontSize={20} fontWeight={700}>
               Please provide the exact number, if known:
             </FormLabel>
-            <Input maxW="20em" name="numClientsExact" type="number" />
+            <Input
+              maxW="20em"
+              name="allergenAvoidantClientsExact"
+              type="number"
+            />
           </FormControl>
         )}
         <FormControl mb="2em">
@@ -210,7 +216,7 @@ const PantryApplicationForm: React.FC = () => {
             <FormLabel fontSize={20} fontWeight={700}>
               If you selected "Other," please specify:
             </FormLabel>
-            <Input maxW="20em" name="otherDietaryRestrictions" type="text" />
+            <Input maxW="20em" name="dietaryRestrictionsOther" type="text" />
           </FormControl>
         )}
         <FormControl isRequired mb="2em">
@@ -315,7 +321,7 @@ const PantryApplicationForm: React.FC = () => {
             The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy,
             fish, shellfish, and sesame.
           </FormHelperText>
-          <RadioGroup name="confidenceIdentifyingAllergens">
+          <RadioGroup name="confidentIdentifyingAllergens">
             <Stack>
               {[
                 'Very confident',
@@ -386,7 +392,7 @@ const PantryApplicationForm: React.FC = () => {
             stock? (i.e., gluten-free breads, sunflower seed butters, non-dairy
             beverages, etc.)
           </FormLabel>
-          <Textarea maxW="20em" name="itemsInStock" />
+          <Textarea maxW="20em" name="allergenFreeItems" />
         </FormControl>
         <FormControl isRequired mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
