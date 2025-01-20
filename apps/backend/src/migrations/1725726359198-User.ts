@@ -9,7 +9,7 @@ export class User1725726359198 implements MigrationInterface {
                 last_name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL,
                 phone VARCHAR(20) NOT NULL,
-                role VARCHAR(50) NOT NULL,
+                role TEXT[] NOT NULL,
                 )`,
     );
   }
