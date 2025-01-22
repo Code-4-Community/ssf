@@ -1,6 +1,5 @@
 import {
   Flex,
-  Box,
   FormControl,
   FormLabel,
   Button,
@@ -26,7 +25,7 @@ import {
   ActionFunctionArgs,
 } from 'react-router-dom';
 
-// might be an API call, dummy data for now
+// might be an API call, for now hard code
 const getAllergens = () => {
   return [
     'Dairy-Free Alternatives',
@@ -67,17 +66,21 @@ const FoodRequestFormModal: React.FC = () => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Form method="post" action="/food-request-modal">
+            <Form method="post" action="/food-request">
               <FormControl as="fieldset" isRequired mb="2em">
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
                   Requested Size of Shipment
                 </FormLabel>
-                <RadioGroup defaultValue="Medium">
+                <RadioGroup defaultValue="Medium" name="size">
                   <HStack spacing="24px">
-                    <Radio value="Very Small">Very Small (1-2 boxes)</Radio>
-                    <Radio value="Small">Small (2-5 boxes)</Radio>
-                    <Radio value="Medium">Medium (5-10 boxes)</Radio>
-                    <Radio value="Large">Large (10+ boxes)</Radio>
+                    <Radio value="Very Small (1-2 boxes)">
+                      Very Small (1-2 boxes)
+                    </Radio>
+                    <Radio value="Small (2-5 boxes)">Small (2-5 boxes)</Radio>
+                    <Radio value="Medium (5-10 boxes)">
+                      Medium (5-10 boxes)
+                    </Radio>
+                    <Radio value="Large (10+ boxes)">Large (10+ boxes)</Radio>
                   </HStack>
                 </RadioGroup>
               </FormControl>
@@ -120,16 +123,36 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   const foodRequestData = new Map();
 
-  foodRequestData.set('notes', form.get('notes'));
+  foodRequestData.set('requestedSize', form.get('size'));
+  form.delete('size');
+  foodRequestData.set('additionalInformation', form.get('notes'));
   form.delete('notes');
-  foodRequestData.set('restrictions', form.getAll('restrictions'));
+  foodRequestData.set('requestedItems', form.getAll('restrictions'));
   form.delete('restrictions');
-  foodRequestData.set('pantry_id', 1);
+  foodRequestData.set('pantryId', 1);
 
   const data = Object.fromEntries(foodRequestData);
 
-  // TODO: API Call to update database
   console.log(data);
+  try {
+    const response = await fetch('/api/requests/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      // Can add additional behavior here
+      console.log('Food request submitted successfully');
+    } else {
+      console.error('Failed to submit food request', await response.text());
+    }
+  } catch (error) {
+    console.error('Error submitting food request', error);
+  }
+
   return redirect('/');
 };
 
