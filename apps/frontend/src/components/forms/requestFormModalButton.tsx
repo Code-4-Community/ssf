@@ -17,6 +17,7 @@ import {
   RadioGroup,
   HStack,
   Radio,
+  Text,
 } from '@chakra-ui/react';
 import {
   Form,
@@ -66,6 +67,16 @@ const FoodRequestFormModal: React.FC = () => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            <Text mb="1.5em">
+              Request a shipment of allergen-free food from SSF. You will be
+              placed on our waiting list for incoming donations targeted to your
+              needs.
+              <br />
+              <br />
+              Please keep in mind that we may not be able to accommodate
+              specific food requests at all times, but we will do our best to
+              match your preferences.
+            </Text>
             <Form method="post" action="/food-request">
               <FormControl as="fieldset" isRequired mb="2em">
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
@@ -105,8 +116,8 @@ const FoodRequestFormModal: React.FC = () => {
                 />
               </FormControl>
               <Flex justifyContent="space-between" mt={4}>
-                <Button type="submit">Submit</Button>
                 <Button onClick={onClose}>Close</Button>
+                <Button type="submit">Submit</Button>
               </Flex>
             </Form>
           </ModalBody>
