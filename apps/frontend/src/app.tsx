@@ -4,8 +4,6 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import { submitFoodRequestForm } from '@components/forms/foodRequestForm';
-import RequestFood from '@containers/foodRequest';
 import LandingPage from '@containers/landingPage';
 import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
@@ -39,11 +37,6 @@ const router = createBrowserRouter([
         element: <Orders />,
       },
     ],
-  },
-  {
-    path: '/food-request',
-    element: <RequestFood />,
-    action: submitFoodRequestForm,
   },
 ]);
 
