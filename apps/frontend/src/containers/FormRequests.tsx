@@ -1,41 +1,51 @@
-import React from 'react';
-import {
-  Center,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-} from '@chakra-ui/react';
-import { redirect } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Center, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 
-const FormRequests: React.FC = () => {
-  // Sample data for the table (will use API)
-  const requests = [
-    {
-      requestId: '001',
-      dateRequested: '2025-01-20',
-      status: 'Pending',
-      fulfilledBy: '2025-01-25',
-      expectedDeliveryDate: '2025-01-25',
-    },
-    {
-      requestId: '002',
-      dateRequested: '2025-01-22',
-      status: 'In Progress',
-      fulfilledBy: '2025-01-29',
-      expectedDeliveryDate: '2025-01-30',
-    },
-  ];
+interface FoodRequest {
+  requestId: number;
+  requestedAt: string;
+  status: string;
+  fulfilledBy: string | null;
+  dateReceived: string | null;
+}
 
-  // Function to handle redirect
-  const handleRedirect = () => {
-    return redirect('/confirmFoodDelivery');
+const FormRequests: React.FC = () => {
+  const [requests, setRequests] = useState<FoodRequest[]>([]);
+
+  const getAllPantryRequests = async (
+    pantryId: number,
+  ): Promise<FoodRequest[]> => {
+    try {
+      const response = await fetch(`/api/requests/${pantryId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        return await response.json();
+      } else {
+        console.error('Failed to fetch food requests', await response.text());
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching food requests', error);
+      return [];
+    }
   };
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      const data = await getAllPantryRequests(1); // Pantry ID hardcoded to 1 for now
+      console.log(data);
+      setRequests(data);
+    };
+
+    fetchRequests();
+  }, []);
 
   return (
     <Center flexDirection="column" p={4}>
@@ -58,10 +68,10 @@ const FormRequests: React.FC = () => {
           {requests.map((request) => (
             <Tr key={request.requestId}>
               <Td>{request.requestId}</Td>
-              <Td>{request.dateRequested}</Td>
+              <Td>{request.requestedAt}</Td>
               <Td>{request.status}</Td>
               <Td>{request.fulfilledBy}</Td>
-              <Td>{request.expectedDeliveryDate}</Td>
+              <Td>{request.dateReceived}</Td>
               <Td>
                 <DeliveryConfirmationModalButton />
               </Td>

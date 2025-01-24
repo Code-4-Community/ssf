@@ -119,6 +119,7 @@ const FoodRequestFormModal: React.FC = () => {
 export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
+  console.log('START OF SUBMIT FORM REQUEST MODAL');
   const form = await request.formData();
 
   const foodRequestData = new Map();
@@ -135,6 +136,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   console.log(data);
   try {
+    console.log('ABOUT TO MAKE POST REQUEST TO CREATE');
     const response = await fetch('/api/requests/create', {
       method: 'POST',
       headers: {
@@ -142,6 +144,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       },
       body: JSON.stringify(data),
     });
+    console.log('GOT RESPONSE FOR THE CREATE REQUEST');
 
     if (response.ok) {
       // Can add additional behavior here

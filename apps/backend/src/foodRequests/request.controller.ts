@@ -49,7 +49,6 @@ export class FoodRequestsController {
     );
   }
 
-  // TODO: method to find all FoodRequest by pantry_id
   // TODO: post updated the deliveryDate, feedback, and photos of the specified requestId that was edited
   // TODO: get method for the previous order for that button
 }

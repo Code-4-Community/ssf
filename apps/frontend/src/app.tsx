@@ -47,9 +47,10 @@ const router = createBrowserRouter([
     action: submitFoodRequestForm,
   },
   {
-    // Filter this based on pantry_id specifics, and use this within the Form to get proper requests
+    // TODO: Later on, this path should determine the id used in the GET request inside this component
     path: '/request-form',
     element: <FormRequests />,
+    action: submitFoodRequestForm,
   },
 ]);
 
