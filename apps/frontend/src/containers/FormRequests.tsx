@@ -6,7 +6,7 @@ import { Center } from '@chakra-ui/react';
 // have not have their delivery confirmed
 // Can implement other components though:
 // Can use a get request to retrieve the information from the database once it is set up for each field in SS
-const FoodRequests: React.FC = () => {
+const FormRequests: React.FC = () => {
   return (
     <Center>
       <DeliveryConfirmationForm />
@@ -14,4 +14,4 @@ const FoodRequests: React.FC = () => {
   );
 };
 
-export default FoodRequests;
+export default FormRequests;

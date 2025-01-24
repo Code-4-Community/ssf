@@ -6,7 +6,7 @@ import Root from '@containers/root';
 import NotFound from '@containers/404';
 import { submitFoodRequestForm } from '@components/forms/foodRequestForm';
 import RequestFood from '@containers/foodRequest';
-import DeliveryConfirmation from '@containers/FoodRequests';
+import DeliveryConfirmation from '@containers/FormRequests';
 import LandingPage from '@containers/landingPage';
 import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
