@@ -11,11 +11,11 @@ export class AddTables1726524792261 implements MigrationInterface {
                 ssf_representative_id INT NOT NULL,
                 pantry_representative_id INT NOT NULL,
                 restrictions TEXT[] NOT NULL,
-
+                
                 CONSTRAINT fk_ssf_representative_id FOREIGN KEY(ssf_representative_id) REFERENCES users(id),
                 CONSTRAINT fk_pantry_representative_id FOREIGN KEY(pantry_representative_id) REFERENCES users(id)
             );
-
+            
             CREATE TABLE IF NOT EXISTS donations (
                 id SERIAL PRIMARY KEY,
                 due_date TIMESTAMP NOT NULL,

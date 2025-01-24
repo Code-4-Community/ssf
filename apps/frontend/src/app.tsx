@@ -6,12 +6,12 @@ import Root from '@containers/root';
 import NotFound from '@containers/404';
 import { submitFoodRequestForm } from '@components/forms/foodRequestForm';
 import RequestFood from '@containers/foodRequest';
-import DeliveryConfirmation from '@containers/FormRequests';
 import LandingPage from '@containers/landingPage';
 import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
+import FormRequests from '@containers/FormRequests';
 
 const router = createBrowserRouter([
   {
@@ -47,8 +47,9 @@ const router = createBrowserRouter([
     action: submitFoodRequestForm,
   },
   {
-    path: '/delivery-confirmation',
-    element: <DeliveryConfirmation />,
+    // Filter this based on pantry_id specifics, and use this within the Form to get proper requests
+    path: '/request-form',
+    element: <FormRequests />,
   },
 ]);
 
