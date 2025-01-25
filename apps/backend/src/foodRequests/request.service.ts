@@ -41,4 +41,26 @@ export class RequestsService {
     }
     return this.repo.find({ where: { pantryId } });
   }
+
+  async updateDeliveryDetails(
+    requestId: number,
+    deliveryDate: Date,
+    feedback: string,
+    photos: string[],
+  ): Promise<FoodRequest> {
+    const request = await this.repo.findOne({
+      where: { requestId },
+    });
+
+    if (!request) {
+      throw new Error(`Request with ID ${requestId} not found.`);
+    }
+
+    request.dateReceived = deliveryDate;
+    request.feedback = feedback;
+    request.photos = photos;
+    request.status = 'Fulfilled';
+
+    return await this.repo.save(request);
+  }
 }

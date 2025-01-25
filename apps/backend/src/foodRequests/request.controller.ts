@@ -4,7 +4,9 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   Body,
+  Put,
 } from '@nestjs/common';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
@@ -49,6 +51,26 @@ export class FoodRequestsController {
     );
   }
 
-  // TODO: post updated the deliveryDate, feedback, and photos of the specified requestId that was edited
-  // TODO: get method for the previous order for that button
+  // NOTE: FUNCTION WORKS PERFECTLY, IT IS FORMAT AND HOW IT IS BEING CALLED THATS THE ISSUE
+  @Post('/:requestId/confirm-delivery')
+  async confirmDelivery(
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Body()
+    body: {
+      deliveryDate: Date;
+      feedback: string;
+      photos: string[];
+    },
+  ): Promise<FoodRequest> {
+    console.log('Entered confirmDelivery function');
+    console.log('Request ID:', requestId);
+    console.log('Body:', body);
+
+    return this.requestsService.updateDeliveryDetails(
+      requestId,
+      body.deliveryDate,
+      body.feedback,
+      body.photos,
+    );
+  }
 }

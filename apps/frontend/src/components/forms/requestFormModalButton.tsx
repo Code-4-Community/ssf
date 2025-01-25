@@ -20,12 +20,22 @@ import {
 } from '@chakra-ui/react';
 import {
   Form,
-  redirect,
   ActionFunction,
   ActionFunctionArgs,
+  redirect,
 } from 'react-router-dom';
 
-// might be an API call, for now hard code
+interface FoodRequest {
+  requestId: number;
+  requestedAt: string;
+  status: string;
+  fulfilledBy: string | null;
+  dateReceived: string | null;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation: string;
+}
+
 const getAllergens = () => {
   return [
     'Dairy-Free Alternatives',
@@ -45,19 +55,33 @@ const getAllergens = () => {
   ];
 };
 
-const FoodRequestFormModal: React.FC = () => {
+interface FoodRequestFormModalProps {
+  previousRequest?: FoodRequest;
+  buttonText: string;
+}
+
+const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
+  previousRequest,
+  buttonText,
+}) => {
   const renderAllergens = () => {
-    return getAllergens().map((a) => (
-      <Checkbox name="restrictions" value={a}>
-        {a}
+    const allergens = getAllergens();
+    return allergens.map((allergen) => (
+      <Checkbox key={allergen} name="restrictions" value={allergen}>
+        {allergen}
       </Checkbox>
     ));
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const defaultSize = previousRequest?.requestedSize || '';
+  const defaultNotes = previousRequest?.additionalInformation || '';
+  const selectedItems = previousRequest?.requestedItems || [];
+
   return (
     <>
-      <Button onClick={onOpen}>Submit new request</Button>
+      <Button onClick={onOpen}>{buttonText}</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
@@ -71,7 +95,7 @@ const FoodRequestFormModal: React.FC = () => {
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
                   Requested Size of Shipment
                 </FormLabel>
-                <RadioGroup defaultValue="Medium" name="size">
+                <RadioGroup defaultValue={defaultSize} name="size">
                   <HStack spacing="24px">
                     <Radio value="Very Small (1-2 boxes)">
                       Very Small (1-2 boxes)
@@ -88,7 +112,7 @@ const FoodRequestFormModal: React.FC = () => {
                 <FormLabel fontSize={20} fontWeight={700}>
                   Requested Shipment
                 </FormLabel>
-                <CheckboxGroup>
+                <CheckboxGroup value={selectedItems}>
                   <SimpleGrid spacing={2} columns={2}>
                     {renderAllergens()}
                   </SimpleGrid>
@@ -102,6 +126,7 @@ const FoodRequestFormModal: React.FC = () => {
                   name="notes"
                   placeholder="Anything else we should know about"
                   size="sm"
+                  defaultValue={defaultNotes}
                 />
               </FormControl>
               <Flex justifyContent="space-between" mt={4}>
@@ -119,7 +144,6 @@ const FoodRequestFormModal: React.FC = () => {
 export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
-  console.log('START OF SUBMIT FORM REQUEST MODAL');
   const form = await request.formData();
 
   const foodRequestData = new Map();
@@ -134,9 +158,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   const data = Object.fromEntries(foodRequestData);
 
-  console.log(data);
   try {
-    console.log('ABOUT TO MAKE POST REQUEST TO CREATE');
     const response = await fetch('/api/requests/create', {
       method: 'POST',
       headers: {
@@ -144,10 +166,8 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       },
       body: JSON.stringify(data),
     });
-    console.log('GOT RESPONSE FOR THE CREATE REQUEST');
 
     if (response.ok) {
-      // Can add additional behavior here
       console.log('Food request submitted successfully');
     } else {
       console.error('Failed to submit food request', await response.text());

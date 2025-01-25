@@ -7,7 +7,6 @@ import {
   Button,
   FormHelperText,
   Textarea,
-  SimpleGrid,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -16,10 +15,6 @@ import {
   ModalBody,
   ModalCloseButton,
   HStack,
-  RadioGroup,
-  Radio,
-  Checkbox,
-  CheckboxGroup,
 } from '@chakra-ui/react';
 import {
   Form,
@@ -28,21 +23,14 @@ import {
   redirect,
 } from 'react-router-dom';
 
-const DeliveryConfirmationModalButton: React.FC = () => {
+interface DeliveryConfirmationModalButtonProps {
+  requestId: number;
+}
+
+const DeliveryConfirmationModalButton: React.FC<
+  DeliveryConfirmationModalButtonProps
+> = ({ requestId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const form = new FormData(event.target as HTMLFormElement);
-    const formData = new Map();
-
-    formData.set('deliveryDate', form.get('deliveryDate'));
-    formData.set('feedback', form.get('feedback'));
-    formData.set('photos', form.getAll('photos'));
-
-    const data = Object.fromEntries(formData);
-  };
 
   return (
     <>
@@ -55,7 +43,8 @@ const DeliveryConfirmationModalButton: React.FC = () => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Form onSubmit={handleSubmit}>
+            <Form method="POST" action="/food-request">
+              <input type="hidden" name="requestId" value={requestId} />
               <FormControl isRequired mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
                   Delivery Date
@@ -102,32 +91,37 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
-  const formData = new Map();
 
-  formData.set('deliveryDate', form.get('deliveryDate'));
-  formData.set('feedback', form.get('feedback'));
-  formData.set('photos', form.getAll('photos'));
+  const confirmDeliveryData = new Map();
 
-  const data = Object.fromEntries(formData);
+  confirmDeliveryData.set('requestId', form.get('requestId'));
+  form.delete('requestId');
+  confirmDeliveryData.set('dateReceived', form.get('deliveryDate'));
+  form.delete('deliveryDate');
+  confirmDeliveryData.set('feedback', form.get('feedback'));
+  form.delete('feedback');
+  confirmDeliveryData.set('photos', form.getAll('photos'));
+  form.delete('photos');
+
+  const data = Object.fromEntries(confirmDeliveryData);
 
   try {
     const response = await fetch(
-      'http://localhost:3000/deliveries/food-requests/123/confirm-delivery',
+      `/api/requests/${data.requestId}/confirm-delivery`,
       {
         method: 'POST',
-        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(data),
       },
     );
 
     if (response.ok) {
-      // Additional behavior after a successful submission
       console.log('Delivery confirmation submitted successfully');
     } else {
       console.error(
-        'Error submitting delivery confirmation',
+        'Failed to submit delivery confirmation',
         await response.text(),
       );
     }

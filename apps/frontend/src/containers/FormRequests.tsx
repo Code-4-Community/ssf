@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import { useParams } from 'react-router-dom';
+import {
+  Center,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Button,
+} from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 
@@ -9,10 +19,17 @@ interface FoodRequest {
   status: string;
   fulfilledBy: string | null;
   dateReceived: string | null;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation: string;
 }
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
+  const [previousRequest, setPreviousRequest] = useState<
+    FoodRequest | undefined
+  >(undefined);
+  const { pantryId } = useParams<{ pantryId: string }>();
 
   const getAllPantryRequests = async (
     pantryId: number,
@@ -39,20 +56,42 @@ const FormRequests: React.FC = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
-      const data = await getAllPantryRequests(1); // Pantry ID hardcoded to 1 for now
-      console.log(data);
-      setRequests(data);
+      if (pantryId) {
+        const data = await getAllPantryRequests(parseInt(pantryId, 10));
+        setRequests(data);
+
+        if (data.length > 0) {
+          const mostRecentRequest = data.reduce((prev, current) =>
+            prev.requestId > current.requestId ? prev : current,
+          );
+          setPreviousRequest(mostRecentRequest);
+        }
+      }
     };
 
     fetchRequests();
-  }, []);
+    console.log('Current previous request: ', previousRequest);
+  }, [pantryId]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-CA');
+  };
 
   return (
     <Center flexDirection="column" p={4}>
-      {/* Food Request Form Modal at the top */}
-      <FoodRequestFormModal />
+      <FoodRequestFormModal
+        previousRequest={undefined}
+        buttonText="Submit New Request"
+      />
 
-      {/* Table displaying orders */}
+      {previousRequest && (
+        <FoodRequestFormModal
+          previousRequest={previousRequest}
+          buttonText="Submit Previous Request"
+        />
+      )}
+
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>
@@ -68,12 +107,14 @@ const FormRequests: React.FC = () => {
           {requests.map((request) => (
             <Tr key={request.requestId}>
               <Td>{request.requestId}</Td>
-              <Td>{request.requestedAt}</Td>
+              <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.status}</Td>
               <Td>{request.fulfilledBy}</Td>
               <Td>{request.dateReceived}</Td>
               <Td>
-                <DeliveryConfirmationModalButton />
+                <DeliveryConfirmationModalButton
+                  requestId={request.requestId}
+                />
               </Td>
             </Tr>
           ))}
