@@ -156,15 +156,19 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
     if (response.ok) {
       // Can add additional behavior here
+
       console.log('Food request submitted successfully');
+
+      // Can be changed if desired to redirect to different page
+      return redirect('/landing-page');
     } else {
       console.error('Failed to submit food request', await response.text());
+      return redirect('/landing-page');
     }
   } catch (error) {
     console.error('Error submitting food request', error);
+    return redirect('/landing-page');
   }
-
-  return redirect('/');
 };
 
 export default FoodRequestFormModal;
