@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
 import {
   Box,
-  Heading,
   FormControl,
   FormLabel,
   Input,
@@ -16,7 +14,6 @@ import {
   ModalBody,
   ModalCloseButton,
   HStack,
-  Image,
   Text,
 } from '@chakra-ui/react';
 import {
@@ -30,28 +27,29 @@ interface DeliveryConfirmationModalButtonProps {
   requestId: number;
 }
 
+// Global variable to store photos
+const globalPhotos: File[] = [];
+
 const DeliveryConfirmationModalButton: React.FC<
   DeliveryConfirmationModalButtonProps
 > = ({ requestId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [photos, setPhotos] = useState<File[]>([]);
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files && files.length <= 3) {
-      setPhotos(Array.from(files));
+    if (files) {
+      Array.from(files).forEach((file) => {
+        if (!globalPhotos.some((photo) => photo.name === file.name)) {
+          globalPhotos.push(file); // Add to globalPhotos array
+        }
+      });
     }
+    console.log('Current global photos: ', globalPhotos);
   };
 
-  const renderPhotoPreviews = () => {
-    return photos.map((photo, index) => (
+  const renderPhotoNames = () => {
+    return globalPhotos.map((photo, index) => (
       <Box key={index} mb={2}>
-        <Image
-          src={URL.createObjectURL(photo)}
-          alt={`photo-${index}`}
-          maxWidth="150px"
-          borderRadius="8px"
-        />
         <Text fontSize="sm" mt={1}>
           {photo.name}
         </Text>
@@ -70,7 +68,11 @@ const DeliveryConfirmationModalButton: React.FC<
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Form method="post" action="/confirm-delivery">
+            <Form
+              method="post"
+              action="/confirm-delivery"
+              encType="multipart/form-data"
+            >
               <input type="hidden" name="requestId" value={requestId} />
               <FormControl isRequired mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
@@ -91,7 +93,7 @@ const DeliveryConfirmationModalButton: React.FC<
               </FormControl>
               <FormControl mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
-                  Upload Photos (Max: 3)
+                  Upload Photos
                 </FormLabel>
                 <Input
                   type="file"
@@ -103,7 +105,7 @@ const DeliveryConfirmationModalButton: React.FC<
                 <FormHelperText>
                   Select up to 3 photos to upload.
                 </FormHelperText>
-                <Box mt={3}>{renderPhotoPreviews()}</Box>
+                <Box mt={3}>{renderPhotoNames()}</Box>
               </FormControl>
               <HStack spacing="24px" justifyContent="space-between" mt={4}>
                 <Button type="submit" colorScheme="blue">
@@ -142,14 +144,12 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   confirmDeliveryData.set('feedback', form.get('feedback'));
   form.delete('feedback');
 
-  const photoPaths: string[] = [];
-  const photos = form.getAll('photos') as File[];
-  console.log('Photos: ', photos);
-  photos.forEach((file) => {
-    photoPaths.push(URL.createObjectURL(file));
-  });
-  console.log('Photo paths: ', photoPaths);
-  confirmDeliveryData.set('photos', photoPaths);
+  // Use globalPhotos directly here
+  confirmDeliveryData.set(
+    'photos',
+    globalPhotos.map((file) => file.name),
+  ); // Directly using globalPhotos
+
   form.delete('photos');
 
   const data = Object.fromEntries(confirmDeliveryData);

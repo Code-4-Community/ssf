@@ -8,7 +8,7 @@ import {
   Tr,
   Th,
   Td,
-  Button,
+  HStack,
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
@@ -86,17 +86,19 @@ const FormRequests: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <FoodRequestFormModal
-        previousRequest={undefined}
-        buttonText="Submit New Request"
-      />
-
-      {previousRequest && (
+      <HStack spacing={200}>
         <FoodRequestFormModal
-          previousRequest={previousRequest}
-          buttonText="Submit Previous Request"
+          previousRequest={undefined}
+          buttonText="Submit New Request"
         />
-      )}
+
+        {previousRequest && (
+          <FoodRequestFormModal
+            previousRequest={previousRequest}
+            buttonText="Submit Previous Request"
+          />
+        )}
+      </HStack>
 
       <Table variant="simple" mt={6} width="80%">
         <Thead>

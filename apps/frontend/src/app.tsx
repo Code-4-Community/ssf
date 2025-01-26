@@ -4,7 +4,6 @@ import { createBrowserRouter, Form, RouterProvider } from 'react-router-dom';
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import RequestFood from '@containers/foodRequest';
 import LandingPage from '@containers/landingPage';
 import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
