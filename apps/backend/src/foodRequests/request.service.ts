@@ -14,7 +14,7 @@ export class RequestsService {
     requestedSize: string,
     requestedItems: string[],
     additionalInformation: string | null,
-    status: string = 'pending',
+    status: string = 'Pending',
     fulfilledBy: number | null,
     dateReceived: Date | null,
     feedback: string | null,
@@ -48,19 +48,23 @@ export class RequestsService {
     feedback: string,
     photos: string[],
   ): Promise<FoodRequest> {
-    const request = await this.repo.findOne({
-      where: { requestId },
-    });
+    try {
+      const request = await this.repo.findOne({ where: { requestId } });
 
-    if (!request) {
-      throw new Error(`Request with ID ${requestId} not found.`);
+      if (!request) {
+        throw new Error(`Request with ID ${requestId} not found.`);
+      }
+
+      request.feedback = feedback;
+      request.dateReceived = deliveryDate;
+      request.photos = photos;
+      request.status = 'Fulfilled';
+      console.log('Request updated:', request);
+
+      return await this.repo.save(request);
+    } catch (error) {
+      console.error('Error in updateDeliveryDetails:', error);
+      throw error;
     }
-
-    request.dateReceived = deliveryDate;
-    request.feedback = feedback;
-    request.photos = photos;
-    request.status = 'Fulfilled';
-
-    return await this.repo.save(request);
   }
 }

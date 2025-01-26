@@ -51,24 +51,25 @@ export class FoodRequestsController {
     );
   }
 
-  // NOTE: FUNCTION WORKS PERFECTLY, IT IS FORMAT AND HOW IT IS BEING CALLED THATS THE ISSUE
   @Post('/:requestId/confirm-delivery')
   async confirmDelivery(
     @Param('requestId', ParseIntPipe) requestId: number,
     @Body()
     body: {
-      deliveryDate: Date;
+      dateReceived: string;
       feedback: string;
       photos: string[];
     },
   ): Promise<FoodRequest> {
-    console.log('Entered confirmDelivery function');
-    console.log('Request ID:', requestId);
-    console.log('Body:', body);
+    const formattedDate = new Date(body.dateReceived);
+    if (formattedDate.toString() === 'Invalid Date') {
+      console.error('Invalid Date:', body.dateReceived);
+      throw new Error('Invalid date format for deliveryDate');
+    }
 
     return this.requestsService.updateDeliveryDetails(
       requestId,
-      body.deliveryDate,
+      formattedDate,
       body.feedback,
       body.photos,
     );

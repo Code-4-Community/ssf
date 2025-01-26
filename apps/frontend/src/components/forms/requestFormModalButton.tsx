@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   FormControl,
@@ -17,6 +18,7 @@ import {
   RadioGroup,
   HStack,
   Radio,
+  Text,
 } from '@chakra-ui/react';
 import {
   Form,
@@ -64,6 +66,18 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
   buttonText,
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [selectedItems, setSelectedItems] = useState<string[]>(
+    previousRequest?.requestedItems || [],
+  );
+  const defaultSize = previousRequest?.requestedSize || '';
+  const defaultNotes = previousRequest?.additionalInformation || '';
+
+  const handleCheckboxChange = (values: string[]) => {
+    setSelectedItems(values);
+  };
+
   const renderAllergens = () => {
     const allergens = getAllergens();
     return allergens.map((allergen) => (
@@ -72,12 +86,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       </Checkbox>
     ));
   };
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const defaultSize = previousRequest?.requestedSize || '';
-  const defaultNotes = previousRequest?.additionalInformation || '';
-  const selectedItems = previousRequest?.requestedItems || [];
 
   return (
     <>
@@ -90,6 +98,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            <Text mb="1.5em">
+              Request a shipment of allergen-free food from SSF. You will be
+              placed on our waiting list for incoming donations targeted to your
+              needs.
+              <br />
+              <br />
+              Please keep in mind that we may not be able to accommodate
+              specific food requests at all times, but we will do our best to
+              match your preferences.
+            </Text>
             <Form method="post" action="/food-request">
               <FormControl as="fieldset" isRequired mb="2em">
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
@@ -112,7 +130,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <FormLabel fontSize={20} fontWeight={700}>
                   Requested Shipment
                 </FormLabel>
-                <CheckboxGroup value={selectedItems}>
+                <CheckboxGroup
+                  value={selectedItems}
+                  onChange={handleCheckboxChange}
+                >
                   <SimpleGrid spacing={2} columns={2}>
                     {renderAllergens()}
                   </SimpleGrid>
@@ -157,6 +178,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   foodRequestData.set('pantryId', 1);
 
   const data = Object.fromEntries(foodRequestData);
+  console.log(data);
 
   try {
     const response = await fetch('/api/requests/create', {
@@ -169,14 +191,16 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
     if (response.ok) {
       console.log('Food request submitted successfully');
+
+      return redirect('/');
     } else {
       console.error('Failed to submit food request', await response.text());
+      return redirect('/');
     }
   } catch (error) {
     console.error('Error submitting food request', error);
+    return redirect('/');
   }
-
-  return redirect('/');
 };
 
 export default FoodRequestFormModal;

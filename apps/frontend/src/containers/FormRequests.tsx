@@ -78,6 +78,12 @@ const FormRequests: React.FC = () => {
     return date.toLocaleDateString('en-CA');
   };
 
+  const formatReceivedDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-CA');
+  };
+
   return (
     <Center flexDirection="column" p={4}>
       <FoodRequestFormModal
@@ -110,7 +116,7 @@ const FormRequests: React.FC = () => {
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.status}</Td>
               <Td>{request.fulfilledBy}</Td>
-              <Td>{request.dateReceived}</Td>
+              <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
                 <DeliveryConfirmationModalButton
                   requestId={request.requestId}

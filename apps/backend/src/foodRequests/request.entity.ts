@@ -6,6 +6,7 @@ import {
 } from 'typeorm';
 
 @Entity('food_requests')
+@Entity('confirm_delivery')
 export class FoodRequest {
   @PrimaryGeneratedColumn({ name: 'request_id' })
   requestId: number;

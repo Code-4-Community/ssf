@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Box,
   Heading,
@@ -15,6 +16,8 @@ import {
   ModalBody,
   ModalCloseButton,
   HStack,
+  Image,
+  Text,
 } from '@chakra-ui/react';
 import {
   Form,
@@ -31,6 +34,30 @@ const DeliveryConfirmationModalButton: React.FC<
   DeliveryConfirmationModalButtonProps
 > = ({ requestId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [photos, setPhotos] = useState<File[]>([]);
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length <= 3) {
+      setPhotos(Array.from(files));
+    }
+  };
+
+  const renderPhotoPreviews = () => {
+    return photos.map((photo, index) => (
+      <Box key={index} mb={2}>
+        <Image
+          src={URL.createObjectURL(photo)}
+          alt={`photo-${index}`}
+          maxWidth="150px"
+          borderRadius="8px"
+        />
+        <Text fontSize="sm" mt={1}>
+          {photo.name}
+        </Text>
+      </Box>
+    ));
+  };
 
   return (
     <>
@@ -43,7 +70,7 @@ const DeliveryConfirmationModalButton: React.FC<
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Form method="POST" action="/food-request">
+            <Form method="post" action="/confirm-delivery">
               <input type="hidden" name="requestId" value={requestId} />
               <FormControl isRequired mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
@@ -71,7 +98,12 @@ const DeliveryConfirmationModalButton: React.FC<
                   name="photos"
                   multiple
                   accept=".jpg,.jpeg,.png"
+                  onChange={handlePhotoChange}
                 />
+                <FormHelperText>
+                  Select up to 3 photos to upload.
+                </FormHelperText>
+                <Box mt={3}>{renderPhotoPreviews()}</Box>
               </FormControl>
               <HStack spacing="24px" justifyContent="space-between" mt={4}>
                 <Button type="submit" colorScheme="blue">
@@ -96,14 +128,32 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
   confirmDeliveryData.set('requestId', form.get('requestId'));
   form.delete('requestId');
-  confirmDeliveryData.set('dateReceived', form.get('deliveryDate'));
+
+  const deliveryDate = form.get('deliveryDate');
+  if (typeof deliveryDate === 'string') {
+    const formattedDate = new Date(deliveryDate);
+    const formattedDateString = formattedDate.toISOString();
+    confirmDeliveryData.set('dateReceived', formattedDateString);
+  } else {
+    console.error('Delivery date is missing or invalid.');
+  }
   form.delete('deliveryDate');
+
   confirmDeliveryData.set('feedback', form.get('feedback'));
   form.delete('feedback');
-  confirmDeliveryData.set('photos', form.getAll('photos'));
+
+  const photoPaths: string[] = [];
+  const photos = form.getAll('photos') as File[];
+  console.log('Photos: ', photos);
+  photos.forEach((file) => {
+    photoPaths.push(URL.createObjectURL(file));
+  });
+  console.log('Photo paths: ', photoPaths);
+  confirmDeliveryData.set('photos', photoPaths);
   form.delete('photos');
 
   const data = Object.fromEntries(confirmDeliveryData);
+  console.log(data);
 
   try {
     const response = await fetch(
@@ -119,17 +169,18 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
     if (response.ok) {
       console.log('Delivery confirmation submitted successfully');
+      return redirect('/');
     } else {
       console.error(
         'Failed to submit delivery confirmation',
         await response.text(),
       );
+      return redirect('/');
     }
   } catch (error) {
     console.error('Error submitting delivery confirmation', error);
+    return redirect('/');
   }
-
-  return redirect('/');
 };
 
 export default DeliveryConfirmationModalButton;
