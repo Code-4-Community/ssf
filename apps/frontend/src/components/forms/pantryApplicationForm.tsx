@@ -14,7 +14,12 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react';
-import { ActionFunction, ActionFunctionArgs, Form } from 'react-router-dom';
+import {
+  ActionFunction,
+  ActionFunctionArgs,
+  Form,
+  redirect,
+} from 'react-router-dom';
 import { useState } from 'react';
 
 const PantryApplicationForm: React.FC = () => {
@@ -441,9 +446,28 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 }: ActionFunctionArgs) => {
   const form = await request.formData();
 
+  const pantryApplicationData = new Map();
+
+  // Handle questions with checkboxes (we create an array of all
+  // selected options)
+
+  pantryApplicationData.set(
+    'dietaryRestrictions',
+    form.getAll('dietaryRestrictions'),
+  );
+  form.delete('dietaryRestrictions');
+
+  pantryApplicationData.set('activities', form.getAll('activities'));
+  form.delete('activities');
+
+  // Handle all other questions
+  form.forEach((value, key) => pantryApplicationData.set(key, value));
+
+  const data = Object.fromEntries(pantryApplicationData);
+
   // TODO: API Call to update database
-  console.log(Array.from(form.entries()).toString());
-  return null;
+  console.log(data);
+  return redirect('/');
 };
 
 export default PantryApplicationForm;
