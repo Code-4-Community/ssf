@@ -38,6 +38,12 @@ const PantryApplicationForm: React.FC = () => {
     string | undefined
   >();
 
+  // We need to keep track of the activities selected so we can provide custom
+  // validation (at least one activity chosen).
+  const [activities, setActivities] = useState<string[]>([]);
+
+  const noActivitiesSelected: boolean = activities.length === 0;
+
   return (
     <Box minW="35em" maxW="50em" m="5em">
       <Form method="post" action="/pantry-application">
@@ -355,11 +361,18 @@ const PantryApplicationForm: React.FC = () => {
             What activities are you open to doing with SSF?
           </FormLabel>
           <FormHelperText mb="1em">
-            Food donations are one part of being a partner pantry. The following
-            are additional ways to help us better support you! (Please select
-            all that apply.)
+            <p>
+              Food donations are one part of being a partner pantry. The
+              following are additional ways to help us better support you!
+              (Please select all that apply.)
+            </p>
+            <p>Please select at least one option!</p>
           </FormHelperText>
-          <CheckboxGroup>
+          {/* TODO: Fix input validation message */}
+          <CheckboxGroup
+            value={activities}
+            onChange={(activities) => setActivities(activities as string[])}
+          >
             <Stack>
               {[
                 'Create a labeled, allergy-friendly shelf or shelves',
@@ -370,7 +383,11 @@ const PantryApplicationForm: React.FC = () => {
                 'Collect feedback from allergen-avoidant clients on SSF foods',
                 'Something else',
               ].map((value) => (
-                <Checkbox name="activities" value={value}>
+                <Checkbox
+                  name="activities"
+                  value={value}
+                  isRequired={noActivitiesSelected}
+                >
                   {value}
                 </Checkbox>
               ))}
