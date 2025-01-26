@@ -27,7 +27,6 @@ interface DeliveryConfirmationModalButtonProps {
   requestId: number;
 }
 
-// Global variable to store photos
 const globalPhotos: File[] = [];
 
 const DeliveryConfirmationModalButton: React.FC<
@@ -40,7 +39,7 @@ const DeliveryConfirmationModalButton: React.FC<
     if (files) {
       Array.from(files).forEach((file) => {
         if (!globalPhotos.some((photo) => photo.name === file.name)) {
-          globalPhotos.push(file); // Add to globalPhotos array
+          globalPhotos.push(file);
         }
       });
     }
@@ -144,11 +143,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   confirmDeliveryData.set('feedback', form.get('feedback'));
   form.delete('feedback');
 
-  // Use globalPhotos directly here
   confirmDeliveryData.set(
     'photos',
     globalPhotos.map((file) => file.name),
-  ); // Directly using globalPhotos
+  );
 
   form.delete('photos');
 
