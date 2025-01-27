@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, Form, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
@@ -11,6 +11,7 @@ import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import FormRequests from '@containers/FormRequests';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: '/orders',
         element: <Orders />,
+      },
+      {
+        path: '/request-form/:pantryId',
+        element: <FormRequests />,
       },
       {
         path: '/food-request',

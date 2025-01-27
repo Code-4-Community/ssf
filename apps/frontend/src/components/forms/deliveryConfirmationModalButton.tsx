@@ -27,6 +27,7 @@ interface DeliveryConfirmationModalButtonProps {
   requestId: number;
 }
 
+const base64Files: string[] = [];
 const globalPhotos: File[] = [];
 
 const DeliveryConfirmationModalButton: React.FC<
@@ -34,16 +35,43 @@ const DeliveryConfirmationModalButton: React.FC<
 > = ({ requestId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Photo handling functions
+  function convertPhotoToBase64(photo: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        resolve(base64String);
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+
+      reader.readAsDataURL(photo);
+    });
+  }
+
+  const handlePhotoChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = event.target.files;
+
     if (files) {
-      Array.from(files).forEach((file) => {
-        if (!globalPhotos.some((photo) => photo.name === file.name)) {
-          globalPhotos.push(file);
+      for (const file of Array.from(files)) {
+        if (!base64Files.some((photo) => photo.includes(file.name))) {
+          try {
+            const base64String = await convertPhotoToBase64(file);
+            base64Files.push(base64String);
+          } catch (error) {
+            console.error(`Failed to convert ${file.name} to Base64:`, error);
+          }
         }
-      });
+      }
     }
-    console.log('Current global photos: ', globalPhotos);
+
+    console.log('Current global photos (Base64):', globalPhotos);
   };
 
   const renderPhotoNames = () => {
@@ -143,10 +171,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   confirmDeliveryData.set('feedback', form.get('feedback'));
   form.delete('feedback');
 
-  confirmDeliveryData.set(
-    'photos',
-    globalPhotos.map((file) => file.name),
-  );
+  confirmDeliveryData.set('photos', base64Files);
 
   form.delete('photos');
 

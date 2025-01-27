@@ -70,8 +70,8 @@ const FormRequests: React.FC = () => {
     };
 
     fetchRequests();
-    console.log('Current previous request: ', previousRequest);
   }, [pantryId]);
+  console.log('Current previous request: ', previousRequest);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
