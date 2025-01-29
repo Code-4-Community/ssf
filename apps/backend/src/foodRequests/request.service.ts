@@ -48,23 +48,17 @@ export class RequestsService {
     feedback: string,
     photos: string[],
   ): Promise<FoodRequest> {
-    try {
-      const request = await this.repo.findOne({ where: { requestId } });
+    const request = await this.repo.findOne({ where: { requestId } });
 
-      if (!request) {
-        throw new Error(`Request with ID ${requestId} not found.`);
-      }
-
-      request.feedback = feedback;
-      request.dateReceived = deliveryDate;
-      request.photos = photos;
-      request.status = 'Fulfilled';
-      console.log('Request updated:', request);
-
-      return await this.repo.save(request);
-    } catch (error) {
-      console.error('Error in updateDeliveryDetails:', error);
-      throw error;
+    if (!request) {
+      throw new Error(`Request with ID ${requestId} not found.`);
     }
+
+    request.feedback = feedback;
+    request.dateReceived = deliveryDate;
+    request.photos = photos;
+    request.status = 'Fulfilled';
+
+    return await this.repo.save(request);
   }
 }

@@ -27,31 +27,13 @@ interface DeliveryConfirmationModalButtonProps {
   requestId: number;
 }
 
-const base64Files: string[] = [];
+const photoNames: string[] = [];
 const globalPhotos: File[] = [];
 
 const DeliveryConfirmationModalButton: React.FC<
   DeliveryConfirmationModalButtonProps
 > = ({ requestId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // Photo handling functions
-  function convertPhotoToBase64(photo: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        resolve(base64String);
-      };
-
-      reader.onerror = (error) => {
-        reject(error);
-      };
-
-      reader.readAsDataURL(photo);
-    });
-  }
 
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -60,18 +42,18 @@ const DeliveryConfirmationModalButton: React.FC<
 
     if (files) {
       for (const file of Array.from(files)) {
-        if (!base64Files.some((photo) => photo.includes(file.name))) {
+        if (!photoNames.some((photo) => photo.includes(file.name))) {
           try {
-            const base64String = await convertPhotoToBase64(file);
-            base64Files.push(base64String);
+            photoNames.push(file.name);
+            globalPhotos.push(file);
           } catch (error) {
-            console.error(`Failed to convert ${file.name} to Base64:`, error);
+            console.error(`Failed to handle ${file.name}:`, error);
           }
         }
       }
     }
 
-    console.log('Current global photos (Base64):', globalPhotos);
+    console.log('Current uploaded photos:', photoNames);
   };
 
   const renderPhotoNames = () => {
@@ -148,13 +130,13 @@ const DeliveryConfirmationModalButton: React.FC<
   );
 };
 
+// Action function to handle form submission
 export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
 
   const confirmDeliveryData = new Map();
-
   confirmDeliveryData.set('requestId', form.get('requestId'));
   form.delete('requestId');
 
@@ -171,8 +153,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   confirmDeliveryData.set('feedback', form.get('feedback'));
   form.delete('feedback');
 
-  confirmDeliveryData.set('photos', base64Files);
-
+  confirmDeliveryData.set('photos', photoNames);
   form.delete('photos');
 
   const data = Object.fromEntries(confirmDeliveryData);

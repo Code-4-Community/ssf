@@ -9,11 +9,15 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
+import { AWSS3Service } from '../aws/aws-s3.service';
 
 @Controller('requests')
 //@UseInterceptors()
 export class FoodRequestsController {
-  constructor(private requestsService: RequestsService) {}
+  constructor(
+    private requestsService: RequestsService,
+    private awsS3Service: AWSS3Service,
+  ) {}
 
   @Get('/:pantryId')
   async getAllPantryRequests(
@@ -101,11 +105,13 @@ export class FoodRequestsController {
       throw new Error('Invalid date format for deliveryDate');
     }
 
+    const uploadedPhotoUrls = await this.awsS3Service.upload(body.photos);
+
     return this.requestsService.updateDeliveryDetails(
       requestId,
       formattedDate,
       body.feedback,
-      body.photos,
+      uploadedPhotoUrls,
     );
   }
 }
