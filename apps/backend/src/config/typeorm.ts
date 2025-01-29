@@ -4,6 +4,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { User1725726359198 } from '../migrations/1725726359198-User';
 import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
 import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTables';
+import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
 
 const config = {
   type: 'postgres',
@@ -21,6 +22,7 @@ const config = {
     User1725726359198,
     AddTables1726524792261,
     ReviseTables1737522923066,
+    UpdatePantriesTable1738172265266,
   ],
 };
 
