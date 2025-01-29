@@ -5,7 +5,7 @@ import { Role } from './types';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  user_id: number;
 
   @Column({
     type: 'varchar',
@@ -22,4 +22,8 @@ export class User {
 
   @Column()
   email: string;
+
+  get id(): number {
+    return this.user_id;
+  }
 }

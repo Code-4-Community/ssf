@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Pantry } from './pantries.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class PantriesService {
@@ -16,7 +17,7 @@ export class PantriesService {
     return this.repo.findOneBy({ pantryId });
   }
 
-  async findSSFRep(pantryId: number) {
+  async findSSFRep(pantryId: number): Promise<User | null> {
     const pantry = await this.repo.findOne({
       where: { pantryId },
       relations: ['ssfRepresentative'],

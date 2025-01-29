@@ -2,7 +2,7 @@ import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { User } from '../users/user.entity';
 import { PantriesService } from './pantries.service';
 
-@Controller('users')
+@Controller('pantries')
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 

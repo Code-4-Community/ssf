@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -55,11 +56,17 @@ export class Pantry {
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
 
-  @OneToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'ssf_representative_id' })
+  @ManyToOne(() => User, { nullable: false })
+  @JoinColumn({
+    name: 'ssf_representative_id',
+    referencedColumnName: 'user_id',
+  })
   ssfRepresentative: User;
 
   @OneToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'pantry_representative_id' })
+  @JoinColumn({
+    name: 'pantry_representative_id',
+    referencedColumnName: 'user_id',
+  })
   pantryRepresentative: User;
 }

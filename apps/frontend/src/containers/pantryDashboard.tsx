@@ -13,8 +13,57 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
+import React, { useEffect, useState } from 'react';
+
+interface User {
+  id: number;
+  role: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 const PantryDashboard: React.FC = () => {
+  const [ssfRep, setSsfRep] = useState<User | null>(null);
+
+  const getSSFRep = async (pantryId: number): Promise<User | null> => {
+    try {
+      const response = await fetch(`/api/pantries/${pantryId}/ssf-contact`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        return await response.json();
+      } else {
+        console.error('Failed to fetch food requests', await response.text());
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching food requests', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchRep = async () => {
+      try {
+        const data = await getSSFRep(1);
+        setSsfRep(data);
+      } catch (error) {
+        console.error('Error fetching SSF rep', error);
+      }
+    };
+
+    fetchRep();
+  }, []);
+
+  useEffect(() => {
+    console.log(ssfRep);
+  }, [ssfRep]);
+
   return (
     <>
       <VStack width="100%" padding="2" spacing={10}>
