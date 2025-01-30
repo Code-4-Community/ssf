@@ -11,6 +11,7 @@ import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
+import PantryDashboard from '@containers/pantryDashboard';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: '/pantry-overview',
         element: <PantryOverview />,
+      },
+      {
+        path: '/pantry-dashboard',
+        element: <PantryDashboard />,
       },
       {
         path: '/pantry-past-orders',
