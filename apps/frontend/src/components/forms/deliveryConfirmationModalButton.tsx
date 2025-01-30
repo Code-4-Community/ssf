@@ -130,14 +130,20 @@ const DeliveryConfirmationModalButton: React.FC<
   );
 };
 
-// Action function to handle form submission
 export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
 
-  const confirmDeliveryData = new Map();
-  confirmDeliveryData.set('requestId', form.get('requestId'));
+  const confirmDeliveryData = new FormData();
+
+  // Set requestId and feedback as strings
+  const requestId = form.get('requestId');
+  if (requestId) {
+    confirmDeliveryData.set('requestId', requestId.toString());
+  } else {
+    console.error('Request ID is missing');
+  }
   form.delete('requestId');
 
   const deliveryDate = form.get('deliveryDate');
@@ -150,24 +156,27 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   }
   form.delete('deliveryDate');
 
-  confirmDeliveryData.set('feedback', form.get('feedback'));
+  // Set feedback as string
+  const feedback = form.get('feedback');
+  if (feedback) {
+    confirmDeliveryData.set('feedback', feedback.toString());
+  } else {
+    console.error('Feedback is missing');
+  }
   form.delete('feedback');
 
-  confirmDeliveryData.set('photos', photoNames);
-  form.delete('photos');
-
-  const data = Object.fromEntries(confirmDeliveryData);
-  console.log(data);
+  // Add files (photos) to FormData
+  const photos = globalPhotos;
+  photos.forEach((photo) => {
+    confirmDeliveryData.append('photos', photo); // Append each file as 'photos'
+  });
 
   try {
     const response = await fetch(
-      `/api/requests/${data.requestId}/confirm-delivery`,
+      `/api/requests/${requestId}/confirm-delivery`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: confirmDeliveryData, // Send FormData with files included
       },
     );
 
