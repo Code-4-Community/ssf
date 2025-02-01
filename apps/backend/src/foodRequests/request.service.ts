@@ -51,7 +51,7 @@ export class RequestsService {
     const request = await this.repo.findOne({ where: { requestId } });
 
     if (!request) {
-      throw new Error(`Request with ID ${requestId} not found.`);
+      throw new NotFoundException('Invalid request ID');
     }
 
     request.feedback = feedback;
