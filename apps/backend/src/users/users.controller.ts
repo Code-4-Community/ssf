@@ -27,10 +27,4 @@ export class UsersController {
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(parseInt(id));
   }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/pantries/:pantryId/ssf-contact')
-  async getSSFContact(@Param('pantryId', ParseIntPipe) pantryId: number) {
-    return this.usersService.getSSFContactByPantryId(pantryId);
-  }
 }
