@@ -90,6 +90,31 @@ export class FoodRequestsController {
   }
 
   @Post('/:requestId/confirm-delivery')
+  @ApiBody({
+    description: 'Details for a confirmation form',
+    schema: {
+      type: 'object',
+      properties: {
+        dateReceived: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          example: new Date().toISOString(),
+        },
+        feedback: {
+          type: 'string',
+          nullable: true,
+          example: 'Wonderful shipment!',
+        },
+        photos: {
+          type: 'array',
+          items: { type: 'string' },
+          nullable: true,
+          example: [],
+        },
+      },
+    },
+  })
   async confirmDelivery(
     @Param('requestId', ParseIntPipe) requestId: number,
     @Body()
@@ -100,7 +125,7 @@ export class FoodRequestsController {
     },
   ): Promise<FoodRequest> {
     const formattedDate = new Date(body.dateReceived);
-    if (formattedDate.toString() === 'Invalid Date') {
+    if (isNaN(formattedDate.getTime())) {
       console.error('Invalid Date:', body.dateReceived);
       throw new Error('Invalid date format for deliveryDate');
     }

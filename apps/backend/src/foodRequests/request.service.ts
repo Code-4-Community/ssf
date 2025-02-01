@@ -14,7 +14,7 @@ export class RequestsService {
     requestedSize: string,
     requestedItems: string[],
     additionalInformation: string | null,
-    status: string = 'Pending',
+    status: string = 'pending',
     fulfilledBy: number | null,
     dateReceived: Date | null,
     feedback: string | null,
@@ -35,7 +35,7 @@ export class RequestsService {
     return this.repo.save(foodRequest);
   }
 
-  find(pantryId: number) {
+  async find(pantryId: number) {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }

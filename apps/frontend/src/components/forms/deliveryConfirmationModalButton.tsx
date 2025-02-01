@@ -117,10 +117,10 @@ const DeliveryConfirmationModalButton: React.FC<
                 <Box mt={3}>{renderPhotoNames()}</Box>
               </FormControl>
               <HStack spacing="24px" justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
                 <Button type="submit" colorScheme="blue">
                   Confirm Delivery
                 </Button>
-                <Button onClick={onClose}>Close</Button>
               </HStack>
             </Form>
           </ModalBody>
@@ -173,17 +173,20 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
     if (response.ok) {
       console.log('Delivery confirmation submitted successfully');
-      return redirect('/');
+      window.location.href = '/request-form/1';
+      return null;
     } else {
       console.error(
         'Failed to submit delivery confirmation',
         await response.text(),
       );
-      return redirect('/');
+      window.location.href = '/request-form/1';
+      return null;
     }
   } catch (error) {
     console.error('Error submitting delivery confirmation', error);
-    return redirect('/');
+    window.location.href = '/request-form/1';
+    return null;
   }
 };
 
