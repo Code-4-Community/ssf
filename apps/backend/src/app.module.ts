@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
+import { RequestsModule } from './foodRequests/request.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -22,6 +22,7 @@ import typeorm from './config/typeorm';
     }),
     UsersModule,
     AuthModule,
+    RequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

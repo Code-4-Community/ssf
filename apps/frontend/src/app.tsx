@@ -4,13 +4,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import { submitFoodRequestForm } from '@components/forms/foodRequestForm';
-import RequestFood from '@containers/foodRequest';
 import LandingPage from '@containers/landingPage';
 import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
+import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
 
 const router = createBrowserRouter([
   {
@@ -38,12 +37,11 @@ const router = createBrowserRouter([
         path: '/orders',
         element: <Orders />,
       },
+      {
+        path: '/food-request', // The route to handle form submission
+        action: submitFoodRequestFormModal, // Action function to handle the form data and redirection
+      },
     ],
-  },
-  {
-    path: '/food-request',
-    element: <RequestFood />,
-    action: submitFoodRequestForm,
   },
 ]);
 
