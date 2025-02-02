@@ -165,15 +165,17 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
     if (response.ok) {
       alert('Delivery confirmation submitted successfully');
       window.location.href = '/request-form/1';
+      return null;
     } else {
-      alert(
-        'Failed to submit delivery confirmation ' + (await response.text()),
-      );
+      const errorMessage = await response.text();
+      alert(`Failed to submit: ${errorMessage}`);
       window.location.href = '/request-form/1';
+      return null;
     }
   } catch (error) {
-    alert('Error submitting delivery confirmation ' + error);
+    alert(`Error submitting delivery confirmation: ${error}`);
     window.location.href = '/request-form/1';
+    return null;
   }
 };
 

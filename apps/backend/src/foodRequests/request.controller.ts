@@ -134,7 +134,7 @@ export class FoodRequestsController {
 
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
-      alert('Invalid Date: ' + body.dateReceived);
+      alert(`Invalid Date: ${body.dateReceived}`);
       throw new Error('Invalid date format for deliveryDate');
     }
 

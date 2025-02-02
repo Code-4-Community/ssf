@@ -32,14 +32,14 @@ export class RequestsService {
       photos,
     });
 
-    return this.repo.save(foodRequest);
+    return await this.repo.save(foodRequest);
   }
 
   async find(pantryId: number) {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }
-    return this.repo.find({ where: { pantryId } });
+    return await this.repo.find({ where: { pantryId } });
   }
 
   async updateDeliveryDetails(
