@@ -3,21 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from './user.entity';
-import { Status } from './types';
-import { Pantry } from '../pantries/pantry.entity';
+import { Role } from './types';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User) private repo: Repository<User>,
-    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
-  ) {}
+  constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  async create(email: string, firstName: string, lastName: string) {
+  async create(
+    email: string,
+    firstName: string,
+    lastName: string,
+    role: Role = Role.VOLUNTEER,
+  ) {
     const userId = (await this.repo.count()) + 1;
     const user = this.repo.create({
       id: userId,
-      status: Status.STANDARD,
+      role,
       firstName,
       lastName,
       email,
@@ -58,25 +59,5 @@ export class UsersService {
     }
 
     return this.repo.remove(user);
-  }
-  async getSSFContactByPantryId(pantryId: number) {
-    const pantry = await this.pantryRepo.findOne({
-      where: { id: pantryId },
-      relations: ['ssfRepresentative'],
-    });
-
-    if (!pantry) {
-      throw new NotFoundException('Pantry not found');
-    }
-
-    const ssfContact = pantry.ssfRepresentative;
-    if (!ssfContact) {
-      throw new NotFoundException('SSF contact not found');
-    }
-
-    return {
-      contactName: `${ssfContact.firstName} ${ssfContact.lastName}`,
-      contactEmail: ssfContact.email,
-    };
   }
 }
