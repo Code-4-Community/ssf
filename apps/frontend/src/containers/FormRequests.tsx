@@ -121,7 +121,7 @@ const FormRequests: React.FC = () => {
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
                 {request.status === 'Fulfilled' ? (
-                  <Text fontSize="md" fontWeight="semibold">
+                  <Text fontWeight="semibold" marginLeft="4">
                     Confirm Delivery
                   </Text>
                 ) : (
