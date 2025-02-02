@@ -42,7 +42,7 @@ const DeliveryConfirmationModalButton: React.FC<
             photoNames.push(file.name);
             globalPhotos.push(file);
           } catch (error) {
-            console.error(`Failed to handle ${file.name}:`, error);
+            alert('Failed to handle ' + file.name + ': ' + error);
           }
         }
       }
@@ -80,7 +80,11 @@ const DeliveryConfirmationModalButton: React.FC<
                 <FormLabel fontSize={20} fontWeight={700}>
                   Delivery Date
                 </FormLabel>
-                <Input type="date" name="deliveryDate" />
+                <Input
+                  type="date"
+                  name="deliveryDate"
+                  max={new Date().toISOString().split('T')[0]}
+                />
                 <FormHelperText>Select the delivery date.</FormHelperText>
               </FormControl>
               <FormControl mb="2em">
@@ -140,7 +144,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
     const formattedDateString = formattedDate.toISOString();
     confirmDeliveryData.append('dateReceived', formattedDateString);
   } else {
-    console.error('Delivery date is missing or invalid.');
+    alert('Delivery date is missing or invalid.');
   }
 
   confirmDeliveryData.append('feedback', form.get('feedback') as string);
@@ -159,17 +163,16 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
     );
 
     if (response.ok) {
-      console.log('Delivery confirmation submitted successfully');
+      alert('Delivery confirmation submitted successfully');
       window.location.href = '/request-form/1';
     } else {
-      console.error(
-        'Failed to submit delivery confirmation',
-        await response.text(),
+      alert(
+        'Failed to submit delivery confirmation ' + (await response.text()),
       );
       window.location.href = '/request-form/1';
     }
   } catch (error) {
-    console.error('Error submitting delivery confirmation', error);
+    alert('Error submitting delivery confirmation ' + error);
     window.location.href = '/request-form/1';
   }
 };

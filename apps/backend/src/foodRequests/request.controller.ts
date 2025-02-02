@@ -128,13 +128,13 @@ export class FoodRequestsController {
     @UploadedFiles() photos: Express.Multer.File[],
   ): Promise<FoodRequest> {
     if (!photos || photos.length === 0) {
-      console.error('No files uploaded');
+      alert('No files uploaded');
       throw new Error('No photos uploaded');
     }
 
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
-      console.error('Invalid Date:', body.dateReceived);
+      alert('Invalid Date: ' + body.dateReceived);
       throw new Error('Invalid date format for deliveryDate');
     }
 

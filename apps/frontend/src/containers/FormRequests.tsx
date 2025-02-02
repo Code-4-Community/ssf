@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   Center,
   Table,
+  Text,
   Thead,
   Tbody,
   Tr,
@@ -45,11 +46,11 @@ const FormRequests: React.FC = () => {
       if (response.ok) {
         return await response.json();
       } else {
-        console.error('Failed to fetch food requests', await response.text());
+        alert('Failed to fetch food requests ' + (await response.text()));
         return [];
       }
     } catch (error) {
-      console.error('Error fetching food requests', error);
+      alert('Error fetching food requests ' + error);
       return [];
     }
   };
@@ -71,7 +72,6 @@ const FormRequests: React.FC = () => {
 
     fetchRequests();
   }, [pantryId]);
-  console.log('Current previous request: ', previousRequest);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -120,9 +120,15 @@ const FormRequests: React.FC = () => {
               <Td>{request.fulfilledBy}</Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
-                <DeliveryConfirmationModalButton
-                  requestId={request.requestId}
-                />
+                {request.status === 'Fulfilled' ? (
+                  <Text fontSize="md" fontWeight="semibold">
+                    Confirm Delivery
+                  </Text>
+                ) : (
+                  <DeliveryConfirmationModalButton
+                    requestId={request.requestId}
+                  />
+                )}
               </Td>
             </Tr>
           ))}
