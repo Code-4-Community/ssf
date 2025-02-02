@@ -57,7 +57,7 @@ export class RequestsService {
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.status = 'Fulfilled';
+    request.status = 'fulfilled';
 
     return await this.repo.save(request);
   }
