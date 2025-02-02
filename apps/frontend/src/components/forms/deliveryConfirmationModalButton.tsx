@@ -16,12 +16,7 @@ import {
   HStack,
   Text,
 } from '@chakra-ui/react';
-import {
-  Form,
-  ActionFunction,
-  ActionFunctionArgs,
-  redirect,
-} from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 
 interface DeliveryConfirmationModalButtonProps {
   requestId: number;
@@ -52,8 +47,6 @@ const DeliveryConfirmationModalButton: React.FC<
         }
       }
     }
-
-    console.log('Current uploaded photos:', photoNames);
   };
 
   const renderPhotoNames = () => {
@@ -136,57 +129,48 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 }: ActionFunctionArgs) => {
   const form = await request.formData();
 
-  const confirmDeliveryData = new Map();
-  confirmDeliveryData.set('requestId', form.get('requestId'));
-  form.delete('requestId');
+  const confirmDeliveryData = new FormData();
+
+  const requestId = form.get('requestId') as string;
+  confirmDeliveryData.append('requestId', requestId);
 
   const deliveryDate = form.get('deliveryDate');
   if (typeof deliveryDate === 'string') {
     const formattedDate = new Date(deliveryDate);
     const formattedDateString = formattedDate.toISOString();
-    confirmDeliveryData.set('dateReceived', formattedDateString);
+    confirmDeliveryData.append('dateReceived', formattedDateString);
   } else {
     console.error('Delivery date is missing or invalid.');
   }
-  form.delete('deliveryDate');
 
-  confirmDeliveryData.set('feedback', form.get('feedback'));
-  form.delete('feedback');
+  confirmDeliveryData.append('feedback', form.get('feedback') as string);
 
-  confirmDeliveryData.set('photos', photoNames);
-  form.delete('photos');
-
-  const data = Object.fromEntries(confirmDeliveryData);
-  console.log(data);
+  globalPhotos.forEach((photo) => {
+    confirmDeliveryData.append('photos', photo);
+  });
 
   try {
     const response = await fetch(
-      `/api/requests/${data.requestId}/confirm-delivery`,
+      `/api/requests/${requestId}/confirm-delivery`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: confirmDeliveryData,
       },
     );
 
     if (response.ok) {
       console.log('Delivery confirmation submitted successfully');
       window.location.href = '/request-form/1';
-      return null;
     } else {
       console.error(
         'Failed to submit delivery confirmation',
         await response.text(),
       );
       window.location.href = '/request-form/1';
-      return null;
     }
   } catch (error) {
     console.error('Error submitting delivery confirmation', error);
     window.location.href = '/request-form/1';
-    return null;
   }
 };
 

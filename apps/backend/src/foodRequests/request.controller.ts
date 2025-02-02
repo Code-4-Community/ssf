@@ -5,14 +5,18 @@ import {
   ParseIntPipe,
   Post,
   Body,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 
 @Controller('requests')
-//@UseInterceptors()
+// @UseInterceptors()
 export class FoodRequestsController {
   constructor(
     private requestsService: RequestsService,
@@ -115,22 +119,26 @@ export class FoodRequestsController {
       },
     },
   })
+  @UseInterceptors(
+    FilesInterceptor('photos', 10, { storage: multer.memoryStorage() }),
+  )
   async confirmDelivery(
     @Param('requestId', ParseIntPipe) requestId: number,
-    @Body()
-    body: {
-      dateReceived: string;
-      feedback: string;
-      photos: string[];
-    },
+    @Body() body: { dateReceived: string; feedback: string },
+    @UploadedFiles() photos: Express.Multer.File[],
   ): Promise<FoodRequest> {
+    if (!photos || photos.length === 0) {
+      console.error('No files uploaded');
+      throw new Error('No photos uploaded');
+    }
+
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
       console.error('Invalid Date:', body.dateReceived);
       throw new Error('Invalid date format for deliveryDate');
     }
 
-    const uploadedPhotoUrls = await this.awsS3Service.upload(body.photos);
+    const uploadedPhotoUrls = await this.awsS3Service.upload(photos);
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

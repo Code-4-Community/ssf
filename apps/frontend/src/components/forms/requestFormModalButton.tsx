@@ -20,12 +20,7 @@ import {
   Radio,
   Text,
 } from '@chakra-ui/react';
-import {
-  Form,
-  ActionFunction,
-  ActionFunctionArgs,
-  redirect,
-} from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 
 interface FoodRequest {
   requestId: number;
