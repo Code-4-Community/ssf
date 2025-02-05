@@ -149,9 +149,11 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
   confirmDeliveryData.append('feedback', form.get('feedback') as string);
 
-  globalPhotos.forEach((photo) => {
-    confirmDeliveryData.append('photos', photo);
-  });
+  if (globalPhotos.length > 0) {
+    globalPhotos.forEach((photo) => {
+      confirmDeliveryData.append('photos', photo);
+    });
+  }
 
   try {
     const response = await fetch(

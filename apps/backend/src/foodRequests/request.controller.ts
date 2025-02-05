@@ -125,18 +125,15 @@ export class FoodRequestsController {
   async confirmDelivery(
     @Param('requestId', ParseIntPipe) requestId: number,
     @Body() body: { dateReceived: string; feedback: string },
-    @UploadedFiles() photos: Express.Multer.File[],
+    @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<FoodRequest> {
-    if (!photos || photos.length === 0) {
-      throw new Error('No photos uploaded');
-    }
-
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
       throw new Error('Invalid date format for deliveryDate');
     }
 
-    const uploadedPhotoUrls = await this.awsS3Service.upload(photos);
+    const uploadedPhotoUrls =
+      photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
 
     return this.requestsService.updateDeliveryDetails(
       requestId,
