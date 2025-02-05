@@ -29,7 +29,7 @@ export class PantriesService {
   async getAllActivePantries() {
     return this.pantryRepo.find({
       where: { approved: true },
-      select: ['id', 'name'], //fields right?
+      select: ['id', 'name'], //any other fields to include?
     });
   }
 }
