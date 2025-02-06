@@ -8,7 +8,7 @@ export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
   @Get('/:pantryId/ssf-contact')
-  async getUser(
+  async getSSFRep(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<User> {
     return this.pantriesService.findSSFRep(pantryId);

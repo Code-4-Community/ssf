@@ -9,12 +9,12 @@ import { User } from '../users/user.entity';
 export class PantriesService {
   constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
 
-  findOne(pantryId: number) {
+  async findOne(pantryId: number): Promise<Pantry | null> {
     if (!pantryId) {
       return null;
     }
 
-    return this.repo.findOneBy({ pantryId });
+    return await this.repo.findOneBy({ pantryId });
   }
 
   async findSSFRep(pantryId: number): Promise<User | null> {
