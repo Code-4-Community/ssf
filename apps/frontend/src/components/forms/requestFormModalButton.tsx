@@ -20,12 +20,7 @@ import {
   Radio,
   Text,
 } from '@chakra-ui/react';
-import {
-  Form,
-  ActionFunction,
-  ActionFunctionArgs,
-  redirect,
-} from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 
 interface FoodRequest {
   requestId: number;
@@ -151,8 +146,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 />
               </FormControl>
               <Flex justifyContent="space-between" mt={4}>
-                <Button type="submit">Submit</Button>
                 <Button onClick={onClose}>Close</Button>
+                <Button type="submit">Submit</Button>
               </Flex>
             </Form>
           </ModalBody>
@@ -192,14 +187,17 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
     if (response.ok) {
       console.log('Food request submitted successfully');
 
-      return redirect('/');
+      window.location.href = '/request-form/1';
+      return null;
     } else {
       console.error('Failed to submit food request', await response.text());
-      return redirect('/');
+      window.location.href = '/request-form/1';
+      return null;
     }
   } catch (error) {
     console.error('Error submitting food request', error);
-    return redirect('/');
+    window.location.href = '/request-form/1';
+    return null;
   }
 };
 

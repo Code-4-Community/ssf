@@ -16,12 +16,7 @@ import {
   HStack,
   Text,
 } from '@chakra-ui/react';
-import {
-  Form,
-  ActionFunction,
-  ActionFunctionArgs,
-  redirect,
-} from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 
 interface DeliveryConfirmationModalButtonProps {
   requestId: number;
@@ -47,13 +42,11 @@ const DeliveryConfirmationModalButton: React.FC<
             photoNames.push(file.name);
             globalPhotos.push(file);
           } catch (error) {
-            console.error(`Failed to handle ${file.name}:`, error);
+            alert('Failed to handle ' + file.name + ': ' + error);
           }
         }
       }
     }
-
-    console.log('Current uploaded photos:', photoNames);
   };
 
   const renderPhotoNames = () => {
@@ -87,7 +80,11 @@ const DeliveryConfirmationModalButton: React.FC<
                 <FormLabel fontSize={20} fontWeight={700}>
                   Delivery Date
                 </FormLabel>
-                <Input type="date" name="deliveryDate" />
+                <Input
+                  type="date"
+                  name="deliveryDate"
+                  max={new Date().toISOString().split('T')[0]}
+                />
                 <FormHelperText>Select the delivery date.</FormHelperText>
               </FormControl>
               <FormControl mb="2em">
@@ -117,10 +114,10 @@ const DeliveryConfirmationModalButton: React.FC<
                 <Box mt={3}>{renderPhotoNames()}</Box>
               </FormControl>
               <HStack spacing="24px" justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
                 <Button type="submit" colorScheme="blue">
                   Confirm Delivery
                 </Button>
-                <Button onClick={onClose}>Close</Button>
               </HStack>
             </Form>
           </ModalBody>
@@ -130,6 +127,7 @@ const DeliveryConfirmationModalButton: React.FC<
   );
 };
 
+// Action function to handle form submission
 export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
@@ -137,62 +135,49 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
   const confirmDeliveryData = new FormData();
 
-  // Set requestId and feedback as strings
-  const requestId = form.get('requestId');
-  if (requestId) {
-    confirmDeliveryData.set('requestId', requestId.toString());
-  } else {
-    console.error('Request ID is missing');
-  }
-  form.delete('requestId');
+  const requestId = form.get('requestId') as string;
+  confirmDeliveryData.append('requestId', requestId);
 
   const deliveryDate = form.get('deliveryDate');
   if (typeof deliveryDate === 'string') {
     const formattedDate = new Date(deliveryDate);
     const formattedDateString = formattedDate.toISOString();
-    confirmDeliveryData.set('dateReceived', formattedDateString);
+    confirmDeliveryData.append('dateReceived', formattedDateString);
   } else {
-    console.error('Delivery date is missing or invalid.');
+    alert('Delivery date is missing or invalid.');
   }
-  form.delete('deliveryDate');
 
-  // Set feedback as string
-  const feedback = form.get('feedback');
-  if (feedback) {
-    confirmDeliveryData.set('feedback', feedback.toString());
-  } else {
-    console.error('Feedback is missing');
+  confirmDeliveryData.append('feedback', form.get('feedback') as string);
+
+  if (globalPhotos.length > 0) {
+    globalPhotos.forEach((photo) => {
+      confirmDeliveryData.append('photos', photo);
+    });
   }
-  form.delete('feedback');
-
-  // Add files (photos) to FormData
-  const photos = globalPhotos;
-  photos.forEach((photo) => {
-    confirmDeliveryData.append('photos', photo); // Append each file as 'photos'
-  });
 
   try {
     const response = await fetch(
       `/api/requests/${requestId}/confirm-delivery`,
       {
         method: 'POST',
-        body: confirmDeliveryData, // Send FormData with files included
+        body: confirmDeliveryData,
       },
     );
 
     if (response.ok) {
-      console.log('Delivery confirmation submitted successfully');
-      return redirect('/');
+      alert('Delivery confirmation submitted successfully');
+      window.location.href = '/request-form/1';
+      return null;
     } else {
-      console.error(
-        'Failed to submit delivery confirmation',
-        await response.text(),
-      );
-      return redirect('/');
+      const errorMessage = await response.text();
+      alert(`Failed to submit: ${errorMessage}`);
+      window.location.href = '/request-form/1';
+      return null;
     }
   } catch (error) {
-    console.error('Error submitting delivery confirmation', error);
-    return redirect('/');
+    alert(`Error submitting delivery confirmation: ${error}`);
+    window.location.href = '/request-form/1';
+    return null;
   }
 };
 
