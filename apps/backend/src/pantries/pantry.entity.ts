@@ -23,7 +23,7 @@ export class Pantry {
   @Column({ name: 'reservation_explanation', type: 'text' })
   reservationExplanation: Text;
 
-  @Column({ name: 'dedicated_allergen_friendly', type: 'varchar', length: 25 })
+  @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 25 })
   dedicateAllergenFriendly: string;
 
   @Column({ name: 'client_visit_frequency', type: 'varchar', length: 25 })

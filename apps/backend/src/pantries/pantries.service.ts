@@ -16,9 +16,7 @@ export class PantriesService {
 
   getNonApprovedPantries() {
     return this.repo.find({
-      where: {
-        status: 'pending',
-      },
+      where: { status: 'pending' },
     });
   }
 
@@ -27,7 +25,7 @@ export class PantriesService {
       .createQueryBuilder()
       .update(Pantry)
       .set({ status: 'approved' })
-      .where('id = :id', { id: id })
+      .where('pantry_id = :pantryId', { pantryId: id })
       .execute();
   }
 
@@ -36,7 +34,7 @@ export class PantriesService {
       .createQueryBuilder()
       .update(Pantry)
       .set({ status: 'denied' })
-      .where('id = :id', { id: id })
+      .where('pantry_id = :pantryId', { pantryId: id })
       .execute();
   }
 }
