@@ -10,6 +10,8 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import FormRequests from '@containers/FormRequests';
 
 const router = createBrowserRouter([
   {
@@ -38,8 +40,16 @@ const router = createBrowserRouter([
         element: <Orders />,
       },
       {
-        path: '/food-request', // The route to handle form submission
-        action: submitFoodRequestFormModal, // Action function to handle the form data and redirection
+        path: '/request-form/:pantryId',
+        element: <FormRequests />,
+      },
+      {
+        path: '/food-request',
+        action: submitFoodRequestFormModal,
+      },
+      {
+        path: '/confirm-delivery',
+        action: submitDeliveryConfirmationFormModal,
       },
     ],
   },

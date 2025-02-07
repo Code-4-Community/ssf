@@ -14,7 +14,6 @@ import typeorm from './config/typeorm';
       isGlobal: true,
       load: [typeorm],
     }),
-    // Load TypeORM config async so we can target the config file (config/typeorm.ts) for migrations
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
