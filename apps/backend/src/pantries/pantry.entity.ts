@@ -9,13 +9,10 @@ import { User } from '../users/user.entity';
 
 @Entity('pantries')
 export class Pantry {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'pantry_id' })
   id: number;
 
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
+  @Column({ name: 'pantry_name', type: 'varchar', length: 255 })
   name: string;
 
   @Column({
