@@ -164,7 +164,9 @@ const PantryApplicationForm: React.FC = () => {
                 "I'm not sure",
                 allergenAvoidantClientsExactOption,
               ].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -213,7 +215,7 @@ const PantryApplicationForm: React.FC = () => {
                 ...otherDietaryRestrictionsOptions,
                 'Unsure',
               ].map((value) => (
-                <Checkbox name="dietaryRestrictions" value={value}>
+                <Checkbox name="dietaryRestrictions" key={value} value={value}>
                   {value}
                 </Checkbox>
               ))}
@@ -237,7 +239,9 @@ const PantryApplicationForm: React.FC = () => {
           <RadioGroup name="acceptRefrigerated">
             <Stack>
               {['Yes', 'Small quantities only', 'No'].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -263,7 +267,9 @@ const PantryApplicationForm: React.FC = () => {
                 willingToReserveSomeOption,
                 'No',
               ].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -300,7 +306,9 @@ const PantryApplicationForm: React.FC = () => {
                 'Yes, we keep allergy-friendly items in a back room',
                 'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
               ].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -318,7 +326,9 @@ const PantryApplicationForm: React.FC = () => {
                 'A few times a month',
                 'Once a month',
               ].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -339,7 +349,9 @@ const PantryApplicationForm: React.FC = () => {
                 'Somewhat confident',
                 'Not very confident (we need more education!)',
               ].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -356,7 +368,9 @@ const PantryApplicationForm: React.FC = () => {
           <RadioGroup name="allergenAvoidantChildren">
             <Stack>
               {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
@@ -390,6 +404,7 @@ const PantryApplicationForm: React.FC = () => {
               ].map((value) => (
                 <Checkbox
                   name="activities"
+                  key={value}
                   value={value}
                   isRequired={noActivitiesSelected}
                 >
@@ -430,7 +445,9 @@ const PantryApplicationForm: React.FC = () => {
           <RadioGroup name="subscribeToNewsletter">
             <Stack>
               {['Yes', 'No'].map((value) => (
-                <Radio value={value}>{value}</Radio>
+                <Radio key={value} value={value}>
+                  {value}
+                </Radio>
               ))}
             </Stack>
           </RadioGroup>
