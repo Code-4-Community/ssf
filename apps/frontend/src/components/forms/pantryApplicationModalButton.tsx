@@ -8,11 +8,8 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  Table,
-  Tbody,
-  Tr,
-  Td,
-  Th,
+  Grid,
+  GridItem,
 } from '@chakra-ui/react';
 
 interface User {
@@ -52,7 +49,6 @@ const PantryApplicationModalButton: React.FC<
 > = ({ pantry }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
   const getRepresentativeUser = async (): Promise<User | null> => {
     try {
@@ -80,6 +76,7 @@ const PantryApplicationModalButton: React.FC<
       return null;
     }
   };
+
   useEffect(() => {
     const fetchUser = async () => {
       const data = await getRepresentativeUser();
@@ -99,63 +96,104 @@ const PantryApplicationModalButton: React.FC<
         <ModalContent>
           <ModalHeader>Pantry Application Details</ModalHeader>
           <ModalBody>
-            <Table variant="simple">
-              <Tbody>
-                <Tr>
-                  <Th>Pantry Name</Th>
-                  <Td>{pantry.pantryName}</Td>
-                </Tr>
-                <Tr>
-                  <Th>Address</Th>
-                  <Td>{pantry.address}</Td>
-                </Tr>
-                <Tr>
-                  <Th>Dedicated Allergen Friendly</Th>
-                  <Td>{pantry.dedicatedAllergenFriendly}</Td>
-                </Tr>
-                <Tr>
-                  <Th>Client Visit Frequency</Th>
-                  <Td>{pantry.clientVisitFrequency}</Td>
-                </Tr>
-                <Tr>
-                  <Th>Serve Allergic Children</Th>
-                  <Td>{pantry.serveAllergicChildren}</Td>
-                </Tr>
-                <Tr>
-                  <Th>Newsletter Subscription</Th>
-                  <Td>{pantry.newsletterSubscription ? 'Yes' : 'No'}</Td>
-                </Tr>
-              </Tbody>
-            </Table>
+            {user ? (
+              <Grid templateColumns="2fr 1fr" gap={4}>
+                <GridItem>
+                  <strong>Representative Name</strong>
+                </GridItem>
+                <GridItem>
+                  {user.firstName} {user.lastName}
+                </GridItem>
 
-            {loading ? (
-              <p>Loading user details...</p>
-            ) : user ? (
-              <Table variant="simple" mt={4}>
-                <Tbody>
-                  <Tr>
-                    <Th>Representative Name</Th>
-                    <Td>
-                      {user.firstName} {user.lastName}
-                    </Td>
-                  </Tr>
-                  <Tr>
-                    <Th>Email</Th>
-                    <Td>{user.email}</Td>
-                  </Tr>
-                  <Tr>
-                    <Th>Phone</Th>
-                    <Td>{user.phone}</Td>
-                  </Tr>
-                  <Tr>
-                    <Th>Role</Th>
-                    <Td>{user.role}</Td>
-                  </Tr>
-                </Tbody>
-              </Table>
+                <GridItem>
+                  <strong>Email</strong>
+                </GridItem>
+                <GridItem>{user.email}</GridItem>
+
+                <GridItem>
+                  <strong>Phone</strong>
+                </GridItem>
+                <GridItem>{user.phone}</GridItem>
+
+                <GridItem>
+                  <strong>Role</strong>
+                </GridItem>
+                <GridItem>{user.role}</GridItem>
+              </Grid>
             ) : (
               <p>No user details available.</p>
             )}
+
+            <Grid templateColumns="2fr 1fr" gap={5} mt={4}>
+              <GridItem>
+                <strong>Pantry Id</strong>
+              </GridItem>
+              <GridItem>{pantry.pantryId}</GridItem>
+
+              <GridItem>
+                <strong>Pantry Name</strong>
+              </GridItem>
+              <GridItem>{pantry.pantryName}</GridItem>
+
+              <GridItem>
+                <strong>Address</strong>
+              </GridItem>
+              <GridItem>{pantry.address}</GridItem>
+
+              <GridItem>
+                <strong>Allergen Clients</strong>
+              </GridItem>
+              <GridItem>{pantry.allergenClients}</GridItem>
+
+              <GridItem>
+                <strong>Refrigerated Donation</strong>
+              </GridItem>
+              <GridItem>{pantry.refrigeratedDonation}</GridItem>
+
+              <GridItem>
+                <strong>Reserve Food for Allergic</strong>
+              </GridItem>
+              <GridItem>
+                {pantry.reserveFoodForAllergic ? 'Yes' : 'No'}
+              </GridItem>
+
+              <GridItem>
+                <strong>Reservation Explanation</strong>
+              </GridItem>
+              <GridItem>{pantry.reservationExplanation}</GridItem>
+
+              <GridItem>
+                <strong>Dedicated Allergen Friendly</strong>
+              </GridItem>
+              <GridItem>{pantry.dedicatedAllergenFriendly}</GridItem>
+
+              <GridItem>
+                <strong>Client Visit Frequency</strong>
+              </GridItem>
+              <GridItem>{pantry.clientVisitFrequency}</GridItem>
+
+              <GridItem>
+                <strong>Identify Allergens Confidence</strong>
+              </GridItem>
+              <GridItem>{pantry.identifyAllergensConfidence}</GridItem>
+
+              <GridItem>
+                <strong>Serve Allergic Children</strong>
+              </GridItem>
+              <GridItem>{pantry.serveAllergicChildren}</GridItem>
+
+              <GridItem>
+                <strong>Newsletter Subscription</strong>
+              </GridItem>
+              <GridItem>
+                {pantry.newsletterSubscription ? 'Yes' : 'No'}
+              </GridItem>
+
+              <GridItem>
+                <strong>Restrictions</strong>
+              </GridItem>
+              <GridItem>{pantry.restrictions.join(', ')}</GridItem>
+            </Grid>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={onClose}>

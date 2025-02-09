@@ -53,4 +53,11 @@ export class Pantry {
 
   @Column({ name: 'status', type: 'varchar', length: 50 })
   status: string;
+
+  @Column({
+    name: 'date_applied',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  dateApplied: Date;
 }
