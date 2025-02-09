@@ -79,6 +79,8 @@ const ApprovePantries: React.FC = () => {
 
     if (sort === 'name') {
       sorted.sort((a, b) => a.pantryName.localeCompare(b.pantryName));
+    } else if (sort == 'name-reverse') {
+      sorted.sort((a, b) => b.pantryName.localeCompare(a.pantryName));
     } else if (sort === 'date-recent') {
       sorted.sort(
         (a, b) =>
@@ -112,6 +114,7 @@ const ApprovePantries: React.FC = () => {
         onChange={(e) => setSort(e.target.value)}
       >
         <option value="name">Pantry Name (A-Z)</option>
+        <option value="name-reverse">Pantry Name (Z-A)</option>
         <option value="date-recent">Date Applied (Most Recent)</option>
         <option value="date-oldest">Date Applied (Oldest First)</option>
       </Select>
