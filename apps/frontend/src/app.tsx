@@ -12,6 +12,8 @@ import Orders from '@containers/orders';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
 import FormRequests from '@containers/FormRequests';
+import PantryApplication from '@containers/pantryApplication';
+import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 
 const router = createBrowserRouter([
   {
