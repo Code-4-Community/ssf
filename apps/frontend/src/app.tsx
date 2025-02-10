@@ -60,7 +60,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-],);
+]);
 
 export const App: React.FC = () => {
   useEffect(() => {
