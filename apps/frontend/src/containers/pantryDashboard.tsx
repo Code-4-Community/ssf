@@ -15,77 +15,28 @@ import {
 import { HamburgerIcon } from '@chakra-ui/icons';
 import React, { useEffect, useState } from 'react';
 import { User, Pantry } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const PantryDashboard: React.FC = () => {
   const [ssfRep, setSsfRep] = useState<User | null>(null);
   const [pantry, setPantry] = useState<Pantry | null>(null);
-
-  const getSSFRep = async (pantryId: number): Promise<User | null> => {
-    try {
-      const response = await fetch(`/api/pantries/${pantryId}/ssf-contact`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.error('Failed to fetch SSF rep', await response.text());
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching SSF rep', error);
-      return null;
-    }
-  };
+  const pantryId = 1;
 
   useEffect(() => {
-    const fetchRep = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getSSFRep(1);
-        setSsfRep(data);
+        const [pantryData, ssfRepData] = await Promise.all([
+          ApiClient.getPantry(pantryId),
+          ApiClient.getPantrySSFRep(pantryId),
+        ]);
+        setPantry(pantryData);
+        setSsfRep(ssfRepData);
       } catch (error) {
-        console.error('Error fetching SSF rep', error);
+        console.error('Error fetching pantry data/SSFRep data', error);
       }
     };
 
-    fetchRep();
-  }, []);
-
-  const getPantry = async (pantryId: number): Promise<Pantry | null> => {
-    try {
-      const response = await fetch(`/api/pantries/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.error('Failed to fetch pantry', await response.text());
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching pantry', error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const fetchPantry = async () => {
-      try {
-        const data = await getPantry(1); // This is a placeholder id, replace with pantry id
-        setPantry(data);
-      } catch (error) {
-        console.error('Error fetching pantry', error);
-      }
-    };
-
-    fetchPantry();
+    fetchData();
   }, []);
 
   return (

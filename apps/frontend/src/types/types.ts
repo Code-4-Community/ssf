@@ -24,4 +24,8 @@ export interface Pantry {
   restrictions: string[];
   ssfRepresentativeId: number;
   pantryRepresentativeId: number;
+  activities: string;
+  questions: string;
+  itemsInStock: string;
+  needMoreOptions: string;
 }
