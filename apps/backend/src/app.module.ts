@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
+import { RequestsModule } from './foodRequests/request.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -15,7 +15,6 @@ import typeorm from './config/typeorm';
       isGlobal: true,
       load: [typeorm],
     }),
-    // Load TypeORM config async so we can target the config file (config/typeorm.ts) for migrations
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
@@ -24,6 +23,7 @@ import typeorm from './config/typeorm';
     UsersModule,
     AuthModule,
     PantriesModule,
+    RequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
