@@ -1,4 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
@@ -6,6 +13,11 @@ import { DonationService } from './donations.service';
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
+
+  @Get('/get-all-donations')
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
 
   @Post('/create')
   @ApiBody({

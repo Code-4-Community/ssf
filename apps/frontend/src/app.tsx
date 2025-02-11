@@ -14,6 +14,7 @@ import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryC
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
+import DonationManagement from '@containers/donationManagement';
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: '/request-form/:pantryId',
         element: <FormRequests />,
+      },
+      {
+        path: '/donation-management',
+        element: <DonationManagement />,
       },
       {
         path: '/food-request',
