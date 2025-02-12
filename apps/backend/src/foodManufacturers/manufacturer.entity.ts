@@ -18,7 +18,7 @@ export class FoodManufacturer {
   @OneToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'food_manufacturer_representative_id',
-    referencedColumnName: 'user_id',
+    referencedColumnName: 'id',
   })
   foodManufacturerRepresentative: User;
 }

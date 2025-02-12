@@ -18,6 +18,7 @@ import {
   Thead,
   Input,
   Tbody,
+  TableCaption,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
@@ -41,10 +42,6 @@ const NewDonationFormModalButton: React.FC = () => {
     ];
   };
 
-  const renderFoodTypesDropdown = () => {
-    return getFoodTypes().map((a) => <option value={a}>{a}</option>);
-  };
-
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -56,10 +53,32 @@ const NewDonationFormModalButton: React.FC = () => {
     },
   ]);
 
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalOz, setTotalOz] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
+
   const handleChange = (id: number, field: string, value: string) => {
-    setRows(
-      rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+    const updatedRows = rows.map((row) =>
+      row.id === id ? { ...row, [field]: value } : row,
     );
+
+    setRows(updatedRows);
+
+    let totalItems = 0,
+      totalOz = 0,
+      totalValue = 0;
+
+    updatedRows.forEach((row) => {
+      if (row.numItems && row.ozPerItem && row.valuePerItem) {
+        totalItems += parseInt(row.numItems);
+        totalOz += parseInt(row.ozPerItem);
+        totalValue += parseInt(row.valuePerItem);
+      }
+    });
+
+    setTotalItems(totalItems);
+    setTotalOz(totalOz);
+    setTotalValue(totalValue);
   };
 
   const addRow = () => {
@@ -78,6 +97,50 @@ const NewDonationFormModalButton: React.FC = () => {
 
   const deleteRow = () => {
     setRows(rows.slice(0, -1));
+  };
+
+  const handleSubmit = async () => {
+    const hasEmptyFields = rows.some(
+      (row) =>
+        row.foodItem === '' ||
+        row.foodType === '' ||
+        row.numItems === '' ||
+        row.ozPerItem === '' ||
+        row.valuePerItem === '',
+    );
+
+    if (hasEmptyFields) {
+      alert('Please fill in all fields before submitting.');
+      return;
+    }
+    onClose();
+
+    console.log(rows);
+    const foodManufacturerId = 1;
+    const donation_body = {
+      foodManufacturerId: foodManufacturerId,
+      totalItems: totalItems,
+      totalOz: totalOz,
+      totalEstimatedValue: totalValue,
+    };
+
+    try {
+      const response = await fetch('/api/donations/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(donation_body),
+      });
+
+      if (response.ok) {
+        console.log('Donation submitted successfully');
+      } else {
+        console.error('Failed to submit donation', await response.text());
+      }
+    } catch (error) {
+      console.error('Error submitting new donation', error);
+    }
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -104,6 +167,14 @@ const NewDonationFormModalButton: React.FC = () => {
             </Text>
             <TableContainer>
               <Table variant="simple">
+                <TableCaption>
+                  <strong>Total # of items: </strong>
+                  {totalItems} &nbsp;&nbsp;&nbsp;
+                  <strong> Total oz of items: </strong>
+                  {totalOz} &nbsp;&nbsp;&nbsp;
+                  <strong> Total value of items: </strong>
+                  {totalValue}
+                </TableCaption>
                 <Thead>
                   <Tr>
                     <Th>Food Item</Th>
@@ -170,16 +241,16 @@ const NewDonationFormModalButton: React.FC = () => {
                   ))}
                 </Tbody>
               </Table>
-              <Button mt={4} onClick={addRow} colorScheme="blue">
+              <Button mt={4} onClick={addRow}>
                 + Add Row
               </Button>
-              <Button mt={4} onClick={deleteRow} colorScheme="red">
+              <Button mt={4} onClick={deleteRow}>
                 - Delete Row
               </Button>
             </TableContainer>
             <Flex justifyContent="space-between" mt={4}>
               <Button onClick={onClose}>Close</Button>
-              <Button type="submit">Submit</Button>
+              <Button onClick={handleSubmit}>Submit</Button>
             </Flex>
           </ModalBody>
         </ModalContent>

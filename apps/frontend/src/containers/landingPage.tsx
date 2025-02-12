@@ -1,5 +1,7 @@
+import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
+
 const LandingPage: React.FC = () => {
-  return <>Landing page</>;
+  return <NewDonationFormModalButton></NewDonationFormModalButton>;
 };
 
 export default LandingPage;

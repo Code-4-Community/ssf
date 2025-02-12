@@ -16,7 +16,7 @@ export class DonationItem {
   donationId: number;
 
   @ManyToOne(() => Donation, { nullable: false })
-  @JoinColumn({ name: 'donation_id', referencedColumnName: 'donation_id' })
+  @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
   donation: Donation;
 
   @Column({ name: 'item_name', type: 'varchar', length: 255 })
