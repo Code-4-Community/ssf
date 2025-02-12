@@ -31,7 +31,7 @@ export class Donation {
     name: 'status',
     type: 'varchar',
     length: 25,
-    default: 'in progress',
+    default: 'avaliable',
   })
   status: string;
 
