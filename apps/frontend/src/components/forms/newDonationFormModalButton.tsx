@@ -21,6 +21,7 @@ import {
   TableCaption,
 } from '@chakra-ui/react';
 import { useState } from 'react';
+import ApiClient from '@api/apiClient';
 
 const NewDonationFormModalButton: React.FC = () => {
   const getFoodTypes = () => {
@@ -113,9 +114,9 @@ const NewDonationFormModalButton: React.FC = () => {
       alert('Please fill in all fields before submitting.');
       return;
     }
+
     onClose();
 
-    console.log(rows);
     const foodManufacturerId = 1;
     const donation_body = {
       foodManufacturerId: foodManufacturerId,
@@ -124,60 +125,38 @@ const NewDonationFormModalButton: React.FC = () => {
       totalEstimatedValue: totalValue,
     };
 
-    let donationId = -1;
-
     try {
-      const response = await fetch('/api/donations/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(donation_body),
-      });
+      const donationResponse = await ApiClient.postDonation(donation_body);
+      const donationId = donationResponse?.donationId;
 
-      if (response.ok) {
-        console.log('Donation submitted successfully');
-        const data = await response.json();
-        donationId = data.donationId;
+      if (donationId) {
+        rows.forEach(async (row) => {
+          const donationItem_body = {
+            donationId: donationId,
+            itemName: row.foodItem,
+            quantity: parseInt(row.numItems),
+            ozPerItem: parseInt(row.ozPerItem),
+            estimatedValue: parseInt(row.valuePerItem),
+            foodType: row.foodType,
+          };
+
+          const donationItemResponse = await ApiClient.postDonationItem(
+            donationItem_body,
+          );
+          if (donationItemResponse) {
+            console.log('Donation item submitted successfully');
+          } else {
+            console.error('Failed to submit donation item');
+            alert('Failed to submit donation item');
+          }
+        });
       } else {
-        console.error('Failed to submit donation', await response.text());
+        console.error('Failed to submit donation');
+        alert('Failed to submit donation');
       }
     } catch (error) {
       console.error('Error submitting new donation', error);
-    }
-
-    if (donationId !== -1) {
-      rows.forEach(async (row) => {
-        const donationItem_body = {
-          donationId: donationId,
-          itemName: row.foodItem,
-          quantity: parseInt(row.numItems),
-          ozPerItem: parseInt(row.ozPerItem),
-          estimatedValue: parseInt(row.valuePerItem),
-          foodType: row.foodType,
-        };
-
-        try {
-          const response = await fetch('/api/donation-items/create', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(donationItem_body),
-          });
-
-          if (response.ok) {
-            console.log('Donation item submitted successfully');
-          } else {
-            console.error(
-              'Failed to submit donation item',
-              await response.text(),
-            );
-          }
-        } catch (error) {
-          console.error('Error submitting new donation item', error);
-        }
-      });
+      alert('Error submitting new donation');
     }
   };
 
