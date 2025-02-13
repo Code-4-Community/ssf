@@ -19,6 +19,7 @@ import {
   Input,
   Tbody,
   TableCaption,
+  Stack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
@@ -97,6 +98,9 @@ const NewDonationFormModalButton: React.FC = () => {
   };
 
   const deleteRow = () => {
+    if (rows.length === 1) {
+      return;
+    }
     setRows(rows.slice(0, -1));
   };
 
@@ -163,34 +167,32 @@ const NewDonationFormModalButton: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen}>Submit new request</Button>
+      <Button onClick={onOpen}>Submit new donation</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
           <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Food Request Form
+            SSF Log New Donation Form
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text mb="1.5em">
-              Request a shipment of allergen-free food from SSF. You will be
-              placed on our waiting list for incoming donations targeted to your
-              needs.
-              <br />
-              <br />
-              Please keep in mind that we may not be able to accommodate
-              specific food requests at all times, but we will do our best to
-              match your preferences.
+              Log a new donation by filling out the form below. Use the add or
+              delete row buttons to add or remove food items from the donation.
+              Please make sure to fill out all fields before submitting.
             </Text>
             <TableContainer>
               <Table variant="simple">
                 <TableCaption>
-                  <strong>Total # of items: </strong>
-                  {totalItems} &nbsp;&nbsp;&nbsp;
-                  <strong> Total oz of items: </strong>
-                  {totalOz} &nbsp;&nbsp;&nbsp;
-                  <strong> Total value of items: </strong>
-                  {totalValue}
+                  <Stack direction="row" align="center" spacing={3} mt={3}>
+                    <Text fontWeight="bold">
+                      Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
+                      items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
+                      {totalValue}
+                    </Text>
+                    <Button onClick={deleteRow}>- Delete Row</Button>
+                    <Button onClick={addRow}>+ Add Row</Button>
+                  </Stack>
                 </TableCaption>
                 <Thead>
                   <Tr>
@@ -258,12 +260,6 @@ const NewDonationFormModalButton: React.FC = () => {
                   ))}
                 </Tbody>
               </Table>
-              <Button mt={4} onClick={addRow}>
-                + Add Row
-              </Button>
-              <Button mt={4} onClick={deleteRow}>
-                - Delete Row
-              </Button>
             </TableContainer>
             <Flex justifyContent="space-between" mt={4}>
               <Button onClick={onClose}>Close</Button>
