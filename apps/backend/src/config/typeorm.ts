@@ -7,6 +7,8 @@ import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTab
 import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateUserRole';
 import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
 import { UpdateDonations1738697216020 } from '../migrations/1738697216020-updateDonations';
+import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+import { UpdateFkAllocations1739497449049 } from '../migrations/1739497449049-updateFkAllocations';
 const config = {
   type: 'postgres',
   host: `${process.env.DATABASE_HOST}`,
@@ -26,6 +28,8 @@ const config = {
     UpdateUserRole1737816745912,
     UpdatePantriesTable1737906317154,
     UpdateDonations1738697216020,
+    AddOrders1739496585940,
+    UpdateFkAllocations1739497449049,
   ],
 };
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
@@ -28,6 +28,15 @@ export class DonationService {
       totalEstimatedValue,
     });
 
+    return this.repo.save(donation);
+  }
+
+  async fulfill(donationId: number): Promise<Donation | null> {
+    const donation = await this.repo.findOneBy({ donationId });
+    if (!donation) {
+      return null;
+    }
+    donation.status = 'fulfilled';
     return this.repo.save(donation);
   }
 }

@@ -7,6 +7,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
+import { DonationModule } from './donations/donations.module';
+import { DonationItemsModule } from './donationItems/donationItems.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import typeorm from './config/typeorm';
     UsersModule,
     AuthModule,
     RequestsModule,
+    DonationModule,
+    DonationItemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

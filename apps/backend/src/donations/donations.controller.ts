@@ -2,9 +2,10 @@ import {
   Controller,
   Post,
   Body,
-  Param,
   Get,
-  ParseIntPipe,
+  Patch,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -56,5 +57,16 @@ export class DonationsController {
       body.totalOz,
       body.totalEstimatedValue,
     );
+  }
+
+  @Patch('/:donationId/fulfill')
+  async fulfillDonation(
+    @Param('donationId') donationId: number,
+  ): Promise<Donation> {
+    const updatedDonation = await this.donationService.fulfill(donationId);
+    if (!updatedDonation) {
+      throw new NotFoundException('Donation not found');
+    }
+    return updatedDonation;
   }
 }

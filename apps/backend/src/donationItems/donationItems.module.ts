@@ -4,11 +4,10 @@ import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
-import { DonationModule } from '../donations/donations.module';
 import { DonationItemsController } from './donationItems.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DonationItem]), DonationModule],
+  imports: [TypeOrmModule.forFeature([DonationItem])],
   controllers: [DonationItemsController],
   providers: [DonationItemsService, AuthService, JwtStrategy],
 })

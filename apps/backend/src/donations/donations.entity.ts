@@ -27,7 +27,12 @@ export class Donation {
   })
   dateDonated: Date;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'available' })
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: 25,
+    default: 'avaliable',
+  })
   status: string;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })

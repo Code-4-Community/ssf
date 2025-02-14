@@ -18,8 +18,10 @@ import {
   Thead,
   Input,
   Tbody,
+  TableCaption,
 } from '@chakra-ui/react';
 import { useState } from 'react';
+import ApiClient from '@api/apiClient';
 
 const NewDonationFormModalButton: React.FC = () => {
   const getFoodTypes = () => {
@@ -41,10 +43,6 @@ const NewDonationFormModalButton: React.FC = () => {
     ];
   };
 
-  const renderFoodTypesDropdown = () => {
-    return getFoodTypes().map((a) => <option value={a}>{a}</option>);
-  };
-
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -56,10 +54,32 @@ const NewDonationFormModalButton: React.FC = () => {
     },
   ]);
 
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalOz, setTotalOz] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
+
   const handleChange = (id: number, field: string, value: string) => {
-    setRows(
-      rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+    const updatedRows = rows.map((row) =>
+      row.id === id ? { ...row, [field]: value } : row,
     );
+
+    setRows(updatedRows);
+
+    let totalItems = 0,
+      totalOz = 0,
+      totalValue = 0;
+
+    updatedRows.forEach((row) => {
+      if (row.numItems && row.ozPerItem && row.valuePerItem) {
+        totalItems += parseInt(row.numItems);
+        totalOz += parseInt(row.ozPerItem);
+        totalValue += parseInt(row.valuePerItem);
+      }
+    });
+
+    setTotalItems(totalItems);
+    setTotalOz(totalOz);
+    setTotalValue(totalValue);
   };
 
   const addRow = () => {
@@ -80,30 +100,103 @@ const NewDonationFormModalButton: React.FC = () => {
     setRows(rows.slice(0, -1));
   };
 
+  const handleSubmit = async () => {
+    const hasEmptyFields = rows.some(
+      (row) =>
+        row.foodItem === '' ||
+        row.foodType === '' ||
+        row.numItems === '' ||
+        row.ozPerItem === '' ||
+        row.valuePerItem === '',
+    );
+
+    if (hasEmptyFields) {
+      alert('Please fill in all fields before submitting.');
+      return;
+    }
+
+    onClose();
+
+    const foodManufacturerId = 1;
+    const donation_body = {
+      foodManufacturerId: foodManufacturerId,
+      totalItems: totalItems,
+      totalOz: totalOz,
+      totalEstimatedValue: totalValue,
+    };
+
+    try {
+      const donationResponse = await ApiClient.postDonation(donation_body);
+      const donationId = donationResponse?.donationId;
+
+      if (donationId) {
+        rows.forEach(async (row) => {
+          const donationItem_body = {
+            donationId: donationId,
+            itemName: row.foodItem,
+            quantity: parseInt(row.numItems),
+            ozPerItem: parseInt(row.ozPerItem),
+            estimatedValue: parseInt(row.valuePerItem),
+            foodType: row.foodType,
+          };
+
+          const donationItemResponse = await ApiClient.postDonationItem(
+            donationItem_body,
+          );
+          if (donationItemResponse) {
+            console.log('Donation item submitted successfully');
+            setRows([
+              {
+                id: 1,
+                foodItem: '',
+                foodType: '',
+                numItems: '',
+                ozPerItem: '',
+                valuePerItem: '',
+              },
+            ]);
+
+            setTotalItems(0);
+            setTotalOz(0);
+            setTotalValue(0);
+          } else {
+            console.error('Failed to submit donation item');
+            alert('Failed to submit donation item');
+          }
+        });
+      } else {
+        console.error('Failed to submit donation');
+        alert('Failed to submit donation');
+      }
+    } catch (error) {
+      console.error('Error submitting new donation', error);
+      alert('Error submitting new donation');
+    }
+  };
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen}>Submit new request</Button>
+      <Button onClick={onOpen}>Log new Donation</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
           <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Food Request Form
+            SSF Donation Log Form
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text mb="1.5em">
-              Request a shipment of allergen-free food from SSF. You will be
-              placed on our waiting list for incoming donations targeted to your
-              needs.
-              <br />
-              <br />
-              Please keep in mind that we may not be able to accommodate
-              specific food requests at all times, but we will do our best to
-              match your preferences.
-            </Text>
+            <Text mb="1.5em">Log a new donation</Text>
             <TableContainer>
               <Table variant="simple">
+                <TableCaption>
+                  <strong>Total # of items: </strong>
+                  {totalItems} &nbsp;&nbsp;&nbsp;
+                  <strong> Total oz of items: </strong>
+                  {totalOz} &nbsp;&nbsp;&nbsp;
+                  <strong> Total value of items: </strong>
+                  {totalValue}
+                </TableCaption>
                 <Thead>
                   <Tr>
                     <Th>Food Item</Th>
@@ -170,16 +263,16 @@ const NewDonationFormModalButton: React.FC = () => {
                   ))}
                 </Tbody>
               </Table>
-              <Button mt={4} onClick={addRow} colorScheme="blue">
+              <Button mt={4} onClick={addRow}>
                 + Add Row
               </Button>
-              <Button mt={4} onClick={deleteRow} colorScheme="red">
+              <Button mt={4} onClick={deleteRow}>
                 - Delete Row
               </Button>
             </TableContainer>
             <Flex justifyContent="space-between" mt={4}>
               <Button onClick={onClose}>Close</Button>
-              <Button type="submit">Submit</Button>
+              <Button onClick={handleSubmit}>Submit</Button>
             </Flex>
           </ModalBody>
         </ModalContent>
