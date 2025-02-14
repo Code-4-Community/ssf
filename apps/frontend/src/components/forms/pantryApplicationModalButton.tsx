@@ -38,6 +38,11 @@ interface Pantry {
   ssfRepresentativeId: number;
   pantryRepresentativeId: number;
   status: string;
+  dateApplied: string;
+  activities: string;
+  questions: string;
+  itemsInStock: string;
+  needMoreOptions: string;
 }
 
 interface PantryApplicationModalButtonProps {
@@ -82,8 +87,11 @@ const PantryApplicationModalButton: React.FC<
       const data = await getRepresentativeUser();
       setUser(data);
     };
-    fetchUser();
-  }, []);
+
+    if (isOpen) {
+      fetchUser();
+    }
+  }, [isOpen]);
 
   return (
     <>

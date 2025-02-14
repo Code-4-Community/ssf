@@ -7,21 +7,19 @@ import { Pantry } from './pantry.entity';
 export class PantriesService {
   constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
 
-  find(pantryId: number) {
+  async findOne(pantryId: number) {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }
-    return this.repo.find({ where: { pantryId } });
+    return await this.repo.findOne({ where: { pantryId } });
   }
 
-  getNonApprovedPantries() {
-    return this.repo.find({
-      where: { status: 'pending' },
-    });
+  async getPendingPantries() {
+    return await this.repo.find({ where: { status: 'pending' } });
   }
 
-  approve(id: number) {
-    this.repo
+  async approve(id: number) {
+    await this.repo
       .createQueryBuilder()
       .update(Pantry)
       .set({ status: 'approved' })
@@ -29,8 +27,8 @@ export class PantriesService {
       .execute();
   }
 
-  deny(id: number) {
-    this.repo
+  async deny(id: number) {
+    await this.repo
       .createQueryBuilder()
       .update(Pantry)
       .set({ status: 'denied' })

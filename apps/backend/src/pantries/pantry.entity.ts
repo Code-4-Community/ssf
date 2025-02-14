@@ -23,7 +23,7 @@ export class Pantry {
   @Column({ name: 'reservation_explanation', type: 'text' })
   reservationExplanation: Text;
 
-  @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 25 })
+  @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 255 })
   dedicateAllergenFriendly: string;
 
   @Column({ name: 'client_visit_frequency', type: 'varchar', length: 25 })
@@ -60,4 +60,16 @@ export class Pantry {
     default: () => 'CURRENT_TIMESTAMP',
   })
   dateApplied: Date;
+
+  @Column({ name: 'activities', type: 'text' })
+  activities: string;
+
+  @Column({ name: 'questions', type: 'text', nullable: true })
+  questions: string;
+
+  @Column({ name: 'items_in_stock', type: 'text' })
+  itemsInStock: string;
+
+  @Column({ name: 'need_more_options', type: 'text' })
+  needMoreOptions: string;
 }

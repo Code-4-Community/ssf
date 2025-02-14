@@ -6,16 +6,17 @@ import { PantriesService } from './pantries.service';
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
-  @Get('/nonApproved')
-  async getNotApprovedPantries(): Promise<Pantry[]> {
-    return this.pantriesService.getNonApprovedPantries();
+  @Get('/pending')
+  async getPendingPantries(): Promise<Pantry[]> {
+    return this.pantriesService.getPendingPantries();
   }
 
+  // Changed this to Pantry instead of Pantry[] promise
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<Pantry[]> {
-    return this.pantriesService.find(pantryId);
+  ): Promise<Pantry> {
+    return this.pantriesService.findOne(pantryId);
   }
 
   @Post('/approve/:pantryId')

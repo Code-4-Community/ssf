@@ -4,7 +4,10 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { User1725726359198 } from '../migrations/1725726359198-User';
 import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
 import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTables';
-import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable.ts';
+import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
+import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateUserRole';
+import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
 
 const config = {
   type: 'postgres',
@@ -22,7 +25,10 @@ const config = {
     User1725726359198,
     AddTables1726524792261,
     ReviseTables1737522923066,
+    UpdateUserRole1737816745912,
+    UpdatePantriesTable1737906317154,
     UpdatePantriesTable1739056029076,
+    UpdatePantriesTable1738172265266,
   ],
 };
 

@@ -20,6 +20,10 @@ interface Pantry {
   pantryRepresentativeId: number;
   status: string;
   dateApplied: string;
+  activities: string;
+  questions: string;
+  itemsInStock: string;
+  needMoreOptions: string;
 }
 
 const ApprovePantries: React.FC = () => {
@@ -27,9 +31,9 @@ const ApprovePantries: React.FC = () => {
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
 
-  const getAllUnapprovedPantries = async (): Promise<Pantry[]> => {
+  const getAllPendingPantries = async (): Promise<Pantry[]> => {
     try {
-      const response = await fetch(`/api/pantries/nonApproved`, {
+      const response = await fetch(`/api/pantries/pending`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -46,7 +50,10 @@ const ApprovePantries: React.FC = () => {
     }
   };
 
-  const updatePantry = async (pantryId: number, decision: string) => {
+  const updatePantry = async (
+    pantryId: number,
+    decision: 'approve' | 'deny',
+  ) => {
     try {
       const response = await fetch(`/api/pantries/${decision}/${pantryId}`, {
         method: 'POST',
@@ -59,16 +66,16 @@ const ApprovePantries: React.FC = () => {
           prev.filter((p) => p.pantryId !== pantryId),
         );
       } else {
-        alert('Failed to approve pantry' + (await response.text()));
+        alert(`Failed to ${decision} pantry` + (await response.text()));
       }
     } catch (error) {
-      alert('Error approving pantry ' + error);
+      alert(`Error ${decision} pantry ` + error);
     }
   };
 
   useEffect(() => {
     const fetchPantries = async () => {
-      const data = await getAllUnapprovedPantries();
+      const data = await getAllPendingPantries();
       setUnapprovedPantries(data);
     };
     fetchPantries();
