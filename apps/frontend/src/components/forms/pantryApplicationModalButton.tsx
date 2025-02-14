@@ -11,39 +11,8 @@ import {
   Grid,
   GridItem,
 } from '@chakra-ui/react';
-
-interface User {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  role: string;
-}
-
-interface Pantry {
-  pantryId: number;
-  pantryName: string;
-  address: string;
-  allergenClients: string | null;
-  refrigeratedDonation: string | null;
-  reserveFoodForAllergic: boolean;
-  reservationExplanation: string;
-  dedicatedAllergenFriendly: string;
-  clientVisitFrequency: string;
-  identifyAllergensConfidence: string;
-  serveAllergicChildren: string;
-  newsletterSubscription: boolean;
-  restrictions: string[];
-  ssfRepresentativeId: number;
-  pantryRepresentativeId: number;
-  status: string;
-  dateApplied: string;
-  activities: string;
-  questions: string;
-  itemsInStock: string;
-  needMoreOptions: string;
-}
+import ApiClient from '@api/apiClient';
+import { Pantry, User } from 'types/type';
 
 interface PantryApplicationModalButtonProps {
   pantry: Pantry;
@@ -55,43 +24,20 @@ const PantryApplicationModalButton: React.FC<
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [user, setUser] = useState<User | null>(null);
 
-  const getRepresentativeUser = async (): Promise<User | null> => {
-    try {
-      const response = await fetch(
-        `/api/users/${pantry.pantryRepresentativeId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert(
-          'Failed to fetch pantry representative user ' +
-            (await response.text()),
-        );
-        return null;
-      }
-    } catch (error) {
-      alert('Error fetching pantry representative user ' + error);
-      return null;
-    }
-  };
-
   useEffect(() => {
     const fetchUser = async () => {
-      const data = await getRepresentativeUser();
-      setUser(data);
+      if (pantry.pantryRepresentativeId) {
+        const data = await ApiClient.getRepresentativeUser(
+          pantry.pantryRepresentativeId,
+        );
+        setUser(data);
+      }
     };
 
     if (isOpen) {
       fetchUser();
     }
-  }, [isOpen]);
+  }, [isOpen, pantry.pantryRepresentativeId]);
 
   return (
     <>
@@ -201,6 +147,26 @@ const PantryApplicationModalButton: React.FC<
                 <strong>Restrictions</strong>
               </GridItem>
               <GridItem>{pantry.restrictions.join(', ')}</GridItem>
+
+              <GridItem>
+                <strong>Activities</strong>
+              </GridItem>
+              <GridItem>{pantry.activities}</GridItem>
+
+              <GridItem>
+                <strong>Questions</strong>
+              </GridItem>
+              <GridItem>{pantry.questions}</GridItem>
+
+              <GridItem>
+                <strong>Items in Stock</strong>
+              </GridItem>
+              <GridItem>{pantry.itemsInStock}</GridItem>
+
+              <GridItem>
+                <strong>Need More Options</strong>
+              </GridItem>
+              <GridItem>{pantry.needMoreOptions}</GridItem>
             </Grid>
           </ModalBody>
           <ModalFooter>

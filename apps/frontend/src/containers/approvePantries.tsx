@@ -1,52 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
 import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
-
-interface Pantry {
-  pantryId: number;
-  pantryName: string;
-  address: string;
-  allergenClients: string | null;
-  refrigeratedDonation: string | null;
-  reserveFoodForAllergic: boolean;
-  reservationExplanation: string;
-  dedicatedAllergenFriendly: string;
-  clientVisitFrequency: string;
-  identifyAllergensConfidence: string;
-  serveAllergicChildren: string;
-  newsletterSubscription: boolean;
-  restrictions: string[];
-  ssfRepresentativeId: number;
-  pantryRepresentativeId: number;
-  status: string;
-  dateApplied: string;
-  activities: string;
-  questions: string;
-  itemsInStock: string;
-  needMoreOptions: string;
-}
+import ApiClient from '@api/apiClient';
+import { Pantry } from 'types/type';
 
 const ApprovePantries: React.FC = () => {
-  const [unapprovedPantries, setUnapprovedPantries] = useState<Pantry[]>([]);
+  const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
 
-  const getAllPendingPantries = async (): Promise<Pantry[]> => {
+  const fetchPantries = async () => {
     try {
-      const response = await fetch(`/api/pantries/pending`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert('Failed to fetch unapproved pantries ' + (await response.text()));
-        return [];
-      }
+      const data = await ApiClient.getAllPendingPantries();
+      setPendingPantries(data);
     } catch (error) {
-      alert('Error fetching unapproved pantries ' + error);
-      return [];
+      alert('Error fetching unapproved pantries: ' + error);
     }
   };
 
@@ -55,38 +23,23 @@ const ApprovePantries: React.FC = () => {
     decision: 'approve' | 'deny',
   ) => {
     try {
-      const response = await fetch(`/api/pantries/${decision}/${pantryId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pantryId }),
-      });
-
-      if (response.ok) {
-        setUnapprovedPantries((prev) =>
-          prev.filter((p) => p.pantryId !== pantryId),
-        );
-      } else {
-        alert(`Failed to ${decision} pantry` + (await response.text()));
-      }
+      await ApiClient.updatePantry(pantryId, decision);
+      setPendingPantries((prev) => prev.filter((p) => p.pantryId !== pantryId));
     } catch (error) {
-      alert(`Error ${decision} pantry ` + error);
+      alert(`Error ${decision} pantry: ` + error);
     }
   };
 
   useEffect(() => {
-    const fetchPantries = async () => {
-      const data = await getAllPendingPantries();
-      setUnapprovedPantries(data);
-    };
     fetchPantries();
   }, []);
 
   useEffect(() => {
-    const sorted = [...unapprovedPantries];
+    const sorted = [...pendingPantries];
 
     if (sort === 'name') {
       sorted.sort((a, b) => a.pantryName.localeCompare(b.pantryName));
-    } else if (sort == 'name-reverse') {
+    } else if (sort === 'name-reverse') {
       sorted.sort((a, b) => b.pantryName.localeCompare(a.pantryName));
     } else if (sort === 'date-recent') {
       sorted.sort(
@@ -101,7 +54,7 @@ const ApprovePantries: React.FC = () => {
     }
 
     setSortedPantries(sorted);
-  }, [sort, unapprovedPantries]);
+  }, [sort, pendingPantries]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
