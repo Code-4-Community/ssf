@@ -49,7 +49,12 @@ const DonationManagement: React.FC = () => {
   const fetchDonations = async () => {
     try {
       const data = await ApiClient.get('/api/donations/get-all-donations');
-      setDonations(data as Donation[]);
+      const sortedDonations = (data as Donation[]).sort((a, b) => {
+        if (a.status === 'fulfilled' && b.status !== 'fulfilled') return 1;
+        if (a.status !== 'fulfilled' && b.status === 'fulfilled') return -1;
+        return 0;
+      });
+      setDonations(sortedDonations);
     } catch (error) {
       alert('Error fetching donations: ' + error);
     }
@@ -158,53 +163,34 @@ const DonationManagement: React.FC = () => {
               <Td>{formatDate(donation.dateDonated)}</Td>
               <Td>{donation.status}</Td>
               <Td>
-                {expandedDonationIds.includes(donation.donationId) ? (
-                  <Box>
-                    {donationItems[donation.donationId] ? (
-                      <Box>
-                        {donationItems[donation.donationId].map((item) => (
-                          <Box
-                            key={item.itemId}
-                            borderBottom="1px solid"
-                            py={2}
-                          >
-                            <Text>
-                              <strong>Item Name:</strong> {item.itemName}
-                            </Text>
-                            <Text>
-                              <strong>Food Type:</strong> {item.foodType}
-                            </Text>
-                            <Text>
-                              <strong>Remaining Stock:</strong>{' '}
-                              {donationItemStock[item.itemId]}
-                            </Text>
-                            <Button onClick={() => updateDonationItem(item)}>
-                              Lower count
-                            </Button>
-                          </Box>
-                        ))}
-                        <Text
-                          cursor="pointer"
-                          color="blue"
-                          onClick={() => toggleDropdown(donation.donationId)}
-                          mt={2}
-                        >
-                          Hide Information
-                        </Text>
-                      </Box>
-                    ) : (
-                      <Text>Loading items...</Text>
-                    )}
-                  </Box>
-                ) : (
-                  <Text
-                    cursor="pointer"
-                    color="blue.500"
-                    onClick={() => toggleDropdown(donation.donationId)}
-                  >
-                    Show Information
-                  </Text>
-                )}
+                {expandedDonationIds.includes(donation.donationId) &&
+                  donationItems[donation.donationId]?.map((item) => (
+                    <Box key={item.itemId} borderBottom="1px solid" py={1}>
+                      <Text>
+                        <strong>Item Name:</strong> {item.itemName}
+                      </Text>
+                      <Text>
+                        <strong>Food Type:</strong> {item.foodType}
+                      </Text>
+                      <Text>
+                        <strong>Remaining Stock:</strong>{' '}
+                        {donationItemStock[item.itemId]}
+                      </Text>
+                      <Button onClick={() => updateDonationItem(item)}>
+                        Lower count
+                      </Button>
+                    </Box>
+                  ))}
+                <Text
+                  cursor="pointer"
+                  color="blue"
+                  onClick={() => toggleDropdown(donation.donationId)}
+                  mt={2}
+                >
+                  {expandedDonationIds.includes(donation.donationId)
+                    ? 'Hide Information'
+                    : 'Show Information'}
+                </Text>
               </Td>
               <Td>
                 {donation.status !== 'fulfilled' && (
