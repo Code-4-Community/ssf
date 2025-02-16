@@ -16,18 +16,23 @@ import { HamburgerIcon } from '@chakra-ui/icons';
 import React, { useEffect, useState } from 'react';
 import { User, Pantry } from 'types/types';
 import ApiClient from '@api/apiClient';
+import { useParams } from 'react-router-dom';
 
 const PantryDashboard: React.FC = () => {
   const [ssfRep, setSsfRep] = useState<User | null>(null);
   const [pantry, setPantry] = useState<Pantry | null>(null);
-  const pantryId = 1;
+  const { pantryId } = useParams<{ pantryId: string }>();
 
   useEffect(() => {
+    if (!pantryId) {
+      console.error('Error: pantryId is undefined');
+      return;
+    }
     const fetchData = async () => {
       try {
         const [pantryData, ssfRepData] = await Promise.all([
-          ApiClient.getPantry(pantryId),
-          ApiClient.getPantrySSFRep(pantryId),
+          ApiClient.getPantry(parseInt(pantryId, 10)),
+          ApiClient.getPantrySSFRep(parseInt(pantryId, 10)),
         ]);
         setPantry(pantryData);
         setSsfRep(ssfRepData);
@@ -37,7 +42,7 @@ const PantryDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [pantryId]);
 
   return (
     <VStack width="100%" padding="2" spacing={10}>
@@ -78,7 +83,7 @@ const PantryDashboard: React.FC = () => {
               </MenuItem>
               <MenuItem
                 as={Link}
-                href="/request-form/1" // This is a placeholder id, replace with pantry id
+                href={`/request-form/${pantryId}`}
                 _hover={{ textDecoration: 'none' }}
                 textDecoration="none"
               >
@@ -117,7 +122,7 @@ const PantryDashboard: React.FC = () => {
       <Button
         mt="6"
         as={Link}
-        href="/request-form/1" // This is a placeholder id, replace with pantry id
+        href={`/request-form/${pantryId}`}
         _hover={{ textDecoration: 'none' }}
         _focus={{ textDecoration: 'none' }}
         textDecoration="none"

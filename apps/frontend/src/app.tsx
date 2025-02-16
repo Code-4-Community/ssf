@@ -29,7 +29,7 @@ const router = createBrowserRouter([
         element: <PantryOverview />,
       },
       {
-        path: '/pantry-dashboard',
+        path: '/pantry-dashboard/:pantryId',
         element: <PantryDashboard />,
       },
       {
