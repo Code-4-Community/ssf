@@ -4,9 +4,9 @@ import { Role } from './types';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  user_id: number;
-
+  @PrimaryGeneratedColumn({ name: 'user_id' })
+  id: number;
+  
   @Column({
     type: 'varchar',
     length: 20,

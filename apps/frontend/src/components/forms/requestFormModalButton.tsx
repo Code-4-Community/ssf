@@ -21,17 +21,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
-
-interface FoodRequest {
-  requestId: number;
-  requestedAt: string;
-  status: string;
-  fulfilledBy: string | null;
-  dateReceived: string | null;
-  requestedSize: string;
-  requestedItems: string[];
-  additionalInformation: string;
-}
+import { FoodRequest } from 'types/type';
 
 const getAllergens = () => {
   return [

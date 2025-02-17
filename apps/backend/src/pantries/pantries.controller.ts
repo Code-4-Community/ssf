@@ -1,11 +1,15 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
-import { User } from '../users/user.entity';
+import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Pantry } from './pantry.entity';
 import { PantriesService } from './pantries.service';
-import { Pantry } from './pantries.entity';
 
 @Controller('pantries')
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
+
+  @Get('/pending')
+  async getPendingPantries(): Promise<Pantry[]> {
+    return this.pantriesService.getPendingPantries();
+  }
 
   @Get('/:pantryId/ssf-contact')
   async getSSFRep(
@@ -19,5 +23,19 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Post('/approve/:pantryId')
+  async approvePantry(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<void> {
+    return this.pantriesService.approve(pantryId);
+  }
+
+  @Post('/deny/:pantryId')
+  async denyPantry(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<void> {
+    return this.pantriesService.deny(pantryId);
   }
 }
