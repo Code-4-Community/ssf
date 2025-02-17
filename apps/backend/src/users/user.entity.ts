@@ -6,7 +6,7 @@ import { Role } from './types';
 export class User {
   @PrimaryGeneratedColumn({ name: 'user_id' })
   id: number;
-
+  
   @Column({
     type: 'varchar',
     length: 20,
@@ -22,4 +22,14 @@ export class User {
 
   @Column()
   email: string;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+  })
+  phone: string;
+
+  get id(): number {
+    return this.user_id;
+  }
 }

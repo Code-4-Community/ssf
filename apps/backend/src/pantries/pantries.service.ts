@@ -34,5 +34,17 @@ export class PantriesService {
       .set({ status: 'denied' })
       .where('pantry_id = :pantryId', { pantryId: id })
       .execute();
+
+  async findSSFRep(pantryId: number): Promise<User | null> {
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['ssfRepresentative'],
+    });
+
+    if (!pantry) {
+      return null;
+    } else {
+      return pantry.ssfRepresentative;
+    }
   }
 }

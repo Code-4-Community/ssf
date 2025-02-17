@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PantriesModule } from './pantries/pantries.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import typeorm from './config/typeorm';
@@ -26,6 +27,7 @@ import typeorm from './config/typeorm';
     }),
     UsersModule,
     AuthModule,
+    PantriesModule,
     RequestsModule,
     PantriesModule,
   ],

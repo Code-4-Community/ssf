@@ -9,6 +9,7 @@ import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
+import PantryDashboard from '@containers/pantryDashboard';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
 import FormRequests from '@containers/FormRequests';
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: '/pantry-overview',
         element: <PantryOverview />,
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: <PantryDashboard />,
       },
       {
         path: '/pantry-past-orders',

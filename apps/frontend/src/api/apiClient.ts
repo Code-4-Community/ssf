@@ -38,6 +38,13 @@ export class ApiClient {
     await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
       pantryId,
     });
+
+  public async getPantry(pantryId: number): Promise<Pantry> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async getPantrySSFRep(pantryId: number): Promise<User> {
+    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {

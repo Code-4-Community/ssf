@@ -11,7 +11,13 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
-  // Changed this to Pantry instead of Pantry[] promise
+  @Get('/:pantryId/ssf-contact')
+  async getSSFRep(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<User> {
+    return this.pantriesService.findSSFRep(pantryId);
+  }
+
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
