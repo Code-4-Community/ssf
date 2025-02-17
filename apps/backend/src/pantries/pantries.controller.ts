@@ -1,6 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { Pantry } from './pantry.entity';
+import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
+import { User } from '../users/user.entity';
 
 @Controller('pantries')
 export class PantriesController {

@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { User, Pantry } from 'types/type';
+import { User, Pantry } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -38,6 +38,7 @@ export class ApiClient {
     await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
       pantryId,
     });
+  }
 
   public async getPantry(pantryId: number): Promise<Pantry> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;

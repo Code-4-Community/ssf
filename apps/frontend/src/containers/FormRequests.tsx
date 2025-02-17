@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
-import { FoodRequest } from 'types/type';
+import { FoodRequest } from 'types/types';
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);

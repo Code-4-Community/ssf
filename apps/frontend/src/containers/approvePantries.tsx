@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
 import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
 import ApiClient from '@api/apiClient';
-import { Pantry } from 'types/type';
+import { Pantry } from 'types/types';
 
 const ApprovePantries: React.FC = () => {
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);

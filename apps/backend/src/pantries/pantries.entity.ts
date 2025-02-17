@@ -29,7 +29,7 @@ export class Pantry {
   reserveFoodForAllergic: boolean;
 
   @Column({ name: 'reservation_explanation', type: 'text' })
-  reservationExplanation: string;
+  reservationExplanation: Text;
 
   @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 255 })
   dedicatedAllergyFriendly: string;
@@ -50,25 +50,32 @@ export class Pantry {
   @Column({ name: 'newsletter_subscription', type: 'boolean' })
   newsletterSubscription: boolean;
 
-  @Column({ name: 'approved', type: 'boolean' })
-  approved: boolean;
-
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'ssf_representative_id',
-    referencedColumnName: 'user_id',
+    referencedColumnName: 'id',
   })
   ssfRepresentative: User;
 
   @OneToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'pantry_representative_id',
-    referencedColumnName: 'user_id',
+    referencedColumnName: 'id',
   })
   pantryRepresentative: User;
+
+  @Column({ name: 'status', type: 'varchar', length: 50 })
+  status: string;
+
+  @Column({
+    name: 'date_applied',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  dateApplied: Date;
 
   @Column({ name: 'activities', type: 'text' })
   activities: string;
