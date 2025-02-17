@@ -21,7 +21,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
-import { FoodRequest } from 'types/type';
+import { FoodRequest } from 'types/types';
 
 const getAllergens = () => {
   return [

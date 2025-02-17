@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Pantry } from './pantry.entity';
+import { Pantry } from './pantries.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class PantriesService {
@@ -34,6 +35,7 @@ export class PantriesService {
       .set({ status: 'denied' })
       .where('pantry_id = :pantryId', { pantryId: id })
       .execute();
+  }
 
   async findSSFRep(pantryId: number): Promise<User | null> {
     const pantry = await this.repo.findOne({

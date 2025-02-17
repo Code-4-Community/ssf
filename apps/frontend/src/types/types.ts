@@ -20,12 +20,24 @@ export interface Pantry {
   identifyAllergensConfidence: string;
   serveAllergicChildren: string;
   newsletterSubscription: boolean;
-  approved: boolean;
   restrictions: string[];
   ssfRepresentativeId: number;
   pantryRepresentativeId: number;
+  status: string;
+  dateApplied: string;
   activities: string;
   questions: string;
   itemsInStock: string;
   needMoreOptions: string;
+}
+
+export interface FoodRequest {
+  requestId: number;
+  requestedAt: string;
+  status: string;
+  fulfilledBy: string | null;
+  dateReceived: string | null;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation: string;
 }

@@ -12,7 +12,7 @@ import {
   GridItem,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/type';
+import { Pantry, User } from 'types/types';
 
 interface PantryApplicationModalButtonProps {
   pantry: Pantry;
@@ -119,7 +119,7 @@ const PantryApplicationModalButton: React.FC<
               <GridItem>
                 <strong>Dedicated Allergen Friendly</strong>
               </GridItem>
-              <GridItem>{pantry.dedicatedAllergenFriendly}</GridItem>
+              <GridItem>{pantry.dedicatedAllergyFriendly}</GridItem>
 
               <GridItem>
                 <strong>Client Visit Frequency</strong>
