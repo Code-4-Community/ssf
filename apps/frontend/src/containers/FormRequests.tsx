@@ -21,6 +21,7 @@ const FormRequests: React.FC = () => {
     FoodRequest | undefined
   >(undefined);
   const { pantryId } = useParams<{ pantryId: string }>();
+  const [allConfirmed, setAllConfirmed] = useState(false);
 
   const getAllPantryRequests = async (
     pantryId: number,
@@ -74,18 +75,24 @@ const FormRequests: React.FC = () => {
     return date.toLocaleDateString('en-CA');
   };
 
+  useEffect(() => {
+    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
+  }, [requests]);
+
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
         <FoodRequestFormModal
           previousRequest={undefined}
           buttonText="Submit New Request"
+          disabled={!allConfirmed}
         />
 
         {previousRequest && (
           <FoodRequestFormModal
             previousRequest={previousRequest}
             buttonText="Submit Previous Request"
+            disabled={!allConfirmed}
           />
         )}
       </HStack>
