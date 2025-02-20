@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RequestsModule } from './foodRequests/request.module';
 import { PantriesModule } from './pantries/pantries.module';
+import { AssignemntsModule } from './volunteerAssignments/volunteerAssignments.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -29,6 +30,7 @@ import typeorm from './config/typeorm';
     PantriesModule,
     RequestsModule,
     PantriesModule,
+    AssignemntsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
