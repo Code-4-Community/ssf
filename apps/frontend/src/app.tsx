@@ -13,6 +13,8 @@ import PantryDashboard from '@containers/pantryDashboard';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
 import FormRequests from '@containers/FormRequests';
+import PantryApplication from '@containers/pantryApplication';
+import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
 
 const router = createBrowserRouter([
@@ -40,6 +42,11 @@ const router = createBrowserRouter([
       {
         path: '/pantries',
         element: <Pantries />,
+      },
+      {
+        path: '/pantry-application',
+        element: <PantryApplication />,
+        action: submitPantryApplicationForm,
       },
       {
         path: '/orders',
