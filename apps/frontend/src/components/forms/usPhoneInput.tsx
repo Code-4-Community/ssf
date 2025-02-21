@@ -12,7 +12,7 @@ const isPhoneValid = (phone: string): boolean => {
         phoneUtil.parseAndKeepRawInput(phone, 'US'),
       ) === PhoneNumberUtil.ValidationResult.IS_POSSIBLE
     );
-  } catch (error) {
+  } catch {
     return false;
   }
 };
