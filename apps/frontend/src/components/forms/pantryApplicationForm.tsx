@@ -20,10 +20,19 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { USPhoneInput } from '@components/forms/usPhoneInput';
 
 const PantryApplicationForm: React.FC = () => {
-  // Option values and state here are for options that, when selected,
+  const [phone, setPhone] = useState<string>('');
+
+  // We need to keep track of the activities selected so we can provide custom
+  // validation (at least one activity chosen).
+  const [activities, setActivities] = useState<string[]>([]);
+
+  const noActivitiesSelected: boolean = activities.length === 0;
+
+  // Option values and state below are for options that, when selected,
   // cause a new form question to appear.
 
   const allergenAvoidantClientsExactOption: string = 'I have an exact number';
@@ -42,12 +51,6 @@ const PantryApplicationForm: React.FC = () => {
   const [willingToReserve, setWillingToReserve] = useState<
     string | undefined
   >();
-
-  // We need to keep track of the activities selected so we can provide custom
-  // validation (at least one activity chosen).
-  const [activities, setActivities] = useState<string[]>([]);
-
-  const noActivitiesSelected: boolean = activities.length === 0;
 
   return (
     <Box minW="35em" maxW="50em" m="5em">
@@ -87,7 +90,11 @@ const PantryApplicationForm: React.FC = () => {
           <FormHelperText mb="1em">
             Please provide the phone number of the pantry contact listed above.
           </FormHelperText>
-          <Input maxW="20em" name="contactPhone" type="tel" />
+          <USPhoneInput
+            value={phone}
+            onChange={setPhone}
+            inputProps={{ maxW: '20em', name: 'contactPhone' }}
+          />
         </FormControl>
         <FormControl isRequired mb="2em">
           <FormLabel fontSize={25} fontWeight={700}>
