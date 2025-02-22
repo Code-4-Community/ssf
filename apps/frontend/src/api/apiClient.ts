@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { User, Pantry } from 'types/types';
+import { User, Pantry, Order } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -28,6 +28,13 @@ export class ApiClient {
   public async getAllPendingPantries(): Promise<Pantry[]> {
     return this.axiosInstance
       .get('/api/pantries/pending')
+      .then((response) => response.data);
+  }
+
+  // TODO: adjust to only the orders we want food manufacturers to see
+  public async getAllOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/get-all-orders')
       .then((response) => response.data);
   }
 

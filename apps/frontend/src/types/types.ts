@@ -41,3 +41,14 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string;
 }
+
+export interface Order {
+  orderId: number;
+  requestId: number;
+  pantryId: number;
+  shippedBy: number;
+  status: string;
+  createdAt: string;
+  shippedAt: string;
+  deliveredAt: string;
+}
