@@ -6,16 +6,16 @@ import { Order } from './order.entity';
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
+  @Get('/get-all-orders')
+  async getAllOrders(): Promise<Order[]> {
+    return this.ordersService.getAll();
+  }
+
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Order> {
     return this.ordersService.findOne(orderId);
-  }
-
-  @Get('/get-all-orders')
-  async getAllOrders(): Promise<Order[]> {
-    return this.ordersService.getAll();
   }
 
   @Post('/update-status/:orderId')

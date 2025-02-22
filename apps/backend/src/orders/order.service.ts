@@ -8,14 +8,19 @@ export class OrdersService {
   constructor(@InjectRepository(Order) private repo: Repository<Order>) {}
 
   async getAll() {
-    return this.repo.find();
+    return this.repo.find({
+      relations: ['requestId', 'pantryId', 'shippedBy'],
+    });
   }
 
   async findOne(orderId: number) {
     if (!orderId || orderId < 1) {
       throw new NotFoundException('Invalid order ID');
     }
-    return await this.repo.findOne({ where: { orderId } });
+    return await this.repo.findOne({
+      where: { orderId },
+      relations: ['requestId', 'pantryId', 'shippedBy'],
+    });
   }
 
   async updateStatus(orderId: number, newStatus: string) {

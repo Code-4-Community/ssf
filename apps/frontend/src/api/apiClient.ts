@@ -38,6 +38,16 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async updateOrderStatus(
+    orderId: number,
+    newStatus: 'shipped' | 'delivered',
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/orders/update-status/${orderId}`, {
+      orderId,
+      newStatus,
+    });
+  }
+
   public async updatePantry(
     pantryId: number,
     decision: 'approve' | 'deny',

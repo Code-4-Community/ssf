@@ -18,21 +18,21 @@ export class Order {
   @ManyToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
     name: 'request_id',
-    referencedColumnName: 'id',
+    referencedColumnName: 'requestId',
   })
   requestId: FoodRequest;
 
   @ManyToOne(() => Pantry, { nullable: false })
   @JoinColumn({
     name: 'pantry_id',
-    referencedColumnName: 'id',
+    referencedColumnName: 'pantryId',
   })
   pantryId: Pantry;
 
   @ManyToOne(() => FoodManufacturer, { nullable: false })
   @JoinColumn({
-    name: 'food_manufacturer_id',
-    referencedColumnName: 'id',
+    name: 'shipped_by',
+    referencedColumnName: 'foodManufacturerId',
   })
   shippedBy: FoodManufacturer;
 
