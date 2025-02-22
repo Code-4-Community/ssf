@@ -16,43 +16,50 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
+import { AssignmentWithRelations } from '../types/types';
 
 const VolunteerManagement: React.FC = () => {
-  // const [assignments, setAssignments] = useState();
+  const [assignments, setAssignments] = useState<
+    AssignmentWithRelations[] | null
+  >(null);
 
-  // useEffect(() => {
-  //     const fetchAssignments = async () => {
-  //         try {
-  //             const response = await fetch("api/assignments/getAll", {
-  //                 method: "GET",
-  //                 headers: {
-  //                     "Content-Type": "application/json"
-  //                 }
-  //             });
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const response = await fetch('api/assignments/getAllRelations', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-  //             if (response.ok) {
-  //                 const data = await response.json();
-  //                 setAssignments(data);
-  //                 console.log("Assignments: ", data);
-  //             } else {
-  //                 console.error("Error fetching assignments: ", await response.text());
-  //             }
-  //         } catch (error) {
-  //             console.error("Error fetching assignments: ", error);
-  //         }
-  //     }
+        if (response.ok) {
+          const data = await response.json();
+          setAssignments(data);
+          console.log('Assignments: ', data);
+        } else {
+          console.error('Error fetching assignments: ', await response.text());
+        }
+      } catch (error) {
+        console.error('Error fetching assignments: ', error);
+      }
+    };
 
-  //     fetchAssignments();
-  // }, []);
+    fetchAssignments();
+  }, []);
 
-  const volunteerTypeDropdown = () => {
+  const volunteerTypeDropdown = ({
+    volunteerType,
+  }: {
+    volunteerType: VolunteerType;
+  }) => {
     return (
-      <Select>
-        <option value={VolunteerType.LEADVOLUNTEER}>Lead Volunteer</option>
-        <option value={VolunteerType.STANDARDVOLUNTEER}>
+      <Select defaultValue={volunteerType}>
+        <option value={VolunteerType.LEAD_VOLUNTEER}>Lead Volunteer</option>
+        <option value={VolunteerType.STANDARD_VOLUNTEER}>
           Standard Volunteer
         </option>
-        <option value={VolunteerType.NONPANTRYVOLUNTEER}>
+        <option value={VolunteerType.NON_PANTRY_VOLUNTEER}>
           Non-Pantry Volunteer
         </option>
       </Select>
@@ -78,21 +85,20 @@ const VolunteerManagement: React.FC = () => {
             </Tr>
           </Thead>
           <Tbody>
-            <Tr>
-              <Td>inches</Td>
-              <Td>millimetres (mm)</Td>
-              <Td isNumeric>25.4</Td>
-            </Tr>
-            <Tr>
-              <Td>feet</Td>
-              <Td>{volunteerTypeDropdown()}</Td>
-              <Td isNumeric>30.48</Td>
-            </Tr>
-            <Tr>
-              <Td>yards</Td>
-              <Td>metres (m)</Td>
-              <Td isNumeric>0.91444</Td>
-            </Tr>
+            {assignments?.map((assignment) => (
+              <Tr key={assignment.assignmentId}>
+                <Td>{assignment.volunteer.firstName}</Td>
+                <Td>
+                  {volunteerTypeDropdown({
+                    volunteerType:
+                      VolunteerType[
+                        assignment.volunteerType.toUpperCase() as keyof typeof VolunteerType
+                      ],
+                  })}
+                </Td>
+                <Td>{assignment.pantry.pantryName}</Td>
+              </Tr>
+            ))}
           </Tbody>
           <Tfoot>
             <Tr>

@@ -25,7 +25,7 @@ export class Assignments {
   @OneToOne(() => Pantry, { nullable: false })
   @JoinColumn({
     name: 'pantry_id',
-    referencedColumnName: 'pantry_id',
+    referencedColumnName: 'pantryId',
   })
   pantry: Pantry;
 

@@ -8,4 +8,22 @@ export class AssignmentsService {
   constructor(
     @InjectRepository(Assignments) private repo: Repository<Assignments>,
   ) {}
+
+  async findAllRelations() {
+    return await this.repo.find({
+      relations: ['volunteer', 'pantry'],
+      select: {
+        assignmentId: true,
+        volunteerType: true,
+        volunteer: {
+          id: true,
+          firstName: true,
+        },
+        pantry: {
+          pantryId: true,
+          pantryName: true,
+        },
+      },
+    });
+  }
 }
