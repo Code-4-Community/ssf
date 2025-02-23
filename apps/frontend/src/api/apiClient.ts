@@ -1,5 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
-import { User, Pantry, Order } from 'types/types';
+import {
+  User,
+  Pantry,
+  Order,
+  FoodRequest,
+  FoodManufacturer,
+} from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -19,6 +25,22 @@ export class ApiClient {
     return this.axiosInstance.get(path).then((response) => response.data);
   }
 
+  private async post(path: string, body: unknown): Promise<unknown> {
+    return this.axiosInstance
+      .post(path, body)
+      .then((response) => response.data);
+  }
+
+  private async patch(path: string, body: unknown): Promise<unknown> {
+    return this.axiosInstance
+      .patch(path, body)
+      .then((response) => response.data);
+  }
+
+  private async delete(path: string): Promise<unknown> {
+    return this.axiosInstance.delete(path).then((response) => response.data);
+  }
+
   public async getRepresentativeUser(userId: number): Promise<User> {
     return this.axiosInstance
       .get(`/api/users/${userId}`)
@@ -35,6 +57,40 @@ export class ApiClient {
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
       .get('/api/orders/get-all-orders')
+      .then((response) => response.data);
+  }
+
+  public async getCurrentOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/get-current-orders')
+      .then((response) => response.data);
+  }
+
+  public async getPastOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/get-past-orders')
+      .then((response) => response.data);
+  }
+
+  public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/pantry`)
+      .then((response) => response.data);
+  }
+
+  public async getFoodRequestFromOrder(
+    orderId: number,
+  ): Promise<FoodRequest | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/request`)
+      .then((response) => response.data);
+  }
+
+  public async getManufacturerFromOrder(
+    orderId: number,
+  ): Promise<FoodManufacturer | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
   }
 
@@ -65,20 +121,12 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
-  private async post(path: string, body: unknown): Promise<unknown> {
-    return this.axiosInstance
-      .post(path, body)
-      .then((response) => response.data);
+  public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
+    return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
   }
 
-  private async patch(path: string, body: unknown): Promise<unknown> {
-    return this.axiosInstance
-      .patch(path, body)
-      .then((response) => response.data);
-  }
-
-  private async delete(path: string): Promise<unknown> {
-    return this.axiosInstance.delete(path).then((response) => response.data);
+  public async getOrder(orderId: number): Promise<Order> {
+    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
   }
 }
 

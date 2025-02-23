@@ -20,5 +20,5 @@ export class FoodManufacturer {
     name: 'food_manufacturer_representative_id',
     referencedColumnName: 'id',
   })
-  foodManufacturerRepresentative: User;
+  foodManufacturerRepresentativeId: User;
 }

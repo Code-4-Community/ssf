@@ -23,7 +23,14 @@ export class FoodRequestsController {
     private awsS3Service: AWSS3Service,
   ) {}
 
-  @Get('/:pantryId')
+  @Get('/:requestId')
+  async getPantry(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<FoodRequest> {
+    return this.requestsService.findOne(requestId);
+  }
+
+  @Get('/get-all-requests/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {

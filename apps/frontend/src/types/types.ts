@@ -52,3 +52,9 @@ export interface Order {
   shippedAt: string;
   deliveredAt: string;
 }
+
+export interface FoodManufacturer {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  foodManufacturerRepresentativeId: number;
+}

@@ -1,6 +1,16 @@
-import { Controller, Get, Post, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  Body,
+} from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
+import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 @Controller('orders')
 export class OrdersController {
@@ -9,6 +19,37 @@ export class OrdersController {
   @Get('/get-all-orders')
   async getAllOrders(): Promise<Order[]> {
     return this.ordersService.getAll();
+  }
+
+  @Get('/get-current-orders')
+  async getCurrentOrders(): Promise<Order[]> {
+    return this.ordersService.getCurrentOrders();
+  }
+
+  @Get('/get-past-orders')
+  async getPastOrders(): Promise<Order[]> {
+    return this.ordersService.getPastOrders();
+  }
+
+  @Get(':orderId/pantry')
+  async getPantryFromOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<Pantry | null> {
+    return this.ordersService.findOrderPantry(orderId);
+  }
+
+  @Get(':orderId/request')
+  async getRequestFromOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<FoodRequest | null> {
+    return this.ordersService.findOrderFoodRequest(orderId);
+  }
+
+  @Get(':orderId/manufacturer')
+  async getManufacturerFromOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<FoodManufacturer | null> {
+    return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
   @Get('/:orderId')
@@ -21,7 +62,7 @@ export class OrdersController {
   @Post('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,
-    newStatus: string,
+    @Body('newStatus') newStatus: string,
   ): Promise<void> {
     return this.ordersService.updateStatus(orderId, newStatus);
   }
