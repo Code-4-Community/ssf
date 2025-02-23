@@ -7,13 +7,8 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  Table,
-  TableContainer,
-  Tr,
-  Th,
-  Td,
-  Thead,
-  Tbody,
+  VStack,
+  Text,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
@@ -35,51 +30,54 @@ const OrderInformationModalButton: React.FC<
 
   useEffect(() => {
     if (isOpen) {
-      ApiClient.getPantryFromOrder(orderId).then((data) => setPantry(data));
-      ApiClient.getFoodRequestFromOrder(orderId).then((data) =>
-        setFoodRequest(data),
-      );
-      ApiClient.getManufacturerFromOrder(orderId).then((data) =>
-        setManufacturer(data),
-      );
+      const fetchData = async () => {
+        try {
+          const pantryData = await ApiClient.getPantryFromOrder(orderId);
+          const foodRequestData = await ApiClient.getFoodRequestFromOrder(
+            orderId,
+          );
+          const manufacturerData = await ApiClient.getManufacturerFromOrder(
+            orderId,
+          );
+
+          setPantry(pantryData);
+          setFoodRequest(foodRequestData);
+          setManufacturer(manufacturerData);
+        } catch (error) {
+          console.error('Error fetching order details:', error);
+        }
+      };
+
+      fetchData();
     }
   }, [isOpen, orderId]);
 
   return (
     <>
       <Button onClick={onOpen}>{orderId}</Button>
-
-      <Modal isOpen={isOpen} size="md" onClose={onClose}>
+      <Modal isOpen={isOpen} size="lg" onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Order Details</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {pantry && foodRequest && manufacturer ? (
-              <TableContainer>
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>Pantry ID</Th>
-                      <Th>Pantry Address</Th>
-                      <Th>Request ID</Th>
-                      <Th>Request Info</Th>
-                      <Th>Manufacturer</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    <Tr>
-                      <Td>{pantry.pantryId}</Td>
-                      <Td>{pantry.address}</Td>
-                      <Td>{foodRequest.requestId}</Td>
-                      <Td>{foodRequest.additionalInformation}</Td>
-                      <Td>{manufacturer.foodManufacturerName}</Td>
-                    </Tr>
-                  </Tbody>
-                </Table>
-              </TableContainer>
+              <VStack spacing={4} align="start">
+                <Text>
+                  <strong>Pantry ID:</strong> {pantry.pantryId}
+                </Text>
+                <Text>
+                  <strong>Pantry Address:</strong> {pantry.address}
+                </Text>
+                <Text>
+                  <strong>Requested Items:</strong>
+                  {foodRequest.requestedItems.map((item, index) => (
+                    <div key={index}>{item}</div>
+                  ))}
+                </Text>
+              </VStack>
             ) : (
-              <p>Loading order details...</p>
+              <p>No data to load</p>
             )}
           </ModalBody>
         </ModalContent>

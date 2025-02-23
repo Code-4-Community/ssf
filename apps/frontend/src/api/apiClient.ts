@@ -53,7 +53,6 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  // TODO: adjust to only the orders we want food manufacturers to see
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
       .get('/api/orders/get-all-orders')
