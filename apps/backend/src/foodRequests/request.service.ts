@@ -9,6 +9,13 @@ export class RequestsService {
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
   ) {}
 
+  async findOne(requestId: number) {
+    if (!requestId || requestId < 1) {
+      throw new NotFoundException('Invalid request ID');
+    }
+    return await this.repo.findOne({ where: { requestId } });
+  }
+
   async create(
     pantryId: number,
     requestedSize: string,

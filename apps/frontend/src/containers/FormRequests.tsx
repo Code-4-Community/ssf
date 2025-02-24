@@ -26,12 +26,15 @@ const FormRequests: React.FC = () => {
     pantryId: number,
   ): Promise<FoodRequest[]> => {
     try {
-      const response = await fetch(`/api/requests/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/requests/get-all-requests/${pantryId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      });
+      );
 
       if (response.ok) {
         return await response.json();
