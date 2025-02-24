@@ -11,6 +11,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import typeorm from './config/typeorm';
 import { OrdersModule } from './orders/order.module';
 import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
+import { DonationModule } from './donations/donations.module';
+import { DonationItemsModule } from './donationItems/donationItems.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
     AuthModule,
     PantriesModule,
     RequestsModule,
+    DonationModule,
+    DonationItemsModule,
     OrdersModule,
     ManufacturerModule,
   ],

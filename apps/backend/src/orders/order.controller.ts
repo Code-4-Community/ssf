@@ -11,6 +11,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Controller('orders')
 export class OrdersController {
@@ -50,6 +51,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodManufacturer | null> {
     return this.ordersService.findOrderFoodManufacturer(orderId);
+  }
+
+  @Get(':orderId/donation')
+  async getDonationFromOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<Donation | null> {
+    return this.ordersService.findOrderDonation(orderId);
   }
 
   @Get('/:orderId')

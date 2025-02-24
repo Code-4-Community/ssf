@@ -9,6 +9,7 @@ import {
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Entity('orders')
 export class Order {
@@ -36,19 +37,12 @@ export class Order {
   })
   shippedBy: FoodManufacturer;
 
-  // @Column({ name: 'request_id' }) // Foreign key for food request
-  // requestId: number;
-
-  // @ManyToOne(() => FoodRequest, { eager: false }) // Foreign relation to FoodRequest
-  // @JoinColumn({ name: 'request_id' }) // Maps to requestId
-  // foodRequest: FoodRequest;
-
-  // @Column({ name: 'shipped_by', nullable: true }) // Foreign key for shipped by (manufacturer)
-  // shippedBy: number;
-
-  // @ManyToOne(() => FoodManufacturer, { eager: false, nullable: true }) // Foreign relation to FoodManufacturer
-  // @JoinColumn({ name: 'shipped_by' }) // Maps to shippedBy
-  // foodManufacturer?: FoodManufacturer;
+  @ManyToOne(() => Donation, { nullable: false })
+  @JoinColumn({
+    name: 'donation_id',
+    referencedColumnName: 'donationId',
+  })
+  donation: Donation;
 
   @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
   status: string;

@@ -12,7 +12,13 @@ import {
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
-import { Pantry, FoodRequest, FoodManufacturer } from 'types/types';
+import {
+  Pantry,
+  FoodRequest,
+  FoodManufacturer,
+  Donation,
+  DonationItem,
+} from 'types/types';
 
 interface OrderInformationModalButtonProps {
   orderId: number;
@@ -26,22 +32,30 @@ const OrderInformationModalButton: React.FC<
   const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
+  const [donation, setDonation] = useState<Donation | null>(null);
+  const [donationItems, setDonationItems] = useState<DonationItem[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
         try {
           const pantryData = await ApiClient.getPantryFromOrder(orderId);
-          const foodRequestData = await ApiClient.getFoodRequestFromOrder(
-            orderId,
-          );
           const foodManufacturerData = await ApiClient.getManufacturerFromOrder(
             orderId,
           );
+          const donationData = await ApiClient.getDonationFromOrder(orderId);
 
           setPantry(pantryData);
-          setFoodRequest(foodRequestData);
           setFoodManufacturer(foodManufacturerData);
+          setDonation(donationData);
+
+          if (donationData?.donationId) {
+            const donationItemsData =
+              await ApiClient.getDonationItemsByDonationId(
+                donationData.donationId,
+              );
+            setDonationItems(donationItemsData);
+          }
         } catch (error) {
           console.error('Error fetching order details:', error);
         }
@@ -60,7 +74,7 @@ const OrderInformationModalButton: React.FC<
           <ModalHeader>Order Details</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {pantry && foodRequest && foodManufacturer ? (
+            {pantry && donation && foodManufacturer ? (
               <VStack spacing={4} align="start">
                 <Text>
                   <strong>Pantry ID:</strong> {pantry.pantryId}
@@ -69,14 +83,20 @@ const OrderInformationModalButton: React.FC<
                   <strong>Pantry Address:</strong> {pantry.address}
                 </Text>
                 <Text>
-                  <strong>Requested Items:</strong>
-                  {foodRequest.requestedItems.map((item, index) => (
-                    <div key={index}>{item}</div>
-                  ))}
+                  <strong>Donation Items:</strong>
+                  {donationItems.length > 0 ? (
+                    donationItems.map((item) => (
+                      <Text key={item.itemId}>
+                        {item.itemName} - {item.quantity} - {item.foodType}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text>No donation items available</Text>
+                  )}
                 </Text>
               </VStack>
             ) : (
-              <p>No data to load</p>
+              <Text>No data to load</Text>
             )}
           </ModalBody>
         </ModalContent>

@@ -5,6 +5,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Injectable()
 export class OrdersService {
@@ -73,6 +74,19 @@ export class OrdersService {
       return null;
     } else {
       return order.shippedBy;
+    }
+  }
+
+  async findOrderDonation(orderId: number): Promise<Donation | null> {
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['donation'],
+    });
+
+    if (!order) {
+      return null;
+    } else {
+      return order.donation;
     }
   }
 
