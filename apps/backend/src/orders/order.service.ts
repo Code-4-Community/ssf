@@ -94,10 +94,15 @@ export class OrdersService {
     if (!orderId || orderId < 1) {
       throw new NotFoundException('Invalid order ID');
     }
+
     await this.repo
       .createQueryBuilder()
       .update(Order)
-      .set({ status: newStatus })
+      .set({
+        status: newStatus,
+        shippedAt: newStatus === 'shipped' ? new Date() : null,
+        deliveredAt: newStatus === 'delivered' ? new Date() : null,
+      })
       .where('order_id = :orderId', { orderId })
       .execute();
   }

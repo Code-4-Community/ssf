@@ -133,7 +133,7 @@ export class ApiClient {
     orderId: number,
     newStatus: 'shipped' | 'delivered',
   ): Promise<void> {
-    await this.axiosInstance.post(`/api/orders/update-status/${orderId}`, {
+    await this.axiosInstance.patch(`/api/orders/update-status/${orderId}`, {
       orderId,
       newStatus,
     });

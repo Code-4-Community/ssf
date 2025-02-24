@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   ParseIntPipe,
   Body,
@@ -67,7 +68,7 @@ export class OrdersController {
     return this.ordersService.findOne(orderId);
   }
 
-  @Post('/update-status/:orderId')
+  @Patch('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body('newStatus') newStatus: string,
