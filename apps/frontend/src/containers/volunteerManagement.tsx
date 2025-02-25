@@ -3,7 +3,6 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
@@ -14,6 +13,13 @@ import {
   Select,
   Button,
   Flex,
+  Input,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Checkbox,
+  VStack,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { AssignmentWithRelations } from '../types/types';
@@ -22,6 +28,16 @@ const VolunteerManagement: React.FC = () => {
   const [assignments, setAssignments] = useState<
     AssignmentWithRelations[] | null
   >(null);
+
+  const [filteredAssignments, setFilteredAssignments] = useState<
+    AssignmentWithRelations[]
+  >([]);
+  const [searchName, setSearchName] = useState<string>('');
+  const [checkedTypes, setCheckedTypes] = useState<string[]>([
+    'LEAD_VOLUNTEER',
+    'STANDARD_VOLUNTEER',
+    'NON-PANTRY_VOLUNTEER',
+  ]);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -36,7 +52,7 @@ const VolunteerManagement: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setAssignments(data);
-          console.log('Assignments: ', data);
+          setFilteredAssignments(data);
         } else {
           console.error('Error fetching assignments: ', await response.text());
         }
@@ -47,6 +63,20 @@ const VolunteerManagement: React.FC = () => {
 
     fetchAssignments();
   }, []);
+
+  useEffect(() => {
+    if (!assignments) return;
+
+    const filtered = assignments.filter(
+      (assignment) =>
+        assignment.volunteer.firstName
+          .toLowerCase()
+          .includes(searchName.toLowerCase()) &&
+        checkedTypes.includes(assignment.volunteerType.toUpperCase()),
+    );
+
+    setFilteredAssignments(filtered);
+  }, [searchName, checkedTypes, assignments]);
 
   const volunteerTypeDropdown = ({
     volunteerType,
@@ -66,10 +96,54 @@ const VolunteerManagement: React.FC = () => {
     );
   };
 
+  const handleSearchNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setSearchName(event.target.value);
+  };
+
+  const handleVolunteerFilterChange = (type: string, checked: boolean) => {
+    if (checked) {
+      setCheckedTypes([...checkedTypes, type.toUpperCase()]);
+    } else {
+      setCheckedTypes(
+        checkedTypes.filter(
+          (checkedType) => checkedType !== type.toUpperCase(),
+        ),
+      );
+    }
+  };
+
   return (
     <Center flexDirection="column" p={4}>
       <Text>Pantry Volunteer Management</Text>
       <TableContainer mt={5}>
+        <VStack my={5}>
+          <Input
+            placeholder="Search by volunteer name"
+            onChange={handleSearchNameChange}
+          />
+          <Menu closeOnSelect={false}>
+            <MenuButton as={Button}>Filter by Volunteer Type</MenuButton>
+            <MenuList>
+              {Object.values(VolunteerType).map((volunteerType) => (
+                <MenuItem key={volunteerType}>
+                  <Checkbox
+                    defaultChecked
+                    onChange={(e) =>
+                      handleVolunteerFilterChange(
+                        volunteerType,
+                        e.target.checked,
+                      )
+                    }
+                  >
+                    {volunteerType}
+                  </Checkbox>
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Menu>
+        </VStack>
         <Table variant="simple">
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
@@ -85,7 +159,7 @@ const VolunteerManagement: React.FC = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {assignments?.map((assignment) => (
+            {filteredAssignments?.map((assignment) => (
               <Tr key={assignment.assignmentId}>
                 <Td>{assignment.volunteer.firstName}</Td>
                 <Td>
@@ -100,13 +174,6 @@ const VolunteerManagement: React.FC = () => {
               </Tr>
             ))}
           </Tbody>
-          <Tfoot>
-            <Tr>
-              <Th>To convert</Th>
-              <Th>into</Th>
-              <Th isNumeric>multiply by</Th>
-            </Tr>
-          </Tfoot>
         </Table>
       </TableContainer>
     </Center>
