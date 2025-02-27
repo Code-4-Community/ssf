@@ -28,7 +28,6 @@ const VolunteerManagement: React.FC = () => {
   const [assignments, setAssignments] = useState<
     AssignmentWithRelations[] | null
   >(null);
-
   const [filteredAssignments, setFilteredAssignments] = useState<
     AssignmentWithRelations[]
   >([]);
@@ -38,6 +37,7 @@ const VolunteerManagement: React.FC = () => {
     'STANDARD_VOLUNTEER',
     'NON-PANTRY_VOLUNTEER',
   ]);
+  const [resetKey, setResetKey] = useState<number>(0);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -62,7 +62,7 @@ const VolunteerManagement: React.FC = () => {
     };
 
     fetchAssignments();
-  }, []);
+  }, [resetKey]);
 
   useEffect(() => {
     if (!assignments) return;
@@ -80,11 +80,13 @@ const VolunteerManagement: React.FC = () => {
 
   const volunteerTypeDropdown = ({
     volunteerType,
+    assignmentId,
   }: {
     volunteerType: VolunteerType;
+    assignmentId: number;
   }) => {
     return (
-      <Select defaultValue={volunteerType}>
+      <Select key={`${assignmentId}-${resetKey}`} defaultValue={volunteerType}>
         <option value={VolunteerType.LEAD_VOLUNTEER}>Lead Volunteer</option>
         <option value={VolunteerType.STANDARD_VOLUNTEER}>
           Standard Volunteer
@@ -114,6 +116,16 @@ const VolunteerManagement: React.FC = () => {
     }
   };
 
+  const handleReset = () => {
+    setSearchName('');
+    setCheckedTypes([
+      'LEAD_VOLUNTEER',
+      'STANDARD_VOLUNTEER',
+      'NON-PANTRY_VOLUNTEER',
+    ]);
+    setResetKey((prev) => prev + 1);
+  };
+
   return (
     <Center flexDirection="column" p={4}>
       <Text>Pantry Volunteer Management</Text>
@@ -125,7 +137,7 @@ const VolunteerManagement: React.FC = () => {
           />
           <Menu closeOnSelect={false}>
             <MenuButton as={Button}>Filter by Volunteer Type</MenuButton>
-            <MenuList>
+            <MenuList key={resetKey}>
               {Object.values(VolunteerType).map((volunteerType) => (
                 <MenuItem key={volunteerType}>
                   <Checkbox
@@ -147,7 +159,7 @@ const VolunteerManagement: React.FC = () => {
         <Table variant="simple">
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
-              <Button>Revert to original</Button>
+              <Button onClick={handleReset}>Reset unsaved changes</Button>
               <Button>Save changes</Button>
             </Flex>
           </TableCaption>
@@ -168,6 +180,7 @@ const VolunteerManagement: React.FC = () => {
                       VolunteerType[
                         assignment.volunteerType.toUpperCase() as keyof typeof VolunteerType
                       ],
+                    assignmentId: assignment.assignmentId,
                   })}
                 </Td>
                 <Td>{assignment.pantry.pantryName}</Td>
