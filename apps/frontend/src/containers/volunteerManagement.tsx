@@ -23,6 +23,9 @@ import {
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { AssignmentWithRelations } from '../types/types';
+import { Link } from 'react-router-dom';
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
   const [assignments, setAssignments] = useState<
@@ -42,20 +45,9 @@ const VolunteerManagement: React.FC = () => {
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const response = await fetch('api/assignments/getAllRelations', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setAssignments(data);
-          setFilteredAssignments(data);
-        } else {
-          console.error('Error fetching assignments: ', await response.text());
-        }
+        const allAssignments = await ApiClient.getAllAssignments();
+        setAssignments(allAssignments);
+        setFilteredAssignments(allAssignments);
       } catch (error) {
         console.error('Error fetching assignments: ', error);
       }
@@ -128,7 +120,7 @@ const VolunteerManagement: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <Text>Pantry Volunteer Management</Text>
+      <Text fontSize="2xl">Pantry Volunteer Management</Text>
       <TableContainer mt={5}>
         <VStack my={5}>
           <Input
@@ -136,7 +128,9 @@ const VolunteerManagement: React.FC = () => {
             onChange={handleSearchNameChange}
           />
           <Menu closeOnSelect={false}>
-            <MenuButton as={Button}>Filter by Volunteer Type</MenuButton>
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+              Filter by Volunteer Type
+            </MenuButton>
             <MenuList key={resetKey}>
               {Object.values(VolunteerType).map((volunteerType) => (
                 <MenuItem key={volunteerType}>
@@ -160,6 +154,9 @@ const VolunteerManagement: React.FC = () => {
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
               <Button onClick={handleReset}>Reset unsaved changes</Button>
+              <Button as={Link} to="/add_volunteer_page">
+                Add a new volunteer
+              </Button>
               <Button>Save changes</Button>
             </Flex>
           </TableCaption>
@@ -183,7 +180,14 @@ const VolunteerManagement: React.FC = () => {
                     assignmentId: assignment.assignmentId,
                   })}
                 </Td>
-                <Td>{assignment.pantry.pantryName}</Td>
+                <Td>
+                  <Button
+                    as={Link}
+                    to={`/pantry-management/${assignment.assignmentId}`}
+                  >
+                    View assigned pantries
+                  </Button>
+                </Td>
               </Tr>
             ))}
           </Tbody>
