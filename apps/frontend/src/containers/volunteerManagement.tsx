@@ -34,11 +34,14 @@ const VolunteerManagement: React.FC = () => {
   const [filteredAssignments, setFilteredAssignments] = useState<
     AssignmentWithRelations[]
   >([]);
+  const [changedAssignments, setChangedAssignments] = useState<
+    AssignmentWithRelations[]
+  >([]);
   const [searchName, setSearchName] = useState<string>('');
   const [checkedTypes, setCheckedTypes] = useState<string[]>([
     'LEAD_VOLUNTEER',
     'STANDARD_VOLUNTEER',
-    'NON-PANTRY_VOLUNTEER',
+    'NON_PANTRY_VOLUNTEER',
   ]);
   const [resetKey, setResetKey] = useState<number>(0);
 
@@ -48,6 +51,7 @@ const VolunteerManagement: React.FC = () => {
         const allAssignments = await ApiClient.getAllAssignments();
         setAssignments(allAssignments);
         setFilteredAssignments(allAssignments);
+        setChangedAssignments(allAssignments);
       } catch (error) {
         console.error('Error fetching assignments: ', error);
       }
@@ -78,7 +82,16 @@ const VolunteerManagement: React.FC = () => {
     assignmentId: number;
   }) => {
     return (
-      <Select key={`${assignmentId}-${resetKey}`} defaultValue={volunteerType}>
+      <Select
+        key={`${assignmentId}-${resetKey}`}
+        defaultValue={volunteerType}
+        onChange={(e) =>
+          handleVolunteerTypeChange(
+            e.target.value as VolunteerType,
+            assignmentId,
+          )
+        }
+      >
         <option value={VolunteerType.LEAD_VOLUNTEER}>Lead Volunteer</option>
         <option value={VolunteerType.STANDARD_VOLUNTEER}>
           Standard Volunteer
@@ -113,9 +126,38 @@ const VolunteerManagement: React.FC = () => {
     setCheckedTypes([
       'LEAD_VOLUNTEER',
       'STANDARD_VOLUNTEER',
-      'NON-PANTRY_VOLUNTEER',
+      'NON_PANTRY_VOLUNTEER',
     ]);
     setResetKey((prev) => prev + 1);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await Promise.all(
+        changedAssignments.map((assignment) =>
+          ApiClient.updateVolunteerTypeAssignment(assignment.assignmentId, {
+            volunteerType: assignment.volunteerType,
+          }),
+        ),
+      );
+      setAssignments(changedAssignments);
+    } catch (error) {
+      console.error('Error updating volunteer type: ', error);
+    }
+  };
+
+  const handleVolunteerTypeChange = (
+    type: VolunteerType,
+    assignmentId: number,
+  ) => {
+    const updatedAssignments = changedAssignments.map((assignment) => {
+      if (assignment.assignmentId === assignmentId) {
+        assignment.volunteerType = type;
+      }
+      return assignment;
+    });
+
+    setChangedAssignments(updatedAssignments);
   };
 
   return (
@@ -157,7 +199,7 @@ const VolunteerManagement: React.FC = () => {
               <Button as={Link} to="/add_volunteer_page">
                 Add a new volunteer
               </Button>
-              <Button>Save changes</Button>
+              <Button onClick={handleSaveChanges}>Save changes</Button>
             </Flex>
           </TableCaption>
           <Thead>

@@ -1,5 +1,5 @@
 export enum VolunteerType {
-  LEADVOLUNTEER = 'LEADVOLUNTEER',
-  STANDARDVOLUNTEER = 'STANDARDVOLUNTEER',
-  NONPANTRYVOLUNTEER = 'NONPANTRYVOLUNTEER',
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+  NON_PANTRY_VOLUNTEER = 'non_pantry_volunteer',
 }

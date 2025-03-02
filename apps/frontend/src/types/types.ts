@@ -43,9 +43,9 @@ export interface FoodRequest {
 }
 
 export enum VolunteerType {
-  LEAD_VOLUNTEER = 'Lead_Volunteer',
-  STANDARD_VOLUNTEER = 'Standard_Volunteer',
-  NON_PANTRY_VOLUNTEER = 'Non-pantry_Volunteer',
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+  NON_PANTRY_VOLUNTEER = 'non_pantry_volunteer',
 }
 
 export interface AssignmentWithRelations {
