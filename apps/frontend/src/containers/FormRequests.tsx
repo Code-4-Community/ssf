@@ -10,6 +10,7 @@ import {
   Th,
   Td,
   HStack,
+  Select,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
@@ -21,6 +22,7 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
+  const [sortBy, setSortBy] = useState<string>('mostRecent');
   const { pantryId } = useParams<{ pantryId: string }>();
 
   const fetchRequests = async () => {
@@ -30,6 +32,13 @@ const FormRequests: React.FC = () => {
           parseInt(pantryId, 10),
         );
         setRequests(data);
+
+        if (data.length > 0) {
+          const mostRecentRequest = data.reduce((prev, current) =>
+            prev.requestId > current.requestId ? prev : current,
+          );
+          setPreviousRequest(mostRecentRequest);
+        }
       } catch (error) {
         alert('Error fetching requests: ' + error);
       }
@@ -49,7 +58,27 @@ const FormRequests: React.FC = () => {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [pantryId]);
+
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (sortBy === 'mostRecent') {
+      return (
+        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+      );
+    } else if (sortBy === 'oldest') {
+      return (
+        new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
+      );
+    } else if (sortBy === 'status') {
+      return b.status.localeCompare(a.status);
+    } else if (sortBy === 'confirmed') {
+      return (
+        new Date(b.dateReceived || 0).getTime() -
+        new Date(a.dateReceived || 0).getTime()
+      );
+    }
+    return 0;
+  });
 
   return (
     <Center flexDirection="column" p={4}>
@@ -58,8 +87,6 @@ const FormRequests: React.FC = () => {
           previousRequest={undefined}
           buttonText="Submit New Request"
         />
-
-        {/* This is not working!! */}
         {previousRequest && (
           <FoodRequestFormModal
             previousRequest={previousRequest}
@@ -67,6 +94,18 @@ const FormRequests: React.FC = () => {
           />
         )}
       </HStack>
+
+      <Select
+        mt={4}
+        width="50%"
+        onChange={(e) => setSortBy(e.target.value)}
+        value={sortBy}
+      >
+        <option value="mostRecent">Date Requested (Recent)</option>
+        <option value="oldest">Date Requested (Oldest)</option>
+        <option value="status">Status</option>
+        <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
+      </Select>
 
       <Table variant="simple" mt={6} width="80%">
         <Thead>
@@ -80,7 +119,7 @@ const FormRequests: React.FC = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {requests.map((request) => (
+          {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
               <Td>{request.requestId}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
