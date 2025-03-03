@@ -41,3 +41,31 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string;
 }
+
+export interface Order {
+  orderId: number;
+  requestId: number;
+  pantryId: number;
+  shippedBy: number;
+  status: string;
+  createdAt: string;
+  shippedAt: string;
+  deliveredAt: string;
+  donationId: number;
+}
+
+export interface FoodManufacturer {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  foodManufacturerRepresentativeId: number;
+}
+
+export interface Donation {
+  donationId: number;
+  foodManufacturerId: number;
+  dateDonated: Date;
+  status: string;
+  totalItems: number;
+  totalOz: number;
+  totalEstimatedValue: number;
+}

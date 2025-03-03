@@ -11,6 +11,7 @@ import {
   Td,
   HStack,
 } from '@chakra-ui/react';
+import ApiClient from '@api/apiClient';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
@@ -22,46 +23,18 @@ const FormRequests: React.FC = () => {
   >(undefined);
   const { pantryId } = useParams<{ pantryId: string }>();
 
-  const getAllPantryRequests = async (
-    pantryId: number,
-  ): Promise<FoodRequest[]> => {
-    try {
-      const response = await fetch(`/api/requests/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert('Failed to fetch food requests ' + (await response.text()));
-        return [];
+  const fetchRequests = async () => {
+    if (pantryId) {
+      try {
+        const data = await ApiClient.getAllPantryRequests(
+          parseInt(pantryId, 10),
+        );
+        setRequests(data);
+      } catch (error) {
+        alert('Error fetching requests: ' + error);
       }
-    } catch (error) {
-      alert('Error fetching food requests ' + error);
-      return [];
     }
   };
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      if (pantryId) {
-        const data = await getAllPantryRequests(parseInt(pantryId, 10));
-        setRequests(data);
-
-        if (data.length > 0) {
-          const mostRecentRequest = data.reduce((prev, current) =>
-            prev.requestId > current.requestId ? prev : current,
-          );
-          setPreviousRequest(mostRecentRequest);
-        }
-      }
-    };
-
-    fetchRequests();
-  }, [pantryId]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -74,6 +47,10 @@ const FormRequests: React.FC = () => {
     return date.toLocaleDateString('en-CA');
   };
 
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
@@ -82,6 +59,7 @@ const FormRequests: React.FC = () => {
           buttonText="Submit New Request"
         />
 
+        {/* This is not working!! */}
         {previousRequest && (
           <FoodRequestFormModal
             previousRequest={previousRequest}
@@ -97,7 +75,7 @@ const FormRequests: React.FC = () => {
             <Th>Date Requested</Th>
             <Th>Status</Th>
             <Th>Fulfilled By</Th>
-            <Th>Expected Delivery Date</Th>
+            <Th>Date Fulfilled</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
