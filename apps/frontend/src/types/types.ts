@@ -41,3 +41,22 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string;
 }
+
+export enum VolunteerType {
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+  NON_PANTRY_VOLUNTEER = 'non_pantry_volunteer',
+}
+
+export interface AssignmentWithRelations {
+  assignmentId: number;
+  volunteerType: VolunteerType;
+  volunteer: {
+    id: number;
+    firstName: string;
+  };
+  pantry: {
+    pantryId: number;
+    pantryName: string;
+  };
+}

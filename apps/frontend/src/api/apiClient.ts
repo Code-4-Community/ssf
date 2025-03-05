@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 import { User, Pantry } from 'types/types';
+import { AssignmentWithRelations, VolunteerType } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -46,6 +47,21 @@ export class ApiClient {
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
+  }
+
+  public async getAllAssignments(): Promise<AssignmentWithRelations[]> {
+    return this.get('/api/assignments/getAllRelations') as Promise<
+      AssignmentWithRelations[]
+    >;
+  }
+
+  public async updateVolunteerTypeAssignment(
+    assignmentId: number,
+    body: { volunteerType: VolunteerType },
+  ): Promise<void> {
+    return this.axiosInstance
+      .put(`/api/assignments/updateVolunteerType/${assignmentId}`, body)
+      .then(() => {});
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {
