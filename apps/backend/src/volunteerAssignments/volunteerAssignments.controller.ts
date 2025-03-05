@@ -12,21 +12,18 @@ import { VolunteerType } from './types';
 
 @Controller('assignments')
 export class AssignmentsController {
-  constructor(private pantriesService: AssignmentsService) {}
+  constructor(private assignmentsService: AssignmentsService) {}
 
   @Get('/getAllRelations')
   async getAllRelations(): Promise<Assignments[]> {
-    return this.pantriesService.findAllRelations();
+    return this.assignmentsService.findAllRelations();
   }
 
-  @Put('/updateVolunteerType/:assignmentId')
+  @Put('/updateVolunteerType/:userId')
   async updateVolunteerType(
-    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body('volunteerType') volunteerType: VolunteerType,
   ): Promise<void> {
-    return this.pantriesService.updateVolunteerType(
-      assignmentId,
-      volunteerType,
-    );
+    return this.assignmentsService.updateVolunteerType(userId, volunteerType);
   }
 }

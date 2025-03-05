@@ -10,6 +10,8 @@ export class AssignmentsService {
     @InjectRepository(Assignments) private repo: Repository<Assignments>,
   ) {}
 
+  // Gets the assignment id, the volunteer type, and the corresponding volunteer's firstName/id,
+  // and the corresponding pantry's pantryId/pantryName
   async findAllRelations() {
     return await this.repo.find({
       relations: ['volunteer', 'pantry'],
@@ -28,10 +30,7 @@ export class AssignmentsService {
     });
   }
 
-  async updateVolunteerType(
-    assignmentId: number,
-    volunteerType: VolunteerType,
-  ) {
-    await this.repo.update({ assignmentId: assignmentId }, { volunteerType });
+  async updateVolunteerType(userId: number, volunteerType: VolunteerType) {
+    await this.repo.update({ volunteerId: userId }, { volunteerType });
   }
 }

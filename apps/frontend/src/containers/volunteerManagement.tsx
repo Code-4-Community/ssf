@@ -28,9 +28,7 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
-  const [assignments, setAssignments] = useState<
-    AssignmentWithRelations[] | null
-  >(null);
+  const [assignments, setAssignments] = useState<AssignmentWithRelations[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<
     AssignmentWithRelations[]
   >([]);
@@ -49,9 +47,18 @@ const VolunteerManagement: React.FC = () => {
     const fetchAssignments = async () => {
       try {
         const allAssignments = await ApiClient.getAllAssignments();
-        setAssignments(allAssignments);
-        setFilteredAssignments(allAssignments);
-        setChangedAssignments(allAssignments);
+        const seen = new Set();
+        // Filters assignments for 1 row per user
+        const uniqueUserAssignments = allAssignments.filter((assignment) => {
+          if (seen.has(assignment.volunteer.id)) {
+            return false;
+          }
+          seen.add(assignment.volunteer.id);
+          return true;
+        });
+        setAssignments(uniqueUserAssignments);
+        setFilteredAssignments(uniqueUserAssignments);
+        setChangedAssignments(uniqueUserAssignments);
       } catch (error) {
         console.error('Error fetching assignments: ', error);
       }
@@ -84,7 +91,7 @@ const VolunteerManagement: React.FC = () => {
     return (
       <Select
         key={`${assignmentId}-${resetKey}`}
-        defaultValue={volunteerType}
+        value={volunteerType}
         onChange={(e) =>
           handleVolunteerTypeChange(
             e.target.value as VolunteerType,
@@ -135,7 +142,7 @@ const VolunteerManagement: React.FC = () => {
     try {
       await Promise.all(
         changedAssignments.map((assignment) =>
-          ApiClient.updateVolunteerTypeAssignment(assignment.assignmentId, {
+          ApiClient.updateVolunteerTypeAssignment(assignment.volunteer.id, {
             volunteerType: assignment.volunteerType,
           }),
         ),
@@ -168,6 +175,7 @@ const VolunteerManagement: React.FC = () => {
           <Input
             placeholder="Search by volunteer name"
             onChange={handleSearchNameChange}
+            key={resetKey}
           />
           <Menu closeOnSelect={false}>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
@@ -225,7 +233,8 @@ const VolunteerManagement: React.FC = () => {
                 <Td>
                   <Button
                     as={Link}
-                    to={`/pantry-management/${assignment.assignmentId}`}
+                    // User id
+                    to={`/pantry-management/${assignment.volunteer.id}`}
                   >
                     View assigned pantries
                   </Button>
