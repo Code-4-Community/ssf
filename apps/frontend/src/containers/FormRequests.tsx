@@ -11,6 +11,7 @@ import {
   Td,
   HStack,
   Select,
+  useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
@@ -22,71 +23,100 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
+  const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
+    null,
+  ); // Tracking selected request
   const [sortBy, setSortBy] = useState<string>('mostRecent');
+  const [orderMapping, setOrderMapping] = useState<
+    Record<number, number | null>
+  >({});
   const { pantryId } = useParams<{ pantryId: string }>();
 
-  const fetchRequests = async () => {
-    if (pantryId) {
-      try {
-        const data = await ApiClient.getAllPantryRequests(
-          parseInt(pantryId, 10),
-        );
-        setRequests(data);
-
-        if (data.length > 0) {
-          const mostRecentRequest = data.reduce((prev, current) =>
-            prev.requestId > current.requestId ? prev : current,
-          );
-          setPreviousRequest(mostRecentRequest);
-        }
-      } catch (error) {
-        alert('Error fetching requests: ' + error);
-      }
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
-
-  const formatReceivedDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
+    const fetchRequests = async () => {
+      if (pantryId) {
+        try {
+          const data = await ApiClient.getAllPantryRequests(
+            parseInt(pantryId, 10),
+          );
+          setRequests(data);
+
+          if (data.length > 0) {
+            setPreviousRequest(
+              data.reduce((prev, current) =>
+                prev.requestId > current.requestId ? prev : current,
+              ),
+            );
+          }
+
+          const orderPromises = data.map(async (request) => {
+            try {
+              const order = await ApiClient.getOrderByRequest(
+                request.requestId,
+              );
+              return {
+                requestId: request.requestId,
+                orderId: order?.orderId ?? null,
+              };
+            } catch (error) {
+              console.error(
+                `Error fetching order for requestId ${request.requestId}:`,
+                error,
+              );
+              return { requestId: request.requestId, orderId: null };
+            }
+          });
+
+          const orderResults = await Promise.all(orderPromises);
+          const mapping: Record<number, number | null> = {};
+          orderResults.forEach(({ requestId, orderId }) => {
+            mapping[requestId] = orderId;
+          });
+          setOrderMapping(mapping);
+        } catch (error) {
+          alert('Error fetching requests: ' + error);
+        }
+      }
+    };
+
     fetchRequests();
   }, [pantryId]);
 
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-CA');
+  const formatReceivedDate = (dateString: string | null) =>
+    dateString ? new Date(dateString).toLocaleDateString('en-CA') : 'N/A';
+
   const sortedRequests = [...requests].sort((a, b) => {
-    if (sortBy === 'mostRecent') {
+    if (sortBy === 'mostRecent')
       return (
         new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
       );
-    } else if (sortBy === 'oldest') {
+    if (sortBy === 'oldest')
       return (
         new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
       );
-    } else if (sortBy === 'status') {
-      return b.status.localeCompare(a.status);
-    } else if (sortBy === 'confirmed') {
+    if (sortBy === 'status') return b.status.localeCompare(a.status);
+    if (sortBy === 'confirmed')
       return (
         new Date(b.dateReceived || 0).getTime() -
         new Date(a.dateReceived || 0).getTime()
       );
-    }
     return 0;
   });
 
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
+        {/* Submit New Request */}
         <FoodRequestFormModal
           previousRequest={undefined}
           buttonText="Submit New Request"
         />
+
+        {/* Submit Previous Request */}
         {previousRequest && (
           <FoodRequestFormModal
             previousRequest={previousRequest}
@@ -111,6 +141,7 @@ const FormRequests: React.FC = () => {
         <Thead>
           <Tr>
             <Th>Request Id</Th>
+            <Th>Order Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
             <Th>Fulfilled By</Th>
@@ -121,7 +152,18 @@ const FormRequests: React.FC = () => {
         <Tbody>
           {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
-              <Td>{request.requestId}</Td>
+              <Td
+                cursor="pointer"
+                color="blue.500"
+                _hover={{ textDecoration: 'underline' }}
+                onClick={() => {
+                  setSelectedRequest(request); // Set selected request on click
+                  onOpen(); // Open the modal
+                }}
+              >
+                {request.requestId}
+              </Td>
+              <Td>{orderMapping[request.requestId] ?? 'N/A'}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.status}</Td>
               <Td>{request.fulfilledBy}</Td>
@@ -141,6 +183,16 @@ const FormRequests: React.FC = () => {
           ))}
         </Tbody>
       </Table>
+
+      {selectedRequest && (
+        <FoodRequestFormModal
+          previousRequest={selectedRequest}
+          buttonText=""
+          readOnly={true}
+          externalIsOpen={isOpen}
+          externalOnClose={onClose}
+        />
+      )}
     </Center>
   );
 };

@@ -27,6 +27,13 @@ export class OrdersService {
     });
   }
 
+  async getOrderByRequest(requestId: number): Promise<Order | null> {
+    return this.repo.findOne({
+      where: { request: { requestId } },
+      relations: ['request'],
+    });
+  }
+
   async findOne(orderId: number) {
     if (!orderId || orderId < 1) {
       throw new NotFoundException('Invalid order ID');

@@ -6,6 +6,7 @@ import {
   FoodRequest,
   FoodManufacturer,
   Donation,
+  DonationItem,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -95,6 +96,14 @@ export class ApiClient {
     return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
   }
 
+  public async getDonationItemsByDonationId(
+    donationId: number,
+  ): Promise<DonationItem[]> {
+    return this.get(
+      `/api/donation-items/get-donation-items/${donationId}`,
+    ) as Promise<DonationItem[]>;
+  }
+
   public async getManufacturerFromOrder(
     orderId: number,
   ): Promise<FoodManufacturer | null> {
@@ -123,6 +132,12 @@ export class ApiClient {
 
   public async getOrder(orderId: number): Promise<Order> {
     return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  public async getOrderByRequest(requestId: number): Promise<Order> {
+    return this.axiosInstance.get(
+      `api/orders/get-order-by-request/${requestId}`,
+    ) as Promise<Order>;
   }
 
   public async updateOrderStatus(

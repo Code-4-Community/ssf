@@ -12,6 +12,7 @@ import typeorm from './config/typeorm';
 import { OrdersModule } from './orders/order.module';
 import { DonationModule } from './donations/donations.module';
 import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
+import { DonationItemsModule } from './donationItems/donationItems.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
     PantriesModule,
     OrdersModule,
     DonationModule,
+    DonationItemsModule,
     ManufacturerModule,
   ],
   controllers: [AppController],
