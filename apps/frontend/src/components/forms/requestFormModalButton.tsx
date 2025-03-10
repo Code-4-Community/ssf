@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   FormControl,
@@ -46,8 +46,6 @@ interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
   buttonText: string;
   readOnly?: boolean;
-  externalIsOpen?: boolean;
-  externalOnClose?: () => void;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
@@ -57,35 +55,25 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [selectedItems, setSelectedItems] = useState<string[]>(
-    previousRequest?.requestedItems || [],
-  );
-  const defaultSize = previousRequest?.requestedSize || '';
-  const defaultNotes = previousRequest?.additionalInformation || '';
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [requestedSize, setRequestedSize] = useState<string>('');
+  const [additionalNotes, setAdditionalNotes] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen && previousRequest) {
+      setSelectedItems(previousRequest.requestedItems || []);
+      setRequestedSize(previousRequest.requestedSize || '');
+      setAdditionalNotes(previousRequest.additionalInformation || '');
+    }
+  }, [isOpen, previousRequest]);
 
   const handleCheckboxChange = (values: string[]) => {
     setSelectedItems(values);
   };
 
-  const renderAllergens = () => {
-    const allergens = getAllergens();
-    return allergens.map((allergen) => (
-      <Checkbox
-        key={allergen}
-        name="restrictions"
-        value={allergen}
-        isDisabled={readOnly}
-      >
-        {allergen}
-      </Checkbox>
-    ));
-  };
-
   return (
     <>
-      <Button onClick={onOpen} isDisabled={readOnly}>
-        {buttonText}
-      </Button>
+      <Button onClick={onOpen}>{buttonText}</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
@@ -110,7 +98,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   Requested Size of Shipment
                 </FormLabel>
                 <RadioGroup
-                  defaultValue={defaultSize}
+                  value={requestedSize}
+                  onChange={setRequestedSize}
                   name="size"
                   isDisabled={readOnly}
                 >
@@ -124,6 +113,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   </HStack>
                 </RadioGroup>
               </FormControl>
+
               <FormControl mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
                   Requested Shipment
@@ -134,10 +124,19 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   isDisabled={readOnly}
                 >
                   <SimpleGrid spacing={2} columns={2}>
-                    {renderAllergens()}
+                    {getAllergens().map((allergen) => (
+                      <Checkbox
+                        key={allergen}
+                        name="restrictions"
+                        value={allergen}
+                      >
+                        {allergen}
+                      </Checkbox>
+                    ))}
                   </SimpleGrid>
                 </CheckboxGroup>
               </FormControl>
+
               <FormControl mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
                   Additional Comments
@@ -146,10 +145,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   name="notes"
                   placeholder="Anything else we should know about"
                   size="sm"
-                  defaultValue={defaultNotes}
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
                   isDisabled={readOnly}
                 />
               </FormControl>
+
               <Flex justifyContent="space-between" mt={4}>
                 <Button onClick={onClose}>Close</Button>
                 {!readOnly && <Button type="submit">Submit</Button>}
@@ -166,7 +167,6 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
-
   const foodRequestData = new Map();
 
   foodRequestData.set('requestedSize', form.get('size'));
@@ -183,9 +183,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   try {
     const response = await fetch('/api/requests/create', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 

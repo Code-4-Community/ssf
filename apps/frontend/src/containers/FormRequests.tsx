@@ -11,10 +11,9 @@ import {
   Td,
   HStack,
   Select,
-  useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import FoodRequestFormModal from '@components/forms/requestFormModalButton';
+import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
 
@@ -23,16 +22,11 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
-  const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
-    null,
-  ); // Tracking selected request
   const [sortBy, setSortBy] = useState<string>('mostRecent');
   const [orderMapping, setOrderMapping] = useState<
     Record<number, number | null>
   >({});
   const { pantryId } = useParams<{ pantryId: string }>();
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -111,15 +105,16 @@ const FormRequests: React.FC = () => {
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
         {/* Submit New Request */}
-        <FoodRequestFormModal
-          previousRequest={undefined}
+        <FoodRequestFormModalButton
+          readOnly={false}
           buttonText="Submit New Request"
         />
 
         {/* Submit Previous Request */}
         {previousRequest && (
-          <FoodRequestFormModal
+          <FoodRequestFormModalButton
             previousRequest={previousRequest}
+            readOnly={false}
             buttonText="Submit Previous Request"
           />
         )}
@@ -152,16 +147,12 @@ const FormRequests: React.FC = () => {
         <Tbody>
           {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
-              <Td
-                cursor="pointer"
-                color="blue.500"
-                _hover={{ textDecoration: 'underline' }}
-                onClick={() => {
-                  setSelectedRequest(request); // Set selected request on click
-                  onOpen(); // Open the modal
-                }}
-              >
-                {request.requestId}
+              <Td>
+                <FoodRequestFormModalButton
+                  previousRequest={request}
+                  readOnly={true}
+                  buttonText={request.requestId.toString()}
+                />
               </Td>
               <Td>{orderMapping[request.requestId] ?? 'N/A'}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
@@ -183,16 +174,6 @@ const FormRequests: React.FC = () => {
           ))}
         </Tbody>
       </Table>
-
-      {selectedRequest && (
-        <FoodRequestFormModal
-          previousRequest={selectedRequest}
-          buttonText=""
-          readOnly={true}
-          externalIsOpen={isOpen}
-          externalOnClose={onClose}
-        />
-      )}
     </Center>
   );
 };
