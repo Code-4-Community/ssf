@@ -13,28 +13,8 @@ import {
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
-
-interface Donation {
-  donationId: number;
-  foodManufacturerId: number;
-  dateDonated: string;
-  status: string;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
-}
-
-interface DonationItem {
-  itemId: number;
-  donationId: number;
-  itemName: string;
-  quantity: number;
-  reservedQuantity: number;
-  status: string;
-  ozPerItem: number;
-  estimatedValue: number;
-  foodType: string;
-}
+import { formatDate } from '@utils/utils';
+import { Donation, DonationItem } from 'types/types';
 
 const DonationManagement: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -102,50 +82,13 @@ const DonationManagement: React.FC = () => {
     }
   };
 
-  // TEMPORARY USE FOR TESTING FUNCTIONALITY
-  // CALLED WHEN A NEW DONATION ITEM HAS ITS STOCK DECREASE (WILL CHANGE THIS WHEN ASSIGNING DONATION ITEMS LATER)
-  const updateDonationItem = async (item: DonationItem) => {
-    try {
-      const updatedItem = await ApiClient.updateDonationItemQuantity(
-        item.itemId,
-      );
-
-      setDonationItemStock((prev) => ({
-        ...prev,
-        [item.itemId]: updatedItem.quantity - updatedItem.reservedQuantity,
-      }));
-
-      if (updatedItem.quantity - updatedItem.reservedQuantity === 0) {
-        const items = await ApiClient.getDonationItemsByDonationId(
-          item.donationId,
-        );
-
-        const fulfilledDonation = items.every(
-          (donationItem) =>
-            donationItem.quantity - donationItem.reservedQuantity === 0,
-        );
-
-        if (fulfilledDonation) {
-          fulfillDonation(item.donationId);
-        }
-      }
-    } catch (error) {
-      alert('Failed to update donation item quantity: ' + error);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
-
   useEffect(() => {
     fetchDonations();
   }, []);
 
   return (
     <Center flexDirection="column" p={4}>
-      <NewDonationFormModalButton />
+      <NewDonationFormModalButton onDonationSuccess={fetchDonations} />
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>
@@ -176,9 +119,6 @@ const DonationManagement: React.FC = () => {
                         <strong>Remaining Stock:</strong>{' '}
                         {donationItemStock[item.itemId]}
                       </Text>
-                      <Button onClick={() => updateDonationItem(item)}>
-                        Lower count
-                      </Button>
                     </Box>
                   ))}
                 <Text

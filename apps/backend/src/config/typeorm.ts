@@ -29,7 +29,6 @@ const config = {
     UpdatePantriesTable1737906317154,
     UpdateDonations1738697216020,
     AddOrders1739496585940,
-    UpdateFkAllocations1739497449049,
   ],
 };
 

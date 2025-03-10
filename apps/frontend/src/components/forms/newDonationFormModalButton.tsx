@@ -23,7 +23,9 @@ import {
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 
-const NewDonationFormModalButton: React.FC = () => {
+const NewDonationFormModalButton: React.FC<{
+  onDonationSuccess: () => void;
+}> = ({ onDonationSuccess }) => {
   const getFoodTypes = () => {
     return [
       'Dairy-Free Alternatives',
@@ -128,6 +130,9 @@ const NewDonationFormModalButton: React.FC = () => {
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
+
+      // Automatically update the page after creating new donation
+      onDonationSuccess();
 
       if (donationId) {
         rows.forEach(async (row) => {

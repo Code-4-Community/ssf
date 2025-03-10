@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
+import { formatDate } from '@utils/utils';
 
 interface FoodRequest {
   requestId: number;
@@ -72,11 +73,6 @@ const FormRequests: React.FC = () => {
 
     fetchRequests();
   }, [pantryId]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
 
   const formatReceivedDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
