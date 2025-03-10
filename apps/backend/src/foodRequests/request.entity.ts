@@ -3,7 +3,10 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Order } from '../orders/order.entity';
 
 @Entity('food_requests')
 export class FoodRequest {
@@ -43,4 +46,11 @@ export class FoodRequest {
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
+
+  @ManyToOne(() => Order, { nullable: true })
+  @JoinColumn({
+    name: 'order_id',
+    referencedColumnName: 'orderId',
+  })
+  order: Order | null;
 }

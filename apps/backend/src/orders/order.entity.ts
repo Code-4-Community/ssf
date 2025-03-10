@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
@@ -23,7 +24,7 @@ export class Order {
   })
   pantry: Pantry;
 
-  @ManyToOne(() => FoodRequest, { nullable: false })
+  @OneToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
     name: 'request_id',
     referencedColumnName: 'requestId',

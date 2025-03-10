@@ -39,7 +39,19 @@ export class RequestsService {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }
-    return await this.repo.find({ where: { pantryId } });
+
+    const foodRequests = await this.repo.find({
+      where: { pantryId },
+      relations: ['order'],
+    });
+
+    const foodRequestsWithOrderId = foodRequests.map((request) => ({
+      ...request,
+      orderId: request.order ? request.order.orderId : null,
+      order: undefined,
+    }));
+
+    return foodRequestsWithOrderId;
   }
 
   async updateDeliveryDetails(
@@ -48,7 +60,10 @@ export class RequestsService {
     feedback: string,
     photos: string[],
   ): Promise<FoodRequest> {
-    const request = await this.repo.findOne({ where: { requestId } });
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['order'],
+    });
 
     if (!request) {
       throw new NotFoundException('Invalid request ID');

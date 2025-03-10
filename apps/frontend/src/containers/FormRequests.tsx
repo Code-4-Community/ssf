@@ -16,6 +16,7 @@ import ApiClient from '@api/apiClient';
 import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
+import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -23,9 +24,6 @@ const FormRequests: React.FC = () => {
     FoodRequest | undefined
   >(undefined);
   const [sortBy, setSortBy] = useState<string>('mostRecent');
-  const [orderMapping, setOrderMapping] = useState<
-    Record<number, number | null>
-  >({});
   const { pantryId } = useParams<{ pantryId: string }>();
 
   useEffect(() => {
@@ -44,31 +42,6 @@ const FormRequests: React.FC = () => {
               ),
             );
           }
-
-          const orderPromises = data.map(async (request) => {
-            try {
-              const order = await ApiClient.getOrderByRequest(
-                request.requestId,
-              );
-              return {
-                requestId: request.requestId,
-                orderId: order?.orderId ?? null,
-              };
-            } catch (error) {
-              console.error(
-                `Error fetching order for requestId ${request.requestId}:`,
-                error,
-              );
-              return { requestId: request.requestId, orderId: null };
-            }
-          });
-
-          const orderResults = await Promise.all(orderPromises);
-          const mapping: Record<number, number | null> = {};
-          orderResults.forEach(({ requestId, orderId }) => {
-            mapping[requestId] = orderId;
-          });
-          setOrderMapping(mapping);
         } catch (error) {
           alert('Error fetching requests: ' + error);
         }
@@ -154,7 +127,13 @@ const FormRequests: React.FC = () => {
                   buttonText={request.requestId.toString()}
                 />
               </Td>
-              <Td>{orderMapping[request.requestId] ?? 'N/A'}</Td>
+              <Td>
+                {request.orderId ? (
+                  <OrderInformationModalButton orderId={request.orderId} />
+                ) : (
+                  'N/A'
+                )}
+              </Td>
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.status}</Td>
               <Td>{request.fulfilledBy}</Td>

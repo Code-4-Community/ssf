@@ -40,6 +40,7 @@ export interface FoodRequest {
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string;
+  orderId: number;
 }
 
 export interface Order {
