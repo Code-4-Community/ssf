@@ -77,13 +77,11 @@ const FormRequests: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
-        {/* Submit New Request */}
         <FoodRequestFormModalButton
           readOnly={false}
           buttonText="Submit New Request"
         />
 
-        {/* Submit Previous Request */}
         {previousRequest && (
           <FoodRequestFormModalButton
             previousRequest={previousRequest}
