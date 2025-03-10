@@ -23,27 +23,9 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
+import { FoodTypes } from '../../types/types';
 
 const NewDonationFormModalButton: React.FC = () => {
-  const getFoodTypes = () => {
-    return [
-      'Dairy-Free Alternatives',
-      'Dried Beans (Gluten-Free, Nut-Free)',
-      'Gluten-Free Baking/Pancake Mixes',
-      'Gluten-Free Bread',
-      'Gluten-Free Tortillas',
-      'Granola',
-      'Masa Harina Flour',
-      'Nut-Free Granola Bars',
-      'Olive Oil',
-      'Refrigerated Meals',
-      'Rice Noodles',
-      'Seed Butters (Peanut Butter Alternative)',
-      'Whole-Grain Cookies',
-      'Quinoa',
-    ];
-  };
-
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -65,7 +47,10 @@ const NewDonationFormModalButton: React.FC = () => {
     );
 
     setRows(updatedRows);
+    calculateTotals(updatedRows);
+  };
 
+  const calculateTotals = (updatedRows: typeof rows) => {
     let totalItems = 0,
       totalOz = 0,
       totalValue = 0;
@@ -73,10 +58,13 @@ const NewDonationFormModalButton: React.FC = () => {
     updatedRows.forEach((row) => {
       if (row.numItems && row.ozPerItem && row.valuePerItem) {
         totalItems += parseInt(row.numItems);
-        totalOz += parseInt(row.ozPerItem);
-        totalValue += parseInt(row.valuePerItem);
+        totalOz += parseFloat(row.ozPerItem) * parseInt(row.numItems);
+        totalValue += parseFloat(row.valuePerItem) * parseInt(row.numItems);
       }
     });
+
+    totalOz = parseFloat(totalOz.toFixed(2));
+    totalValue = parseFloat(totalValue.toFixed(2));
 
     setTotalItems(totalItems);
     setTotalOz(totalOz);
@@ -101,7 +89,9 @@ const NewDonationFormModalButton: React.FC = () => {
     if (rows.length === 1) {
       return;
     }
-    setRows(rows.slice(0, -1));
+    const newRows = rows.slice(0, -1);
+    setRows(newRows);
+    calculateTotals(newRows);
   };
 
   const handleSubmit = async () => {
@@ -222,7 +212,7 @@ const NewDonationFormModalButton: React.FC = () => {
                             handleChange(row.id, 'foodType', e.target.value)
                           }
                         >
-                          {getFoodTypes().map((type) => (
+                          {FoodTypes.map((type) => (
                             <option key={type} value={type}>
                               {type}
                             </option>
