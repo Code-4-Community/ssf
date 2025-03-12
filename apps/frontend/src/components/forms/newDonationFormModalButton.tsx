@@ -129,8 +129,8 @@ const NewDonationFormModalButton: React.FC = () => {
             donationId: donationId,
             itemName: row.foodItem,
             quantity: parseInt(row.numItems),
-            ozPerItem: parseInt(row.ozPerItem),
-            estimatedValue: parseInt(row.valuePerItem),
+            ozPerItem: parseFloat(row.ozPerItem),
+            estimatedValue: parseFloat(row.valuePerItem),
             foodType: row.foodType,
           };
 
@@ -144,6 +144,19 @@ const NewDonationFormModalButton: React.FC = () => {
             alert('Failed to submit donation item');
           }
         });
+        setRows([
+          {
+            id: 1,
+            foodItem: '',
+            foodType: '',
+            numItems: '',
+            ozPerItem: '',
+            valuePerItem: '',
+          },
+        ]);
+        setTotalItems(0);
+        setTotalOz(0);
+        setTotalValue(0);
       } else {
         console.error('Failed to submit donation');
         alert('Failed to submit donation');
