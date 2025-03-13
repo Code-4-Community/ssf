@@ -6,9 +6,11 @@ import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
 import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTables';
 import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateUserRole';
 import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
+import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
+import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+
 import { UpdateDonations1738697216020 } from '../migrations/1738697216020-updateDonations';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
-import { UpdateFkAllocations1739497449049 } from '../migrations/1739497449049-updateFkAllocations';
 const config = {
   type: 'postgres',
   host: `${process.env.DATABASE_HOST}`,
@@ -27,6 +29,8 @@ const config = {
     ReviseTables1737522923066,
     UpdateUserRole1737816745912,
     UpdatePantriesTable1737906317154,
+    UpdatePantriesTable1738172265266,
+    UpdatePantriesTable1739056029076,
     UpdateDonations1738697216020,
     AddOrders1739496585940,
   ],

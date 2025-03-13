@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
+import { User, Pantry } from 'types/types';
 import { Donation } from 'types/types';
 import { DonationItem } from 'types/types';
 
@@ -18,6 +19,35 @@ export class ApiClient {
 
   public async get(path: string): Promise<unknown> {
     return this.axiosInstance.get(path).then((response) => response.data);
+  }
+
+  public async getRepresentativeUser(userId: number): Promise<User> {
+    return this.axiosInstance
+      .get(`/api/users/${userId}`)
+      .then((response) => response.data);
+  }
+
+  public async getAllPendingPantries(): Promise<Pantry[]> {
+    return this.axiosInstance
+      .get('/api/pantries/pending')
+      .then((response) => response.data);
+  }
+
+  public async updatePantry(
+    pantryId: number,
+    decision: 'approve' | 'deny',
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+      pantryId,
+    });
+  }
+
+  public async getPantry(pantryId: number): Promise<Pantry> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async getPantrySSFRep(pantryId: number): Promise<User> {
+    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {
