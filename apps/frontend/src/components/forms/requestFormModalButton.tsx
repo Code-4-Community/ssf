@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Flex,
   FormControl,
@@ -19,14 +20,9 @@ import {
   Radio,
   Text,
 } from '@chakra-ui/react';
-import {
-  Form,
-  redirect,
-  ActionFunction,
-  ActionFunctionArgs,
-} from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
+import { FoodRequest } from 'types/types';
 
-// might be an API call, for now hard code
 const getAllergens = () => {
   return [
     'Dairy-Free Alternatives',
@@ -46,19 +42,39 @@ const getAllergens = () => {
   ];
 };
 
-const FoodRequestFormModal: React.FC = () => {
+interface FoodRequestFormModalProps {
+  previousRequest?: FoodRequest;
+  buttonText: string;
+}
+
+const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
+  previousRequest,
+  buttonText,
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [selectedItems, setSelectedItems] = useState<string[]>(
+    previousRequest?.requestedItems || [],
+  );
+  const defaultSize = previousRequest?.requestedSize || '';
+  const defaultNotes = previousRequest?.additionalInformation || '';
+
+  const handleCheckboxChange = (values: string[]) => {
+    setSelectedItems(values);
+  };
+
   const renderAllergens = () => {
-    return getAllergens().map((a) => (
-      <Checkbox name="restrictions" value={a}>
-        {a}
+    const allergens = getAllergens();
+    return allergens.map((allergen) => (
+      <Checkbox key={allergen} name="restrictions" value={allergen}>
+        {allergen}
       </Checkbox>
     ));
   };
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen}>Submit new request</Button>
+      <Button onClick={onOpen}>{buttonText}</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
@@ -82,7 +98,7 @@ const FoodRequestFormModal: React.FC = () => {
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
                   Requested Size of Shipment
                 </FormLabel>
-                <RadioGroup defaultValue="Medium" name="size">
+                <RadioGroup defaultValue={defaultSize} name="size">
                   <HStack spacing="24px">
                     <Radio value="Very Small (1-2 boxes)">
                       Very Small (1-2 boxes)
@@ -99,7 +115,10 @@ const FoodRequestFormModal: React.FC = () => {
                 <FormLabel fontSize={20} fontWeight={700}>
                   Requested Shipment
                 </FormLabel>
-                <CheckboxGroup>
+                <CheckboxGroup
+                  value={selectedItems}
+                  onChange={handleCheckboxChange}
+                >
                   <SimpleGrid spacing={2} columns={2}>
                     {renderAllergens()}
                   </SimpleGrid>
@@ -113,6 +132,7 @@ const FoodRequestFormModal: React.FC = () => {
                   name="notes"
                   placeholder="Anything else we should know about"
                   size="sm"
+                  defaultValue={defaultNotes}
                 />
               </FormControl>
               <Flex justifyContent="space-between" mt={4}>
@@ -143,8 +163,8 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   foodRequestData.set('pantryId', 1);
 
   const data = Object.fromEntries(foodRequestData);
-
   console.log(data);
+
   try {
     const response = await fetch('/api/requests/create', {
       method: 'POST',
@@ -155,19 +175,19 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
     });
 
     if (response.ok) {
-      // Can add additional behavior here
-
       console.log('Food request submitted successfully');
 
-      // Can be changed if desired to redirect to different page
-      return redirect('/landing-page');
+      window.location.href = '/request-form/1';
+      return null;
     } else {
       console.error('Failed to submit food request', await response.text());
-      return redirect('/landing-page');
+      window.location.href = '/request-form/1';
+      return null;
     }
   } catch (error) {
     console.error('Error submitting food request', error);
-    return redirect('/landing-page');
+    window.location.href = '/request-form/1';
+    return null;
   }
 };
 

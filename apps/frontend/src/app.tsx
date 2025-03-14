@@ -9,7 +9,13 @@ import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
+import PantryDashboard from '@containers/pantryDashboard';
 import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import FormRequests from '@containers/FormRequests';
+import PantryApplication from '@containers/pantryApplication';
+import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
+import ApprovePantries from '@containers/approvePantries';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +32,10 @@ const router = createBrowserRouter([
         element: <PantryOverview />,
       },
       {
+        path: '/pantry-dashboard/:pantryId',
+        element: <PantryDashboard />,
+      },
+      {
         path: '/pantry-past-orders',
         element: <PantryPastOrders />,
       },
@@ -34,12 +44,29 @@ const router = createBrowserRouter([
         element: <Pantries />,
       },
       {
+        path: '/pantry-application',
+        element: <PantryApplication />,
+        action: submitPantryApplicationForm,
+      },
+      {
         path: '/orders',
         element: <Orders />,
       },
       {
-        path: '/food-request', // The route to handle form submission
-        action: submitFoodRequestFormModal, // Action function to handle the form data and redirection
+        path: '/request-form/:pantryId',
+        element: <FormRequests />,
+      },
+      {
+        path: '/food-request',
+        action: submitFoodRequestFormModal,
+      },
+      {
+        path: '/confirm-delivery',
+        action: submitDeliveryConfirmationFormModal,
+      },
+      {
+        path: '/approve-pantries',
+        element: <ApprovePantries />,
       },
     ],
   },

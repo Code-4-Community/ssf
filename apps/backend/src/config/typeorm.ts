@@ -8,6 +8,9 @@ import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateU
 import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
 import { UpdateDonations1738697216020 } from '../migrations/1738697216020-updateDonations';
 import { UpdateDonationColTypes1741708808976 } from '../migrations/1741708808976-UpdateDonationColTypes';
+import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
+import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+
 const config = {
   type: 'postgres',
   host: `${process.env.DATABASE_HOST}`,
@@ -28,6 +31,8 @@ const config = {
     UpdatePantriesTable1737906317154,
     UpdateDonations1738697216020,
     UpdateDonationColTypes1741708808976,
+    UpdatePantriesTable1738172265266,
+    UpdatePantriesTable1739056029076,
   ],
 };
 
