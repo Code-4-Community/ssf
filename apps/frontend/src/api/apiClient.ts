@@ -1,4 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
+import { Donation } from 'types/types';
+import { DonationItem } from 'types/types';
 import { User, Pantry } from 'types/types';
 
 const defaultBaseUrl =
@@ -52,6 +54,17 @@ export class ApiClient {
     return this.axiosInstance
       .post(path, body)
       .then((response) => response.data);
+  }
+
+  public async postDonation(body: unknown): Promise<Donation> {
+    return this.post('/api/donations/create', body) as Promise<Donation>;
+  }
+
+  public async postDonationItem(body: unknown): Promise<DonationItem> {
+    return this.post(
+      '/api/donation-items/create',
+      body,
+    ) as Promise<DonationItem>;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
