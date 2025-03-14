@@ -20,7 +20,6 @@ import OrderInformationModalButton from '@components/forms/orderInformationModal
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
-  // Temporary comment
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
@@ -135,7 +134,7 @@ const FormRequests: React.FC = () => {
               </Td>
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.status}</Td>
-              <Td>{request.fulfilledBy}</Td>
+              <Td>{request.fulfilledBy ? request.fulfilledBy : 'N/A'}</Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
                 {request.status === 'fulfilled' ? (
