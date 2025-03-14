@@ -29,7 +29,6 @@ const OrderInformationModalButton: React.FC<
 > = ({ orderId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pantry, setPantry] = useState<Pantry | null>(null);
-  const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
   const [donation, setDonation] = useState<Donation | null>(null);
