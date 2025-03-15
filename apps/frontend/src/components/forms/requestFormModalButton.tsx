@@ -76,7 +76,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   return (
     <>
-      <Button onClick={onOpen} disabled={disabled}>
+      <Button onClick={onOpen} isDisabled={disabled}>
         {buttonText}
       </Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>

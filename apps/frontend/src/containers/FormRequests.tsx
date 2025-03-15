@@ -76,9 +76,7 @@ const FormRequests: React.FC = () => {
   };
 
   useEffect(() => {
-    setAllConfirmed(
-      requests.every((request) => request.status === 'fulfilled'),
-    );
+    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
   }, [requests]);
 
   return (
