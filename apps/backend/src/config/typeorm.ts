@@ -10,6 +10,7 @@ import { UpdateDonations1738697216020 } from '../migrations/1738697216020-update
 import { UpdateDonationColTypes1741708808976 } from '../migrations/1741708808976-UpdateDonationColTypes';
 import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
 import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+import { AddVolunteerType1740066853273 } from '../migrations/1740066853273-AddVolunteerType';
 
 const config = {
   type: 'postgres',
@@ -33,6 +34,7 @@ const config = {
     UpdateDonationColTypes1741708808976,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
+    AddVolunteerType1740066853273,
   ],
 };
 
