@@ -16,6 +16,12 @@ import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import '@aws-amplify/ui-react/styles.css';
+import { Authenticator } from '@aws-amplify/ui-react';
+import { Amplify } from 'aws-amplify';
+import CognitoAuthConfig from './aws-exports';
+
+Amplify.configure(CognitoAuthConfig);
 
 const router = createBrowserRouter([
   {
@@ -78,7 +84,13 @@ export const App: React.FC = () => {
     apiClient.getHello().then((res) => console.log(res));
   }, []);
 
-  return <RouterProvider router={router} />;
+  return (
+    <Authenticator.Provider>
+      <Authenticator>
+        <RouterProvider router={router} />
+      </Authenticator>
+    </Authenticator.Provider>
+  );
 };
 
 export default App;
