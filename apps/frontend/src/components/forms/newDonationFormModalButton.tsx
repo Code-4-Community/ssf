@@ -19,32 +19,15 @@ import {
   Input,
   Tbody,
   TableCaption,
+  Stack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
+import { FoodTypes } from '../../types/types';
 
 const NewDonationFormModalButton: React.FC<{
   onDonationSuccess: () => void;
 }> = ({ onDonationSuccess }) => {
-  const getFoodTypes = () => {
-    return [
-      'Dairy-Free Alternatives',
-      'Dried Beans (Gluten-Free, Nut-Free)',
-      'Gluten-Free Baking/Pancake Mixes',
-      'Gluten-Free Bread',
-      'Gluten-Free Tortillas',
-      'Granola',
-      'Masa Harina Flour',
-      'Nut-Free Granola Bars',
-      'Olive Oil',
-      'Refrigerated Meals',
-      'Rice Noodles',
-      'Seed Butters (Peanut Butter Alternative)',
-      'Whole-Grain Cookies',
-      'Quinoa',
-    ];
-  };
-
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -66,7 +49,10 @@ const NewDonationFormModalButton: React.FC<{
     );
 
     setRows(updatedRows);
+    calculateTotals(updatedRows);
+  };
 
+  const calculateTotals = (updatedRows: typeof rows) => {
     let totalItems = 0,
       totalOz = 0,
       totalValue = 0;
@@ -74,10 +60,13 @@ const NewDonationFormModalButton: React.FC<{
     updatedRows.forEach((row) => {
       if (row.numItems && row.ozPerItem && row.valuePerItem) {
         totalItems += parseInt(row.numItems);
-        totalOz += parseInt(row.ozPerItem);
-        totalValue += parseInt(row.valuePerItem);
+        totalOz += parseFloat(row.ozPerItem) * parseInt(row.numItems);
+        totalValue += parseFloat(row.valuePerItem) * parseInt(row.numItems);
       }
     });
+
+    totalOz = parseFloat(totalOz.toFixed(2));
+    totalValue = parseFloat(totalValue.toFixed(2));
 
     setTotalItems(totalItems);
     setTotalOz(totalOz);
@@ -99,7 +88,12 @@ const NewDonationFormModalButton: React.FC<{
   };
 
   const deleteRow = () => {
-    setRows(rows.slice(0, -1));
+    if (rows.length === 1) {
+      return;
+    }
+    const newRows = rows.slice(0, -1);
+    setRows(newRows);
+    calculateTotals(newRows);
   };
 
   const handleSubmit = async () => {
@@ -140,8 +134,8 @@ const NewDonationFormModalButton: React.FC<{
             donationId: donationId,
             itemName: row.foodItem,
             quantity: parseInt(row.numItems),
-            ozPerItem: parseInt(row.ozPerItem),
-            estimatedValue: parseInt(row.valuePerItem),
+            ozPerItem: parseFloat(row.ozPerItem),
+            estimatedValue: parseFloat(row.valuePerItem),
             foodType: row.foodType,
           };
 
@@ -169,6 +163,19 @@ const NewDonationFormModalButton: React.FC<{
             alert('Failed to submit donation item');
           }
         });
+        setRows([
+          {
+            id: 1,
+            foodItem: '',
+            foodType: '',
+            numItems: '',
+            ozPerItem: '',
+            valuePerItem: '',
+          },
+        ]);
+        setTotalItems(0);
+        setTotalOz(0);
+        setTotalValue(0);
       } else {
         console.error('Failed to submit donation');
         alert('Failed to submit donation');
@@ -182,25 +189,34 @@ const NewDonationFormModalButton: React.FC<{
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
+      <Button onClick={onOpen}>Submit new donation</Button>
       <Button onClick={onOpen}>Log new Donation</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
           <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Donation Log Form
+            SSF Log New Donation Form SSF Donation Log Form
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            <Text mb="1.5em">
+              Log a new donation by filling out the form below. Use the add or
+              delete row buttons to add or remove food items from the donation.
+              Please make sure to fill out all fields before submitting.
+            </Text>
             <Text mb="1.5em">Log a new donation</Text>
             <TableContainer>
               <Table variant="simple">
                 <TableCaption>
-                  <strong>Total # of items: </strong>
-                  {totalItems} &nbsp;&nbsp;&nbsp;
-                  <strong> Total oz of items: </strong>
-                  {totalOz} &nbsp;&nbsp;&nbsp;
-                  <strong> Total value of items: </strong>
-                  {totalValue}
+                  <Stack direction="row" align="center" spacing={3} mt={3}>
+                    <Text fontWeight="bold">
+                      Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
+                      items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
+                      {totalValue}
+                    </Text>
+                    <Button onClick={deleteRow}>- Delete Row</Button>
+                    <Button onClick={addRow}>+ Add Row</Button>
+                  </Stack>
                 </TableCaption>
                 <Thead>
                   <Tr>
@@ -230,7 +246,7 @@ const NewDonationFormModalButton: React.FC<{
                             handleChange(row.id, 'foodType', e.target.value)
                           }
                         >
-                          {getFoodTypes().map((type) => (
+                          {FoodTypes.map((type) => (
                             <option key={type} value={type}>
                               {type}
                             </option>
@@ -268,12 +284,6 @@ const NewDonationFormModalButton: React.FC<{
                   ))}
                 </Tbody>
               </Table>
-              <Button mt={4} onClick={addRow}>
-                + Add Row
-              </Button>
-              <Button mt={4} onClick={deleteRow}>
-                - Delete Row
-              </Button>
             </TableContainer>
             <Flex justifyContent="space-between" mt={4}>
               <Button onClick={onClose}>Close</Button>

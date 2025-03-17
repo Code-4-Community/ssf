@@ -20,6 +20,23 @@ export interface DonationItem {
   foodType: string;
 }
 
+export const FoodTypes = [
+  'Dairy-Free Alternatives',
+  'Dried Beans (Gluten-Free, Nut-Free)',
+  'Gluten-Free Baking/Pancake Mixes',
+  'Gluten-Free Bread',
+  'Gluten-Free Tortillas',
+  'Granola',
+  'Masa Harina Flour',
+  'Nut-Free Granola Bars',
+  'Olive Oil',
+  'Refrigerated Meals',
+  'Rice Noodles',
+  'Seed Butters (Peanut Butter Alternative)',
+  'Whole-Grain Cookies',
+  'Quinoa',
+] as const;
+
 export interface User {
   userId: number;
   role: string;

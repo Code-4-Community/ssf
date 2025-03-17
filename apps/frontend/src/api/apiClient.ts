@@ -1,7 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { User, Pantry } from 'types/types';
-import { Donation } from 'types/types';
-import { DonationItem } from 'types/types';
+import { Donation, DonationItem, User, Pantry } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';

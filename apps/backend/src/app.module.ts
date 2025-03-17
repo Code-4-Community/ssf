@@ -32,6 +32,7 @@ import { DonationItemsModule } from './donationItems/donationItems.module';
     RequestsModule,
     DonationModule,
     DonationItemsModule,
+    PantriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
