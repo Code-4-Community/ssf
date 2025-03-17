@@ -144,20 +144,6 @@ const NewDonationFormModalButton: React.FC<{
           );
           if (donationItemResponse) {
             console.log('Donation item submitted successfully');
-            setRows([
-              {
-                id: 1,
-                foodItem: '',
-                foodType: '',
-                numItems: '',
-                ozPerItem: '',
-                valuePerItem: '',
-              },
-            ]);
-
-            setTotalItems(0);
-            setTotalOz(0);
-            setTotalValue(0);
           } else {
             console.error('Failed to submit donation item');
             alert('Failed to submit donation item');
