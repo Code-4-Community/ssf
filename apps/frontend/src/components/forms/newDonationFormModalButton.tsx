@@ -176,7 +176,6 @@ const NewDonationFormModalButton: React.FC<{
   return (
     <>
       <Button onClick={onOpen}>Submit new donation</Button>
-      <Button onClick={onOpen}>Log new Donation</Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
