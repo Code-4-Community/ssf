@@ -25,7 +25,9 @@ import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodTypes } from '../../types/types';
 
-const NewDonationFormModalButton: React.FC = () => {
+const NewDonationFormModalButton: React.FC<{
+  onDonationSuccess: () => void;
+}> = ({ onDonationSuccess }) => {
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -123,6 +125,9 @@ const NewDonationFormModalButton: React.FC = () => {
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
 
+      // Automatically update the page after creating new donation
+      onDonationSuccess();
+
       if (donationId) {
         rows.forEach(async (row) => {
           const donationItem_body = {
@@ -175,7 +180,7 @@ const NewDonationFormModalButton: React.FC = () => {
         <ModalOverlay />
         <ModalContent maxW="49em">
           <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Log New Donation Form
+            SSF Log New Donation Form SSF Donation Log Form
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -184,6 +189,7 @@ const NewDonationFormModalButton: React.FC = () => {
               delete row buttons to add or remove food items from the donation.
               Please make sure to fill out all fields before submitting.
             </Text>
+            <Text mb="1.5em">Log a new donation</Text>
             <TableContainer>
               <Table variant="simple">
                 <TableCaption>

@@ -10,6 +10,12 @@ export class DonationItemsService {
     @InjectRepository(DonationItem) private repo: Repository<DonationItem>,
   ) {}
 
+  async getAllDonationItems(
+    donationId: number,
+  ): Promise<DonationItem[] | null> {
+    return this.repo.findBy({ donationId });
+  }
+
   async create(
     donationId: number,
     itemName: string,
@@ -31,6 +37,17 @@ export class DonationItemsService {
       foodType,
     });
 
+    return this.repo.save(donationItem);
+  }
+
+  async updateDonationItemQuantity(
+    itemId: number,
+  ): Promise<DonationItem | null> {
+    const donationItem = await this.repo.findOneBy({ itemId });
+    if (!donationItem) {
+      return null;
+    }
+    donationItem.quantity -= 1;
     return this.repo.save(donationItem);
   }
 }

@@ -1,7 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { Donation } from 'types/types';
-import { DonationItem } from 'types/types';
-import { User, Pantry } from 'types/types';
+import { Donation, DonationItem, User, Pantry } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -17,7 +15,7 @@ export class ApiClient {
     return this.get('/api') as Promise<string>;
   }
 
-  private async get(path: string): Promise<unknown> {
+  public async get(path: string): Promise<unknown> {
     return this.axiosInstance.get(path).then((response) => response.data);
   }
 
@@ -71,6 +69,34 @@ export class ApiClient {
     return this.axiosInstance
       .patch(path, body)
       .then((response) => response.data);
+  }
+
+  public async fulfillDonation(
+    donationId: number,
+    body?: unknown,
+  ): Promise<Donation> {
+    return this.patch(
+      `/api/donations/${donationId}/fulfill`,
+      body,
+    ) as Promise<Donation>;
+  }
+
+  public async updateDonationItemQuantity(
+    itemId: number,
+    body?: unknown,
+  ): Promise<DonationItem> {
+    return this.patch(
+      `/api/donation-items/update-quantity/${itemId}`,
+      body,
+    ) as Promise<DonationItem>;
+  }
+
+  public async getDonationItemsByDonationId(
+    donationId: number,
+  ): Promise<DonationItem[]> {
+    return this.get(
+      `/api/donation-items/get-donation-items/${donationId}`,
+    ) as Promise<DonationItem[]>;
   }
 
   private async delete(path: string): Promise<unknown> {

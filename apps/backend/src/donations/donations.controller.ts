@@ -1,4 +1,12 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Patch,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
@@ -6,6 +14,11 @@ import { DonationService } from './donations.service';
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
+
+  @Get('/get-all-donations')
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
 
   @Post('/create')
   @ApiBody({
@@ -44,5 +57,16 @@ export class DonationsController {
       body.totalOz,
       body.totalEstimatedValue,
     );
+  }
+
+  @Patch('/:donationId/fulfill')
+  async fulfillDonation(
+    @Param('donationId') donationId: number,
+  ): Promise<Donation> {
+    const updatedDonation = await this.donationService.fulfill(donationId);
+    if (!updatedDonation) {
+      throw new NotFoundException('Donation not found');
+    }
+    return updatedDonation;
   }
 }

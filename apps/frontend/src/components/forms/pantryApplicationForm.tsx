@@ -20,6 +20,7 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
+
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 
@@ -32,8 +33,7 @@ const PantryApplicationForm: React.FC = () => {
 
   const noActivitiesSelected: boolean = activities.length === 0;
 
-  // Option values and state below are for options that, when selected,
-  // cause a new form question to appear.
+  // Option values and state below are for options that, when selected
 
   const allergenAvoidantClientsExactOption: string = 'I have an exact number';
   const otherDietaryRestrictionsOptions: string[] = [
