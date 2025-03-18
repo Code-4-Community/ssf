@@ -20,8 +20,39 @@ import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
+import { Button } from '@chakra-ui/react';
 
 Amplify.configure(CognitoAuthConfig);
+
+const components = {
+  SignUp: {
+    Footer() {
+      return (
+        <>
+          <Button as="a" href="/pantry-application">
+            {' '}
+            Sign up to be pantry partner{' '}
+          </Button>
+          <Button> Log donation for one-time donors </Button>
+        </>
+      );
+    },
+  },
+
+  SignIn: {
+    Footer() {
+      return (
+        <>
+          <Button as="a" href="/pantry-application">
+            {' '}
+            Sign up to be pantry partner{' '}
+          </Button>
+          <Button> Log donation for one-time donors </Button>
+        </>
+      );
+    },
+  },
+};
 
 const router = createBrowserRouter([
   {
@@ -29,39 +60,83 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
-      {
-        path: '/landing-page',
-        element: <LandingPage />,
-      },
-      {
-        path: '/pantry-overview',
-        element: <PantryOverview />,
-      },
-      {
-        path: '/pantry-dashboard/:pantryId',
-        element: <PantryDashboard />,
-      },
-      {
-        path: '/pantry-past-orders',
-        element: <PantryPastOrders />,
-      },
-      {
-        path: '/pantries',
-        element: <Pantries />,
-      },
+      // Public routes (no auth needed)
+
       {
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
       },
+
+      // Private routes (protected by auth)
+
+      {
+        path: '/landing-page',
+        element: (
+          <Authenticator components={components}>
+            <LandingPage />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-overview',
+        element: (
+          <Authenticator components={components}>
+            <PantryOverview />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <Authenticator components={components}>
+            <PantryDashboard />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <Authenticator components={components}>
+            <PantryPastOrders />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <Authenticator components={components}>
+            <Pantries />
+          </Authenticator>
+        ),
+      },
       {
         path: '/orders',
-        element: <Orders />,
+        element: (
+          <Authenticator components={components}>
+            <Orders />
+          </Authenticator>
+        ),
       },
       {
         path: '/request-form/:pantryId',
-        element: <FormRequests />,
+        element: (
+          <Authenticator components={components}>
+            <FormRequests />
+          </Authenticator>
+        ),
       },
+      {
+        path: '/approve-pantries',
+        element: (
+          <Authenticator components={components}>
+            <ApprovePantries />
+          </Authenticator>
+        ),
+      },
+
+      // Actions
+
       {
         path: '/food-request',
         action: submitFoodRequestFormModal,
@@ -69,10 +144,6 @@ const router = createBrowserRouter([
       {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
-      },
-      {
-        path: '/approve-pantries',
-        element: <ApprovePantries />,
       },
     ],
   },
@@ -86,9 +157,7 @@ export const App: React.FC = () => {
 
   return (
     <Authenticator.Provider>
-      <Authenticator>
-        <RouterProvider router={router} />
-      </Authenticator>
+      <RouterProvider router={router} />
     </Authenticator.Provider>
   );
 };
