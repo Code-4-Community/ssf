@@ -27,7 +27,11 @@ export class CurrentUserInterceptor implements NestInterceptor {
     if (users.length > 0) {
       const user = users[0];
 
-      request.user = user;
+      request.user = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      };
     }
 
     return handler.handle();
