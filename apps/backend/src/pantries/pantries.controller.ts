@@ -23,7 +23,7 @@ export class PantriesController {
   @Get('/pending')
   @UseGuards(AuthGuard('jwt'))
   async getPendingPantries(@Request() request): Promise<Pantry[]> {
-    if (request.user.role !== 'PANTRY') {
+    if (request.user.role !== 'FOODMANUFACTURER') {
       throw new ForbiddenException('Access denied');
     }
     return this.pantriesService.getPendingPantries();
