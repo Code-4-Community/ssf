@@ -7,6 +7,7 @@ import {
   FoodManufacturer,
   DonationItem,
   Donation,
+  Allocation,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -127,6 +128,12 @@ export class ApiClient {
 
   public async getOrder(orderId: number): Promise<Order> {
     return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
+    return this.axiosInstance
+      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .then((response) => response.data);
   }
 
   public async updateOrderStatus(

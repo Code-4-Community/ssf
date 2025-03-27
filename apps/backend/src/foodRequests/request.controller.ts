@@ -24,7 +24,7 @@ export class FoodRequestsController {
   ) {}
 
   @Get('/:requestId')
-  async getPantry(
+  async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<FoodRequest> {
     return this.requestsService.findOne(requestId);

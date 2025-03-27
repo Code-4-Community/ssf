@@ -81,3 +81,13 @@ export interface DonationItem {
   estimatedValue: number;
   foodType: string;
 }
+
+export interface Allocation {
+  allocationId: number;
+  orderId: number;
+  itemId: number;
+  allocatedQuantity: number;
+  reservedAt: string;
+  fulfilledAt: string;
+  status: string;
+}

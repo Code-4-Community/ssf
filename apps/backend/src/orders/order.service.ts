@@ -6,6 +6,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Injectable()
 export class OrdersService {
