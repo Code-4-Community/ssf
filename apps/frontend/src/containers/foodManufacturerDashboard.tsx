@@ -14,6 +14,8 @@ import {
   Box,
   Select,
   Stack,
+  HStack,
+  VStack,
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
 
@@ -78,13 +80,15 @@ const FoodManufacturerDashboard: React.FC = () => {
 
   const ManufacturerCard = () => {
     return (
-      <Card mx={40}>
+      <Card mx={40} variant="elevated" boxShadow="0 4px 8px rgba(0, 0, 0, 0.2)">
         <CardHeader display="flex" alignItems="center" justifyContent="center">
-          <Heading size="md">Client Report</Heading>
+          <Heading size="md">
+            Welcome to Food Manufacturer Admin page - FOODMANID
+          </Heading>
         </CardHeader>
 
         <CardBody display="flex" alignItems="center" justifyContent="center">
-          <Stack>
+          <Stack width="100%">
             <ManufacturerDetailsBox></ManufacturerDetailsBox>
             <UpdateFrequencyBox></UpdateFrequencyBox>
           </Stack>
@@ -95,22 +99,88 @@ const FoodManufacturerDashboard: React.FC = () => {
 
   const ManufacturerDetailsBox = () => {
     return (
-      <Box background="tomato" width="100%" padding="4" color="white">
-        Details
+      <Box bg="gray.200" width="100%" padding="4" color="black">
+        <Heading size="md">About Manufacturer 1:</Heading>
+        <br />
+        <VStack align="start" spacing={4} width="70%">
+          <HStack spacing={8} align="center" width="100%">
+            <Box flex="1">
+              <Text>Assigned SSF Contact:</Text>
+            </Box>
+            <Box flex="1" textAlign="right">
+              <Text>Pantry Partner since</Text>
+            </Box>
+          </HStack>
+
+          <HStack spacing={8} align="center" width="100%">
+            <Box flex="1">
+              <Text>Total donations:</Text>
+            </Box>
+            <Box flex="1" textAlign="right">
+              <Text>Manufacturer Industry:</Text>
+            </Box>
+          </HStack>
+
+          <HStack spacing={8} align="center" width="100%">
+            <Box flex="1">
+              <Text>Email Address:</Text>
+            </Box>
+            <Box flex="1" textAlign="right">
+              <Text>Phone Number:</Text>
+            </Box>
+          </HStack>
+
+          <HStack spacing={8} align="center" width="100%">
+            <Box flex="1">
+              <Text>Address for Food Shipments:</Text>
+            </Box>
+          </HStack>
+        </VStack>
       </Box>
     );
   };
 
   const UpdateFrequencyBox = () => {
     return (
-      <Box background="black" width="100%" padding="4" color="white">
-        Frequency
-        <Select placeholder="Select option">
-          <option value="option1">Option 1</option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
-        </Select>
-        <Button>Confirm update</Button>
+      <Box
+        bg="gray.200"
+        width="100%"
+        padding="4"
+        color="black"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Heading size="md">Update Frequency of Donations</Heading>
+        <br />
+        Current Frequency: x donations a month
+        <Box
+          bg="white"
+          width="75% "
+          my={'6'}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <HStack
+            width="50%"
+            my={'6'}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text>A donation </Text>
+            <Select width="50%" placeholder="Period of time">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Biweekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </Select>
+          </HStack>
+        </Box>
+        <Button bg={'gold'}>Confirm update</Button>
       </Box>
     );
   };
