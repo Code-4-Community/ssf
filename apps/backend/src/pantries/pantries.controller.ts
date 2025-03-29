@@ -1,7 +1,15 @@
-import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { User } from '../users/user.entity';
+import { PantryApplicationDto } from './dtos/pantry-application.dto';
 
 @Controller('pantries')
 export class PantriesController {
@@ -24,6 +32,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Post()
+  async submitPantryApplication(
+    @Body() pantryData: PantryApplicationDto,
+  ): Promise<void> {
+    return this.pantriesService.addPantry(pantryData);
   }
 
   @Post('/approve/:pantryId')
