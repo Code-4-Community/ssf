@@ -86,6 +86,7 @@ export interface Allocation {
   allocationId: number;
   orderId: number;
   itemId: number;
+  item: DonationItem;
   allocatedQuantity: number;
   reservedAt: string;
   fulfilledAt: string;

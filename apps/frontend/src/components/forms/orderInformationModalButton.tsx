@@ -73,9 +73,8 @@ const OrderInformationModalButton: React.FC<
                   {allocationItems.length > 0 ? (
                     allocationItems.map((allocation) => (
                       <Text key={allocation.allocationId}>
-                        Id: {allocation.allocationId} - Item:{' '}
-                        {allocation.itemId} - Quantity:{' '}
-                        {allocation.allocatedQuantity}
+                        - {allocation.allocatedQuantity}{' '}
+                        {allocation.item.itemName}
                       </Text>
                     ))
                   ) : (

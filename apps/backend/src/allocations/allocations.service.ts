@@ -14,6 +14,7 @@ export class AllocationsService {
   ): Promise<Allocation[] | null> {
     return this.repo.find({
       where: { orderId: orderId },
+      relations: ['item'],
     });
   }
 }

@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Entity('allocations')
 export class Allocation {
@@ -10,6 +17,10 @@ export class Allocation {
 
   @Column({ name: 'item_id', type: 'int' })
   itemId: number;
+
+  @ManyToOne(() => DonationItem, (item) => item.allocations)
+  @JoinColumn({ name: 'item_id' })
+  item: DonationItem;
 
   @Column({ name: 'allocated_quantity', type: 'int' })
   allocatedQuantity: number;
