@@ -1,5 +1,6 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import { User, Pantry } from 'types/types';
+import { PantryApplicationDto } from '@api/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -46,6 +47,12 @@ export class ApiClient {
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
+  }
+
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {
