@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
-  AttributeType,
   CognitoIdentityProviderClient,
   ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
@@ -47,15 +46,30 @@ export class AuthService {
     return hmac.digest('base64');
   }
 
-  async getUser(userSub: string): Promise<AttributeType[]> {
+  async getUser(userSub: string): Promise<{ email: string; role: string }> {
     const listUsersCommand = new ListUsersCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
       Filter: `sub = "${userSub}"`,
     });
 
-    // TODO need error handling
     const { Users } = await this.providerClient.send(listUsersCommand);
-    return Users[0].Attributes;
+    if (!Users || Users.length === 0) {
+      throw new Error('User not found');
+    }
+
+    const attributes = Users[0].Attributes;
+
+    const email = attributes.find((attr) => attr.Name === 'email')?.Value || '';
+    const role =
+      attributes.find((attr) => attr.Name === 'custom:role')?.Value ||
+      'VOLUNTEER';
+
+    return { email, role };
+  }
+
+  async getUserRole(userSub: string): Promise<Role> {
+    const { role } = await this.getUser(userSub);
+    return role as Role;
   }
 
   async signup(

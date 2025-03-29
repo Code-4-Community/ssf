@@ -1,79 +1,62 @@
 import {
   Controller,
-  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
   Post,
   Request,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { User } from '../users/user.entity';
-import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
-import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../users/types';
+import { Roles } from '../auth/roles.decorator';
+import { JwtGuard } from '../auth/jwt.guard';
 
 @Controller('pantries')
-@UseInterceptors(CurrentUserInterceptor)
+// @UseInterceptors(CurrentUserInterceptor)
+// @UseGuards(AuthGuard('jwt'))
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(JwtGuard, RolesGuard)
   @Get('/pending')
-  @UseGuards(AuthGuard('jwt'))
-  async getPendingPantries(@Request() request): Promise<Pantry[]> {
-    if (request.user.role !== 'FOODMANUFACTURER') {
-      throw new ForbiddenException('Access denied');
-    }
+  async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
   }
 
   @Get('/:pantryId/ssf-contact')
-  @UseGuards(AuthGuard('jwt'))
   async getSSFRep(
-    @Request() request,
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<User> {
-    if (request.user.role !== 'PANTRY') {
-      throw new ForbiddenException('Access denied');
-    }
     return this.pantriesService.findSSFRep(pantryId);
   }
 
   @Get('/:pantryId')
-  @UseGuards(AuthGuard('jwt'))
   async getPantry(
-    @Request() request,
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
-    if (request.user.role !== 'PANTRY') {
-      throw new ForbiddenException('Access denied');
-    }
     return this.pantriesService.findOne(pantryId);
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(JwtGuard, RolesGuard)
   @Post('/approve/:pantryId')
-  @UseGuards(AuthGuard('jwt'))
   async approvePantry(
-    @Request() request,
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
-    if (request.user.role !== 'PANTRY') {
-      throw new ForbiddenException('Access denied');
-    }
     return this.pantriesService.approve(pantryId);
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(JwtGuard, RolesGuard)
   @Post('/deny/:pantryId')
-  @UseGuards(AuthGuard('jwt'))
   async denyPantry(
-    @Request() request,
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
-    if (request.user.role !== 'PANTRY') {
-      throw new ForbiddenException('Access denied');
-    }
     return this.pantriesService.deny(pantryId);
   }
 }

@@ -16,21 +16,21 @@ export class CurrentUserInterceptor implements NestInterceptor {
 
   async intercept(context: ExecutionContext, handler: CallHandler) {
     const request = context.switchToHttp().getRequest();
-    const cognitoUserAttributes = await this.authService.getUser(
-      request.user.userId,
-    );
-    const userEmail = cognitoUserAttributes.find(
-      (attribute) => attribute.Name === 'email',
-    ).Value;
-    const users = await this.usersService.find(userEmail);
 
-    if (users.length > 0) {
-      const user = users[0];
+    // Get user attributes from Cognito (email and role)
+    // const cognitoUserAttributes = await this.authService.getUser(request.user.userId);
 
-      request.user = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
+    // // If no email or role was found, handle it (optional, log or return an error) (not sure when to use this)
+    // if (!cognitoUserAttributes.email) {
+    //   console.log('Email not found in Cognito user attributes');
+    //   return handler.handle();
+    // }
+
+    if (request.user) {
+      request.currentUser = {
+        id: request.user.userId,
+        email: request.user.email,
+        role: request.user.role,
       };
     }
 
