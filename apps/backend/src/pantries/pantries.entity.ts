@@ -96,7 +96,10 @@ export class Pantry {
   })
   ssfRepresentative?: User;
 
-  @OneToOne(() => User, { nullable: false })
+  // cascade: ['insert'] means that when we create a new
+  // pantry, the representative will automatically be added
+  // to the User table
+  @OneToOne(() => User, { nullable: false, cascade: ['insert'] })
   @JoinColumn({
     name: 'pantry_representative_id',
     referencedColumnName: 'id',
