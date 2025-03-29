@@ -42,13 +42,13 @@ export class AuthService {
   // (see https://docs.aws.amazon.com/cognito/latest/developerguide/signing-up-users-in-your-app.html#cognito-user-pools-computing-secret-hash)
   calculateHash(username: string): string {
     const hmac = createHmac('sha256', this.clientSecret);
-    hmac.update(username + CognitoAuthConfig.clientId);
+    hmac.update(username + CognitoAuthConfig.userPoolClientId);
     return hmac.digest('base64');
   }
 
   async getUser(userSub: string): Promise<{ email: string; role: string }> {
     const listUsersCommand = new ListUsersCommand({
-      UserPoolId: CognitoAuthConfig.userPoolId,
+      UserPoolId: CognitoAuthConfig.userPoolClientId,
       Filter: `sub = "${userSub}"`,
     });
 
@@ -78,7 +78,7 @@ export class AuthService {
   ): Promise<boolean> {
     // Needs error handling
     const signUpCommand = new SignUpCommand({
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       SecretHash: this.calculateHash(email),
       Username: email,
       Password: password,
@@ -102,7 +102,7 @@ export class AuthService {
 
   async verifyUser(email: string, verificationCode: string): Promise<void> {
     const confirmCommand = new ConfirmSignUpCommand({
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       SecretHash: this.calculateHash(email),
       Username: email,
       ConfirmationCode: verificationCode,
@@ -114,7 +114,7 @@ export class AuthService {
   async signin({ email, password }: SignInDto): Promise<SignInResponseDto> {
     const signInCommand = new AdminInitiateAuthCommand({
       AuthFlow: 'ADMIN_USER_PASSWORD_AUTH',
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       UserPoolId: CognitoAuthConfig.userPoolId,
       AuthParameters: {
         USERNAME: email,
@@ -139,7 +139,7 @@ export class AuthService {
   }: RefreshTokenDto): Promise<SignInResponseDto> {
     const refreshCommand = new AdminInitiateAuthCommand({
       AuthFlow: 'REFRESH_TOKEN_AUTH',
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       UserPoolId: CognitoAuthConfig.userPoolId,
       AuthParameters: {
         REFRESH_TOKEN: refreshToken,
@@ -158,7 +158,7 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const forgotCommand = new ForgotPasswordCommand({
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       Username: email,
       SecretHash: this.calculateHash(email),
     });
@@ -172,7 +172,7 @@ export class AuthService {
     newPassword,
   }: ConfirmPasswordDto) {
     const confirmComamnd = new ConfirmForgotPasswordCommand({
-      ClientId: CognitoAuthConfig.clientId,
+      ClientId: CognitoAuthConfig.userPoolClientId,
       SecretHash: this.calculateHash(email),
       Username: email,
       ConfirmationCode: confirmationCode,
