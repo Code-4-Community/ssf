@@ -4,7 +4,6 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
@@ -16,8 +15,6 @@ import { Roles } from '../auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('pantries')
-// @UseInterceptors(CurrentUserInterceptor)
-// @UseGuards(AuthGuard('jwt'))
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
