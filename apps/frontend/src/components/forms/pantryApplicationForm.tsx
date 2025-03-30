@@ -518,11 +518,11 @@ export const submitPantryApplicationForm: ActionFunction = async ({
       if (axios.isAxiosError(error) && error.response?.status === 400) {
         alert(
           'Form submission failed with the following errors: \n\n' +
-            // Creates a nicely formatted bullet-point list of the errors
+            // Creates a bullet-point list of the errors
             // returned from the backend
             error.response?.data?.message
-              .reduce((acc: string, line: string) => acc + `- ${line}\n`, '')
-              .trim(),
+              .map((line: string) => '- ' + line)
+              .join('\n'),
         );
       } else {
         alert('Form submission failed; please try again');
