@@ -8,8 +8,8 @@ export class User {
   id: number;
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
+    enum: Role,
     default: Role.VOLUNTEER,
   })
   role: Role;
