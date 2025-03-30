@@ -6,9 +6,19 @@ const defaultBaseUrl =
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
+  private accessToken: string | undefined;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
+  }
+
+  public setAccessToken(token: string | undefined) {
+    this.accessToken = token;
+    console.log(this.accessToken);
+    if (token)
+      this.axiosInstance.defaults.headers.common[
+        'Authorization'
+      ] = `Bearer ${token}`;
   }
 
   public async getHello(): Promise<string> {
@@ -26,8 +36,13 @@ export class ApiClient {
   }
 
   public async getAllPendingPantries(): Promise<Pantry[]> {
+    console.log(this.accessToken);
     return this.axiosInstance
-      .get('/api/pantries/pending')
+      .get('/api/pantries/pending', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
+        },
+      })
       .then((response) => response.data);
   }
 

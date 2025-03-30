@@ -27,12 +27,15 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 
 Amplify.configure(CognitoAuthConfig);
 
-function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
+async function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
   if (data.payload.event !== 'signedIn') {
     return;
   }
 
-  console.log(fetchAuthSession());
+  const { tokens } = await fetchAuthSession();
+  const b64token = tokens?.accessToken.toString();
+  console.log(b64token);
+  localStorage.setItem('accessToken', b64token || '');
 }
 
 Hub.listen('auth', signInListener);
@@ -163,10 +166,10 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  useEffect(() => {
-    document.title = 'SSF';
-    apiClient.getHello().then((res) => console.log(res));
-  }, []);
+  // useEffect(() => {
+  //   document.title = 'SSF';
+  //   apiClient.getHello().then((res) => console.log(res));
+  // }, []);
 
   return (
     <Authenticator.Provider>

@@ -8,9 +8,11 @@ import { AuthService } from './auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {
     const cognitoAuthority = `https://cognito-idp.${CognitoAuthConfig.region}.amazonaws.com/${CognitoAuthConfig.userPoolId}`;
-    console.log(cognitoAuthority);
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -28,6 +30,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload) {
-    return { sub: payload.sub };
+    // add DB user to request here b/c controller guards run first (gross)
+    // https://docs.nestjs.com/faq/request-lifecycle#filters
+    // console.log(payload);
+    const user = await this.authService.getUser(payload.sub);
+    const dbUser = await this.usersService.findByEmail(user.email);
+    // console.log(dbUser)
+    return dbUser;
   }
 }

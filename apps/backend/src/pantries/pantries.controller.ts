@@ -6,6 +6,7 @@ import {
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
@@ -14,15 +15,16 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('pantries')
 // @UseInterceptors(CurrentUserInterceptor)
-// @UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'))
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
-  @Roles(Role.PANTRY, Role.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
+  @UseGuards(RolesGuard)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
