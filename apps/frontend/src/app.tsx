@@ -21,8 +21,21 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
+import { Hub, HubCapsule } from 'aws-amplify/utils';
+import { AuthHubEventData } from '@aws-amplify/core/dist/esm/Hub/types';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 Amplify.configure(CognitoAuthConfig);
+
+function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
+  if (data.payload.event !== 'signedIn') {
+    return;
+  }
+
+  console.log(fetchAuthSession());
+}
+
+Hub.listen('auth', signInListener);
 
 const components = {
   SignUp: {
