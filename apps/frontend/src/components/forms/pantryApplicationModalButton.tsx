@@ -24,7 +24,10 @@ const PantryApplicationModalButton: React.FC<
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
+  // TODO: Make sure clients of this button actually include
+  // the pantry representative ID (or the representative User
+  // itself) in the provided Pantry data
+  /*useEffect(() => {
     const fetchUser = async () => {
       if (pantry.pantryRepresentativeId) {
         const data = await ApiClient.getRepresentativeUser(
@@ -37,7 +40,7 @@ const PantryApplicationModalButton: React.FC<
     if (isOpen) {
       fetchUser();
     }
-  }, [isOpen, pantry.pantryRepresentativeId]);
+  }, [isOpen, pantry.pantryRepresentativeId]);*/
 
   return (
     <>
@@ -90,9 +93,34 @@ const PantryApplicationModalButton: React.FC<
               <GridItem>{pantry.pantryName}</GridItem>
 
               <GridItem>
-                <strong>Address</strong>
+                <strong>Address Line 1</strong>
               </GridItem>
-              <GridItem>{pantry.address}</GridItem>
+              <GridItem>{pantry.addressLine1}</GridItem>
+
+              <GridItem>
+                <strong>Address Line 2</strong>
+              </GridItem>
+              <GridItem>{pantry.addressLine2 ?? ''}</GridItem>
+
+              <GridItem>
+                <strong>Address City</strong>
+              </GridItem>
+              <GridItem>{pantry.addressCity}</GridItem>
+
+              <GridItem>
+                <strong>Address State</strong>
+              </GridItem>
+              <GridItem>{pantry.addressState}</GridItem>
+
+              <GridItem>
+                <strong>Address Zip</strong>
+              </GridItem>
+              <GridItem>{pantry.addressZip}</GridItem>
+
+              <GridItem>
+                <strong>Address Country</strong>
+              </GridItem>
+              <GridItem>{pantry.addressCountry ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Allergen Clients</strong>
@@ -107,14 +135,12 @@ const PantryApplicationModalButton: React.FC<
               <GridItem>
                 <strong>Reserve Food for Allergic</strong>
               </GridItem>
-              <GridItem>
-                {pantry.reserveFoodForAllergic ? 'Yes' : 'No'}
-              </GridItem>
+              <GridItem>{pantry.reserveFoodForAllergic}</GridItem>
 
               <GridItem>
                 <strong>Reservation Explanation</strong>
               </GridItem>
-              <GridItem>{pantry.reservationExplanation}</GridItem>
+              <GridItem>{pantry.reservationExplanation ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Dedicated Allergen Friendly</strong>
@@ -124,17 +150,17 @@ const PantryApplicationModalButton: React.FC<
               <GridItem>
                 <strong>Client Visit Frequency</strong>
               </GridItem>
-              <GridItem>{pantry.clientVisitFrequency}</GridItem>
+              <GridItem>{pantry.clientVisitFrequency ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Identify Allergens Confidence</strong>
               </GridItem>
-              <GridItem>{pantry.identifyAllergensConfidence}</GridItem>
+              <GridItem>{pantry.identifyAllergensConfidence ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Serve Allergic Children</strong>
               </GridItem>
-              <GridItem>{pantry.serveAllergicChildren}</GridItem>
+              <GridItem>{pantry.serveAllergicChildren ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Newsletter Subscription</strong>
@@ -151,12 +177,12 @@ const PantryApplicationModalButton: React.FC<
               <GridItem>
                 <strong>Activities</strong>
               </GridItem>
-              <GridItem>{pantry.activities}</GridItem>
+              <GridItem>{pantry.activities.join(', ')}</GridItem>
 
               <GridItem>
-                <strong>Questions</strong>
+                <strong>Activities Comments</strong>
               </GridItem>
-              <GridItem>{pantry.questions}</GridItem>
+              <GridItem>{pantry.activitiesComments ?? ''}</GridItem>
 
               <GridItem>
                 <strong>Items in Stock</strong>
