@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import typeorm from './config/typeorm';
+import { DonationModule } from './donations/donations.module';
+import { DonationItemsModule } from './donationItems/donationItems.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import typeorm from './config/typeorm';
     AuthModule,
     PantriesModule,
     RequestsModule,
+    DonationModule,
+    DonationItemsModule,
     PantriesModule,
   ],
   controllers: [AppController],
