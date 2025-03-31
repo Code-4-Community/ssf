@@ -27,6 +27,8 @@ import { OrdersService } from '../orders/order.service';
 import { Public } from '../auth/public.decorator';
 
 @Controller('pantries')
+// @UseInterceptors(CurrentUserInterceptor)
+@UseGuards(AuthGuard('jwt'))
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,

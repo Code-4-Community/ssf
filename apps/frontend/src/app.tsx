@@ -30,6 +30,19 @@ import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
 
+async function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
+  if (data.payload.event !== 'signedIn') {
+    return;
+  }
+
+  const { tokens } = await fetchAuthSession();
+  const b64token = tokens?.accessToken.toString();
+  console.log(b64token);
+  localStorage.setItem('accessToken', b64token || '');
+}
+
+Hub.listen('auth', signInListener);
+
 const components = {
   SignUp: {
     Footer() {

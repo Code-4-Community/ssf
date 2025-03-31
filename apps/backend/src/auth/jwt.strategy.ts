@@ -9,8 +9,10 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private usersService: UsersService) {
-    console.log('IN THE JWT STRATEGY');
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {
     const cognitoAuthority = `https://cognito-idp.${CognitoAuthConfig.region}.amazonaws.com/${CognitoAuthConfig.userPoolId}`;
 
     super({

@@ -42,6 +42,14 @@ const FormRequests: React.FC = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
+        const data = await ApiClient.getPantryRequests(parseInt(pantryId, 10));
+        setRequests(data);
+
+        if (data.length > 0) {
+          const mostRecentRequest = data.reduce((prev, current) =>
+            prev.requestId > current.requestId ? prev : current,
+          );
+          setPreviousRequest(mostRecentRequest);
         try {
           const data = await ApiClient.getPantryRequests(pantryId);
           const sortedData = data
