@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import LandingPage from '@containers/landingPage';
@@ -21,8 +18,25 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
+import { Hub, HubCapsule } from 'aws-amplify/utils';
+import { AuthHubEventData } from '@aws-amplify/core/dist/esm/Hub/types';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
+
+async function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
+  if (data.payload.event !== 'signedIn') {
+    return;
+  }
+
+  const { tokens } = await fetchAuthSession();
+  const b64token = tokens?.accessToken.toString();
+  console.log(b64token);
+  localStorage.setItem('accessToken', b64token || '');
+}
+
+Hub.listen('auth', signInListener);
 
 const components = {
   SignUp: {
@@ -66,6 +80,11 @@ const router = createBrowserRouter([
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
+      },
+
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />,
       },
 
       // Private routes (protected by auth)
@@ -150,10 +169,10 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  useEffect(() => {
-    document.title = 'SSF';
-    apiClient.getHello().then((res) => console.log(res));
-  }, []);
+  // useEffect(() => {
+  //   document.title = 'SSF';
+  //   apiClient.getHello().then((res) => console.log(res));
+  // }, []);
 
   return (
     <Authenticator.Provider>

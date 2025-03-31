@@ -4,11 +4,14 @@ import { passportJwtSecret } from 'jwks-rsa';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../users/users.service';
 import CognitoAuthConfig from './aws-exports';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private usersService: UsersService) {
-    console.log('IN THE JWT STRATEGY');
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {
     const cognitoAuthority = `https://cognito-idp.${CognitoAuthConfig.region}.amazonaws.com/${CognitoAuthConfig.userPoolId}`;
 
     super({
@@ -27,11 +30,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload) {
-    console.log('THIS IS THE PAYLOAD: ' + payload);
-    const user = await this.usersService.findByEmail(payload.email);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return user;
+    const user = await this.authService.getUser(payload.sub);
+    const dbUser = await this.usersService.findByEmail(user.email);
+    return dbUser;
   }
 }

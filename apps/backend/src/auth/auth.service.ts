@@ -48,7 +48,7 @@ export class AuthService {
 
   async getUser(userSub: string): Promise<{ email: string; role: string }> {
     const listUsersCommand = new ListUsersCommand({
-      UserPoolId: CognitoAuthConfig.userPoolClientId,
+      UserPoolId: CognitoAuthConfig.userPoolId,
       Filter: `sub = "${userSub}"`,
     });
 
