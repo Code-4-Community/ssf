@@ -25,7 +25,7 @@ export class Assignments {
   })
   volunteer: User;
 
-  @OneToOne(() => Pantry, { nullable: false })
+  @OneToOne(() => Pantry, { nullable: true })
   @JoinColumn({
     name: 'pantry_id',
     referencedColumnName: 'pantryId',

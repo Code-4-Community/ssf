@@ -11,9 +11,9 @@ export class AssignmentsService {
   ) {}
 
   // Gets the assignment id, the volunteer type, and the corresponding volunteer's firstName/id,
-  // and the corresponding pantry's pantryId/pantryName
+  // and the corresponding pantry's pantryId/pantryName, sets pantry to null if pantryId is null.
   async findAllRelations() {
-    return await this.repo.find({
+    const results = await this.repo.find({
       relations: ['volunteer', 'pantry'],
       select: {
         assignmentId: true,
@@ -21,6 +21,8 @@ export class AssignmentsService {
         volunteer: {
           id: true,
           firstName: true,
+          email: true,
+          phone: true,
         },
         pantry: {
           pantryId: true,
@@ -28,6 +30,11 @@ export class AssignmentsService {
         },
       },
     });
+
+    return results.map((assignment) => ({
+      ...assignment,
+      pantry: assignment.pantry?.pantryId ? assignment.pantry : null,
+    }));
   }
 
   async updateVolunteerType(userId: number, volunteerType: VolunteerType) {

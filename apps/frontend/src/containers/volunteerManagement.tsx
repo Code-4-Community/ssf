@@ -148,6 +148,7 @@ const VolunteerManagement: React.FC = () => {
         ),
       );
       setAssignments(changedAssignments);
+      alert('successful save!');
     } catch (error) {
       console.error('Error updating volunteer type: ', error);
     }
@@ -213,7 +214,9 @@ const VolunteerManagement: React.FC = () => {
           <Thead>
             <Tr>
               <Th>Volunteer Name</Th>
-              <Th>Volunteer Type</Th>
+              <Th>Email</Th>
+              <Th>Phone</Th>
+              <Th>Type</Th>
               <Th>Assigned Pantries</Th>
             </Tr>
           </Thead>
@@ -221,6 +224,8 @@ const VolunteerManagement: React.FC = () => {
             {filteredAssignments?.map((assignment) => (
               <Tr key={assignment.assignmentId}>
                 <Td>{assignment.volunteer.firstName}</Td>
+                <Td>{assignment.volunteer.email}</Td>
+                <Td>{assignment.volunteer.phone}</Td>
                 <Td>
                   {volunteerTypeDropdown({
                     volunteerType:
@@ -231,13 +236,14 @@ const VolunteerManagement: React.FC = () => {
                   })}
                 </Td>
                 <Td>
-                  <Button
-                    as={Link}
-                    // User id
-                    to={`/pantry-management/${assignment.volunteer.id}`}
-                  >
-                    View assigned pantries
-                  </Button>
+                  {assignment.pantry && (
+                    <Button
+                      as={Link}
+                      to={`/pantry-management/${assignment.volunteer.id}`}
+                    >
+                      View assigned pantries
+                    </Button>
+                  )}
                 </Td>
               </Tr>
             ))}

@@ -54,9 +54,11 @@ export interface AssignmentWithRelations {
   volunteer: {
     id: number;
     firstName: string;
+    email: string;
+    phone: string;
   };
   pantry: {
     pantryId: number;
     pantryName: string;
-  };
+  } | null;
 }
