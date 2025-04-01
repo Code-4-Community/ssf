@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('donations')
+@UseGuards(AuthGuard('jwt'))
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
