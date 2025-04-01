@@ -1,5 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
-import { Donation, DonationItem, User, Pantry } from 'types/types';
+import {
+  Donation,
+  DonationItem,
+  User,
+  Pantry,
+  ManufacturerDetails,
+} from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -29,6 +35,14 @@ export class ApiClient {
     return this.axiosInstance
       .get('/api/pantries/pending')
       .then((response) => response.data);
+  }
+
+  public async getManufacturerDetails(
+    manufacturerId: number,
+  ): Promise<ManufacturerDetails> {
+    return this.axiosInstance.get(
+      `/api/manufacturer/getDetails/${manufacturerId}`,
+    ) as Promise<ManufacturerDetails>;
   }
 
   public async updatePantry(

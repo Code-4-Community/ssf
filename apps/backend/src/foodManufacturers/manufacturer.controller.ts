@@ -6,10 +6,10 @@ import { ManufacturerService } from './manufacturer.service';
 export class ManufacturerController {
   constructor(private manufacturerService: ManufacturerService) {}
 
-  @Get('/get/:manufacturerId')
-  async getManufacturer(
+  @Get('/getDetails/:manufacturerId')
+  async getManufacturerDetails(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
-  ): Promise<FoodManufacturer[]> {
-    return this.manufacturerService.get(manufacturerId);
+  ): Promise<FoodManufacturer | null> {
+    return this.manufacturerService.getDetails(manufacturerId);
   }
 }

@@ -18,8 +18,37 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { HamburgerIcon } from '@chakra-ui/icons';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import ApiClient from '@api/apiClient';
+import { ManufacturerDetails } from 'types/types';
 
 const FoodManufacturerDashboard: React.FC = () => {
+  const { manufacturerId } = useParams<{ manufacturerId: string }>();
+  const [manufacturerDetails, setManufacturerDetails] =
+    useState<ManufacturerDetails>();
+
+  useEffect(() => {
+    if (!manufacturerId) {
+      console.error('Error: manufacturerId is undefined');
+      return;
+    }
+
+    const fetchDetails = async () => {
+      try {
+        const details = await ApiClient.getManufacturerDetails(
+          parseInt(manufacturerId, 10),
+        );
+        console.log(details);
+        setManufacturerDetails(details);
+      } catch (error) {
+        console.error('Error fetching manufacturer details: ', error);
+      }
+    };
+
+    fetchDetails();
+  }, [manufacturerId]);
+
   const HamburgerMenu = () => {
     return (
       <Menu>

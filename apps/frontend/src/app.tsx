@@ -75,7 +75,7 @@ const router = createBrowserRouter([
         element: <ApprovePantries />,
       },
       {
-        path: '/food-manufacturer-dashboard',
+        path: '/food-manufacturer-dashboard/:manufacturerId',
         element: <FoodManufacturerDashboard />,
       },
     ],

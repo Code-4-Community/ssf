@@ -22,4 +22,19 @@ export class FoodManufacturer {
     referencedColumnName: 'id',
   })
   foodManufacturerRepresentative: User;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  industry: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  email: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  phone: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  address: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  signupDate: Date;
 }

@@ -10,12 +10,26 @@ export class ManufacturerService {
     private repo: Repository<FoodManufacturer>,
   ) {}
 
-  async get(manufacturerId: number) {
+  async getDetails(manufacturerId: number): Promise<FoodManufacturer | null> {
     if (!manufacturerId || manufacturerId < 1) {
       throw new NotFoundException('Invalid manufacturer ID');
     }
-    return await this.repo.find({
+    return await this.repo.findOne({
       where: { foodManufacturerId: manufacturerId },
+      relations: ['foodManufacturerRepresentative'],
+      select: {
+        foodManufacturerId: true,
+        foodManufacturerName: true,
+        industry: true,
+        email: true,
+        phone: true,
+        address: true,
+        signupDate: true,
+        foodManufacturerRepresentative: {
+          firstName: true,
+          lastName: true,
+        },
+      },
     });
   }
 }
