@@ -29,7 +29,6 @@ const config = {
     ReviseTables1737522923066,
     UpdateUserRole1737816745912,
     UpdatePantriesTable1737906317154,
-    UpdateDonations1738697216020,
     UpdateDonationColTypes1741708808976,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,

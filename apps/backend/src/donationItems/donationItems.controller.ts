@@ -1,10 +1,20 @@
-import { Controller, Post, Body, Param, Get, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('donation-items')
 //@UseInterceptors()
+@UseGuards(AuthGuard('jwt'))
 export class DonationItemsController {
   constructor(private donationItemsService: DonationItemsService) {}
 

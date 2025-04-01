@@ -13,8 +13,8 @@ const ApprovePantries: React.FC = () => {
     try {
       const data = await ApiClient.getAllPendingPantries();
       setPendingPantries(data);
-    } catch (error) {
-      alert('Error fetching unapproved pantries: ' + error);
+    } catch (err) {
+      console.log(err);
     }
   };
 

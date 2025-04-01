@@ -7,6 +7,7 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -14,15 +15,22 @@ import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('requests')
 // @UseInterceptors()
+@UseGuards(AuthGuard('jwt'))
 export class FoodRequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
   ) {}
 
+  @Roles(Role.PANTRY)
+  @UseGuards(RolesGuard)
   @Get('/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -30,6 +38,8 @@ export class FoodRequestsController {
     return this.requestsService.find(pantryId);
   }
 
+  @Roles(Role.PANTRY)
+  @UseGuards(RolesGuard)
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',
@@ -93,6 +103,8 @@ export class FoodRequestsController {
     );
   }
 
+  @Roles(Role.PANTRY)
+  @UseGuards(RolesGuard)
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',

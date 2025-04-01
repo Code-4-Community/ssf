@@ -15,6 +15,7 @@ import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
 import { formatDate } from '@utils/utils';
+import ApiClient from '@api/apiClient';
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -23,33 +24,10 @@ const FormRequests: React.FC = () => {
   >(undefined);
   const { pantryId } = useParams<{ pantryId: string }>();
 
-  const getAllPantryRequests = async (
-    pantryId: number,
-  ): Promise<FoodRequest[]> => {
-    try {
-      const response = await fetch(`/api/requests/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert('Failed to fetch food requests ' + (await response.text()));
-        return [];
-      }
-    } catch (error) {
-      alert('Error fetching food requests ' + error);
-      return [];
-    }
-  };
-
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
-        const data = await getAllPantryRequests(parseInt(pantryId, 10));
+        const data = await ApiClient.getPantryRequests(parseInt(pantryId, 10));
         setRequests(data);
 
         if (data.length > 0) {

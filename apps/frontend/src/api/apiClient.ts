@@ -1,14 +1,45 @@
-import axios, { type AxiosInstance } from 'axios';
-import { Donation, DonationItem, User, Pantry } from 'types/types';
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+import { Donation, DonationItem, User, Pantry, FoodRequest } from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
+  private accessToken: string | undefined;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
+
+    this.axiosInstance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = this.accessToken || localStorage.getItem('accessToken');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 403) {
+          window.location.replace('/unauthorized');
+        }
+        return Promise.reject(error);
+      },
+    );
+  }
+
+  public setAccessToken(token: string | undefined) {
+    this.accessToken = token;
   }
 
   public async getHello(): Promise<string> {
@@ -97,6 +128,39 @@ export class ApiClient {
     return this.get(
       `/api/donation-items/get-donation-items/${donationId}`,
     ) as Promise<DonationItem[]>;
+  }
+
+  public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
+    try {
+      const response = await this.axiosInstance.get(
+        `/api/requests/${pantryId}`,
+      );
+      return response.data;
+    } catch (error) {
+      alert('Error fetching food requests: ' + error);
+      return [];
+    }
+  }
+
+  public async confirmDelivery(
+    requestId: number,
+    data: FormData,
+  ): Promise<void> {
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/requests/${requestId}/confirm-delivery`,
+        data,
+      );
+
+      if (response.status === 200) {
+        alert('Delivery confirmation submitted successfully');
+        window.location.href = '/request-form/1';
+      } else {
+        alert(`Failed to submit: ${response.statusText}`);
+      }
+    } catch (error) {
+      alert(`Error submitting delivery confirmation: ${error}`);
+    }
   }
 
   private async delete(path: string): Promise<unknown> {

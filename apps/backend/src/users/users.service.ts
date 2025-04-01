@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { User } from './user.entity';
 import { Role } from './types';
 
@@ -35,8 +34,8 @@ export class UsersService {
     return this.repo.findOneBy({ id });
   }
 
-  find(email: string) {
-    return this.repo.find({ where: { email } });
+  async findByEmail(email: string): Promise<User | null> {
+    return this.repo.findOneBy({ email });
   }
 
   async update(id: number, attrs: Partial<User>) {

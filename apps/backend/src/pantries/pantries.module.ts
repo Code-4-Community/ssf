@@ -3,13 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { PantriesService } from './pantries.service';
 import { PantriesController } from './pantries.controller';
-import { JwtStrategy } from '../auth/jwt.strategy';
-import { AuthService } from '../auth/auth.service';
 import { Pantry } from './pantries.entity';
+import { UsersModule } from '../users/users.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pantry, User])],
+  imports: [TypeOrmModule.forFeature([Pantry, User]), UsersModule, AuthModule],
   controllers: [PantriesController],
-  providers: [PantriesService, AuthService, JwtStrategy],
+  providers: [PantriesService],
 })
 export class PantriesModule {}
