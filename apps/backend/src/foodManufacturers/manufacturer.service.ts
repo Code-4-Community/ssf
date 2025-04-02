@@ -10,6 +10,20 @@ export class ManufacturerService {
     private repo: Repository<FoodManufacturer>,
   ) {}
 
+  async updateManufacturerFrequency(
+    manufacturerId: number,
+    donationFrequency: string,
+  ): Promise<FoodManufacturer | null> {
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: manufacturerId },
+    });
+    if (!manufacturer) {
+      return null;
+    }
+    manufacturer.donationFrequency = donationFrequency;
+    return this.repo.save(manufacturer);
+  }
+
   async getDetails(manufacturerId: number): Promise<FoodManufacturer | null> {
     if (!manufacturerId || manufacturerId < 1) {
       throw new NotFoundException('Invalid manufacturer ID');
@@ -25,6 +39,7 @@ export class ManufacturerService {
         phone: true,
         address: true,
         signupDate: true,
+        donationFrequency: true,
         foodManufacturerRepresentative: {
           firstName: true,
           lastName: true,

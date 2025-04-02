@@ -37,4 +37,7 @@ export class FoodManufacturer {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   signupDate: Date;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  donationFrequency: string;
 }

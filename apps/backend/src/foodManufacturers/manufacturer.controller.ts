@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Patch } from '@nestjs/common';
 import { FoodManufacturer } from './manufacturer.entity';
 import { ManufacturerService } from './manufacturer.service';
 
@@ -11,5 +11,16 @@ export class ManufacturerController {
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
   ): Promise<FoodManufacturer | null> {
     return this.manufacturerService.getDetails(manufacturerId);
+  }
+
+  @Patch('/updateFrequency/:manufacturerId/:frequency')
+  async updateManufacturerFrequency(
+    @Param('manufacturerId') manufacturerId: number,
+    @Param('frequency') frequency: string,
+  ): Promise<FoodManufacturer | null> {
+    return this.manufacturerService.updateManufacturerFrequency(
+      manufacturerId,
+      frequency,
+    );
   }
 }

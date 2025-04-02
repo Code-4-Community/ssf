@@ -22,11 +22,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 import { ManufacturerDetails } from 'types/types';
+import apiClient from '@api/apiClient';
 
 const FoodManufacturerDashboard: React.FC = () => {
   const { manufacturerId } = useParams<{ manufacturerId: string }>();
   const [manufacturerDetails, setManufacturerDetails] =
     useState<ManufacturerDetails>();
+  const [currentSelectedFrequency, setCurrentSelectedFrequency] =
+    useState<string>();
 
   useEffect(() => {
     if (!manufacturerId) {
@@ -36,11 +39,11 @@ const FoodManufacturerDashboard: React.FC = () => {
 
     const fetchDetails = async () => {
       try {
-        const details = await ApiClient.getManufacturerDetails(
+        const response = await ApiClient.getManufacturerDetails(
           parseInt(manufacturerId, 10),
         );
-        console.log(details);
-        setManufacturerDetails(details);
+        setManufacturerDetails(response);
+        setCurrentSelectedFrequency(response.donationFrequency);
       } catch (error) {
         console.error('Error fetching manufacturer details: ', error);
       }
@@ -48,6 +51,26 @@ const FoodManufacturerDashboard: React.FC = () => {
 
     fetchDetails();
   }, [manufacturerId]);
+
+  const handleUpdate = async () => {
+    try {
+      if (manufacturerId && currentSelectedFrequency) {
+        const response = await ApiClient.updateDonationFrequency(
+          parseInt(manufacturerId, 10),
+          currentSelectedFrequency,
+        );
+        alert('update frequency successful');
+      }
+    } catch (error) {
+      console.error('Error updating manufacturer frequency: ', error);
+    }
+  };
+
+  const handleFrequencyChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setCurrentSelectedFrequency(event.target.value);
+  };
 
   const HamburgerMenu = () => {
     return (
@@ -112,7 +135,8 @@ const FoodManufacturerDashboard: React.FC = () => {
       <Card mx={40} variant="elevated" boxShadow="0 4px 8px rgba(0, 0, 0, 0.2)">
         <CardHeader display="flex" alignItems="center" justifyContent="center">
           <Heading size="md">
-            Welcome to Food Manufacturer Admin page - FOODMANID
+            Welcome to Food Manufacturer Admin page -{' '}
+            {manufacturerDetails?.foodManufacturerName}
           </Heading>
         </CardHeader>
 
@@ -129,39 +153,52 @@ const FoodManufacturerDashboard: React.FC = () => {
   const ManufacturerDetailsBox = () => {
     return (
       <Box bg="gray.200" width="100%" padding="4" color="black">
-        <Heading size="md">About Manufacturer 1:</Heading>
+        <Heading size="md">
+          About Manufacturer {manufacturerDetails?.foodManufacturerName}
+        </Heading>
         <br />
         <VStack align="start" spacing={4} width="70%">
-          <HStack spacing={8} align="center" width="100%">
+          <HStack spacing={8} align="center" width="125%">
             <Box flex="1">
-              <Text>Assigned SSF Contact:</Text>
+              <Text>
+                Assigned SSF Contact:{' '}
+                {manufacturerDetails?.foodManufacturerRepresentative.firstName}{' '}
+                {manufacturerDetails?.foodManufacturerRepresentative.lastName}
+              </Text>
             </Box>
-            <Box flex="1" textAlign="right">
-              <Text>Pantry Partner since</Text>
+            <Box flex="1" textAlign="left">
+              <Text>
+                Pantry Partner since{' '}
+                {manufacturerDetails?.signupDate.toString().substring(0, 4)}
+              </Text>
             </Box>
           </HStack>
 
-          <HStack spacing={8} align="center" width="100%">
+          <HStack spacing={8} align="center" width="125%">
             <Box flex="1">
               <Text>Total donations:</Text>
             </Box>
-            <Box flex="1" textAlign="right">
-              <Text>Manufacturer Industry:</Text>
+            <Box flex="1" textAlign="left">
+              <Text>
+                Manufacturer Industry: {manufacturerDetails?.industry}
+              </Text>
+            </Box>
+          </HStack>
+
+          <HStack spacing={8} align="center" width="125%">
+            <Box flex="1">
+              <Text>Email Address: {manufacturerDetails?.email}</Text>
+            </Box>
+            <Box flex="1" textAlign="left">
+              <Text>Phone Number: {manufacturerDetails?.phone}</Text>
             </Box>
           </HStack>
 
           <HStack spacing={8} align="center" width="100%">
             <Box flex="1">
-              <Text>Email Address:</Text>
-            </Box>
-            <Box flex="1" textAlign="right">
-              <Text>Phone Number:</Text>
-            </Box>
-          </HStack>
-
-          <HStack spacing={8} align="center" width="100%">
-            <Box flex="1">
-              <Text>Address for Food Shipments:</Text>
+              <Text>
+                Address for Food Shipments: {manufacturerDetails?.address}
+              </Text>
             </Box>
           </HStack>
         </VStack>
@@ -183,7 +220,11 @@ const FoodManufacturerDashboard: React.FC = () => {
       >
         <Heading size="md">Update Frequency of Donations</Heading>
         <br />
-        Current Frequency: x donations a month
+        <p>
+          {' '}
+          Current Frequency: x donations{' '}
+          {manufacturerDetails?.donationFrequency}{' '}
+        </p>
         <Box
           bg="white"
           width="75% "
@@ -200,7 +241,11 @@ const FoodManufacturerDashboard: React.FC = () => {
             justifyContent="center"
           >
             <Text>A donation </Text>
-            <Select width="50%" placeholder="Period of time">
+            <Select
+              width="50%"
+              defaultValue={manufacturerDetails?.donationFrequency}
+              onChange={handleFrequencyChange}
+            >
               <option value="weekly">Weekly</option>
               <option value="biweekly">Biweekly</option>
               <option value="monthly">Monthly</option>
@@ -209,7 +254,9 @@ const FoodManufacturerDashboard: React.FC = () => {
             </Select>
           </HStack>
         </Box>
-        <Button bg={'gold'}>Confirm update</Button>
+        <Button onClick={handleUpdate} bg={'gold'}>
+          Confirm update
+        </Button>
       </Box>
     );
   };

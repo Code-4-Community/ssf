@@ -12,6 +12,7 @@ import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-up
 import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { AddManufacturerDetails1743518493960 } from '../migrations/1743518493960-AddManufacturerDetails';
+import { AddManufacturerDonationFrequency1743623272909 } from '../migrations/1743623272909-AddManufacturerDonationFrequency';
 
 const config = {
   type: 'postgres',
@@ -37,6 +38,7 @@ const config = {
     UpdatePantriesTable1739056029076,
     AddOrders1739496585940,
     AddManufacturerDetails1743518493960,
+    AddManufacturerDonationFrequency1743623272909,
   ],
 };
 

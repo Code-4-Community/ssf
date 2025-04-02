@@ -89,6 +89,7 @@ export interface ManufacturerDetails {
   phone: string;
   address: string;
   signupDate: Date;
+  donationFrequency: string;
   foodManufacturerRepresentative: {
     firstName: string;
     lastName: string;

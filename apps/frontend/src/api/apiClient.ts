@@ -40,9 +40,9 @@ export class ApiClient {
   public async getManufacturerDetails(
     manufacturerId: number,
   ): Promise<ManufacturerDetails> {
-    return this.axiosInstance.get(
-      `/api/manufacturer/getDetails/${manufacturerId}`,
-    ) as Promise<ManufacturerDetails>;
+    return this.axiosInstance
+      .get(`/api/manufacturer/getDetails/${manufacturerId}`)
+      .then((response) => response.data) as Promise<ManufacturerDetails>;
   }
 
   public async updatePantry(
@@ -93,6 +93,17 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
+  }
+
+  public async updateDonationFrequency(
+    manufacturerId: number,
+    frequency: string,
+    body?: unknown,
+  ): Promise<ManufacturerDetails> {
+    return this.patch(
+      `/api/manufacturer/updateFrequency/${manufacturerId}/${frequency}`,
+      body,
+    ) as Promise<ManufacturerDetails>;
   }
 
   public async updateDonationItemQuantity(
