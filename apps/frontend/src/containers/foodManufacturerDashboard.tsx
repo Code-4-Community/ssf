@@ -30,6 +30,7 @@ const FoodManufacturerDashboard: React.FC = () => {
     useState<ManufacturerDetails>();
   const [currentSelectedFrequency, setCurrentSelectedFrequency] =
     useState<string>();
+  const [manufacturerDonations, setManufacturerDonations] = useState<number>();
 
   useEffect(() => {
     if (!manufacturerId) {
@@ -44,6 +45,11 @@ const FoodManufacturerDashboard: React.FC = () => {
         );
         setManufacturerDetails(response);
         setCurrentSelectedFrequency(response.donationFrequency);
+
+        const numberDonations = await ApiClient.getManufacturerDonationCount(
+          parseInt(manufacturerId, 10),
+        );
+        setManufacturerDonations(numberDonations);
       } catch (error) {
         console.error('Error fetching manufacturer details: ', error);
       }
@@ -69,7 +75,7 @@ const FoodManufacturerDashboard: React.FC = () => {
   const handleFrequencyChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
-    setCurrentSelectedFrequency(event.target.value);
+    setCurrentSelectedFrequency('' + event.target.value);
   };
 
   const HamburgerMenu = () => {
@@ -176,7 +182,7 @@ const FoodManufacturerDashboard: React.FC = () => {
 
           <HStack spacing={8} align="center" width="125%">
             <Box flex="1">
-              <Text>Total donations:</Text>
+              <Text>Total donations: {manufacturerDonations}</Text>
             </Box>
             <Box flex="1" textAlign="left">
               <Text>
@@ -243,8 +249,9 @@ const FoodManufacturerDashboard: React.FC = () => {
             <Text>A donation </Text>
             <Select
               width="50%"
-              defaultValue={manufacturerDetails?.donationFrequency}
+              value={currentSelectedFrequency}
               onChange={handleFrequencyChange}
+              placeholder="Select frequency"
             >
               <option value="weekly">Weekly</option>
               <option value="biweekly">Biweekly</option>

@@ -58,6 +58,14 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
   }
 
+  public async getManufacturerDonationCount(
+    manufacturerId: number,
+  ): Promise<number> {
+    return this.get(
+      `/api/donations/getManufacturerDonationCount/${manufacturerId}`,
+    ) as Promise<number>;
+  }
+
   public async getPantrySSFRep(pantryId: number): Promise<User> {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
