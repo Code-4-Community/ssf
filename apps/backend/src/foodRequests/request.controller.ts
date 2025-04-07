@@ -14,6 +14,7 @@ import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -21,6 +22,7 @@ export class FoodRequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
+    private ordersService: OrdersService,
   ) {}
 
   @Get('/:requestId')
@@ -141,6 +143,9 @@ export class FoodRequestsController {
 
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
+
+    const order = this.ordersService.findOrderByRequest(requestId);
+    await this.ordersService.updateStatus((await order).orderId, 'delivered');
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

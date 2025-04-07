@@ -154,6 +154,33 @@ export class ApiClient {
       pantryId,
     });
   }
+
+  public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
+    const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
+    console.log('Raw response from API:', data);
+    return data as FoodRequest[];
+  }
+
+  public async confirmDelivery(
+    requestId: number,
+    data: FormData,
+  ): Promise<void> {
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/requests/${requestId}/confirm-delivery`,
+        data,
+      );
+
+      if (response.status === 200) {
+        alert('Delivery confirmation submitted successfully');
+        window.location.href = '/request-form/1';
+      } else {
+        alert(`Failed to submit: ${response.statusText}`);
+      }
+    } catch (error) {
+      alert(`Error submitting delivery confirmation: ${error}`);
+    }
+  }
 }
 
 export default new ApiClient();

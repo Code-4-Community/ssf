@@ -30,6 +30,9 @@ export class Order {
   })
   request: FoodRequest;
 
+  @Column({ name: 'request_id' })
+  requestId: number;
+
   @ManyToOne(() => FoodManufacturer, { nullable: false })
   @JoinColumn({
     name: 'shipped_by',

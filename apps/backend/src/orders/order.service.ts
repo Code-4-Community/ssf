@@ -37,6 +37,19 @@ export class OrdersService {
     });
   }
 
+  async findOrderByRequest(requestId: number): Promise<Order | null> {
+    const order = await this.repo.findOne({
+      where: { requestId },
+      relations: ['request'],
+    });
+
+    if (!order) {
+      return null;
+    } else {
+      return order;
+    }
+  }
+
   async findOrderPantry(orderId: number): Promise<Pantry | null> {
     const order = await this.repo.findOne({
       where: { orderId },

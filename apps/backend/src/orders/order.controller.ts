@@ -68,6 +68,13 @@ export class OrdersController {
     return this.ordersService.findOne(orderId);
   }
 
+  @Get('/order/:requestId')
+  async getOrderByRequestId(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<Order> {
+    return this.ordersService.findOrderByRequest(orderId);
+  }
+
   @Patch('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,

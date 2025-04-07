@@ -7,14 +7,16 @@ import { JwtStrategy } from '../auth/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
 import { AWSS3Module } from '../aws/aws-s3.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { OrdersService } from '../orders/order.service';
+import { Order } from '../orders/order.entity';
 
 @Module({
   imports: [
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
-    TypeOrmModule.forFeature([FoodRequest]),
+    TypeOrmModule.forFeature([FoodRequest, Order]),
   ],
   controllers: [FoodRequestsController],
-  providers: [RequestsService, AuthService, JwtStrategy],
+  providers: [RequestsService, OrdersService, AuthService, JwtStrategy],
 })
 export class RequestsModule {}

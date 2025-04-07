@@ -98,34 +98,16 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                 <Td>{order.status}</Td>
                 <Td>
                   <ButtonGroup>
-                    {(order.status === 'pending' ||
-                      order.status === 'shipped') && (
-                      <Menu>
-                        <MenuButton
-                          as={Button}
-                          rightIcon={<ChevronDownIcon />}
-                          colorScheme="blue"
-                          size="sm"
-                        >
-                          Update Status
-                        </MenuButton>
-                        <MenuList>
-                          <MenuItem
-                            onClick={() =>
-                              updateOrderStatus(order.orderId, 'shipped')
-                            }
-                          >
-                            Mark as Shipped
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() =>
-                              updateOrderStatus(order.orderId, 'delivered')
-                            }
-                          >
-                            Mark as Delivered
-                          </MenuItem>
-                        </MenuList>
-                      </Menu>
+                    {order.status === 'pending' && (
+                      <Button
+                        colorScheme="blue"
+                        size="sm"
+                        onClick={() =>
+                          updateOrderStatus(order.orderId, 'shipped')
+                        }
+                      >
+                        Mark as Shipped
+                      </Button>
                     )}
                   </ButtonGroup>
                 </Td>
