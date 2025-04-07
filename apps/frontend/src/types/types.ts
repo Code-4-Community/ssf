@@ -34,18 +34,19 @@ export interface Pantry {
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
-  status: string;
-  fulfilledBy: string | null;
   dateReceived: string | null;
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string;
+  orderId: number;
+  order?: Order;
 }
 
 export interface Order {
   orderId: number;
   requestId: number;
   pantryId: number;
+  foodManufacturer: FoodManufacturer;
   shippedBy: number;
   status: string;
   createdAt: string;

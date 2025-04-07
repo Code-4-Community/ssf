@@ -6,7 +6,6 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
-import { Allocation } from '../allocations/allocations.entity';
 
 @Injectable()
 export class OrdersService {
@@ -79,16 +78,8 @@ export class OrdersService {
   async findOrderFoodManufacturer(
     orderId: number,
   ): Promise<FoodManufacturer | null> {
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['shippedBy'],
-    });
-
-    if (!order) {
-      return null;
-    } else {
-      return order.shippedBy;
-    }
+    const order = this.findOne(orderId);
+    return (await order).foodManufacturer;
   }
 
   async findOrderDonation(orderId: number): Promise<Donation | null> {

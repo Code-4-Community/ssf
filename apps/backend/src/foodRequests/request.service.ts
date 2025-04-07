@@ -21,8 +21,6 @@ export class RequestsService {
     requestedSize: string,
     requestedItems: string[],
     additionalInformation: string | null,
-    status: string = 'pending',
-    fulfilledBy: number | null,
     dateReceived: Date | null,
     feedback: string | null,
     photos: string[] | null,
@@ -32,8 +30,6 @@ export class RequestsService {
       requestedSize,
       requestedItems,
       additionalInformation,
-      status,
-      fulfilledBy,
       dateReceived,
       feedback,
       photos,
@@ -46,7 +42,10 @@ export class RequestsService {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }
-    return await this.repo.find({ where: { pantryId } });
+    return await this.repo.find({
+      where: { pantryId },
+      relations: ['order'],
+    });
   }
 
   async updateDeliveryDetails(
@@ -64,7 +63,6 @@ export class RequestsService {
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.status = 'fulfilled';
 
     return await this.repo.save(request);
   }

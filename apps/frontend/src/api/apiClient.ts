@@ -130,6 +130,12 @@ export class ApiClient {
     return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
   }
 
+  public async getOrderByRequestId(requestId: number): Promise<Order> {
+    return this.axiosInstance.get(
+      `api/requests/get-order/${requestId}`,
+    ) as Promise<Order>;
+  }
+
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
       .get(`api/allocations/${orderId}/get-all-allocations`)
@@ -170,7 +176,6 @@ export class ApiClient {
         `/api/requests/${requestId}/confirm-delivery`,
         data,
       );
-
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
         window.location.href = '/request-form/1';

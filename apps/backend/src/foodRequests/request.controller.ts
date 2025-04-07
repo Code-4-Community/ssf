@@ -15,6 +15,7 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
+import { Order } from '../orders/order.entity';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -37,6 +38,14 @@ export class FoodRequestsController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
+  }
+
+  @Get('get-order/:requestId')
+  async getOrderByRequestId(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<Order> {
+    const request = this.requestsService.findOne(requestId);
+    return this.ordersService.findOne((await request).orderId);
   }
 
   @Post('/create')
@@ -94,8 +103,6 @@ export class FoodRequestsController {
       body.requestedSize,
       body.requestedItems,
       body.additionalInformation,
-      body.status,
-      body.fulfilledBy,
       body.dateReceived,
       body.feedback,
       body.photos,
@@ -143,9 +150,15 @@ export class FoodRequestsController {
 
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
+    console.log(
+      'Received photo files:',
+      photos?.map((p) => p.originalname),
+      '| Count:',
+      photos?.length,
+    );
 
-    const order = this.ordersService.findOrderByRequest(requestId);
-    await this.ordersService.updateStatus((await order).orderId, 'delivered');
+    const request = this.requestsService.findOne(requestId);
+    await this.ordersService.updateStatus((await request).orderId, 'delivered');
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

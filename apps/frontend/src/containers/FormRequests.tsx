@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
-import { FoodRequest } from 'types/types';
+import { FoodRequest, Order } from 'types/types';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
@@ -70,8 +70,8 @@ const FormRequests: React.FC = () => {
             <Th>Request Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
-            <Th>Fulfilled By</Th>
-            <Th>Expected Delivery Date</Th>
+            <Th>Shipped By</Th>
+            <Th>Delivery Date</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
@@ -80,14 +80,14 @@ const FormRequests: React.FC = () => {
             <Tr key={request.requestId}>
               <Td>{request.requestId}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.status}</Td>
-              <Td>{request.fulfilledBy}</Td>
+              <Td>{request.order?.status ?? 'pending'}</Td>
+              <Td>{request.order?.shippedBy ?? 'N/A'}</Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
-                {request.status === 'fulfilled' ? (
-                  <Text fontWeight="semibold" marginLeft="4">
-                    Confirm Delivery
-                  </Text>
+                {!request.order || request.order?.status === 'pending' ? (
+                  <Text>Awaiting Order Assignment</Text>
+                ) : request.order?.status === 'delivered' ? (
+                  <Text>Food Request is Already Delivered</Text>
                 ) : (
                   <DeliveryConfirmationModalButton
                     requestId={request.requestId}

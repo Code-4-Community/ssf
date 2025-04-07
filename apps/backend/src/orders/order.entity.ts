@@ -38,7 +38,10 @@ export class Order {
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
   })
-  shippedBy: FoodManufacturer;
+  foodManufacturer: FoodManufacturer;
+
+  @Column({ name: 'shipped_by' })
+  shippedBy: number;
 
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({
