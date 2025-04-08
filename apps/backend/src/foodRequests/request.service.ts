@@ -13,7 +13,10 @@ export class RequestsService {
     if (!requestId || requestId < 1) {
       throw new NotFoundException('Invalid request ID');
     }
-    return await this.repo.findOne({ where: { requestId } });
+    return await this.repo.findOne({
+      where: { requestId },
+      relations: ['order'],
+    });
   }
 
   async create(

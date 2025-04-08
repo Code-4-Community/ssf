@@ -41,13 +41,6 @@ export class FoodRequest {
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
 
-  @OneToOne(() => Order, { nullable: true })
-  @JoinColumn({
-    name: 'order_id',
-    referencedColumnName: 'orderId',
-  })
+  @OneToOne(() => Order, (order) => order.request, { nullable: true })
   order: Order;
-
-  @Column({ name: 'order_id' })
-  orderId: number;
 }

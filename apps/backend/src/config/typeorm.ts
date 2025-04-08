@@ -11,6 +11,7 @@ import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-up
 import { UpdateOrdersTable1740367964915 } from '../migrations/1740367964915-updateOrdersTable';
 import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-updateFoodRequests.ts';
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
+import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
 
 const config = {
   type: 'postgres',
@@ -35,6 +36,7 @@ const config = {
     UpdateOrdersTable1740367964915,
     UpdateRequestTable1741571847063,
     UpdateFoodRequests1744051370129,
+    RemoveOrderIdFromRequests1744133526650,
   ],
 };
 

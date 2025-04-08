@@ -100,11 +100,13 @@ export class OrdersService {
       throw new NotFoundException('Invalid order ID');
     }
 
+    // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
         status: newStatus,
+        shippedBy: 1,
         shippedAt: newStatus === 'shipped' ? new Date() : null,
         deliveredAt: newStatus === 'delivered' ? new Date() : null,
       })

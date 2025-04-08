@@ -45,7 +45,7 @@ export class FoodRequestsController {
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<Order> {
     const request = this.requestsService.findOne(requestId);
-    return this.ordersService.findOne((await request).orderId);
+    return (await request).order;
   }
 
   @Post('/create')
@@ -157,8 +157,8 @@ export class FoodRequestsController {
       photos?.length,
     );
 
-    const request = this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus((await request).orderId, 'delivered');
+    const request = await this.requestsService.findOne(requestId);
+    await this.ordersService.updateStatus(request.order.orderId, 'delivered');
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

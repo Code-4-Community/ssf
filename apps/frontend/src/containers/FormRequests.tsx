@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
-import { FoodRequest, Order } from 'types/types';
+import { FoodRequest } from 'types/types';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
@@ -81,7 +81,11 @@ const FormRequests: React.FC = () => {
               <Td>{request.requestId}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.order?.status ?? 'pending'}</Td>
-              <Td>{request.order?.shippedBy ?? 'N/A'}</Td>
+              <Td>
+                {request.order?.status === 'pending'
+                  ? 'N/A'
+                  : request.order?.shippedBy ?? 'N/A'}
+              </Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
                 {!request.order || request.order?.status === 'pending' ? (

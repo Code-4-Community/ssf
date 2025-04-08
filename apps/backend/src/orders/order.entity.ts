@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
@@ -23,7 +24,7 @@ export class Order {
   })
   pantry: Pantry;
 
-  @ManyToOne(() => FoodRequest, { nullable: false })
+  @OneToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
     name: 'request_id',
     referencedColumnName: 'requestId',
@@ -33,14 +34,14 @@ export class Order {
   @Column({ name: 'request_id' })
   requestId: number;
 
-  @ManyToOne(() => FoodManufacturer, { nullable: false })
+  @ManyToOne(() => FoodManufacturer, { nullable: true })
   @JoinColumn({
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
   })
   foodManufacturer: FoodManufacturer;
 
-  @Column({ name: 'shipped_by' })
+  @Column({ name: 'shipped_by', nullable: true })
   shippedBy: number;
 
   @ManyToOne(() => Donation, { nullable: false })

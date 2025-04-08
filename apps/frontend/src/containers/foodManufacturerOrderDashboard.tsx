@@ -9,13 +9,8 @@ import {
   Td,
   Button,
   ButtonGroup,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   VStack,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
 import OrderInformationModalButton from '@components/forms/orderInformationModalButton';

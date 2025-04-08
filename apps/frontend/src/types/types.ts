@@ -47,7 +47,7 @@ export interface Order {
   requestId: number;
   pantryId: number;
   foodManufacturer: FoodManufacturer;
-  shippedBy: number;
+  shippedBy: number | null;
   status: string;
   createdAt: string;
   shippedAt: string;
