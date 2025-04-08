@@ -14,6 +14,7 @@ import {
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
 import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
+import { formatDate } from '@utils/utils';
 
 const FoodManufacturerOrderDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -45,15 +46,6 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
     } catch (error) {
       alert(`Error updating order status: ` + error);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-    });
   };
 
   return (

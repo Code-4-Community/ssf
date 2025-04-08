@@ -7,7 +7,7 @@ export class AllocationsController {
   constructor(private allocationsService: AllocationsService) {}
 
   @Get(':orderId/get-all-allocations')
-  async getAllAllocationsByOder(
+  async getAllAllocationsByOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Allocation[] | null> {
     return this.allocationsService.getAllAllocationsByOrder(orderId);

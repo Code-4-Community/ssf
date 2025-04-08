@@ -14,7 +14,7 @@ import {
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
-import { formatDate } from '@utils/utils';
+import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
 const FormRequests: React.FC = () => {
@@ -41,12 +41,6 @@ const FormRequests: React.FC = () => {
 
     fetchRequests();
   }, [pantryId]);
-
-  const formatReceivedDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
 
   return (
     <Center flexDirection="column" p={4}>
