@@ -23,8 +23,6 @@ const OrderInformationModalButton: React.FC<
 > = ({ orderId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pantry, setPantry] = useState<Pantry | null>(null);
-  const [foodManufacturer, setFoodManufacturer] =
-    useState<FoodManufacturer | null>(null);
   const [allocationItems, setAllocationItems] = useState<Allocation[]>([]);
 
   useEffect(() => {
@@ -32,15 +30,11 @@ const OrderInformationModalButton: React.FC<
       const fetchData = async () => {
         try {
           const pantryData = await ApiClient.getPantryFromOrder(orderId);
-          const foodManufacturerData = await ApiClient.getManufacturerFromOrder(
-            orderId,
-          );
           const allocationItemData = await ApiClient.getAllAllocationsByOrder(
             orderId,
           );
 
           setPantry(pantryData);
-          setFoodManufacturer(foodManufacturerData);
           setAllocationItems(allocationItemData);
         } catch (error) {
           console.error('Error fetching order details:', error);
@@ -60,7 +54,7 @@ const OrderInformationModalButton: React.FC<
           <ModalHeader>Order Details</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {pantry && foodManufacturer ? (
+            {pantry ? (
               <VStack spacing={4} align="start">
                 <Text>
                   <strong>Pantry Name:</strong> {pantry.pantryName}
