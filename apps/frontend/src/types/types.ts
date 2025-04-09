@@ -80,3 +80,18 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string;
 }
+
+export interface ManufacturerDetails {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  industry: string;
+  email: string;
+  phone: string;
+  address: string;
+  signupDate: Date;
+  donationFrequency: string;
+  foodManufacturerRepresentative: {
+    firstName: string;
+    lastName: string;
+  };
+}

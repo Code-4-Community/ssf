@@ -1,5 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
-import { Donation, DonationItem, User, Pantry } from 'types/types';
+import {
+  Donation,
+  DonationItem,
+  User,
+  Pantry,
+  ManufacturerDetails,
+} from 'types/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
@@ -31,6 +37,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getManufacturerDetails(
+    manufacturerId: number,
+  ): Promise<ManufacturerDetails> {
+    return this.axiosInstance
+      .get(`/api/manufacturer/getDetails/${manufacturerId}`)
+      .then((response) => response.data) as Promise<ManufacturerDetails>;
+  }
+
   public async updatePantry(
     pantryId: number,
     decision: 'approve' | 'deny',
@@ -42,6 +56,14 @@ export class ApiClient {
 
   public async getPantry(pantryId: number): Promise<Pantry> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async getManufacturerDonationCount(
+    manufacturerId: number,
+  ): Promise<number> {
+    return this.get(
+      `/api/donations/getManufacturerDonationCount/${manufacturerId}`,
+    ) as Promise<number>;
   }
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
@@ -79,6 +101,17 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
+  }
+
+  public async updateDonationFrequency(
+    manufacturerId: number,
+    frequency: string,
+    body?: unknown,
+  ): Promise<ManufacturerDetails> {
+    return this.patch(
+      `/api/manufacturer/updateFrequency/${manufacturerId}/${frequency}`,
+      body,
+    ) as Promise<ManufacturerDetails>;
   }
 
   public async updateDonationItemQuantity(

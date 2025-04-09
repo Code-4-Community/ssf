@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   NotFoundException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -18,6 +19,13 @@ export class DonationsController {
   @Get('/get-all-donations')
   async getAllDonations(): Promise<Donation[]> {
     return this.donationService.getAll();
+  }
+
+  @Get('/getManufacturerDonationCount/:manufacturerId')
+  async getManufacturerDonationCount(
+    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+  ): Promise<number> {
+    return this.donationService.getManufacturerDonationCount(manufacturerId);
   }
 
   @Post('/create')
