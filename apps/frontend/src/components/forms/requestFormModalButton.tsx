@@ -45,11 +45,13 @@ const getAllergens = () => {
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
   buttonText: string;
+  disabled: boolean;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
   buttonText,
+  disabled,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -74,7 +76,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   return (
     <>
-      <Button onClick={onOpen}>{buttonText}</Button>
+      <Button onClick={onOpen} isDisabled={disabled}>
+        {buttonText}
+      </Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
