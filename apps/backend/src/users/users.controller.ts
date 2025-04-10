@@ -10,6 +10,7 @@ import {
 import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
+import { Role } from './types';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
@@ -26,5 +27,14 @@ export class UsersController {
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(parseInt(id));
+  }
+
+  @Get()
+  async getAllVolunteers(): Promise<User[]> {
+    return this.usersService.findUsersByRoles([
+      Role.LEAD_VOLUNTEER,
+      Role.STANDARD_VOLUNTEER,
+      Role.NON_PANTRY_VOLUNTEER,
+    ]);
   }
 }

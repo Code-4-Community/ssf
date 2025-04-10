@@ -1,5 +1,9 @@
-export enum VolunteerType {
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
-  NON_PANTRY_VOLUNTEER = 'non_pantry_volunteer',
-}
+import { Role } from '../users/types';
+
+export const VOLUNTEER_ROLES: Role[] = [
+  Role.LEAD_VOLUNTEER,
+  Role.STANDARD_VOLUNTEER,
+  Role.NON_PANTRY_VOLUNTEER,
+];
+
+export type VolunteerType = (typeof VOLUNTEER_ROLES)[number];

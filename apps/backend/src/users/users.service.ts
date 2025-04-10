@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { User } from './user.entity';
 import { Role } from './types';
@@ -13,7 +13,7 @@ export class UsersService {
     email: string,
     firstName: string,
     lastName: string,
-    role: Role = Role.VOLUNTEER,
+    role: Role = Role.STANDARD_VOLUNTEER,
   ) {
     const userId = (await this.repo.count()) + 1;
     const user = this.repo.create({
@@ -59,5 +59,9 @@ export class UsersService {
     }
 
     return this.repo.remove(user);
+  }
+
+  async findUsersByRoles(roles: string[]): Promise<User[]> {
+    return this.repo.find({ where: { role: In(roles) } });
   }
 }

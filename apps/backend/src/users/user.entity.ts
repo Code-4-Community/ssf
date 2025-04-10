@@ -10,7 +10,7 @@ export class User {
   @Column({
     type: 'varchar',
     length: 20,
-    default: Role.VOLUNTEER,
+    default: Role.STANDARD_VOLUNTEER,
   })
   role: Role;
 
