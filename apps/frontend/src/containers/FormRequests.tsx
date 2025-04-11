@@ -14,7 +14,8 @@ import {
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
-import { formatDate } from '@utils/utils';
+import { formatDate, formatReceivedDate } from '@utils/utils';
+import ApiClient from '@api/apiClient';
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -24,33 +25,10 @@ const FormRequests: React.FC = () => {
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
 
-  const getAllPantryRequests = async (
-    pantryId: number,
-  ): Promise<FoodRequest[]> => {
-    try {
-      const response = await fetch(`/api/requests/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert('Failed to fetch food requests ' + (await response.text()));
-        return [];
-      }
-    } catch (error) {
-      alert('Error fetching food requests ' + error);
-      return [];
-    }
-  };
-
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
-        const data = await getAllPantryRequests(parseInt(pantryId, 10));
+        const data = await ApiClient.getPantryRequests(parseInt(pantryId, 10));
         setRequests(data);
 
         if (data.length > 0) {
@@ -64,12 +42,6 @@ const FormRequests: React.FC = () => {
 
     fetchRequests();
   }, [pantryId]);
-
-  const formatReceivedDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
 
   useEffect(() => {
     setAllConfirmed(requests.every((request) => request.dateReceived !== null));
@@ -99,8 +71,8 @@ const FormRequests: React.FC = () => {
             <Th>Request Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
-            <Th>Fulfilled By</Th>
-            <Th>Expected Delivery Date</Th>
+            <Th>Shipped By</Th>
+            <Th>Delivery Date</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
@@ -109,14 +81,18 @@ const FormRequests: React.FC = () => {
             <Tr key={request.requestId}>
               <Td>{request.requestId}</Td>
               <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.status}</Td>
-              <Td>{request.fulfilledBy}</Td>
+              <Td>{request.order?.status ?? 'pending'}</Td>
+              <Td>
+                {request.order?.status === 'pending'
+                  ? 'N/A'
+                  : request.order?.shippedBy ?? 'N/A'}
+              </Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
-                {request.status === 'fulfilled' ? (
-                  <Text fontWeight="semibold" marginLeft="4">
-                    Confirm Delivery
-                  </Text>
+                {!request.order || request.order?.status === 'pending' ? (
+                  <Text>Awaiting Order Assignment</Text>
+                ) : request.order?.status === 'delivered' ? (
+                  <Text>Food Request is Already Delivered</Text>
                 ) : (
                   <DeliveryConfirmationModalButton
                     requestId={request.requestId}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
@@ -6,6 +6,15 @@ import { Donation } from './donations.entity';
 @Injectable()
 export class DonationService {
   constructor(@InjectRepository(Donation) private repo: Repository<Donation>) {}
+
+  async findOne(donationId: number) {
+    if (!donationId || donationId < 1) {
+      throw new NotFoundException('Invalid donation ID');
+    }
+    return await this.repo.findOne({
+      where: { donationId },
+    });
+  }
 
   async getAll() {
     return this.repo.find();
