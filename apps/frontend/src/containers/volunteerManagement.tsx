@@ -147,6 +147,13 @@ const VolunteerManagement: React.FC = () => {
           }),
         ),
       );
+      await Promise.all(
+        changedAssignments.map((assignment) =>
+          ApiClient.updateUserVolunteerRole(assignment.volunteer.id, {
+            role: String(assignment.volunteerType),
+          }),
+        ),
+      );
       setAssignments(changedAssignments);
       alert('successful save!');
     } catch (error) {

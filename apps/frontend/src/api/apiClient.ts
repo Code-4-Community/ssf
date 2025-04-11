@@ -64,6 +64,15 @@ export class ApiClient {
       .then(() => {});
   }
 
+  public async updateUserVolunteerRole(
+    userId: number,
+    body: { role: string },
+  ): Promise<void> {
+    return this.axiosInstance
+      .put(`/api/users/${userId}/role`, body)
+      .then(() => {});
+  }
+
   private async post(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .post(path, body)
