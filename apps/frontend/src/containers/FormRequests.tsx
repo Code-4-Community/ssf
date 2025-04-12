@@ -134,8 +134,10 @@ const FormRequests: React.FC = () => {
                 />
               </Td>
               <Td>
-                {request.orderId ? (
-                  <OrderInformationModalButton orderId={request.orderId} />
+                {request.order?.orderId ? (
+                  <OrderInformationModalButton
+                    orderId={request.order.orderId}
+                  />
                 ) : (
                   'N/A'
                 )}

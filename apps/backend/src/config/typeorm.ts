@@ -14,8 +14,8 @@ import { UpdateOrdersTable1740367964915 } from '../migrations/1740367964915-upda
 import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-updateFoodRequests.ts';
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
-
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+
 const config = {
   type: 'postgres',
   host: `${process.env.DATABASE_HOST}`,
