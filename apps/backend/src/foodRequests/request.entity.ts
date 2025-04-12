@@ -3,8 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  ManyToOne,
-  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 
@@ -32,12 +31,6 @@ export class FoodRequest {
   })
   requestedAt: Date;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
-  status: string;
-
-  @Column({ name: 'fulfilled_by', type: 'int', nullable: true })
-  fulfilledBy: number;
-
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
   dateReceived: Date;
 
@@ -47,10 +40,6 @@ export class FoodRequest {
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
 
-  @ManyToOne(() => Order, { nullable: true })
-  @JoinColumn({
-    name: 'order_id',
-    referencedColumnName: 'orderId',
-  })
-  order: Order | null;
+  @OneToOne(() => Order, (order) => order.request, { nullable: true })
+  order: Order;
 }

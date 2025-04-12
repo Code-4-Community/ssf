@@ -12,10 +12,11 @@ import {
   HStack,
   Select,
 } from '@chakra-ui/react';
-import ApiClient from '@api/apiClient';
 import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
+import { formatDate, formatReceivedDate } from '@utils/utils';
+import ApiClient from '@api/apiClient';
 import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
 
 const FormRequests: React.FC = () => {
@@ -25,12 +26,13 @@ const FormRequests: React.FC = () => {
   >(undefined);
   const [sortBy, setSortBy] = useState<string>('mostRecent');
   const { pantryId } = useParams<{ pantryId: string }>();
+  const [allConfirmed, setAllConfirmed] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
-          const data = await ApiClient.getAllPantryRequests(
+          const data = await ApiClient.getPantryRequests(
             parseInt(pantryId, 10),
           );
           setRequests(data);
@@ -51,10 +53,9 @@ const FormRequests: React.FC = () => {
     fetchRequests();
   }, [pantryId]);
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString('en-CA');
-  const formatReceivedDate = (dateString: string | null) =>
-    dateString ? new Date(dateString).toLocaleDateString('en-CA') : 'N/A';
+  useEffect(() => {
+    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
+  }, [requests]);
 
   const sortedRequests = [...requests].sort((a, b) => {
     if (sortBy === 'mostRecent')
@@ -65,7 +66,11 @@ const FormRequests: React.FC = () => {
       return (
         new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
       );
-    if (sortBy === 'status') return b.status.localeCompare(a.status);
+    if (sortBy === 'status') {
+      const statusA = a.order?.status ?? '';
+      const statusB = b.order?.status ?? '';
+      return statusB.localeCompare(statusA);
+    }
     if (sortBy === 'confirmed')
       return (
         new Date(b.dateReceived || 0).getTime() -
@@ -80,6 +85,7 @@ const FormRequests: React.FC = () => {
         <FoodRequestFormModalButton
           readOnly={false}
           buttonText="Submit New Request"
+          disabled={!allConfirmed}
         />
 
         {previousRequest && (
@@ -87,6 +93,7 @@ const FormRequests: React.FC = () => {
             previousRequest={previousRequest}
             readOnly={false}
             buttonText="Submit Previous Request"
+            disabled={!allConfirmed}
           />
         )}
       </HStack>
@@ -110,7 +117,7 @@ const FormRequests: React.FC = () => {
             <Th>Order Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
-            <Th>Fulfilled By</Th>
+            <Th>Shipped By</Th>
             <Th>Date Fulfilled</Th>
             <Th>Actions</Th>
           </Tr>
@@ -123,6 +130,7 @@ const FormRequests: React.FC = () => {
                   previousRequest={request}
                   readOnly={true}
                   buttonText={request.requestId.toString()}
+                  disabled={false}
                 />
               </Td>
               <Td>
@@ -133,14 +141,18 @@ const FormRequests: React.FC = () => {
                 )}
               </Td>
               <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.status}</Td>
-              <Td>{request.fulfilledBy ? request.fulfilledBy : 'N/A'}</Td>
+              <Td>{request.order?.status ?? 'pending'}</Td>
+              <Td>
+                {request.order?.status === 'pending'
+                  ? 'N/A'
+                  : request.order?.shippedBy ?? 'N/A'}
+              </Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
-                {request.status === 'fulfilled' ? (
-                  <Text fontWeight="semibold" marginLeft="4">
-                    Confirm Delivery
-                  </Text>
+                {!request.order || request.order?.status === 'pending' ? (
+                  <Text>Awaiting Order Assignment</Text>
+                ) : request.order?.status === 'delivered' ? (
+                  <Text>Food Request is Already Delivered</Text>
                 ) : (
                   <DeliveryConfirmationModalButton
                     requestId={request.requestId}

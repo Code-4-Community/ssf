@@ -15,7 +15,6 @@ export class FoodManufacturer {
   @Column({ name: 'food_manufacturer_name', type: 'varchar', length: 255 })
   foodManufacturerName: string;
 
-  @Column({ name: 'food_manufacturer_representative_id', type: 'int' })
   @OneToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'food_manufacturer_representative_id',

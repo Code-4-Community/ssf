@@ -27,13 +27,6 @@ export class OrdersService {
     });
   }
 
-  async getOrderByRequest(requestId: number): Promise<Order | null> {
-    return this.repo.findOne({
-      where: { request: { requestId } },
-      relations: ['request'],
-    });
-  }
-
   async findOne(orderId: number) {
     if (!orderId || orderId < 1) {
       throw new NotFoundException('Invalid order ID');
@@ -41,6 +34,19 @@ export class OrdersService {
     return await this.repo.findOne({
       where: { orderId },
     });
+  }
+
+  async findOrderByRequest(requestId: number): Promise<Order | null> {
+    const order = await this.repo.findOne({
+      where: { requestId },
+      relations: ['request'],
+    });
+
+    if (!order) {
+      return null;
+    } else {
+      return order;
+    }
   }
 
   async findOrderPantry(orderId: number): Promise<Pantry | null> {
@@ -72,16 +78,8 @@ export class OrdersService {
   async findOrderFoodManufacturer(
     orderId: number,
   ): Promise<FoodManufacturer | null> {
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['shippedBy'],
-    });
-
-    if (!order) {
-      return null;
-    } else {
-      return order.shippedBy;
-    }
+    const order = this.findOne(orderId);
+    return (await order).foodManufacturer;
   }
 
   async findOrderDonation(orderId: number): Promise<Donation | null> {
@@ -102,11 +100,13 @@ export class OrdersService {
       throw new NotFoundException('Invalid order ID');
     }
 
+    // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
         status: newStatus,
+        shippedBy: 1,
         shippedAt: newStatus === 'shipped' ? new Date() : null,
         deliveredAt: newStatus === 'delivered' ? new Date() : null,
       })

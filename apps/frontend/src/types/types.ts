@@ -1,3 +1,42 @@
+export interface Donation {
+  donationId: number;
+  foodManufacturerId: number;
+  dateDonated: string;
+  status: string;
+  totalItems: number;
+  totalOz: number;
+  totalEstimatedValue: number;
+}
+
+export interface DonationItem {
+  itemId: number;
+  donationId: number;
+  itemName: string;
+  quantity: number;
+  reservedQuantity: number;
+  status: string;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: string;
+}
+
+export const FoodTypes = [
+  'Dairy-Free Alternatives',
+  'Dried Beans (Gluten-Free, Nut-Free)',
+  'Gluten-Free Baking/Pancake Mixes',
+  'Gluten-Free Bread',
+  'Gluten-Free Tortillas',
+  'Granola',
+  'Masa Harina Flour',
+  'Nut-Free Granola Bars',
+  'Olive Oil',
+  'Refrigerated Meals',
+  'Rice Noodles',
+  'Seed Butters (Peanut Butter Alternative)',
+  'Whole-Grain Cookies',
+  'Quinoa',
+] as const;
+
 export interface User {
   userId: number;
   role: string;
@@ -34,20 +73,20 @@ export interface Pantry {
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
-  status: string;
-  fulfilledBy: string | null;
   dateReceived: string | null;
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string;
   orderId: number;
+  order?: Order;
 }
 
 export interface Order {
   orderId: number;
   requestId: number;
   pantryId: number;
-  shippedBy: number;
+  foodManufacturer: FoodManufacturer;
+  shippedBy: number | null;
   status: string;
   createdAt: string;
   shippedAt: string;
@@ -64,7 +103,7 @@ export interface FoodManufacturer {
 export interface Donation {
   donationId: number;
   foodManufacturerId: number;
-  dateDonated: Date;
+  dateDonated: string;
   status: string;
   totalItems: number;
   totalOz: number;
@@ -81,4 +120,15 @@ export interface DonationItem {
   ozPerItem: number;
   estimatedValue: number;
   foodType: string;
+}
+
+export interface Allocation {
+  allocationId: number;
+  orderId: number;
+  itemId: number;
+  item: DonationItem;
+  allocatedQuantity: number;
+  reservedAt: string;
+  fulfilledAt: string;
+  status: string;
 }

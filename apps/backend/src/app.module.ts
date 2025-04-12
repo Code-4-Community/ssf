@@ -10,9 +10,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import typeorm from './config/typeorm';
 import { OrdersModule } from './orders/order.module';
-import { DonationModule } from './donations/donations.module';
 import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
+import { DonationModule } from './donations/donations.module';
 import { DonationItemsModule } from './donationItems/donationItems.module';
+import { AllocationModule } from './allocations/allocations.module';
 
 @Module({
   imports: [
@@ -32,11 +33,11 @@ import { DonationItemsModule } from './donationItems/donationItems.module';
     AuthModule,
     PantriesModule,
     RequestsModule,
-    PantriesModule,
-    OrdersModule,
     DonationModule,
     DonationItemsModule,
+    OrdersModule,
     ManufacturerModule,
+    AllocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

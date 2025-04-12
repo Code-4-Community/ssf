@@ -31,12 +31,18 @@ export class Order {
   })
   request: FoodRequest;
 
-  @ManyToOne(() => FoodManufacturer, { nullable: false })
+  @Column({ name: 'request_id' })
+  requestId: number;
+
+  @ManyToOne(() => FoodManufacturer, { nullable: true })
   @JoinColumn({
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
   })
-  shippedBy: FoodManufacturer;
+  foodManufacturer: FoodManufacturer;
+
+  @Column({ name: 'shipped_by', nullable: true })
+  shippedBy: number;
 
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({

@@ -45,12 +45,14 @@ const getAllergens = () => {
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
   buttonText: string;
+  disabled: boolean;
   readOnly?: boolean;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
   buttonText,
+  disabled,
   readOnly = false,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -73,7 +75,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   return (
     <>
-      <Button onClick={onOpen}>{buttonText}</Button>
+      <Button onClick={onOpen} isDisabled={disabled}>
+        {buttonText}
+      </Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
@@ -167,6 +171,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
+
   const foodRequestData = new Map();
 
   foodRequestData.set('requestedSize', form.get('size'));
@@ -183,12 +188,15 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   try {
     const response = await fetch('/api/requests/create', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     });
 
     if (response.ok) {
       console.log('Food request submitted successfully');
+
       window.location.href = '/request-form/1';
       return null;
     } else {

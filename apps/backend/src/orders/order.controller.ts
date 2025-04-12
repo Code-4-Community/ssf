@@ -33,13 +33,6 @@ export class OrdersController {
     return this.ordersService.getPastOrders();
   }
 
-  @Get('/get-order-by-request/:requestId')
-  async getOrderByRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order | null> {
-    return this.ordersService.getOrderByRequest(requestId);
-  }
-
   @Get(':orderId/pantry')
   async getPantryFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -73,6 +66,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Order> {
     return this.ordersService.findOne(orderId);
+  }
+
+  @Get('/order/:requestId')
+  async getOrderByRequestId(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<Order> {
+    return this.ordersService.findOrderByRequest(orderId);
   }
 
   @Patch('/update-status/:orderId')

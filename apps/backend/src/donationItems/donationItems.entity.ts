@@ -4,8 +4,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Donation } from '../donations/donations.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Entity('donation_items')
 export class DonationItem {
@@ -39,4 +41,7 @@ export class DonationItem {
 
   @Column({ name: 'food_type', type: 'varchar', length: 255, nullable: true })
   foodType: string;
+
+  @OneToMany(() => Allocation, (allocation) => allocation.item)
+  allocations: Allocation[];
 }
