@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { VolunteerType } from './types';
+import { VOLUNTEER_ROLES, VolunteerType } from './types';
 
 @Entity('volunteer_assignments')
 export class Assignments {
@@ -34,8 +34,8 @@ export class Assignments {
 
   @Column({
     type: 'enum',
-    enum: VolunteerType,
-    default: VolunteerType.NON_PANTRY_VOLUNTEER,
+    enum: VOLUNTEER_ROLES,
+    default: 'non_pantry_volunteer',
     name: 'volunteer_type',
   })
   volunteerType: VolunteerType;

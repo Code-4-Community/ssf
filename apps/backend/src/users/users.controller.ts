@@ -38,7 +38,15 @@ export class UsersController {
     if (!Object.values(Role).includes(upperCaseRole as Role)) {
       throw new BadRequestException('Invalid role');
     }
-
     return this.usersService.update(id, { role: upperCaseRole as Role });
+  }
+
+  @Get()
+  async getAllVolunteers(): Promise<User[]> {
+    return this.usersService.findUsersByRoles([
+      Role.LEAD_VOLUNTEER,
+      Role.STANDARD_VOLUNTEER,
+      Role.NON_PANTRY_VOLUNTEER,
+    ]);
   }
 }
