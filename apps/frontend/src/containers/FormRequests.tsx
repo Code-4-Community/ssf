@@ -66,16 +66,12 @@ const FormRequests: React.FC = () => {
       return (
         new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
       );
-    if (sortBy === 'status') {
-      const statusA = a.order?.status ?? '';
-      const statusB = b.order?.status ?? '';
-      return statusB.localeCompare(statusA);
-    }
     if (sortBy === 'confirmed')
       return (
         new Date(b.dateReceived || 0).getTime() -
         new Date(a.dateReceived || 0).getTime()
       );
+
     return 0;
   });
 
@@ -106,7 +102,6 @@ const FormRequests: React.FC = () => {
       >
         <option value="mostRecent">Date Requested (Recent)</option>
         <option value="oldest">Date Requested (Oldest)</option>
-        <option value="status">Status</option>
         <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
       </Select>
 
