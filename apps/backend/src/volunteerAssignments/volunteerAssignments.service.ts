@@ -45,6 +45,7 @@ export class AssignmentsService {
         volunteer: {
           id: true,
           firstName: true,
+          lastName: true,
           email: true,
           phone: true,
         },

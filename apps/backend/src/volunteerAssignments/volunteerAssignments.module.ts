@@ -12,4 +12,4 @@ import { UsersModule } from '../users/users.module';
   controllers: [AssignmentsController],
   providers: [AssignmentsService, AuthService, JwtStrategy],
 })
-export class AssignemntsModule {}
+export class AssignmentsModule {}

@@ -34,11 +34,10 @@ export class UsersController {
 
   @Put(':id/role')
   async updateRole(@Param('id') id: number, @Body('role') role: string) {
-    const upperCaseRole = role.toUpperCase();
-    if (!Object.values(Role).includes(upperCaseRole as Role)) {
+    if (!Object.values(Role).includes(role as Role)) {
       throw new BadRequestException('Invalid role');
     }
-    return this.usersService.update(id, { role: upperCaseRole as Role });
+    return this.usersService.update(id, { role: role as Role });
   }
 
   @Get()

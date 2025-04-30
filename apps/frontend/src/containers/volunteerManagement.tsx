@@ -99,13 +99,11 @@ const VolunteerManagement: React.FC = () => {
           )
         }
       >
-        <option value={VolunteerType.LEAD_VOLUNTEER}>Lead Volunteer</option>
-        <option value={VolunteerType.STANDARD_VOLUNTEER}>
-          Standard Volunteer
-        </option>
-        <option value={VolunteerType.NON_PANTRY_VOLUNTEER}>
-          Non-Pantry Volunteer
-        </option>
+        {Object.entries(VOLUNTEER_TYPES).map(([key, label]) => (
+          <option value={VolunteerType[key as keyof typeof VolunteerType]}>
+            {label}
+          </option>
+        ))}
       </Select>
     );
   };
@@ -175,6 +173,12 @@ const VolunteerManagement: React.FC = () => {
     setChangedAssignments(updatedAssignments);
   };
 
+  const VOLUNTEER_TYPES: Record<string, string> = {
+    LEAD_VOLUNTEER: 'Lead Volunteer',
+    STANDARD_VOLUNTEER: 'Standard Volunteer',
+    NON_PANTRY_VOLUNTEER: 'Non-Pantry Volunteer',
+  };
+
   return (
     <Center flexDirection="column" p={4}>
       <Text fontSize="2xl">Pantry Volunteer Management</Text>
@@ -201,7 +205,8 @@ const VolunteerManagement: React.FC = () => {
                       )
                     }
                   >
-                    {volunteerType}
+                    {VOLUNTEER_TYPES[volunteerType.toUpperCase()] ||
+                      volunteerType}
                   </Checkbox>
                 </MenuItem>
               ))}
@@ -230,7 +235,10 @@ const VolunteerManagement: React.FC = () => {
           <Tbody>
             {filteredAssignments?.map((assignment) => (
               <Tr key={assignment.assignmentId}>
-                <Td>{assignment.volunteer.firstName}</Td>
+                <Td>
+                  {assignment.volunteer.firstName}{' '}
+                  {assignment.volunteer.lastName}
+                </Td>
                 <Td>{assignment.volunteer.email}</Td>
                 <Td>{assignment.volunteer.phone}</Td>
                 <Td>
