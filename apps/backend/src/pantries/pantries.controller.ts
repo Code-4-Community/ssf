@@ -28,7 +28,7 @@ import { Public } from '../auth/public.decorator';
 
 @Controller('pantries')
 // @UseInterceptors(CurrentUserInterceptor)
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
@@ -42,6 +42,16 @@ export class PantriesController {
   }
 
   @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(RolesGuard)
+  @Get('/:pantryId/ssf-contact')
+  async getSSFRep(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<User> {
+    return this.pantriesService.findSSFRep(pantryId);
+  }
+
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(RolesGuard)
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -302,7 +312,8 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @Patch('/:pantryId/approve')
+  @UseGuards(RolesGuard)
+  @Post('/approve/:pantryId')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
@@ -310,7 +321,8 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @Patch('/:pantryId/deny')
+  @UseGuards(RolesGuard)
+  @Post('/deny/:pantryId')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
