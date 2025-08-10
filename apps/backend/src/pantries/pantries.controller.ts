@@ -16,19 +16,17 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Controller('pantries')
 // @UseInterceptors(CurrentUserInterceptor)
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class PantriesController {
   constructor(private pantriesService: PantriesService) {}
 
   @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
   }
 
   @Roles(Role.PANTRY, Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Get('/:pantryId/ssf-contact')
   async getSSFRep(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -37,7 +35,6 @@ export class PantriesController {
   }
 
   @Roles(Role.PANTRY, Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -46,7 +43,6 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Post('/approve/:pantryId')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -55,7 +51,6 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Post('/deny/:pantryId')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,

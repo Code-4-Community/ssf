@@ -1,4 +1,5 @@
 import { Button } from '@chakra-ui/react';
+import SignOutButton from '@components/signOutButton';
 import { signOut } from 'aws-amplify/auth';
 
 const LandingPage: React.FC = () => {
@@ -9,7 +10,7 @@ const LandingPage: React.FC = () => {
   return (
     <>
       Landing page
-      <Button onClick={handleSignOut}> sign out</Button>
+      <SignOutButton />
     </>
   );
 };

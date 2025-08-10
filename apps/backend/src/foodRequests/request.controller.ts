@@ -22,6 +22,7 @@ import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('requests')
 // @UseInterceptors()
+@UseGuards(RolesGuard)
 @UseGuards(AuthGuard('jwt'))
 export class FoodRequestsController {
   constructor(
@@ -30,7 +31,6 @@ export class FoodRequestsController {
   ) {}
 
   @Roles(Role.PANTRY)
-  @UseGuards(RolesGuard)
   @Get('/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -39,7 +39,6 @@ export class FoodRequestsController {
   }
 
   @Roles(Role.PANTRY)
-  @UseGuards(RolesGuard)
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',
@@ -104,7 +103,6 @@ export class FoodRequestsController {
   }
 
   @Roles(Role.PANTRY)
-  @UseGuards(RolesGuard)
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',
