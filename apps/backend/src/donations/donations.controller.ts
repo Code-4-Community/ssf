@@ -28,6 +28,11 @@ export class DonationsController {
     return this.donationService.getAll();
   }
 
+  @Get('/donation-count')
+  async getNumberOfDonations(): Promise<number> {
+    return this.donationService.getNumberOfDonations();
+  }
+
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a donation',

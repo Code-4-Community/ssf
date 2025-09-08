@@ -20,6 +20,10 @@ export class DonationService {
     return this.repo.find();
   }
 
+  async getNumberOfDonations(): Promise<number> {
+    return this.repo.count();
+  }
+
   async create(
     foodManufacturerId: number,
     dateDonated: Date,
