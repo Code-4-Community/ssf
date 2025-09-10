@@ -1,20 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
+import { mock } from 'jest-mock-extended';
+
+const mockDonationRepository = mock<Repository<Donation>>();
 
 describe('DonationService', () => {
   let service: DonationService;
-  let mockDonationRepository: { count: jest.Mock };
 
   beforeAll(async () => {
-    // Creating a mock repository
-    mockDonationRepository = {
-      count: jest.fn(),
-    };
+    mockDonationRepository.count.mockReset();
 
-    // Make the testing module and tell it to use the created mock repo
     const app = await Test.createTestingModule({
       providers: [
         DonationService,
@@ -30,5 +28,16 @@ describe('DonationService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getDonationCount', () => {
+    it.each([[0], [5]])('should return %i of donations', async (count) => {
+      mockDonationRepository.count.mockResolvedValue(count);
+
+      const donationCount: number = await service.getNumberOfDonations();
+
+      expect(donationCount).toEqual(count);
+      expect(mockDonationRepository.count).toHaveBeenCalled();
+    });
   });
 });
