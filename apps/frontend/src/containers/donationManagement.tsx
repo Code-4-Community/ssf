@@ -10,6 +10,7 @@ import {
   Button,
   Box,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
@@ -17,6 +18,7 @@ import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
 
 const DonationManagement: React.FC = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [expandedDonationIds, setExpandedDonationIds] = useState<number[]>([]);
   const [donationItems, setDonationItems] = useState<{
@@ -88,7 +90,12 @@ const DonationManagement: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <NewDonationFormModalButton onDonationSuccess={fetchDonations} />
+      <Button onClick={onOpen}>Submit new donation</Button>
+      <NewDonationFormModalButton
+        onDonationSuccess={fetchDonations}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>

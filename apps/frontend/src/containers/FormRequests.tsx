@@ -9,15 +9,20 @@ import {
   Tr,
   Th,
   Td,
+  Button,
   HStack,
+  useDisclosure,
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
 import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { all } from 'axios';
 
 const FormRequests: React.FC = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
@@ -50,18 +55,26 @@ const FormRequests: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
+        <Button onClick={onOpen} isDisabled={!allConfirmed}>
+          Submit New Request
+        </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
-          buttonText="Submit New Request"
-          disabled={!allConfirmed}
+          isOpen={isOpen}
+          onClose={onClose}
         />
 
         {previousRequest && (
-          <FoodRequestFormModal
-            previousRequest={previousRequest}
-            buttonText="Submit Previous Request"
-            disabled={!allConfirmed}
-          />
+          <>
+            <Button onClick={onOpen} isDisabled={!allConfirmed}>
+              Submit Previous Request
+            </Button>
+            <FoodRequestFormModal
+              previousRequest={previousRequest}
+              isOpen={isOpen}
+              onClose={onClose}
+            />
+          </>
         )}
       </HStack>
 
@@ -94,9 +107,14 @@ const FormRequests: React.FC = () => {
                 ) : request.order?.status === 'delivered' ? (
                   <Text>Food Request is Already Delivered</Text>
                 ) : (
-                  <DeliveryConfirmationModalButton
-                    requestId={request.requestId}
-                  />
+                  <>
+                    <Button onClick={onOpen}>Confirm Delivery</Button>
+                    <DeliveryConfirmationModalButton
+                      requestId={request.requestId}
+                      isOpen={isOpen}
+                      onClose={onClose}
+                    />
+                  </>
                 )}
               </Td>
             </Tr>

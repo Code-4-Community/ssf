@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
+import {
+  Center,
+  Table,
+  Tbody,
+  Tr,
+  Td,
+  Button,
+  Select,
+  useDisclosure,
+} from '@chakra-ui/react';
 import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
 const ApprovePantries: React.FC = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
@@ -85,7 +95,14 @@ const ApprovePantries: React.FC = () => {
             <Tr key={pantry.pantryId}>
               <Td>{pantry.pantryId}</Td>
               <Td>
-                <PantryApplicationModalButton pantry={pantry} />
+                <Button variant="link" colorScheme="blue" onClick={onOpen}>
+                  {pantry.pantryName}
+                </Button>
+                <PantryApplicationModalButton
+                  pantry={pantry}
+                  isOpen={isOpen}
+                  onClose={onClose}
+                />
               </Td>
               <Td>{formatDate(pantry.dateApplied)}</Td>
               <Td>

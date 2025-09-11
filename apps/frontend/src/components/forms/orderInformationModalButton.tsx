@@ -1,27 +1,26 @@
 import {
-  Button,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  useDisclosure,
   VStack,
   Text,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
-import { Pantry, FoodManufacturer, Allocation } from 'types/types';
+import { Pantry, Allocation } from 'types/types';
 
 interface OrderInformationModalButtonProps {
   orderId: number;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const OrderInformationModalButton: React.FC<
   OrderInformationModalButtonProps
-> = ({ orderId }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+> = ({ orderId, isOpen, onClose }) => {
   const [pantry, setPantry] = useState<Pantry | null>(null);
   const [allocationItems, setAllocationItems] = useState<Allocation[]>([]);
 
@@ -46,43 +45,40 @@ const OrderInformationModalButton: React.FC<
   }, [isOpen, orderId]);
 
   return (
-    <>
-      <Button onClick={onOpen}>{orderId}</Button>
-      <Modal isOpen={isOpen} size="lg" onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Order Details</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {pantry ? (
-              <VStack spacing={4} align="start">
-                <Text>
-                  <strong>Pantry Name:</strong> {pantry.pantryName}
-                </Text>
-                <Text>
-                  <strong>Pantry Address:</strong> {pantry.address}
-                </Text>
-                <Text>
-                  <strong>Order Items:</strong>
-                  {allocationItems.length > 0 ? (
-                    allocationItems.map((allocation) => (
-                      <Text key={allocation.allocationId}>
-                        - {allocation.allocatedQuantity}{' '}
-                        {allocation.item.itemName}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text>No order contents available</Text>
-                  )}
-                </Text>
-              </VStack>
-            ) : (
-              <Text>No data to load</Text>
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Order Details</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          {pantry ? (
+            <VStack spacing={4} align="start">
+              <Text>
+                <strong>Pantry Name:</strong> {pantry.pantryName}
+              </Text>
+              <Text>
+                <strong>Pantry Address:</strong> {pantry.address}
+              </Text>
+              <Text>
+                <strong>Order Items:</strong>
+                {allocationItems.length > 0 ? (
+                  allocationItems.map((allocation) => (
+                    <Text key={allocation.allocationId}>
+                      - {allocation.allocatedQuantity}{' '}
+                      {allocation.item.itemName}
+                    </Text>
+                  ))
+                ) : (
+                  <Text>No order contents available</Text>
+                )}
+              </Text>
+            </VStack>
+          ) : (
+            <Text>No data to load</Text>
+          )}
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 

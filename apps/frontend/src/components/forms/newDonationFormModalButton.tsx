@@ -6,7 +6,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  useDisclosure,
   Text,
   Flex,
   Select,
@@ -25,9 +24,17 @@ import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodTypes } from '../../types/types';
 
-const NewDonationFormModalButton: React.FC<{
+interface NewDonationFormModalButtonProps {
   onDonationSuccess: () => void;
-}> = ({ onDonationSuccess }) => {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const NewDonationFormModalButton: React.FC<NewDonationFormModalButtonProps> = ({
+  onDonationSuccess,
+  isOpen,
+  onClose,
+}) => {
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -172,112 +179,108 @@ const NewDonationFormModalButton: React.FC<{
     }
   };
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <>
-      <Button onClick={onOpen}>Submit new donation</Button>
-      <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent maxW="49em">
-          <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Log New Donation Form SSF Donation Log Form
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text mb="1.5em">
-              Log a new donation by filling out the form below. Use the add or
-              delete row buttons to add or remove food items from the donation.
-              Please make sure to fill out all fields before submitting.
-            </Text>
-            <Text mb="1.5em">Log a new donation</Text>
-            <TableContainer>
-              <Table variant="simple">
-                <TableCaption>
-                  <Stack direction="row" align="center" spacing={3} mt={3}>
-                    <Text fontWeight="bold">
-                      Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
-                      items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
-                      {totalValue}
-                    </Text>
-                    <Button onClick={deleteRow}>- Delete Row</Button>
-                    <Button onClick={addRow}>+ Add Row</Button>
-                  </Stack>
-                </TableCaption>
-                <Thead>
-                  <Tr>
-                    <Th>Food Item</Th>
-                    <Th>Food Type</Th>
-                    <Th># of Items</Th>
-                    <Th>Oz per Item</Th>
-                    <Th>Value per Item</Th>
+    <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent maxW="49em">
+        <ModalHeader fontSize={25} fontWeight={700}>
+          SSF Log New Donation Form SSF Donation Log Form
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Text mb="1.5em">
+            Log a new donation by filling out the form below. Use the add or
+            delete row buttons to add or remove food items from the donation.
+            Please make sure to fill out all fields before submitting.
+          </Text>
+          <Text mb="1.5em">Log a new donation</Text>
+          <TableContainer>
+            <Table variant="simple">
+              <TableCaption>
+                <Stack direction="row" align="center" spacing={3} mt={3}>
+                  <Text fontWeight="bold">
+                    Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
+                    items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
+                    {totalValue}
+                  </Text>
+                  <Button onClick={deleteRow}>- Delete Row</Button>
+                  <Button onClick={addRow}>+ Add Row</Button>
+                </Stack>
+              </TableCaption>
+              <Thead>
+                <Tr>
+                  <Th>Food Item</Th>
+                  <Th>Food Type</Th>
+                  <Th># of Items</Th>
+                  <Th>Oz per Item</Th>
+                  <Th>Value per Item</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {rows.map((row) => (
+                  <Tr key={row.id}>
+                    <Td>
+                      <Input
+                        value={row.foodItem}
+                        onChange={(e) =>
+                          handleChange(row.id, 'foodItem', e.target.value)
+                        }
+                      />
+                    </Td>
+                    <Td>
+                      <Select
+                        placeholder="Select a food type"
+                        value={row.foodType}
+                        onChange={(e) =>
+                          handleChange(row.id, 'foodType', e.target.value)
+                        }
+                      >
+                        {FoodTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </Select>
+                    </Td>
+                    <Td>
+                      <Input
+                        type="number"
+                        value={row.numItems}
+                        onChange={(e) =>
+                          handleChange(row.id, 'numItems', e.target.value)
+                        }
+                      />
+                    </Td>
+                    <Td>
+                      <Input
+                        type="number"
+                        value={row.ozPerItem}
+                        onChange={(e) =>
+                          handleChange(row.id, 'ozPerItem', e.target.value)
+                        }
+                      />
+                    </Td>
+                    <Td>
+                      <Input
+                        type="number"
+                        value={row.valuePerItem}
+                        onChange={(e) =>
+                          handleChange(row.id, 'valuePerItem', e.target.value)
+                        }
+                      />
+                    </Td>
                   </Tr>
-                </Thead>
-                <Tbody>
-                  {rows.map((row) => (
-                    <Tr key={row.id}>
-                      <Td>
-                        <Input
-                          value={row.foodItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'foodItem', e.target.value)
-                          }
-                        />
-                      </Td>
-                      <Td>
-                        <Select
-                          placeholder="Select a food type"
-                          value={row.foodType}
-                          onChange={(e) =>
-                            handleChange(row.id, 'foodType', e.target.value)
-                          }
-                        >
-                          {FoodTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </Select>
-                      </Td>
-                      <Td>
-                        <Input
-                          type="number"
-                          value={row.numItems}
-                          onChange={(e) =>
-                            handleChange(row.id, 'numItems', e.target.value)
-                          }
-                        />
-                      </Td>
-                      <Td>
-                        <Input
-                          type="number"
-                          value={row.ozPerItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'ozPerItem', e.target.value)
-                          }
-                        />
-                      </Td>
-                      <Td>
-                        <Input
-                          type="number"
-                          value={row.valuePerItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'valuePerItem', e.target.value)
-                          }
-                        />
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
-            <Flex justifyContent="space-between" mt={4}>
-              <Button onClick={onClose}>Close</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </Flex>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <Flex justifyContent="space-between" mt={4}>
+            <Button onClick={onClose}>Close</Button>
+            <Button onClick={handleSubmit}>Submit</Button>
+          </Flex>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 
