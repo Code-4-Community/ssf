@@ -13,15 +13,15 @@ import {
   HStack,
   useDisclosure,
 } from '@chakra-ui/react';
-import FoodRequestFormModal from '@components/forms/requestFormModalButton';
-import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
+import FoodRequestFormModal from '@components/forms/requestFormModal';
+import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
 import { FoodRequest } from 'types/types';
 import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { all } from 'axios';
 
 const FormRequests: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const newRequestDisclosure = useDisclosure();
+  const previousRequestDisclosure = useDisclosure();
 
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
@@ -29,6 +29,9 @@ const FormRequests: React.FC = () => {
   >(undefined);
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
+  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -55,24 +58,30 @@ const FormRequests: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
-        <Button onClick={onOpen} isDisabled={!allConfirmed}>
+        <Button
+          onClick={newRequestDisclosure.onOpen}
+          isDisabled={!allConfirmed}
+        >
           Submit New Request
         </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
-          isOpen={isOpen}
-          onClose={onClose}
+          isOpen={newRequestDisclosure.isOpen}
+          onClose={newRequestDisclosure.onClose}
         />
 
         {previousRequest && (
           <>
-            <Button onClick={onOpen} isDisabled={!allConfirmed}>
+            <Button
+              onClick={previousRequestDisclosure.onOpen}
+              isDisabled={!allConfirmed}
+            >
               Submit Previous Request
             </Button>
             <FoodRequestFormModal
               previousRequest={previousRequest}
-              isOpen={isOpen}
-              onClose={onClose}
+              isOpen={previousRequestDisclosure.isOpen}
+              onClose={previousRequestDisclosure.onClose}
             />
           </>
         )}
@@ -108,11 +117,17 @@ const FormRequests: React.FC = () => {
                   <Text>Food Request is Already Delivered</Text>
                 ) : (
                   <>
-                    <Button onClick={onOpen}>Confirm Delivery</Button>
-                    <DeliveryConfirmationModalButton
+                    <Button
+                      onClick={() =>
+                        setOpenDeliveryRequestId(request.requestId)
+                      }
+                    >
+                      Confirm Delivery
+                    </Button>
+                    <DeliveryConfirmationModal
                       requestId={request.requestId}
-                      isOpen={isOpen}
-                      onClose={onClose}
+                      isOpen={openDeliveryRequestId === request.requestId}
+                      onClose={() => setOpenDeliveryRequestId(null)}
                     />
                   </>
                 )}

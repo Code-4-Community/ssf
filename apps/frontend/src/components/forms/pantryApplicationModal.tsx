@@ -7,22 +7,23 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure,
   Grid,
   GridItem,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry, User } from 'types/types';
 
-interface PantryApplicationModalButtonProps {
+interface PantryApplicationModalProps {
   pantry: Pantry;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const PantryApplicationModalButton: React.FC<
-  PantryApplicationModalButtonProps
-> = ({ pantry, isOpen, onClose }) => {
+const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
+  pantry,
+  isOpen,
+  onClose,
+}) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -171,4 +172,4 @@ const PantryApplicationModalButton: React.FC<
   );
 };
 
-export default PantryApplicationModalButton;
+export default PantryApplicationModal;

@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
-import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
+import OrderInformationModal from '@components/forms/orderInformationModal';
 import { formatDate } from '@utils/utils';
 
 const FoodManufacturerOrderDashboard: React.FC = () => {
@@ -82,7 +82,7 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
               <Tr key={order.orderId}>
                 <Td>
                   <Button onClick={onOpen}>{order.orderId}</Button>
-                  <OrderInformationModalButton
+                  <OrderInformationModal
                     orderId={order.orderId}
                     isOpen={isOpen}
                     onClose={onClose}

@@ -24,13 +24,13 @@ import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodTypes } from '../../types/types';
 
-interface NewDonationFormModalButtonProps {
+interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const NewDonationFormModalButton: React.FC<NewDonationFormModalButtonProps> = ({
+const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
   isOpen,
   onClose,
@@ -284,4 +284,4 @@ const NewDonationFormModalButton: React.FC<NewDonationFormModalButtonProps> = ({
   );
 };
 
-export default NewDonationFormModalButton;
+export default NewDonationFormModal;

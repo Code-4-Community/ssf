@@ -12,15 +12,17 @@ import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
 import { Pantry, Allocation } from 'types/types';
 
-interface OrderInformationModalButtonProps {
+interface OrderInformationModalProps {
   orderId: number;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const OrderInformationModalButton: React.FC<
-  OrderInformationModalButtonProps
-> = ({ orderId, isOpen, onClose }) => {
+const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
+  orderId,
+  isOpen,
+  onClose,
+}) => {
   const [pantry, setPantry] = useState<Pantry | null>(null);
   const [allocationItems, setAllocationItems] = useState<Allocation[]>([]);
 
@@ -82,4 +84,4 @@ const OrderInformationModalButton: React.FC<
   );
 };
 
-export default OrderInformationModalButton;
+export default OrderInformationModal;

@@ -18,7 +18,7 @@ import {
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 
-interface DeliveryConfirmationModalButtonProps {
+interface DeliveryConfirmationModalProps {
   requestId: number;
   isOpen: boolean;
   onClose: () => void;
@@ -27,9 +27,11 @@ interface DeliveryConfirmationModalButtonProps {
 const photoNames: string[] = [];
 const globalPhotos: File[] = [];
 
-const DeliveryConfirmationModalButton: React.FC<
-  DeliveryConfirmationModalButtonProps
-> = ({ requestId, isOpen, onClose }) => {
+const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
+  requestId,
+  isOpen,
+  onClose,
+}) => {
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -161,4 +163,4 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   }
 };
 
-export default DeliveryConfirmationModalButton;
+export default DeliveryConfirmationModal;

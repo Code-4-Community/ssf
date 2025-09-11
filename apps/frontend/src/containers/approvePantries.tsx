@@ -9,7 +9,7 @@ import {
   Select,
   useDisclosure,
 } from '@chakra-ui/react';
-import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
+import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
@@ -98,7 +98,7 @@ const ApprovePantries: React.FC = () => {
                 <Button variant="link" colorScheme="blue" onClick={onOpen}>
                   {pantry.pantryName}
                 </Button>
-                <PantryApplicationModalButton
+                <PantryApplicationModal
                   pantry={pantry}
                   isOpen={isOpen}
                   onClose={onClose}

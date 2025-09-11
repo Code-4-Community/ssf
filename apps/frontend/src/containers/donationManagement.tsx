@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
+import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
 
@@ -91,7 +91,7 @@ const DonationManagement: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <Button onClick={onOpen}>Submit new donation</Button>
-      <NewDonationFormModalButton
+      <NewDonationFormModal
         onDonationSuccess={fetchDonations}
         isOpen={isOpen}
         onClose={onClose}
