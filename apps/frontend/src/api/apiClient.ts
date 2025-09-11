@@ -50,7 +50,7 @@ export class ApiClient {
   }
 
   public async getAllAssignments(): Promise<AssignmentWithRelations[]> {
-    return this.get('/api/assignments/getAllRelations') as Promise<
+    return this.get('/api/assignments/assignments') as Promise<
       AssignmentWithRelations[]
     >;
   }

@@ -14,6 +14,7 @@ import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
+import { VOLUNTEER_ROLES } from '../volunteerAssignments/types';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
@@ -40,12 +41,8 @@ export class UsersController {
     return this.usersService.update(id, { role: role as Role });
   }
 
-  @Get()
+  @Get('/volunteers')
   async getAllVolunteers(): Promise<User[]> {
-    return this.usersService.findUsersByRoles([
-      Role.LEAD_VOLUNTEER,
-      Role.STANDARD_VOLUNTEER,
-      Role.NON_PANTRY_VOLUNTEER,
-    ]);
+    return this.usersService.findUsersByRoles(VOLUNTEER_ROLES);
   }
 }

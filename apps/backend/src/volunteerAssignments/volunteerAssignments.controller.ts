@@ -14,8 +14,8 @@ import { VolunteerType } from './types';
 export class AssignmentsController {
   constructor(private assignmentsService: AssignmentsService) {}
 
-  @Get('/getAllRelations')
-  async getAllRelations(): Promise<Assignments[]> {
+  @Get('/assignments')
+  async getAssignments(): Promise<Assignments[]> {
     return this.assignmentsService.findAllRelations();
   }
 
