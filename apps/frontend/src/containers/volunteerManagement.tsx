@@ -29,9 +29,6 @@ import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
   const [assignments, setAssignments] = useState<AssignmentWithRelations[]>([]);
-  const [filteredAssignments, setFilteredAssignments] = useState<
-    AssignmentWithRelations[]
-  >([]);
   const [changedAssignments, setChangedAssignments] = useState<
     AssignmentWithRelations[]
   >([]);
@@ -41,7 +38,6 @@ const VolunteerManagement: React.FC = () => {
     'STANDARD_VOLUNTEER',
     'NON_PANTRY_VOLUNTEER',
   ]);
-  const [resetKey, setResetKey] = useState<number>(0);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -57,7 +53,6 @@ const VolunteerManagement: React.FC = () => {
           return true;
         });
         setAssignments(uniqueUserAssignments);
-        setFilteredAssignments(uniqueUserAssignments);
         setChangedAssignments(uniqueUserAssignments);
       } catch (error) {
         console.error('Error fetching assignments: ', error);
@@ -65,21 +60,13 @@ const VolunteerManagement: React.FC = () => {
     };
 
     fetchAssignments();
-  }, [resetKey]);
+  }, []);
 
-  useEffect(() => {
-    if (!assignments) return;
-
-    const filtered = assignments.filter(
-      (assignment) =>
-        assignment.volunteer.firstName
-          .toLowerCase()
-          .includes(searchName.toLowerCase()) &&
-        checkedTypes.includes(assignment.volunteerType.toUpperCase()),
-    );
-
-    setFilteredAssignments(filtered);
-  }, [searchName, checkedTypes, assignments]);
+  const filteredAssignments = changedAssignments.filter(
+    (a) =>
+      a.volunteer.firstName.toLowerCase().includes(searchName.toLowerCase()) &&
+      checkedTypes.includes(a.volunteerType.toUpperCase()),
+  );
 
   const volunteerTypeDropdown = ({
     volunteerType,
@@ -90,7 +77,7 @@ const VolunteerManagement: React.FC = () => {
   }) => {
     return (
       <Select
-        key={`${assignmentId}-${resetKey}`}
+        key={`${assignmentId}`}
         value={volunteerType}
         onChange={(e) =>
           handleVolunteerTypeChange(
@@ -133,7 +120,8 @@ const VolunteerManagement: React.FC = () => {
       'STANDARD_VOLUNTEER',
       'NON_PANTRY_VOLUNTEER',
     ]);
-    setResetKey((prev) => prev + 1);
+
+    setChangedAssignments(assignments);
   };
 
   const handleSaveChanges = async () => {
@@ -163,14 +151,11 @@ const VolunteerManagement: React.FC = () => {
     type: VolunteerType,
     assignmentId: number,
   ) => {
-    const updatedAssignments = changedAssignments.map((assignment) => {
-      if (assignment.assignmentId === assignmentId) {
-        assignment.volunteerType = type;
-      }
-      return assignment;
-    });
-
-    setChangedAssignments(updatedAssignments);
+    setChangedAssignments((prev) =>
+      prev.map((a) =>
+        a.assignmentId === assignmentId ? { ...a, volunteerType: type } : a,
+      ),
+    );
   };
 
   const VOLUNTEER_TYPES: Record<string, string> = {
@@ -186,18 +171,20 @@ const VolunteerManagement: React.FC = () => {
         <VStack my={5}>
           <Input
             placeholder="Search by volunteer name"
+            value={searchName}
             onChange={handleSearchNameChange}
-            key={resetKey}
           />
           <Menu closeOnSelect={false}>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
               Filter by Volunteer Type
             </MenuButton>
-            <MenuList key={resetKey}>
+            <MenuList>
               {Object.values(VolunteerType).map((volunteerType) => (
                 <MenuItem key={volunteerType}>
                   <Checkbox
-                    defaultChecked
+                    isChecked={checkedTypes.includes(
+                      volunteerType.toUpperCase(),
+                    )}
                     onChange={(e) =>
                       handleVolunteerFilterChange(
                         volunteerType,
