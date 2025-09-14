@@ -14,10 +14,14 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
+import { AllocationsService } from '../allocations/allocations.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly allocationsService: AllocationsService,
+  ) {}
 
   @Get('/get-all-orders')
   async getAllOrders(
@@ -77,6 +81,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Order> {
     return this.ordersService.findOrderByRequest(orderId);
+  }
+
+  @Get(':orderId/get-all-allocations')
+  async getAllAllocationsByOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ) {
+    return this.allocationsService.getAllAllocationsByOrder(orderId);
   }
 
   @Patch('/update-status/:orderId')

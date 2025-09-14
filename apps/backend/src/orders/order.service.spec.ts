@@ -3,18 +3,17 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Order } from './order.entity';
 import { OrdersService } from './order.service';
-import { mock } from 'jest-mock-extended';
-
-const mockOrdersRepository = mock<Repository<Order>>();
-const qb = mock<SelectQueryBuilder<Order>>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
+  let mockOrdersRepository: jest.Mocked<Repository<Order>>;
 
   beforeAll(async () => {
-    jest.resetAllMocks();
+    mockOrdersRepository = {
+      createQueryBuilder: jest.fn(),
+    } as unknown as jest.Mocked<Repository<Order>>;
 
-    const app = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         OrdersService,
         {
@@ -24,7 +23,18 @@ describe('OrdersService', () => {
       ],
     }).compile();
 
-    service = app.get<OrdersService>(OrdersService);
+    service = module.get<OrdersService>(OrdersService);
+  });
+
+  beforeEach(() => {
+    const qb: SelectQueryBuilder<Order> = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+    } as unknown as SelectQueryBuilder<Order>;
+
+    mockOrdersRepository.createQueryBuilder.mockReturnValue(qb);
   });
 
   it('should be defined', () => {
@@ -32,33 +42,26 @@ describe('OrdersService', () => {
   });
 
   describe('getAll', () => {
-    beforeEach(() => {
-      qb.leftJoin.mockReturnThis();
-      qb.select.mockReturnThis();
-      qb.andWhere.mockReturnThis();
-      qb.getMany.mockResolvedValue([]);
-
-      mockOrdersRepository.createQueryBuilder.mockReturnValue(qb);
-    });
-
     it('should return orders filtered by status', async () => {
       const mockOrders = [
         { orderId: 1, status: 'pending' } as Order,
         { orderId: 2, status: 'delivered' } as Order,
       ];
 
-      qb.getMany.mockResolvedValue(mockOrders);
+      const qb = mockOrdersRepository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders);
 
       const result = await service.getAll({ status: 'pending' });
 
-      expect(result).toEqual([mockOrders[0]]);
+      expect(result).toEqual(mockOrders);
       expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
         status: 'pending',
       });
     });
 
     it('should return empty array when no status filters match', async () => {
-      qb.getMany.mockResolvedValue([]);
+      const qb = mockOrdersRepository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue([]);
 
       const result = await service.getAll({ status: 'invalid status' });
 
@@ -76,31 +79,39 @@ describe('OrdersService', () => {
           pantry: { pantryName: 'Test Pantry' },
         } as Order,
         {
-          orderId: 3,
+          orderId: 4,
           status: 'delivered',
           pantry: { pantryName: 'Test Pantry 2' },
         } as Order,
       ];
 
-      qb.getMany.mockResolvedValue(mockOrders);
+      const qb = mockOrdersRepository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders);
 
       const result = await service.getAll({ pantryName: 'Test Pantry' });
 
-      expect(result).toEqual([mockOrders[0]]);
-      expect(qb.andWhere).toHaveBeenCalledWith('pantry.name = :pantryName', {
-        pantryName: 'Test Pantry',
-      });
+      expect(result).toEqual(mockOrders);
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'pantry.pantryName = :pantryName',
+        {
+          pantryName: 'Test Pantry',
+        },
+      );
     });
 
     it('should return empty array when no pantryName filters match', async () => {
-      qb.getMany.mockResolvedValue([]);
+      const qb = mockOrdersRepository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue([]);
 
       const result = await service.getAll({ pantryName: 'Nonexistent Pantry' });
 
       expect(result).toEqual([]);
-      expect(qb.andWhere).toHaveBeenCalledWith('pantry.name = :pantryName', {
-        pantryName: 'Nonexistent Pantry',
-      });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'pantry.pantryName = :pantryName',
+        {
+          pantryName: 'Nonexistent Pantry',
+        },
+      );
     });
   });
 });

@@ -21,6 +21,7 @@ export class OrdersService {
         'order.createdAt',
         'order.shippedAt',
         'order.deliveredAt',
+        'pantry.pantryName',
       ]);
 
     if (filters?.status) {
