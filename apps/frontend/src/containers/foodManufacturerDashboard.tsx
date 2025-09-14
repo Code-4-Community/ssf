@@ -22,7 +22,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 import { ManufacturerDetails } from 'types/types';
-import apiClient from '@api/apiClient';
 
 const FoodManufacturerDashboard: React.FC = () => {
   const { manufacturerId } = useParams<{ manufacturerId: string }>();
@@ -43,6 +42,9 @@ const FoodManufacturerDashboard: React.FC = () => {
         const response = await ApiClient.getManufacturerDetails(
           parseInt(manufacturerId, 10),
         );
+        if (response?.signupDate) {
+          response.signupDate = new Date(response.signupDate);
+        }
         setManufacturerDetails(response);
         setCurrentSelectedFrequency(response.donationFrequency);
 
@@ -141,17 +143,20 @@ const FoodManufacturerDashboard: React.FC = () => {
       <Card mx={40} variant="elevated" boxShadow="0 4px 8px rgba(0, 0, 0, 0.2)">
         <CardHeader display="flex" alignItems="center" justifyContent="center">
           <Heading size="md">
-            Welcome to Food Manufacturer Admin page -{' '}
-            {manufacturerDetails?.foodManufacturerName}
+            Welcome to the Food Manufacturer Admin Dashboard
+            {manufacturerDetails?.foodManufacturerName &&
+              ` - ${manufacturerDetails.foodManufacturerName}`}
           </Heading>
         </CardHeader>
 
-        <CardBody display="flex" alignItems="center" justifyContent="center">
-          <Stack width="100%">
-            <ManufacturerDetailsBox></ManufacturerDetailsBox>
-            <UpdateFrequencyBox></UpdateFrequencyBox>
-          </Stack>
-        </CardBody>
+        {manufacturerDetails && (
+          <CardBody display="flex" alignItems="center" justifyContent="center">
+            <Stack width="100%">
+              <ManufacturerDetailsBox></ManufacturerDetailsBox>
+              <UpdateFrequencyBox></UpdateFrequencyBox>
+            </Stack>
+          </CardBody>
+        )}
       </Card>
     );
   };
@@ -174,15 +179,15 @@ const FoodManufacturerDashboard: React.FC = () => {
             </Box>
             <Box flex="1" textAlign="left">
               <Text>
-                Pantry Partner since{' '}
-                {manufacturerDetails?.signupDate.toString().substring(0, 4)}
+                Pantry Partner since:{' '}
+                {manufacturerDetails?.signupDate.getFullYear().toString()}
               </Text>
             </Box>
           </HStack>
 
           <HStack spacing={8} align="center" width="125%">
             <Box flex="1">
-              <Text>Total donations: {manufacturerDonations}</Text>
+              <Text>Total Donations: {manufacturerDonations}</Text>
             </Box>
             <Box flex="1" textAlign="left">
               <Text>
@@ -228,8 +233,8 @@ const FoodManufacturerDashboard: React.FC = () => {
         <br />
         <p>
           {' '}
-          Current Frequency: x donations{' '}
-          {manufacturerDetails?.donationFrequency}{' '}
+          Current Frequency:{' '}
+          {manufacturerDetails?.donationFrequency ?? 'not set'}{' '}
         </p>
         <Box
           bg="white"
@@ -246,7 +251,7 @@ const FoodManufacturerDashboard: React.FC = () => {
             alignItems="center"
             justifyContent="center"
           >
-            <Text>A donation </Text>
+            <Text>New Frequency: </Text>
             <Select
               width="50%"
               value={currentSelectedFrequency}
