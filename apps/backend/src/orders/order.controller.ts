@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Body,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
@@ -19,8 +20,11 @@ export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
   @Get('/get-all-orders')
-  async getAllOrders(): Promise<Order[]> {
-    return this.ordersService.getAll();
+  async getAllOrders(
+    @Query('status') status?: string,
+    @Query('pantryName') pantryName?: string,
+  ): Promise<Order[]> {
+    return this.ordersService.getAll({ status, pantryName });
   }
 
   @Get('/get-current-orders')
