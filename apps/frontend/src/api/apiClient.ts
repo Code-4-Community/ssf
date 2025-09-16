@@ -40,9 +40,9 @@ export class ApiClient {
   public async getManufacturerDetails(
     manufacturerId: number,
   ): Promise<ManufacturerDetails> {
-    return this.axiosInstance
-      .get(`/api/manufacturer/getDetails/${manufacturerId}`)
-      .then((response) => response.data) as Promise<ManufacturerDetails>;
+    return this.get(
+      `/api/manufacturer/getDetails/${manufacturerId}`,
+    ) as Promise<ManufacturerDetails>;
   }
 
   public async updatePantry(

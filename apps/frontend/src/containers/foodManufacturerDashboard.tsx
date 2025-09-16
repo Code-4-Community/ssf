@@ -30,6 +30,7 @@ const FoodManufacturerDashboard: React.FC = () => {
   const [currentSelectedFrequency, setCurrentSelectedFrequency] =
     useState<string>();
   const [manufacturerDonations, setManufacturerDonations] = useState<number>();
+  const [notFound, setNotFound] = useState<boolean>();
 
   useEffect(() => {
     if (!manufacturerId) {
@@ -42,6 +43,12 @@ const FoodManufacturerDashboard: React.FC = () => {
         const response = await ApiClient.getManufacturerDetails(
           parseInt(manufacturerId, 10),
         );
+
+        if (!response) {
+          setNotFound(true);
+          return;
+        }
+
         if (response?.signupDate) {
           response.signupDate = new Date(response.signupDate);
         }
@@ -54,6 +61,7 @@ const FoodManufacturerDashboard: React.FC = () => {
         setManufacturerDonations(numberDonations);
       } catch (error) {
         console.error('Error fetching manufacturer details: ', error);
+        setNotFound(true);
       }
     };
 
@@ -63,10 +71,17 @@ const FoodManufacturerDashboard: React.FC = () => {
   const handleUpdate = async () => {
     try {
       if (manufacturerId && currentSelectedFrequency) {
-        const response = await ApiClient.updateDonationFrequency(
+        await ApiClient.updateDonationFrequency(
           parseInt(manufacturerId, 10),
           currentSelectedFrequency,
         );
+
+        setManufacturerDetails((prev) =>
+          prev
+            ? { ...prev, donationFrequency: currentSelectedFrequency }
+            : prev,
+        );
+
         alert('update frequency successful');
       }
     } catch (error) {
@@ -272,6 +287,17 @@ const FoodManufacturerDashboard: React.FC = () => {
       </Box>
     );
   };
+
+  if (notFound) {
+    return (
+      <Box p={8} textAlign="center">
+        <Heading size="md" mb={4}>
+          Manufacturer not found
+        </Heading>
+        <Text>The manufacturer you are looking for does not exist.</Text>
+      </Box>
+    );
+  }
 
   return (
     <>
