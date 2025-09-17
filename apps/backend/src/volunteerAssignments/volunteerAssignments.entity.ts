@@ -35,7 +35,7 @@ export class Assignments {
   @Column({
     type: 'enum',
     enum: VOLUNTEER_ROLES,
-    default: 'non_pantry_volunteer',
+    default: 'standard_volunteer',
     name: 'volunteer_type',
   })
   volunteerType: VolunteerType;

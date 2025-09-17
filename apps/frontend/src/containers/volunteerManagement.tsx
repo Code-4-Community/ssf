@@ -36,7 +36,6 @@ const VolunteerManagement: React.FC = () => {
   const [checkedTypes, setCheckedTypes] = useState<string[]>([
     'LEAD_VOLUNTEER',
     'STANDARD_VOLUNTEER',
-    'NON_PANTRY_VOLUNTEER',
   ]);
 
   useEffect(() => {
@@ -115,11 +114,7 @@ const VolunteerManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchName('');
-    setCheckedTypes([
-      'LEAD_VOLUNTEER',
-      'STANDARD_VOLUNTEER',
-      'NON_PANTRY_VOLUNTEER',
-    ]);
+    setCheckedTypes(['LEAD_VOLUNTEER', 'STANDARD_VOLUNTEER']);
 
     setChangedAssignments(assignments);
   };
@@ -161,7 +156,6 @@ const VolunteerManagement: React.FC = () => {
   const VOLUNTEER_TYPES: Record<string, string> = {
     LEAD_VOLUNTEER: 'Lead Volunteer',
     STANDARD_VOLUNTEER: 'Standard Volunteer',
-    NON_PANTRY_VOLUNTEER: 'Non-Pantry Volunteer',
   };
 
   return (
