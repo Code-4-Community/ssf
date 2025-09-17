@@ -18,6 +18,7 @@ import { submitPantryApplicationForm } from '@components/forms/pantryApplication
 import ApprovePantries from '@containers/approvePantries';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         path: '/landing-page',
         element: <LandingPage />,
