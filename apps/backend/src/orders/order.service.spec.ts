@@ -113,5 +113,44 @@ describe('OrdersService', () => {
         },
       );
     });
+
+    it('should return orders filtered by both status and pantryName', async () => {
+      const mockOrders = [
+        {
+          orderId: 3,
+          status: 'delivered',
+          pantry: { pantryName: 'Test Pantry' },
+        } as Order,
+        {
+          orderId: 4,
+          status: 'delivered',
+          pantry: { pantryName: 'Test Pantry 2' },
+        } as Order,
+        {
+          orderId: 5,
+          status: 'delivered',
+          pantry: { pantryName: 'Test Pantry 2' },
+        },
+      ];
+
+      const qb = mockOrdersRepository.createQueryBuilder();
+      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders.slice(1, 3));
+
+      const result = await service.getAll({
+        status: 'delivered',
+        pantryName: 'Test Pantry 2',
+      });
+
+      expect(result).toEqual(mockOrders.slice(1, 3));
+      expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
+        status: 'delivered',
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'pantry.pantryName = :pantryName',
+        {
+          pantryName: 'Test Pantry 2',
+        },
+      );
+    });
   });
 });
