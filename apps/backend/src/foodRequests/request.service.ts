@@ -9,30 +9,39 @@ export class RequestsService {
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
   ) {}
 
-  async findOne(requestId: number) {
+  async findOne(requestId: number): Promise<FoodRequest> {
     if (!requestId || requestId < 1) {
       throw new NotFoundException('Invalid request ID');
     }
-    return await this.repo.findOne({
+    const request = await this.repo.findOne({
       where: { requestId },
       relations: ['order'],
     });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+    return request;
   }
 
   async create(
     pantryId: number,
     requestedSize: string,
     requestedItems: string[],
-    additionalInformation: string | null,
-    dateReceived: Date | null,
-    feedback: string | null,
-    photos: string[] | null,
-  ) {
+    additionalInformation: string | undefined,
+    status: string,
+    fulfilledBy: number | undefined,
+    dateReceived: Date | undefined,
+    feedback: string | undefined,
+    photos: string[] | undefined,
+  ): Promise<FoodRequest> {
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
       requestedItems,
       additionalInformation,
+      status,
+      fulfilledBy,
       dateReceived,
       feedback,
       photos,

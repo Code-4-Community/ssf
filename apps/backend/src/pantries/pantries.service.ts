@@ -8,14 +8,20 @@ import { User } from '../users/user.entity';
 export class PantriesService {
   constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
 
-  async findOne(pantryId: number) {
+  async findOne(pantryId: number): Promise<Pantry> {
     if (!pantryId || pantryId < 1) {
       throw new NotFoundException('Invalid pantry ID');
     }
-    return await this.repo.findOne({ where: { pantryId } });
+
+    const pantry = await this.repo.findOne({ where: { pantryId } });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+    return pantry;
   }
 
-  async getPendingPantries() {
+  async getPendingPantries(): Promise<Pantry[]> {
     return await this.repo.find({ where: { status: 'pending' } });
   }
 
@@ -37,16 +43,15 @@ export class PantriesService {
       .execute();
   }
 
-  async findSSFRep(pantryId: number): Promise<User | null> {
+  async findSSFRep(pantryId: number): Promise<User> {
     const pantry = await this.repo.findOne({
       where: { pantryId },
       relations: ['ssfRepresentative'],
     });
 
     if (!pantry) {
-      return null;
-    } else {
-      return pantry.ssfRepresentative;
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
+    return pantry.ssfRepresentative;
   }
 }

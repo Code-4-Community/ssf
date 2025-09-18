@@ -7,13 +7,18 @@ import { Donation } from './donations.entity';
 export class DonationService {
   constructor(@InjectRepository(Donation) private repo: Repository<Donation>) {}
 
-  async findOne(donationId: number) {
+  async findOne(donationId: number): Promise<Donation> {
     if (!donationId || donationId < 1) {
       throw new NotFoundException('Invalid donation ID');
     }
-    return await this.repo.findOne({
+    const donation = await this.repo.findOne({
       where: { donationId },
     });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+    return donation;
   }
 
   async getAll() {
@@ -40,10 +45,10 @@ export class DonationService {
     return this.repo.save(donation);
   }
 
-  async fulfill(donationId: number): Promise<Donation | null> {
+  async fulfill(donationId: number): Promise<Donation> {
     const donation = await this.repo.findOneBy({ donationId });
     if (!donation) {
-      return null;
+      throw new NotFoundException(`Donation ${donationId} not found`);
     }
     donation.status = 'fulfilled';
     return this.repo.save(donation);
