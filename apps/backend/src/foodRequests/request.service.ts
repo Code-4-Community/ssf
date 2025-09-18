@@ -73,7 +73,6 @@ export class RequestsService {
 
     const order = await this.repo.manager.findOne(Order, {
       where: { orderId: request.order.orderId },
-      relations: ['shippedBy'],
     });
 
     if (!order || !order.shippedBy) {
