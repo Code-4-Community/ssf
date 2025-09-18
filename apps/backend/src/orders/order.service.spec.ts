@@ -49,11 +49,11 @@ describe('OrdersService', () => {
       ];
 
       const qb = mockOrdersRepository.createQueryBuilder();
-      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders);
+      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders[0]);
 
       const result = await service.getAll({ status: 'pending' });
 
-      expect(result).toEqual(mockOrders);
+      expect(result).toEqual(mockOrders[0]);
       expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
         status: 'pending',
       });
