@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
@@ -68,7 +72,7 @@ export class RequestsService {
     }
 
     if (!request.order) {
-      throw new NotFoundException('No associated order found for this request');
+      throw new ConflictException('No associated order found for this request');
     }
 
     const order = await this.repo.manager.findOne(Order, {
@@ -76,7 +80,7 @@ export class RequestsService {
     });
 
     if (!order || !order.shippedBy) {
-      throw new NotFoundException(
+      throw new ConflictException(
         'No associated food manufacturer found for this order',
       );
     }
