@@ -27,72 +27,75 @@ export class OrdersService {
     });
   }
 
-  async findOne(orderId: number) {
+  async findOne(orderId: number): Promise<Order> {
     if (!orderId || orderId < 1) {
       throw new NotFoundException('Invalid order ID');
     }
-    return await this.repo.findOne({
-      where: { orderId },
-    });
+    const order = await this.repo.findOne({ where: { orderId } });
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    return order;
   }
 
-  async findOrderByRequest(requestId: number): Promise<Order | null> {
+  async findOrderByRequest(requestId: number): Promise<Order> {
     const order = await this.repo.findOne({
       where: { requestId },
       relations: ['request'],
     });
 
     if (!order) {
-      return null;
+      throw new NotFoundException(
+        `Order with request ID ${requestId} not found`,
+      );
     } else {
       return order;
     }
   }
 
-  async findOrderPantry(orderId: number): Promise<Pantry | null> {
+  async findOrderPantry(orderId: number): Promise<Pantry> {
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['pantry'],
     });
 
     if (!order) {
-      return null;
-    } else {
-      return order.pantry;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.pantry;
   }
 
-  async findOrderFoodRequest(orderId: number): Promise<FoodRequest | null> {
+  async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['request'],
     });
 
     if (!order) {
-      return null;
-    } else {
-      return order.request;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.request;
   }
 
-  async findOrderFoodManufacturer(
-    orderId: number,
-  ): Promise<FoodManufacturer | null> {
-    const order = this.findOne(orderId);
-    return (await order).foodManufacturer;
+  async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
+    const order = await this.findOne(orderId);
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    return order.foodManufacturer;
   }
 
-  async findOrderDonation(orderId: number): Promise<Donation | null> {
+  async findOrderDonation(orderId: number): Promise<Donation> {
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['donation'],
     });
 
     if (!order) {
-      return null;
-    } else {
-      return order.donation;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.donation;
   }
 
   async updateStatus(orderId: number, newStatus: string) {
@@ -107,8 +110,8 @@ export class OrdersService {
       .set({
         status: newStatus,
         shippedBy: 1,
-        shippedAt: newStatus === 'shipped' ? new Date() : null,
-        deliveredAt: newStatus === 'delivered' ? new Date() : null,
+        shippedAt: newStatus === 'shipped' ? new Date() : undefined,
+        deliveredAt: newStatus === 'delivered' ? new Date() : undefined,
       })
       .where('order_id = :orderId', { orderId })
       .execute();

@@ -44,8 +44,8 @@ export class FoodRequestsController {
   async getOrderByRequestId(
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<Order> {
-    const request = this.requestsService.findOne(requestId);
-    return (await request).order;
+    const request = await this.requestsService.findOne(requestId);
+    return request.order;
   }
 
   @Post('/create')
@@ -103,6 +103,8 @@ export class FoodRequestsController {
       body.requestedSize,
       body.requestedItems,
       body.additionalInformation,
+      body.status,
+      body.fulfilledBy,
       body.dateReceived,
       body.feedback,
       body.photos,

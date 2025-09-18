@@ -27,12 +27,17 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  findOne(id: number) {
+  async findOne(id: number): Promise<User> {
     if (!id) {
-      return null;
+      throw new NotFoundException('Invalid user ID');
     }
 
-    return this.repo.findOneBy({ id });
+    const user = await this.repo.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   find(email: string) {
