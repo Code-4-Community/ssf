@@ -207,7 +207,9 @@ export class ApiClient {
         `/api/requests/${requestId}/confirm-delivery`,
         data,
       );
-      if (response.status === 200) {
+      console.log('Response status:', response.status);
+      // POST requests need a 201 status for creation
+      if (response.status === 201) {
         alert('Delivery confirmation submitted successfully');
         window.location.href = '/request-form/1';
       } else {
