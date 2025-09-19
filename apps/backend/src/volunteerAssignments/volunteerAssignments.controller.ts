@@ -1,14 +1,6 @@
-import {
-  Controller,
-  Get,
-  Put,
-  Param,
-  ParseIntPipe,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AssignmentsService } from './volunteerAssignments.service';
 import { Assignments } from './volunteerAssignments.entity';
-import { VolunteerType } from './types';
 
 @Controller('assignments')
 export class AssignmentsController {
@@ -17,13 +9,5 @@ export class AssignmentsController {
   @Get('/assignments')
   async getAssignments(): Promise<Assignments[]> {
     return this.assignmentsService.getAssignments();
-  }
-
-  @Put('/updateVolunteerType/:userId')
-  async updateVolunteerType(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Body('volunteerType') volunteerType: VolunteerType,
-  ): Promise<void> {
-    return this.assignmentsService.updateVolunteerType(userId, volunteerType);
   }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Assignments } from './volunteerAssignments.entity';
-import { VOLUNTEER_ROLES, VolunteerType } from './types';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -34,9 +33,5 @@ export class AssignmentsService {
       },
     });
     return results;
-  }
-
-  async updateVolunteerType(userId: number, volunteerType: VolunteerType) {
-    await this.repo.update({ volunteerId: userId }, { volunteerType });
   }
 }

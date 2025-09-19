@@ -14,7 +14,7 @@ import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
-import { VOLUNTEER_ROLES } from '../volunteerAssignments/types';
+import { VOLUNTEER_ROLES } from './types';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')

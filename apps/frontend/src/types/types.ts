@@ -47,15 +47,15 @@ export enum VolunteerType {
   STANDARD_VOLUNTEER = 'standard_volunteer',
 }
 
-export interface AssignmentWithRelations {
+export interface VolunteerPantryAssignment {
   assignmentId: number;
-  volunteerType: VolunteerType;
   volunteer: {
     id: number;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
+    role: string;
   };
   pantry: {
     pantryId: number;

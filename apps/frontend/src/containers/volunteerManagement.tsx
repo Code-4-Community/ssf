@@ -22,15 +22,17 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
-import { AssignmentWithRelations } from '../types/types';
+import { VolunteerPantryAssignment } from '../types/types';
 import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
-  const [assignments, setAssignments] = useState<AssignmentWithRelations[]>([]);
+  const [assignments, setAssignments] = useState<VolunteerPantryAssignment[]>(
+    [],
+  );
   const [changedAssignments, setChangedAssignments] = useState<
-    AssignmentWithRelations[]
+    VolunteerPantryAssignment[]
   >([]);
   const [searchName, setSearchName] = useState<string>('');
   const [checkedTypes, setCheckedTypes] = useState<string[]>([
@@ -64,7 +66,7 @@ const VolunteerManagement: React.FC = () => {
   const filteredAssignments = changedAssignments.filter(
     (a) =>
       a.volunteer.firstName.toLowerCase().includes(searchName.toLowerCase()) &&
-      checkedTypes.includes(a.volunteerType.toUpperCase()),
+      checkedTypes.includes(a.volunteer.role.toUpperCase()),
   );
 
   const volunteerTypeDropdown = ({
@@ -123,15 +125,8 @@ const VolunteerManagement: React.FC = () => {
     try {
       await Promise.all(
         changedAssignments.map((assignment) =>
-          ApiClient.updateVolunteerTypeAssignment(assignment.volunteer.id, {
-            volunteerType: assignment.volunteerType,
-          }),
-        ),
-      );
-      await Promise.all(
-        changedAssignments.map((assignment) =>
           ApiClient.updateUserVolunteerRole(assignment.volunteer.id, {
-            role: String(assignment.volunteerType),
+            role: String(assignment.volunteer.role),
           }),
         ),
       );
@@ -148,7 +143,9 @@ const VolunteerManagement: React.FC = () => {
   ) => {
     setChangedAssignments((prev) =>
       prev.map((a) =>
-        a.assignmentId === assignmentId ? { ...a, volunteerType: type } : a,
+        a.assignmentId === assignmentId
+          ? { ...a, volunteer: { ...a.volunteer, role: type } }
+          : a,
       ),
     );
   };
@@ -226,7 +223,7 @@ const VolunteerManagement: React.FC = () => {
                   {volunteerTypeDropdown({
                     volunteerType:
                       VolunteerType[
-                        assignment.volunteerType.toUpperCase() as keyof typeof VolunteerType
+                        assignment.volunteer.role.toUpperCase() as keyof typeof VolunteerType
                       ],
                     assignmentId: assignment.assignmentId,
                   })}
