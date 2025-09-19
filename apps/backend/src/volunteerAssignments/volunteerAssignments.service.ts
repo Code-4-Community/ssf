@@ -14,40 +14,18 @@ export class AssignmentsService {
 
   // Gets the assignment id, the volunteer type, and the corresponding volunteer's firstName/id,
   // and the corresponding pantry's pantryId/pantryName, sets pantry to null if pantryId is null.
-  async findAllRelations() {
-    const allVolunteerUsers = await this.usersService.findUsersByRoles(
-      VOLUNTEER_ROLES,
-    );
-
-    const existingAssignments = await this.repo.find();
-    const volunteersInAssignments = new Set(
-      existingAssignments.map((a) => a.volunteerId),
-    );
-
-    const missingAssignments = allVolunteerUsers
-      .filter((user) => !volunteersInAssignments.has(user.id))
-      .map((user) => {
-        const newAssignment = this.repo.create({
-          volunteerId: user.id,
-          volunteerType: user.role,
-        });
-        return newAssignment;
-      });
-
-    if (missingAssignments.length > 0) {
-      await this.repo.save(missingAssignments);
-    }
+  async getAssignments() {
     const results = await this.repo.find({
       relations: ['volunteer', 'pantry'],
       select: {
         assignmentId: true,
-        volunteerType: true,
         volunteer: {
           id: true,
           firstName: true,
           lastName: true,
           email: true,
           phone: true,
+          role: true,
         },
         pantry: {
           pantryId: true,
@@ -55,11 +33,7 @@ export class AssignmentsService {
         },
       },
     });
-
-    return results.map((assignment) => ({
-      ...assignment,
-      pantry: assignment.pantry?.pantryId ? assignment.pantry : null,
-    }));
+    return results;
   }
 
   async updateVolunteerType(userId: number, volunteerType: VolunteerType) {

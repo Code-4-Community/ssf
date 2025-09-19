@@ -8,9 +8,6 @@ import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateU
 import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
 import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
 import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
-import { AddVolunteerType1740066853273 } from '../migrations/1740066853273-AddVolunteerType';
-import { PantryIDNullable1743439379596 } from '../migrations/1743439379596-pantryIDNullable';
-import { RemoveNonPantryVolunteer1758118972420 } from '../migrations/1758118972420-RemoveNonPantryVolunteer';
 
 const config = {
   type: 'postgres',
@@ -32,9 +29,6 @@ const config = {
     UpdatePantriesTable1737906317154,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
-    AddVolunteerType1740066853273,
-    PantryIDNullable1743439379596,
-    RemoveNonPantryVolunteer1758118972420,
   ],
 };
 

@@ -16,7 +16,7 @@ export class AssignmentsController {
 
   @Get('/assignments')
   async getAssignments(): Promise<Assignments[]> {
-    return this.assignmentsService.findAllRelations();
+    return this.assignmentsService.getAssignments();
   }
 
   @Put('/updateVolunteerType/:userId')
