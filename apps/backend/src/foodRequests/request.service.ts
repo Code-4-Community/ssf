@@ -75,9 +75,7 @@ export class RequestsService {
       throw new ConflictException('No associated order found for this request');
     }
 
-    const order = await this.repo.manager.findOne(Order, {
-      where: { orderId: request.order.orderId },
-    });
+    const order = request.order;
 
     if (!order || !order.shippedBy) {
       throw new ConflictException(
