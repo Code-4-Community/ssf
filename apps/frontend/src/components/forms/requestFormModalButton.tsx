@@ -19,8 +19,6 @@ import {
   HStack,
   Radio,
   Text,
-  Alert,
-  AlertIcon,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
@@ -57,8 +55,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   disabled,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [selectedItems, setSelectedItems] = useState<string[]>(
     previousRequest?.requestedItems || [],
