@@ -19,9 +19,12 @@ import {
   HStack,
   Radio,
   Text,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -54,6 +57,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   disabled,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [selectedItems, setSelectedItems] = useState<string[]>(
     previousRequest?.requestedItems || [],
@@ -170,26 +175,14 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   console.log(data);
 
   try {
-    const response = await fetch('/api/requests/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      console.log('Food request submitted successfully');
-
-      window.location.href = '/request-form/1';
-      return null;
-    } else {
-      console.error('Failed to submit food request', await response.text());
-      window.location.href = '/request-form/1';
-      return null;
-    }
+    await ApiClient.createFoodRequest(data);
+    console.log('Food request submitted successfully');
+    alert('Food request submitted successfully');
+    window.location.href = '/request-form/1';
+    return null;
   } catch (error) {
     console.error('Error submitting food request', error);
+    alert('Failed to submit food request. Please try again.');
     window.location.href = '/request-form/1';
     return null;
   }

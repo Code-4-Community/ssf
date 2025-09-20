@@ -81,6 +81,10 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async createFoodRequest(body: unknown): Promise<FoodRequest> {
+    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
   public async getPantrySSFRep(pantryId: number): Promise<User> {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
