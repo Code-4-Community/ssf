@@ -10,7 +10,6 @@ import {
   Button,
   ButtonGroup,
   VStack,
-  useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
@@ -18,9 +17,9 @@ import OrderInformationModal from '@components/forms/orderInformationModal';
 import { formatDate } from '@utils/utils';
 
 const FoodManufacturerOrderDashboard: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderType, setOrderType] = useState<'current' | 'past'>('current');
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -81,11 +80,13 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
             {orders.map((order) => (
               <Tr key={order.orderId}>
                 <Td>
-                  <Button onClick={onOpen}>{order.orderId}</Button>
+                  <Button onClick={() => setOpenOrderId(order.orderId)}>
+                    {order.orderId}
+                  </Button>
                   <OrderInformationModal
                     orderId={order.orderId}
-                    isOpen={isOpen}
-                    onClose={onClose}
+                    isOpen={openOrderId === order.orderId}
+                    onClose={() => setOpenOrderId(null)}
                   />
                 </Td>
                 <Td>{formatDate(order.createdAt)}</Td>
