@@ -8,6 +8,7 @@ import { UpdateUserRole1737816745912 } from '../migrations/1737816745912-UpdateU
 import { UpdatePantriesTable1737906317154 } from '../migrations/1737906317154-updatePantriesTable';
 import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
 import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+import { AssignmentsPantryIdNotUnique1758384669652 } from '../migrations/1758384669652-AssignmentsPantryIdNotUnique';
 
 const config = {
   type: 'postgres',
@@ -29,6 +30,7 @@ const config = {
     UpdatePantriesTable1737906317154,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
+    AssignmentsPantryIdNotUnique1758384669652,
   ],
 };
 

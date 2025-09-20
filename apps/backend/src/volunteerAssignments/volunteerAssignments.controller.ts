@@ -6,7 +6,7 @@ import { Assignments } from './volunteerAssignments.entity';
 export class AssignmentsController {
   constructor(private assignmentsService: AssignmentsService) {}
 
-  @Get('/assignments')
+  @Get('')
   async getAssignments(): Promise<Assignments[]> {
     return this.assignmentsService.getAssignments();
   }

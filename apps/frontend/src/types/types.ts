@@ -60,5 +60,5 @@ export interface VolunteerPantryAssignment {
   pantry: {
     pantryId: number;
     pantryName: string;
-  } | null;
+  };
 }

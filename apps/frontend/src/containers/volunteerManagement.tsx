@@ -65,7 +65,10 @@ const VolunteerManagement: React.FC = () => {
 
   const filteredAssignments = changedAssignments.filter(
     (a) =>
-      a.volunteer.firstName.toLowerCase().includes(searchName.toLowerCase()) &&
+      (a.volunteer.firstName.toLowerCase().includes(searchName.toLowerCase()) ||
+        a.volunteer.lastName
+          .toLowerCase()
+          .includes(searchName.toLowerCase())) &&
       checkedTypes.includes(a.volunteer.role.toUpperCase()),
   );
 
@@ -78,7 +81,7 @@ const VolunteerManagement: React.FC = () => {
   }) => {
     return (
       <Select
-        key={`${assignmentId}`}
+        key={assignmentId}
         value={volunteerType}
         onChange={(e) =>
           handleVolunteerTypeChange(
@@ -87,7 +90,7 @@ const VolunteerManagement: React.FC = () => {
           )
         }
       >
-        {Object.entries(VOLUNTEER_TYPES).map(([key, label]) => (
+        {Object.entries(DISPLAY_VOLUNTEER_TYPES).map(([key, label]) => (
           <option value={VolunteerType[key as keyof typeof VolunteerType]}>
             {label}
           </option>
@@ -133,6 +136,7 @@ const VolunteerManagement: React.FC = () => {
       setAssignments(changedAssignments);
       alert('successful save!');
     } catch (error) {
+      alert('Error updating volunteer type');
       console.error('Error updating volunteer type: ', error);
     }
   };
@@ -150,7 +154,7 @@ const VolunteerManagement: React.FC = () => {
     );
   };
 
-  const VOLUNTEER_TYPES: Record<string, string> = {
+  const DISPLAY_VOLUNTEER_TYPES: Record<string, string> = {
     LEAD_VOLUNTEER: 'Lead Volunteer',
     STANDARD_VOLUNTEER: 'Standard Volunteer',
   };
@@ -183,7 +187,7 @@ const VolunteerManagement: React.FC = () => {
                       )
                     }
                   >
-                    {VOLUNTEER_TYPES[volunteerType.toUpperCase()] ||
+                    {DISPLAY_VOLUNTEER_TYPES[volunteerType.toUpperCase()] ||
                       volunteerType}
                   </Checkbox>
                 </MenuItem>

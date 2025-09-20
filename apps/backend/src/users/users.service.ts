@@ -61,7 +61,7 @@ export class UsersService {
     return this.repo.remove(user);
   }
 
-  async findUsersByRoles(roles: string[]): Promise<User[]> {
+  async findUsersByRoles(roles: Role[]): Promise<User[]> {
     return this.repo.find({ where: { role: In(roles) } });
   }
 }

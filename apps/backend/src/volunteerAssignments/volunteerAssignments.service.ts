@@ -11,8 +11,7 @@ export class AssignmentsService {
     private usersService: UsersService,
   ) {}
 
-  // Gets the assignment id, the volunteer type, and the corresponding volunteer's firstName/id,
-  // and the corresponding pantry's pantryId/pantryName, sets pantry to null if pantryId is null.
+  // Gets the assignment id, volunteer details and the corresponding pantry
   async getAssignments() {
     const results = await this.repo.find({
       relations: ['volunteer', 'pantry'],

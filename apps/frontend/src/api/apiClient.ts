@@ -50,9 +50,7 @@ export class ApiClient {
   }
 
   public async getAllAssignments(): Promise<VolunteerPantryAssignment[]> {
-    return this.get('/api/assignments/assignments') as Promise<
-      VolunteerPantryAssignment[]
-    >;
+    return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
   }
 
   public async updateUserVolunteerRole(
