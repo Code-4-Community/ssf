@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import ApiClient from '@api/apiClient';
-import Orders from './orders';
 import { Order } from 'types/types';
 
 const OrderManagement: React.FC = () => {
