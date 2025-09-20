@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Center,
-  Table,
-  Tbody,
-  Tr,
-  Td,
-  Button,
-  Select,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
 import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
 const ApprovePantries: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
+  const [openPantryId, setOpenPantryId] = useState<number | null>(null);
 
   const fetchPantries = async () => {
     try {
@@ -95,13 +86,17 @@ const ApprovePantries: React.FC = () => {
             <Tr key={pantry.pantryId}>
               <Td>{pantry.pantryId}</Td>
               <Td>
-                <Button variant="link" colorScheme="blue" onClick={onOpen}>
+                <Button
+                  variant="link"
+                  colorScheme="blue"
+                  onClick={() => setOpenPantryId(pantry.pantryId)}
+                >
                   {pantry.pantryName}
                 </Button>
                 <PantryApplicationModal
                   pantry={pantry}
-                  isOpen={isOpen}
-                  onClose={onClose}
+                  isOpen={pantry.pantryId === openPantryId}
+                  onClose={() => setOpenPantryId(null)}
                 />
               </Td>
               <Td>{formatDate(pantry.dateApplied)}</Td>
