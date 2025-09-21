@@ -168,17 +168,14 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   foodRequestData.set('pantryId', 1);
 
   const data = Object.fromEntries(foodRequestData);
-  console.log(data);
 
   try {
     await ApiClient.createFoodRequest(data);
-    console.log('Food request submitted successfully');
     alert('Food request submitted successfully');
     window.location.href = '/request-form/1';
     return null;
   } catch (error) {
-    console.error('Error submitting food request', error);
-    alert('Failed to submit food request. Please try again.');
+    alert('Error submitting food request', error);
     window.location.href = '/request-form/1';
     return null;
   }
