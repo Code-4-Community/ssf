@@ -159,8 +159,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       parseInt(requestId, 10),
       confirmDeliveryData,
     );
+    alert('Delivery confirmation submitted successfully');
     window.location.href = '/request-form/1';
   } catch (error) {
+    alert(`Error submitting delivery confirmation: ${error}`);
     window.location.href = '/request-form/1';
   }
 };

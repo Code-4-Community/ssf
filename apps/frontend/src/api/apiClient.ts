@@ -202,22 +202,17 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-      console.log('Response status:', response.status);
-      // POST requests need a 201 status for creation
-      if (response.status === 201) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
+    const response = await this.axiosInstance.post(
+      `/api/requests/${requestId}/confirm-delivery`,
+      data,
+    );
+    console.log('Response status:', response.status);
+    // // POST requests need a 201 status for creation
+    // if (response.status === 201) {
+    //   window.location.href = '/request-form/1';
+    // } else {
+    //   alert(`Failed to submit: ${response.statusText}`);
+    // }
   }
 }
 
