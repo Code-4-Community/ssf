@@ -22,6 +22,11 @@ import { VOLUNTEER_ROLES } from './types';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @Get('/volunteers')
+  async getAllVolunteers(): Promise<User[]> {
+    return this.usersService.findUsersByRoles(VOLUNTEER_ROLES);
+  }
+
   // @UseGuards(AuthGuard('jwt'))
   @Get('/:userId')
   async getUser(@Param('userId', ParseIntPipe) userId: number): Promise<User> {
@@ -39,10 +44,5 @@ export class UsersController {
       throw new BadRequestException('Invalid role');
     }
     return this.usersService.update(id, { role: role as Role });
-  }
-
-  @Get('/volunteers')
-  async getAllVolunteers(): Promise<User[]> {
-    return this.usersService.findUsersByRoles(VOLUNTEER_ROLES);
   }
 }

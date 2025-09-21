@@ -53,6 +53,10 @@ export class ApiClient {
     return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
   }
 
+  public async getVolunteers(): Promise<User[]> {
+    return this.get('/api/users/volunteers') as Promise<User[]>;
+  }
+
   public async updateUserVolunteerRole(
     userId: number,
     body: { role: string },

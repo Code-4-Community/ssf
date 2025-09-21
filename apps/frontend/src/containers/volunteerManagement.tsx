@@ -22,18 +22,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
-import { VolunteerPantryAssignment } from '../types/types';
 import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from '@chakra-ui/icons';
+import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
-  const [assignments, setAssignments] = useState<VolunteerPantryAssignment[]>(
-    [],
-  );
-  const [changedAssignments, setChangedAssignments] = useState<
-    VolunteerPantryAssignment[]
-  >([]);
+  const [volunteers, setVolunteers] = useState<User[]>([]);
+  const [changedVolunteers, setChangedVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
   const [checkedTypes, setCheckedTypes] = useState<string[]>([
     'LEAD_VOLUNTEER',
@@ -41,52 +37,43 @@ const VolunteerManagement: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const fetchAssignments = async () => {
+    const fetchVolunteers = async () => {
       try {
-        const allAssignments = await ApiClient.getAllAssignments();
-        const seen = new Set();
-        // Filters assignments for 1 row per user
-        const uniqueUserAssignments = allAssignments.filter((assignment) => {
-          if (seen.has(assignment.volunteer.id)) {
-            return false;
-          }
-          seen.add(assignment.volunteer.id);
-          return true;
-        });
-        setAssignments(uniqueUserAssignments);
-        setChangedAssignments(uniqueUserAssignments);
+        const allVolunteers = await ApiClient.getVolunteers();
+        setVolunteers(allVolunteers);
+        setChangedVolunteers(allVolunteers);
       } catch (error) {
-        console.error('Error fetching assignments: ', error);
+        alert('Error fetching volunteers');
+        console.error('Error fetching volunteers: ', error);
       }
     };
 
-    fetchAssignments();
+    fetchVolunteers();
   }, []);
 
-  const filteredAssignments = changedAssignments.filter(
-    (a) =>
-      (a.volunteer.firstName.toLowerCase().includes(searchName.toLowerCase()) ||
-        a.volunteer.lastName
-          .toLowerCase()
-          .includes(searchName.toLowerCase())) &&
-      checkedTypes.includes(a.volunteer.role.toUpperCase()),
-  );
+  const filteredVolunteers = changedVolunteers.filter((a) => {
+    const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
+    return (
+      fullName.includes(searchName.toLowerCase()) &&
+      checkedTypes.includes(a.role.toUpperCase())
+    );
+  });
 
   const volunteerTypeDropdown = ({
     volunteerType,
-    assignmentId,
+    volunteerId,
   }: {
     volunteerType: VolunteerType;
-    assignmentId: number;
+    volunteerId: number;
   }) => {
     return (
       <Select
-        key={assignmentId}
+        key={volunteerId}
         value={volunteerType}
         onChange={(e) =>
           handleVolunteerTypeChange(
             e.target.value as VolunteerType,
-            assignmentId,
+            volunteerId,
           )
         }
       >
@@ -121,19 +108,19 @@ const VolunteerManagement: React.FC = () => {
     setSearchName('');
     setCheckedTypes(['LEAD_VOLUNTEER', 'STANDARD_VOLUNTEER']);
 
-    setChangedAssignments(assignments);
+    setChangedVolunteers(volunteers);
   };
 
   const handleSaveChanges = async () => {
     try {
       await Promise.all(
-        changedAssignments.map((assignment) =>
-          ApiClient.updateUserVolunteerRole(assignment.volunteer.id, {
-            role: String(assignment.volunteer.role),
+        changedVolunteers.map((volunteer) =>
+          ApiClient.updateUserVolunteerRole(volunteer.id, {
+            role: String(volunteer.role),
           }),
         ),
       );
-      setAssignments(changedAssignments);
+      setVolunteers(changedVolunteers);
       alert('successful save!');
     } catch (error) {
       alert('Error updating volunteer type');
@@ -143,14 +130,10 @@ const VolunteerManagement: React.FC = () => {
 
   const handleVolunteerTypeChange = (
     type: VolunteerType,
-    assignmentId: number,
+    volunteerId: number,
   ) => {
-    setChangedAssignments((prev) =>
-      prev.map((a) =>
-        a.assignmentId === assignmentId
-          ? { ...a, volunteer: { ...a.volunteer, role: type } }
-          : a,
-      ),
+    setChangedVolunteers((prev) =>
+      prev.map((a) => (a.id === volunteerId ? { ...a, role: type } : a)),
     );
   };
 
@@ -215,32 +198,26 @@ const VolunteerManagement: React.FC = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {filteredAssignments?.map((assignment) => (
-              <Tr key={assignment.assignmentId}>
+            {filteredVolunteers?.map((volunteer) => (
+              <Tr key={volunteer.id}>
                 <Td>
-                  {assignment.volunteer.firstName}{' '}
-                  {assignment.volunteer.lastName}
+                  {volunteer.firstName} {volunteer.lastName}
                 </Td>
-                <Td>{assignment.volunteer.email}</Td>
-                <Td>{assignment.volunteer.phone}</Td>
+                <Td>{volunteer.email}</Td>
+                <Td>{volunteer.phone}</Td>
                 <Td>
                   {volunteerTypeDropdown({
                     volunteerType:
                       VolunteerType[
-                        assignment.volunteer.role.toUpperCase() as keyof typeof VolunteerType
+                        volunteer.role.toUpperCase() as keyof typeof VolunteerType
                       ],
-                    assignmentId: assignment.assignmentId,
+                    volunteerId: volunteer.id,
                   })}
                 </Td>
                 <Td>
-                  {assignment.pantry && (
-                    <Button
-                      as={Link}
-                      to={`/pantry-management/${assignment.volunteer.id}`}
-                    >
-                      View assigned pantries
-                    </Button>
-                  )}
+                  <Button as={Link} to={`/pantry-management/${volunteer.id}`}>
+                    View assigned pantries
+                  </Button>
                 </Td>
               </Tr>
             ))}
