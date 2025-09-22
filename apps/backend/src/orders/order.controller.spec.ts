@@ -52,12 +52,15 @@ describe('OrdersController', () => {
   describe('getAllOrders', () => {
     it('should call ordersService.getAll and return orders', async () => {
       const status = 'pending';
-      const pantryName = 'Test Pantry';
+      const pantryNames = ['Test Pantry', 'Test Pantry 2'];
 
-      const result = await controller.getAllOrders(status, pantryName);
+      const result = await controller.getAllOrders(status, pantryNames);
 
       expect(result).toEqual(mockOrders[0]);
-      expect(ordersService.getAll).toHaveBeenCalledWith({ status, pantryName });
+      expect(ordersService.getAll).toHaveBeenCalledWith({
+        status,
+        pantryNames,
+      });
     });
   });
 

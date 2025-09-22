@@ -83,18 +83,25 @@ describe('OrdersService', () => {
           status: 'delivered',
           pantry: { pantryName: 'Test Pantry 2' },
         } as Order,
+        {
+          orderId: 5,
+          status: 'delivered',
+          pantry: { pantryName: 'Test Pantry 3' },
+        } as Order,
       ];
 
       const qb = mockOrdersRepository.createQueryBuilder();
-      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders);
+      (qb.getMany as jest.Mock).mockResolvedValue(mockOrders.slice(0, 2));
 
-      const result = await service.getAll({ pantryName: 'Test Pantry' });
+      const result = await service.getAll({
+        pantryNames: ['Test Pantry', 'Test Pantry 2'],
+      });
 
-      expect(result).toEqual(mockOrders);
+      expect(result).toEqual(mockOrders.slice(0, 2));
       expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName = :pantryName',
+        'pantry.pantryName IN (:...pantryNames)',
         {
-          pantryName: 'Test Pantry',
+          pantryNames: ['Test Pantry', 'Test Pantry 2'],
         },
       );
     });
@@ -103,13 +110,15 @@ describe('OrdersService', () => {
       const qb = mockOrdersRepository.createQueryBuilder();
       (qb.getMany as jest.Mock).mockResolvedValue([]);
 
-      const result = await service.getAll({ pantryName: 'Nonexistent Pantry' });
+      const result = await service.getAll({
+        pantryNames: ['Nonexistent Pantry'],
+      });
 
       expect(result).toEqual([]);
       expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName = :pantryName',
+        'pantry.pantryName IN (:...pantryNames)',
         {
-          pantryName: 'Nonexistent Pantry',
+          pantryNames: ['Nonexistent Pantry'],
         },
       );
     });
@@ -138,7 +147,7 @@ describe('OrdersService', () => {
 
       const result = await service.getAll({
         status: 'delivered',
-        pantryName: 'Test Pantry 2',
+        pantryNames: ['Test Pantry 2'],
       });
 
       expect(result).toEqual(mockOrders.slice(1, 3));
@@ -146,9 +155,9 @@ describe('OrdersService', () => {
         status: 'delivered',
       });
       expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName = :pantryName',
+        'pantry.pantryName IN (:...pantryNames)',
         {
-          pantryName: 'Test Pantry 2',
+          pantryNames: ['Test Pantry 2'],
         },
       );
     });

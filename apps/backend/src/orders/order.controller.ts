@@ -26,9 +26,12 @@ export class OrdersController {
   @Get('/get-all-orders')
   async getAllOrders(
     @Query('status') status?: string,
-    @Query('pantryName') pantryName?: string,
+    @Query('pantryName') pantryNames?: string | string[],
   ): Promise<Order[]> {
-    return this.ordersService.getAll({ status, pantryName });
+    if (typeof pantryNames === 'string') {
+      pantryNames = [pantryNames];
+    }
+    return this.ordersService.getAll({ status, pantryNames });
   }
 
   @Get('/get-current-orders')
