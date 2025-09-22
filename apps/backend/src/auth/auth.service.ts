@@ -28,12 +28,10 @@ export class AuthService {
     this.providerClient = new CognitoIdentityProviderClient({
       region: CognitoAuthConfig.region,
       credentials: {
-        accessKeyId: process.env.NX_AWS_ACCESS_KEY,
-        secretAccessKey: process.env.NX_AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
     });
-
-    this.clientSecret = process.env.COGNITO_CLIENT_SECRET;
   }
 
   // Computes secret hash to authenticate this backend to Cognito
