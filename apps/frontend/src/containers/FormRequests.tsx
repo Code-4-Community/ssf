@@ -24,7 +24,9 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
-  const [sortBy, setSortBy] = useState<string>('mostRecent');
+  const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
+    'mostRecent',
+  );
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
 
@@ -97,7 +99,9 @@ const FormRequests: React.FC = () => {
       <Select
         mt={4}
         width="50%"
-        onChange={(e) => setSortBy(e.target.value)}
+        onChange={(e) =>
+          setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+        }
         value={sortBy}
       >
         <option value="mostRecent">Date Requested (Recent)</option>

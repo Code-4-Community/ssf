@@ -77,7 +77,7 @@ export class RequestsService {
 
     const order = request.order;
 
-    if (!order || !order.shippedBy) {
+    if (!order.shippedBy) {
       throw new ConflictException(
         'No associated food manufacturer found for this order',
       );
