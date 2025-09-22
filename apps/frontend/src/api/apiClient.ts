@@ -202,20 +202,10 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
+    await this.axiosInstance.post(
+      `/api/requests/${requestId}/confirm-delivery`,
+      data,
+    );
   }
 }
 

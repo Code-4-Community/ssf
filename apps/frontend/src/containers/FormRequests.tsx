@@ -10,32 +10,44 @@ import {
   Th,
   Td,
   HStack,
+  Select,
 } from '@chakra-ui/react';
-import FoodRequestFormModal from '@components/forms/requestFormModalButton';
+import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
 import { FoodRequest } from 'types/types';
 import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
 
 const FormRequests: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
+  const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
+    'mostRecent',
+  );
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
-        const data = await ApiClient.getPantryRequests(parseInt(pantryId, 10));
-        setRequests(data);
-
-        if (data.length > 0) {
-          const mostRecentRequest = data.reduce((prev, current) =>
-            prev.requestId > current.requestId ? prev : current,
+        try {
+          const data = await ApiClient.getPantryRequests(
+            parseInt(pantryId, 10),
           );
-          setPreviousRequest(mostRecentRequest);
+          setRequests(data);
+
+          if (data.length > 0) {
+            setPreviousRequest(
+              data.reduce((prev, current) =>
+                prev.requestId > current.requestId ? prev : current,
+              ),
+            );
+          }
+        } catch (error) {
+          alert('Error fetching requests: ' + error);
         }
       }
     };
@@ -47,39 +59,88 @@ const FormRequests: React.FC = () => {
     setAllConfirmed(requests.every((request) => request.dateReceived !== null));
   }, [requests]);
 
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (sortBy === 'mostRecent')
+      return (
+        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+      );
+    if (sortBy === 'oldest')
+      return (
+        new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
+      );
+    if (sortBy === 'confirmed')
+      return (
+        new Date(b.dateReceived || 0).getTime() -
+        new Date(a.dateReceived || 0).getTime()
+      );
+
+    return 0;
+  });
+
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
-        <FoodRequestFormModal
-          previousRequest={undefined}
+        <FoodRequestFormModalButton
+          readOnly={false}
           buttonText="Submit New Request"
           disabled={!allConfirmed}
         />
 
         {previousRequest && (
-          <FoodRequestFormModal
+          <FoodRequestFormModalButton
             previousRequest={previousRequest}
+            readOnly={false}
             buttonText="Submit Previous Request"
             disabled={!allConfirmed}
           />
         )}
       </HStack>
 
+      <Select
+        mt={4}
+        width="50%"
+        onChange={(e) =>
+          setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+        }
+        value={sortBy}
+      >
+        <option value="mostRecent">Date Requested (Recent)</option>
+        <option value="oldest">Date Requested (Oldest)</option>
+        <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
+      </Select>
+
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>
             <Th>Request Id</Th>
+            <Th>Order Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
             <Th>Shipped By</Th>
-            <Th>Delivery Date</Th>
+            <Th>Date Fulfilled</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {requests.map((request) => (
+          {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
-              <Td>{request.requestId}</Td>
+              <Td>
+                <FoodRequestFormModalButton
+                  previousRequest={request}
+                  readOnly={true}
+                  buttonText={request.requestId.toString()}
+                  disabled={false}
+                />
+              </Td>
+              <Td>
+                {request.order?.orderId ? (
+                  <OrderInformationModalButton
+                    orderId={request.order.orderId}
+                  />
+                ) : (
+                  'N/A'
+                )}
+              </Td>
               <Td>{formatDate(request.requestedAt)}</Td>
               <Td>{request.order?.status ?? 'pending'}</Td>
               <Td>
