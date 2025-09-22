@@ -26,3 +26,20 @@ You can check that your database connection details are correct by running `nx s
 ```
 
 Finally, run `yarn run typeorm:migrate` to load all the tables into your database. If everything is set up correctly, you should see "Migration ... has been  executed successfully." in the terminal.
+
+# AWS Setup
+
+We have a few environment variables that we utilize to access several AWS services throughout the application. Below is a list of each of them and how to access each after logging in to AWS
+
+1. `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`:
+   - Click on your username in the top right corner, and navigate to Security Credentials
+   - Scroll down to access keys, and create a new key
+   - Select CLI as the purpose for the key, and add an optional description
+   - Replace both the public and secret keys in the .env file to those values. Note that the secret key will not be accessible after you leave this page
+   - Click done
+
+2. `AWS_REGION`:
+This can be found next to your profile name when you login to the main page. Some accounts may be different, but we generally use us-east-1 or us-east-2
+
+3. `AWS_BUCKET_NAME`:
+This one is already given to you. As of right now, we only use one bucket, confirm-delivery-photos to store photos in a public S3 Bucket. This may be subject to change as we use S3 more in the project.
