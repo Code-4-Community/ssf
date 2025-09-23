@@ -17,6 +17,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
+import ApiClient from '@api/apiClient';
 
 interface DeliveryConfirmationModalButtonProps {
   requestId: number;
@@ -132,7 +133,6 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
-
   const confirmDeliveryData = new FormData();
 
   const requestId = form.get('requestId') as string;
@@ -140,9 +140,8 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
 
   const deliveryDate = form.get('deliveryDate');
   if (typeof deliveryDate === 'string') {
-    const formattedDate = new Date(deliveryDate);
-    const formattedDateString = formattedDate.toISOString();
-    confirmDeliveryData.append('dateReceived', formattedDateString);
+    const formattedDate = new Date(deliveryDate).toISOString();
+    confirmDeliveryData.append('dateReceived', formattedDate);
   } else {
     alert('Delivery date is missing or invalid.');
   }
@@ -150,34 +149,21 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   confirmDeliveryData.append('feedback', form.get('feedback') as string);
 
   if (globalPhotos.length > 0) {
-    globalPhotos.forEach((photo) => {
-      confirmDeliveryData.append('photos', photo);
-    });
+    globalPhotos.forEach((photo) =>
+      confirmDeliveryData.append('photos', photo),
+    );
   }
 
   try {
-    const response = await fetch(
-      `/api/requests/${requestId}/confirm-delivery`,
-      {
-        method: 'POST',
-        body: confirmDeliveryData,
-      },
+    await ApiClient.confirmDelivery(
+      parseInt(requestId, 10),
+      confirmDeliveryData,
     );
-
-    if (response.ok) {
-      alert('Delivery confirmation submitted successfully');
-      window.location.href = '/request-form/1';
-      return null;
-    } else {
-      const errorMessage = await response.text();
-      alert(`Failed to submit: ${errorMessage}`);
-      window.location.href = '/request-form/1';
-      return null;
-    }
+    alert('Delivery confirmation submitted successfully');
+    window.location.href = '/request-form/1';
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
     window.location.href = '/request-form/1';
-    return null;
   }
 };
 
