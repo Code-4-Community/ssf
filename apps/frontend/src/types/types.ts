@@ -38,7 +38,7 @@ export const FoodTypes = [
 ] as const;
 
 export interface User {
-  userId: number;
+  id: number;
   role: string;
   firstName: string;
   lastName: string;
@@ -131,4 +131,25 @@ export interface Allocation {
   reservedAt: string;
   fulfilledAt: string;
   status: string;
+}
+
+export enum VolunteerType {
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+}
+
+export interface VolunteerPantryAssignment {
+  assignmentId: number;
+  volunteer: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+  pantry: {
+    pantryId: number;
+    pantryName: string;
+  };
 }

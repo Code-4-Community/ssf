@@ -60,7 +60,7 @@ export class AuthService {
 
   async signup(
     { firstName, lastName, email, password }: SignUpDto,
-    role: Role = Role.VOLUNTEER,
+    role: Role = Role.STANDARD_VOLUNTEER,
   ): Promise<boolean> {
     // Needs error handling
     const signUpCommand = new SignUpCommand({
