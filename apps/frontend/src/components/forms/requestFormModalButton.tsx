@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   FormControl,
@@ -45,36 +45,39 @@ const getAllergens = () => {
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
   buttonText: string;
+  disabled: boolean;
+  readOnly?: boolean;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
   buttonText,
+  disabled,
+  readOnly = false,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [selectedItems, setSelectedItems] = useState<string[]>(
-    previousRequest?.requestedItems || [],
-  );
-  const defaultSize = previousRequest?.requestedSize || '';
-  const defaultNotes = previousRequest?.additionalInformation || '';
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [requestedSize, setRequestedSize] = useState<string>('');
+  const [additionalNotes, setAdditionalNotes] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen && previousRequest) {
+      setSelectedItems(previousRequest.requestedItems || []);
+      setRequestedSize(previousRequest.requestedSize || '');
+      setAdditionalNotes(previousRequest.additionalInformation || '');
+    }
+  }, [isOpen, previousRequest]);
 
   const handleCheckboxChange = (values: string[]) => {
     setSelectedItems(values);
   };
 
-  const renderAllergens = () => {
-    const allergens = getAllergens();
-    return allergens.map((allergen) => (
-      <Checkbox key={allergen} name="restrictions" value={allergen}>
-        {allergen}
-      </Checkbox>
-    ));
-  };
-
   return (
     <>
-      <Button onClick={onOpen}>{buttonText}</Button>
+      <Button onClick={onOpen} isDisabled={disabled}>
+        {buttonText}
+      </Button>
       <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
         <ModalOverlay />
         <ModalContent maxW="49em">
@@ -98,19 +101,23 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <FormLabel as="legend" fontSize={20} fontWeight={700}>
                   Requested Size of Shipment
                 </FormLabel>
-                <RadioGroup defaultValue={defaultSize} name="size">
+                <RadioGroup
+                  value={requestedSize}
+                  onChange={setRequestedSize}
+                  name="size"
+                  isDisabled={readOnly}
+                >
                   <HStack spacing="24px">
-                    <Radio value="Very Small (1-2 boxes)">
-                      Very Small (1-2 boxes)
-                    </Radio>
-                    <Radio value="Small (2-5 boxes)">Small (2-5 boxes)</Radio>
-                    <Radio value="Medium (5-10 boxes)">
-                      Medium (5-10 boxes)
-                    </Radio>
-                    <Radio value="Large (10+ boxes)">Large (10+ boxes)</Radio>
+                    <Radio value="<20">{'<'}20</Radio>
+                    <Radio value="20-50">20-50</Radio>
+                    <Radio value="50-100">50-100</Radio>
+                    <Radio value="100-150">100-150</Radio>
+                    <Radio value="150-200">150-200</Radio>
+                    <Radio value=">200">{'>'}200</Radio>
                   </HStack>
                 </RadioGroup>
               </FormControl>
+
               <FormControl mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
                   Requested Shipment
@@ -118,12 +125,22 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <CheckboxGroup
                   value={selectedItems}
                   onChange={handleCheckboxChange}
+                  isDisabled={readOnly}
                 >
                   <SimpleGrid spacing={2} columns={2}>
-                    {renderAllergens()}
+                    {getAllergens().map((allergen) => (
+                      <Checkbox
+                        key={allergen}
+                        name="restrictions"
+                        value={allergen}
+                      >
+                        {allergen}
+                      </Checkbox>
+                    ))}
                   </SimpleGrid>
                 </CheckboxGroup>
               </FormControl>
+
               <FormControl mb="2em">
                 <FormLabel fontSize={20} fontWeight={700}>
                   Additional Comments
@@ -132,12 +149,15 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   name="notes"
                   placeholder="Anything else we should know about"
                   size="sm"
-                  defaultValue={defaultNotes}
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  isDisabled={readOnly}
                 />
               </FormControl>
+
               <Flex justifyContent="space-between" mt={4}>
                 <Button onClick={onClose}>Close</Button>
-                <Button type="submit">Submit</Button>
+                {!readOnly && <Button type="submit">Submit</Button>}
               </Flex>
             </Form>
           </ModalBody>

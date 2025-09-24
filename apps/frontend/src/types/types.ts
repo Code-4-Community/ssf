@@ -73,12 +73,64 @@ export interface Pantry {
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
-  status: string;
-  fulfilledBy: string | null;
   dateReceived: string | null;
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string;
+  orderId: number;
+  order?: Order;
+}
+
+export interface Order {
+  orderId: number;
+  requestId: number;
+  pantryId: number;
+  foodManufacturer: FoodManufacturer;
+  shippedBy: number | null;
+  status: string;
+  createdAt: string;
+  shippedAt: string;
+  deliveredAt: string;
+  donationId: number;
+}
+
+export interface FoodManufacturer {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  foodManufacturerRepresentativeId: number;
+}
+
+export interface Donation {
+  donationId: number;
+  foodManufacturerId: number;
+  dateDonated: string;
+  status: string;
+  totalItems: number;
+  totalOz: number;
+  totalEstimatedValue: number;
+}
+
+export interface DonationItem {
+  itemId: number;
+  donationId: number;
+  itemName: string;
+  quantity: number;
+  reservedQuantity: number;
+  status: string;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: string;
+}
+
+export interface Allocation {
+  allocationId: number;
+  orderId: number;
+  itemId: number;
+  item: DonationItem;
+  allocatedQuantity: number;
+  reservedAt: string;
+  fulfilledAt: string;
+  status: string;
 }
 
 export interface ManufacturerDetails {
