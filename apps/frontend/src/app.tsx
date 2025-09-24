@@ -19,6 +19,7 @@ import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         path: '/landing-page',
         element: <LandingPage />,
