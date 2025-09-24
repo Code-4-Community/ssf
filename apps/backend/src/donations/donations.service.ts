@@ -20,6 +20,13 @@ export class DonationService {
     return this.repo.find();
   }
 
+  async getManufacturerDonationCount(manufacturerId: number) {
+    const count = await this.repo.count({
+      where: { foodManufacturerId: manufacturerId },
+    });
+    return count;
+  }
+
   async create(
     foodManufacturerId: number,
     dateDonated: Date,
