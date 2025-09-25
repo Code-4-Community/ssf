@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Param,
   ParseIntPipe,
@@ -36,28 +35,28 @@ export class OrdersController {
   @Get(':orderId/pantry')
   async getPantryFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Pantry | null> {
+  ): Promise<Pantry> {
     return this.ordersService.findOrderPantry(orderId);
   }
 
   @Get(':orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodRequest | null> {
+  ): Promise<FoodRequest> {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
   @Get(':orderId/manufacturer')
   async getManufacturerFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodManufacturer | null> {
+  ): Promise<FoodManufacturer> {
     return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
   @Get(':orderId/donation')
   async getDonationFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Donation | null> {
+  ): Promise<Donation> {
     return this.ordersService.findOrderDonation(orderId);
   }
 
@@ -70,9 +69,9 @@ export class OrdersController {
 
   @Get('/order/:requestId')
   async getOrderByRequestId(
-    @Param('orderId', ParseIntPipe) orderId: number,
+    @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<Order> {
-    return this.ordersService.findOrderByRequest(orderId);
+    return this.ordersService.findOrderByRequest(requestId);
   }
 
   @Patch('/update-status/:orderId')
