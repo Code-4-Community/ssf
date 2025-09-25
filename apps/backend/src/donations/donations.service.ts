@@ -22,7 +22,9 @@ export class DonationService {
   }
 
   async getAll() {
-    return this.repo.find();
+    return this.repo.find({
+      relations: ['foodManufacturer'],
+    });
   }
 
   async create(
