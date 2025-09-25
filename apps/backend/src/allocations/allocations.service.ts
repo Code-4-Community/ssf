@@ -11,10 +11,17 @@ export class AllocationsService {
 
   async getAllAllocationsByOrder(
     orderId: number,
-  ): Promise<Allocation[] | null> {
+  ): Promise<Partial<Allocation>[]> {
     return this.repo.find({
-      where: { orderId: orderId },
+      where: { orderId },
       relations: ['item'],
+      select: {
+        allocationId: true,
+        allocatedQuantity: true,
+        reservedAt: true,
+        fulfilledAt: true,
+        status: true,
+      },
     });
   }
 }

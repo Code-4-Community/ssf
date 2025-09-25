@@ -11,8 +11,30 @@ import { Donation } from '../donations/donations.entity';
 export class OrdersService {
   constructor(@InjectRepository(Order) private repo: Repository<Order>) {}
 
-  async getAll() {
-    return this.repo.find();
+  async getAll(filters?: { status?: string; pantryNames?: string[] }) {
+    const qb = this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.pantry', 'pantry')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'pantry.pantryName',
+      ]);
+
+    if (filters?.status) {
+      qb.andWhere('order.status = :status', { status: filters.status });
+    }
+
+    if (filters?.pantryNames) {
+      qb.andWhere('pantry.pantryName IN (:...pantryNames)', {
+        pantryNames: filters.pantryNames,
+      });
+    }
+
+    return qb.getMany();
   }
 
   async getCurrentOrders() {
