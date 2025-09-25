@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { DonationItem } from './donationItems.entity';
+import { validateId } from '../utils/validation.utils';
 
 @Injectable()
 export class DonationItemsService {
@@ -11,6 +11,7 @@ export class DonationItemsService {
   ) {}
 
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
+    validateId(donationId, 'Donation');
     return this.repo.findBy({ donationId });
   }
 
@@ -39,6 +40,8 @@ export class DonationItemsService {
   }
 
   async updateDonationItemQuantity(itemId: number): Promise<DonationItem> {
+    validateId(itemId, 'Donation Item');
+
     const donationItem = await this.repo.findOneBy({ itemId });
     if (!donationItem) {
       throw new NotFoundException(`Donation item ${itemId} not found`);

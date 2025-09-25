@@ -6,6 +6,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
+import { validateId } from '../utils/validation.utils';
 
 @Injectable()
 export class OrdersService {
@@ -28,10 +29,10 @@ export class OrdersService {
   }
 
   async findOne(orderId: number): Promise<Order> {
-    if (!orderId || orderId < 1) {
-      throw new NotFoundException('Invalid order ID');
-    }
-    const order = await this.repo.findOne({ where: { orderId } });
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
@@ -39,6 +40,8 @@ export class OrdersService {
   }
 
   async findOrderByRequest(requestId: number): Promise<Order> {
+    validateId(requestId, 'Request');
+
     const order = await this.repo.findOne({
       where: { requestId },
       relations: ['request'],
@@ -48,12 +51,13 @@ export class OrdersService {
       throw new NotFoundException(
         `Order with request ID ${requestId} not found`,
       );
-    } else {
-      return order;
     }
+    return order;
   }
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
+    validateId(orderId, 'Order');
+
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['pantry'],
@@ -66,6 +70,8 @@ export class OrdersService {
   }
 
   async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
+    validateId(orderId, 'Order');
+
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['request'],
@@ -78,6 +84,8 @@ export class OrdersService {
   }
 
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
+    validateId(orderId, 'Order');
+
     const order = await this.findOne(orderId);
 
     if (!order) {
@@ -87,6 +95,8 @@ export class OrdersService {
   }
 
   async findOrderDonation(orderId: number): Promise<Donation> {
+    validateId(orderId, 'Order');
+
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['donation'],
@@ -99,9 +109,7 @@ export class OrdersService {
   }
 
   async updateStatus(orderId: number, newStatus: string) {
-    if (!orderId || orderId < 1) {
-      throw new NotFoundException('Invalid order ID');
-    }
+    validateId(orderId, 'Order');
 
     // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo

@@ -4,6 +4,7 @@ import { In, Repository } from 'typeorm';
 
 import { User } from './user.entity';
 import { Role } from './types';
+import { validateId } from '../utils/validation.utils';
 
 @Injectable()
 export class UsersService {
@@ -28,9 +29,7 @@ export class UsersService {
   }
 
   async findOne(id: number): Promise<User> {
-    if (!id) {
-      throw new NotFoundException('Invalid user ID');
-    }
+    validateId(id, 'User');
 
     const user = await this.repo.findOneBy({ id });
 
@@ -45,6 +44,8 @@ export class UsersService {
   }
 
   async update(id: number, attrs: Partial<User>) {
+    validateId(id, 'User');
+
     const user = await this.findOne(id);
 
     if (!user) {
@@ -57,6 +58,8 @@ export class UsersService {
   }
 
   async remove(id: number) {
+    validateId(id, 'User');
+
     const user = await this.findOne(id);
 
     if (!user) {
