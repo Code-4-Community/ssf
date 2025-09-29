@@ -24,12 +24,6 @@ export class FoodRequest {
   @Column({ name: 'additional_information', type: 'text', nullable: true })
   additionalInformation: string;
 
-  @Column({ name: 'status', type: 'varchar', length: 20, default: 'pending' })
-  status: string;
-
-  @Column({ name: 'fulfilled_by', type: 'int', nullable: true })
-  fulfilledBy: number;
-
   @CreateDateColumn({
     name: 'requested_at',
     type: 'timestamp',

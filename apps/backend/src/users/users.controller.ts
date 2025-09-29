@@ -28,18 +28,21 @@ export class UsersController {
   }
 
   // @UseGuards(AuthGuard('jwt'))
-  @Get('/:userId')
-  async getUser(@Param('userId', ParseIntPipe) userId: number): Promise<User> {
+  @Get('/:id')
+  async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);
   }
 
   @Delete('/:id')
-  removeUser(@Param('userId', ParseIntPipe) userId: number) {
+  removeUser(@Param('id', ParseIntPipe) userId: number) {
     return this.usersService.remove(userId);
   }
 
   @Put(':id/role')
-  async updateRole(@Param('id') id: number, @Body('role') role: string) {
+  async updateRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('role') role: string,
+  ) {
     if (!Object.values(Role).includes(role as Role)) {
       throw new BadRequestException('Invalid role');
     }

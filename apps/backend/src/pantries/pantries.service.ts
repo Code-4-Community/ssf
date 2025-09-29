@@ -27,31 +27,23 @@ export class PantriesService {
   async approve(id: number) {
     validateId(id, 'Pantry');
 
-    const result = await this.repo
-      .createQueryBuilder()
-      .update(Pantry)
-      .set({ status: 'approved' })
-      .where('pantry_id = :pantryId', { pantryId: id })
-      .execute();
-
-    if (result.affected === 0) {
+    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
+
+    await this.repo.update(id, { status: 'approved' });
   }
 
   async deny(id: number) {
     validateId(id, 'Pantry');
 
-    const result = await this.repo
-      .createQueryBuilder()
-      .update(Pantry)
-      .set({ status: 'denied' })
-      .where('pantry_id = :pantryId', { pantryId: id })
-      .execute();
-
-    if (result.affected === 0) {
+    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
+
+    await this.repo.update(id, { status: 'denied' });
   }
 
   async findSSFRep(pantryId: number): Promise<User> {

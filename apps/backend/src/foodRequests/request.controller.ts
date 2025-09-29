@@ -91,8 +91,6 @@ export class FoodRequestsController {
       requestedSize: string;
       requestedItems: string[];
       additionalInformation: string;
-      status: string;
-      fulfilledBy: number;
       dateReceived: Date;
       feedback: string;
       photos: string[];
@@ -103,8 +101,6 @@ export class FoodRequestsController {
       body.requestedSize,
       body.requestedItems,
       body.additionalInformation,
-      body.status,
-      body.fulfilledBy,
       body.dateReceived,
       body.feedback,
       body.photos,

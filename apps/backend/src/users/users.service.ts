@@ -34,7 +34,7 @@ export class UsersService {
     const user = await this.repo.findOneBy({ id });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User ${id} not found`);
     }
     return user;
   }
@@ -49,7 +49,7 @@ export class UsersService {
     const user = await this.findOne(id);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User ${id} not found`);
     }
 
     Object.assign(user, attrs);
@@ -63,7 +63,7 @@ export class UsersService {
     const user = await this.findOne(id);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User ${id} not found`);
     }
 
     return this.repo.remove(user);
