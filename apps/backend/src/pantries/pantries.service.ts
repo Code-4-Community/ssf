@@ -3,50 +3,61 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
+import { validateId } from '../utils/validation.utils';
 
 @Injectable()
 export class PantriesService {
   constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
 
-  async findOne(pantryId: number) {
-    if (!pantryId || pantryId < 1) {
-      throw new NotFoundException('Invalid pantry ID');
+  async findOne(pantryId: number): Promise<Pantry> {
+    validateId(pantryId, 'Pantry');
+
+    const pantry = await this.repo.findOne({ where: { pantryId } });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
-    return await this.repo.findOne({ where: { pantryId } });
+    return pantry;
   }
 
-  async getPendingPantries() {
+  async getPendingPantries(): Promise<Pantry[]> {
     return await this.repo.find({ where: { status: 'pending' } });
   }
 
   async approve(id: number) {
-    await this.repo
-      .createQueryBuilder()
-      .update(Pantry)
-      .set({ status: 'approved' })
-      .where('pantry_id = :pantryId', { pantryId: id })
-      .execute();
+    validateId(id, 'Pantry');
+
+    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${id} not found`);
+    }
+
+    await this.repo.update(id, { status: 'approved' });
   }
 
   async deny(id: number) {
-    await this.repo
-      .createQueryBuilder()
-      .update(Pantry)
-      .set({ status: 'denied' })
-      .where('pantry_id = :pantryId', { pantryId: id })
-      .execute();
+    validateId(id, 'Pantry');
+
+    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${id} not found`);
+    }
+
+    await this.repo.update(id, { status: 'denied' });
   }
 
-  async findSSFRep(pantryId: number): Promise<User | null> {
+  async findSSFRep(pantryId: number): Promise<User> {
+    validateId(pantryId, 'Pantry');
+
     const pantry = await this.repo.findOne({
       where: { pantryId },
       relations: ['ssfRepresentative'],
     });
 
     if (!pantry) {
-      return null;
-    } else {
-      return pantry.ssfRepresentative;
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
+
+    return pantry.ssfRepresentative;
   }
 }
