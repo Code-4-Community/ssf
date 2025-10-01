@@ -19,9 +19,6 @@ export class Donation {
   @JoinColumn({ name: 'food_manufacturer_id' })
   foodManufacturer: FoodManufacturer;
 
-  @Column({ name: 'food_manufacturer_id', type: 'int' })
-  foodManufacturerId: number;
-
   @CreateDateColumn({
     name: 'date_donated',
     type: 'timestamp',
