@@ -28,8 +28,8 @@ const DonationManagement: React.FC = () => {
 
   const fetchDonations = async () => {
     try {
-      const data = await ApiClient.get('/api/donations/get-all-donations');
-      const sortedDonations = (data as Donation[]).sort((a, b) => {
+      const data = await ApiClient.getAllDonations();
+      const sortedDonations = data.sort((a, b) => {
         if (a.status === 'fulfilled' && b.status !== 'fulfilled') return 1;
         if (a.status !== 'fulfilled' && b.status === 'fulfilled') return -1;
         return 0;
