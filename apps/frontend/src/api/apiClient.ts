@@ -52,6 +52,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
+      .then((response) => response.data);
+  }
+
   public async fulfillDonation(
     donationId: number,
     body?: unknown,

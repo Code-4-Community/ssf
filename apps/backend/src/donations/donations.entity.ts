@@ -3,8 +3,8 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 
@@ -13,12 +13,11 @@ export class Donation {
   @PrimaryGeneratedColumn({ name: 'donation_id' })
   donationId: number;
 
-  @OneToOne(() => FoodManufacturer, { nullable: false })
+  @ManyToOne(() => FoodManufacturer, (manufacturer) => manufacturer.donations, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'food_manufacturer_id' })
   foodManufacturer: FoodManufacturer;
-
-  @Column({ name: 'food_manufacturer_id', type: 'int' })
-  foodManufacturerId: number;
 
   @CreateDateColumn({
     name: 'date_donated',

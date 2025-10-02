@@ -1,11 +1,11 @@
 export interface Donation {
   donationId: number;
-  foodManufacturerId: number;
   dateDonated: string;
   status: string;
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
+  foodManufacturer: FoodManufacturer;
 }
 
 export interface DonationItem {
