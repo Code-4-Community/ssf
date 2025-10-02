@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
+import { Center, Table, Button, Select } from '@chakra-ui/react';
 import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
@@ -67,7 +67,7 @@ const ApprovePantries: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <Select
+      <Select.Root
         width="40%"
         mb={4}
         placeholder="Sort By"
@@ -77,37 +77,37 @@ const ApprovePantries: React.FC = () => {
         <option value="name-reverse">Pantry Name (Z-A)</option>
         <option value="date-recent">Date Applied (Most Recent)</option>
         <option value="date-oldest">Date Applied (Oldest First)</option>
-      </Select>
+      </Select.Root>
 
-      <Table variant="simple" mt={6} width="80%">
-        <Tbody>
+      <Table.Root mt={6} width="80%">
+        <Table.Body>
           {sortedPantries.map((pantry) => (
-            <Tr key={pantry.pantryId}>
-              <Td>{pantry.pantryId}</Td>
-              <Td>
+            <Table.Row key={pantry.pantryId}>
+              <Table.Cell>{pantry.pantryId}</Table.Cell>
+              <Table.Cell>
                 <PantryApplicationModalButton pantry={pantry} />
-              </Td>
-              <Td>{formatDate(pantry.dateApplied)}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>{formatDate(pantry.dateApplied)}</Table.Cell>
+              <Table.Cell>
                 <Button
                   colorScheme="green"
                   onClick={() => updatePantry(pantry.pantryId, 'approve')}
                 >
                   Approve
                 </Button>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 <Button
                   colorScheme="red"
                   onClick={() => updatePantry(pantry.pantryId, 'deny')}
                 >
                   Deny
                 </Button>
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

@@ -1,23 +1,16 @@
 import {
   Box,
-  FormControl,
-  FormLabel,
+  Field,
   Input,
   Button,
-  FormHelperText,
+  Dialog,
   Textarea,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   HStack,
   Text,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
+import { useState } from 'react';
 
 interface DeliveryConfirmationModalButtonProps {
   requestId: number;
@@ -29,7 +22,7 @@ const globalPhotos: File[] = [];
 const DeliveryConfirmationModalButton: React.FC<
   DeliveryConfirmationModalButtonProps
 > = ({ requestId }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -62,73 +55,76 @@ const DeliveryConfirmationModalButton: React.FC<
 
   return (
     <>
-      <Button onClick={onOpen}>Confirm Delivery</Button>
-      <Modal isOpen={isOpen} onClose={onClose} size={'xl'}>
-        <ModalOverlay />
-        <ModalContent maxW="49em">
-          <ModalHeader fontSize={25} fontWeight={700}>
-            Delivery Confirmation Form
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Form
-              method="post"
-              action="/confirm-delivery"
-              encType="multipart/form-data"
-            >
-              <input type="hidden" name="requestId" value={requestId} />
-              <FormControl isRequired mb="2em">
-                <FormLabel fontSize={20} fontWeight={700}>
-                  Delivery Date
-                </FormLabel>
-                <Input
-                  type="date"
-                  name="deliveryDate"
-                  max={new Date().toISOString().split('T')[0]}
-                />
-                <FormHelperText>Select the delivery date.</FormHelperText>
-              </FormControl>
-              <FormControl mb="2em">
-                <FormLabel fontSize={20} fontWeight={700}>
-                  Feedback
-                </FormLabel>
-                <Textarea
-                  name="feedback"
-                  placeholder="Share any feedback or issues..."
-                  size="sm"
-                />
-              </FormControl>
-              <FormControl mb="2em">
-                <FormLabel fontSize={20} fontWeight={700}>
-                  Upload Photos
-                </FormLabel>
-                <Input
-                  type="file"
-                  name="photos"
-                  multiple
-                  accept=".jpg,.jpeg,.png"
-                  onChange={handlePhotoChange}
-                />
-                <FormHelperText>
-                  Select up to 3 photos to upload.
-                </FormHelperText>
-                <Box mt={3}>{renderPhotoNames()}</Box>
-              </FormControl>
-              <HStack spacing="24px" justifyContent="space-between" mt={4}>
-                <Button onClick={onClose}>Close</Button>
-                <Button type="submit" colorScheme="blue">
-                  Confirm Delivery
-                </Button>
-              </HStack>
-            </Form>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <Button onClick={() => setIsOpen(true)}>Confirm Delivery</Button>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} size="xl">
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxW="49em">
+            <Dialog.Header>
+              <Dialog.Title fontSize={25} fontWeight={700}>
+                Delivery Confirmation Form
+              </Dialog.Title>
+              <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body>
+              <Form
+                method="post"
+                action="/confirm-delivery"
+                encType="multipart/form-data"
+              >
+                <input type="hidden" name="requestId" value={requestId} />
+                <Field.Root required mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Delivery Date
+                  </Field.Label>
+                  <Input
+                    type="date"
+                    name="deliveryDate"
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                  <Field.HelperText>Select the delivery date.</Field.HelperText>
+                </Field.Root>
+                <Field.Root mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Feedback
+                  </Field.Label>
+                  <Textarea
+                    name="feedback"
+                    placeholder="Share any feedback or issues..."
+                    size="sm"
+                  />
+                </Field.Root>
+                <Field.Root mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Upload Photos
+                  </Field.Label>
+                  <Input
+                    type="file"
+                    name="photos"
+                    multiple
+                    accept=".jpg,.jpeg,.png"
+                    onChange={handlePhotoChange}
+                  />
+                  <Field.HelperText>
+                    Select up to 3 photos to upload.
+                  </Field.HelperText>
+                  <Box mt={3}>{renderPhotoNames()}</Box>
+                </Field.Root>
+                <HStack gap={6} justifyContent="space-between" mt={4}>
+                  <Button onClick={() => setIsOpen(false)}>Close</Button>
+                  <Button type="submit" colorScheme="blue">
+                    Confirm Delivery
+                  </Button>
+                </HStack>
+              </Form>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </>
   );
 };
 
-// Action function to handle form submission
 export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {

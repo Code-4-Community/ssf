@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Center,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  Box,
-  Text,
-} from '@chakra-ui/react';
+import { Center, Table, Button, Box, Text } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
 import { formatDate } from '@utils/utils';
@@ -89,23 +78,23 @@ const DonationManagement: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <NewDonationFormModalButton onDonationSuccess={fetchDonations} />
-      <Table variant="simple" mt={6} width="80%">
-        <Thead>
-          <Tr>
-            <Th>Donation Id</Th>
-            <Th>Date Donated</Th>
-            <Th>Status</Th>
-            <Th>Remaining Stock</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      <Table.Root mt={6} width="80%">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Donation Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Donated</Table.ColumnHeader>
+            <Table.ColumnHeader>Status</Table.ColumnHeader>
+            <Table.ColumnHeader>Remaining Stock</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {donations.map((donation) => (
-            <Tr key={donation.donationId}>
-              <Td>{donation.donationId}</Td>
-              <Td>{formatDate(donation.dateDonated)}</Td>
-              <Td>{donation.status}</Td>
-              <Td>
+            <Table.Row key={donation.donationId}>
+              <Table.Cell>{donation.donationId}</Table.Cell>
+              <Table.Cell>{formatDate(donation.dateDonated)}</Table.Cell>
+              <Table.Cell>{donation.status}</Table.Cell>
+              <Table.Cell>
                 {expandedDonationIds.includes(donation.donationId) &&
                   donationItems[donation.donationId]?.map((item) => (
                     <Box key={item.itemId} borderBottom="1px solid" py={1}>
@@ -131,8 +120,8 @@ const DonationManagement: React.FC = () => {
                     ? 'Hide Information'
                     : 'Show Information'}
                 </Text>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 {donation.status !== 'fulfilled' && (
                   <Button
                     colorScheme="green"
@@ -141,11 +130,11 @@ const DonationManagement: React.FC = () => {
                     Fulfill
                   </Button>
                 )}
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

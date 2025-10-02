@@ -1,13 +1,7 @@
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
   VStack,
+  Dialog,
   Text,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
@@ -21,7 +15,7 @@ interface OrderInformationModalButtonProps {
 const OrderInformationModalButton: React.FC<
   OrderInformationModalButtonProps
 > = ({ orderId }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const [pantry, setPantry] = useState<Pantry | null>(null);
   const [allocationItems, setAllocationItems] = useState<Allocation[]>([]);
 
@@ -47,41 +41,45 @@ const OrderInformationModalButton: React.FC<
 
   return (
     <>
-      <Button onClick={onOpen}>{orderId}</Button>
-      <Modal isOpen={isOpen} size="lg" onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Order Details</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {pantry ? (
-              <VStack spacing={4} align="start">
-                <Text>
-                  <strong>Pantry Name:</strong> {pantry.pantryName}
-                </Text>
-                <Text>
-                  <strong>Pantry Address:</strong> {pantry.address}
-                </Text>
-                <Text>
-                  <strong>Order Items:</strong>
-                  {allocationItems.length > 0 ? (
-                    allocationItems.map((allocation) => (
-                      <Text key={allocation.allocationId}>
-                        - {allocation.allocatedQuantity}{' '}
-                        {allocation.item.itemName}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text>No order contents available</Text>
-                  )}
-                </Text>
-              </VStack>
-            ) : (
-              <Text>No data to load</Text>
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <Button onClick={() => setIsOpen(true)}>{orderId}</Button>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} size="lg">
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Order Details</Dialog.Title>
+              <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body>
+              {pantry ? (
+                <VStack gap={4} align="start">
+                  <Text>
+                    <strong>Pantry Name:</strong> {pantry.pantryName}
+                  </Text>
+                  <Text>
+                    <strong>Pantry Address:</strong> {pantry.address}
+                  </Text>
+                  <Text>
+                    <strong>Order Items:</strong>
+                    {allocationItems.length > 0 ? (
+                      allocationItems.map((allocation) => (
+                        <Text key={allocation.allocationId}>
+                          - {allocation.allocatedQuantity}{' '}
+                          {allocation.item.itemName}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text>No order contents available</Text>
+                    )}
+                  </Text>
+                </VStack>
+              ) : (
+                <Text>No data to load</Text>
+              )}
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </>
   );
 };

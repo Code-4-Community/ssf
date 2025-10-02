@@ -1,24 +1,11 @@
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
   Text,
   Flex,
   Select,
   Table,
-  TableContainer,
-  Tr,
-  Th,
-  Td,
-  Thead,
+  Dialog,
   Input,
-  Tbody,
-  TableCaption,
   Stack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
@@ -28,6 +15,7 @@ import { FoodTypes } from '../../types/types';
 const NewDonationFormModalButton: React.FC<{
   onDonationSuccess: () => void;
 }> = ({ onDonationSuccess }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -96,6 +84,8 @@ const NewDonationFormModalButton: React.FC<{
     calculateTotals(newRows);
   };
 
+  const onClose = () => setIsOpen(false);
+
   const handleSubmit = async () => {
     const hasEmptyFields = rows.some(
       (row) =>
@@ -125,7 +115,6 @@ const NewDonationFormModalButton: React.FC<{
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
 
-      // Automatically update the page after creating new donation
       onDonationSuccess();
 
       if (donationId) {
@@ -172,28 +161,28 @@ const NewDonationFormModalButton: React.FC<{
     }
   };
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen}>Submit new donation</Button>
-      <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent maxW="49em">
-          <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Log New Donation Form SSF Donation Log Form
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text mb="1.5em">
-              Log a new donation by filling out the form below. Use the add or
-              delete row buttons to add or remove food items from the donation.
-              Please make sure to fill out all fields before submitting.
-            </Text>
-            <Text mb="1.5em">Log a new donation</Text>
-            <TableContainer>
-              <Table variant="simple">
-                <TableCaption>
-                  <Stack direction="row" align="center" spacing={3} mt={3}>
+      <Button onClick={() => setIsOpen(true)}>Submit new donation</Button>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} size="xl">
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxW="49em">
+            <Dialog.Header>
+              <Dialog.Title fontSize={25} fontWeight={700}>
+                SSF Log New Donation Form
+              </Dialog.Title>
+              <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body>
+              <Text mb="1.5em">
+                Log a new donation by filling out the form below. Use the add or
+                delete row buttons to add or remove food items from the donation.
+                Please make sure to fill out all fields before submitting.
+              </Text>
+              <Table.Root>
+                <Table.Caption>
+                  <Stack direction="row" align="center" gap={3} mt={3}>
                     <Text fontWeight="bold">
                       Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
                       items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
@@ -202,43 +191,47 @@ const NewDonationFormModalButton: React.FC<{
                     <Button onClick={deleteRow}>- Delete Row</Button>
                     <Button onClick={addRow}>+ Add Row</Button>
                   </Stack>
-                </TableCaption>
-                <Thead>
-                  <Tr>
-                    <Th>Food Item</Th>
-                    <Th>Food Type</Th>
-                    <Th># of Items</Th>
-                    <Th>Oz per Item</Th>
-                    <Th>Value per Item</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+                </Table.Caption>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader>Food Item</Table.ColumnHeader>
+                    <Table.ColumnHeader>Food Type</Table.ColumnHeader>
+                    <Table.ColumnHeader># of Items</Table.ColumnHeader>
+                    <Table.ColumnHeader>Oz per Item</Table.ColumnHeader>
+                    <Table.ColumnHeader>Value per Item</Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
                   {rows.map((row) => (
-                    <Tr key={row.id}>
-                      <Td>
+                    <Table.Row key={row.id}>
+                      <Table.Cell>
                         <Input
                           value={row.foodItem}
                           onChange={(e) =>
                             handleChange(row.id, 'foodItem', e.target.value)
                           }
                         />
-                      </Td>
-                      <Td>
-                        <Select
-                          placeholder="Select a food type"
-                          value={row.foodType}
-                          onChange={(e) =>
-                            handleChange(row.id, 'foodType', e.target.value)
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Select.Root
+                          value={[row.foodType]}
+                          onValueChange={(e) =>
+                            handleChange(row.id, 'foodType', e.value[0])
                           }
                         >
-                          {FoodTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </Select>
-                      </Td>
-                      <Td>
+                          <Select.Trigger>
+                            <Select.ValueText placeholder="Select a food type" />
+                          </Select.Trigger>
+                          <Select.Content>
+                            {FoodTypes.map((type) => (
+                              <Select.Item key={type} item={type}>
+                                {type}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Root>
+                      </Table.Cell>
+                      <Table.Cell>
                         <Input
                           type="number"
                           value={row.numItems}
@@ -246,8 +239,8 @@ const NewDonationFormModalButton: React.FC<{
                             handleChange(row.id, 'numItems', e.target.value)
                           }
                         />
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         <Input
                           type="number"
                           value={row.ozPerItem}
@@ -255,8 +248,8 @@ const NewDonationFormModalButton: React.FC<{
                             handleChange(row.id, 'ozPerItem', e.target.value)
                           }
                         />
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         <Input
                           type="number"
                           value={row.valuePerItem}
@@ -264,19 +257,19 @@ const NewDonationFormModalButton: React.FC<{
                             handleChange(row.id, 'valuePerItem', e.target.value)
                           }
                         />
-                      </Td>
-                    </Tr>
+                      </Table.Cell>
+                    </Table.Row>
                   ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
-            <Flex justifyContent="space-between" mt={4}>
-              <Button onClick={onClose}>Close</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </Flex>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+                </Table.Body>
+              </Table.Root>
+              <Flex justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
+                <Button onClick={handleSubmit}>Submit</Button>
+              </Flex>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </>
   );
 };

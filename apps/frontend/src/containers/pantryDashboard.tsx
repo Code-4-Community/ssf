@@ -1,7 +1,5 @@
 import {
   Menu,
-  MenuButton,
-  MenuList,
   MenuItem,
   Button,
   HStack,
@@ -12,7 +10,7 @@ import {
   Box,
   Link,
 } from '@chakra-ui/react';
-import { HamburgerIcon } from '@chakra-ui/icons';
+import { HamburgerIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { User, Pantry } from 'types/types';
 import ApiClient from '@api/apiClient';
@@ -62,7 +60,7 @@ const PantryDashboard: React.FC = () => {
           top="50%"
           transform="translateY(-50%)"
         >
-          <Menu>
+          <Menu.Root>
             <MenuButton
               as={Button}
               bg="transparent"
@@ -98,11 +96,11 @@ const PantryDashboard: React.FC = () => {
                 Sign out
               </MenuItem>
             </MenuList>
-          </Menu>
+          </Menu.Root>
         </Box>
       </HStack>
 
-      <Card>
+      <Card.Root>
         <CardBody>
           <Text
             textAlign="center"
@@ -117,7 +115,7 @@ const PantryDashboard: React.FC = () => {
           <Text>Email: {ssfRep?.email}</Text>
           <Text>Phone: {ssfRep?.phone}</Text>
         </CardBody>
-      </Card>
+      </Card.Root>
 
       <Button
         mt="6"

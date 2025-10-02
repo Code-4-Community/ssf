@@ -4,13 +4,9 @@ import {
   Center,
   Table,
   Text,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   HStack,
   Select,
+  createListCollection,
 } from '@chakra-ui/react';
 import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
 import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
@@ -29,6 +25,14 @@ const FormRequests: React.FC = () => {
   );
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
+
+  const sortOptions = createListCollection({
+    items: [
+      { label: 'Date Requested (Recent)', value: 'mostRecent' },
+      { label: 'Date Requested (Oldest)', value: 'oldest' },
+      { label: 'Order Confirmation (Date Fulfilled)', value: 'confirmed' },
+    ],
+  });
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -79,7 +83,7 @@ const FormRequests: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <HStack spacing={200}>
+      <HStack gap={200}>
         <FoodRequestFormModalButton
           readOnly={false}
           buttonText="Submit New Request"
@@ -96,43 +100,51 @@ const FormRequests: React.FC = () => {
         )}
       </HStack>
 
-      <Select
+      <Select.Root
+        collection={sortOptions}
         mt={4}
         width="50%"
-        onChange={(e) =>
-          setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+        value={[sortBy]}
+        onValueChange={(e) =>
+          setSortBy(e.value[0] as 'mostRecent' | 'oldest' | 'confirmed')
         }
-        value={sortBy}
       >
-        <option value="mostRecent">Date Requested (Recent)</option>
-        <option value="oldest">Date Requested (Oldest)</option>
-        <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
-      </Select>
+        <Select.Trigger>
+          <Select.ValueText />
+        </Select.Trigger>
+        <Select.Content>
+          {sortOptions.items.map((option) => (
+            <Select.Item key={option.value} item={option}>
+              <Select.ItemText>{option.label}</Select.ItemText>
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select.Root>
 
-      <Table variant="simple" mt={6} width="80%">
-        <Thead>
-          <Tr>
-            <Th>Request Id</Th>
-            <Th>Order Id</Th>
-            <Th>Date Requested</Th>
-            <Th>Status</Th>
-            <Th>Shipped By</Th>
-            <Th>Date Fulfilled</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      <Table.Root mt={6} width="80%">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Request Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Order Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
+            <Table.ColumnHeader>Status</Table.ColumnHeader>
+            <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Fulfilled</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {sortedRequests.map((request) => (
-            <Tr key={request.requestId}>
-              <Td>
+            <Table.Row key={request.requestId}>
+              <Table.Cell>
                 <FoodRequestFormModalButton
                   previousRequest={request}
                   readOnly={true}
                   buttonText={request.requestId.toString()}
                   disabled={false}
                 />
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 {request.order?.orderId ? (
                   <OrderInformationModalButton
                     orderId={request.order.orderId}
@@ -140,16 +152,18 @@ const FormRequests: React.FC = () => {
                 ) : (
                   'N/A'
                 )}
-              </Td>
-              <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.order?.status ?? 'pending'}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
+              <Table.Cell>{request.order?.status ?? 'pending'}</Table.Cell>
+              <Table.Cell>
                 {request.order?.status === 'pending'
                   ? 'N/A'
                   : request.order?.shippedBy ?? 'N/A'}
-              </Td>
-              <Td>{formatReceivedDate(request.dateReceived)}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
+                {formatReceivedDate(request.dateReceived)}
+              </Table.Cell>
+              <Table.Cell>
                 {!request.order || request.order?.status === 'pending' ? (
                   <Text>Awaiting Order Assignment</Text>
                 ) : request.order?.status === 'delivered' ? (
@@ -159,11 +173,11 @@ const FormRequests: React.FC = () => {
                     requestId={request.requestId}
                   />
                 )}
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

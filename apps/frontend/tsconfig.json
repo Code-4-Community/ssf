@@ -14,7 +14,7 @@
       "@public/*": ["../public/*"],
       "@shared/*": ["../../../shared/*"],
       "@utils/*": ["utils/*"]
-    }
+    },
   },
   "files": [],
   "include": [],

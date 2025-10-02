@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
-  FormControl,
-  FormLabel,
+  Field,
   Button,
   Checkbox,
+  RadioGroup,
+  Dialog,
   Textarea,
   SimpleGrid,
-  CheckboxGroup,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-  RadioGroup,
   HStack,
-  Radio,
   Text,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
@@ -55,8 +46,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   disabled,
   readOnly = false,
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
@@ -75,94 +65,122 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   return (
     <>
-      <Button onClick={onOpen} isDisabled={disabled}>
+      <Button onClick={() => setIsOpen(true)} disabled={disabled}>
         {buttonText}
       </Button>
-      <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent maxW="49em">
-          <ModalHeader fontSize={25} fontWeight={700}>
-            SSF Food Request Form
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text mb="1.5em">
-              Request a shipment of allergen-free food from SSF. You will be
-              placed on our waiting list for incoming donations targeted to your
-              needs.
-              <br />
-              <br />
-              Please keep in mind that we may not be able to accommodate
-              specific food requests at all times, but we will do our best to
-              match your preferences.
-            </Text>
-            <Form method="post" action="/food-request">
-              <FormControl as="fieldset" isRequired mb="2em">
-                <FormLabel as="legend" fontSize={20} fontWeight={700}>
-                  Requested Size of Shipment
-                </FormLabel>
-                <RadioGroup
-                  value={requestedSize}
-                  onChange={setRequestedSize}
-                  name="size"
-                  isDisabled={readOnly}
-                >
-                  <HStack spacing="24px">
-                    <Radio value="<20">{'<'}20</Radio>
-                    <Radio value="20-50">20-50</Radio>
-                    <Radio value="50-100">50-100</Radio>
-                    <Radio value="100-150">100-150</Radio>
-                    <Radio value="150-200">150-200</Radio>
-                    <Radio value=">200">{'>'}200</Radio>
-                  </HStack>
-                </RadioGroup>
-              </FormControl>
+      <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} size="xl">
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxW="49em">
+            <Dialog.Header>
+              <Dialog.Title fontSize={25} fontWeight={700}>
+                SSF Food Request Form
+              </Dialog.Title>
+              <Dialog.CloseTrigger />
+            </Dialog.Header>
+            <Dialog.Body>
+              <Text mb="1.5em">
+                Request a shipment of allergen-free food from SSF. You will be
+                placed on our waiting list for incoming donations targeted to your
+                needs.
+                <br />
+                <br />
+                Please keep in mind that we may not be able to accommodate
+                specific food requests at all times, but we will do our best to
+                match your preferences.
+              </Text>
+              <Form method="post" action="/food-request">
+                <Field.Root required mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Requested Size of Shipment
+                  </Field.Label>
+                  <RadioGroup.Root
+                    value={requestedSize}
+                    onValueChange={(e) => setRequestedSize(e.value)}
+                    name="size"
+                    disabled={readOnly}
+                  >
+                    <HStack gap={6}>
+                      <RadioGroup.Item value="<20">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>{'<'}20</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                      <RadioGroup.Item value="20-50">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>20-50</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                      <RadioGroup.Item value="50-100">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>50-100</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                      <RadioGroup.Item value="100-150">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>100-150</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                      <RadioGroup.Item value="150-200">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>150-200</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                      <RadioGroup.Item value=">200">
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>{'>'}200</RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                    </HStack>
+                  </RadioGroup.Root>
+                </Field.Root>
 
-              <FormControl mb="2em">
-                <FormLabel fontSize={20} fontWeight={700}>
-                  Requested Shipment
-                </FormLabel>
-                <CheckboxGroup
-                  value={selectedItems}
-                  onChange={handleCheckboxChange}
-                  isDisabled={readOnly}
-                >
-                  <SimpleGrid spacing={2} columns={2}>
-                    {getAllergens().map((allergen) => (
-                      <Checkbox
-                        key={allergen}
-                        name="restrictions"
-                        value={allergen}
-                      >
-                        {allergen}
-                      </Checkbox>
-                    ))}
-                  </SimpleGrid>
-                </CheckboxGroup>
-              </FormControl>
+                <Field.Root mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Requested Shipment
+                  </Field.Label>
+                  <CheckboxGroup.Root
+                    value={selectedItems}
+                    onValueChange={(e) => handleCheckboxChange(e.value)}
+                    disabled={readOnly}
+                  >
+                    <SimpleGrid gap={2} columns={2}>
+                      {getAllergens().map((allergen) => (
+                        <Checkbox
+                          key={allergen}
+                          name="restrictions"
+                          value={allergen}
+                        >
+                          {allergen}
+                        </Checkbox>
+                      ))}
+                    </SimpleGrid>
+                  </CheckboxGroup.Root>
+                </Field.Root>
 
-              <FormControl mb="2em">
-                <FormLabel fontSize={20} fontWeight={700}>
-                  Additional Comments
-                </FormLabel>
-                <Textarea
-                  name="notes"
-                  placeholder="Anything else we should know about"
-                  size="sm"
-                  value={additionalNotes}
-                  onChange={(e) => setAdditionalNotes(e.target.value)}
-                  isDisabled={readOnly}
-                />
-              </FormControl>
+                <Field.Root mb="2em">
+                  <Field.Label fontSize={20} fontWeight={700}>
+                    Additional Comments
+                  </Field.Label>
+                  <Textarea
+                    name="notes"
+                    placeholder="Anything else we should know about"
+                    size="sm"
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    disabled={readOnly}
+                  />
+                </Field.Root>
 
-              <Flex justifyContent="space-between" mt={4}>
-                <Button onClick={onClose}>Close</Button>
-                {!readOnly && <Button type="submit">Submit</Button>}
-              </Flex>
-            </Form>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+                <Flex justifyContent="space-between" mt={4}>
+                  <Button onClick={() => setIsOpen(false)}>Close</Button>
+                  {!readOnly && <Button type="submit">Submit</Button>}
+                </Flex>
+              </Form>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Root>
     </>
   );
 };
@@ -196,7 +214,6 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
     if (response.ok) {
       console.log('Food request submitted successfully');
-
       window.location.href = '/request-form/1';
       return null;
     } else {

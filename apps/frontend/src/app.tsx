@@ -19,6 +19,7 @@ import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import AdminDonation from '@containers/adminDonation';
 
 const router = createBrowserRouter([
   {
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
         path: '/approve-pantries',
         element: <ApprovePantries />,
       },
+      {
+        path: '/admin-donation',
+        element: <AdminDonation />,
+      }
       {
         path: '/volunteer-management',
         element: <VolunteerManagement />,
