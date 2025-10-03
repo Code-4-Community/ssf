@@ -37,7 +37,8 @@ const FormRequests: React.FC = () => {
   const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
     number | null
   >(null);
-  const [openRequest, setOpenRequest] = useState<FoodRequest | null>(null);
+  const [openReadOnlyRequest, setOpenReadOnlyRequest] =
+    useState<FoodRequest | null>(null);
   const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -148,7 +149,7 @@ const FormRequests: React.FC = () => {
           {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
               <Td>
-                <Button onClick={() => setOpenRequest(request)}>
+                <Button onClick={() => setOpenReadOnlyRequest(request)}>
                   {request.requestId}
                 </Button>
               </Td>
@@ -188,12 +189,12 @@ const FormRequests: React.FC = () => {
               </Td>
             </Tr>
           ))}
-          {openRequest && (
+          {openReadOnlyRequest && (
             <FoodRequestFormModal
-              previousRequest={openRequest}
+              previousRequest={openReadOnlyRequest}
               readOnly={true}
-              isOpen={openRequest !== null}
-              onClose={() => setOpenRequest(null)}
+              isOpen={openReadOnlyRequest !== null}
+              onClose={() => setOpenReadOnlyRequest(null)}
             />
           )}
           {openOrderId && (
