@@ -1,6 +1,6 @@
 import {
   Menu,
-  MenuItem,
+  Portal,
   Button,
   HStack,
   Text,
@@ -43,7 +43,7 @@ const PantryDashboard: React.FC = () => {
   }, [pantryId]);
 
   return (
-    <VStack width="100%" padding="2" spacing={10}>
+    <VStack width="100%" padding="2" gap={10}>
       <HStack
         width="100%"
         justify="center"
@@ -61,41 +61,46 @@ const PantryDashboard: React.FC = () => {
           transform="translateY(-50%)"
         >
           <Menu.Root>
-            <MenuButton
-              as={Button}
-              bg="transparent"
-              size="lg"
-              _hover={{ bg: 'transparent' }}
-              _active={{ bg: 'transparent' }}
-            >
-              <HamburgerIcon w={6} h={6} />
-            </MenuButton>
-            <MenuList>
-              <MenuItem
-                as={Link}
-                href="/landing-page"
-                _hover={{ textDecoration: 'none' }}
-                textDecoration="none"
+            <Menu.Trigger asChild>
+              <Button
+                bg="transparent"
+                size="lg"
+                _hover={{ bg: 'transparent' }}
+                _active={{ bg: 'transparent' }}
               >
-                Profile
-              </MenuItem>
-              <MenuItem
-                as={Link}
-                href={`/request-form/${pantryId}`}
-                _hover={{ textDecoration: 'none' }}
-                textDecoration="none"
-              >
-                Request Form
-              </MenuItem>
-              <MenuItem
-                as={Link}
-                href="/landing-page"
-                _hover={{ textDecoration: 'none' }}
-                textDecoration="none"
-              >
-                Sign out
-              </MenuItem>
-            </MenuList>
+                <HamburgerIcon w={6} h={6} />
+              </Button>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content>
+                  <Menu.Item
+                    as={Link}
+                    href="/landing-page"
+                    _hover={{ textDecoration: 'none' }}
+                    textDecoration="none"
+                  >
+                    Profile
+                  </Menu.Item>
+                  <Menu.Item
+                    as={Link}
+                    href={`/request-form/${pantryId}`}
+                    _hover={{ textDecoration: 'none' }}
+                    textDecoration="none"
+                  >
+                    Request Form
+                  </Menu.Item>
+                  <Menu.Item
+                    as={Link}
+                    href="/landing-page"
+                    _hover={{ textDecoration: 'none' }}
+                    textDecoration="none"
+                  >
+                    Sign out
+                  </Menu.Item>
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
           </Menu.Root>
         </Box>
       </HStack>
@@ -117,15 +122,16 @@ const PantryDashboard: React.FC = () => {
         </CardBody>
       </Card.Root>
 
-      <Button
+      <Button 
+        asChild
         mt="6"
-        as={Link}
-        href={`/request-form/${pantryId}`}
         _hover={{ textDecoration: 'none' }}
         _focus={{ textDecoration: 'none' }}
         textDecoration="none"
       >
-        Request new shipment or check shipment status
+        <Link href={`/request-form/${pantryId}`}>
+          Request new shipment or check shipment status
+        </Link>
       </Button>
     </VStack>
   );

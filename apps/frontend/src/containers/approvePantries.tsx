@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Button, Select } from '@chakra-ui/react';
-import PantryApplicationModalButton from '@components/forms/pantryApplicationModalButton';
+import { Center, Table, Button, Select, Link, NativeSelect, NativeSelectIndicator } from '@chakra-ui/react';
+import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
@@ -8,6 +8,7 @@ const ApprovePantries: React.FC = () => {
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
+  const [openPantry, setOpenPantry] = useState<Pantry | null>(null);
 
   const fetchPantries = async () => {
     try {
@@ -67,30 +68,45 @@ const ApprovePantries: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <Select.Root
+      <NativeSelect.Root
         width="40%"
         mb={4}
-        placeholder="Sort By"
-        onChange={(e) => setSort(e.target.value)}
       >
-        <option value="name">Pantry Name (A-Z)</option>
-        <option value="name-reverse">Pantry Name (Z-A)</option>
-        <option value="date-recent">Date Applied (Most Recent)</option>
-        <option value="date-oldest">Date Applied (Oldest First)</option>
-      </Select.Root>
+        <NativeSelect.Field
+          placeholder="Sort By"
+          onChange={(e) => setSort(e.target.value)}
+        >
+          <option value="name">Pantry Name (A-Z)</option>
+          <option value="name-reverse">Pantry Name (Z-A)</option>
+          <option value="date-recent">Date Applied (Most Recent)</option>
+          <option value="date-oldest">Date Applied (Oldest First)</option>
+        </NativeSelect.Field>
+        <NativeSelectIndicator />
+      </NativeSelect.Root>
 
-      <Table.Root mt={6} width="80%">
+      <Table.Root variant="line" mt={6} width="80%">
         <Table.Body>
           {sortedPantries.map((pantry) => (
             <Table.Row key={pantry.pantryId}>
               <Table.Cell>{pantry.pantryId}</Table.Cell>
               <Table.Cell>
-                <PantryApplicationModalButton pantry={pantry} />
+                <Button 
+                  asChild
+                  bg="transparent" 
+                  color="cyan" 
+                  fontWeight="600"
+                  onClick={() => setOpenPantry(pantry)}
+                >
+                  <Link>
+                    {pantry.pantryName}
+                  </Link>
+                </Button>
               </Table.Cell>
               <Table.Cell>{formatDate(pantry.dateApplied)}</Table.Cell>
               <Table.Cell>
                 <Button
-                  colorScheme="green"
+                  bg="green.600"
+                  fontWeight="600"
                   onClick={() => updatePantry(pantry.pantryId, 'approve')}
                 >
                   Approve
@@ -98,7 +114,8 @@ const ApprovePantries: React.FC = () => {
               </Table.Cell>
               <Table.Cell>
                 <Button
-                  colorScheme="red"
+                  bg="red"
+                  fontWeight="600"
                   onClick={() => updatePantry(pantry.pantryId, 'deny')}
                 >
                   Deny
@@ -106,6 +123,13 @@ const ApprovePantries: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
+          {openPantry && (
+            <PantryApplicationModal
+              pantry={openPantry}
+              isOpen={openPantry !== null}
+              onClose={() => setOpenPantry(null)}
+            />
+          )}
         </Table.Body>
       </Table.Root>
     </Center>

@@ -97,6 +97,7 @@ const AdminDonation: React.FC = () => {
     color: 'black',
     fontFamily: "'Inter', sans-serif",
     fontSize: 'sm',
+    py: 0,
   };
 
   return (
@@ -232,11 +233,13 @@ const AdminDonation: React.FC = () => {
                 >
                   {donation.donationId}
                 </Button>
-                <DonationDetailsModal
-                  donationId={selectedDonationId || 0}
-                  isOpen={selectedDonationId !== null}
-                  onClose={() => setSelectedDonationId(null)}
-                />
+                {selectedDonationId && (
+                  <DonationDetailsModal
+                    donationId={selectedDonationId}
+                    isOpen={selectedDonationId !== null}
+                    onClose={() => setSelectedDonationId(null)}
+                  />
+                )}
               </Table.Cell>
               <Table.Cell
                 {...tableCellStyles}

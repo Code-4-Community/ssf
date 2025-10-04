@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Center, Table, Button, ButtonGroup, VStack } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
-import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
+import OrderInformationModal from '@components/forms/orderInformationModal';
 import { formatDate } from '@utils/utils';
 
 const FoodManufacturerOrderDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderType, setOrderType] = useState<'current' | 'past'>('current');
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -58,17 +59,23 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
         <Table.Root mt={6} width="100%">
           <Table.Header>
             <Table.Row>
-              <Table.Header>Order ID</Table.Header>
-              <Table.Header>Date Placed</Table.Header>
-              <Table.Header>Status</Table.Header>
-              <Table.Header>Actions</Table.Header>
+              <Table.ColumnHeader>Order ID</Table.ColumnHeader>
+              <Table.ColumnHeader>Date Placed</Table.ColumnHeader>
+              <Table.ColumnHeader>Status</Table.ColumnHeader>
+              <Table.ColumnHeader>Actions</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {orders.map((order) => (
               <Table.Row key={order.orderId}>
                 <Table.Cell>
-                  <OrderInformationModalButton orderId={order.orderId} />
+                  <Button 
+                    onClick={() => setOpenOrderId(order.orderId)}
+                    bg="neutral.100"
+                    color="black"
+                  >
+                    {order.orderId}
+                  </Button>
                 </Table.Cell>
                 <Table.Cell>{formatDate(order.createdAt)}</Table.Cell>
                 <Table.Cell>{order.status}</Table.Cell>
@@ -89,6 +96,13 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                 </Table.Cell>
               </Table.Row>
             ))}
+            {openOrderId && (
+              <OrderInformationModal
+                orderId={openOrderId}
+                isOpen={openOrderId !== null}
+                onClose={() => setOpenOrderId(null)}
+              />
+            )}
           </Table.Body>
         </Table.Root>
       </VStack>

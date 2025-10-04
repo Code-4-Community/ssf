@@ -10,8 +10,8 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
@@ -83,7 +83,7 @@ const router = createBrowserRouter([
       {
         path: '/admin-donation',
         element: <AdminDonation />,
-      }
+      },
       {
         path: '/volunteer-management',
         element: <VolunteerManagement />,

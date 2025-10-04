@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, VStack, HStack, Dialog, Portal } from '@chakra-ui/react';
+import { Box, Text, VStack, Dialog, Portal, CloseButton } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Donation } from 'types/types';
 import { DonationItem } from 'types/types';
+import { formatDate } from '@utils/utils';
 
 interface DonationDetailsModalProps {
   donationId: number;
@@ -36,44 +37,85 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     }
   }, [isOpen, donationId]);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-  };
+  const groupedItems = items.reduce((acc, item) => {
+    if (!acc[item.foodType]) {
+      acc[item.foodType] = [];
+    }
+    acc[item.foodType].push(item);
+    return acc;
+  }, {} as Record<string, DonationItem[]>)
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
         <Portal>
-            <Dialog.Backdrop />
+            <Dialog.Backdrop bg="blackAlpha.200"/>
             <Dialog.Positioner>
                 <Dialog.Content>
-                    <Dialog.CloseTrigger />
+                    <Dialog.CloseTrigger asChild>
+                      <CloseButton />
+                    </Dialog.CloseTrigger>
 
                     <Dialog.Header>
-                        <Dialog.Title fontSize="lg" fontWeight="600" fontFamily="'Inter', sans-serif">
-                        Donation #{donationId} Details
+                      <VStack align="stretch" gap={0}>
+                        <Dialog.Title fontSize="lg" mb={2} fontWeight="600" fontFamily="'Inter', sans-serif">
+                          Donation #{donationId} Details
                         </Dialog.Title>
+                        {donation && (
+                          <>
+                            <Text fontSize="sm" color="neutral.800">
+                              {donation.foodManufacturer?.foodManufacturerName}
+                            </Text>
+                            <Text fontSize="sm" color="neutral.800">
+                              {formatDate(donation.dateDonated)}
+                            </Text>
+                          </>
+                        )}
+                      </VStack>
                     </Dialog.Header>
                 
                     <Dialog.Body>
-                        {donation && (
-                        <VStack align="stretch" gap={3} fontFamily="'Inter', sans-serif" fontSize="sm">
-                            <Text fontWeight="600">{donation.foodManufacturer?.foodManufacturerName}</Text>
-                            <Text color="gray.600">{formatDate(donation.dateDonated)}</Text>
-
-                            <Box mt={4}>
-                            {items.map((item, index) => (
-                                <Box key={index} mb={3}>
-                                <Text fontWeight="600" mb={1}>{item.foodType}</Text>
-                                <HStack justify="space-between">
-                                    <Text color="gray.700">{item.itemName}</Text>
-                                    <Text fontWeight="600">{item.quantity}</Text>
-                                </HStack>
-                                </Box>
-                            ))}
+                      {donation && (
+                        <VStack align="stretch" gap={4} my={2}>
+                          {Object.entries(groupedItems).map(([foodType, typeItems]) => (
+                            <Box key={foodType}>
+                              <Text fontSize="md" fontWeight="600" mb={2} color="neutral.800">
+                                {foodType}
+                              </Text>
+                              <VStack align="stretch" gap={2}>
+                                {typeItems.map((item, index) => (
+                                  <Box
+                                    key={index}
+                                    display="flex"
+                                    p={0}
+                                    border="1px solid"
+                                    borderColor="neutral.100"
+                                    borderRadius="md"
+                                    overflow="hidden"
+                                  >
+                                    <Box flex={1} p={3} bg="white">
+                                      <Text color="neutral.800" fontSize="sm">
+                                        {item.itemName}
+                                      </Text>
+                                    </Box>
+                                    <Box 
+                                      borderLeft="1px solid" 
+                                      borderColor="neutral.100" 
+                                      p={3}
+                                      minW="50px"
+                                      display="flex"
+                                      alignItems="center"
+                                      justifyContent="center"
+                                      bg="white"
+                                    >
+                                      <Text color="neutral.800" fontSize="sm">{item.quantity}</Text>
+                                    </Box>
+                                  </Box>
+                                ))}
+                              </VStack>
                             </Box>
+                          ))}
                         </VStack>
-                        )}
+                      )}
                     </Dialog.Body>
                 </Dialog.Content>
             </Dialog.Positioner>

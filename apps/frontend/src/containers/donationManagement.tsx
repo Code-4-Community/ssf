@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Button, Box, Text } from '@chakra-ui/react';
+import {
+  Center,
+  Table,
+  Button,
+  Box,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
+import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
 
 const DonationManagement: React.FC = () => {
+  const { open, onOpen, onClose } = useDisclosure();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [expandedDonationIds, setExpandedDonationIds] = useState<number[]>([]);
   const [donationItems, setDonationItems] = useState<{
@@ -77,8 +85,13 @@ const DonationManagement: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <NewDonationFormModalButton onDonationSuccess={fetchDonations} />
-      <Table.Root mt={6} width="80%">
+      <Button onClick={onOpen}>Submit new donation</Button>
+      <NewDonationFormModal
+        onDonationSuccess={fetchDonations}
+        isOpen={open}
+        onClose={onClose}
+      />
+      <Table.Root variant="line" mt={6} width="80%">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>Donation Id</Table.ColumnHeader>
@@ -124,7 +137,8 @@ const DonationManagement: React.FC = () => {
               <Table.Cell>
                 {donation.status !== 'fulfilled' && (
                   <Button
-                    colorScheme="green"
+                    bg="green.600"
+                    fontWeight="600"
                     onClick={() => fulfillDonation(donation.donationId)}
                   >
                     Fulfill
