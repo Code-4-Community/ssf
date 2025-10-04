@@ -139,7 +139,14 @@ const VolunteerManagement: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <Text fontSize="2xl">Pantry Volunteer Management</Text>
-      <Box mt={5} display="block" maxW="100%" overflowX="auto" overflowY="hidden" whiteSpace="nowrap">
+      <Box
+        mt={5}
+        display="block"
+        maxW="100%"
+        overflowX="auto"
+        overflowY="hidden"
+        whiteSpace="nowrap"
+      >
         <VStack my={5}>
           <Input
             placeholder="Search by volunteer name"
@@ -148,7 +155,7 @@ const VolunteerManagement: React.FC = () => {
           />
           <Menu.Root closeOnSelect={false}>
             <Menu.Trigger asChild>
-              <Button >
+              <Button>
                 Filter by Volunteer Type
                 <ChevronDownIcon />
               </Button>
@@ -172,8 +179,9 @@ const VolunteerManagement: React.FC = () => {
                         <Checkbox.HiddenInput />
                         <Checkbox.Control />
                         <Checkbox.Label>
-                          {DISPLAY_VOLUNTEER_TYPES[volunteerType.toUpperCase()] ||
-                          volunteerType}
+                          {DISPLAY_VOLUNTEER_TYPES[
+                            volunteerType.toUpperCase()
+                          ] || volunteerType}
                         </Checkbox.Label>
                       </Checkbox.Root>
                     </Menu.Item>

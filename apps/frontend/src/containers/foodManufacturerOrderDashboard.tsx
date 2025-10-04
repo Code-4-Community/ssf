@@ -69,7 +69,7 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
             {orders.map((order) => (
               <Table.Row key={order.orderId}>
                 <Table.Cell>
-                  <Button 
+                  <Button
                     onClick={() => setOpenOrderId(order.orderId)}
                     bg="neutral.100"
                     color="black"

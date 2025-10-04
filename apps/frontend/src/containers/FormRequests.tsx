@@ -86,10 +86,7 @@ const FormRequests: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <HStack gap={200}>
-        <Button
-          onClick={newRequestDisclosure.onOpen}
-          disabled={!allConfirmed}
-        >
+        <Button onClick={newRequestDisclosure.onOpen} disabled={!allConfirmed}>
           Submit New Request
         </Button>
         <FoodRequestFormModal
@@ -115,11 +112,8 @@ const FormRequests: React.FC = () => {
         )}
       </HStack>
 
-      <NativeSelect.Root
-        mt={4}
-        width="50%"
-      >
-        <NativeSelect.Field 
+      <NativeSelect.Root mt={4} width="50%">
+        <NativeSelect.Field
           value={sortBy}
           onChange={(e) =>
             setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')

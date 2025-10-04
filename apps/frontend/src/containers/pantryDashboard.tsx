@@ -122,7 +122,7 @@ const PantryDashboard: React.FC = () => {
         </CardBody>
       </Card.Root>
 
-      <Button 
+      <Button
         asChild
         mt="6"
         _hover={{ textDecoration: 'none' }}

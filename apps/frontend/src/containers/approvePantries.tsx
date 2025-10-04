@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Button, Select, Link, NativeSelect, NativeSelectIndicator } from '@chakra-ui/react';
+import {
+  Center,
+  Table,
+  Button,
+  Link,
+  NativeSelect,
+  NativeSelectIndicator,
+} from '@chakra-ui/react';
 import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
@@ -68,10 +75,7 @@ const ApprovePantries: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <NativeSelect.Root
-        width="40%"
-        mb={4}
-      >
+      <NativeSelect.Root width="40%" mb={4}>
         <NativeSelect.Field
           placeholder="Sort By"
           onChange={(e) => setSort(e.target.value)}
@@ -90,16 +94,14 @@ const ApprovePantries: React.FC = () => {
             <Table.Row key={pantry.pantryId}>
               <Table.Cell>{pantry.pantryId}</Table.Cell>
               <Table.Cell>
-                <Button 
+                <Button
                   asChild
-                  bg="transparent" 
-                  color="cyan" 
+                  bg="transparent"
+                  color="cyan"
                   fontWeight="600"
                   onClick={() => setOpenPantry(pantry)}
                 >
-                  <Link>
-                    {pantry.pantryName}
-                  </Link>
+                  <Link>{pantry.pantryName}</Link>
                 </Button>
               </Table.Cell>
               <Table.Cell>{formatDate(pantry.dateApplied)}</Table.Cell>
