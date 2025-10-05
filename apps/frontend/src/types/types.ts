@@ -132,3 +132,15 @@ export interface Allocation {
   fulfilledAt: string;
   status: string;
 }
+
+export interface CreateFoodRequestBody {
+  pantryId: number;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation?: string | null;
+  status: string;
+  fulfilledBy?: number | null;
+  dateReceived?: Date | null;
+  feedback?: string | null;
+  photos?: string[] | null;
+}

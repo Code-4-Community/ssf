@@ -8,6 +8,7 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  CreateFoodRequestBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -81,7 +82,9 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async createFoodRequest(body: unknown): Promise<FoodRequest> {
+  public async createFoodRequest(
+    body: CreateFoodRequestBody,
+  ): Promise<FoodRequest> {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
