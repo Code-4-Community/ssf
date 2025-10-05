@@ -63,27 +63,30 @@ const PantryApplicationForm: React.FC = () => {
           </Text>
           <Text>Please fill out the following information to get started.</Text>
         </Box>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             First and Last Name
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             Whom should we contact at your pantry?
           </Field.HelperText>
           <Input maxW="20em" name="contactName" type="text" />
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Email Address
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             Please provide the email address of the pantry contact listed above.
           </Field.HelperText>
           <Input maxW="20em" name="contactEmail" type="email" />
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Phone Number
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             Please provide the phone number of the pantry contact listed above.
@@ -94,10 +97,11 @@ const PantryApplicationForm: React.FC = () => {
             inputProps={{ maxW: '20em', name: 'contactPhone' }}
           />
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label asChild>
             <Text fontSize={25} fontWeight={700}>
               Food Pantry Name
+              <Field.RequiredIndicator color="red"/>
             </Text>
           </Field.Label>
           <Input maxW="20em" name="pantryName" type="text" />
@@ -109,9 +113,10 @@ const PantryApplicationForm: React.FC = () => {
           <Text mb="1em">
             Please list your address for <b>food</b> shipments.
           </Text>
-          <Field.Root isRequired mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label fontSize={20} fontWeight={700}>
               Address Line 1
+              <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <Input maxW="20em" name="addressLine1" type="text" />
           </Field.Root>
@@ -121,21 +126,24 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <Input maxW="20em" name="addressLine2" type="text" />
           </Field.Root>
-          <Field.Root isRequired mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label fontSize={20} fontWeight={700}>
               City/Town
+              <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <Input maxW="20em" name="addressCity" type="text" />
           </Field.Root>
-          <Field.Root isRequired mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label fontSize={20} fontWeight={700}>
               State/Region/Province
+              <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <Input maxW="20em" name="addressRegion" type="text" />
           </Field.Root>
-          <Field.Root isRequired mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label fontSize={20} fontWeight={700}>
               Zip/Post Code
+              <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <Input maxW="20em" name="addressZip" type="text" />
           </Field.Root>
@@ -146,10 +154,11 @@ const PantryApplicationForm: React.FC = () => {
             <Input maxW="20em" name="addressCountry" type="text" />
           </Field.Root>
         </section>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Approximately how many allergen-avoidant clients does your pantry
             serve?
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             Please note that our target population is NOT individuals with
@@ -159,7 +168,7 @@ const PantryApplicationForm: React.FC = () => {
           <RadioGroup.Root
             name="allergenAvoidantClients"
             value={allergenAvoidantClients}
-            onChange={setAllergenAvoidantClients}
+            onValueChange={(e) => setAllergenAvoidantClients(e.value)}
           >
             <Stack>
               {[
@@ -241,9 +250,10 @@ const PantryApplicationForm: React.FC = () => {
             <Input maxW="20em" name="dietaryRestrictionsOther" type="text" />
           </Field.Root>
         )}
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Would you be able to accept refrigerated/frozen donations from us?
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <RadioGroup.Root name="acceptRefrigerated">
             <Stack>
@@ -257,10 +267,11 @@ const PantryApplicationForm: React.FC = () => {
             </Stack>
           </RadioGroup.Root>
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Are you willing to reserve our food shipments for allergen-avoidant
             individuals?
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             For example: keeping allergen-friendly items on a separate shelf,
@@ -270,7 +281,7 @@ const PantryApplicationForm: React.FC = () => {
           <RadioGroup.Root
             name="willingToReserve"
             value={willingToReserve}
-            onChange={setWillingToReserve}
+            onValueChange={(e) => setWillingToReserve(e.value)}
           >
             <Stack>
               {[
@@ -288,9 +299,10 @@ const PantryApplicationForm: React.FC = () => {
           </RadioGroup.Root>
         </Field.Root>
         {willingToReserve === willingToReserveYesOption && (
-          <Field.Root isRequired mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label fontSize={20} fontWeight={700}>
               Please explain how you would do this:
+              <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <Textarea maxW="20em" name="howWillReserveYes" />
           </Field.Root>
@@ -303,10 +315,11 @@ const PantryApplicationForm: React.FC = () => {
             <Textarea maxW="20em" name="howWillReserveSome" />
           </Field.Root>
         )}
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Do you have a dedicated shelf or section of your pantry for
             allergy-friendly items?
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Field.HelperText mb="1em">
             If not, we would love to have a conversation and offer resources to
@@ -396,22 +409,25 @@ const PantryApplicationForm: React.FC = () => {
             </Stack>
           </RadioGroup.Root>
         </Field.Root>
-        <Field.Root isRequired mb="2em">
-          <Field.Label fontSize={25} fontWeight={700}>
-            What activities are you open to doing with SSF?
-          </Field.Label>
-          <Field.HelperText mb="1em">
+        <Fieldset.Root required mb="2em">
+          <Fieldset.Legend fontSize={25} fontWeight={700}>
+            What activities are you open to doing with SSF?{" "}
+            <Text as="span" color="red">
+              *
+            </Text>
+          </Fieldset.Legend>
+          <Fieldset.HelperText mb="1em">
             <p>
               Food donations are one part of being a partner pantry. The
               following are additional ways to help us better support you!
               (Please select all that apply.)
             </p>
             <p>Please select at least one option!</p>
-          </Field.HelperText>
+          </Fieldset.HelperText>
           {/* TODO: Fix input validation message */}
           <CheckboxGroup
             value={activities}
-            onChange={(activities) => setActivities(activities as string[])}
+            onValueChange={(activities) => setActivities(activities as string[])}
           >
             <Stack>
               {[
@@ -436,7 +452,7 @@ const PantryApplicationForm: React.FC = () => {
               ))}
             </Stack>
           </CheckboxGroup>
-        </Field.Root>
+        </Fieldset.Root>
         <Field.Root mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Please list any comments/concerns related to the previous question.
@@ -446,18 +462,20 @@ const PantryApplicationForm: React.FC = () => {
           </Field.HelperText>
           <Textarea maxW="20em" name="activitiesComments" />
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             What types of allergen-free items, if any, do you currently have in
             stock? (i.e., gluten-free breads, sunflower seed butters, non-dairy
             beverages, etc.)
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Textarea maxW="20em" name="allergenFreeItems" />
         </Field.Root>
-        <Field.Root isRequired mb="2em">
+        <Field.Root required mb="2em">
           <Field.Label fontSize={25} fontWeight={700}>
             Do allergen-avoidant clients at your pantry ever request a greater
             variety of items or not have enough options?
+            <Field.RequiredIndicator color="red"/>
           </Field.Label>
           <Textarea maxW="20em" name="allergenAvoidantRequests" />
         </Field.Root>

@@ -94,7 +94,7 @@ const DonationManagement: React.FC = () => {
       <Table.Root variant="line" mt={6} width="80%">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Donation Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Donation ID</Table.ColumnHeader>
             <Table.ColumnHeader>Date Donated</Table.ColumnHeader>
             <Table.ColumnHeader>Status</Table.ColumnHeader>
             <Table.ColumnHeader>Remaining Stock</Table.ColumnHeader>
