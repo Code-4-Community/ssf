@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
+import { validateId } from '../utils/validation.utils';
 
 @Injectable()
 export class RequestsService {
@@ -9,25 +14,29 @@ export class RequestsService {
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
   ) {}
 
-  async findOne(requestId: number) {
-    if (!requestId || requestId < 1) {
-      throw new NotFoundException('Invalid request ID');
-    }
-    return await this.repo.findOne({
+  async findOne(requestId: number): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
       where: { requestId },
       relations: ['order'],
     });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+    return request;
   }
 
   async create(
     pantryId: number,
     requestedSize: string,
     requestedItems: string[],
-    additionalInformation: string | null,
-    dateReceived: Date | null,
-    feedback: string | null,
-    photos: string[] | null,
-  ) {
+    additionalInformation: string | undefined,
+    dateReceived: Date | undefined,
+    feedback: string | undefined,
+    photos: string[] | undefined,
+  ): Promise<FoodRequest> {
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
@@ -42,9 +51,8 @@ export class RequestsService {
   }
 
   async find(pantryId: number) {
-    if (!pantryId || pantryId < 1) {
-      throw new NotFoundException('Invalid pantry ID');
-    }
+    validateId(pantryId, 'Pantry');
+
     return await this.repo.find({
       where: { pantryId },
       relations: ['order'],
@@ -57,15 +65,33 @@ export class RequestsService {
     feedback: string,
     photos: string[],
   ): Promise<FoodRequest> {
-    const request = await this.repo.findOne({ where: { requestId } });
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['order'],
+    });
 
     if (!request) {
       throw new NotFoundException('Invalid request ID');
     }
 
+    if (!request.order) {
+      throw new ConflictException('No associated order found for this request');
+    }
+
+    const order = request.order;
+
+    if (!order.shippedBy) {
+      throw new ConflictException(
+        'No associated food manufacturer found for this order',
+      );
+    }
+
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
+    request.order.status = 'fulfilled';
 
     return await this.repo.save(request);
   }
