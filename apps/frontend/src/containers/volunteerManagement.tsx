@@ -172,10 +172,7 @@ const VolunteerManagement: React.FC = () => {
                           volunteerType.toUpperCase(),
                         )}
                         onCheckedChange={(e) =>
-                          handleVolunteerFilterChange(
-                            volunteerType,
-                            e.checked,
-                          )
+                          handleVolunteerFilterChange(volunteerType, e.checked)
                         }
                       >
                         <Checkbox.HiddenInput />
