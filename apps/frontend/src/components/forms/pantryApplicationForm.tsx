@@ -10,6 +10,7 @@ import {
   Text,
   Field,
   Textarea,
+  Fieldset,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -191,14 +192,14 @@ const PantryApplicationForm: React.FC = () => {
             />
           </Field.Root>
         )}
-        <Field.Root mb="2em">
-          <Field.Label fontSize={25} fontWeight={700}>
+        <Fieldset.Root mb="2em">
+          <Fieldset.Legend fontSize={25} fontWeight={700}>
             Which food allergies or other medical dietary restrictions do
             clients at your pantry report?
-          </Field.Label>
-          <Field.HelperText mb="1em">
+          </Fieldset.Legend>
+          <Fieldset.HelperText mb="1em">
             Please select all that apply.
-          </Field.HelperText>
+          </Fieldset.HelperText>
           <CheckboxGroup
             value={dietaryRestrictions}
             onValueChange={setDietaryRestrictions}
@@ -229,7 +230,7 @@ const PantryApplicationForm: React.FC = () => {
               ))}
             </Stack>
           </CheckboxGroup>
-        </Field.Root>
+        </Fieldset.Root>
         {dietaryRestrictions.find((option) =>
           otherDietaryRestrictionsOptions.includes(option),
         ) && (

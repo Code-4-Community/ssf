@@ -13,6 +13,7 @@ import {
   Box,
   Portal,
   NativeSelect,
+  NativeSelectIndicator,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { Link } from 'react-router-dom';
@@ -76,6 +77,7 @@ const VolunteerManagement: React.FC = () => {
             </option>
           ))}
         </NativeSelect.Field>
+        <NativeSelectIndicator />
       </NativeSelect.Root>
     );
   };
@@ -172,7 +174,7 @@ const VolunteerManagement: React.FC = () => {
                         onCheckedChange={(e) =>
                           handleVolunteerFilterChange(
                             volunteerType,
-                            e.target.checked,
+                            e.checked,
                           )
                         }
                       >

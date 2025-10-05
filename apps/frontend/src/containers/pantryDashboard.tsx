@@ -10,7 +10,7 @@ import {
   Box,
   Link,
 } from '@chakra-ui/react';
-import { HamburgerIcon } from 'lucide-react';
+import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { User, Pantry } from 'types/types';
 import ApiClient from '@api/apiClient';
@@ -68,7 +68,7 @@ const PantryDashboard: React.FC = () => {
                 _hover={{ bg: 'transparent' }}
                 _active={{ bg: 'transparent' }}
               >
-                <HamburgerIcon w={6} h={6} />
+                <MenuIcon color="black" size={6} />
               </Button>
             </Menu.Trigger>
             <Portal>

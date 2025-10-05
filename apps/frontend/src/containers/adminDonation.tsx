@@ -159,7 +159,7 @@ const AdminDonation: React.FC = () => {
                       key={manufacturer}
                       checked={selectedManufacturers.includes(manufacturer)}
                       onCheckedChange={(e) =>
-                        handleFilterChange(manufacturer, !!e.checked)
+                        handleFilterChange(manufacturer, e.checked)
                       }
                       color="black"
                       size="sm"

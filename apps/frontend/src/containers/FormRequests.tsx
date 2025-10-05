@@ -93,6 +93,7 @@ const FormRequests: React.FC = () => {
           previousRequest={undefined}
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
+          pantryId={parseInt(pantryId!)}
         />
         {previousRequest && (
           <>
@@ -107,6 +108,7 @@ const FormRequests: React.FC = () => {
               readOnly={false}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
+              pantryId={parseInt(pantryId!)}
             />
           </>
         )}
@@ -129,8 +131,8 @@ const FormRequests: React.FC = () => {
       <Table.Root mt={6} width="80%">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Request Id</Table.ColumnHeader>
-            <Table.ColumnHeader>Order Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Request ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Order ID</Table.ColumnHeader>
             <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
             <Table.ColumnHeader>Status</Table.ColumnHeader>
             <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
@@ -190,6 +192,7 @@ const FormRequests: React.FC = () => {
               readOnly={true}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
+              pantryId={parseInt(pantryId!)}
             />
           )}
           {openOrderId && (

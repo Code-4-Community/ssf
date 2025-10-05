@@ -42,7 +42,14 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Dialog.Root open={isOpen} size="lg" onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root 
+      open={isOpen} 
+      size="lg" 
+      onOpenChange={(e) => {
+        if (!e.open) onClose()
+      }}
+      closeOnInteractOutside
+    >
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content>

@@ -55,7 +55,14 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()} size="xl">
+    <Dialog.Root 
+      open={isOpen} 
+      onOpenChange={(e) => {
+        if (!e.open) onClose()
+      }}
+      size="xl"
+      closeOnInteractOutside
+    >
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
@@ -115,7 +122,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
               </Field.Root>
               <HStack gap="24px" justifyContent="space-between" mt={4}>
                 <Button onClick={onClose}>Close</Button>
-                <Button type="submit" colorScheme="blue">
+                <Button type="submit" bg="blue">
                   Confirm Delivery
                 </Button>
               </HStack>

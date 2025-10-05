@@ -46,7 +46,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   }, {} as Record<string, DonationItem[]>)
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root 
+      open={isOpen} 
+      onOpenChange={(e) => {
+        if (!e.open) onClose()
+      }}
+      closeOnInteractOutside
+    >
         <Portal>
             <Dialog.Backdrop bg="blackAlpha.200"/>
             <Dialog.Positioner>
