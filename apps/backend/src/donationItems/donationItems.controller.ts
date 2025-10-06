@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Param, Get, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Patch,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
@@ -10,7 +18,7 @@ export class DonationItemsController {
 
   @Get('/get-donation-items/:donationId')
   async getAllDonationIdItems(
-    @Param('donationId') donationId: number,
+    @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
@@ -59,7 +67,7 @@ export class DonationItemsController {
 
   @Patch('/update-quantity/:itemId')
   async updateDonationItemQuantity(
-    @Param('itemId') itemId: number,
+    @Param('itemId', ParseIntPipe) itemId: number,
   ): Promise<DonationItem> {
     return this.donationItemsService.updateDonationItemQuantity(itemId);
   }
