@@ -4,11 +4,13 @@ import { OrdersService } from './order.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { Order } from './order.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+
+const mockOrdersService = mock<OrdersService>();
+const mockAllocationsService = mock<AllocationsService>();
 
 describe('OrdersController', () => {
   let controller: OrdersController;
-  let ordersService: OrdersService;
-  let allocationsService: AllocationsService;
 
   const mockOrders: Order[] = [
     { orderId: 1, status: 'pending' } as Order,
@@ -21,16 +23,6 @@ describe('OrdersController', () => {
     { allocationId: 3, orderId: 2 } as Allocation,
   ];
 
-  const mockOrdersService = {
-    getAll: jest.fn().mockResolvedValue(mockOrders[0]),
-  };
-
-  const mockAllocationsService = {
-    getAllAllocationsByOrder: jest
-      .fn()
-      .mockResolvedValue(mockAllocations.slice(0, 2)),
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrdersController],
@@ -41,8 +33,6 @@ describe('OrdersController', () => {
     }).compile();
 
     controller = module.get<OrdersController>(OrdersController);
-    ordersService = module.get<OrdersService>(OrdersService);
-    allocationsService = module.get<AllocationsService>(AllocationsService);
   });
 
   it('should be defined', () => {
@@ -53,11 +43,12 @@ describe('OrdersController', () => {
     it('should call ordersService.getAll and return orders', async () => {
       const status = 'pending';
       const pantryNames = ['Test Pantry', 'Test Pantry 2'];
+      mockOrdersService.getAll.mockResolvedValueOnce([mockOrders[0]]);
 
       const result = await controller.getAllOrders(status, pantryNames);
 
-      expect(result).toEqual(mockOrders[0]);
-      expect(ordersService.getAll).toHaveBeenCalledWith({
+      expect(result).toEqual([mockOrders[0]]);
+      expect(mockOrdersService.getAll).toHaveBeenCalledWith({
         status,
         pantryNames,
       });
@@ -67,13 +58,16 @@ describe('OrdersController', () => {
   describe('getAllAllocationsByOrder', () => {
     it('should call allocationsService.getAllAllocationsByOrder and return allocations', async () => {
       const orderId = 1;
+      mockAllocationsService.getAllAllocationsByOrder.mockResolvedValueOnce(
+        mockAllocations.slice(0, 2),
+      );
 
       const result = await controller.getAllAllocationsByOrder(orderId);
 
       expect(result).toEqual(mockAllocations.slice(0, 2));
-      expect(allocationsService.getAllAllocationsByOrder).toHaveBeenCalledWith(
-        orderId,
-      );
+      expect(
+        mockAllocationsService.getAllAllocationsByOrder,
+      ).toHaveBeenCalledWith(orderId);
     });
   });
 });
