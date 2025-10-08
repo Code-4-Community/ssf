@@ -14,6 +14,7 @@ import {
 import { Donation } from 'types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
+import { formatDate } from '@utils/utils';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -38,6 +39,10 @@ const AdminDonation: React.FC = () => {
     };
     fetchDonations();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedManufacturers])
 
   const manufacturerOptions = [
     ...new Set(donations.map((d) => d.foodManufacturer.foodManufacturerName)),
@@ -72,15 +77,6 @@ const AdminDonation: React.FC = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',

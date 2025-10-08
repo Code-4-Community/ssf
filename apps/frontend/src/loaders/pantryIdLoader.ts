@@ -1,6 +1,6 @@
 import { json, LoaderFunctionArgs } from 'react-router-dom';
 
-export async function requestFormLoader({ params }: LoaderFunctionArgs) {
+export async function pantryIdLoader({ params }: LoaderFunctionArgs) {
   const { pantryId } = params;
 
   if (!pantryId) {

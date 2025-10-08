@@ -20,7 +20,7 @@ import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
-import { requestFormLoader } from '@loaders/requestFormLoader';
+import { pantryIdLoader } from '@loaders/pantryIdLoader';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +39,7 @@ const router = createBrowserRouter([
       {
         path: '/pantry-dashboard/:pantryId',
         element: <PantryDashboard />,
+        loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
@@ -64,7 +65,7 @@ const router = createBrowserRouter([
       {
         path: '/request-form/:pantryId',
         element: <FormRequests />,
-        loader: requestFormLoader,
+        loader: pantryIdLoader,
       },
       {
         path: '/donation-management',

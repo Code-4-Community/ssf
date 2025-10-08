@@ -10,6 +10,7 @@ import {
 import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
+import { formatDate } from '@utils/utils';
 
 const ApprovePantries: React.FC = () => {
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
@@ -63,15 +64,6 @@ const ApprovePantries: React.FC = () => {
 
     setSortedPantries(sorted);
   }, [sort, pendingPantries]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-    });
-  };
 
   return (
     <Center flexDirection="column" p={4}>
