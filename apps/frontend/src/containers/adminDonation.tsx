@@ -42,7 +42,7 @@ const AdminDonation: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedManufacturers])
+  }, [selectedManufacturers]);
 
   const manufacturerOptions = [
     ...new Set(donations.map((d) => d.foodManufacturer.foodManufacturerName)),
