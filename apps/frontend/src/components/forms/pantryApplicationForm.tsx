@@ -221,7 +221,11 @@ const PantryApplicationForm: React.FC = () => {
                 ...otherDietaryRestrictionsOptions,
                 'Unsure',
               ].map((value) => (
-                <Checkbox.Root key={value} value={value} name="dietaryRestrictions">
+                <Checkbox.Root
+                  key={value}
+                  value={value}
+                  name="dietaryRestrictions"
+                >
                   <Checkbox.HiddenInput />
                   <Checkbox.Control />
                   <Checkbox.Label>{value}</Checkbox.Label>

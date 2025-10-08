@@ -71,7 +71,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   ];
 
   return (
-    <Dialog.Root open={isOpen} size="xl" onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root
+      open={isOpen}
+      size="xl"
+      onOpenChange={(e) => !e.open && onClose()}
+    >
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
@@ -87,9 +91,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               needs.
               <br />
               <br />
-              Please keep in mind that we may not be able to accommodate specific
-              food requests at all times, but we will do our best to match your
-              preferences.
+              Please keep in mind that we may not be able to accommodate
+              specific food requests at all times, but we will do our best to
+              match your preferences.
             </Text>
             <Form method="post" action="/food-request">
               <input type="hidden" name="pantryId" value={pantryId} />
@@ -98,7 +102,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Text fontSize={20} fontWeight={700}>
                     Requested Size of Shipment
                   </Text>
-                  <Field.RequiredIndicator color="red" fontSize={20} fontWeight={700}/>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
                 </Field.Label>
                 <RadioGroup.Root
                   value={requestedSize}
@@ -111,7 +119,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       <RadioGroup.Item key={option.value} value={option.value}>
                         <RadioGroup.ItemHiddenInput />
                         <RadioGroup.ItemControl />
-                        <RadioGroup.ItemText>{option.label}</RadioGroup.ItemText>
+                        <RadioGroup.ItemText>
+                          {option.label}
+                        </RadioGroup.ItemText>
                       </RadioGroup.Item>
                     ))}
                   </HStack>
@@ -123,7 +133,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Text fontSize={20} fontWeight={700}>
                     Requested Shipment
                   </Text>
-                  <Field.RequiredIndicator color="red" fontSize={20} fontWeight={700}/>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
                 </Field.Label>
                 <CheckboxGroup
                   value={selectedItems}
@@ -139,7 +153,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       >
                         <Checkbox.HiddenInput />
                         <Checkbox.Control />
-                        <Checkbox.Label >{allergen}</Checkbox.Label>
+                        <Checkbox.Label>{allergen}</Checkbox.Label>
                       </Checkbox.Root>
                     ))}
                   </SimpleGrid>
@@ -151,7 +165,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Text fontSize={20} fontWeight={700}>
                     Additional Comments
                   </Text>
-                  <Field.RequiredIndicator color="red" fontSize={20} fontWeight={700}/>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
                 </Field.Label>
                 <Textarea
                   name="notes"

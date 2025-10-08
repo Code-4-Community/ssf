@@ -10,5 +10,6 @@ import { JwtStrategy } from '../auth/jwt.strategy';
   imports: [TypeOrmModule.forFeature([Allocation])],
   controllers: [AllocationsController],
   providers: [AllocationsService, AuthService, JwtStrategy],
+  exports: [AllocationsService],
 })
 export class AllocationModule {}

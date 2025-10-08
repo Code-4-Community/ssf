@@ -171,7 +171,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   };
 
   return (
-    <Dialog.Root open={isOpen} size={'xl'} onClose={(e) => !e.open && onClose()}>
+    <Dialog.Root
+      open={isOpen}
+      size={'xl'}
+      onClose={(e) => !e.open && onClose()}
+    >
       <Dialog.Backdrop />
       <Dialog.Content maxW="49em">
         <Dialog.Header asChild>
@@ -186,7 +190,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
             Please make sure to fill out all fields before submitting.
           </Text>
           <Text mb="1.5em">Log a new donation</Text>
-          <Box display="block" maxW="100%" overflowX="auto" overflowY="hidden" whiteSpace="nowrap">
+          <Box
+            display="block"
+            maxW="100%"
+            overflowX="auto"
+            overflowY="hidden"
+            whiteSpace="nowrap"
+          >
             <Table.Root variant="line">
               <TableCaption>
                 <Stack direction="row" align="center" gap={3} mt={3}>
@@ -221,7 +231,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                     </Table.Cell>
                     <Table.Cell>
                       <NativeSelect.Root>
-                        <NativeSelect.Field 
+                        <NativeSelect.Field
                           placeholder="Select a food type"
                           value={row.foodType}
                           onChange={(e) =>

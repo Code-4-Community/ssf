@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Dialog,
-  Grid,
-  GridItem,
-} from '@chakra-ui/react';
+import { Button, Dialog, Grid, GridItem } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry, User } from 'types/types';
 

@@ -20,6 +20,7 @@ import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
+import AdminOrderManagement from '@containers/adminOrderManagement';
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: '/admin-donation',
         element: <AdminDonation />,
+      },
+      {
+        path: '/admin-order-management',
+        element: <AdminOrderManagement />,
       },
       {
         path: '/volunteer-management',

@@ -55,7 +55,11 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()} size="xl">
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e) => !e.open && onClose()}
+      size="xl"
+    >
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
@@ -76,7 +80,11 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   <Text fontSize={20} fontWeight={700}>
                     Delivery Date
                   </Text>
-                  <Field.RequiredIndicator color="red" fontSize={20} fontWeight={700}/>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
                 </Field.Label>
                 <Input
                   type="date"
@@ -110,7 +118,9 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   accept=".jpg,.jpeg,.png"
                   onChange={handlePhotoChange}
                 />
-                <Field.HelperText>Select up to 3 photos to upload.</Field.HelperText>
+                <Field.HelperText>
+                  Select up to 3 photos to upload.
+                </Field.HelperText>
                 <Box mt={3}>{renderPhotoNames()}</Box>
               </Field.Root>
               <HStack gap="24px" justifyContent="space-between" mt={4}>

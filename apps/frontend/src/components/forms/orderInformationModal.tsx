@@ -1,8 +1,4 @@
-import {
-  VStack,
-  Text,
-  Dialog,
-} from '@chakra-ui/react';
+import { VStack, Text, Dialog } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
 import { Pantry, Allocation } from 'types/types';
@@ -42,7 +38,11 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Dialog.Root open={isOpen} size="lg" onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root
+      open={isOpen}
+      size="lg"
+      onOpenChange={(e) => !e.open && onClose()}
+    >
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content>
