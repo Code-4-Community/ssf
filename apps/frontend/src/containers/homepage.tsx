@@ -27,9 +27,7 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-overview">
-                  Pantry Overview
-                </RouterLink>
+                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -41,9 +39,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-past-orders">
-                  Past Orders
-                </RouterLink>
+                <RouterLink to="/pantry-past-orders">Past Orders</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -69,10 +65,7 @@ const Homepage: React.FC = () => {
           </Heading>
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link
-                asChild
-                color="teal.500"
-              >
+              <Link asChild color="teal.500">
                 <RouterLink to="/food-manufacturer-order-dashboard">
                   Order Dashboard
                 </RouterLink>
@@ -80,9 +73,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/orders">
-                  Orders
-                </RouterLink>
+                <RouterLink to="/orders">Orders</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -102,16 +93,12 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/approve-pantries">
-                  Approve Pantries
-                </RouterLink>
+                <RouterLink to="/approve-pantries">Approve Pantries</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantries">
-                  All Pantries
-                </RouterLink>
+                <RouterLink to="/pantries">All Pantries</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -138,9 +125,7 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild href="/landing-page" color="teal.500">
-                <RouterLink to="/pantry-overview">
-                  Pantry Overview
-                </RouterLink>
+                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
                 Landing Page
               </Link>
             </ListItem>
