@@ -6,7 +6,10 @@ const customConfig = defineConfig({
       colors: {
         white: { value: '#fff' },
         black: { value: '#000' },
-        blue: { value: '#2B5061' },
+        blue: { 
+          ssf: { value: '#2B5061' },
+          100: { value: '#bee3f8' },
+        },
         red: { value: '#CC3538' },
         yellow: { value: '#F89E19' },
         cyan: { value: '#2795A5' },

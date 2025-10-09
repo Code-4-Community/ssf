@@ -21,6 +21,7 @@ import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDas
 import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
 import { pantryIdLoader } from '@loaders/pantryIdLoader';
+import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         path: '/landing-page',
         element: <LandingPage />,
