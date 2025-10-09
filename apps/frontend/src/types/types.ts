@@ -139,7 +139,6 @@ export enum VolunteerType {
 }
 
 export interface VolunteerPantryAssignment {
-  assignmentId: number;
   volunteer: {
     id: number;
     firstName: string;
