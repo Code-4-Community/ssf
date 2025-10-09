@@ -17,6 +17,7 @@ import {
   Funnel,
   Mail,
 } from 'lucide-react';
+import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
@@ -49,7 +50,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
     setSelectedPantries((prev) =>
-      checked ? [...prev, pantry] : prev.filter((m) => m !== pantry),
+      checked ? [...prev, pantry] : prev.filter((p) => p !== pantry),
     );
   };
 
@@ -65,15 +66,6 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
         ? a.createdAt.localeCompare(b.createdAt)
         : b.createdAt.localeCompare(a.createdAt),
     );
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
