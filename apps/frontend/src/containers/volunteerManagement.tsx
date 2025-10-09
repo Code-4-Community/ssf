@@ -25,10 +25,7 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [changedVolunteers, setChangedVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const [checkedTypes, setCheckedTypes] = useState<string[]>([
-    'LEAD_VOLUNTEER',
-    'STANDARD_VOLUNTEER',
-  ]);
+  const [checkedTypes, setCheckedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -49,7 +46,8 @@ const VolunteerManagement: React.FC = () => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
     return (
       fullName.includes(searchName.toLowerCase()) &&
-      checkedTypes.includes(a.role.toUpperCase())
+      (checkedTypes.includes(a.role.toUpperCase()) ||
+      checkedTypes.length === 0)
     );
   });
 
@@ -102,7 +100,7 @@ const VolunteerManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchName('');
-    setCheckedTypes(['LEAD_VOLUNTEER', 'STANDARD_VOLUNTEER']);
+    setCheckedTypes([]);
 
     setChangedVolunteers(volunteers);
   };
