@@ -5,7 +5,7 @@ export interface Donation {
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer?: FoodManufacturer;
 }
 
 export interface DonationItem {
@@ -97,29 +97,7 @@ export interface Order {
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
-  foodManufacturerRepresentativeId: number;
-}
-
-export interface Donation {
-  donationId: number;
-  foodManufacturerId: number;
-  dateDonated: string;
-  status: string;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
-}
-
-export interface DonationItem {
-  itemId: number;
-  donationId: number;
-  itemName: string;
-  quantity: number;
-  reservedQuantity: number;
-  status: string;
-  ozPerItem: number;
-  estimatedValue: number;
-  foodType: string;
+  foodManufacturerRepresentative: User;
 }
 
 export interface Allocation {
