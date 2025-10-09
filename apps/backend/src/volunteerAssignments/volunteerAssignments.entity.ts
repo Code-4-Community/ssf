@@ -1,27 +1,23 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-  ManyToOne,
-  Column,
-} from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Entity('volunteer_assignments')
 export class Assignments {
-  @PrimaryGeneratedColumn({ name: 'assignment_id' })
-  assignmentId: number;
+  @PrimaryColumn({ name: 'volunteer_id' })
+  volunteerId: number;
 
-  @ManyToOne(() => User, { nullable: false })
+  @PrimaryColumn({ name: 'pantry_id' })
+  pantryId: number;
+
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'volunteer_id',
     referencedColumnName: 'id',
   })
   volunteer: User;
 
-  @OneToOne(() => Pantry, { nullable: true })
+  @ManyToOne(() => Pantry, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({
     name: 'pantry_id',
     referencedColumnName: 'pantryId',

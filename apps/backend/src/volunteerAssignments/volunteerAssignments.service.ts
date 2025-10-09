@@ -11,12 +11,11 @@ export class AssignmentsService {
     private usersService: UsersService,
   ) {}
 
-  // Gets the assignment id, volunteer details and the corresponding pantry
+  // Gets the volunteer details and the corresponding pantry
   async getAssignments() {
     const results = await this.repo.find({
       relations: ['volunteer', 'pantry'],
       select: {
-        assignmentId: true,
         volunteer: {
           id: true,
           firstName: true,
