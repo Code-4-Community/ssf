@@ -46,8 +46,7 @@ const VolunteerManagement: React.FC = () => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
     return (
       fullName.includes(searchName.toLowerCase()) &&
-      (checkedTypes.includes(a.role.toUpperCase()) ||
-      checkedTypes.length === 0)
+      (checkedTypes.includes(a.role.toUpperCase()) || checkedTypes.length === 0)
     );
   });
 
