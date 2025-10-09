@@ -19,7 +19,7 @@ import { Order } from '../orders/order.entity';
 
 @Controller('requests')
 // @UseInterceptors()
-export class FoodRequestsController {
+export class RequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
