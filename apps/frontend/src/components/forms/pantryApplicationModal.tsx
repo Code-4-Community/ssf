@@ -4,6 +4,7 @@ import {
   Dialog,
   Grid,
   GridItem,
+  Text,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry, User } from 'types/types';
@@ -53,114 +54,115 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
             {user ? (
               <Grid templateColumns="2fr 1fr" gap={4}>
                 <GridItem>
-                  <strong>Representative Name</strong>
+                  <Text fontWeight="bold">Representative Name</Text>
                 </GridItem>
+
                 <GridItem>
                   {user.firstName} {user.lastName}
                 </GridItem>
 
                 <GridItem>
-                  <strong>Email</strong>
+                  <Text fontWeight="bold">Email</Text>
                 </GridItem>
                 <GridItem>{user.email}</GridItem>
 
                 <GridItem>
-                  <strong>Phone</strong>
+                  <Text fontWeight="bold">Phone</Text>
                 </GridItem>
                 <GridItem>{user.phone}</GridItem>
 
                 <GridItem>
-                  <strong>Role</strong>
+                  <Text fontWeight="bold">Role</Text>
                 </GridItem>
                 <GridItem>{user.role}</GridItem>
               </Grid>
             ) : (
-              <p>No user details available.</p>
+              <Text>No user details available.</Text>
             )}
 
             <Grid templateColumns="2fr 1fr" gap={5} mt={4}>
               <GridItem>
-                <strong>Pantry Id</strong>
+                <Text fontWeight="bold">Pantry Id</Text>
               </GridItem>
               <GridItem>{pantry.pantryId}</GridItem>
 
               <GridItem>
-                <strong>Pantry Name</strong>
+                <Text fontWeight="bold">Pantry Name</Text>
               </GridItem>
               <GridItem>{pantry.pantryName}</GridItem>
 
               <GridItem>
-                <strong>Address</strong>
+                <Text fontWeight="bold">Address</Text>
               </GridItem>
               <GridItem>{pantry.address}</GridItem>
 
               <GridItem>
-                <strong>Allergen Clients</strong>
+                <Text fontWeight="bold">Allergen Clients</Text>
               </GridItem>
               <GridItem>{pantry.allergenClients}</GridItem>
 
               <GridItem>
-                <strong>Refrigerated Donation</strong>
+                <Text fontWeight="bold">Refrigerated Donation</Text>
               </GridItem>
               <GridItem>{pantry.refrigeratedDonation}</GridItem>
 
               <GridItem>
-                <strong>Reserve Food for Allergic</strong>
+                <Text fontWeight="bold">Reserve Food for Allergic</Text>
               </GridItem>
               <GridItem>{pantry.reserveFoodForAllergic ? 'Yes' : 'No'}</GridItem>
 
               <GridItem>
-                <strong>Reservation Explanation</strong>
+                <Text fontWeight="bold">Reservation Explanation</Text>
               </GridItem>
               <GridItem>{pantry.reservationExplanation}</GridItem>
 
               <GridItem>
-                <strong>Dedicated Allergen Friendly</strong>
+                <Text fontWeight="bold">Dedicated Allergen Friendly</Text>
               </GridItem>
               <GridItem>{pantry.dedicatedAllergyFriendly}</GridItem>
 
               <GridItem>
-                <strong>Client Visit Frequency</strong>
+                <Text fontWeight="bold">Client Visit Frequency</Text>
               </GridItem>
               <GridItem>{pantry.clientVisitFrequency}</GridItem>
 
               <GridItem>
-                <strong>Identify Allergens Confidence</strong>
+                <Text fontWeight="bold">Identify Allergens Confidence</Text>
               </GridItem>
               <GridItem>{pantry.identifyAllergensConfidence}</GridItem>
 
               <GridItem>
-                <strong>Serve Allergic Children</strong>
+                <Text fontWeight="bold">Serve Allergic Children</Text>
               </GridItem>
               <GridItem>{pantry.serveAllergicChildren}</GridItem>
 
               <GridItem>
-                <strong>Newsletter Subscription</strong>
+                <Text fontWeight="bold">Newsletter Subscription</Text>
               </GridItem>
               <GridItem>{pantry.newsletterSubscription ? 'Yes' : 'No'}</GridItem>
 
               <GridItem>
-                <strong>Restrictions</strong>
+                <Text fontWeight="bold">Restrictions</Text>
               </GridItem>
               <GridItem>{pantry.restrictions.join(', ')}</GridItem>
 
               <GridItem>
-                <strong>Activities</strong>
+                <Text fontWeight="bold">Activities</Text>
               </GridItem>
               <GridItem>{pantry.activities}</GridItem>
 
               <GridItem>
-                <strong>Questions</strong>
+                <Text fontWeight="bold">Questions</Text>
               </GridItem>
               <GridItem>{pantry.questions}</GridItem>
 
               <GridItem>
-                <strong>Items in Stock</strong>
+                <Text fontWeight="bold">Items in Stock</Text>
               </GridItem>
               <GridItem>{pantry.itemsInStock}</GridItem>
 
               <GridItem>
-                <strong>Need More Options</strong>
+                <Text fontWeight="bold">Need More Options</Text>
               </GridItem>
               <GridItem>{pantry.needMoreOptions}</GridItem>
             </Grid>
