@@ -9,17 +9,22 @@ import {
   Tr,
   Th,
   Td,
-  HStack,
   Select,
+  Button,
+  HStack,
+  useDisclosure,
 } from '@chakra-ui/react';
-import FoodRequestFormModalButton from '@components/forms/requestFormModalButton';
-import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
+import FoodRequestFormModal from '@components/forms/requestFormModal';
+import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
+import OrderInformationModal from '@components/forms/orderInformationModal';
 import { FoodRequest } from 'types/types';
 import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import OrderInformationModalButton from '@components/forms/orderInformationModalButton';
 
 const FormRequests: React.FC = () => {
+  const newRequestDisclosure = useDisclosure();
+  const previousRequestDisclosure = useDisclosure();
+
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
@@ -29,6 +34,12 @@ const FormRequests: React.FC = () => {
   );
   const { pantryId } = useParams<{ pantryId: string }>();
   const [allConfirmed, setAllConfirmed] = useState(false);
+  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
+    number | null
+  >(null);
+  const [openReadOnlyRequest, setOpenReadOnlyRequest] =
+    useState<FoodRequest | null>(null);
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -80,19 +91,32 @@ const FormRequests: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
-        <FoodRequestFormModalButton
-          readOnly={false}
-          buttonText="Submit New Request"
-          disabled={!allConfirmed}
+        <Button
+          onClick={newRequestDisclosure.onOpen}
+          isDisabled={!allConfirmed}
+        >
+          Submit New Request
+        </Button>
+        <FoodRequestFormModal
+          previousRequest={undefined}
+          isOpen={newRequestDisclosure.isOpen}
+          onClose={newRequestDisclosure.onClose}
         />
-
         {previousRequest && (
-          <FoodRequestFormModalButton
-            previousRequest={previousRequest}
-            readOnly={false}
-            buttonText="Submit Previous Request"
-            disabled={!allConfirmed}
-          />
+          <>
+            <Button
+              onClick={previousRequestDisclosure.onOpen}
+              isDisabled={!allConfirmed}
+            >
+              Submit Previous Request
+            </Button>
+            <FoodRequestFormModal
+              previousRequest={previousRequest}
+              readOnly={false}
+              isOpen={previousRequestDisclosure.isOpen}
+              onClose={previousRequestDisclosure.onClose}
+            />
+          </>
         )}
       </HStack>
 
@@ -125,18 +149,19 @@ const FormRequests: React.FC = () => {
           {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
               <Td>
-                <FoodRequestFormModalButton
-                  previousRequest={request}
-                  readOnly={true}
-                  buttonText={request.requestId.toString()}
-                  disabled={false}
-                />
+                <Button onClick={() => setOpenReadOnlyRequest(request)}>
+                  {request.requestId}
+                </Button>
               </Td>
               <Td>
                 {request.order?.orderId ? (
-                  <OrderInformationModalButton
-                    orderId={request.order.orderId}
-                  />
+                  <Button
+                    onClick={() =>
+                      setOpenOrderId(request.order?.orderId ?? null)
+                    }
+                  >
+                    {request.order?.orderId}
+                  </Button>
                 ) : (
                   'N/A'
                 )}
@@ -155,13 +180,37 @@ const FormRequests: React.FC = () => {
                 ) : request.order?.status === 'delivered' ? (
                   <Text>Food Request is Already Delivered</Text>
                 ) : (
-                  <DeliveryConfirmationModalButton
-                    requestId={request.requestId}
-                  />
+                  <Button
+                    onClick={() => setOpenDeliveryRequestId(request.requestId)}
+                  >
+                    Confirm Delivery
+                  </Button>
                 )}
               </Td>
             </Tr>
           ))}
+          {openReadOnlyRequest && (
+            <FoodRequestFormModal
+              previousRequest={openReadOnlyRequest}
+              readOnly={true}
+              isOpen={openReadOnlyRequest !== null}
+              onClose={() => setOpenReadOnlyRequest(null)}
+            />
+          )}
+          {openOrderId && (
+            <OrderInformationModal
+              orderId={openOrderId}
+              isOpen={openOrderId !== null}
+              onClose={() => setOpenOrderId(null)}
+            />
+          )}
+          {openDeliveryRequestId && (
+            <DeliveryConfirmationModal
+              requestId={openDeliveryRequestId}
+              isOpen={openDeliveryRequestId !== null}
+              onClose={() => setOpenDeliveryRequestId(null)}
+            />
+          )}
         </Tbody>
       </Table>
     </Center>
