@@ -16,16 +16,16 @@ import { DonationService } from './donations.service';
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
+  @Get()
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
+
   @Get('/:donationId')
   async getOrder(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.findOne(donationId);
-  }
-
-  @Get('/get-all-donations')
-  async getAllDonations(): Promise<Donation[]> {
-    return this.donationService.getAll();
   }
 
   @Post('/create')
@@ -69,7 +69,7 @@ export class DonationsController {
 
   @Patch('/:donationId/fulfill')
   async fulfillDonation(
-    @Param('donationId') donationId: number,
+    @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     const updatedDonation = await this.donationService.fulfill(donationId);
     if (!updatedDonation) {
