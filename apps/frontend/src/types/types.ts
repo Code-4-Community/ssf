@@ -97,7 +97,7 @@ export interface Order {
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
-  foodManufacturerRepresentative: User;
+  foodManufacturerRepresentative?: User;
 }
 
 export interface Allocation {
