@@ -192,7 +192,6 @@ describe('RequestsController', () => {
       expect(photoResult).toEqual(updatedPhotoUrls);
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(photos);
 
-      // Mock the OrdersService.updateDeliveryDetails method
       await mockOrdersService.updateStatus(requestId, 'deivered');
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         requestId,
