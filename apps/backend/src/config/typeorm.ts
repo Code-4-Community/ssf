@@ -16,6 +16,7 @@ import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-upd
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+import { AddVolunteerPantryUniqueConstraint1760033134668 } from '../migrations/1760033134668-AddVolunteerPantryUniqueConstraint';
 
 const config = {
   type: 'postgres',
@@ -45,6 +46,7 @@ const config = {
     UpdateRequestTable1741571847063,
     UpdateFoodRequests1744051370129,
     RemoveOrderIdFromRequests1744133526650,
+    AddVolunteerPantryUniqueConstraint1760033134668,
   ],
 };
 
