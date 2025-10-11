@@ -20,6 +20,9 @@ export class UsersService {
 
     @InjectRepository(Assignments)
     private assignmentsRepo: Repository<Assignments>,
+
+    @InjectRepository(Pantry)
+    private pantryRepo: Repository<Pantry>,
   ) {}
 
   async create(
@@ -112,12 +115,15 @@ export class UsersService {
 
   async assignPantriesToVolunteer(volunteerId: number, pantryIds: number[]) {
     validateId(volunteerId, 'Volunteer');
+    for (const pantryId of pantryIds) {
+      validateId(pantryId, 'Pantry');
+    }
+
     const volunteer = await this.repo.findOne({ where: { id: volunteerId } });
     if (!volunteer)
       throw new NotFoundException(`Volunteer ${volunteerId} not found`);
 
-    const pantryRepo = this.assignmentsRepo.manager.getRepository(Pantry);
-    const pantries = await pantryRepo.findBy({ pantryId: In(pantryIds) });
+    const pantries = await this.pantryRepo.findBy({ pantryId: In(pantryIds) });
 
     if (pantries.length !== pantryIds.length) {
       throw new BadRequestException('One or more pantries not found');
