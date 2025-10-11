@@ -15,7 +15,6 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
-import { Order } from '../orders/order.entity';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -38,14 +37,6 @@ export class RequestsController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
-  }
-
-  @Get('get-order/:requestId')
-  async getOrderByRequestId(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order> {
-    const request = await this.requestsService.findOne(requestId);
-    return request.order;
   }
 
   @Post('/create')

@@ -37,6 +37,8 @@ export class RequestsService {
     feedback: string | undefined,
     photos: string[] | undefined,
   ): Promise<FoodRequest> {
+    validateId(pantryId, 'Pantry');
+
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
