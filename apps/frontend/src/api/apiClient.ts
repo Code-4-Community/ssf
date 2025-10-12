@@ -141,7 +141,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/get-all-orders')
+      .get('/api/orders/orders')
       .then((response) => response.data);
   }
 
@@ -169,7 +169,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .get(`api/allocations/${orderId}/allocations`)
       .then((response) => response.data);
   }
 

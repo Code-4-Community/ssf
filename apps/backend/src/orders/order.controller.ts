@@ -23,7 +23,7 @@ export class OrdersController {
     private readonly allocationsService: AllocationsService,
   ) {}
 
-  @Get('/get-all-orders')
+  @Get('/orders')
   async getAllOrders(
     @Query('status') status?: string,
     @Query('pantryName') pantryNames?: string | string[],
@@ -86,7 +86,7 @@ export class OrdersController {
     return this.ordersService.findOrderByRequest(orderId);
   }
 
-  @Get(':orderId/get-all-allocations')
+  @Get(':orderId/allocations')
   async getAllAllocationsByOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {
