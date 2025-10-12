@@ -40,7 +40,7 @@ export class RequestsService {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.find(pantryId);
-    if (!pantry || pantry.length === 0) {
+    if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
 

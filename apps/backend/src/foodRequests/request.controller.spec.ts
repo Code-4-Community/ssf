@@ -10,6 +10,19 @@ const mockRequestsService = mock<RequestsService>();
 const mockOrdersService = mock<OrdersService>();
 const mockAWSS3Service = mock<AWSS3Service>();
 
+const foodRequest = {
+  requestId: 1,
+  pantryId: 1,
+  requestedSize: 'Medium (5-10 boxes)',
+  requestedItems: ['Canned Goods', 'Vegetables'],
+  additionalInformation: 'No onions, please.',
+  requestedAt: null,
+  dateReceived: null,
+  feedback: null,
+  photos: null,
+  order: null,
+};
+
 describe('RequestsController', () => {
   let controller: RequestsController;
 
@@ -46,18 +59,6 @@ describe('RequestsController', () => {
 
   describe('GET /:requestId', () => {
     it('should call requestsService.findOne and return a specific food request', async () => {
-      const foodRequest = {
-        requestId: 1,
-        pantryId: 1,
-        requestedSize: 'Medium (5-10 boxes)',
-        requestedItems: ['Canned Goods', 'Vegetables'],
-        additionalInformation: 'No onions, please.',
-        requestedAt: null,
-        dateReceived: null,
-        feedback: null,
-        photos: null,
-        order: null,
-      };
       const requestId = 1;
 
       mockRequestsService.findOne.mockResolvedValueOnce(foodRequest);
@@ -72,18 +73,7 @@ describe('RequestsController', () => {
   describe('GET /get-all-requests/:pantryId', () => {
     it('should call requestsService.find and return all food requests for a specific pantry', async () => {
       const foodRequests = [
-        {
-          requestId: 1,
-          pantryId: 1,
-          requestedSize: 'Medium (5-10 boxes)',
-          requestedItems: ['Canned Goods', 'Vegetables'],
-          additionalInformation: 'No onions, please.',
-          requestedAt: null,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
-          order: null,
-        },
+        foodRequest,
         {
           requestId: 2,
           pantryId: 1,

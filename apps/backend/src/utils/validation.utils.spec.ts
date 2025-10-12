@@ -13,10 +13,10 @@ describe('validateId', () => {
 
   it('should throw BadRequestException for undefined or null ID', () => {
     expect(() => validateId(undefined as unknown as number, 'Pantry')).toThrow(
-      'Invalid Pantry ID',
+      new BadRequestException('Invalid Pantry ID'),
     );
     expect(() => validateId(null as unknown as number, 'Pantry')).toThrow(
-      'Invalid Pantry ID',
+      new BadRequestException('Invalid Pantry ID'),
     );
   });
 });
