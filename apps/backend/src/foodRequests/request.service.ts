@@ -39,6 +39,11 @@ export class RequestsService {
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
+    const pantry = await this.find(pantryId);
+    if (!pantry || pantry.length === 0) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
