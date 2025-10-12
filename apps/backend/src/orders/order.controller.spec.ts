@@ -49,7 +49,7 @@ describe('OrdersController', () => {
 
       const result = await controller.getAllOrders(status, pantryNames);
 
-      expect(result).toEqual([mockOrders[0]]);
+      expect(result).toEqual([mockOrders[0]] as Order[]);
       expect(mockOrdersService.getAll).toHaveBeenCalledWith({
         status,
         pantryNames,
@@ -61,12 +61,12 @@ describe('OrdersController', () => {
     it('should call allocationsService.getAllAllocationsByOrder and return allocations', async () => {
       const orderId = 1;
       mockAllocationsService.getAllAllocationsByOrder.mockResolvedValueOnce(
-        mockAllocations.slice(0, 2),
+        mockAllocations.slice(0, 2) as Allocation[],
       );
 
       const result = await controller.getAllAllocationsByOrder(orderId);
 
-      expect(result).toEqual(mockAllocations.slice(0, 2));
+      expect(result).toEqual(mockAllocations.slice(0, 2) as Allocation[]);
       expect(
         mockAllocationsService.getAllAllocationsByOrder,
       ).toHaveBeenCalledWith(orderId);
