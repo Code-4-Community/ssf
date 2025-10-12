@@ -169,7 +169,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/allocations`)
+      .get(`api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 

@@ -12,15 +12,15 @@ const mockAllocationsService = mock<AllocationsService>();
 describe('OrdersController', () => {
   let controller: OrdersController;
 
-  const mockOrders: Order[] = [
-    { orderId: 1, status: 'pending' } as Order,
-    { orderId: 2, status: 'delivered' } as Order,
+  const mockOrders: Partial<Order>[] = [
+    { orderId: 1, status: 'pending' },
+    { orderId: 2, status: 'delivered' },
   ];
 
-  const mockAllocations = [
-    { allocationId: 1, orderId: 1 } as Allocation,
-    { allocationId: 2, orderId: 1 } as Allocation,
-    { allocationId: 3, orderId: 2 } as Allocation,
+  const mockAllocations: Partial<Allocation>[] = [
+    { allocationId: 1, orderId: 1 },
+    { allocationId: 2, orderId: 1 },
+    { allocationId: 3, orderId: 2 },
   ];
 
   beforeEach(async () => {
@@ -43,7 +43,9 @@ describe('OrdersController', () => {
     it('should call ordersService.getAll and return orders', async () => {
       const status = 'pending';
       const pantryNames = ['Test Pantry', 'Test Pantry 2'];
-      mockOrdersService.getAll.mockResolvedValueOnce([mockOrders[0]]);
+      mockOrdersService.getAll.mockResolvedValueOnce([
+        mockOrders[0],
+      ] as Order[]);
 
       const result = await controller.getAllOrders(status, pantryNames);
 
