@@ -65,6 +65,21 @@ describe('OrdersService', () => {
         relations: ['order'],
       });
     });
+
+    it('should throw an error if the request id is not found', async () => {
+      const requestId = 999;
+
+      mockRequestsRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.findOne(requestId)).rejects.toThrow(
+        `Request ${requestId} not found`,
+      );
+
+      expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
+        where: { requestId },
+        relations: ['order'],
+      });
+    });
   });
 
   describe('create', () => {
