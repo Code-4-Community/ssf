@@ -7,8 +7,9 @@ describe('validateId', () => {
   });
 
   it('should throw BadRequestException for ID < 1', () => {
-    expect(() => validateId(0, 'User')).toThrow(BadRequestException);
-    expect(() => validateId(0, 'User')).toThrow('Invalid User ID');
+    expect(() => validateId(0, 'User')).toThrow(
+      new BadRequestException('Invalid User ID'),
+    );
   });
 
   it('should throw BadRequestException for undefined or null ID', () => {

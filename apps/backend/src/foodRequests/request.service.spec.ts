@@ -4,8 +4,11 @@ import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { RequestsService } from './request.service';
 import { mock } from 'jest-mock-extended';
+import { get } from 'http';
+import { Pantry } from '../pantries/pantries.entity';
 
 const mockRequestsRepository = mock<Repository<FoodRequest>>();
+const mockPantryRepository = mock<Repository<Pantry>>();
 
 const mockRequest = {
   requestId: 1,
@@ -29,6 +32,7 @@ describe('OrdersService', () => {
     mockRequestsRepository.create.mockReset();
     mockRequestsRepository.save.mockReset();
     mockRequestsRepository.find.mockReset();
+    mockPantryRepository.findOneBy.mockReset();
 
     const module = await Test.createTestingModule({
       providers: [
@@ -36,6 +40,10 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: mockRequestsRepository,
+        },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: mockPantryRepository,
         },
       ],
     }).compile();
@@ -48,6 +56,7 @@ describe('OrdersService', () => {
     mockRequestsRepository.create.mockReset();
     mockRequestsRepository.save.mockReset();
     mockRequestsRepository.find.mockReset();
+    mockPantryRepository.findOneBy.mockReset();
   });
 
   it('should be defined', () => {
@@ -84,6 +93,9 @@ describe('OrdersService', () => {
 
   describe('create', () => {
     it('should successfully create and return a new food request', async () => {
+      mockPantryRepository.findOneBy.mockResolvedValueOnce({
+        pantryId: 1,
+      } as unknown as Pantry);
       mockRequestsRepository.create.mockReturnValueOnce(mockRequest);
       mockRequestsRepository.save.mockResolvedValueOnce(mockRequest);
       mockRequestsRepository.find.mockResolvedValueOnce([mockRequest]);

@@ -7,11 +7,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
+import { Pantry } from '../pantries/pantries.entity';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
+    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -39,7 +41,7 @@ export class RequestsService {
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
-    const pantry = await this.find(pantryId);
+    const pantry = await this.pantryRepo.findOneBy({ pantryId });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
