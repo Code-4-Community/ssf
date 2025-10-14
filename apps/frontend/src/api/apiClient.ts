@@ -141,7 +141,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/orders')
+      .get('/api/orders/')
       .then((response) => response.data);
   }
 
