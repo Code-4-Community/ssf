@@ -30,7 +30,7 @@ export class Donation {
     name: 'status',
     type: 'varchar',
     length: 25,
-    default: 'avaliable',
+    default: 'available',
   })
   status: string;
 
