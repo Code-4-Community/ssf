@@ -3,9 +3,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Entity('food_manufacturers')
 export class FoodManufacturer {
@@ -20,5 +22,8 @@ export class FoodManufacturer {
     name: 'food_manufacturer_representative_id',
     referencedColumnName: 'id',
   })
-  foodManufacturerRepresentativeId: User;
+  foodManufacturerRepresentative: User;
+
+  @OneToMany(() => Donation, (donation) => donation.foodManufacturer)
+  donations: Donation[];
 }

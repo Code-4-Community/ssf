@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
+import { VolunteerPantryAssignment } from 'types/types';
 import {
   User,
   Pantry,
@@ -48,6 +49,12 @@ export class ApiClient {
   private async patch(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .patch(path, body)
+      .then((response) => response.data);
+  }
+
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
       .then((response) => response.data);
   }
 
@@ -107,6 +114,23 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/request`)
       .then((response) => response.data);
+  }
+
+  public async getAllAssignments(): Promise<VolunteerPantryAssignment[]> {
+    return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
+  }
+
+  public async getVolunteers(): Promise<User[]> {
+    return this.get('/api/users/volunteers') as Promise<User[]>;
+  }
+
+  public async updateUserVolunteerRole(
+    userId: number,
+    body: { role: string },
+  ): Promise<void> {
+    return this.axiosInstance
+      .put(`/api/users/${userId}/role`, body)
+      .then(() => {});
   }
 
   public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
@@ -202,20 +226,10 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
+    await this.axiosInstance.post(
+      `/api/requests/${requestId}/confirm-delivery`,
+      data,
+    );
   }
 }
 
