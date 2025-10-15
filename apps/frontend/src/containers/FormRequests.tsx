@@ -207,6 +207,7 @@ const FormRequests: React.FC = () => {
               requestId={openDeliveryRequestId}
               isOpen={openDeliveryRequestId !== null}
               onClose={() => setOpenDeliveryRequestId(null)}
+              pantryId={parseInt(pantryId!)}
             />
           )}
         </Table.Body>

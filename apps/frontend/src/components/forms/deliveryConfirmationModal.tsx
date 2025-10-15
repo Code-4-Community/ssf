@@ -15,6 +15,7 @@ interface DeliveryConfirmationModalProps {
   requestId: number;
   isOpen: boolean;
   onClose: () => void;
+  pantryId: number;
 }
 
 const photoNames: string[] = [];
@@ -24,6 +25,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   requestId,
   isOpen,
   onClose,
+  pantryId,
 }) => {
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -77,6 +79,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
               action="/confirm-delivery"
               encType="multipart/form-data"
             >
+              <input type="hidden" name="pantryId" value={pantryId} />
               <input type="hidden" name="requestId" value={requestId} />
               <Field.Root required mb="2em">
                 <Field.Label>
@@ -142,6 +145,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
+  const pantryId = form.get('pantryId')
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 
@@ -167,10 +171,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       confirmDeliveryData,
     );
     alert('Delivery confirmation submitted successfully');
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   }
 };
 
