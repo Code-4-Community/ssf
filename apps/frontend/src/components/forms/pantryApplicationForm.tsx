@@ -472,6 +472,30 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const pantryApplicationData = new Map();
 
+  // Backend enum mappings (reverse from frontend labels)
+  const AllergyFriendlyStorageMap: Record<string, string> = {
+    'Yes, we have a dedicated shelf or box': 'Yes, dedicated shelf',
+    'Yes, we keep allergy-friendly items in a back room': 'Yes, back room',
+    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item':
+      'No, throughout pantry',
+  };
+
+  const ActivitiesMap: Record<string, string> = {
+    'Create a labeled, allergy-friendly shelf or shelves':
+      'Create allergy-friendly shelf or shelves',
+    'Provide clients and staff/volunteers with educational pamphlets':
+      'Provide educational pamphlets',
+    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month":
+      'Spreadsheet tracking dietary needs, SSF items per month',
+    'Post allergen-free resource flyers throughout pantry':
+      'Post allergen-free resource flyers',
+    'Survey your clients to determine their medical dietary needs':
+      'Survey clients for medical dietary needs',
+    'Collect feedback from allergen-avoidant clients on SSF foods':
+      'Collect feedback from allergen-avoidant clients on SSF foods',
+    'Something else': 'Something else',
+  };
+
   // Handle questions with checkboxes (we create an array of all
   // selected options)
 
@@ -481,8 +505,15 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   );
   form.delete('dietaryRestrictions');
 
-  pantryApplicationData.set('activities', form.getAll('activities'));
+  const rawActivities = form.getAll('activities') as string[];
+  const convertedActivities = rawActivities.map((act) => ActivitiesMap[act]);
+  pantryApplicationData.set('activities', convertedActivities);
   form.delete('activities');
+
+  const dedicatedShelfRaw = form.get('dedicatedShelf') as string;
+  const convertedShelf = AllergyFriendlyStorageMap[dedicatedShelfRaw];
+  pantryApplicationData.set('dedicatedShelf', convertedShelf);
+  form.delete('dedicatedShelf');
 
   // Handle all other questions
   form.forEach((value, key) => pantryApplicationData.set(key, value));
