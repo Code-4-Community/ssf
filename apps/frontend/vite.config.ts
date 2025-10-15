@@ -41,6 +41,7 @@ export default defineConfig({
       '@public': path.resolve(__dirname, './public'),
       '@shared': path.resolve(__dirname, '../../shared'),
       '@utils': path.resolve(__dirname, './src/utils'),
+      '@loaders': path.resolve(__dirname, './src/loaders')
     },
   },
 });
