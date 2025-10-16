@@ -9,6 +9,7 @@ describe('PantriesController', () => {
   let controller: PantriesController;
   let service: PantriesService;
 
+  // Mock PantriesService
   const mockPantriesService = {
     getPendingPantries: jest.fn(),
     findOne: jest.fn(),
@@ -17,6 +18,7 @@ describe('PantriesController', () => {
     deny: jest.fn(),
   };
 
+  // Mock Pantry
   const mockPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
@@ -41,6 +43,7 @@ describe('PantriesController', () => {
     needMoreOptions: '',
   } as unknown as Pantry;
 
+  // Mock User
   const mockUser = {
     id: 1,
     role: Role.STANDARD_VOLUNTEER,
@@ -73,6 +76,7 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
+  // Get all pantries with pending status
   describe('getPendingPantries', () => {
     it('should return an array of pending pantries', async () => {
       const result = [mockPantry];
@@ -90,6 +94,7 @@ describe('PantriesController', () => {
     });
   });
 
+  // Get pantry by ID
   describe('getPantry', () => {
     it('should return a single pantry by id', async () => {
       mockPantriesService.findOne.mockResolvedValue(mockPantry);
@@ -108,6 +113,7 @@ describe('PantriesController', () => {
     });
   });
 
+  // Get SSF representative for a pantry
   describe('getSSFRep', () => {
     it('should return the SSF representative for a pantry', async () => {
       mockPantriesService.findSSFRep.mockResolvedValue(mockUser);
@@ -126,6 +132,7 @@ describe('PantriesController', () => {
     });
   });
 
+  // Approve pantry by ID (status = approved)
   describe('approvePantry', () => {
     it('should approve a pantry', async () => {
       mockPantriesService.approve.mockResolvedValue(undefined);
@@ -145,6 +152,7 @@ describe('PantriesController', () => {
     });
   });
 
+  // Deny pantry by ID (status = denied)
   describe('denyPantry', () => {
     it('should deny a pantry', async () => {
       mockPantriesService.deny.mockResolvedValue(undefined);

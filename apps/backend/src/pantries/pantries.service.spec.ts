@@ -7,7 +7,6 @@ import { NotFoundException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 
-// Mock the validation utils
 jest.mock('../utils/validation.utils', () => ({
   validateId: jest.fn(),
 }));
@@ -16,12 +15,14 @@ describe('PantriesService', () => {
   let service: PantriesService;
   let repository: Repository<Pantry>;
 
+  // Mock Repository
   const mockRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
     update: jest.fn(),
   };
 
+  // Mock Pantry
   const mockPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
@@ -46,6 +47,7 @@ describe('PantriesService', () => {
     needMoreOptions: '',
   } as unknown as Pantry;
 
+  // Mock User
   const mockUser = {
     id: 1,
     role: Role.STANDARD_VOLUNTEER,
@@ -78,6 +80,7 @@ describe('PantriesService', () => {
     expect(service).toBeDefined();
   });
 
+  // Find pantry by ID
   describe('findOne', () => {
     it('should return a pantry by id', async () => {
       mockRepository.findOne.mockResolvedValue(mockPantry);
@@ -100,6 +103,7 @@ describe('PantriesService', () => {
     });
   });
 
+  // Get pantries with pending status
   describe('getPendingPantries', () => {
     it('should return all pending pantries', async () => {
       const pendingPantries = [mockPantry, { ...mockPantry, pantryId: 2 }];
@@ -122,6 +126,7 @@ describe('PantriesService', () => {
     });
   });
 
+  // Approve pantry by ID (status = approved)
   describe('approve', () => {
     it('should approve a pantry', async () => {
       mockRepository.findOne.mockResolvedValue(mockPantry);
@@ -148,6 +153,7 @@ describe('PantriesService', () => {
     });
   });
 
+  // Deny pantry by ID (status = denied)
   describe('deny', () => {
     it('should deny a pantry', async () => {
       mockRepository.findOne.mockResolvedValue(mockPantry);
@@ -170,6 +176,7 @@ describe('PantriesService', () => {
     });
   });
 
+  // Find SSF representative for a pantry (relations field)
   describe('findSSFRep', () => {
     it('should return the SSF representative for a pantry', async () => {
       const pantryWithRep = {
