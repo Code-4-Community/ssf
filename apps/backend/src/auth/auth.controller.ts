@@ -32,6 +32,7 @@ export class AuthController {
       signUpDto.email,
       signUpDto.firstName,
       signUpDto.lastName,
+      signUpDto.phone,
     );
 
     return user;
