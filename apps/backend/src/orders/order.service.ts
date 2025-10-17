@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
@@ -7,6 +11,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
 import { validateId } from '../utils/validation.utils';
+import { OrdersStatus } from './types';
 
 @Injectable()
 export class OrdersService {
@@ -18,13 +23,13 @@ export class OrdersService {
 
   async getCurrentOrders() {
     return this.repo.find({
-      where: { status: In(['pending', 'shipped']) },
+      where: { status: In([OrdersStatus.PENDING, OrdersStatus.SHIPPED]) },
     });
   }
 
   async getPastOrders() {
     return this.repo.find({
-      where: { status: 'delivered' },
+      where: { status: OrdersStatus.DELIVERED },
     });
   }
 
@@ -111,15 +116,19 @@ export class OrdersService {
   async updateStatus(orderId: number, newStatus: string) {
     validateId(orderId, 'Order');
 
+    if (!Object.values(OrdersStatus).includes(newStatus as OrdersStatus)) {
+      throw new BadRequestException('Invalid status');
+    }
+
     // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
-        status: newStatus,
+        status: newStatus as OrdersStatus,
         shippedBy: 1,
-        shippedAt: newStatus === 'shipped' ? new Date() : null,
-        deliveredAt: newStatus === 'delivered' ? new Date() : null,
+        shippedAt: newStatus === OrdersStatus.SHIPPED ? new Date() : null,
+        deliveredAt: newStatus === OrdersStatus.DELIVERED ? new Date() : null,
       })
       .where('order_id = :orderId', { orderId })
       .execute();

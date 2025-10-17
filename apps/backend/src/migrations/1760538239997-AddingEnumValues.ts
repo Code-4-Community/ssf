@@ -78,16 +78,6 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'No'
       );
 
-      CREATE TYPE "activities_enum" AS ENUM (
-        'Create allergy-friendly shelf or shelves',
-        'Provide educational pamphlets',
-        'Spreadsheet tracking dietary needs, SSF items per month',
-        'Post allergen-free resource flyers',
-        'Survey clients for medical dietary needs',
-        'Collect feedback from allergen-avoidant clients on SSF foods',
-        'Something else'
-      );
-
       CREATE TYPE "pantries_status_enum" AS ENUM (
         'approved',
         'denied',
@@ -99,7 +89,6 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       DROP TYPE "pantries_status_enum";
-      DROP TYPE "activities_enum";
       DROP TYPE "serve_allergic_children_enum";
       DROP TYPE "allergens_confidence_enum";
       DROP TYPE "client_visit_frequency_enum";

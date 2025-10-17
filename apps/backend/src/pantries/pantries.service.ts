@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
+import { PantriesStatus } from './types';
 
 @Injectable()
 export class PantriesService {
@@ -21,7 +22,7 @@ export class PantriesService {
   }
 
   async getPendingPantries(): Promise<Pantry[]> {
-    return await this.repo.find({ where: { status: 'pending' } });
+    return await this.repo.find({ where: { status: PantriesStatus.PENDING } });
   }
 
   async approve(id: number) {
@@ -32,7 +33,7 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: 'approved' });
+    await this.repo.update(id, { status: PantriesStatus.APPROVED });
   }
 
   async deny(id: number) {
@@ -43,7 +44,7 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: 'denied' });
+    await this.repo.update(id, { status: PantriesStatus.DENIED });
   }
 
   async findSSFRep(pantryId: number): Promise<User> {

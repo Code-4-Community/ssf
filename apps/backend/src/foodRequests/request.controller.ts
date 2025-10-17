@@ -7,6 +7,7 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -16,6 +17,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
+import { RequestSize } from './types';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -88,7 +90,7 @@ export class FoodRequestsController {
     @Body()
     body: {
       pantryId: number;
-      requestedSize: string;
+      requestedSize: RequestSize;
       requestedItems: string[];
       additionalInformation: string;
       dateReceived: Date;
@@ -96,6 +98,11 @@ export class FoodRequestsController {
       photos: string[];
     },
   ): Promise<FoodRequest> {
+    if (
+      !Object.values(RequestSize).includes(body.requestedSize as RequestSize)
+    ) {
+      throw new BadRequestException('Invalid request size');
+    }
     return this.requestsService.create(
       body.pantryId,
       body.requestedSize,

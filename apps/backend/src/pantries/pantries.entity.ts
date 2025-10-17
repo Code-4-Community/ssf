@@ -7,6 +7,15 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import {
+  Activities,
+  AllergensConfidence,
+  AllergyFriendlyStorage,
+  ClientVisitFrequency,
+  PantriesStatus,
+  RefridgeratedDonation,
+  ServeAllergicChildren,
+} from './types';
 
 @Entity('pantries')
 export class Pantry {
@@ -22,8 +31,13 @@ export class Pantry {
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients: string;
 
-  @Column({ name: 'refrigerated_donation', type: 'varchar', length: 25 })
-  refrigeratedDonation: string;
+  @Column({
+    name: 'refrigerated_donation',
+    type: 'enum',
+    enum: RefridgeratedDonation,
+    enumName: 'refrigerated_donation_enum',
+  })
+  refrigeratedDonation: RefridgeratedDonation;
 
   @Column({ name: 'reserve_food_for_allergic', type: 'boolean' })
   reserveFoodForAllergic: boolean;
@@ -31,21 +45,37 @@ export class Pantry {
   @Column({ name: 'reservation_explanation', type: 'text' })
   reservationExplanation: Text;
 
-  @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 255 })
-  dedicatedAllergyFriendly: string;
+  @Column({
+    name: 'dedicated_allergy_friendly',
+    type: 'enum',
+    enum: AllergyFriendlyStorage,
+    enumName: 'allergy_friendly_storage_enum',
+  })
+  dedicatedAllergyFriendly: AllergyFriendlyStorage;
 
-  @Column({ name: 'client_visit_frequency', type: 'varchar', length: 25 })
-  clientVisitFrequency: string;
+  @Column({
+    name: 'client_visit_frequency',
+    type: 'enum',
+    enum: ClientVisitFrequency,
+    enumName: 'client_visit_frequency_enum',
+  })
+  clientVisitFrequency: ClientVisitFrequency;
 
   @Column({
     name: 'identify_allergens_confidence',
-    type: 'varchar',
-    length: 50,
+    type: 'enum',
+    enum: AllergensConfidence,
+    enumName: 'allergens_confidence_enum',
   })
-  identifyAllergensConfidence: string;
+  identifyAllergensConfidence: AllergensConfidence;
 
-  @Column({ name: 'serve_allergic_children', type: 'varchar', length: 25 })
-  serveAllergicChildren: string;
+  @Column({
+    name: 'serve_allergic_children',
+    type: 'enum',
+    enum: ServeAllergicChildren,
+    enumName: 'serve_allergic_children_enum',
+  })
+  serveAllergicChildren: ServeAllergicChildren;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean' })
   newsletterSubscription: boolean;
@@ -67,8 +97,13 @@ export class Pantry {
   })
   pantryRepresentative: User;
 
-  @Column({ name: 'status', type: 'varchar', length: 50 })
-  status: string;
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: PantriesStatus,
+    enumName: 'pantries_status_enum',
+  })
+  status: PantriesStatus;
 
   @Column({
     name: 'date_applied',
@@ -77,8 +112,8 @@ export class Pantry {
   })
   dateApplied: Date;
 
-  @Column({ name: 'activities', type: 'text' })
-  activities: string;
+  @Column({ name: 'activities', type: 'text', array: true })
+  activities: Activities[];
 
   @Column({ name: 'questions', type: 'text', nullable: true })
   questions: string;

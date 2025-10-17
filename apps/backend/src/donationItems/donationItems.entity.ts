@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Donation } from '../donations/donations.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { FoodType } from './types';
 
 @Entity('donation_items')
 export class DonationItem {
@@ -39,8 +40,14 @@ export class DonationItem {
   @Column({ name: 'estimated_value', type: 'int', nullable: true })
   estimatedValue: number;
 
-  @Column({ name: 'food_type', type: 'varchar', length: 255, nullable: true })
-  foodType: string;
+  @Column({
+    name: 'food_type',
+    type: 'enum',
+    enum: FoodType,
+    enumName: 'food_type_enum',
+    nullable: true,
+  })
+  foodType: FoodType;
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
   allocations: Allocation[];

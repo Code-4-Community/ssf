@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { DonationsStatus } from './types';
 
 @Entity('donations')
 export class Donation {
@@ -28,11 +29,12 @@ export class Donation {
 
   @Column({
     name: 'status',
-    type: 'varchar',
-    length: 25,
-    default: 'available',
+    type: 'enum',
+    enum: DonationsStatus,
+    enumName: 'donations_status_enum',
+    default: DonationsStatus.AVAILABLE,
   })
-  status: string;
+  status: DonationsStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
   totalItems: number;

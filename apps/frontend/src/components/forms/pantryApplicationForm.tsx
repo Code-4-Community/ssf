@@ -480,22 +480,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
       'No, throughout pantry',
   };
 
-  const ActivitiesMap: Record<string, string> = {
-    'Create a labeled, allergy-friendly shelf or shelves':
-      'Create allergy-friendly shelf or shelves',
-    'Provide clients and staff/volunteers with educational pamphlets':
-      'Provide educational pamphlets',
-    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month":
-      'Spreadsheet tracking dietary needs, SSF items per month',
-    'Post allergen-free resource flyers throughout pantry':
-      'Post allergen-free resource flyers',
-    'Survey your clients to determine their medical dietary needs':
-      'Survey clients for medical dietary needs',
-    'Collect feedback from allergen-avoidant clients on SSF foods':
-      'Collect feedback from allergen-avoidant clients on SSF foods',
-    'Something else': 'Something else',
-  };
-
   // Handle questions with checkboxes (we create an array of all
   // selected options)
 
@@ -505,9 +489,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   );
   form.delete('dietaryRestrictions');
 
-  const rawActivities = form.getAll('activities') as string[];
-  const convertedActivities = rawActivities.map((act) => ActivitiesMap[act]);
-  pantryApplicationData.set('activities', convertedActivities);
+  pantryApplicationData.set('activities', form.getAll('activities'));
   form.delete('activities');
 
   const dedicatedShelfRaw = form.get('dedicatedShelf') as string;

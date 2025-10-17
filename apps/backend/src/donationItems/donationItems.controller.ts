@@ -6,10 +6,12 @@ import {
   Get,
   Patch,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
+import { FoodType } from './types';
 
 @Controller('donation-items')
 //@UseInterceptors()
@@ -50,9 +52,12 @@ export class DonationItemsController {
       status: string;
       ozPerItem: number;
       estimatedValue: number;
-      foodType: string;
+      foodType: FoodType;
     },
   ): Promise<DonationItem> {
+    if (!Object.values(FoodType).includes(body.foodType as FoodType)) {
+      throw new BadRequestException('Invalid foodtype');
+    }
     return this.donationItemsService.create(
       body.donationId,
       body.itemName,
