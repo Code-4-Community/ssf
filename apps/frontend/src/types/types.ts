@@ -119,7 +119,7 @@ export interface CreateFoodRequestBody {
   status: string;
   fulfilledBy?: number | null | undefined;
   dateReceived?: Date | null | undefined;
-  feedback?: string | null;
+  feedback?: string | null | undefined;
   photos?: string[] | null | undefined;
 }
 
