@@ -29,7 +29,7 @@ export class Pantry {
   reserveFoodForAllergic: boolean;
 
   @Column({ name: 'reservation_explanation', type: 'text' })
-  reservationExplanation: Text;
+  reservationExplanation: string;
 
   @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 255 })
   dedicatedAllergyFriendly: string;
