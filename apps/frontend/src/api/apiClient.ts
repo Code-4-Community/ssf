@@ -53,6 +53,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
+      .then((response) => response.data);
+  }
+
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
@@ -166,7 +172,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/get-all-orders')
+      .get('/api/orders/')
       .then((response) => response.data);
   }
 
@@ -194,7 +200,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .get(`api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 
