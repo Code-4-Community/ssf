@@ -86,7 +86,7 @@ export interface Order {
   requestId: number;
   pantryId: number;
   foodManufacturer: FoodManufacturer;
-  shippedBy: number | null;
+  shippedBy: number | null | undefined;
   status: string;
   createdAt: string;
   shippedAt: string;
@@ -109,6 +109,18 @@ export interface Allocation {
   reservedAt: string;
   fulfilledAt: string;
   status: string;
+}
+
+export interface CreateFoodRequestBody {
+  pantryId: number;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation: string | null | undefined;
+  status: string;
+  fulfilledBy?: number | null | undefined;
+  dateReceived?: Date | null | undefined;
+  feedback?: string | null | undefined;
+  photos?: string[] | null | undefined;
 }
 
 export enum VolunteerType {

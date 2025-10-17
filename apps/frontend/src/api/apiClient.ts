@@ -9,6 +9,7 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  CreateFoodRequestBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -86,6 +87,12 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/users/${userId}`)
       .then((response) => response.data);
+  }
+
+  public async createFoodRequest(
+    body: CreateFoodRequestBody,
+  ): Promise<FoodRequest> {
+    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
