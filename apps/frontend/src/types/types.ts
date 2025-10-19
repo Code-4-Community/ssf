@@ -117,10 +117,10 @@ export interface CreateFoodRequestBody {
   requestedItems: string[];
   additionalInformation: string | null | undefined;
   status: string;
-  fulfilledBy?: number | null | undefined;
-  dateReceived?: Date | null | undefined;
-  feedback?: string | null | undefined;
-  photos?: string[] | null | undefined;
+  fulfilledBy: number | null | undefined;
+  dateReceived: Date | null | undefined;
+  feedback: string | null | undefined;
+  photos: string[] | null | undefined;
 }
 
 export enum VolunteerType {
