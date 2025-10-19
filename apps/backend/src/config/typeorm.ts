@@ -10,6 +10,11 @@ import { UpdateDonations1738697216020 } from '../migrations/1738697216020-update
 import { UpdateDonationColTypes1741708808976 } from '../migrations/1741708808976-UpdateDonationColTypes';
 import { UpdatePantriesTable1738172265266 } from '../migrations/1738172265266-updatePantriesTable';
 import { UpdatePantriesTable1739056029076 } from '../migrations/1739056029076-updatePantriesTable';
+import { AssignmentsPantryIdNotUnique1758384669652 } from '../migrations/1758384669652-AssignmentsPantryIdNotUnique';
+import { UpdateOrdersTable1740367964915 } from '../migrations/1740367964915-updateOrdersTable';
+import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-updateFoodRequests.ts';
+import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
+import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 
@@ -35,8 +40,12 @@ const config = {
     UpdateDonationColTypes1741708808976,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
-    UpdateDonations1738697216020,
+    AssignmentsPantryIdNotUnique1758384669652,
     AddOrders1739496585940,
+    UpdateOrdersTable1740367964915,
+    UpdateRequestTable1741571847063,
+    UpdateFoodRequests1744051370129,
+    RemoveOrderIdFromRequests1744133526650,
     UpdatePantriesTable1742739750279,
   ],
 };

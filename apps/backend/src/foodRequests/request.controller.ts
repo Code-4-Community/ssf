@@ -14,6 +14,8 @@ import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { OrdersService } from '../orders/order.service';
+import { Order } from '../orders/order.entity';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -21,13 +23,29 @@ export class FoodRequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
+    private ordersService: OrdersService,
   ) {}
 
-  @Get('/:pantryId')
+  @Get('/:requestId')
+  async getRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<FoodRequest> {
+    return this.requestsService.findOne(requestId);
+  }
+
+  @Get('/get-all-requests/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
+  }
+
+  @Get('get-order/:requestId')
+  async getOrderByRequestId(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<Order> {
+    const request = await this.requestsService.findOne(requestId);
+    return request.order;
   }
 
   @Post('/create')
@@ -73,8 +91,6 @@ export class FoodRequestsController {
       requestedSize: string;
       requestedItems: string[];
       additionalInformation: string;
-      status: string;
-      fulfilledBy: number;
       dateReceived: Date;
       feedback: string;
       photos: string[];
@@ -85,8 +101,6 @@ export class FoodRequestsController {
       body.requestedSize,
       body.requestedItems,
       body.additionalInformation,
-      body.status,
-      body.fulfilledBy,
       body.dateReceived,
       body.feedback,
       body.photos,
@@ -134,6 +148,15 @@ export class FoodRequestsController {
 
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
+    console.log(
+      'Received photo files:',
+      photos?.map((p) => p.originalname),
+      '| Count:',
+      photos?.length,
+    );
+
+    const request = await this.requestsService.findOne(requestId);
+    await this.ordersService.updateStatus(request.order.orderId, 'delivered');
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

@@ -1,11 +1,11 @@
 export interface Donation {
   donationId: number;
-  foodManufacturerId: number;
   dateDonated: string;
   status: string;
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
+  foodManufacturer?: FoodManufacturer;
 }
 
 export interface DonationItem {
@@ -38,7 +38,7 @@ export const FoodTypes = [
 ] as const;
 
 export interface User {
-  userId: number;
+  id: number;
   role: string;
   firstName: string;
   lastName: string;
@@ -80,10 +80,61 @@ export interface Pantry {
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
-  status: string;
-  fulfilledBy: string | null;
   dateReceived: string | null;
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string;
+  orderId: number;
+  order?: Order;
+}
+
+export interface Order {
+  orderId: number;
+  requestId: number;
+  pantryId: number;
+  foodManufacturer: FoodManufacturer;
+  shippedBy: number | null;
+  status: string;
+  createdAt: string;
+  shippedAt: string;
+  deliveredAt: string;
+  donationId: number;
+}
+
+export interface FoodManufacturer {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  foodManufacturerRepresentative?: User;
+}
+
+export interface Allocation {
+  allocationId: number;
+  orderId: number;
+  itemId: number;
+  item: DonationItem;
+  allocatedQuantity: number;
+  reservedAt: string;
+  fulfilledAt: string;
+  status: string;
+}
+
+export enum VolunteerType {
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+}
+
+export interface VolunteerPantryAssignment {
+  assignmentId: number;
+  volunteer: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+  pantry: {
+    pantryId: number;
+    pantryName: string;
+  };
 }

@@ -1,5 +1,15 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
-import { Donation, DonationItem, User, Pantry } from 'types/types';
+import { VolunteerPantryAssignment } from 'types/types';
+import {
+  User,
+  Pantry,
+  Order,
+  FoodRequest,
+  FoodManufacturer,
+  DonationItem,
+  Donation,
+  Allocation,
+} from 'types/types';
 import { PantryApplicationDto } from '@api/types';
 
 const defaultBaseUrl =
@@ -18,41 +28,6 @@ export class ApiClient {
 
   public async get(path: string): Promise<unknown> {
     return this.axiosInstance.get(path).then((response) => response.data);
-  }
-
-  public async getRepresentativeUser(userId: number): Promise<User> {
-    return this.axiosInstance
-      .get(`/api/users/${userId}`)
-      .then((response) => response.data);
-  }
-
-  public async getAllPendingPantries(): Promise<Pantry[]> {
-    return this.axiosInstance
-      .get('/api/pantries/pending')
-      .then((response) => response.data);
-  }
-
-  public async updatePantry(
-    pantryId: number,
-    decision: 'approve' | 'deny',
-  ): Promise<void> {
-    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
-      pantryId,
-    });
-  }
-
-  public async getPantry(pantryId: number): Promise<Pantry> {
-    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
-  }
-
-  public async getPantrySSFRep(pantryId: number): Promise<User> {
-    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
-  }
-
-  public async postPantry(
-    data: PantryApplicationDto,
-  ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/pantries`, data);
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {
@@ -78,6 +53,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
+      .then((response) => response.data);
+  }
+
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
@@ -98,6 +79,81 @@ export class ApiClient {
     ) as Promise<DonationItem>;
   }
 
+  private async delete(path: string): Promise<unknown> {
+    return this.axiosInstance.delete(path).then((response) => response.data);
+  }
+
+  public async getRepresentativeUser(userId: number): Promise<User> {
+    return this.axiosInstance
+      .get(`/api/users/${userId}`)
+      .then((response) => response.data);
+  }
+
+  public async getPantrySSFRep(pantryId: number): Promise<User> {
+    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
+  }
+
+  public async getAllPendingPantries(): Promise<Pantry[]> {
+    return this.axiosInstance
+      .get('/api/pantries/pending')
+      .then((response) => response.data);
+  }
+
+  public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/pantry`)
+      .then((response) => response.data);
+  }
+
+  public async getPantry(pantryId: number): Promise<Pantry> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
+  }
+
+  public async getFoodRequestFromOrder(
+    orderId: number,
+  ): Promise<FoodRequest | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/request`)
+      .then((response) => response.data);
+  }
+
+  public async getAllAssignments(): Promise<VolunteerPantryAssignment[]> {
+    return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
+  }
+
+  public async getVolunteers(): Promise<User[]> {
+    return this.get('/api/users/volunteers') as Promise<User[]>;
+  }
+
+  public async updateUserVolunteerRole(
+    userId: number,
+    body: { role: string },
+  ): Promise<void> {
+    return this.axiosInstance
+      .put(`/api/users/${userId}/role`, body)
+      .then(() => {});
+  }
+
+  public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
+    return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
+  }
+
+  public async getDonationFromOrder(orderId: number): Promise<Donation | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/donation`)
+      .then((response) => response.data);
+  }
+
+  public async getOrderDonation(donationId: number): Promise<Donation> {
+    return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
+  }
+
   public async getDonationItemsByDonationId(
     donationId: number,
   ): Promise<DonationItem[]> {
@@ -106,8 +162,81 @@ export class ApiClient {
     ) as Promise<DonationItem[]>;
   }
 
-  private async delete(path: string): Promise<unknown> {
-    return this.axiosInstance.delete(path).then((response) => response.data);
+  public async getManufacturerFromOrder(
+    orderId: number,
+  ): Promise<FoodManufacturer | null> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/manufacturer`)
+      .then((response) => response.data);
+  }
+
+  public async getAllOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/')
+      .then((response) => response.data);
+  }
+
+  public async getCurrentOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/get-current-orders')
+      .then((response) => response.data);
+  }
+
+  public async getPastOrders(): Promise<Order[]> {
+    return this.axiosInstance
+      .get('/api/orders/get-past-orders')
+      .then((response) => response.data);
+  }
+
+  public async getOrder(orderId: number): Promise<Order> {
+    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  public async getOrderByRequestId(requestId: number): Promise<Order> {
+    return this.axiosInstance.get(
+      `api/requests/get-order/${requestId}`,
+    ) as Promise<Order>;
+  }
+
+  async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
+    return this.axiosInstance
+      .get(`api/orders/${orderId}/allocations`)
+      .then((response) => response.data);
+  }
+
+  public async updateOrderStatus(
+    orderId: number,
+    newStatus: 'shipped' | 'delivered',
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/update-status/${orderId}`, {
+      orderId,
+      newStatus,
+    });
+  }
+
+  public async updatePantry(
+    pantryId: number,
+    decision: 'approve' | 'deny',
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+      pantryId,
+    });
+  }
+
+  public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
+    const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
+    console.log('Raw response from API:', data);
+    return data as FoodRequest[];
+  }
+
+  public async confirmDelivery(
+    requestId: number,
+    data: FormData,
+  ): Promise<void> {
+    await this.axiosInstance.post(
+      `/api/requests/${requestId}/confirm-delivery`,
+      data,
+    );
   }
 }
 

@@ -10,13 +10,16 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import VolunteerManagement from '@containers/volunteerManagement';
+import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +27,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         path: '/landing-page',
         element: <LandingPage />,
@@ -50,6 +57,10 @@ const router = createBrowserRouter([
         action: submitPantryApplicationForm,
       },
       {
+        path: '/food-manufacturer-order-dashboard',
+        element: <FoodManufacturerOrderDashboard />,
+      },
+      {
         path: '/orders',
         element: <Orders />,
       },
@@ -72,6 +83,10 @@ const router = createBrowserRouter([
       {
         path: '/approve-pantries',
         element: <ApprovePantries />,
+      },
+      {
+        path: '/volunteer-management',
+        element: <VolunteerManagement />,
       },
     ],
   },

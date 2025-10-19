@@ -3,9 +3,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Entity('food_manufacturers')
 export class FoodManufacturer {
@@ -15,11 +17,13 @@ export class FoodManufacturer {
   @Column({ name: 'food_manufacturer_name', type: 'varchar', length: 255 })
   foodManufacturerName: string;
 
-  @Column({ name: 'food_manufacturer_representative_id', type: 'int' })
   @OneToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'food_manufacturer_representative_id',
     referencedColumnName: 'id',
   })
   foodManufacturerRepresentative: User;
+
+  @OneToMany(() => Donation, (donation) => donation.foodManufacturer)
+  donations: Donation[];
 }

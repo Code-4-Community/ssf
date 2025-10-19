@@ -9,54 +9,56 @@ import {
   Tr,
   Th,
   Td,
+  Select,
+  Button,
   HStack,
+  useDisclosure,
 } from '@chakra-ui/react';
-import FoodRequestFormModal from '@components/forms/requestFormModalButton';
-import DeliveryConfirmationModalButton from '@components/forms/deliveryConfirmationModalButton';
+import FoodRequestFormModal from '@components/forms/requestFormModal';
+import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
+import OrderInformationModal from '@components/forms/orderInformationModal';
 import { FoodRequest } from 'types/types';
-import { formatDate } from '@utils/utils';
+import { formatDate, formatReceivedDate } from '@utils/utils';
+import ApiClient from '@api/apiClient';
 
 const FormRequests: React.FC = () => {
+  const newRequestDisclosure = useDisclosure();
+  const previousRequestDisclosure = useDisclosure();
+
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
+  const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
+    'mostRecent',
+  );
   const { pantryId } = useParams<{ pantryId: string }>();
-
-  const getAllPantryRequests = async (
-    pantryId: number,
-  ): Promise<FoodRequest[]> => {
-    try {
-      const response = await fetch(`/api/requests/${pantryId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        return await response.json();
-      } else {
-        alert('Failed to fetch food requests ' + (await response.text()));
-        return [];
-      }
-    } catch (error) {
-      alert('Error fetching food requests ' + error);
-      return [];
-    }
-  };
+  const [allConfirmed, setAllConfirmed] = useState(false);
+  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
+    number | null
+  >(null);
+  const [openReadOnlyRequest, setOpenReadOnlyRequest] =
+    useState<FoodRequest | null>(null);
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
-        const data = await getAllPantryRequests(parseInt(pantryId, 10));
-        setRequests(data);
-
-        if (data.length > 0) {
-          const mostRecentRequest = data.reduce((prev, current) =>
-            prev.requestId > current.requestId ? prev : current,
+        try {
+          const data = await ApiClient.getPantryRequests(
+            parseInt(pantryId, 10),
           );
-          setPreviousRequest(mostRecentRequest);
+          setRequests(data);
+
+          if (data.length > 0) {
+            setPreviousRequest(
+              data.reduce((prev, current) =>
+                prev.requestId > current.requestId ? prev : current,
+              ),
+            );
+          }
+        } catch (error) {
+          alert('Error fetching requests: ' + error);
         }
       }
     };
@@ -64,60 +66,151 @@ const FormRequests: React.FC = () => {
     fetchRequests();
   }, [pantryId]);
 
-  const formatReceivedDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA');
-  };
+  useEffect(() => {
+    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
+  }, [requests]);
+
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (sortBy === 'mostRecent')
+      return (
+        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+      );
+    if (sortBy === 'oldest')
+      return (
+        new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
+      );
+    if (sortBy === 'confirmed')
+      return (
+        new Date(b.dateReceived || 0).getTime() -
+        new Date(a.dateReceived || 0).getTime()
+      );
+
+    return 0;
+  });
 
   return (
     <Center flexDirection="column" p={4}>
       <HStack spacing={200}>
+        <Button
+          onClick={newRequestDisclosure.onOpen}
+          isDisabled={!allConfirmed}
+        >
+          Submit New Request
+        </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
-          buttonText="Submit New Request"
+          isOpen={newRequestDisclosure.isOpen}
+          onClose={newRequestDisclosure.onClose}
         />
-
         {previousRequest && (
-          <FoodRequestFormModal
-            previousRequest={previousRequest}
-            buttonText="Submit Previous Request"
-          />
+          <>
+            <Button
+              onClick={previousRequestDisclosure.onOpen}
+              isDisabled={!allConfirmed}
+            >
+              Submit Previous Request
+            </Button>
+            <FoodRequestFormModal
+              previousRequest={previousRequest}
+              readOnly={false}
+              isOpen={previousRequestDisclosure.isOpen}
+              onClose={previousRequestDisclosure.onClose}
+            />
+          </>
         )}
       </HStack>
+
+      <Select
+        mt={4}
+        width="50%"
+        onChange={(e) =>
+          setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+        }
+        value={sortBy}
+      >
+        <option value="mostRecent">Date Requested (Recent)</option>
+        <option value="oldest">Date Requested (Oldest)</option>
+        <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
+      </Select>
 
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>
             <Th>Request Id</Th>
+            <Th>Order Id</Th>
             <Th>Date Requested</Th>
             <Th>Status</Th>
-            <Th>Fulfilled By</Th>
-            <Th>Expected Delivery Date</Th>
+            <Th>Shipped By</Th>
+            <Th>Date Fulfilled</Th>
             <Th>Actions</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {requests.map((request) => (
+          {sortedRequests.map((request) => (
             <Tr key={request.requestId}>
-              <Td>{request.requestId}</Td>
+              <Td>
+                <Button onClick={() => setOpenReadOnlyRequest(request)}>
+                  {request.requestId}
+                </Button>
+              </Td>
+              <Td>
+                {request.order?.orderId ? (
+                  <Button
+                    onClick={() =>
+                      setOpenOrderId(request.order?.orderId ?? null)
+                    }
+                  >
+                    {request.order?.orderId}
+                  </Button>
+                ) : (
+                  'N/A'
+                )}
+              </Td>
               <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.status}</Td>
-              <Td>{request.fulfilledBy}</Td>
+              <Td>{request.order?.status ?? 'pending'}</Td>
+              <Td>
+                {request.order?.status === 'pending'
+                  ? 'N/A'
+                  : request.order?.shippedBy ?? 'N/A'}
+              </Td>
               <Td>{formatReceivedDate(request.dateReceived)}</Td>
               <Td>
-                {request.status === 'fulfilled' ? (
-                  <Text fontWeight="semibold" marginLeft="4">
-                    Confirm Delivery
-                  </Text>
+                {!request.order || request.order?.status === 'pending' ? (
+                  <Text>Awaiting Order Assignment</Text>
+                ) : request.order?.status === 'delivered' ? (
+                  <Text>Food Request is Already Delivered</Text>
                 ) : (
-                  <DeliveryConfirmationModalButton
-                    requestId={request.requestId}
-                  />
+                  <Button
+                    onClick={() => setOpenDeliveryRequestId(request.requestId)}
+                  >
+                    Confirm Delivery
+                  </Button>
                 )}
               </Td>
             </Tr>
           ))}
+          {openReadOnlyRequest && (
+            <FoodRequestFormModal
+              previousRequest={openReadOnlyRequest}
+              readOnly={true}
+              isOpen={openReadOnlyRequest !== null}
+              onClose={() => setOpenReadOnlyRequest(null)}
+            />
+          )}
+          {openOrderId && (
+            <OrderInformationModal
+              orderId={openOrderId}
+              isOpen={openOrderId !== null}
+              onClose={() => setOpenOrderId(null)}
+            />
+          )}
+          {openDeliveryRequestId && (
+            <DeliveryConfirmationModal
+              requestId={openDeliveryRequestId}
+              isOpen={openDeliveryRequestId !== null}
+              onClose={() => setOpenDeliveryRequestId(null)}
+            />
+          )}
         </Tbody>
       </Table>
     </Center>
