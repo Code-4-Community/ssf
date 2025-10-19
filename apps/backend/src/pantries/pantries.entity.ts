@@ -13,7 +13,7 @@ import {
   AllergyFriendlyStorage,
   ClientVisitFrequency,
   PantriesStatus,
-  RefridgeratedDonation,
+  RefrigeratedDonation,
   ServeAllergicChildren,
 } from './types';
 
@@ -34,10 +34,10 @@ export class Pantry {
   @Column({
     name: 'refrigerated_donation',
     type: 'enum',
-    enum: RefridgeratedDonation,
+    enum: RefrigeratedDonation,
     enumName: 'refrigerated_donation_enum',
   })
-  refrigeratedDonation: RefridgeratedDonation;
+  refrigeratedDonation: RefrigeratedDonation;
 
   @Column({ name: 'reserve_food_for_allergic', type: 'boolean' })
   reserveFoodForAllergic: boolean;

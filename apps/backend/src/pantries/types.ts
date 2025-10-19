@@ -1,4 +1,4 @@
-export enum RefridgeratedDonation {
+export enum RefrigeratedDonation {
   YES = 'Yes',
   NO = 'No',
   SMALL_QUANTITIES_ONLY = 'Small quantities only',

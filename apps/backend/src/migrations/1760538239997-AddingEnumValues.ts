@@ -46,7 +46,7 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'shipped'
       );
 
-      CREATE TYPE "refridgerated_donation_enum" AS ENUM (
+      CREATE TYPE "refrigerated_donation_enum" AS ENUM (
         'Yes',
         'No',
         'Small quantities only'
@@ -93,7 +93,7 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       DROP TYPE "allergens_confidence_enum";
       DROP TYPE "client_visit_frequency_enum";
       DROP TYPE "allergy_friendly_storage_enum";
-      DROP TYPE "refridgerated_donation_enum";
+      DROP TYPE "refrigerated_donation_enum";
       DROP TYPE "orders_status_enum";
       DROP TYPE "request_size_enum";
       DROP TYPE "donation_frequency_enum";
