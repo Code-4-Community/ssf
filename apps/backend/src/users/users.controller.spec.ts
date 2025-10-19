@@ -1,4 +1,3 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -6,16 +5,30 @@ import { User } from './user.entity';
 import { Role } from './types';
 import { userSchema } from './users.controller';
 
+import { Test, TestingModule } from '@nestjs/testing';
+import { mock } from 'jest-mock-extended';
+
+const mockUserService = mock<UsersService>();
+
 describe('UsersController', () => {
   let controller: UsersController;
 
-  const mockUser: User = {
+  const mockUser1: User = {
     id: 1,
-    email: 'test@example.com',
+    email: 'john@example.com',
     firstName: 'John',
     lastName: 'Doe',
     phone: '1234567890',
     role: Role.STANDARD_VOLUNTEER,
+  };
+
+  const mockUser2: User = {
+    id: 2,
+    email: 'jane@example.com',
+    firstName: 'Jane',
+    lastName: 'Smith',
+    phone: '2002002000',
+    role: Role.ADMIN,
   };
 
   const mockUsersService = {
@@ -46,7 +59,7 @@ describe('UsersController', () => {
 
   describe('getAllVolunteers', () => {
     it('should return all volunteers', async () => {
-      const volunteers = [mockUser];
+      const volunteers = [mockUser1, mockUser2];
       mockUsersService.findUsersByRoles.mockResolvedValue(volunteers);
 
       const result = await controller.getAllVolunteers();
@@ -61,29 +74,29 @@ describe('UsersController', () => {
 
   describe('getUser', () => {
     it('should return a user by id', async () => {
-      mockUsersService.findOne.mockResolvedValue(mockUser);
+      mockUsersService.findOne.mockResolvedValue(mockUser1);
 
       const result = await controller.getUser(1);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUser1);
       expect(mockUsersService.findOne).toHaveBeenCalledWith(1);
     });
   });
 
   describe('removeUser', () => {
     it('should remove a user by id', async () => {
-      mockUsersService.remove.mockResolvedValue(mockUser);
+      mockUsersService.remove.mockResolvedValue(mockUser1);
 
       const result = await controller.removeUser(1);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUser1);
       expect(mockUsersService.remove).toHaveBeenCalledWith(1);
     });
   });
 
   describe('updateRole', () => {
     it('should update user role with valid role', async () => {
-      const updatedUser = { ...mockUser, role: Role.ADMIN };
+      const updatedUser = { ...mockUser1, role: Role.ADMIN };
       mockUsersService.update.mockResolvedValue(updatedUser);
 
       const result = await controller.updateRole(1, Role.ADMIN);
@@ -104,7 +117,7 @@ describe('UsersController', () => {
 
   describe('createUser', () => {
     it('should create a new user with all required fields', async () => {
-      const createUserDto: userSchema = {
+      const createUserSchema: userSchema = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
@@ -112,23 +125,23 @@ describe('UsersController', () => {
         role: Role.ADMIN,
       };
 
-      const createdUser = { ...createUserDto, id: 2 };
+      const createdUser = { ...createUserSchema, id: 2 };
       mockUsersService.create.mockResolvedValue(createdUser);
 
-      const result = await controller.createUser(createUserDto);
+      const result = await controller.createUser(createUserSchema);
 
       expect(result).toEqual(createdUser);
       expect(mockUsersService.create).toHaveBeenCalledWith(
-        createUserDto.email,
-        createUserDto.firstName,
-        createUserDto.lastName,
-        createUserDto.phone,
-        createUserDto.role,
+        createUserSchema.email,
+        createUserSchema.firstName,
+        createUserSchema.lastName,
+        createUserSchema.phone,
+        createUserSchema.role,
       );
     });
 
     it('should create a new user with default role when role is not provided', async () => {
-      const createUserDto: userSchema = {
+      const createUserSchema: userSchema = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
@@ -136,26 +149,26 @@ describe('UsersController', () => {
       };
 
       const createdUser = {
-        ...createUserDto,
+        ...createUserSchema,
         id: 2,
         role: Role.STANDARD_VOLUNTEER,
       };
       mockUsersService.create.mockResolvedValue(createdUser);
 
-      const result = await controller.createUser(createUserDto);
+      const result = await controller.createUser(createUserSchema);
 
       expect(result).toEqual(createdUser);
       expect(mockUsersService.create).toHaveBeenCalledWith(
-        createUserDto.email,
-        createUserDto.firstName,
-        createUserDto.lastName,
-        createUserDto.phone,
+        createUserSchema.email,
+        createUserSchema.firstName,
+        createUserSchema.lastName,
+        createUserSchema.phone,
         undefined, // role should be undefined when not provided
       );
     });
 
     it('should handle service errors', async () => {
-      const createUserDto: userSchema = {
+      const createUserSchema: userSchema = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
@@ -165,7 +178,9 @@ describe('UsersController', () => {
       const error = new Error('Database error');
       mockUsersService.create.mockRejectedValue(error);
 
-      await expect(controller.createUser(createUserDto)).rejects.toThrow(error);
+      await expect(controller.createUser(createUserSchema)).rejects.toThrow(
+        error,
+      );
     });
   });
 });

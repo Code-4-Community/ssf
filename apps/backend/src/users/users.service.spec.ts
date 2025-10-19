@@ -4,7 +4,10 @@ import { NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
+import { Repository } from 'typeorm';
 
+import { mock } from 'jest-mock-extended';
+const mockUserRepository = mock<Repository<User>>();
 describe('UsersService', () => {
   let service: UsersService;
 
@@ -17,21 +20,13 @@ describe('UsersService', () => {
     role: Role.STANDARD_VOLUNTEER,
   };
 
-  const mockRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
-    findOneBy: jest.fn(),
-    find: jest.fn(),
-    remove: jest.fn(),
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockRepository,
+          useValue: mockUserRepository,
         },
       ],
     }).compile();
@@ -54,8 +49,8 @@ describe('UsersService', () => {
       };
 
       const createdUser = { ...userData, id: 1 };
-      mockRepository.create.mockReturnValue(createdUser);
-      mockRepository.save.mockResolvedValue(createdUser);
+      mockUserRepository.create.mockReturnValue(createdUser);
+      mockUserRepository.save.mockResolvedValue(createdUser);
 
       const result = await service.create(
         userData.email,
@@ -66,14 +61,14 @@ describe('UsersService', () => {
       );
 
       expect(result).toEqual(createdUser);
-      expect(mockRepository.create).toHaveBeenCalledWith({
+      expect(mockUserRepository.create).toHaveBeenCalledWith({
         role: userData.role,
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
         phone: userData.phone,
       });
-      expect(mockRepository.save).toHaveBeenCalledWith(createdUser);
+      expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
     });
 
     it('should create a new user with default role when not provided', async () => {
@@ -85,8 +80,8 @@ describe('UsersService', () => {
       };
 
       const createdUser = { ...userData, id: 1, role: Role.STANDARD_VOLUNTEER };
-      mockRepository.create.mockReturnValue(createdUser);
-      mockRepository.save.mockResolvedValue(createdUser);
+      mockUserRepository.create.mockReturnValue(createdUser);
+      mockUserRepository.save.mockResolvedValue(createdUser);
 
       const result = await service.create(
         userData.email,
@@ -96,7 +91,7 @@ describe('UsersService', () => {
       );
 
       expect(result).toEqual(createdUser);
-      expect(mockRepository.create).toHaveBeenCalledWith({
+      expect(mockUserRepository.create).toHaveBeenCalledWith({
         role: Role.STANDARD_VOLUNTEER,
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -108,16 +103,16 @@ describe('UsersService', () => {
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
       const result = await service.findOne(1);
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockUserRepository.findOneBy.mockResolvedValue(null);
 
       await expect(service.findOne(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
@@ -126,19 +121,19 @@ describe('UsersService', () => {
 
     it('should throw error for invalid id', async () => {
       await expect(service.findOne(-1)).rejects.toThrow();
-      expect(mockRepository.findOneBy).not.toHaveBeenCalled();
+      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
 
   describe('find', () => {
     it('should return users by email', async () => {
       const users = [mockUser];
-      mockRepository.find.mockResolvedValue(users);
+      mockUserRepository.find.mockResolvedValue(users);
 
       const result = await service.find('test@example.com');
 
       expect(result).toEqual(users);
-      expect(mockRepository.find).toHaveBeenCalledWith({
+      expect(mockUserRepository.find).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
       });
     });
@@ -149,17 +144,17 @@ describe('UsersService', () => {
       const updateData = { firstName: 'Updated', role: Role.ADMIN };
       const updatedUser = { ...mockUser, ...updateData };
 
-      mockRepository.findOneBy.mockResolvedValue(mockUser);
-      mockRepository.save.mockResolvedValue(updatedUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+      mockUserRepository.save.mockResolvedValue(updatedUser);
 
       const result = await service.update(1, updateData);
 
       expect(result).toEqual(updatedUser);
-      expect(mockRepository.save).toHaveBeenCalledWith(updatedUser);
+      expect(mockUserRepository.save).toHaveBeenCalledWith(updatedUser);
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockUserRepository.findOneBy.mockResolvedValue(null);
 
       await expect(
         service.update(999, { firstName: 'Updated' }),
@@ -170,23 +165,23 @@ describe('UsersService', () => {
       await expect(
         service.update(-1, { firstName: 'Updated' }),
       ).rejects.toThrow();
-      expect(mockRepository.findOneBy).not.toHaveBeenCalled();
+      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockUser);
-      mockRepository.remove.mockResolvedValue(mockUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+      mockUserRepository.remove.mockResolvedValue(mockUser);
 
       const result = await service.remove(1);
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.remove).toHaveBeenCalledWith(mockUser);
+      expect(mockUserRepository.remove).toHaveBeenCalledWith(mockUser);
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      mockUserRepository.findOneBy.mockResolvedValue(null);
 
       await expect(service.remove(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
@@ -195,7 +190,7 @@ describe('UsersService', () => {
 
     it('should throw error for invalid id', async () => {
       await expect(service.remove(-1)).rejects.toThrow();
-      expect(mockRepository.findOneBy).not.toHaveBeenCalled();
+      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
 
@@ -203,19 +198,19 @@ describe('UsersService', () => {
     it('should return users by roles', async () => {
       const roles = [Role.ADMIN, Role.LEAD_VOLUNTEER];
       const users = [mockUser];
-      mockRepository.find.mockResolvedValue(users);
+      mockUserRepository.find.mockResolvedValue(users);
 
       const result = await service.findUsersByRoles(roles);
 
       expect(result).toEqual(users);
-      expect(mockRepository.find).toHaveBeenCalledWith({
+      expect(mockUserRepository.find).toHaveBeenCalledWith({
         where: { role: expect.any(Object) },
       });
     });
 
     it('should return empty array when no users found', async () => {
       const roles = [Role.ADMIN];
-      mockRepository.find.mockResolvedValue([]);
+      mockUserRepository.find.mockResolvedValue([]);
 
       const result = await service.findUsersByRoles(roles);
 
