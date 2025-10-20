@@ -3,15 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 
 @Injectable()
 export class DonationService {
-  constructor(
-    @InjectRepository(Donation) private repo: Repository<Donation>,
-    @InjectRepository(FoodManufacturer)
-    private manufacturerRepo: Repository<FoodManufacturer>,
-  ) {}
+  constructor(@InjectRepository(Donation) private repo: Repository<Donation>) {}
 
   async findOne(donationId: number): Promise<Donation> {
     validateId(donationId, 'Donation');
@@ -27,9 +22,7 @@ export class DonationService {
   }
 
   async getAll() {
-    return this.repo.find({
-      relations: ['foodManufacturer'],
-    });
+    return this.repo.find();
   }
 
   async create(
@@ -40,18 +33,8 @@ export class DonationService {
     totalOz: number,
     totalEstimatedValue: number,
   ) {
-    validateId(foodManufacturerId, 'Food Manufacturer');
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId },
-    });
-
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${foodManufacturerId} not found`,
-      );
-    }
     const donation = this.repo.create({
-      foodManufacturer: manufacturer,
+      foodManufacturerId,
       dateDonated,
       status,
       totalItems,

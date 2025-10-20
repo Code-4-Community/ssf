@@ -10,15 +10,13 @@ import {
   Button,
   Box,
   Text,
-  useDisclosure,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import NewDonationFormModalButton from '@components/forms/newDonationFormModalButton';
 import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
 
 const DonationManagement: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [expandedDonationIds, setExpandedDonationIds] = useState<number[]>([]);
   const [donationItems, setDonationItems] = useState<{
@@ -30,8 +28,8 @@ const DonationManagement: React.FC = () => {
 
   const fetchDonations = async () => {
     try {
-      const data = await ApiClient.getAllDonations();
-      const sortedDonations = data.sort((a, b) => {
+      const data = await ApiClient.get('/api/donations/get-all-donations');
+      const sortedDonations = (data as Donation[]).sort((a, b) => {
         if (a.status === 'fulfilled' && b.status !== 'fulfilled') return 1;
         if (a.status !== 'fulfilled' && b.status === 'fulfilled') return -1;
         return 0;
@@ -90,12 +88,7 @@ const DonationManagement: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <Button onClick={onOpen}>Submit new donation</Button>
-      <NewDonationFormModal
-        onDonationSuccess={fetchDonations}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
+      <NewDonationFormModalButton onDonationSuccess={fetchDonations} />
       <Table variant="simple" mt={6} width="80%">
         <Thead>
           <Tr>

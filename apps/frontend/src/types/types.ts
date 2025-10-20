@@ -1,11 +1,11 @@
 export interface Donation {
   donationId: number;
+  foodManufacturerId: number;
   dateDonated: string;
   status: string;
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
-  foodManufacturer?: FoodManufacturer;
 }
 
 export interface DonationItem {
@@ -86,7 +86,7 @@ export interface Order {
   requestId: number;
   pantryId: number;
   foodManufacturer: FoodManufacturer;
-  shippedBy: number | null | undefined;
+  shippedBy: number | null;
   status: string;
   createdAt: string;
   shippedAt: string;
@@ -97,7 +97,29 @@ export interface Order {
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
-  foodManufacturerRepresentative?: User;
+  foodManufacturerRepresentativeId: number;
+}
+
+export interface Donation {
+  donationId: number;
+  foodManufacturerId: number;
+  dateDonated: string;
+  status: string;
+  totalItems: number;
+  totalOz: number;
+  totalEstimatedValue: number;
+}
+
+export interface DonationItem {
+  itemId: number;
+  donationId: number;
+  itemName: string;
+  quantity: number;
+  reservedQuantity: number;
+  status: string;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: string;
 }
 
 export interface Allocation {
@@ -117,10 +139,10 @@ export interface CreateFoodRequestBody {
   requestedItems: string[];
   additionalInformation: string | null | undefined;
   status: string;
-  fulfilledBy: number | null | undefined;
-  dateReceived: Date | null | undefined;
-  feedback: string | null | undefined;
-  photos: string[] | null | undefined;
+  fulfilledBy?: number | null;
+  dateReceived?: Date | null;
+  feedback?: string | null;
+  photos?: string[] | null;
 }
 
 export enum VolunteerType {

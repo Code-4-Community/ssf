@@ -5,10 +5,9 @@ import { Order } from './order.entity';
 import { OrdersService } from './order.service';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
-import { AllocationModule } from '../allocations/allocations.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order]), AllocationModule],
+  imports: [TypeOrmModule.forFeature([Order])],
   controllers: [OrdersController],
   providers: [OrdersService, AuthService, JwtStrategy],
 })
