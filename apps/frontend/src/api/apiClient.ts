@@ -1,5 +1,4 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
-import { VolunteerPantryAssignment } from 'types/types';
 import {
   User,
   Pantry,
@@ -9,8 +8,9 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  PantryApplicationDto,
+  VolunteerPantryAssignment,
 } from 'types/types';
-import { PantryApplicationDto } from '@api/types';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
