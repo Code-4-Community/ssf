@@ -87,6 +87,12 @@ export class UpdateColsToUseEnumType1760886499863
     await queryRunner.query(`
             ALTER TABLE pantries ALTER COLUMN status SET DEFAULT 'pending';
         `);
+
+    await queryRunner.query(`
+            ALTER TABLE users
+            ALTER COLUMN role TYPE users_role_enum
+            USING role::users_role_enum;
+        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -172,6 +178,12 @@ export class UpdateColsToUseEnumType1760886499863
 
     await queryRunner.query(`
             ALTER TABLE pantries ALTER COLUMN status SET DEFAULT 'pending';
+        `);
+
+    await queryRunner.query(`
+            ALTER TABLE users
+            ALTER COLUMN role TYPE VARCHAR(255)
+            USING role::text;
         `);
   }
 }

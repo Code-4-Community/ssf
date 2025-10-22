@@ -83,6 +83,14 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'denied',
         'pending'
       );
+
+      CREATE TYPE "users_role_enum" AS ENUM (
+        'admin',
+        'lead_volunteer',
+        'standard_volunteer',
+        'pantry',
+        'food_manufacturer'
+      );
     `);
   }
 
@@ -99,6 +107,7 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       DROP TYPE "donation_frequency_enum";
       DROP TYPE "donations_status_enum";
       DROP TYPE "food_type_enum";
+      DROP TYPE "users_role_enum";
     `);
   }
 }
