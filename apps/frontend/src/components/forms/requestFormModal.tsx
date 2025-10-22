@@ -101,12 +101,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 isDisabled={readOnly}
               >
                 <HStack spacing="24px">
-                  <Radio value="<20">{'<'}20</Radio>
-                  <Radio value="20-50">20-50</Radio>
-                  <Radio value="50-100">50-100</Radio>
-                  <Radio value="100-150">100-150</Radio>
-                  <Radio value="150-200">150-200</Radio>
-                  <Radio value=">200">{'>'}200</Radio>
+                  <Radio value="Very Small (1-2 boxes)">
+                    Very Small (1-2 boxes)
+                  </Radio>
+                  <Radio value="Small (2-5 boxes)">Small (2-5 boxes)</Radio>
+                  <Radio value="Medium (5-10 boxes)">Medium (5-10 boxes)</Radio>
+                  <Radio value="Large (10+ boxes)">Large (10+ boxes)</Radio>
                 </HStack>
               </RadioGroup>
             </FormControl>

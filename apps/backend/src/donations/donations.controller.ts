@@ -60,6 +60,7 @@ export class DonationsController {
     },
   ): Promise<Donation> {
     if (
+      body.status &&
       !Object.values(DonationsStatus).includes(body.status as DonationsStatus)
     ) {
       throw new BadRequestException('Invalid status');
@@ -67,7 +68,7 @@ export class DonationsController {
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
-      body.status,
+      body.status ?? DonationsStatus.AVAILABLE,
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
