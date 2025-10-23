@@ -26,9 +26,9 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // TODO: Make sure clients of this button actually include
+  // TODO: Make sure clients of this modal actually include
   // the pantry representative ID (or the representative User
-  // itself) in the provided Pantry data
+  // itself) in the provided data
   /*useEffect(() => {
     const fetchUser = async () => {
       if (pantry.pantryRepresentativeId) {
