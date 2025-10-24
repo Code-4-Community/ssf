@@ -137,7 +137,7 @@ export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: string;
   requestedItems: string[];
-  additionalInformation: string | null | undefined;
+  additionalInformation?: string | null;
   status: string;
   fulfilledBy: number | null | undefined;
   dateReceived: Date | null | undefined;
