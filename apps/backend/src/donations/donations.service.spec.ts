@@ -13,7 +13,7 @@ describe('DonationService', () => {
   beforeAll(async () => {
     mockDonationRepository.count.mockReset();
 
-    const app = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         DonationService,
         {
@@ -23,7 +23,7 @@ describe('DonationService', () => {
       ],
     }).compile();
 
-    service = app.get<DonationService>(DonationService);
+    service = module.get<DonationService>(DonationService);
   });
 
   it('should be defined', () => {
