@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
-import { FoodTypes } from '../../types/types';
+import { DonationItem, FoodTypes } from '../../types/types';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -127,8 +127,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       onDonationSuccess();
 
       if (donationId) {
+        const multipleDonationItems_body: Partial<DonationItem>[] = [];
+
+        // Populate the body with all donation items for the donation
         rows.forEach(async (row) => {
-          const donationItem_body = {
+          const donationItem_body: Partial<DonationItem> = {
             donationId: donationId,
             itemName: row.foodItem,
             quantity: parseInt(row.numItems),
@@ -137,16 +140,18 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
             foodType: row.foodType,
           };
 
-          const donationItemResponse = await ApiClient.postDonationItem(
-            donationItem_body,
-          );
-          if (donationItemResponse) {
-            console.log('Donation item submitted successfully');
-          } else {
-            console.error('Failed to submit donation item');
-            alert('Failed to submit donation item');
-          }
+          multipleDonationItems_body.push(donationItem_body);
         });
+
+        const multipleDonationItemResponse = await ApiClient.postMultipleDonationItems(
+          multipleDonationItems_body,
+        );
+
+        if (multipleDonationItemResponse) {
+          console.log('Donation items submitted successfully');
+        } else {
+          alert('Failed to submit donation items');
+        }
         setRows([
           {
             id: 1,
@@ -161,12 +166,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         setTotalOz(0);
         setTotalValue(0);
       } else {
-        console.error('Failed to submit donation');
         alert('Failed to submit donation');
       }
     } catch (error) {
-      console.error('Error submitting new donation', error);
-      alert('Error submitting new donation');
+      alert('Error submitting new donation: ' + error);
     }
   };
 
