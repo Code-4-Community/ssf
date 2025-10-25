@@ -10,6 +10,7 @@ import {
   Dialog,
   NativeSelect,
   NativeSelectIndicator,
+  Portal,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
@@ -43,7 +44,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
   const handleChange = (id: number, field: string, value: string) => {
     const updatedRows = rows.map((row) =>
-      row.id === id ? { ...row, [field]: value } : row,
+      row.id === id ? { ...row, [field]: value } : row
     );
 
     setRows(updatedRows);
@@ -57,18 +58,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
     updatedRows.forEach((row) => {
       if (row.numItems && row.ozPerItem && row.valuePerItem) {
-        totalItems += parseInt(row.numItems);
-        totalOz += parseFloat(row.ozPerItem) * parseInt(row.numItems);
-        totalValue += parseFloat(row.valuePerItem) * parseInt(row.numItems);
+        const qty = parseInt(row.numItems);
+        totalItems += qty;
+        totalOz += parseFloat(row.ozPerItem) * qty;
+        totalValue += parseFloat(row.valuePerItem) * qty;
       }
     });
 
-    totalOz = parseFloat(totalOz.toFixed(2));
-    totalValue = parseFloat(totalValue.toFixed(2));
-
     setTotalItems(totalItems);
-    setTotalOz(totalOz);
-    setTotalValue(totalValue);
+    setTotalOz(parseFloat(totalOz.toFixed(2)));
+    setTotalValue(parseFloat(totalValue.toFixed(2)));
   };
 
   const addRow = () => {
@@ -86,36 +85,34 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   };
 
   const deleteRow = () => {
-    if (rows.length === 1) {
-      return;
-    }
+    if (rows.length === 1) return;
+
     const newRows = rows.slice(0, -1);
     setRows(newRows);
     calculateTotals(newRows);
   };
 
   const handleSubmit = async () => {
-    const hasEmptyFields = rows.some(
+    const hasEmpty = rows.some(
       (row) =>
-        row.foodItem === '' ||
-        row.foodType === '' ||
-        row.numItems === '' ||
-        row.ozPerItem === '' ||
-        row.valuePerItem === '',
+        !row.foodItem ||
+        !row.foodType ||
+        !row.numItems ||
+        !row.ozPerItem ||
+        !row.valuePerItem
     );
 
-    if (hasEmptyFields) {
+    if (hasEmpty) {
       alert('Please fill in all fields before submitting.');
       return;
     }
 
     onClose();
 
-    const foodManufacturerId = 1;
     const donation_body = {
-      foodManufacturerId: foodManufacturerId,
-      totalItems: totalItems,
-      totalOz: totalOz,
+      foodManufacturerId: 1,
+      totalItems,
+      totalOz,
       totalEstimatedValue: totalValue,
     };
 
@@ -123,35 +120,20 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
 
-      // Automatically update the page after creating new donation
       onDonationSuccess();
 
       if (donationId) {
-        const multipleDonationItems_body: Partial<DonationItem>[] = [];
+        const multipleItems: Partial<DonationItem>[] = rows.map((row) => ({
+          donationId,
+          itemName: row.foodItem,
+          quantity: parseInt(row.numItems),
+          ozPerItem: parseFloat(row.ozPerItem),
+          estimatedValue: parseFloat(row.valuePerItem),
+          foodType: row.foodType,
+        }));
 
-        // Populate the body with all donation items for the donation
-        rows.forEach(async (row) => {
-          const donationItem_body: Partial<DonationItem> = {
-            donationId: donationId,
-            itemName: row.foodItem,
-            quantity: parseInt(row.numItems),
-            ozPerItem: parseFloat(row.ozPerItem),
-            estimatedValue: parseFloat(row.valuePerItem),
-            foodType: row.foodType,
-          };
+        await ApiClient.postMultipleDonationItems(multipleItems);
 
-          multipleDonationItems_body.push(donationItem_body);
-        });
-
-        const multipleDonationItemResponse = await ApiClient.postMultipleDonationItems(
-          multipleDonationItems_body,
-        );
-
-        if (multipleDonationItemResponse) {
-          console.log('Donation items submitted successfully');
-        } else {
-          alert('Failed to submit donation items');
-        }
         setRows([
           {
             id: 1,
@@ -176,127 +158,137 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   return (
     <Dialog.Root
       open={isOpen}
-      size={'xl'}
-      onOpenChange={(e: { open: boolean }) => {
+      size="xl"
+      onOpenChange={(e) => {
         if (!e.open) onClose();
       }}
       closeOnInteractOutside
     >
-      <Dialog.Backdrop />
-      <Dialog.Positioner>
-        <Dialog.Content maxW="49em">
-          <Dialog.Header asChild>
-            <Dialog.Title fontSize={25} fontWeight={700}>
-              SSF Log New Donation Form SSF Donation Log Form
-            </Dialog.Title>
-          </Dialog.Header>
-          <Dialog.Body>
-            <Text mb="1.5em">
-              Log a new donation by filling out the form below. Use the add or
-              delete row buttons to add or remove food items from the donation.
-              Please make sure to fill out all fields before submitting.
-            </Text>
-            <Text mb="1.5em">Log a new donation</Text>
-            <Box
-              display="block"
-              maxW="100%"
-              overflowX="auto"
-              overflowY="hidden"
-              whiteSpace="nowrap"
-            >
-              <Table.Root variant="line">
-                <TableCaption>
-                  <Stack direction="row" align="center" gap={3} mt={3}>
-                    <Text fontWeight="bold">
-                      Total # of items: {totalItems} &nbsp;&nbsp; Total oz of
-                      items: {totalOz} &nbsp;&nbsp; Total value of items:{' '}
-                      {totalValue}
-                    </Text>
-                    <Button onClick={deleteRow}>- Delete Row</Button>
-                    <Button onClick={addRow}>+ Add Row</Button>
-                  </Stack>
-                </TableCaption>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader>Food Item</Table.ColumnHeader>
-                    <Table.ColumnHeader>Food Type</Table.ColumnHeader>
-                    <Table.ColumnHeader># of Items</Table.ColumnHeader>
-                    <Table.ColumnHeader>Oz per Item</Table.ColumnHeader>
-                    <Table.ColumnHeader>Value per Item</Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {rows.map((row) => (
-                    <Table.Row key={row.id}>
-                      <Table.Cell>
-                        <Input
-                          value={row.foodItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'foodItem', e.target.value)
-                          }
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <NativeSelect.Root>
-                          <NativeSelect.Field
-                            placeholder="Select a food type"
-                            value={row.foodType}
-                            onChange={(e) =>
-                              handleChange(row.id, 'foodType', e.target.value)
-                            }
-                          >
-                            {FoodTypes.map((type) => (
-                              <option key={type} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </NativeSelect.Field>
-                          <NativeSelectIndicator />
-                        </NativeSelect.Root>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={row.numItems}
-                          onChange={(e) =>
-                            handleChange(row.id, 'numItems', e.target.value)
-                          }
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={row.ozPerItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'ozPerItem', e.target.value)
-                          }
-                        />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={row.valuePerItem}
-                          onChange={(e) =>
-                            handleChange(row.id, 'valuePerItem', e.target.value)
-                          }
-                        />
-                      </Table.Cell>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxW="49em">
+            <Dialog.CloseTrigger />
+
+            <Dialog.Header asChild>
+              <Dialog.Title fontSize={25} fontWeight={700}>
+                SSF Log New Donation Form
+              </Dialog.Title>
+            </Dialog.Header>
+
+            <Dialog.Body>
+              <Text mb="1.5em">
+                Log a new donation by filling out the form below.
+              </Text>
+
+              <Box display="block" overflowX="auto" whiteSpace="nowrap">
+                <Table.Root variant="line">
+                  <TableCaption>
+                    <Stack direction="row" align="center" gap={3} mt={3}>
+                      <Text fontWeight="bold">
+                        Total Items: {totalItems} &nbsp; Total oz: {totalOz}{' '}
+                        &nbsp; Total Value: {totalValue}
+                      </Text>
+                      <Button onClick={deleteRow}>- Delete Row</Button>
+                      <Button onClick={addRow}>+ Add Row</Button>
+                    </Stack>
+                  </TableCaption>
+
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader>Food Item</Table.ColumnHeader>
+                      <Table.ColumnHeader>Food Type</Table.ColumnHeader>
+                      <Table.ColumnHeader># of Items</Table.ColumnHeader>
+                      <Table.ColumnHeader>Oz per Item</Table.ColumnHeader>
+                      <Table.ColumnHeader>Value per Item</Table.ColumnHeader>
                     </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </Box>
-            <Flex justifyContent="space-between" mt={4}>
-              <Button onClick={onClose}>Close</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
-            </Flex>
-          </Dialog.Body>
-          <Dialog.CloseTrigger />
-        </Dialog.Content>
-      </Dialog.Positioner>
+                  </Table.Header>
+
+                  <Table.Body>
+                    {rows.map((row) => (
+                      <Table.Row key={row.id}>
+                        <Table.Cell>
+                          <Input
+                            value={row.foodItem}
+                            onChange={(e) =>
+                              handleChange(row.id, 'foodItem', e.target.value)
+                            }
+                          />
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <NativeSelect.Root>
+                            <NativeSelect.Field
+                              value={row.foodType}
+                              onChange={(e) =>
+                                handleChange(
+                                  row.id,
+                                  'foodType',
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option value="">Select food type...</option>
+                              {FoodTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelectIndicator />
+                          </NativeSelect.Root>
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={row.numItems}
+                            onChange={(e) =>
+                              handleChange(row.id, 'numItems', e.target.value)
+                            }
+                          />
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={row.ozPerItem}
+                            onChange={(e) =>
+                              handleChange(row.id, 'ozPerItem', e.target.value)
+                            }
+                          />
+                        </Table.Cell>
+
+                        <Table.Cell>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={row.valuePerItem}
+                            onChange={(e) =>
+                              handleChange(
+                                row.id,
+                                'valuePerItem',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </Box>
+
+              <Flex justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
+                <Button onClick={handleSubmit}>Submit</Button>
+              </Flex>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
     </Dialog.Root>
   );
 };
