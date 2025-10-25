@@ -25,6 +25,8 @@ export class DonationItemsService {
     estimatedValue: number,
     foodType: string,
   ) {
+    validateId(donationId, 'Donation');
+    
     const donationItem = this.repo.create({
       donationId,
       itemName,
