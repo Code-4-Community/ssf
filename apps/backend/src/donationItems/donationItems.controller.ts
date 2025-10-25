@@ -74,6 +74,58 @@ export class DonationItemsController {
     );
   }
 
+  @Post('/create-multiple')
+  @ApiBody({
+    description: 'List of donation items to create',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          donationId: { type: 'integer', example: 1 },
+          itemName: { type: 'string', example: 'Rice Noodles' },
+          quantity: { type: 'integer', example: 100 },
+          reservedQuantity: { type: 'integer', example: 0 },
+          status: { type: 'string', example: 'available' },
+          ozPerItem: { type: 'integer', example: 5 },
+          estimatedValue: { type: 'integer', example: 100 },
+          foodType: { type: 'string', example: 'grain' },
+        },
+      },
+    },
+  })
+  async createMultipleDonationItems(
+    @Body()
+    body: {
+      donationId: number;
+      itemName: string;
+      quantity: number;
+      reservedQuantity: number;
+      status: string;
+      ozPerItem: number;
+      estimatedValue: number;
+      foodType: string;
+    }[],
+  ): Promise<DonationItem[]> {
+    let createdDonationItems: DonationItem[] = [];
+
+    for (const donationItem of body) {
+      const createdDonationItem = await this.donationItemsService.create(
+        donationItem.donationId,
+        donationItem.itemName,
+        donationItem.quantity,
+        donationItem.reservedQuantity,
+        donationItem.status,
+        donationItem.ozPerItem,
+        donationItem.estimatedValue,
+        donationItem.foodType,
+      );
+      createdDonationItems.push(createdDonationItem);
+    }
+
+    return createdDonationItems;
+  }
+
   @Patch('/update-quantity/:itemId')
   async updateDonationItemQuantity(
     @Param('itemId', ParseIntPipe) itemId: number,

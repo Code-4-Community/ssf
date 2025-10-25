@@ -54,6 +54,13 @@ export class ApiClient {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
+  public async postMultipleDonationItems(body: unknown): Promise<DonationItem[]> {
+    return this.post(
+      '/api/donation-items/create-multiple',
+      body,
+    ) as Promise<DonationItem[]>;
+  }
+
   private async patch(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .patch(path, body)
