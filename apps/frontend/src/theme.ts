@@ -53,7 +53,7 @@ const customConfig = defineConfig({
       colors: {
         white: { value: '#fff' },
         black: { value: '#000' },
-        blue: { 
+        blue: {
           ssf: { value: '#2B5061' },
           100: { value: '#bee3f8' },
         },
