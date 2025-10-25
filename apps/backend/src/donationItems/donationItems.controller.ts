@@ -98,7 +98,7 @@ export class DonationItemsController {
       foodType: string;
     }[],
   ): Promise<DonationItem[]> {
-    let createdDonationItems: DonationItem[] = [];
+    const createdDonationItems: DonationItem[] = [];
 
     for (const donationItem of body) {
       const createdDonationItem = await this.donationItemsService.create(

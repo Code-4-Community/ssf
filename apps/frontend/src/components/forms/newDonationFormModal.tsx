@@ -143,9 +143,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           multipleDonationItems_body.push(donationItem_body);
         });
 
-        const multipleDonationItemResponse = await ApiClient.postMultipleDonationItems(
-          multipleDonationItems_body,
-        );
+        const multipleDonationItemResponse =
+          await ApiClient.postMultipleDonationItems(multipleDonationItems_body);
 
         if (multipleDonationItemResponse) {
           console.log('Donation items submitted successfully');
@@ -174,11 +173,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   };
 
   return (
-    <Dialog.Root 
-      open={isOpen} 
-      size={'xl'} 
+    <Dialog.Root
+      open={isOpen}
+      size={'xl'}
       onOpenChange={(e) => {
-        if (!e.open) onClose()
+        if (!e.open) onClose();
       }}
       closeOnInteractOutside
     >
@@ -197,7 +196,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
               Please make sure to fill out all fields before submitting.
             </Text>
             <Text mb="1.5em">Log a new donation</Text>
-            <Box display="block" maxW="100%" overflowX="auto" overflowY="hidden" whiteSpace="nowrap">
+            <Box
+              display="block"
+              maxW="100%"
+              overflowX="auto"
+              overflowY="hidden"
+              whiteSpace="nowrap"
+            >
               <Table.Root variant="line">
                 <TableCaption>
                   <Stack direction="row" align="center" gap={3} mt={3}>
@@ -232,7 +237,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       </Table.Cell>
                       <Table.Cell>
                         <NativeSelect.Root>
-                          <NativeSelect.Field 
+                          <NativeSelect.Field
                             placeholder="Select a food type"
                             value={row.foodType}
                             onChange={(e) =>

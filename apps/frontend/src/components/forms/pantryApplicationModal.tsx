@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Dialog,
-  Grid,
-  GridItem,
-  Text,
-} from '@chakra-ui/react';
+import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry, User } from 'types/types';
 
@@ -38,10 +32,10 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   }, [isOpen, pantry.pantryRepresentativeId]);
 
   return (
-    <Dialog.Root 
-      open={isOpen} 
+    <Dialog.Root
+      open={isOpen}
       onOpenChange={(e) => {
-        if (!e.open)onClose();
+        if (!e.open) onClose();
       }}
       size="xl"
       closeOnInteractOutside
@@ -109,7 +103,9 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Reserve Food for Allergic</Text>
               </GridItem>
-              <GridItem>{pantry.reserveFoodForAllergic ? 'Yes' : 'No'}</GridItem>
+              <GridItem>
+                {pantry.reserveFoodForAllergic ? 'Yes' : 'No'}
+              </GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Reservation Explanation</Text>
@@ -139,7 +135,9 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Newsletter Subscription</Text>
               </GridItem>
-              <GridItem>{pantry.newsletterSubscription ? 'Yes' : 'No'}</GridItem>
+              <GridItem>
+                {pantry.newsletterSubscription ? 'Yes' : 'No'}
+              </GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Restrictions</Text>
