@@ -31,7 +31,7 @@ describe('DonationItemsController', () => {
       ozPerItem: 20,
       estimatedValue: 150,
       foodType: 'grain',
-    }
+    },
   ];
 
   beforeEach(async () => {
@@ -52,8 +52,12 @@ describe('DonationItemsController', () => {
   describe('create', () => {
     it('should call donationItemsService.create and return a donationItem', async () => {
       const donationItemData = mockDonationItemsCreateData[0];
-      mockDonationItemsService.create.mockResolvedValue(donationItemData as DonationItem);
-      const result = await controller.createDonationItem(donationItemData as DonationItem);
+      mockDonationItemsService.create.mockResolvedValue(
+        donationItemData as DonationItem,
+      );
+      const result = await controller.createDonationItem(
+        donationItemData as DonationItem,
+      );
       expect(result).toEqual(donationItemData as DonationItem);
       expect(mockDonationItemsService.create).toHaveBeenCalledWith(
         donationItemData.donationId,
@@ -70,20 +74,33 @@ describe('DonationItemsController', () => {
 
   describe('createMultipleDonationItems', () => {
     it('should call donationItemsService.create for each item and return created donationItems', async () => {
-      mockDonationItemsService.create.mockImplementation(async (donationId: number, itemName: string, quantity: number, reservedQuantity: number, status: string, ozPerItem: number, estimatedValue: number, foodType: string) => {
-        return mockDonationItemsCreateData.find(
-          (item) =>
-            item.donationId === donationId &&
-            item.itemName === itemName &&
-            item.quantity === quantity &&
-            item.reservedQuantity === reservedQuantity &&
-            item.status === status &&
-            item.ozPerItem === ozPerItem &&
-            item.estimatedValue === estimatedValue &&
-            item.foodType === foodType,
-        ) as DonationItem;
-      });
-      const result = await controller.createMultipleDonationItems(mockDonationItemsCreateData as DonationItem[]);
+      mockDonationItemsService.create.mockImplementation(
+        async (
+          donationId: number,
+          itemName: string,
+          quantity: number,
+          reservedQuantity: number,
+          status: string,
+          ozPerItem: number,
+          estimatedValue: number,
+          foodType: string,
+        ) => {
+          return mockDonationItemsCreateData.find(
+            (item) =>
+              item.donationId === donationId &&
+              item.itemName === itemName &&
+              item.quantity === quantity &&
+              item.reservedQuantity === reservedQuantity &&
+              item.status === status &&
+              item.ozPerItem === ozPerItem &&
+              item.estimatedValue === estimatedValue &&
+              item.foodType === foodType,
+          ) as DonationItem;
+        },
+      );
+      const result = await controller.createMultipleDonationItems(
+        mockDonationItemsCreateData as DonationItem[],
+      );
       expect(result).toEqual(mockDonationItemsCreateData as DonationItem[]);
       for (const donationItemData of mockDonationItemsCreateData) {
         expect(mockDonationItemsService.create).toHaveBeenCalledWith(
