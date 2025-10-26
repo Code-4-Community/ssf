@@ -37,6 +37,7 @@
     "dotenv": "^16.4.5",
     "global": "^4.4.0",
     "google-libphonenumber": "^3.2.40",
+    "jest-mock-extended": "^4.0.0",
     "jwks-rsa": "^3.1.0",
     "lucide-react": "^0.544.0",
     "mongodb": "^6.1.0",
