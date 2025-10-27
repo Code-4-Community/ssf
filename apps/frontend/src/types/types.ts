@@ -135,6 +135,18 @@ export interface FoodManufacturer {
   foodManufacturerRepresentative?: User;
 }
 
+export interface CreateFoodRequestBody {
+  pantryId: number;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation?: string | null;
+  status: string;
+  fulfilledBy: number | null | undefined;
+  dateReceived: Date | null | undefined;
+  feedback: string | null | undefined;
+  photos: string[] | null | undefined;
+}
+
 export interface Allocation {
   allocationId: number;
   orderId: number;
