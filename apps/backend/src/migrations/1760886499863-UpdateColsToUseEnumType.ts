@@ -11,17 +11,10 @@ export class UpdateColsToUseEnumType1760886499863
         `);
 
     await queryRunner.query(`
-            ALTER TABLE donations ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
             ALTER TABLE donations
-            ALTER COLUMN status TYPE donations_status_enum
-            USING status::donations_status_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE donations ALTER COLUMN status SET DEFAULT 'available';
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE donations_status_enum USING status::donations_status_enum,
+                ALTER COLUMN status SET DEFAULT 'available';
         `);
 
     await queryRunner.query(`
@@ -31,61 +24,22 @@ export class UpdateColsToUseEnumType1760886499863
         `);
 
     await queryRunner.query(`
-            ALTER TABLE orders ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
             ALTER TABLE orders
-            ALTER COLUMN status TYPE orders_status_enum
-            USING status::orders_status_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE orders ALTER COLUMN status SET DEFAULT 'pending';
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN refrigerated_donation TYPE refrigerated_donation_enum
-            USING refrigerated_donation::refrigerated_donation_enum;
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE orders_status_enum USING status::orders_status_enum,
+                ALTER COLUMN status SET DEFAULT 'pending';
         `);
 
     await queryRunner.query(`
             ALTER TABLE pantries
-            ALTER COLUMN dedicated_allergy_friendly TYPE allergy_friendly_storage_enum
-            USING dedicated_allergy_friendly::allergy_friendly_storage_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN client_visit_frequency TYPE client_visit_frequency_enum
-            USING client_visit_frequency::client_visit_frequency_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN identify_allergens_confidence TYPE allergens_confidence_enum
-            USING identify_allergens_confidence::allergens_confidence_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN serve_allergic_children TYPE serve_allergic_children_enum
-            USING serve_allergic_children::serve_allergic_children_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN status TYPE pantries_status_enum
-            USING status::pantries_status_enum;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries ALTER COLUMN status SET DEFAULT 'pending';
+                ALTER COLUMN refrigerated_donation TYPE refrigerated_donation_enum USING refrigerated_donation::refrigerated_donation_enum,
+                ALTER COLUMN dedicated_allergy_friendly TYPE allergy_friendly_storage_enum USING dedicated_allergy_friendly::allergy_friendly_storage_enum,
+                ALTER COLUMN client_visit_frequency TYPE client_visit_frequency_enum USING client_visit_frequency::client_visit_frequency_enum,
+                ALTER COLUMN identify_allergens_confidence TYPE allergens_confidence_enum USING identify_allergens_confidence::allergens_confidence_enum,
+                ALTER COLUMN serve_allergic_children TYPE serve_allergic_children_enum USING serve_allergic_children::serve_allergic_children_enum,
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE pantries_status_enum USING status::pantries_status_enum,
+                ALTER COLUMN status SET DEFAULT 'pending';
         `);
 
     await queryRunner.query(`
@@ -103,17 +57,10 @@ export class UpdateColsToUseEnumType1760886499863
         `);
 
     await queryRunner.query(`
-            ALTER TABLE donations ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
             ALTER TABLE donations
-            ALTER COLUMN status TYPE VARCHAR(25)
-            USING status::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE donations ALTER COLUMN status SET DEFAULT 'available';
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE VARCHAR(25) USING status::text,
+                ALTER COLUMN status SET DEFAULT 'available';
         `);
 
     await queryRunner.query(`
@@ -123,61 +70,22 @@ export class UpdateColsToUseEnumType1760886499863
         `);
 
     await queryRunner.query(`
-            ALTER TABLE orders ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
             ALTER TABLE orders
-            ALTER COLUMN status TYPE VARCHAR(25)
-            USING status::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE orders ALTER COLUMN status SET DEFAULT 'pending';
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN refrigerated_donation TYPE VARCHAR(25)
-            USING refrigerated_donation::text;
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE VARCHAR(25) USING status::text,
+                ALTER COLUMN status SET DEFAULT 'pending';
         `);
 
     await queryRunner.query(`
             ALTER TABLE pantries
-            ALTER COLUMN dedicated_allergy_friendly TYPE VARCHAR(255)
-            USING dedicated_allergy_friendly::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN client_visit_frequency TYPE VARCHAR(25)
-            USING client_visit_frequency::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN identify_allergens_confidence TYPE VARCHAR(50)
-            USING identify_allergens_confidence::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN serve_allergic_children TYPE VARCHAR(25)
-            USING serve_allergic_children::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries ALTER COLUMN status DROP DEFAULT;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries
-            ALTER COLUMN status TYPE VARCHAR(50)
-            USING status::text;
-        `);
-
-    await queryRunner.query(`
-            ALTER TABLE pantries ALTER COLUMN status SET DEFAULT 'pending';
+                ALTER COLUMN refrigerated_donation TYPE VARCHAR(25) USING refrigerated_donation::text,
+                ALTER COLUMN dedicated_allergy_friendly TYPE VARCHAR(255) USING dedicated_allergy_friendly::text,
+                ALTER COLUMN client_visit_frequency TYPE VARCHAR(25) USING client_visit_frequency::text,
+                ALTER COLUMN identify_allergens_confidence TYPE VARCHAR(50) USING identify_allergens_confidence::text,
+                ALTER COLUMN serve_allergic_children TYPE VARCHAR(25) USING serve_allergic_children::text,
+                ALTER COLUMN status DROP DEFAULT,
+                ALTER COLUMN status TYPE VARCHAR(50) USING status::text,
+                ALTER COLUMN status SET DEFAULT 'pending';
         `);
 
     await queryRunner.query(`
