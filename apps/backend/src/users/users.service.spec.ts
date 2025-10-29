@@ -1,27 +1,46 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
-import { Repository } from 'typeorm';
-
 import { mock } from 'jest-mock-extended';
+import { validateId } from '../utils/validation.utils';
+
+jest.mock('../utils/validation.utils');
+
 const mockUserRepository = mock<Repository<User>>();
+
+const mockUser: User = {
+  id: 1,
+  email: 'test@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  phone: '1234567890',
+  role: Role.STANDARD_VOLUNTEER,
+};
+
+const invalidIdUser: User = {
+  id: -1,
+  email: 'test@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  phone: '1234567890',
+  role: Role.STANDARD_VOLUNTEER,
+};
+
 describe('UsersService', () => {
   let service: UsersService;
 
-  const mockUser: User = {
-    id: 1,
-    email: 'test@example.com',
-    firstName: 'John',
-    lastName: 'Doe',
-    phone: '1234567890',
-    role: Role.STANDARD_VOLUNTEER,
-  };
+  beforeAll(async () => {
+    mockUserRepository.create.mockReset();
+    mockUserRepository.save.mockReset();
+    mockUserRepository.findOneBy.mockReset();
+    mockUserRepository.find.mockReset();
+    mockUserRepository.remove.mockReset();
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         UsersService,
         {
@@ -34,8 +53,22 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
   });
 
+  beforeEach(() => {
+    mockUserRepository.create.mockReset();
+    mockUserRepository.save.mockReset();
+    mockUserRepository.findOneBy.mockReset();
+    mockUserRepository.find.mockReset();
+    mockUserRepository.remove.mockReset();
+
+    (validateId as jest.Mock).mockImplementation(() => {});
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
   describe('create', () => {
@@ -120,7 +153,15 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      await expect(service.findOne(-1)).rejects.toThrow();
+      (validateId as jest.Mock).mockImplementation(() => {
+        throw new Error('Invalid ID: ID must be a positive integer');
+      });
+
+      await expect(service.findOne(-1)).rejects.toThrow(
+        'Invalid ID: ID must be a positive integer',
+      );
+
+      expect(validateId).toHaveBeenCalledWith(-1, 'User');
       expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
@@ -162,10 +203,15 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      await expect(
-        service.update(-1, { firstName: 'Updated' }),
-      ).rejects.toThrow();
-      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
+      (validateId as jest.Mock).mockImplementation(() => {
+        throw new Error('Invalid ID: ID must be a positive integer');
+      });
+      await expect(service.update(-1, invalidIdUser)).rejects.toThrow(
+        'Invalid ID: ID must be a positive integer',
+      );
+
+      expect(validateId).toHaveBeenCalledWith(-1, 'User');
+      expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
   });
 
@@ -189,8 +235,15 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      await expect(service.remove(-1)).rejects.toThrow();
-      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
+      (validateId as jest.Mock).mockImplementation(() => {
+        throw new Error('Invalid ID: ID must be a positive integer');
+      });
+      await expect(service.remove(-1)).rejects.toThrow(
+        'Invalid ID: ID must be a positive integer',
+      );
+
+      expect(validateId).toHaveBeenCalledWith(-1, 'User');
+      expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });
   });
 
