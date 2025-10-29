@@ -28,7 +28,7 @@ describe('DonationsController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('GET /donation-count', () => {
+  describe('GET /count', () => {
     it.each([[0], [5]])('should return %i donations', async (count) => {
       mockDonationService.getNumberOfDonations.mockResolvedValue(count);
 

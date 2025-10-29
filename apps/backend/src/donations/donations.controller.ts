@@ -16,21 +16,21 @@ import { DonationService } from './donations.service';
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
-  @Get('/:donationId')
-  async getOrder(
-    @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<Donation> {
-    return this.donationService.findOne(donationId);
-  }
-
   @Get('/get-all-donations')
   async getAllDonations(): Promise<Donation[]> {
     return this.donationService.getAll();
   }
 
-  @Get('/donation-count')
+  @Get('/count')
   async getNumberOfDonations(): Promise<number> {
     return this.donationService.getNumberOfDonations();
+  }
+
+  @Get('/:donationId')
+  async getDonation(
+    @Param('donationId', ParseIntPipe) donationId: number,
+  ): Promise<Donation> {
+    return this.donationService.findOne(donationId);
   }
 
   @Post('/create')
