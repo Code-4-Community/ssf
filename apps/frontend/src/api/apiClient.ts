@@ -1,5 +1,4 @@
-import axios, { type AxiosInstance } from 'axios';
-import { VolunteerPantryAssignment } from 'types/types';
+import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
   Pantry,
@@ -9,6 +8,8 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  PantryApplicationDto,
+  VolunteerPantryAssignment,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -106,6 +107,12 @@ export class ApiClient {
 
   public async getPantry(pantryId: number): Promise<Pantry> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
   }
 
   public async getFoodRequestFromOrder(
