@@ -1,29 +1,23 @@
 import { useEffect, useState } from 'react';
 import {
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   TableCaption,
-  TableContainer,
   Text,
   Center,
-  Select,
   Button,
   Flex,
   Input,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Checkbox,
   VStack,
+  Box,
+  Portal,
+  NativeSelect,
+  NativeSelectIndicator,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { Link } from 'react-router-dom';
-import { ChevronDownIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 
@@ -31,10 +25,7 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [changedVolunteers, setChangedVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const [checkedTypes, setCheckedTypes] = useState<string[]>([
-    'LEAD_VOLUNTEER',
-    'STANDARD_VOLUNTEER',
-  ]);
+  const [checkedTypes, setCheckedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -55,7 +46,7 @@ const VolunteerManagement: React.FC = () => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
     return (
       fullName.includes(searchName.toLowerCase()) &&
-      checkedTypes.includes(a.role.toUpperCase())
+      (checkedTypes.includes(a.role.toUpperCase()) || checkedTypes.length === 0)
     );
   });
 
@@ -67,22 +58,24 @@ const VolunteerManagement: React.FC = () => {
     volunteerId: number;
   }) => {
     return (
-      <Select
-        key={volunteerId}
-        value={volunteerType}
-        onChange={(e) =>
-          handleVolunteerTypeChange(
-            e.target.value as VolunteerType,
-            volunteerId,
-          )
-        }
-      >
-        {Object.entries(DISPLAY_VOLUNTEER_TYPES).map(([key, label]) => (
-          <option value={VolunteerType[key as keyof typeof VolunteerType]}>
-            {label}
-          </option>
-        ))}
-      </Select>
+      <NativeSelect.Root>
+        <NativeSelect.Field
+          value={volunteerType}
+          onChange={(e) =>
+            handleVolunteerTypeChange(
+              e.target.value as VolunteerType,
+              volunteerId,
+            )
+          }
+        >
+          {Object.entries(DISPLAY_VOLUNTEER_TYPES).map(([key, label]) => (
+            <option value={VolunteerType[key as keyof typeof VolunteerType]}>
+              {label}
+            </option>
+          ))}
+        </NativeSelect.Field>
+        <NativeSelectIndicator />
+      </NativeSelect.Root>
     );
   };
 
@@ -106,7 +99,7 @@ const VolunteerManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchName('');
-    setCheckedTypes(['LEAD_VOLUNTEER', 'STANDARD_VOLUNTEER']);
+    setCheckedTypes([]);
 
     setChangedVolunteers(volunteers);
   };
@@ -145,67 +138,83 @@ const VolunteerManagement: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <Text fontSize="2xl">Pantry Volunteer Management</Text>
-      <TableContainer mt={5}>
+      <Box
+        mt={5}
+        display="block"
+        maxW="100%"
+        overflowX="auto"
+        overflowY="hidden"
+        whiteSpace="nowrap"
+      >
         <VStack my={5}>
           <Input
             placeholder="Search by volunteer name"
             value={searchName}
             onChange={handleSearchNameChange}
           />
-          <Menu closeOnSelect={false}>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-              Filter by Volunteer Type
-            </MenuButton>
-            <MenuList>
-              {Object.values(VolunteerType).map((volunteerType) => (
-                <MenuItem key={volunteerType}>
-                  <Checkbox
-                    isChecked={checkedTypes.includes(
-                      volunteerType.toUpperCase(),
-                    )}
-                    onChange={(e) =>
-                      handleVolunteerFilterChange(
-                        volunteerType,
-                        e.target.checked,
-                      )
-                    }
-                  >
-                    {DISPLAY_VOLUNTEER_TYPES[volunteerType.toUpperCase()] ||
-                      volunteerType}
-                  </Checkbox>
-                </MenuItem>
-              ))}
-            </MenuList>
-          </Menu>
+          <Menu.Root closeOnSelect={false}>
+            <Menu.Trigger asChild>
+              <Button>
+                Filter by Volunteer Type
+                <ChevronDownIcon />
+              </Button>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content>
+                  {Object.values(VolunteerType).map((volunteerType) => (
+                    <Menu.Item key={volunteerType}>
+                      <Checkbox.Root
+                        checked={checkedTypes.includes(
+                          volunteerType.toUpperCase(),
+                        )}
+                        onCheckedChange={(e: { checked: boolean }) =>
+                          handleVolunteerFilterChange(volunteerType, e.checked)
+                        }
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>
+                          {DISPLAY_VOLUNTEER_TYPES[
+                            volunteerType.toUpperCase()
+                          ] || volunteerType}
+                        </Checkbox.Label>
+                      </Checkbox.Root>
+                    </Menu.Item>
+                  ))}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
         </VStack>
-        <Table variant="simple">
+        <Table.Root variant="line">
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
               <Button onClick={handleReset}>Reset unsaved changes</Button>
-              <Button as={Link} to="/add_volunteer_page">
-                Add a new volunteer
+              <Button asChild>
+                <Link to="/add_volunteer_page">Add a new volunteer</Link>
               </Button>
               <Button onClick={handleSaveChanges}>Save changes</Button>
             </Flex>
           </TableCaption>
-          <Thead>
-            <Tr>
-              <Th>Volunteer Name</Th>
-              <Th>Email</Th>
-              <Th>Phone</Th>
-              <Th>Type</Th>
-              <Th>Assigned Pantries</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>Volunteer Name</Table.ColumnHeader>
+              <Table.ColumnHeader>Email</Table.ColumnHeader>
+              <Table.ColumnHeader>Phone</Table.ColumnHeader>
+              <Table.ColumnHeader>Type</Table.ColumnHeader>
+              <Table.ColumnHeader>Assigned Pantries</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {filteredVolunteers?.map((volunteer) => (
-              <Tr key={volunteer.id}>
-                <Td>
+              <Table.Row key={volunteer.id}>
+                <Table.Cell>
                   {volunteer.firstName} {volunteer.lastName}
-                </Td>
-                <Td>{volunteer.email}</Td>
-                <Td>{volunteer.phone}</Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>{volunteer.email}</Table.Cell>
+                <Table.Cell>{volunteer.phone}</Table.Cell>
+                <Table.Cell>
                   {volunteerTypeDropdown({
                     volunteerType:
                       VolunteerType[
@@ -213,17 +222,19 @@ const VolunteerManagement: React.FC = () => {
                       ],
                     volunteerId: volunteer.id,
                   })}
-                </Td>
-                <Td>
-                  <Button as={Link} to={`/pantry-management/${volunteer.id}`}>
-                    View assigned pantries
+                </Table.Cell>
+                <Table.Cell>
+                  <Button asChild>
+                    <Link to={`/pantry-management/${volunteer.id}`}>
+                      View assigned pantries
+                    </Link>
                   </Button>
-                </Td>
-              </Tr>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+          </Table.Body>
+        </Table.Root>
+      </Box>
     </Center>
   );
 };

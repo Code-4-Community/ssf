@@ -4,15 +4,10 @@ import {
   Center,
   Table,
   Text,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Select,
   Button,
   HStack,
   useDisclosure,
+  NativeSelect,
 } from '@chakra-ui/react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
 import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
@@ -32,7 +27,10 @@ const FormRequests: React.FC = () => {
   const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
     'mostRecent',
   );
-  const { pantryId } = useParams<{ pantryId: string }>();
+
+  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
+  const pantryId = parseInt(pantryIdParam!, 10);
+
   const [allConfirmed, setAllConfirmed] = useState(false);
   const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
     number | null
@@ -45,9 +43,7 @@ const FormRequests: React.FC = () => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
-          const data = await ApiClient.getPantryRequests(
-            parseInt(pantryId, 10),
-          );
+          const data = await ApiClient.getPantryRequests(pantryId);
           setRequests(data);
 
           if (data.length > 0) {
@@ -90,70 +86,70 @@ const FormRequests: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <HStack spacing={200}>
-        <Button
-          onClick={newRequestDisclosure.onOpen}
-          isDisabled={!allConfirmed}
-        >
+      <HStack gap={200}>
+        <Button onClick={newRequestDisclosure.onOpen} disabled={!allConfirmed}>
           Submit New Request
         </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
-          isOpen={newRequestDisclosure.isOpen}
+          isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
+          pantryId={pantryId}
         />
         {previousRequest && (
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              isDisabled={!allConfirmed}
+              disabled={!allConfirmed}
             >
               Submit Previous Request
             </Button>
             <FoodRequestFormModal
               previousRequest={previousRequest}
               readOnly={false}
-              isOpen={previousRequestDisclosure.isOpen}
+              isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
+              pantryId={pantryId}
             />
           </>
         )}
       </HStack>
 
-      <Select
-        mt={4}
-        width="50%"
-        onChange={(e) =>
-          setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
-        }
-        value={sortBy}
-      >
-        <option value="mostRecent">Date Requested (Recent)</option>
-        <option value="oldest">Date Requested (Oldest)</option>
-        <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
-      </Select>
+      <NativeSelect.Root mt={4} width="50%">
+        <NativeSelect.Field
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+          }
+        >
+          <option value="mostRecent">Date Requested (Recent)</option>
+          <option value="oldest">Date Requested (Oldest)</option>
+          <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator />
+      </NativeSelect.Root>
 
-      <Table variant="simple" mt={6} width="80%">
-        <Thead>
-          <Tr>
-            <Th>Request Id</Th>
-            <Th>Order Id</Th>
-            <Th>Date Requested</Th>
-            <Th>Status</Th>
-            <Th>Shipped By</Th>
-            <Th>Date Fulfilled</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      <Table.Root mt={6} width="80%">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Request ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Order ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
+            <Table.ColumnHeader>Status</Table.ColumnHeader>
+            <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Fulfilled</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {sortedRequests.map((request) => (
-            <Tr key={request.requestId}>
-              <Td>
+            <Table.Row key={request.requestId}>
+              <Table.Cell>
                 <Button onClick={() => setOpenReadOnlyRequest(request)}>
                   {request.requestId}
                 </Button>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 {request.order?.orderId ? (
                   <Button
                     onClick={() =>
@@ -165,16 +161,18 @@ const FormRequests: React.FC = () => {
                 ) : (
                   'N/A'
                 )}
-              </Td>
-              <Td>{formatDate(request.requestedAt)}</Td>
-              <Td>{request.order?.status ?? 'pending'}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
+              <Table.Cell>{request.order?.status ?? 'pending'}</Table.Cell>
+              <Table.Cell>
                 {request.order?.status === 'pending'
                   ? 'N/A'
                   : request.order?.shippedBy ?? 'N/A'}
-              </Td>
-              <Td>{formatReceivedDate(request.dateReceived)}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
+                {formatReceivedDate(request.dateReceived)}
+              </Table.Cell>
+              <Table.Cell>
                 {!request.order || request.order?.status === 'pending' ? (
                   <Text>Awaiting Order Assignment</Text>
                 ) : request.order?.status === 'delivered' ? (
@@ -186,8 +184,8 @@ const FormRequests: React.FC = () => {
                     Confirm Delivery
                   </Button>
                 )}
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
           {openReadOnlyRequest && (
             <FoodRequestFormModal
@@ -195,6 +193,7 @@ const FormRequests: React.FC = () => {
               readOnly={true}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
+              pantryId={pantryId}
             />
           )}
           {openOrderId && (
@@ -209,10 +208,11 @@ const FormRequests: React.FC = () => {
               requestId={openDeliveryRequestId}
               isOpen={openDeliveryRequestId !== null}
               onClose={() => setOpenDeliveryRequestId(null)}
+              pantryId={pantryId}
             />
           )}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

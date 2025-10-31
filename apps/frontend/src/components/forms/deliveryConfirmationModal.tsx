@@ -1,19 +1,12 @@
 import {
   Box,
-  FormControl,
-  FormLabel,
+  Field,
   Input,
   Button,
-  FormHelperText,
   Textarea,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   HStack,
   Text,
+  Dialog,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
@@ -22,6 +15,7 @@ interface DeliveryConfirmationModalProps {
   requestId: number;
   isOpen: boolean;
   onClose: () => void;
+  pantryId: number;
 }
 
 const photoNames: string[] = [];
@@ -31,6 +25,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   requestId,
   isOpen,
   onClose,
+  pantryId,
 }) => {
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -62,65 +57,90 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={'xl'}>
-      <ModalOverlay />
-      <ModalContent maxW="49em">
-        <ModalHeader fontSize={25} fontWeight={700}>
-          Delivery Confirmation Form
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Form
-            method="post"
-            action="/confirm-delivery"
-            encType="multipart/form-data"
-          >
-            <input type="hidden" name="requestId" value={requestId} />
-            <FormControl isRequired mb="2em">
-              <FormLabel fontSize={20} fontWeight={700}>
-                Delivery Date
-              </FormLabel>
-              <Input
-                type="date"
-                name="deliveryDate"
-                max={new Date().toISOString().split('T')[0]}
-              />
-              <FormHelperText>Select the delivery date.</FormHelperText>
-            </FormControl>
-            <FormControl mb="2em">
-              <FormLabel fontSize={20} fontWeight={700}>
-                Feedback
-              </FormLabel>
-              <Textarea
-                name="feedback"
-                placeholder="Share any feedback or issues..."
-                size="sm"
-              />
-            </FormControl>
-            <FormControl mb="2em">
-              <FormLabel fontSize={20} fontWeight={700}>
-                Upload Photos
-              </FormLabel>
-              <Input
-                type="file"
-                name="photos"
-                multiple
-                accept=".jpg,.jpeg,.png"
-                onChange={handlePhotoChange}
-              />
-              <FormHelperText>Select up to 3 photos to upload.</FormHelperText>
-              <Box mt={3}>{renderPhotoNames()}</Box>
-            </FormControl>
-            <HStack spacing="24px" justifyContent="space-between" mt={4}>
-              <Button onClick={onClose}>Close</Button>
-              <Button type="submit" colorScheme="blue">
-                Confirm Delivery
-              </Button>
-            </HStack>
-          </Form>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      size="xl"
+      closeOnInteractOutside
+    >
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW="49em">
+          <Dialog.Header>
+            <Dialog.Title fontSize={25} fontWeight={700}>
+              Delivery Confirmation Form
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <Form
+              method="post"
+              action="/confirm-delivery"
+              encType="multipart/form-data"
+            >
+              <input type="hidden" name="pantryId" value={pantryId} />
+              <input type="hidden" name="requestId" value={requestId} />
+              <Field.Root required mb="2em">
+                <Field.Label>
+                  <Text fontSize={20} fontWeight={700}>
+                    Delivery Date
+                  </Text>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
+                </Field.Label>
+                <Input
+                  type="date"
+                  name="deliveryDate"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+                <Field.HelperText>Select the delivery date.</Field.HelperText>
+              </Field.Root>
+              <Field.Root mb="2em">
+                <Field.Label asChild>
+                  <Text fontSize={20} fontWeight={700}>
+                    Feedback
+                  </Text>
+                </Field.Label>
+                <Textarea
+                  name="feedback"
+                  placeholder="Share any feedback or issues..."
+                  size="sm"
+                />
+              </Field.Root>
+              <Field.Root mb="2em">
+                <Field.Label asChild>
+                  <Text fontSize={20} fontWeight={700}>
+                    Upload Photos
+                  </Text>
+                </Field.Label>
+                <Input
+                  type="file"
+                  name="photos"
+                  multiple
+                  accept=".jpg,.jpeg,.png"
+                  onChange={handlePhotoChange}
+                />
+                <Field.HelperText>
+                  Select up to 3 photos to upload.
+                </Field.HelperText>
+                <Box mt={3}>{renderPhotoNames()}</Box>
+              </Field.Root>
+              <HStack gap="24px" justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
+                <Button type="submit" bg="blue">
+                  Confirm Delivery
+                </Button>
+              </HStack>
+            </Form>
+          </Dialog.Body>
+          <Dialog.CloseTrigger />
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 };
 
@@ -131,6 +151,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
+  const pantryId = form.get('pantryId');
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 
@@ -156,10 +177,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       confirmDeliveryData,
     );
     alert('Delivery confirmation submitted successfully');
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   }
 };
 
