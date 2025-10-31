@@ -1,8 +1,4 @@
-import {
-  VStack,
-  Text,
-  Dialog,
-} from '@chakra-ui/react';
+import { VStack, Text, Dialog } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
 import { Pantry, Allocation } from 'types/types';
@@ -42,11 +38,11 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Dialog.Root 
-      open={isOpen} 
-      size="lg" 
-      onOpenChange={(e) => {
-        if (!e.open) onClose()
+    <Dialog.Root
+      open={isOpen}
+      size="lg"
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
       }}
       closeOnInteractOutside
     >
@@ -59,9 +55,6 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
               <VStack gap={4} align="start">
                 <Text>
                   <strong>Pantry Name:</strong> {pantry.pantryName}
-                </Text>
-                <Text>
-                  <strong>Pantry Address:</strong> {pantry.address}
                 </Text>
                 <Text>
                   <strong>Order Items:</strong>

@@ -45,7 +45,11 @@ const AdminDonation: React.FC = () => {
   }, [selectedManufacturers]);
 
   const manufacturerOptions = [
-    ...new Set(donations.map((d) => d.foodManufacturer.foodManufacturerName)),
+    ...new Set(
+      donations
+        .map((d) => d.foodManufacturer?.foodManufacturerName)
+        .filter((name): name is string => !!name),
+    ),
   ].sort((a, b) => a.localeCompare(b));
 
   const handleFilterChange = (manufacturer: string, checked: boolean) => {
@@ -62,7 +66,10 @@ const AdminDonation: React.FC = () => {
     .filter((d) => {
       const matchesFilter =
         selectedManufacturers.length === 0 ||
-        selectedManufacturers.includes(d.foodManufacturer.foodManufacturerName);
+        (d.foodManufacturer &&
+          selectedManufacturers.includes(
+            d.foodManufacturer?.foodManufacturerName,
+          ));
       return matchesFilter;
     })
     .sort((a, b) =>
@@ -154,7 +161,7 @@ const AdminDonation: React.FC = () => {
                     <Checkbox.Root
                       key={manufacturer}
                       checked={selectedManufacturers.includes(manufacturer)}
-                      onCheckedChange={(e) =>
+                      onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(manufacturer, e.checked)
                       }
                       color="black"
@@ -242,7 +249,7 @@ const AdminDonation: React.FC = () => {
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {donation.foodManufacturer.foodManufacturerName}
+                {donation.foodManufacturer?.foodManufacturerName}
               </Table.Cell>
               <Table.Cell
                 {...tableCellStyles}
@@ -261,7 +268,7 @@ const AdminDonation: React.FC = () => {
           count={filteredDonations.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e) => setCurrentPage(e.page)}
+          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
         >
           <ButtonGroup
             display="flex"

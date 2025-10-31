@@ -57,10 +57,10 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   };
 
   return (
-    <Dialog.Root 
-      open={isOpen} 
-      onOpenChange={(e) => {
-        if (!e.open) onClose()
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
       }}
       size="xl"
       closeOnInteractOutside
@@ -86,7 +86,11 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   <Text fontSize={20} fontWeight={700}>
                     Delivery Date
                   </Text>
-                  <Field.RequiredIndicator color="red" fontSize={20} fontWeight={700}/>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
                 </Field.Label>
                 <Input
                   type="date"
@@ -120,7 +124,9 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   accept=".jpg,.jpeg,.png"
                   onChange={handlePhotoChange}
                 />
-                <Field.HelperText>Select up to 3 photos to upload.</Field.HelperText>
+                <Field.HelperText>
+                  Select up to 3 photos to upload.
+                </Field.HelperText>
                 <Box mt={3}>{renderPhotoNames()}</Box>
               </Field.Root>
               <HStack gap="24px" justifyContent="space-between" mt={4}>
@@ -145,7 +151,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
-  const pantryId = form.get('pantryId')
+  const pantryId = form.get('pantryId');
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 
