@@ -77,7 +77,7 @@ const PantryDashboard: React.FC = () => {
                   <Menu.Item
                     as={Link}
                     href="/landing-page"
-                    _hover={{ textDecoration: 'none' }}
+                    _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
                     Profile
@@ -85,7 +85,7 @@ const PantryDashboard: React.FC = () => {
                   <Menu.Item
                     as={Link}
                     href={`/request-form/${pantryId}`}
-                    _hover={{ textDecoration: 'none' }}
+                    _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
                     Request Form
@@ -93,7 +93,7 @@ const PantryDashboard: React.FC = () => {
                   <Menu.Item
                     as={Link}
                     href="/landing-page"
-                    _hover={{ textDecoration: 'none' }}
+                    _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
                     Sign out

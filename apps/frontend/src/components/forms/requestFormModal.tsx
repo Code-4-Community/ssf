@@ -129,7 +129,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Field.Label>
                 <RadioGroup.Root
                   value={requestedSize}
-                  onValueChange={setRequestedSize}
+                  onValueChange={(e: { value: string }) =>
+                    setRequestedSize(e.value)
+                  }
                   name="size"
                   disabled={readOnly}
                   required

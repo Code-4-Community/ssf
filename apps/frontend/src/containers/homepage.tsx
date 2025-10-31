@@ -124,9 +124,13 @@ const Homepage: React.FC = () => {
           </Heading>
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link asChild href="/landing-page" color="teal.500">
+              <Link asChild color="teal.500">
+                <RouterLink to="/landing-page">Landing Page</RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
                 <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
-                Landing Page
               </Link>
             </ListItem>
           </List.Root>
