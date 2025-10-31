@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
   Pantry,
@@ -8,6 +8,8 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  PantryApplicationDto,
+  VolunteerPantryAssignment,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -48,6 +50,12 @@ export class ApiClient {
   private async patch(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .patch(path, body)
+      .then((response) => response.data);
+  }
+
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
       .then((response) => response.data);
   }
 
@@ -101,12 +109,35 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
   }
 
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
+  }
+
   public async getFoodRequestFromOrder(
     orderId: number,
   ): Promise<FoodRequest | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/request`)
       .then((response) => response.data);
+  }
+
+  public async getAllAssignments(): Promise<VolunteerPantryAssignment[]> {
+    return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
+  }
+
+  public async getVolunteers(): Promise<User[]> {
+    return this.get('/api/users/volunteers') as Promise<User[]>;
+  }
+
+  public async updateUserVolunteerRole(
+    userId: number,
+    body: { role: string },
+  ): Promise<void> {
+    return this.axiosInstance
+      .put(`/api/users/${userId}/role`, body)
+      .then(() => {});
   }
 
   public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
@@ -141,7 +172,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/get-all-orders')
+      .get('/api/orders/')
       .then((response) => response.data);
   }
 
@@ -169,7 +200,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .get(`api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 
@@ -202,20 +233,10 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
+    await this.axiosInstance.post(
+      `/api/requests/${requestId}/confirm-delivery`,
+      data,
+    );
   }
 }
 

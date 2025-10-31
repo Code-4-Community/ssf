@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToOne,
-  JoinColumn,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 
