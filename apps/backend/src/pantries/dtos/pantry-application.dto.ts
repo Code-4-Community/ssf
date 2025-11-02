@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
-  IsIn,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -122,6 +121,6 @@ export class PantryApplicationDto {
   needMoreOptions: string;
 
   @IsOptional()
-  @IsIn(['Yes', 'No'])
-  newsletterSubscription?: string;
+  @IsBoolean()
+  newsletterSubscription?: boolean;
 }
