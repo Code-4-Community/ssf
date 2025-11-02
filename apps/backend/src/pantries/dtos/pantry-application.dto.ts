@@ -81,6 +81,13 @@ export class PantryApplicationDto {
   @IsEnum(RefrigeratedDonation)
   refrigeratedDonation: RefrigeratedDonation;
 
+  @IsBoolean()
+  acceptFoodDeliveries: boolean;
+
+  @IsOptional()
+  @IsString()
+  deliveryWindowInstructions?: string;
+
   @IsEnum(ReserveFoodForAllergic)
   reserveFoodForAllergic: ReserveFoodForAllergic;
 

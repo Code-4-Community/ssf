@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   Heading,
   Input,
   RadioGroup,
@@ -73,10 +72,7 @@ const PantryApplicationForm: React.FC = () => {
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
-  const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<boolean>();
-  const [dedicatedAllergyFriendly, setDedicatedAllergyFriendly] = useState<
-    string | undefined
-  >();
+  const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<string>();
   const [clientVisitFrequency, setClientVisitFrequency] = useState<
     string | undefined
   >();
@@ -87,7 +83,6 @@ const PantryApplicationForm: React.FC = () => {
     string | undefined
   >();
   const [refrigeratedDonation, setRefrigeratedDonation] = useState<string | undefined>();
-  const [newsletterSubscription, setNewsletterSubscription] = useState<boolean | undefined>();
   const [searchRestriction, setSearchRestriction] = useState<string>('');
   const [searchActivity, setSearchActivity] = useState<string>('');
 
@@ -142,10 +137,15 @@ const PantryApplicationForm: React.FC = () => {
     <Box width="100%" mx="11em" my="4em">
       <Box as="section" mb="2em">
         <Heading size="3xl" fontWeight="normal" mb=".5em">
-          Pantry Sign Up Form
+          Welcome to the Securing Safe Food Partner Pantry Application.
         </Heading>
         <Text color="gray">
-          Welcome! We are so excited to have you join us in our mission to secure allergen-safe food and promote food equity.
+          Thank you for your interest in partnering with Securing Safe Food (SSF) to help serve clients 
+          with food allergies and other adverse reactions to foods. This application helps us understand 
+          your pantry’s capacity and interest in distributing allergen-friendly food. We’ll ask about 
+          your pantry’s current practices, storage capabilities, and communication preferences. Please 
+          answer as accurately as possible. If you have any questions or need help, don’t hesitate to 
+          contact the SSF team.
         </Text>
       </Box>
       <Box 
@@ -295,9 +295,10 @@ const PantryApplicationForm: React.FC = () => {
             </NativeSelect.Root>
           </Field.Root>
           {allergenClients === allergenClientsExactOption && (
-            <Field.Root mb="2em">
+            <Field.Root required mb="2em">
               <Field.Label>
                 Please provide the exact number, if known
+                <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
                 maxW="10em"
@@ -413,32 +414,73 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
 
           <Field.Root required mb="2em">
-            <Checkbox.Root
-              checked={reserveFoodForAllergic}
-              onCheckedChange={(e: {checked: boolean}) => setReserveFoodForAllergic(e.checked)}
-              variant="outline"
-              name="reserveFoodForAllergic"
+            <Field.Label {...fieldHeaderStyles}>
+              Would your pantry be able to accept food deliveries during standard business hours?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <RadioGroup.Root 
+              name="acceptFoodDeliveries"
+              variant="solid"
             >
-              <Checkbox.HiddenInput />
-              <Checkbox.Control 
-                size={5}
-                border="1px solid" 
-                borderColor="neutral.200"
-              />
-              <Checkbox.Label {...fieldHeaderStyles}>
-                Are you willing to reserve our food shipments for allergen-avoidant
-                individuals?{' '}
-                <Field.RequiredIndicator color="red"/>
-              </Checkbox.Label>
-            </Checkbox.Root>
+              <Stack>
+                {['Yes', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
           </Field.Root>
-          {reserveFoodForAllergic && (
+
+          <Field.Root mb="2em">
+            <Field.Label {...fieldHeaderStyles}>
+              Please note any delivery window instructions.
+            </Field.Label>
+            <Textarea name="deliveryWindowInstructions" borderColor="neutral.100" />
+          </Field.Root>
+
+          <Field.Root required mb="2em">
+            <Field.Label {...fieldHeaderStyles}>
+              Are you willing to reserve our food shipments for allergen-avoidant
+                individuals?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <RadioGroup.Root 
+              name="reserveFoodForAllergic"
+              variant="solid"
+              onValueChange={(e: {value: string}) => setReserveFoodForAllergic(e.value)}
+            >
+              <Stack>
+                {['Yes', 'Some', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
+          </Field.Root>
+
+          {reserveFoodForAllergic && ['Some', 'Yes'].includes(reserveFoodForAllergic) && (
             <Field.Root required mb="2em">
               <Field.Label {...fieldHeaderStyles}>
                 Please explain how you would do this.
                 <Field.RequiredIndicator color="red"/>
               </Field.Label>
-              <Textarea name="reservationExplanation" borderColor="neutral.100" />
+              <Textarea name="reservationExplanation" borderColor="neutral.100" autoresize />
               <Field.HelperText color="neutral.600">
                 For example: keeping allergen-friendly items on a separate shelf, encouraging non-allergic 
                 clients to save these items for clients who do not have other safe food options.
@@ -452,27 +494,27 @@ const PantryApplicationForm: React.FC = () => {
               allergy-friendly items?
               <Field.RequiredIndicator color="red"/>
             </Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
-                value={dedicatedAllergyFriendly}
-                onChange={(e) => setDedicatedAllergyFriendly(e.target.value)}
-                placeholder="Select an option"
-                borderColor="neutral.100"
-                name="dedicatedAllergyFriendly"
-              >
-                {[
-                  'Yes, we have a dedicated shelf or box',
-                  'Yes, we keep allergy-friendly items in a back room',
-                  'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-                ].map((value) => (
-                  <option value={value}>
-                    {value}
-                  </option>
+            <RadioGroup.Root 
+              name="dedicatedAllergyFriendly"
+              variant="solid"
+            >
+              <Stack>
+                {['Yes', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                  </RadioGroup.Item>
                 ))}
-              </NativeSelect.Field>
-              <NativeSelectIndicator />
-            </NativeSelect.Root>
+              </Stack>
+            </RadioGroup.Root>
           </Field.Root>
+
           <Field.Root mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               How often do allergen-avoidant clients visit your food pantry?
@@ -636,7 +678,7 @@ const PantryApplicationForm: React.FC = () => {
             <Field.Label {...fieldHeaderStyles}>
               Please list any comments/concerns related to the previous question.
             </Field.Label>
-            <Textarea name="activitiesComments" borderColor="neutral.100" />
+            <Textarea name="activitiesComments" borderColor="neutral.100" autoresize/>
             <Field.HelperText color="neutral.600">
               If you answered "Something Else", please elaborate.
             </Field.HelperText>
@@ -647,7 +689,7 @@ const PantryApplicationForm: React.FC = () => {
               stock?
               <Field.RequiredIndicator color="red"/>
             </Field.Label>
-            <Textarea name="itemsInStock" borderColor="neutral.100" />
+            <Textarea name="itemsInStock" borderColor="neutral.100" autoresize />
             <Field.HelperText color="neutral.600">
               For example, gluten-free breads, sunflower seed butters, nondairy beverages, etc.
             </Field.HelperText>
@@ -658,7 +700,7 @@ const PantryApplicationForm: React.FC = () => {
               variety of items or not have enough options? Please explain.
               <Field.RequiredIndicator color="red"/>
             </Field.Label>
-            <Textarea name="needMoreOptions" borderColor="neutral.100" />
+            <Textarea name="needMoreOptions" borderColor="neutral.100" autoresize />
           </Field.Root>
 
           <Field.Root mb="2em">
@@ -668,8 +710,6 @@ const PantryApplicationForm: React.FC = () => {
             <RadioGroup.Root 
               name="newsletterSubscription"
               variant="solid"
-              value={newsletterSubscription ? 'Yes' : 'No'}
-              onValueChange={(e: {value: string}) => setNewsletterSubscription(e.value === 'Yes')}
             >
               <Stack>
                 {['Yes', 'No'].map((value) => (
@@ -748,10 +788,19 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   form.delete('dedicatedAllergyFriendly');
 
   // Handle all other questions
-  form.forEach((value, key) => pantryApplicationData.set(key, value));
+  form.forEach((value, key) => {
+    if (value === '') {
+      pantryApplicationData.set(key, null);
+    } else {
+      pantryApplicationData.set(key, value)
+    }
+  });
 
-  pantryApplicationData.set('reserveFoodForAllergic', form.get("reserveFoodForAllergic") === "true");
-  pantryApplicationData.set('newsletterSubscription', form.get("reserveFoodForAllergic") === "Yes");
+  pantryApplicationData.set('newsletterSubscription', form.get("newsletterSubscription") === "Yes");
+  pantryApplicationData.set('acceptFoodDeliveries', form.get("acceptFoodDeliveries") === "Yes");
+  pantryApplicationData.set('dedicatedAllergyFriendly', form.get("dedicatedAllergyFriendly") === "Yes");
+
+  console.log('Pantry Application Data:', Object.fromEntries(pantryApplicationData));
 
   // Replace the answer for allergenClients with the answer
   // for allergenClientsExact if it is given
@@ -782,6 +831,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
         );
       } else {
         alert('Form submission failed; please try again');
+        console.log(error)
       }
     },
   );
