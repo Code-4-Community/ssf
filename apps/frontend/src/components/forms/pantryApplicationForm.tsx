@@ -567,7 +567,7 @@ const PantryApplicationForm: React.FC = () => {
               value={activities}
               collection={activitiesCollection}
               onValueChange={(e: {value: string[]}) => setActivities(e.value)}
-              onInputValueChange={(e) => setSearchActivity(e.inputValue)}
+              onInputValueChange={(e: {inputValue: string}) => setSearchActivity(e.inputValue)}
               required={noActivitiesSelected}
             >
               <Combobox.Control name="activities">
@@ -735,8 +735,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   if (restrictionsOther !== null && restrictionsOther !== '') {
     restrictions.push(restrictionsOther);
   }
-
-  console.log('restrictions: ', restrictions);
 
   pantryApplicationData.set('restrictions', restrictions);
   form.delete('restrictions');
