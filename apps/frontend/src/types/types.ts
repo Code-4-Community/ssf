@@ -46,26 +46,61 @@ export interface User {
   phone: string;
 }
 
+export interface PantryApplicationDto {
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  restrictions?: string[];
+  refrigeratedDonation: string;
+  reserveFoodForAllergic: string;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: string;
+  clientVisitFrequency?: string;
+  identifyAllergensConfidence?: string;
+  serveAllergicChildren?: string;
+  activities: string[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription?: string;
+}
+
+// Note: The API calls as currently written do not
+// return a pantry's SSF representative or pantry
+// representative, or their IDs, as part of the
+// Pantry data
 export interface Pantry {
   pantryId: number;
   pantryName: string;
-  address: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
   allergenClients: string;
   refrigeratedDonation: string;
-  reserveFoodForAllergic: boolean;
-  reservationExplanation: string;
+  reserveFoodForAllergic: string;
+  reservationExplanation?: string;
   dedicatedAllergyFriendly: string;
-  clientVisitFrequency: string;
-  identifyAllergensConfidence: string;
-  serveAllergicChildren: string;
+  clientVisitFrequency?: string;
+  identifyAllergensConfidence?: string;
+  serveAllergicChildren?: string;
   newsletterSubscription: boolean;
   restrictions: string[];
-  ssfRepresentativeId: number;
-  pantryRepresentativeId: number;
   status: string;
   dateApplied: string;
-  activities: string;
-  questions: string;
+  activities: string[];
+  activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
 }

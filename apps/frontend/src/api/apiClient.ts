@@ -1,5 +1,4 @@
-import axios, { type AxiosInstance } from 'axios';
-import { VolunteerPantryAssignment } from 'types/types';
+import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
   Pantry,
@@ -9,6 +8,8 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  PantryApplicationDto,
+  VolunteerPantryAssignment,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -108,6 +109,12 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
   }
 
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
+  }
+
   public async getFoodRequestFromOrder(
     orderId: number,
   ): Promise<FoodRequest | null> {
@@ -165,7 +172,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/get-all-orders')
+      .get('/api/orders/')
       .then((response) => response.data);
   }
 
@@ -193,7 +200,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .get(`api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 

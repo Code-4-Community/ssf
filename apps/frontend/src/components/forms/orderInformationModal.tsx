@@ -61,9 +61,6 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
                   <strong>Pantry Name:</strong> {pantry.pantryName}
                 </Text>
                 <Text>
-                  <strong>Pantry Address:</strong> {pantry.address}
-                </Text>
-                <Text>
                   <strong>Order Items:</strong>
                   {allocationItems.length > 0 ? (
                     allocationItems.map((allocation) => (

@@ -21,6 +21,11 @@ const customConfig = defineConfig({
           100: { value: '#E7E7E7' },
           50: { value: '#FAFAFA' },
         },
+        gray: { value: '#515151' },
+        teal: {
+          400: { value: '#A9D5DB' },
+          100: { value: '#E9F4F6' },
+        }
       },
       fonts: {
         heading: { value: `'Instrument Serif', serif` },
@@ -34,6 +39,9 @@ const customConfig = defineConfig({
     },
     'h1, h2, h3, h4, h5, h6': {
       fontFamily: 'heading',
+    },
+    'body': {
+      bg: '#FAFAFA',
     },
   },
 });

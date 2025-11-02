@@ -22,7 +22,10 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
+  // TODO: Make sure clients of this modal actually include
+  // the pantry representative ID (or the representative User
+  // itself) in the provided data
+  /*useEffect(() => {
     const fetchUser = async () => {
       if (pantry.pantryRepresentativeId) {
         const data = await ApiClient.getRepresentativeUser(
@@ -35,7 +38,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
     if (isOpen) {
       fetchUser();
     }
-  }, [isOpen, pantry.pantryRepresentativeId]);
+  }, [isOpen, pantry.pantryRepresentativeId]);*/
 
   return (
     <Dialog.Root 
@@ -91,10 +94,35 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               </GridItem>
               <GridItem>{pantry.pantryName}</GridItem>
 
-              <GridItem>
-                <Text fontWeight="bold">Address</Text>
-              </GridItem>
-              <GridItem>{pantry.address}</GridItem>
+            <GridItem>
+              <strong>Address Line 1</strong>
+            </GridItem>
+            <GridItem>{pantry.addressLine1}</GridItem>
+
+            <GridItem>
+              <strong>Address Line 2</strong>
+            </GridItem>
+            <GridItem>{pantry.addressLine2 ?? ''}</GridItem>
+
+            <GridItem>
+              <strong>Address City</strong>
+            </GridItem>
+            <GridItem>{pantry.addressCity}</GridItem>
+
+            <GridItem>
+              <strong>Address State</strong>
+            </GridItem>
+            <GridItem>{pantry.addressState}</GridItem>
+
+            <GridItem>
+              <strong>Address Zip</strong>
+            </GridItem>
+            <GridItem>{pantry.addressZip}</GridItem>
+
+            <GridItem>
+              <strong>Address Country</strong>
+            </GridItem>
+            <GridItem>{pantry.addressCountry ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Allergen Clients</Text>
@@ -109,12 +137,12 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Reserve Food for Allergic</Text>
               </GridItem>
-              <GridItem>{pantry.reserveFoodForAllergic ? 'Yes' : 'No'}</GridItem>
+              <GridItem>{pantry.reserveFoodForAllergic}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Reservation Explanation</Text>
               </GridItem>
-              <GridItem>{pantry.reservationExplanation}</GridItem>
+              <GridItem>{pantry.reservationExplanation ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Dedicated Allergen Friendly</Text>
@@ -124,17 +152,17 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Client Visit Frequency</Text>
               </GridItem>
-              <GridItem>{pantry.clientVisitFrequency}</GridItem>
+              <GridItem>{pantry.clientVisitFrequency ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Identify Allergens Confidence</Text>
               </GridItem>
-              <GridItem>{pantry.identifyAllergensConfidence}</GridItem>
+              <GridItem>{pantry.identifyAllergensConfidence ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Serve Allergic Children</Text>
               </GridItem>
-              <GridItem>{pantry.serveAllergicChildren}</GridItem>
+              <GridItem>{pantry.serveAllergicChildren ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Newsletter Subscription</Text>
@@ -149,12 +177,12 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Activities</Text>
               </GridItem>
-              <GridItem>{pantry.activities}</GridItem>
+              <GridItem>{pantry.activities.join(', ')}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Questions</Text>
+                <Text fontWeight="bold">Activities Comments</Text>
               </GridItem>
-              <GridItem>{pantry.questions}</GridItem>
+              <GridItem>{pantry.activitiesComments ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Items in Stock</Text>
