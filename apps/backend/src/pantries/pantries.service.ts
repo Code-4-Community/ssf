@@ -62,8 +62,7 @@ export class PantriesService {
     pantry.activitiesComments = pantryData.activitiesComments;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
-    pantry.newsletterSubscription =
-      pantryData?.newsletterSubscription === 'Yes';
+    pantry.newsletterSubscription = pantryData.newsletterSubscription;
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
