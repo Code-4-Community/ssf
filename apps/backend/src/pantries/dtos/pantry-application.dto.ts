@@ -1,5 +1,6 @@
 import {
   ArrayNotEmpty,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsNotEmpty,
@@ -72,8 +73,8 @@ export class PantryApplicationDto {
   @IsIn(['Yes', 'Small quantities only', 'No'])
   refrigeratedDonation: string;
 
-  @IsIn(['Yes', 'Some', 'No'])
-  reserveFoodForAllergic: string;
+  @IsBoolean()
+  reserveFoodForAllergic: boolean;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
   @IsOptional()
@@ -137,6 +138,6 @@ export class PantryApplicationDto {
   needMoreOptions: string;
 
   @IsOptional()
-  @IsIn(['Yes', 'No'])
-  newsletterSubscription?: string;
+  @IsBoolean()
+  newsletterSubscription?: boolean;
 }

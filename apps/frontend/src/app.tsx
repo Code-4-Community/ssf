@@ -14,6 +14,7 @@ import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
+import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
+      },
+      {
+        path: '/pantry-application/submitted',
+        element: <PantryApplicationSubmitted />,
       },
       {
         path: '/food-manufacturer-order-dashboard',
