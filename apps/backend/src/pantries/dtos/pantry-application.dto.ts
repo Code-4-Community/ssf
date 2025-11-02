@@ -74,19 +74,22 @@ export class PantryApplicationDto {
   refrigeratedDonation: string;
 
   @IsBoolean()
-  reserveFoodForAllergic: boolean;
+  acceptFoodDeliveries: boolean;
+
+  @IsOptional()
+  @IsString()
+  deliveryWindowInstructions?: string;
+
+  @IsIn(['Yes', 'Some', 'No'])
+  reserveFoodForAllergic: string;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
   @IsOptional()
   @IsString()
   reservationExplanation?: string;
 
-  @IsIn([
-    'Yes, we have a dedicated shelf or box',
-    'Yes, we keep allergy-friendly items in a back room',
-    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-  ])
-  dedicatedAllergyFriendly: string;
+  @IsBoolean()
+  dedicatedAllergyFriendly: boolean;
 
   @IsOptional()
   @IsIn([
