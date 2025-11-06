@@ -7,6 +7,7 @@
     "format": "prettier --no-error-on-unmatched-pattern --write apps/{frontend,backend}/src/**/*.{js,ts,tsx}",
     "lint:check": "eslint apps/frontend --ext .ts,.tsx && eslint apps/backend --ext .ts,.tsx",
     "lint": "eslint apps/frontend --ext .ts,.tsx --fix && eslint apps/backend --ext .ts,.tsx --fix",
+    "test": "jest",
     "prepush": "yarn run format:check && yarn run lint:check",
     "prepush:fix": "yarn run format && yarn run lint",
     "prepare": "husky install",
