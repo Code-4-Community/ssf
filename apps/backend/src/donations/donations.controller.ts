@@ -21,13 +21,8 @@ export class DonationsController {
     return this.donationService.getAll();
   }
 
-  @Get('/count')
-  async getNumberOfDonations(): Promise<number> {
-    return this.donationService.getNumberOfDonations();
-  }
-
   @Get('/:donationId')
-  async getDonation(
+  async getOrder(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.findOne(donationId);
