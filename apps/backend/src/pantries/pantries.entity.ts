@@ -53,7 +53,11 @@ export class Pantry {
   @Column({ name: 'accept_food_deliveries', type: 'boolean' })
   acceptFoodDeliveries: boolean;
 
-  @Column({ name: 'delivery_window_instructions', type: 'text', nullable: true })
+  @Column({
+    name: 'delivery_window_instructions',
+    type: 'text',
+    nullable: true,
+  })
   deliveryWindowInstructions?: string;
 
   @Column({ name: 'reserve_food_for_allergic', type: 'varchar', length: 25 })
