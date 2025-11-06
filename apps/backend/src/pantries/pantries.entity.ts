@@ -66,7 +66,11 @@ export class Pantry {
   @Column({ name: 'accept_food_deliveries', type: 'boolean' })
   acceptFoodDeliveries: boolean;
 
-  @Column({ name: 'delivery_window_instructions', type: 'text', nullable: true })
+  @Column({
+    name: 'delivery_window_instructions',
+    type: 'text',
+    nullable: true,
+  })
   deliveryWindowInstructions?: string;
 
   @Column({ 
