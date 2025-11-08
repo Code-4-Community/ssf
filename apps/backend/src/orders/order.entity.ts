@@ -61,15 +61,17 @@ export class Order {
   })
   createdAt: Date;
 
-  @CreateDateColumn({
+  @Column({
     name: 'shipped_at',
     type: 'timestamp',
+    nullable: true,
   })
-  shippedAt: Date;
+  shippedAt: Date | null;
 
-  @CreateDateColumn({
+  @Column({
     name: 'delivered_at',
     type: 'timestamp',
+    nullable: true,
   })
-  deliveredAt: Date;
+  deliveredAt: Date | null;
 }
