@@ -25,8 +25,33 @@ export class Pantry {
   @Column({ name: 'pantry_name', type: 'varchar', length: 255 })
   pantryName: string;
 
-  @Column({ name: 'address', type: 'varchar', length: 255 })
-  address: string;
+  @Column({ name: 'address_line_1', type: 'varchar', length: 255 })
+  addressLine1: string;
+
+  @Column({
+    name: 'address_line_2',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  addressLine2?: string;
+
+  @Column({ name: 'address_city', type: 'varchar', length: 255 })
+  addressCity: string;
+
+  @Column({ name: 'address_state', type: 'varchar', length: 255 })
+  addressState: string;
+
+  @Column({ name: 'address_zip', type: 'varchar', length: 255 })
+  addressZip: string;
+
+  @Column({
+    name: 'address_country',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  addressCountry?: string;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients: string;
@@ -39,11 +64,11 @@ export class Pantry {
   })
   refrigeratedDonation: RefrigeratedDonation;
 
-  @Column({ name: 'reserve_food_for_allergic', type: 'boolean' })
-  reserveFoodForAllergic: boolean;
+  @Column({ name: 'reserve_food_for_allergic', type: 'varchar', length: 25 })
+  reserveFoodForAllergic: string;
 
-  @Column({ name: 'reservation_explanation', type: 'text' })
-  reservationExplanation: string;
+  @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
+  reservationExplanation?: string;
 
   @Column({
     name: 'dedicated_allergy_friendly',
@@ -83,14 +108,17 @@ export class Pantry {
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({
     name: 'ssf_representative_id',
     referencedColumnName: 'id',
   })
-  ssfRepresentative: User;
+  ssfRepresentative?: User;
 
-  @OneToOne(() => User, { nullable: false })
+  // cascade: ['insert'] means that when we create a new
+  // pantry, the representative will automatically be added
+  // to the User table
+  @OneToOne(() => User, { nullable: false, cascade: ['insert'] })
   @JoinColumn({
     name: 'pantry_representative_id',
     referencedColumnName: 'id',
@@ -115,8 +143,8 @@ export class Pantry {
   @Column({ name: 'activities', type: 'text', array: true })
   activities: Activities[];
 
-  @Column({ name: 'questions', type: 'text', nullable: true })
-  questions: string;
+  @Column({ name: 'activities_comments', type: 'text', nullable: true })
+  activitiesComments?: string;
 
   @Column({ name: 'items_in_stock', type: 'text' })
   itemsInStock: string;

@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -175,29 +176,14 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   foodRequestData.set('pantryId', 1);
 
   const data = Object.fromEntries(foodRequestData);
-  console.log(data);
 
   try {
-    const response = await fetch('/api/requests/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      console.log('Food request submitted successfully');
-
-      window.location.href = '/request-form/1';
-      return null;
-    } else {
-      console.error('Failed to submit food request', await response.text());
-      window.location.href = '/request-form/1';
-      return null;
-    }
+    await ApiClient.createFoodRequest(data);
+    alert('Food request submitted successfully');
+    window.location.href = '/request-form/1';
+    return null;
   } catch (error) {
-    console.error('Error submitting food request', error);
+    alert('Error submitting food request: ' + error);
     window.location.href = '/request-form/1';
     return null;
   }

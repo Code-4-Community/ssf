@@ -18,6 +18,7 @@ import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { AddingEnumValues1760538239997 } from '../migrations/1760538239997-AddingEnumValues';
 import { UpdateColsToUseEnumType1760886499863 } from '../migrations/1760886499863-UpdateColsToUseEnumType';
+import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 
 const config = {
   type: 'postgres',
@@ -49,6 +50,7 @@ const config = {
     RemoveOrderIdFromRequests1744133526650,
     AddingEnumValues1760538239997,
     UpdateColsToUseEnumType1760886499863,
+    UpdatePantriesTable1742739750279,
   ],
 };
 
