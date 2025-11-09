@@ -4,46 +4,14 @@ import { PantriesService } from './pantries.service';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
+import { mock } from 'jest-mock-extended';
+import { PantryApplicationDto } from './dtos/pantry-application.dto';
+
+const mockPantriesService = mock<PantriesService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
-  let service: PantriesService;
 
-  // Mock PantriesService
-  const mockPantriesService = {
-    getPendingPantries: jest.fn(),
-    findOne: jest.fn(),
-    findSSFRep: jest.fn(),
-    approve: jest.fn(),
-    deny: jest.fn(),
-  };
-
-  // Mock Pantry
-  const mockPantry = {
-    pantryId: 1,
-    pantryName: 'Test Pantry',
-    address: '123 Test St',
-    allergenClients: 'Yes',
-    refrigeratedDonation: 'Yes',
-    reservationExplanation: 'We reserve food for allergic clients.',
-    dedicatedAllergyFriendly: 'Yes',
-    clientVisitFrequency: 'Weekly',
-    identifyAllergensConfidence: 'High',
-    serveAllergicChildren: 'Yes',
-    newsletterSubscription: true,
-    restrictions: ['Peanuts', 'Dairy'],
-    ssfRepresentative: null,
-    reserveFoodForAllergic: true,
-    pantryRepresentative: null,
-    status: 'pending',
-    dateApplied: new Date(),
-    activities: '',
-    questions: '',
-    itemsInStock: '',
-    needMoreOptions: '',
-  } as unknown as Pantry;
-
-  // Mock User
   const mockUser = {
     id: 1,
     role: Role.STANDARD_VOLUNTEER,
@@ -51,7 +19,49 @@ describe('PantriesController', () => {
     lastName: 'Doe',
     email: '',
     phone: '123-456-7890',
-  } as unknown as User;
+  };
+
+  const mockPantry = {
+    pantryId: 1,
+    pantryName: 'Test Pantry',
+    addressLine1: '123 Test St',
+    addressCity: 'Boston',
+    addressState: 'MA',
+    addressZip: '02115',
+    allergenClients: 'Yes',
+    refrigeratedDonation: 'Yes',
+    reserveFoodForAllergic: 'Yes',
+    dedicatedAllergyFriendly: 'Yes',
+    newsletterSubscription: true,
+    restrictions: ['Peanuts', 'Dairy'],
+    pantryRepresentative: mockUser,
+    status: 'pending',
+    dateApplied: new Date(),
+    activities: ['Food Distribution'],
+    itemsInStock: 'Canned goods',
+    needMoreOptions: 'More options needed',
+  } as Pantry;
+
+  const mockPantryApplication = {
+    contactFirstName: 'John',
+    contactLastName: 'Doe',
+    contactEmail: 'john.doe@example.com',
+    contactPhone: '(508) 111-1111',
+    pantryName: 'Community Food Pantry',
+    addressLine1: '123 Test Street',
+    addressCity: 'Boston',
+    addressState: 'MA',
+    addressZip: '02101',
+    allergenClients: '10',
+    restrictions: ['Egg allergy'],
+    refrigeratedDonation: 'Yes',
+    reserveFoodForAllergic: 'Some',
+    dedicatedAllergyFriendly: 'Yes',
+    activities: [],
+    itemsInStock: 'Rice, pasta',
+    needMoreOptions: 'More options needed',
+    newsletterSubscription: 'Yes',
+  } as PantryApplicationDto;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -65,7 +75,6 @@ describe('PantriesController', () => {
     }).compile();
 
     controller = module.get<PantriesController>(PantriesController);
-    service = module.get<PantriesService>(PantriesService);
   });
 
   afterEach(() => {
@@ -76,99 +85,128 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
-  // Get all pantries with pending status
   describe('getPendingPantries', () => {
     it('should return an array of pending pantries', async () => {
-      const result = [mockPantry];
-      mockPantriesService.getPendingPantries.mockResolvedValue(result);
+      mockPantriesService.getPendingPantries.mockResolvedValueOnce([
+        mockPantry,
+      ] as Pantry[]);
 
-      expect(await controller.getPendingPantries()).toBe(result);
-      expect(service.getPendingPantries).toHaveBeenCalled();
+      const result = await controller.getPendingPantries();
+
+      expect(result).toEqual([mockPantry] as Pantry[]);
+      expect(mockPantriesService.getPendingPantries).toHaveBeenCalled();
     });
 
     it('should return an empty array if no pending pantries', async () => {
-      mockPantriesService.getPendingPantries.mockResolvedValue([]);
+      mockPantriesService.getPendingPantries.mockResolvedValueOnce([]);
 
-      expect(await controller.getPendingPantries()).toEqual([]);
-      expect(service.getPendingPantries).toHaveBeenCalled();
+      const result = await controller.getPendingPantries();
+
+      expect(result).toEqual([]);
+      expect(mockPantriesService.getPendingPantries).toHaveBeenCalled();
     });
   });
 
-  // Get pantry by ID
   describe('getPantry', () => {
     it('should return a single pantry by id', async () => {
-      mockPantriesService.findOne.mockResolvedValue(mockPantry);
+      mockPantriesService.findOne.mockResolvedValueOnce(mockPantry as Pantry);
 
-      expect(await controller.getPantry(1)).toBe(mockPantry);
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      const result = await controller.getPantry(1);
+
+      expect(result).toEqual(mockPantry as Pantry);
+      expect(mockPantriesService.findOne).toHaveBeenCalledWith(1);
     });
 
     it('should throw NotFoundException if pantry does not exist', async () => {
-      mockPantriesService.findOne.mockRejectedValue(
+      mockPantriesService.findOne.mockRejectedValueOnce(
         new Error('Pantry 999 not found'),
       );
 
       await expect(controller.getPantry(999)).rejects.toThrow();
-      expect(service.findOne).toHaveBeenCalledWith(999);
+      expect(mockPantriesService.findOne).toHaveBeenCalledWith(999);
     });
   });
 
-  // Get SSF representative for a pantry
   describe('getSSFRep', () => {
     it('should return the SSF representative for a pantry', async () => {
-      mockPantriesService.findSSFRep.mockResolvedValue(mockUser);
+      mockPantriesService.findSSFRep.mockResolvedValueOnce(mockUser as User);
 
-      expect(await controller.getSSFRep(1)).toBe(mockUser);
-      expect(service.findSSFRep).toHaveBeenCalledWith(1);
+      const result = await controller.getSSFRep(1);
+
+      expect(result).toEqual(mockUser as User);
+      expect(mockPantriesService.findSSFRep).toHaveBeenCalledWith(1);
     });
 
     it('should throw error if pantry does not exist', async () => {
-      mockPantriesService.findSSFRep.mockRejectedValue(
+      mockPantriesService.findSSFRep.mockRejectedValueOnce(
         new Error('Pantry 999 not found'),
       );
 
       await expect(controller.getSSFRep(999)).rejects.toThrow();
-      expect(service.findSSFRep).toHaveBeenCalledWith(999);
+      expect(mockPantriesService.findSSFRep).toHaveBeenCalledWith(999);
     });
   });
 
-  // Approve pantry by ID (status = approved)
   describe('approvePantry', () => {
     it('should approve a pantry', async () => {
-      mockPantriesService.approve.mockResolvedValue(undefined);
+      mockPantriesService.approve.mockResolvedValueOnce(undefined);
 
       await controller.approvePantry(1);
 
-      expect(service.approve).toHaveBeenCalledWith(1);
+      expect(mockPantriesService.approve).toHaveBeenCalledWith(1);
     });
 
     it('should throw error if pantry does not exist', async () => {
-      mockPantriesService.approve.mockRejectedValue(
+      mockPantriesService.approve.mockRejectedValueOnce(
         new Error('Pantry 999 not found'),
       );
 
       await expect(controller.approvePantry(999)).rejects.toThrow();
-      expect(service.approve).toHaveBeenCalledWith(999);
+      expect(mockPantriesService.approve).toHaveBeenCalledWith(999);
     });
   });
 
-  // Deny pantry by ID (status = denied)
   describe('denyPantry', () => {
     it('should deny a pantry', async () => {
-      mockPantriesService.deny.mockResolvedValue(undefined);
+      mockPantriesService.deny.mockResolvedValueOnce(undefined);
 
       await controller.denyPantry(1);
 
-      expect(service.deny).toHaveBeenCalledWith(1);
+      expect(mockPantriesService.deny).toHaveBeenCalledWith(1);
     });
 
     it('should throw error if pantry does not exist', async () => {
-      mockPantriesService.deny.mockRejectedValue(
+      mockPantriesService.deny.mockRejectedValueOnce(
         new Error('Pantry 999 not found'),
       );
 
       await expect(controller.denyPantry(999)).rejects.toThrow();
-      expect(service.deny).toHaveBeenCalledWith(999);
+      expect(mockPantriesService.deny).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('submitPantryApplication', () => {
+    it('should submit a pantry application successfully', async () => {
+      mockPantriesService.addPantry.mockResolvedValueOnce(undefined);
+
+      await controller.submitPantryApplication(mockPantryApplication);
+
+      expect(mockPantriesService.addPantry).toHaveBeenCalledWith(
+        mockPantryApplication,
+      );
+    });
+
+    it('should throw error if application data is invalid', async () => {
+      mockPantriesService.addPantry.mockRejectedValueOnce(
+        new Error('Invalid application data'),
+      );
+
+      await expect(
+        controller.submitPantryApplication(mockPantryApplication),
+      ).rejects.toThrow();
+      expect(mockPantriesService.addPantry).toHaveBeenCalledWith(
+        mockPantryApplication,
+      );
     });
   });
 });
