@@ -6,9 +6,8 @@ import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
 import { mock } from 'jest-mock-extended';
-import { validateId } from '../utils/validation.utils';
-
-jest.mock('../utils/validation.utils');
+import { In } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 const mockUserRepository = mock<Repository<User>>();
 
@@ -21,25 +20,10 @@ const mockUser: User = {
   role: Role.STANDARD_VOLUNTEER,
 };
 
-const invalidIdUser: User = {
-  id: -1,
-  email: 'test@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '1234567890',
-  role: Role.STANDARD_VOLUNTEER,
-};
-
 describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
-    mockUserRepository.create.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.findOneBy.mockReset();
-    mockUserRepository.find.mockReset();
-    mockUserRepository.remove.mockReset();
-
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -59,8 +43,6 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
-
-    (validateId as jest.Mock).mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -153,15 +135,10 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      (validateId as jest.Mock).mockImplementation(() => {
-        throw new Error('Invalid ID: ID must be a positive integer');
-      });
-
       await expect(service.findOne(-1)).rejects.toThrow(
-        'Invalid ID: ID must be a positive integer',
+        new BadRequestException('Invalid User ID'),
       );
 
-      expect(validateId).toHaveBeenCalledWith(-1, 'User');
       expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
@@ -203,14 +180,10 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      (validateId as jest.Mock).mockImplementation(() => {
-        throw new Error('Invalid ID: ID must be a positive integer');
-      });
-      await expect(service.update(-1, invalidIdUser)).rejects.toThrow(
-        'Invalid ID: ID must be a positive integer',
-      );
+      await expect(
+        service.update(-1, { firstName: 'Updated' }),
+      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
 
-      expect(validateId).toHaveBeenCalledWith(-1, 'User');
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
   });
@@ -235,14 +208,10 @@ describe('UsersService', () => {
     });
 
     it('should throw error for invalid id', async () => {
-      (validateId as jest.Mock).mockImplementation(() => {
-        throw new Error('Invalid ID: ID must be a positive integer');
-      });
       await expect(service.remove(-1)).rejects.toThrow(
-        'Invalid ID: ID must be a positive integer',
+        new BadRequestException('Invalid User ID'),
       );
 
-      expect(validateId).toHaveBeenCalledWith(-1, 'User');
       expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });
   });
@@ -257,7 +226,7 @@ describe('UsersService', () => {
 
       expect(result).toEqual(users);
       expect(mockUserRepository.find).toHaveBeenCalledWith({
-        where: { role: expect.any(Object) },
+        where: { role: In(roles) },
       });
     });
 

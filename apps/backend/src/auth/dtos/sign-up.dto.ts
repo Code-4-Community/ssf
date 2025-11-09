@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
 
 export class SignUpDto {
   @IsString()
@@ -15,5 +15,9 @@ export class SignUpDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsPhoneNumber('US', {
+    message:
+      'contactPhone must be a valid phone number (make sure all the digits are correct)',
+  })
   phone: string;
 }

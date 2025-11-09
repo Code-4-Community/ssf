@@ -3,20 +3,12 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
-import { userSchema } from './users.controller';
+import { userSchemaDto } from './dto/userSchema.dto';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 
 const mockUserService = mock<UsersService>();
-
-interface UserSchema {
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  role: Role;
-}
 
 const mockUser1: User = {
   id: 1,
@@ -34,15 +26,6 @@ const mockUser2: User = {
   lastName: 'Smith',
   phone: '9876',
   role: Role.LEAD_VOLUNTEER,
-};
-
-const mockUserAdmin: User = {
-  id: 3,
-  email: 'jane@example.com',
-  firstName: 'Jane',
-  lastName: 'Smith',
-  phone: '2002002000',
-  role: Role.ADMIN,
 };
 
 describe('UsersController', () => {
@@ -133,9 +116,9 @@ describe('UsersController', () => {
     });
   });
 
-  describe('POST /admin/create', () => {
+  describe('POST /api/users', () => {
     it('should create a new user with all required fields', async () => {
-      const createUserSchema: UserSchema = {
+      const createUserSchema: userSchemaDto = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
@@ -158,39 +141,13 @@ describe('UsersController', () => {
       );
     });
 
-    it('should create a new user with default role when role is not provided', async () => {
-      const createUserSchema: userSchema = {
-        email: 'newuser@example.com',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        phone: '9876543210',
-      };
-
-      const createdUser = {
-        ...createUserSchema,
-        id: 2,
-        role: Role.STANDARD_VOLUNTEER,
-      };
-      mockUserService.create.mockResolvedValue(createdUser);
-
-      const result = await controller.createUser(createUserSchema);
-
-      expect(result).toEqual(createdUser);
-      expect(mockUserService.create).toHaveBeenCalledWith(
-        createUserSchema.email,
-        createUserSchema.firstName,
-        createUserSchema.lastName,
-        createUserSchema.phone,
-        undefined, // role should be undefined when not provided
-      );
-    });
-
     it('should handle service errors', async () => {
-      const createUserSchema: userSchema = {
+      const createUserSchema: userSchemaDto = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
+        role: Role.STANDARD_VOLUNTEER,
       };
 
       const error = new Error('Database error');
