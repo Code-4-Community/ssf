@@ -7,6 +7,7 @@
     "format": "prettier --no-error-on-unmatched-pattern --write apps/{frontend,backend}/src/**/*.{js,ts,tsx}",
     "lint:check": "eslint apps/frontend --ext .ts,.tsx && eslint apps/backend --ext .ts,.tsx",
     "lint": "eslint apps/frontend --ext .ts,.tsx --fix && eslint apps/backend --ext .ts,.tsx --fix",
+    "test": "jest",
     "prepush": "yarn run format:check && yarn run lint:check",
     "prepush:fix": "yarn run format && yarn run lint",
     "prepare": "husky install",
@@ -40,6 +41,7 @@
     "framer-motion": "^11.5.6",
     "global": "^4.4.0",
     "google-libphonenumber": "^3.2.40",
+    "jest-mock-extended": "^4.0.0",
     "jwks-rsa": "^3.1.0",
     "mongodb": "^6.1.0",
     "multer": "^1.4.5-lts.1",
@@ -56,6 +58,7 @@
     "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.1.2",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.0.2",
     "@nx/cypress": "^16.8.1",
