@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -89,22 +88,15 @@ export class Pantry {
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
 
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({
-    name: 'ssf_representative_id',
-    referencedColumnName: 'id',
-  })
-  ssfRepresentative?: User;
-
   // cascade: ['insert'] means that when we create a new
-  // pantry, the representative will automatically be added
+  // pantry, the pantry user will automatically be added
   // to the User table
   @OneToOne(() => User, { nullable: false, cascade: ['insert'] })
   @JoinColumn({
-    name: 'pantry_representative_id',
+    name: 'pantry_user_id',
     referencedColumnName: 'id',
   })
-  pantryRepresentative: User;
+  pantryUser: User;
 
   @Column({ name: 'status', type: 'varchar', length: 50, default: 'pending' })
   status: string;
