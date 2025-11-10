@@ -3,7 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
-import { userSchemaDto } from './dto/userSchema.dto';
+import { userSchemaDto } from './dtos/userSchema.dto';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
@@ -116,7 +116,7 @@ describe('UsersController', () => {
     });
   });
 
-  describe('POST /api/users', () => {
+  describe('POST /', () => {
     it('should create a new user with all required fields', async () => {
       const createUserSchema: userSchemaDto = {
         email: 'newuser@example.com',
