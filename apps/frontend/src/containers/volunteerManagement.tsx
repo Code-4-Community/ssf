@@ -14,19 +14,24 @@ import {
   NativeSelect,
   NativeSelectIndicator,
   InputGroup,
+  Pagination,
+  ButtonGroup,
+  IconButton
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { Link } from 'react-router-dom';
-import { ChevronDownIcon } from 'lucide-react';
-import { SearchIcon } from 'lucide-react';
+import { ChevronDownIcon, SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 
 const VolunteerManagement: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [changedVolunteers, setChangedVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
   const [checkedTypes, setCheckedTypes] = useState<string[]>([]);
+
+  const pageSize = 2;
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -43,6 +48,10 @@ const VolunteerManagement: React.FC = () => {
     fetchVolunteers();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchName, checkedTypes]);
+
   const filteredVolunteers = changedVolunteers.filter((a) => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
     return (
@@ -50,6 +59,11 @@ const VolunteerManagement: React.FC = () => {
       (checkedTypes.includes(a.role.toUpperCase()) || checkedTypes.length === 0)
     );
   });
+
+  const paginatedVolunteers = filteredVolunteers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const volunteerTypeDropdown = ({
     volunteerType,
@@ -147,15 +161,20 @@ const VolunteerManagement: React.FC = () => {
         overflowY="hidden"
         whiteSpace="nowrap"
       >
-        <VStack my={5} align="start" maxW="400px" w="full">
-          <InputGroup startElement = {<SearchIcon size={15}></SearchIcon>}>
-            <Input
-              placeholder="Search"
-              value={searchName}
-              onChange={handleSearchNameChange}
-            />
-          </InputGroup>
-          <Menu.Root closeOnSelect={false}>
+        <VStack my={2} align="start" >
+          <Flex justify="space-between" align="center" w="100%">
+            <InputGroup startElement = {<SearchIcon size={15}></SearchIcon>} maxW={300}>
+              <Input
+                placeholder="Search"
+                value={searchName}
+                onChange={handleSearchNameChange}
+              />
+            </InputGroup>
+            <Button as={Link} to="/add_volunteer_page" variant="outline">
+              + Add
+            </Button>
+          </Flex>
+          <Menu.Root closeOnSelect={true}>
             <Menu.Trigger asChild>
               <Button variant="outline">
                 Filter by Volunteer Type
@@ -194,9 +213,6 @@ const VolunteerManagement: React.FC = () => {
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
               <Button onClick={handleReset} variant="outline">Reset unsaved changes</Button>
-              <Button as={Link} to="/add_volunteer_page" variant="outline">
-                + Add
-              </Button>
               <Button onClick={handleSaveChanges} variant="outline">Save changes</Button>
             </Flex>
           </TableCaption>
@@ -209,7 +225,7 @@ const VolunteerManagement: React.FC = () => {
             </Table.Row> 
           </Table.Header>
           <Table.Body>
-            {filteredVolunteers?.map((volunteer) => (
+            {paginatedVolunteers?.map((volunteer) => (
               <Table.Row key={volunteer.id}>
                 <Table.Cell>
                   {volunteer.firstName} {volunteer.lastName}
@@ -235,6 +251,33 @@ const VolunteerManagement: React.FC = () => {
             ))}
           </Table.Body>
         </Table.Root>
+      
+      <Pagination.Root count={Math.ceil(filteredVolunteers.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
+        <ButtonGroup variant="ghost" size="sm">
+          <Pagination.PrevTrigger asChild>
+            <IconButton onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
+              <ChevronLeft />
+            </IconButton>
+          </Pagination.PrevTrigger>
+
+          <Pagination.Items
+            render={(page) => (
+              <IconButton
+                variant={page.isCurrent ? 'outline' : 'ghost'}
+                onClick={() => setCurrentPage(page.value)}
+              >
+                {page.value}
+              </IconButton>
+            )}
+          />
+
+          <Pagination.NextTrigger asChild>
+            <IconButton onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredVolunteers.length / pageSize)))}>
+              <ChevronRight />
+            </IconButton>
+          </Pagination.NextTrigger>
+        </ButtonGroup>
+      </Pagination.Root>
       </Box>
     </Box>
   );
