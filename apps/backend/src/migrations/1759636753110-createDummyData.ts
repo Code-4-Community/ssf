@@ -478,23 +478,109 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DELETE FROM public.volunteer_assignments`);
-    await queryRunner.query(`DELETE FROM public.allocations`);
-    await queryRunner.query(`DELETE FROM public.orders`);
-    await queryRunner.query(`DELETE FROM public.food_requests`);
-    await queryRunner.query(`DELETE FROM public.donation_items`);
-    await queryRunner.query(`DELETE FROM public.donations`);
-    await queryRunner.query(`DELETE FROM public.pantries`);
-    await queryRunner.query(`DELETE FROM public.food_manufacturers`);
+    await queryRunner.query(`
+    DELETE FROM public.volunteer_assignments 
+    WHERE volunteer_id IN (
+      SELECT user_id FROM public.users 
+      WHERE email IN (
+        'james.t@volunteer.org', 'maria.g@volunteer.org', 
+        'william.m@volunteer.org', 'patricia.j@volunteer.org'
+      )
+    )
+  `);
 
     await queryRunner.query(`
-      DELETE FROM public.users 
-      WHERE email IN (
-        'john.smith@ssf.org', 'sarah.j@ssf.org', 'mike.brown@pantry1.org',
-        'emily.davis@pantry2.org', 'robert.w@pantry3.org', 'lisa.m@foodcorp.com',
-        'david.a@healthyfoods.com', 'jennifer.t@organic.com', 'james.t@volunteer.org',
-        'maria.g@volunteer.org', 'william.m@volunteer.org', 'patricia.j@volunteer.org'
+    DELETE FROM public.allocations 
+    WHERE order_id IN (
+      SELECT order_id FROM public.orders 
+      WHERE pantry_id IN (
+        SELECT pantry_id FROM public.pantries 
+        WHERE pantry_name IN (
+          'Community Food Pantry Downtown',
+          'Westside Community Kitchen',
+          'North End Food Bank'
+        )
       )
-    `);
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.orders 
+    WHERE pantry_id IN (
+      SELECT pantry_id FROM public.pantries 
+      WHERE pantry_name IN (
+        'Community Food Pantry Downtown',
+        'Westside Community Kitchen',
+        'North End Food Bank'
+      )
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.food_requests 
+    WHERE pantry_id IN (
+      SELECT pantry_id FROM public.pantries 
+      WHERE pantry_name IN (
+        'Community Food Pantry Downtown',
+        'Westside Community Kitchen',
+        'North End Food Bank'
+      )
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.donation_items 
+    WHERE donation_id IN (
+      SELECT donation_id FROM public.donations 
+      WHERE food_manufacturer_id IN (
+        SELECT food_manufacturer_id FROM public.food_manufacturers 
+        WHERE food_manufacturer_name IN (
+          'FoodCorp Industries',
+          'Healthy Foods Co',
+          'Organic Suppliers LLC'
+        )
+      )
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.donations 
+    WHERE food_manufacturer_id IN (
+      SELECT food_manufacturer_id FROM public.food_manufacturers 
+      WHERE food_manufacturer_name IN (
+        'FoodCorp Industries',
+        'Healthy Foods Co',
+        'Organic Suppliers LLC'
+      )
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.pantries 
+    WHERE pantry_name IN (
+      'Community Food Pantry Downtown',
+      'Westside Community Kitchen',
+      'North End Food Bank'
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.food_manufacturers 
+    WHERE food_manufacturer_name IN (
+      'FoodCorp Industries',
+      'Healthy Foods Co',
+      'Organic Suppliers LLC'
+    )
+  `);
+
+    await queryRunner.query(`
+    DELETE FROM public.users 
+    WHERE email IN (
+      'john.smith@ssf.org', 'sarah.j@ssf.org', 'mike.brown@pantry1.org',
+      'emily.davis@pantry2.org', 'robert.w@pantry3.org', 'lisa.m@foodcorp.com',
+      'david.a@healthyfoods.com', 'jennifer.t@organic.com', 'james.t@volunteer.org',
+      'maria.g@volunteer.org', 'william.m@volunteer.org', 'patricia.j@volunteer.org'
+    )
+  `);
   }
 }
