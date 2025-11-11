@@ -3,7 +3,6 @@ import {
   Table,
   TableCaption,
   Text,
-  Center,
   Button,
   Flex,
   Input,
@@ -14,10 +13,12 @@ import {
   Portal,
   NativeSelect,
   NativeSelectIndicator,
+  InputGroup,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 
@@ -136,8 +137,8 @@ const VolunteerManagement: React.FC = () => {
   };
 
   return (
-    <Center flexDirection="column" p={4}>
-      <Text fontSize="2xl">Pantry Volunteer Management</Text>
+    <Box flexDirection="column" p={4}>
+      <Text fontSize="2xl">Volunteer Management</Text>
       <Box
         mt={5}
         display="block"
@@ -146,15 +147,17 @@ const VolunteerManagement: React.FC = () => {
         overflowY="hidden"
         whiteSpace="nowrap"
       >
-        <VStack my={5}>
-          <Input
-            placeholder="Search by volunteer name"
-            value={searchName}
-            onChange={handleSearchNameChange}
-          />
+        <VStack my={5} align="start" maxW="400px" w="full">
+          <InputGroup startElement = {<SearchIcon size={15}></SearchIcon>}>
+            <Input
+              placeholder="Search"
+              value={searchName}
+              onChange={handleSearchNameChange}
+            />
+          </InputGroup>
           <Menu.Root closeOnSelect={false}>
             <Menu.Trigger asChild>
-              <Button>
+              <Button variant="outline">
                 Filter by Volunteer Type
                 <ChevronDownIcon />
               </Button>
@@ -190,21 +193,20 @@ const VolunteerManagement: React.FC = () => {
         <Table.Root variant="line">
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
-              <Button onClick={handleReset}>Reset unsaved changes</Button>
-              <Button as={Link} to="/add_volunteer_page">
-                Add a new volunteer
+              <Button onClick={handleReset} variant="outline">Reset unsaved changes</Button>
+              <Button as={Link} to="/add_volunteer_page" variant="outline">
+                + Add
               </Button>
-              <Button onClick={handleSaveChanges}>Save changes</Button>
+              <Button onClick={handleSaveChanges} variant="outline">Save changes</Button>
             </Flex>
           </TableCaption>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader>Volunteer Name</Table.ColumnHeader>
-              <Table.ColumnHeader>Email</Table.ColumnHeader>
-              <Table.ColumnHeader>Phone</Table.ColumnHeader>
+              <Table.ColumnHeader>Volunteer</Table.ColumnHeader>
               <Table.ColumnHeader>Type</Table.ColumnHeader>
-              <Table.ColumnHeader>Assigned Pantries</Table.ColumnHeader>
-            </Table.Row>
+              <Table.ColumnHeader>Email</Table.ColumnHeader>
+              <Table.ColumnHeader textAlign="right">Actions</Table.ColumnHeader>
+            </Table.Row> 
           </Table.Header>
           <Table.Body>
             {filteredVolunteers?.map((volunteer) => (
@@ -212,8 +214,6 @@ const VolunteerManagement: React.FC = () => {
                 <Table.Cell>
                   {volunteer.firstName} {volunteer.lastName}
                 </Table.Cell>
-                <Table.Cell>{volunteer.email}</Table.Cell>
-                <Table.Cell>{volunteer.phone}</Table.Cell>
                 <Table.Cell>
                   {volunteerTypeDropdown({
                     volunteerType:
@@ -224,7 +224,10 @@ const VolunteerManagement: React.FC = () => {
                   })}
                 </Table.Cell>
                 <Table.Cell>
-                  <Button as={Link} to={`/pantry-management/${volunteer.id}`}>
+                  {volunteer.email}
+                </Table.Cell>
+                <Table.Cell textAlign="right">
+                  <Button textDecoration="underline" color="black" as={Link} to={`/pantry-management/${volunteer.id}`}>
                     View assigned pantries
                   </Button>
                 </Table.Cell>
@@ -233,7 +236,7 @@ const VolunteerManagement: React.FC = () => {
           </Table.Body>
         </Table.Root>
       </Box>
-    </Center>
+    </Box>
   );
 };
 
