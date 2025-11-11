@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { PluralNamingStrategy } from '../strategies/plural-naming.strategy';
+import { Order } from '../orders/order.entity';
+import { Pantry } from '../pantries/pantries.entity';
 import { User1725726359198 } from '../migrations/1725726359198-User';
 import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
 import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTables';
