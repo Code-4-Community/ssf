@@ -116,7 +116,7 @@ describe('UsersController', () => {
     });
   });
 
-  describe('POST /', () => {
+  describe('POST /api/users', () => {
     it('should create a new user with all required fields', async () => {
       const createUserSchema: userSchemaDto = {
         email: 'newuser@example.com',
