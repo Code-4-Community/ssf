@@ -85,35 +85,6 @@ describe('UsersService', () => {
       });
       expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
     });
-
-    it('should create a new user with default role when not provided', async () => {
-      const userData = {
-        email: 'newuser@example.com',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        phone: '9876543210',
-      };
-
-      const createdUser = { ...userData, id: 1, role: Role.STANDARD_VOLUNTEER };
-      mockUserRepository.create.mockReturnValue(createdUser);
-      mockUserRepository.save.mockResolvedValue(createdUser);
-
-      const result = await service.create(
-        userData.email,
-        userData.firstName,
-        userData.lastName,
-        userData.phone,
-      );
-
-      expect(result).toEqual(createdUser);
-      expect(mockUserRepository.create).toHaveBeenCalledWith({
-        role: Role.STANDARD_VOLUNTEER,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phone: userData.phone,
-      });
-    });
   });
 
   describe('findOne', () => {

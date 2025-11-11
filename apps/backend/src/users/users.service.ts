@@ -15,7 +15,7 @@ export class UsersService {
     firstName: string,
     lastName: string,
     phone: string,
-    role: Role = Role.STANDARD_VOLUNTEER,
+    role: Role,
   ) {
     const user = this.repo.create({
       role,

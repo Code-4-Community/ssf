@@ -11,6 +11,7 @@ import { SignInResponseDto } from './dtos/sign-in-response.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { Role } from '../users/types';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +34,7 @@ export class AuthController {
       signUpDto.firstName,
       signUpDto.lastName,
       signUpDto.phone,
+      Role.STANDARD_VOLUNTEER,
     );
 
     return user;
