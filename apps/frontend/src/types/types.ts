@@ -97,6 +97,7 @@ export interface Pantry {
   serveAllergicChildren?: string;
   newsletterSubscription: boolean;
   restrictions: string[];
+  pantryUser?: User;
   status: string;
   dateApplied: string;
   activities: string[];

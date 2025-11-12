@@ -36,7 +36,7 @@ export class PantriesService {
     pantryContact.email = pantryData.contactEmail;
     pantryContact.phone = pantryData.contactPhone;
 
-    pantry.pantryRepresentative = pantryContact;
+    pantry.pantryUser = pantryContact;
 
     pantry.pantryName = pantryData.pantryName;
     pantry.addressLine1 = pantryData.addressLine1;
@@ -85,20 +85,5 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: 'denied' });
-  }
-
-  async findSSFRep(pantryId: number): Promise<User> {
-    validateId(pantryId, 'Pantry');
-
-    const pantry = await this.repo.findOne({
-      where: { pantryId },
-      relations: ['ssfRepresentative'],
-    });
-
-    if (!pantry) {
-      throw new NotFoundException(`Pantry ${pantryId} not found`);
-    }
-
-    return pantry.ssfRepresentative;
   }
 }

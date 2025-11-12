@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Button,
   Modal,
@@ -10,8 +10,7 @@ import {
   Grid,
   GridItem,
 } from '@chakra-ui/react';
-import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/types';
+import { Pantry } from '../../types/types';
 
 interface PantryApplicationModalProps {
   pantry: Pantry;
@@ -24,55 +23,35 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  // TODO: Make sure clients of this modal actually include
-  // the pantry representative ID (or the representative User
-  // itself) in the provided data
-  /*useEffect(() => {
-    const fetchUser = async () => {
-      if (pantry.pantryRepresentativeId) {
-        const data = await ApiClient.getRepresentativeUser(
-          pantry.pantryRepresentativeId,
-        );
-        setUser(data);
-      }
-    };
-
-    if (isOpen) {
-      fetchUser();
-    }
-  }, [isOpen, pantry.pantryRepresentativeId]);*/
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Pantry Application Details</ModalHeader>
         <ModalBody>
-          {user ? (
+          {pantry.pantryUser ? (
             <Grid templateColumns="2fr 1fr" gap={4}>
               <GridItem>
-                <strong>Representative Name</strong>
+                <strong>Pantry User Name</strong>
               </GridItem>
               <GridItem>
-                {user.firstName} {user.lastName}
+                {pantry.pantryUser.firstName} {pantry.pantryUser.lastName}
               </GridItem>
 
               <GridItem>
                 <strong>Email</strong>
               </GridItem>
-              <GridItem>{user.email}</GridItem>
+              <GridItem>{pantry.pantryUser.email}</GridItem>
 
               <GridItem>
                 <strong>Phone</strong>
               </GridItem>
-              <GridItem>{user.phone}</GridItem>
+              <GridItem>{pantry.pantryUser.phone}</GridItem>
 
               <GridItem>
                 <strong>Role</strong>
               </GridItem>
-              <GridItem>{user.role}</GridItem>
+              <GridItem>{pantry.pantryUser.role}</GridItem>
             </Grid>
           ) : (
             <p>No user details available.</p>
