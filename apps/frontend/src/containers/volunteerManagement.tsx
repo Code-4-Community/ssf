@@ -22,7 +22,7 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
 
-  const pageSize = 2;
+  const pageSize = 8;
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -60,7 +60,7 @@ const VolunteerManagement: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={4}>
-      <Text fontSize="2xl">Volunteer Management</Text>
+      <Text fontSize="3xl">Volunteer Management</Text>
       <Box
         mt={5}
         display="block"
@@ -69,7 +69,7 @@ const VolunteerManagement: React.FC = () => {
         overflowY="hidden"
         whiteSpace="nowrap"
       >
-        <VStack my={2} align="start" >
+        <VStack mt={2} mb={7} align="start" >
           <Flex justify="space-between" align="center" w="100%">
             <InputGroup startElement = {<SearchIcon size={15}></SearchIcon>} maxW={300}>
               <Input
@@ -101,7 +101,7 @@ const VolunteerManagement: React.FC = () => {
                   {volunteer.email}
                 </Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Button textDecoration="underline" color="black" as={Link} to={`/pantry-management/${volunteer.id}`}>
+                  <Button textDecoration="underline" color="gray" as={Link} to={`/pantry-management/${volunteer.id}`}>
                     View assigned pantries
                   </Button>
                 </Table.Cell>
@@ -109,33 +109,34 @@ const VolunteerManagement: React.FC = () => {
             ))}
           </Table.Body>
         </Table.Root>
-      
-      <Pagination.Root count={Math.ceil(filteredVolunteers.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
-        <ButtonGroup variant="ghost" size="sm">
-          <Pagination.PrevTrigger asChild>
-            <IconButton onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
-              <ChevronLeft />
-            </IconButton>
-          </Pagination.PrevTrigger>
+        <Flex justify="center" mt={4}>
+          <Pagination.Root count={Math.ceil(filteredVolunteers.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
+            <ButtonGroup variant="outline" size="sm">
+              <Pagination.PrevTrigger asChild>
+                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
+                  <ChevronLeft />
+                </IconButton>
+              </Pagination.PrevTrigger>
 
-          <Pagination.Items
-            render={(page) => (
-              <IconButton
-                variant={page.isCurrent ? 'outline' : 'ghost'}
-                onClick={() => setCurrentPage(page.value)}
-              >
-                {page.value}
-              </IconButton>
-            )}
-          />
+              <Pagination.Items
+                render={(page) => (
+                  <IconButton
+                    variant={{ base: "outline", _selected: "outline" }}
+                    onClick={() => setCurrentPage(page.value)}
+                  >
+                    {page.value}
+                  </IconButton>
+                )}
+              />
 
-          <Pagination.NextTrigger asChild>
-            <IconButton onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredVolunteers.length / pageSize)))}>
-              <ChevronRight />
-            </IconButton>
-          </Pagination.NextTrigger>
-        </ButtonGroup>
-      </Pagination.Root>
+              <Pagination.NextTrigger asChild>
+                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredVolunteers.length / pageSize)))}>
+                  <ChevronRight />
+                </IconButton>
+              </Pagination.NextTrigger>
+            </ButtonGroup>
+          </Pagination.Root>
+        </Flex>
       </Box>
     </Box>
   );
