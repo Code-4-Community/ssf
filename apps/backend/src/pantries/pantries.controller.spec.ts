@@ -4,6 +4,7 @@ import { mock } from 'jest-mock-extended';
 import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { OrdersService } from '../orders/order.service';
+import { Order } from '../orders/order.entity';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -25,5 +26,70 @@ describe('PantriesController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getOrders', () => {
+    it('should return orders for a pantry', async () => {
+      const pantryId = 24;
+
+      const mockOrders = [
+        {
+          orderId: 26,
+          requestId: 26,
+          shippedBy: 32,
+          status: 'delivered',
+          createdAt: new Date('2024-03-02T15:00:00.000Z'),
+          shippedAt: new Date('2024-03-02T20:00:00.000Z'),
+          deliveredAt: new Date('2024-03-03T19:00:00.000Z'),
+          pantry: { pantryId: 24 },
+          foodManufacturer: { foodManufacturerId: 32 },
+          donation: { donationId: 1 },
+          request: {
+            requestId: 26,
+            pantryId: 24,
+            requestedSize: 'medium',
+            requestedItems: ['canned_vegetables', 'grains'],
+            additionalInformation: 'Regular production pantry order',
+            requestedAt: new Date('2024-03-02T14:00:00.000Z'),
+            dateReceived: new Date('2024-03-03T19:00:00.000Z'),
+            feedback: 'Good selection of items',
+            photos: ['prod_photo1.jpg'],
+          },
+        },
+        {
+          orderId: 27,
+          requestId: 27,
+          shippedBy: 33,
+          status: 'shipped',
+          createdAt: new Date('2024-03-04T10:00:00.000Z'),
+          shippedAt: new Date('2024-03-04T14:00:00.000Z'),
+          deliveredAt: null,
+          pantry: { pantryId: 24 },
+          foodManufacturer: { foodManufacturerId: 33 },
+          donation: { donationId: 2 },
+          request: {
+            requestId: 27,
+            pantryId: 24,
+            requestedSize: 'large',
+            requestedItems: ['dairy_free', 'gluten_free', 'nuts'],
+            additionalInformation: 'Urgent request for allergy-friendly items',
+            requestedAt: new Date('2024-03-04T09:00:00.000Z'),
+            dateReceived: null,
+            feedback: null,
+            photos: [],
+          },
+        },
+      ] as Order[];
+
+      mockOrdersService.getOrdersByPantry.mockResolvedValue(mockOrders);
+
+      const result = await controller.getOrders(pantryId);
+
+      expect(result).toEqual(mockOrders);
+      expect(result).toHaveLength(2);
+      expect(result[0].orderId).toBe(26);
+      expect(result[1].orderId).toBe(27);
+      expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
+    });
   });
 });
