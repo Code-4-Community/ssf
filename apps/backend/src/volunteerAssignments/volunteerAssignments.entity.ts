@@ -14,9 +14,6 @@ export class Assignments {
   @PrimaryGeneratedColumn({ name: 'assignment_id' })
   assignmentId: number;
 
-  @Column({ name: 'volunteer_id' })
-  volunteerId: number;
-
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({
     name: 'volunteer_id',

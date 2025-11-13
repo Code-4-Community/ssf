@@ -12,7 +12,6 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Donation } from '../donations/donations.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 
 @Controller('orders')
@@ -64,13 +63,6 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodManufacturer> {
     return this.ordersService.findOrderFoodManufacturer(orderId);
-  }
-
-  @Get(':orderId/donation')
-  async getDonationFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Donation> {
-    return this.ordersService.findOrderDonation(orderId);
   }
 
   @Get('/:orderId')

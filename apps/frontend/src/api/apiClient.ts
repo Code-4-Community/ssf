@@ -151,12 +151,6 @@ export class ApiClient {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
   }
 
-  public async getDonationFromOrder(orderId: number): Promise<Donation | null> {
-    return this.axiosInstance
-      .get(`/api/orders/${orderId}/donation`)
-      .then((response) => response.data);
-  }
-
   public async getOrderDonation(donationId: number): Promise<Donation> {
     return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
   }
