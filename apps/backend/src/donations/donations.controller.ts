@@ -33,6 +33,18 @@ export class DonationsController {
     return this.donationService.findOne(donationId);
   }
 
+  @Get('/get-all-donations')
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
+
+  @Get('/getManufacturerDonationCount/:manufacturerId')
+  async getManufacturerDonationCount(
+    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+  ): Promise<number> {
+    return this.donationService.getManufacturerDonationCount(manufacturerId);
+  }
+
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a donation',

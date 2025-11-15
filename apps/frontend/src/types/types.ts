@@ -158,6 +158,21 @@ export interface Allocation {
   status: string;
 }
 
+export interface ManufacturerDetails {
+  foodManufacturerId: number;
+  foodManufacturerName: string;
+  industry: string;
+  email: string;
+  phone: string;
+  address: string;
+  signupDate: Date;
+  donationFrequency: string;
+  foodManufacturerRepresentative: {
+    firstName: string;
+    lastName: string;
+  }
+}
+
 export enum VolunteerType {
   LEAD_VOLUNTEER = 'lead_volunteer',
   STANDARD_VOLUNTEER = 'standard_volunteer',

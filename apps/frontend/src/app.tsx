@@ -19,6 +19,7 @@ import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import FoodManufacturerDashboard from '@containers/foodManufacturerDashboard';
 import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: '/approve-pantries',
         element: <ApprovePantries />,
+      },
+      {
+        path: '/food-manufacturer-dashboard/:manufacturerId',
+        element: <FoodManufacturerDashboard />,
       },
       {
         path: '/volunteer-management',
