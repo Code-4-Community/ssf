@@ -17,6 +17,7 @@ import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-upd
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
+import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 
 const config = {
   type: 'postgres',
@@ -47,6 +48,7 @@ const config = {
     UpdateFoodRequests1744051370129,
     RemoveOrderIdFromRequests1744133526650,
     CreateDummyData1759636753110,
+    UpdatePantriesTable1742739750279,
   ],
 };
 

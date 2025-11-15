@@ -1,11 +1,11 @@
 export interface Donation {
   donationId: number;
-  foodManufacturerId: number;
   dateDonated: string;
   status: string;
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
+  foodManufacturer?: FoodManufacturer;
 }
 
 export interface DonationItem {
@@ -46,26 +46,61 @@ export interface User {
   phone: string;
 }
 
+export interface PantryApplicationDto {
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  restrictions?: string[];
+  refrigeratedDonation: string;
+  reserveFoodForAllergic: string;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: string;
+  clientVisitFrequency?: string;
+  identifyAllergensConfidence?: string;
+  serveAllergicChildren?: string;
+  activities: string[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription?: string;
+}
+
+// Note: The API calls as currently written do not
+// return a pantry's SSF representative or pantry
+// representative, or their IDs, as part of the
+// Pantry data
 export interface Pantry {
   pantryId: number;
   pantryName: string;
-  address: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
   allergenClients: string;
   refrigeratedDonation: string;
-  reserveFoodForAllergic: boolean;
-  reservationExplanation: string;
+  reserveFoodForAllergic: string;
+  reservationExplanation?: string;
   dedicatedAllergyFriendly: string;
-  clientVisitFrequency: string;
-  identifyAllergensConfidence: string;
-  serveAllergicChildren: string;
+  clientVisitFrequency?: string;
+  identifyAllergensConfidence?: string;
+  serveAllergicChildren?: string;
   newsletterSubscription: boolean;
   restrictions: string[];
-  ssfRepresentativeId: number;
-  pantryRepresentativeId: number;
   status: string;
   dateApplied: string;
-  activities: string;
-  questions: string;
+  activities: string[];
+  activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
 }
@@ -97,29 +132,19 @@ export interface Order {
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
-  foodManufacturerRepresentativeId: number;
+  foodManufacturerRepresentative?: User;
 }
 
-export interface Donation {
-  donationId: number;
-  foodManufacturerId: number;
-  dateDonated: string;
+export interface CreateFoodRequestBody {
+  pantryId: number;
+  requestedSize: string;
+  requestedItems: string[];
+  additionalInformation: string | null | undefined;
   status: string;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
-}
-
-export interface DonationItem {
-  itemId: number;
-  donationId: number;
-  itemName: string;
-  quantity: number;
-  reservedQuantity: number;
-  status: string;
-  ozPerItem: number;
-  estimatedValue: number;
-  foodType: string;
+  fulfilledBy: number | null | undefined;
+  dateReceived: Date | null | undefined;
+  feedback: string | null | undefined;
+  photos: string[] | null | undefined;
 }
 
 export interface Allocation {
