@@ -6,6 +6,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
+import { RequestSize } from './types';
 
 @Entity('food_requests')
 export class FoodRequest {
@@ -15,8 +16,13 @@ export class FoodRequest {
   @Column({ name: 'pantry_id', type: 'int' })
   pantryId: number;
 
-  @Column({ name: 'requested_size', type: 'varchar', length: 50 })
-  requestedSize: string;
+  @Column({
+    name: 'requested_size',
+    type: 'enum',
+    enum: RequestSize,
+    enumName: 'request_size_enum',
+  })
+  requestedSize: RequestSize;
 
   @Column({ name: 'requested_items', type: 'text', array: true })
   requestedItems: string[];

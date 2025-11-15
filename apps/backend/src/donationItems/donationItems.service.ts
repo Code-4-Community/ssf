@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
+import { FoodType } from './types';
 
 @Injectable()
 export class DonationItemsService {
@@ -23,7 +24,7 @@ export class DonationItemsService {
     status: string,
     ozPerItem: number,
     estimatedValue: number,
-    foodType: string,
+    foodType: FoodType,
   ) {
     const donationItem = this.repo.create({
       donationId,

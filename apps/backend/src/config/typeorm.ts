@@ -16,6 +16,8 @@ import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-upd
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests.ts';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+import { AddingEnumValues1760538239997 } from '../migrations/1760538239997-AddingEnumValues';
+import { UpdateColsToUseEnumType1760886499863 } from '../migrations/1760886499863-UpdateColsToUseEnumType';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 
 const config = {
@@ -46,6 +48,8 @@ const config = {
     UpdateRequestTable1741571847063,
     UpdateFoodRequests1744051370129,
     RemoveOrderIdFromRequests1744133526650,
+    AddingEnumValues1760538239997,
+    UpdateColsToUseEnumType1760886499863,
     UpdatePantriesTable1742739750279,
   ],
 };

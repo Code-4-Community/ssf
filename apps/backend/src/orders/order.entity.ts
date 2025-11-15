@@ -11,6 +11,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { Donation } from '../donations/donations.entity';
+import { OrdersStatus } from './types';
 
 @Entity('orders')
 export class Order {
@@ -51,8 +52,14 @@ export class Order {
   })
   donation: Donation;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
-  status: string;
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enumName: 'orders_status_enum',
+    enum: OrdersStatus,
+    default: OrdersStatus.PENDING,
+  })
+  status: OrdersStatus;
 
   @CreateDateColumn({
     name: 'created_at',
