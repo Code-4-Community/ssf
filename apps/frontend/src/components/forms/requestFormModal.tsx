@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -248,7 +249,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       return null;
     }
   } catch (error) {
-    console.error('Error submitting food request', error);
+    alert('Error submitting food request: ' + error);
     window.location.href = `/request-form/${pantryId}`;
     return null;
   }

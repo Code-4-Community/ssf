@@ -33,6 +33,10 @@ export class DonationService {
     });
   }
 
+  async getNumberOfDonations(): Promise<number> {
+    return this.repo.count();
+  }
+
   async create(
     foodManufacturerId: number,
     dateDonated: Date,
