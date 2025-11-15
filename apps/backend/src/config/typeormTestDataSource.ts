@@ -3,6 +3,12 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { PluralNamingStrategy } from '../strategies/plural-naming.strategy';
 import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { User } from '../users/user.entity';
+import { Donation } from '../donations/donations.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 import { User1725726359198 } from '../migrations/1725726359198-User';
 import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
 import { ReviseTables1737522923066 } from '../migrations/1737522923066-reviseTables';
@@ -30,6 +36,16 @@ const testConfig: DataSourceOptions = {
   password: `${process.env.DATABASE_PASSWORD}`,
   synchronize: false,
   namingStrategy: new PluralNamingStrategy(),
+  entities: [
+    Order,
+    Pantry,
+    User,
+    Donation,
+    FoodManufacturer,
+    FoodRequest,
+    DonationItem,
+    Allocation,
+  ],
   migrations: [
     User1725726359198,
     AddTables1726524792261,

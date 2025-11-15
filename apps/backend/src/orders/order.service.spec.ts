@@ -1,17 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Order } from './order.entity';
 import { OrdersService } from './order.service';
+import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Repository } from 'typeorm';
+import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 
 describe('OrdersService', () => {
   let service: OrdersService;
   let repository: Repository<Order>;
 
   beforeAll(async () => {
+    // Initialize DB and run all migrations once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
+      await testDataSource.runMigrations();
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -29,21 +32,30 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
-    // reset tables
-    await testDataSource.synchronize(true);
+    // Truncate all tables in FK-safe order
+    const fkSafeOrder = [
+      'volunteer_assignments',
+      'allocations',
+      'orders',
+      'food_requests',
+      'donation_items',
+      'donations',
+      'pantries',
+      'food_manufacturers',
+      'users',
+    ];
 
-    // optional: seed one sample record
-    await repository.save({
-      orderId: 1,
-      requestId: 1,
-      pantry: { pantryId: 1, pantryName: 'Community Food Pantry Downtown' },
-      shippedBy: 1,
-      status: 'delivered',
-      createdAt: new Date('2024-01-16T09:00:00Z'),
-      shippedAt: new Date('2024-01-17T08:00:00Z'),
-      deliveredAt: new Date('2024-01-18T14:30:00Z'),
-      donationId: 1,
-    });
+    for (const table of fkSafeOrder) {
+      await testDataSource.query(
+        `TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`,
+      );
+    }
+
+    // Reseed dummy data
+    const queryRunner = testDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await new CreateDummyData1759636753110().up(queryRunner);
+    await queryRunner.release();
   });
 
   afterAll(async () => {
@@ -56,13 +68,13 @@ describe('OrdersService', () => {
 
   describe('getAll', () => {
     it('should return orders filtered by status', async () => {
-      const result = await service.getAll({ status: 'delivered' });
-      expect(result.length).toBeGreaterThanOrEqual(1);
+      const orders = await service.getAll({ status: 'delivered' });
+      expect(orders.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should return empty array when no status filters match', async () => {
-      const result = await service.getAll({ status: 'invalid' });
-      expect(result).toEqual([]);
+      const orders = await service.getAll({ status: 'invalid' });
+      expect(orders).toEqual([]);
     });
   });
 });
