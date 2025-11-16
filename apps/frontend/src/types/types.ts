@@ -46,6 +46,22 @@ export interface User {
   phone: string;
 }
 
+export interface UserDto {
+  email: string,
+  firstName: string,
+  lastName: string,
+  phone: string,
+  role: Role,
+}
+
+export enum Role {
+  ADMIN = 'admin',
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+  PANTRY = 'pantry',
+  FOODMANUFACTURER = 'food_manufacturer',
+}
+
 export interface PantryApplicationDto {
   contactFirstName: string;
   contactLastName: string;

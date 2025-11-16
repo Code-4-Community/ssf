@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
+import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -78,9 +79,7 @@ const VolunteerManagement: React.FC = () => {
                 onChange={handleSearchNameChange}
               />
             </InputGroup>
-            <Button as={Link} to="/add_volunteer_page" variant="outline">
-              + Add
-            </Button>
+            <NewVolunteerModal></NewVolunteerModal>
           </Flex>
         </VStack>
         <Table.Root variant="line">

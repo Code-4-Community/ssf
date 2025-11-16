@@ -10,6 +10,7 @@ import {
   Allocation,
   PantryApplicationDto,
   VolunteerPantryAssignment,
+  UserDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -87,6 +88,10 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/users/${userId}`)
       .then((response) => response.data);
+  }
+
+  public async postUser(data: UserDto): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/users`, data);
   }
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
