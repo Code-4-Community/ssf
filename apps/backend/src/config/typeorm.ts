@@ -16,6 +16,8 @@ import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-upd
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+import { AddManufacturerDetails1743518493960 } from '../migrations/1743518493960-AddManufacturerDetails';
+import { AddManufacturerDonationFrequency1743623272909 } from '../migrations/1743623272909-AddManufacturerDonationFrequency';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 
 const config = {
@@ -42,6 +44,8 @@ const config = {
     UpdatePantriesTable1739056029076,
     AssignmentsPantryIdNotUnique1758384669652,
     AddOrders1739496585940,
+    AddManufacturerDetails1743518493960,
+    AddManufacturerDonationFrequency1743623272909,
     UpdateOrdersTable1740367964915,
     UpdateRequestTable1741571847063,
     UpdateFoodRequests1744051370129,

@@ -1,12 +1,13 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
+  Donation,
+  DonationItem,
   User,
   Pantry,
+  ManufacturerDetails,
   Order,
   FoodRequest,
   FoodManufacturer,
-  DonationItem,
-  Donation,
   Allocation,
   PantryApplicationDto,
   VolunteerPantryAssignment,
@@ -29,6 +30,51 @@ export class ApiClient {
 
   public async get(path: string): Promise<unknown> {
     return this.axiosInstance.get(path).then((response) => response.data);
+  }
+
+  public async getRepresentativeUser(userId: number): Promise<User> {
+    return this.axiosInstance
+      .get(`/api/users/${userId}`)
+      .then((response) => response.data);
+  }
+
+  public async getAllPendingPantries(): Promise<Pantry[]> {
+    return this.axiosInstance
+      .get('/api/pantries/pending')
+      .then((response) => response.data);
+  }
+
+  public async getManufacturerDetails(
+    manufacturerId: number,
+  ): Promise<ManufacturerDetails> {
+    return this.get(
+      `/api/manufacturer/getDetails/${manufacturerId}`,
+    ) as Promise<ManufacturerDetails>;
+  }
+
+  public async updatePantry(
+    pantryId: number,
+    decision: 'approve' | 'deny',
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+      pantryId,
+    });
+  }
+
+  public async getPantry(pantryId: number): Promise<Pantry> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async getManufacturerDonationCount(
+    manufacturerId: number,
+  ): Promise<number> {
+    return this.get(
+      `/api/donations/getManufacturerDonationCount/${manufacturerId}`,
+    ) as Promise<number>;
+  }
+
+  public async getPantrySSFRep(pantryId: number): Promise<User> {
+    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
   private async post(path: string, body: unknown): Promise<unknown> {
@@ -74,6 +120,17 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
+  }
+
+  public async updateDonationFrequency(
+    manufacturerId: number,
+    frequency: string,
+    body?: unknown,
+  ): Promise<ManufacturerDetails> {
+    return this.patch(
+      `/api/manufacturer/updateFrequency/${manufacturerId}/${frequency}`,
+      body,
+    ) as Promise<ManufacturerDetails>;
   }
 
   public async updateDonationItemQuantity(
