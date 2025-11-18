@@ -10,8 +10,8 @@
     "prepush": "yarn run format:check && yarn run lint:check",
     "prepush:fix": "yarn run format && yarn run lint",
     "prepare": "husky install",
-    "typeorm:migrate": "npx ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:run -d apps/backend/src/config/typeorm.ts",
-    "typeorm:revert": "npx ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:revert -d apps/backend/src/config/typeorm.ts"
+    "typeorm:migrate": "ts-node --project apps/backend/tsconfig.app.json -r dotenv/config ./node_modules/typeorm/cli.js migration:run -d apps/backend/src/config/typeorm.ts",
+    "typeorm:revert": "ts-node --project apps/backend/tsconfig.app.json -r dotenv/config ./node_modules/typeorm/cli.js migration:revert -d apps/backend/src/config/typeorm.ts"
   },
   "private": true,
   "dependencies": {
