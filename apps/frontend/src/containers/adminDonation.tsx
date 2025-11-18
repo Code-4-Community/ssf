@@ -96,11 +96,7 @@ const AdminDonation: React.FC = () => {
 
   return (
     <Box p={12}>
-      <Heading
-        textStyle="h1"
-        color="gray.600"
-        mb={6}
-      >
+      <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
@@ -242,11 +238,7 @@ const AdminDonation: React.FC = () => {
               >
                 {donation.foodManufacturer?.foodManufacturerName}
               </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                textAlign="right"
-                color="neutral.700"
-              >
+              <Table.Cell textStyle="p2" textAlign="right" color="neutral.700">
                 {formatDate(donation.dateDonated)}
               </Table.Cell>
             </Table.Row>
