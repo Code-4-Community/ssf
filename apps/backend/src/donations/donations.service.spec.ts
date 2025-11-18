@@ -4,8 +4,10 @@ import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { mock } from 'jest-mock-extended';
+import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 
 const mockDonationRepository = mock<Repository<Donation>>();
+const mockFoodManufacturerRepository = mock<Repository<FoodManufacturer>>();
 
 describe('DonationService', () => {
   let service: DonationService;
@@ -19,6 +21,10 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: mockDonationRepository,
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: mockFoodManufacturerRepository,
         },
       ],
     }).compile();
