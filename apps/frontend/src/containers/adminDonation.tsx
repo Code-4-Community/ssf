@@ -24,7 +24,7 @@ const AdminDonation: React.FC = () => {
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
     [],
   );
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
 
@@ -89,28 +89,17 @@ const AdminDonation: React.FC = () => {
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
     color: 'neutral.800',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: 'inter',
     fontWeight: '600',
     fontSize: 'sm',
-  };
-
-  const tableCellStyles = {
-    borderBottom: '1px solid',
-    borderColor: 'neutral.100',
-    color: 'black',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 'sm',
-    py: 0,
   };
 
   return (
     <Box p={12}>
       <Heading
-        size="4xl"
+        textStyle="h1"
         color="gray.600"
-        fontWeight="normal"
         mb={6}
-        fontFamily="'Instrument Serif', serif"
       >
         Donation Management
       </Heading>
@@ -124,6 +113,7 @@ const AdminDonation: React.FC = () => {
             borderColor="neutral.200"
             size="sm"
             p={3}
+            fontFamily="karrik"
           >
             <Funnel />
             Filter
@@ -185,6 +175,7 @@ const AdminDonation: React.FC = () => {
           borderColor="neutral.200"
           p={3}
           size="sm"
+          fontFamily="karrik"
         >
           <ArrowDownUp />
           Sort
@@ -225,34 +216,34 @@ const AdminDonation: React.FC = () => {
               _hover={{ bg: 'gray.50' }}
             >
               <Table.Cell
-                {...tableCellStyles}
+                textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
                 <Button
                   variant="plain"
                   textDecoration="underline"
-                  onClick={() => setSelectedDonationId(donation.donationId)}
+                  onClick={() => setSelectedDonation(donation)}
                 >
                   {donation.donationId}
                 </Button>
-                {selectedDonationId && (
+                {selectedDonation && (
                   <DonationDetailsModal
-                    donationId={selectedDonationId}
-                    isOpen={selectedDonationId !== null}
-                    onClose={() => setSelectedDonationId(null)}
+                    donation={selectedDonation}
+                    isOpen={selectedDonation !== null}
+                    onClose={() => setSelectedDonation(null)}
                   />
                 )}
               </Table.Cell>
               <Table.Cell
-                {...tableCellStyles}
+                textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
                 {donation.foodManufacturer?.foodManufacturerName}
               </Table.Cell>
               <Table.Cell
-                {...tableCellStyles}
+                textStyle="p2"
                 textAlign="right"
                 color="neutral.700"
               >
@@ -281,7 +272,7 @@ const AdminDonation: React.FC = () => {
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
-              _hover={{ color: 'black' }}
+              _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronLeft size={16} />
             </Pagination.PrevTrigger>
@@ -302,7 +293,7 @@ const AdminDonation: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
-              _hover={{ color: 'black' }}
+              _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronRight size={16} />
             </Pagination.NextTrigger>
