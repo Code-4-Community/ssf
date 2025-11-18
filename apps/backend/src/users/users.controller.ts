@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Put,
   Post,
+  Patch,
   BadRequestException,
   Body,
   //UseGuards,
@@ -15,7 +16,6 @@ import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
-import { VOLUNTEER_ROLES } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
@@ -26,7 +26,7 @@ export class UsersController {
 
   @Get('/volunteers')
   async getAllVolunteers(): Promise<User[]> {
-    return this.usersService.findUsersByRoles(VOLUNTEER_ROLES);
+    return this.usersService.getVolunteersAndPantryAssignments();
   }
 
   // @UseGuards(AuthGuard('jwt'))
@@ -55,5 +55,18 @@ export class UsersController {
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
     const { email, firstName, lastName, phone, role } = createUserDto;
     return this.usersService.create(email, firstName, lastName, phone, role);
+  }
+
+  @Get('/:id/pantries')
+  async getVolunteerPantries(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getVolunteerPantries(id);
+  }
+
+  @Patch(':id/pantries')
+  async assignPantry(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('pantryIds') pantryIds: number[],
+  ) {
+    return this.usersService.assignPantriesToVolunteer(id, pantryIds);
   }
 }
