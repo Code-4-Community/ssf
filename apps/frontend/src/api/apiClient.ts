@@ -1,5 +1,4 @@
-import axios, { type AxiosInstance } from 'axios';
-import { VolunteerPantryAssignment } from 'types/types';
+import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
   Pantry,
@@ -9,6 +8,9 @@ import {
   DonationItem,
   Donation,
   Allocation,
+  PantryApplicationDto,
+  VolunteerPantryAssignment,
+  CreateFoodRequestBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -46,9 +48,21 @@ export class ApiClient {
     ) as Promise<DonationItem>;
   }
 
+  public async createFoodRequest(
+    body: CreateFoodRequestBody,
+  ): Promise<FoodRequest> {
+    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
   private async patch(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .patch(path, body)
+      .then((response) => response.data);
+  }
+
+  public async getAllDonations(): Promise<Donation[]> {
+    return this.axiosInstance
+      .get('/api/donations')
       .then((response) => response.data);
   }
 
@@ -100,6 +114,12 @@ export class ApiClient {
 
   public async getPantry(pantryId: number): Promise<Pantry> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  }
+
+  public async postPantry(
+    data: PantryApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/pantries`, data);
   }
 
   public async getFoodRequestFromOrder(
@@ -159,7 +179,7 @@ export class ApiClient {
 
   public async getAllOrders(): Promise<Order[]> {
     return this.axiosInstance
-      .get('/api/orders/get-all-orders')
+      .get('/api/orders/')
       .then((response) => response.data);
   }
 
@@ -187,7 +207,7 @@ export class ApiClient {
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/allocations/${orderId}/get-all-allocations`)
+      .get(`api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 

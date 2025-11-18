@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Put,
+  Post,
   Patch,
   BadRequestException,
   Body,
@@ -15,6 +16,7 @@ import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
+import { userSchemaDto } from './dtos/userSchema.dto';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
@@ -47,6 +49,12 @@ export class UsersController {
       throw new BadRequestException('Invalid role');
     }
     return this.usersService.update(id, { role: role as Role });
+  }
+
+  @Post('/')
+  async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
+    const { email, firstName, lastName, phone, role } = createUserDto;
+    return this.usersService.create(email, firstName, lastName, phone, role);
   }
 
   @Get('/:id/pantries')
