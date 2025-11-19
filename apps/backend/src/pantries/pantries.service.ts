@@ -23,7 +23,7 @@ export class PantriesService {
   }
 
   async getPendingPantries(): Promise<Pantry[]> {
-    return await this.repo.find({ where: { status: 'pending' } });
+    return await this.repo.find({ where: { status: 'pending' },  relations: ['pantryUser'] });
   }
 
   async addPantry(pantryData: PantryApplicationDto) {

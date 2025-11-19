@@ -14,6 +14,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const pantryUser = pantry.pantryUser;
   return (
     <Dialog.Root
       open={isOpen}
@@ -28,30 +29,30 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
         <Dialog.Content>
           <Dialog.Header>Pantry Application Details</Dialog.Header>
           <Dialog.Body>
-            {pantry.pantryUser ? (
+            {pantryUser ? (
               <Grid templateColumns="2fr 1fr" gap={4}>
                 <GridItem>
                   <Text fontWeight="bold">Pantry User Name</Text>
                 </GridItem>
 
                 <GridItem>
-                  {pantry.pantryUser.firstName} {pantry.pantryUser.lastName}
+                  {pantryUser.firstName} {pantryUser.lastName}
                 </GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Email</Text>
                 </GridItem>
-                <GridItem>{pantry.pantryUser.email}</GridItem>
+                <GridItem>{pantryUser.email}</GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Phone</Text>
                 </GridItem>
-                <GridItem>{pantry.pantryUser.phone}</GridItem>
+                <GridItem>{pantryUser.phone}</GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Role</Text>
                 </GridItem>
-                <GridItem>{pantry.pantryUser.role}</GridItem>
+                <GridItem>{pantryUser.role}</GridItem>
               </Grid>
             ) : (
               <Text>No user details available.</Text>
