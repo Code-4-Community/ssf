@@ -24,7 +24,7 @@ export enum ServeAllergicChildren {
   NO = 'No',
 }
 
-export enum PantriesStatus {
+export enum PantryStatus {
   APPROVED = 'approved',
   DENIED = 'denied',
   PENDING = 'pending',

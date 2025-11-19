@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { DonationsStatus } from './types';
+import { DonationStatus } from './types';
 
 @Injectable()
 export class DonationService {
@@ -40,7 +40,7 @@ export class DonationService {
   async create(
     foodManufacturerId: number,
     dateDonated: Date,
-    status: DonationsStatus,
+    status: DonationStatus,
     totalItems: number,
     totalOz: number,
     totalEstimatedValue: number,
@@ -74,7 +74,7 @@ export class DonationService {
     if (!donation) {
       throw new NotFoundException(`Donation ${donationId} not found`);
     }
-    donation.status = DonationsStatus.FULFILLED;
+    donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
   }
 }

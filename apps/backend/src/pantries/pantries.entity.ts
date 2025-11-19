@@ -12,7 +12,7 @@ import {
   AllergensConfidence,
   AllergyFriendlyStorage,
   ClientVisitFrequency,
-  PantriesStatus,
+  PantryStatus,
   RefrigeratedDonation,
   ServeAllergicChildren,
 } from './types';
@@ -128,10 +128,10 @@ export class Pantry {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: PantriesStatus,
+    enum: PantryStatus,
     enumName: 'pantries_status_enum',
   })
-  status: PantriesStatus;
+  status: PantryStatus;
 
   @Column({
     name: 'date_applied',

@@ -12,7 +12,7 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationsStatus } from './types';
+import { DonationStatus } from './types';
 
 @Controller('donations')
 export class DonationsController {
@@ -46,7 +46,10 @@ export class DonationsController {
           type: 'string',
           format: 'date-time',
         },
-        status: { type: 'string', example: 'in progress' },
+        status: { 
+          type: 'string', 
+          enum: Object.values(DonationStatus),
+          example: DonationStatus.AVAILABLE },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
@@ -58,7 +61,7 @@ export class DonationsController {
     body: {
       foodManufacturerId: number;
       dateDonated: Date;
-      status: DonationsStatus;
+      status: DonationStatus;
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
@@ -66,14 +69,14 @@ export class DonationsController {
   ): Promise<Donation> {
     if (
       body.status &&
-      !Object.values(DonationsStatus).includes(body.status as DonationsStatus)
+      !Object.values(DonationStatus).includes(body.status as DonationStatus)
     ) {
       throw new BadRequestException('Invalid status');
     }
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
-      body.status ?? DonationsStatus.AVAILABLE,
+      body.status ?? DonationStatus.AVAILABLE,
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,

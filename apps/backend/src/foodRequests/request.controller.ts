@@ -57,7 +57,10 @@ export class FoodRequestsController {
       type: 'object',
       properties: {
         pantryId: { type: 'integer', example: 1 },
-        requestedSize: { type: 'string', example: 'Medium (5-10 boxes)' },
+        requestedSize: { 
+          type: 'string', 
+          enum: Object.values(RequestSize),
+          example: RequestSize.LARGE },
         requestedItems: {
           type: 'array',
           items: { type: 'string' },
@@ -68,8 +71,6 @@ export class FoodRequestsController {
           nullable: true,
           example: 'Urgent request',
         },
-        status: { type: 'string', example: 'pending' },
-        fulfilledBy: { type: 'integer', nullable: true, example: null },
         dateReceived: {
           type: 'string',
           format: 'date-time',

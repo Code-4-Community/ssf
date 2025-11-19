@@ -11,7 +11,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { OrdersStatus } from './types';
+import { OrderStatus } from './types';
 
 @Injectable()
 export class OrdersService {
@@ -45,13 +45,13 @@ export class OrdersService {
 
   async getCurrentOrders() {
     return this.repo.find({
-      where: { status: In([OrdersStatus.PENDING, OrdersStatus.SHIPPED]) },
+      where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
     });
   }
 
   async getPastOrders() {
     return this.repo.find({
-      where: { status: OrdersStatus.DELIVERED },
+      where: { status: OrderStatus.DELIVERED },
     });
   }
 
@@ -138,7 +138,7 @@ export class OrdersService {
   async updateStatus(orderId: number, newStatus: string) {
     validateId(orderId, 'Order');
 
-    if (!Object.values(OrdersStatus).includes(newStatus as OrdersStatus)) {
+    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
       throw new BadRequestException('Invalid status');
     }
 
@@ -147,10 +147,10 @@ export class OrdersService {
       .createQueryBuilder()
       .update(Order)
       .set({
-        status: newStatus as OrdersStatus,
+        status: newStatus as OrderStatus,
         shippedBy: 1,
-        shippedAt: newStatus === OrdersStatus.SHIPPED ? new Date() : null,
-        deliveredAt: newStatus === OrdersStatus.DELIVERED ? new Date() : null,
+        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : null,
+        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : null,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
