@@ -11,7 +11,12 @@ import { useState } from 'react';
 import { Role, UserDto } from "../../types/types";
 import ApiClient from '@api/apiClient';
 
-const NewVolunteerModal: React.FC = () => {
+interface NewVolunteerModalProps {
+  onSubmitSuccess?: () => void; 
+  onSubmitFail?: () => void; 
+}
+
+const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, onSubmitFail }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -39,13 +44,21 @@ const NewVolunteerModal: React.FC = () => {
 
     try {
       await ApiClient.postUser(newVolunteer);
-    } catch (error) {
-      alert('Error creating new user');
+      if (onSubmitSuccess) onSubmitSuccess();
+      handleClear();
+    } catch (error: any) {
+      const message = error.response?.data?.message;
+      const hasEmailOrPhoneError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("phone")));
+      if (hasEmailOrPhoneError) {
+        setError("Please specify a valid email and phone number")
+      } else {
+        if (onSubmitFail) onSubmitFail();
+        handleClear();
+      }
     }
-
   }
 
-  const handleCancel = () => {
+  const handleClear = () => {
     setFirstName("");
     setLastName("");
     setEmail("");
@@ -65,7 +78,7 @@ const NewVolunteerModal: React.FC = () => {
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
           <Dialog.Header>
-            <Dialog.Title fontSize={25} fontWeight={700}>
+            <Dialog.Title fontSize={25} fontWeight={700} fontFamily="'Instrument Serif', serif">
               Add New Volunteer
             </Dialog.Title>
             <CloseButton onClick={() => setIsOpen(false)} size="sm" position="absolute" top={3} right={3}/>
@@ -98,8 +111,8 @@ const NewVolunteerModal: React.FC = () => {
               </Text>
             )}
             <Flex justifyContent="flex-end" mt={4} gap={4}>
-              <Button variant='outline' onClick={handleSubmit}>Submit</Button>
-              <Button variant='outline' onClick={handleCancel}>Cancel</Button>
+              <Button bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
+              <Button variant='outline' onClick={handleClear}>Cancel</Button>
             </Flex>
           </Dialog.Body>
         </Dialog.Content>
