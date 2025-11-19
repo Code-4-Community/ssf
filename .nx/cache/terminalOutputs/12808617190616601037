@@ -1,0 +1,192 @@
+[1m[33m[36m>[39m[33m [7m[1m[36m NX [39m[33m[22m[1m[27m Unable to load tsconfig-paths, workspace libraries may be inaccessible.[39m[22m
+[1m[33m  - To fix this, install tsconfig-paths with npm/yarn/pnpm[39m[22m
+[1m[33m[36m>[39m[33m [7m[1m[36m NX [39m[33m[22m[1m[27m Falling back to ts-node for local typescript execution. This may be a little slower.[39m[22m
+[1m[33m  - To fix this, ensure @swc-node/register and @swc/core have been installed[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 154 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+webpack compiled [1m[32msuccessfully[39m[22m (d5b6861a64efac66)
+[1m[31mDebugger listening on ws://localhost:9229/1874d891-d781-4216-8561-0535ab086a2a[39m[22m
+[1m[31mDebugger listening on ws://localhost:9229/1874d891-d781-4216-8561-0535ab086a2a[39m[22m
+[1m[31mFor help, see: https://nodejs.org/en/docs/inspector[39m[22m
+[1m[31m[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+webpack compiled [1m[32msuccessfully[39m[22m (87ce07cadfff260b)
+[1m[31mDebugger listening on ws://localhost:9229/7fdbd61c-9a68-44b6-bdf3-e7a23069a946[39m[22m
+[1m[31mDebugger listening on ws://localhost:9229/7fdbd61c-9a68-44b6-bdf3-e7a23069a946[39m[22m
+[1m[31mFor help, see: https://nodejs.org/en/docs/inspector[39m[22m
+[1m[31m[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m
+webpack compiled [1m[32msuccessfully[39m[22m (87ce07cadfff260b)
+[1m[31mDebugger listening on ws://localhost:9229/ddcad5e6-3a96-478f-9d94-4f2d3e0d71dd[39m[22m
+[1m[31mDebugger listening on ws://localhost:9229/ddcad5e6-3a96-478f-9d94-4f2d3e0d71dd[39m[22m
+[1m[31mFor help, see: https://nodejs.org/en/docs/inspector[39m[22m
+[1m[31m[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 154 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/auth/auth.controller.ts:[32m[1m36:17[22m[39m[1m[39m[22m
+[90mTS2339: [39mProperty 'phone' does not exist on type 'SignUpDto'.
+  [0m [90m 34 |[39m       signUpDto[33m.[39mfirstName[33m,[39m[0m
+  [0m [90m 35 |[39m       signUpDto[33m.[39mlastName[33m,[39m[0m
+  [0m[31m[1m>[22m[39m[90m 36 |[39m       signUpDto[33m.[39mphone[33m,[39m[0m
+  [0m [90m    |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 37 |[39m       [33mRole[39m[33m.[39m[33mSTANDARD_VOLUNTEER[39m[33m,[39m[0m
+  [0m [90m 38 |[39m     )[33m;[39m[0m
+  [0m [90m 39 |[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/auth/auth.controller.ts:[32m[1m37:7[22m[39m[1m[39m[22m
+[90mTS2554: [39mExpected 3-4 arguments, but got 5.
+  [0m [90m 35 |[39m       signUpDto[33m.[39mlastName[33m,[39m[0m
+  [0m [90m 36 |[39m       signUpDto[33m.[39mphone[33m,[39m[0m
+  [0m[31m[1m>[22m[39m[90m 37 |[39m       [33mRole[39m[33m.[39m[33mSTANDARD_VOLUNTEER[39m[33m,[39m[0m
+  [0m [90m    |[39m       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 38 |[39m     )[33m;[39m[0m
+  [0m [90m 39 |[39m[0m
+  [0m [90m 40 |[39m     [36mreturn[39m user[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/config/typeorm.ts:[32m[1m15:49[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module '../migrations/1744051370129-updateFoodRequests' or its corresponding type declarations.
+  [0m [90m 13 |[39m [36mimport[39m { [33mAssignmentsPantryIdNotUnique1758384669652[39m } [36mfrom[39m [32m'../migrations/1758384669652-AssignmentsPantryIdNotUnique'[39m[33m;[39m[0m
+  [0m [90m 14 |[39m [36mimport[39m { [33mUpdateOrdersTable1740367964915[39m } [36mfrom[39m [32m'../migrations/1740367964915-updateOrdersTable'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 15 |[39m [36mimport[39m { [33mUpdateFoodRequests1744051370129[39m } [36mfrom[39m [32m'../migrations/1744051370129-updateFoodRequests'[39m[33m;[39m[0m
+  [0m [90m    |[39m                                                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 16 |[39m [36mimport[39m { [33mUpdateRequestTable1741571847063[39m } [36mfrom[39m [32m'../migrations/1741571847063-updateRequestTable'[39m[33m;[39m[0m
+  [0m [90m 17 |[39m [36mimport[39m { [33mRemoveOrderIdFromRequests1744133526650[39m } [36mfrom[39m [32m'../migrations/1744133526650-removeOrderIdFromRequests'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mAddOrders1739496585940[39m } [36mfrom[39m [32m'../migrations/1739496585940-addOrders'[39m[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/config/typeorm.ts:[32m[1m17:56[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module '../migrations/1744133526650-removeOrderIdFromRequests' or its corresponding type declarations.
+  [0m [90m 15 |[39m [36mimport[39m { [33mUpdateFoodRequests1744051370129[39m } [36mfrom[39m [32m'../migrations/1744051370129-updateFoodRequests'[39m[33m;[39m[0m
+  [0m [90m 16 |[39m [36mimport[39m { [33mUpdateRequestTable1741571847063[39m } [36mfrom[39m [32m'../migrations/1741571847063-updateRequestTable'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 17 |[39m [36mimport[39m { [33mRemoveOrderIdFromRequests1744133526650[39m } [36mfrom[39m [32m'../migrations/1744133526650-removeOrderIdFromRequests'[39m[33m;[39m[0m
+  [0m [90m    |[39m                                                        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mAddOrders1739496585940[39m } [36mfrom[39m [32m'../migrations/1739496585940-addOrders'[39m[33m;[39m[0m
+  [0m [90m 19 |[39m [36mimport[39m { [33mUpdatePantriesTable1742739750279[39m } [36mfrom[39m [32m'../migrations/1742739750279-updatePantriesTable'[39m[33m;[39m[0m
+  [0m [90m 20 |[39m [36mimport[39m { [33mUpdatePantryUserFields1731171000000[39m } [36mfrom[39m [32m'../migrations/1731171000000-UpdatePantryUserFields'[39m[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m19:31[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module './dtos/userSchema.dto' or its corresponding type declarations.
+  [0m [90m 17 |[39m [36mimport[39m { [33mRole[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mVOLUNTEER_ROLES[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 19 |[39m [36mimport[39m { userSchemaDto } [36mfrom[39m [32m'./dtos/userSchema.dto'[39m[33m;[39m[0m
+  [0m [90m    |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 20 |[39m [90m//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';[39m[0m
+  [0m [90m 21 |[39m[0m
+  [0m [90m 22 |[39m [33m@[39m[33mController[39m([32m'users'[39m)[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m57:72[22m[39m[1m[39m[22m
+[90mTS2554: [39mExpected 3-4 arguments, but got 5.
+  [0m [90m 55 |[39m   [36masync[39m createUser([33m@[39m[33mBody[39m() createUserDto[33m:[39m userSchemaDto)[33m:[39m [33mPromise[39m[33m<[39m[33mUser[39m[33m>[39m {[0m
+  [0m [90m 56 |[39m     [36mconst[39m { email[33m,[39m firstName[33m,[39m lastName[33m,[39m phone[33m,[39m role } [33m=[39m createUserDto[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 57 |[39m     [36mreturn[39m [36mthis[39m[33m.[39musersService[33m.[39mcreate(email[33m,[39m firstName[33m,[39m lastName[33m,[39m phone[33m,[39m role)[33m;[39m[0m
+  [0m [90m    |[39m                                                                        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 58 |[39m   }[0m
+  [0m [90m 59 |[39m }[0m
+  [0m [90m 60 |[39m[0m
+
+webpack compiled with [1m[31m6 errors[39m[22m (3743c4f1fe8cc021)
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m19:31[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module './dtos/userSchema.dto' or its corresponding type declarations.
+  [0m [90m 17 |[39m [36mimport[39m { [33mRole[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mVOLUNTEER_ROLES[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 19 |[39m [36mimport[39m { userSchemaDto } [36mfrom[39m [32m'./dtos/userSchema.dto'[39m[33m;[39m[0m
+  [0m [90m    |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 20 |[39m [90m//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';[39m[0m
+  [0m [90m 21 |[39m[0m
+  [0m [90m 22 |[39m [33m@[39m[33mController[39m([32m'users'[39m)[0m
+
+webpack compiled with [1m[31m1 error[39m[22m (a5b392e29901b5dc)
+[1m[31mBuild failed, waiting for changes to restart...[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m19:31[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module './dtos/userSchema.dto' or its corresponding type declarations.
+  [0m [90m 17 |[39m [36mimport[39m { [33mRole[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mVOLUNTEER_ROLES[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 19 |[39m [36mimport[39m { userSchemaDto } [36mfrom[39m [32m'./dtos/userSchema.dto'[39m[33m;[39m[0m
+  [0m [90m    |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 20 |[39m [90m//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';[39m[0m
+  [0m [90m 21 |[39m[0m
+  [0m [90m 22 |[39m [33m@[39m[33mController[39m([32m'users'[39m)[0m
+
+webpack compiled with [1m[31m1 error[39m[22m (a5b392e29901b5dc)
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m
+webpack compiled [1m[32msuccessfully[39m[22m (a5b392e29901b5dc)
+[1m[31mBuild failed, waiting for changes to restart...[39m[22m
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 154 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/auth/auth.controller.ts:[32m[1m36:17[22m[39m[1m[39m[22m
+[90mTS2339: [39mProperty 'phone' does not exist on type 'SignUpDto'.
+  [0m [90m 34 |[39m       signUpDto[33m.[39mfirstName[33m,[39m[0m
+  [0m [90m 35 |[39m       signUpDto[33m.[39mlastName[33m,[39m[0m
+  [0m[31m[1m>[22m[39m[90m 36 |[39m       signUpDto[33m.[39mphone[33m,[39m[0m
+  [0m [90m    |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 37 |[39m       [33mRole[39m[33m.[39m[33mSTANDARD_VOLUNTEER[39m[33m,[39m[0m
+  [0m [90m 38 |[39m     )[33m;[39m[0m
+  [0m [90m 39 |[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/auth/auth.controller.ts:[32m[1m37:7[22m[39m[1m[39m[22m
+[90mTS2554: [39mExpected 3-4 arguments, but got 5.
+  [0m [90m 35 |[39m       signUpDto[33m.[39mlastName[33m,[39m[0m
+  [0m [90m 36 |[39m       signUpDto[33m.[39mphone[33m,[39m[0m
+  [0m[31m[1m>[22m[39m[90m 37 |[39m       [33mRole[39m[33m.[39m[33mSTANDARD_VOLUNTEER[39m[33m,[39m[0m
+  [0m [90m    |[39m       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 38 |[39m     )[33m;[39m[0m
+  [0m [90m 39 |[39m[0m
+  [0m [90m 40 |[39m     [36mreturn[39m user[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/config/typeorm.ts:[32m[1m15:49[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module '../migrations/1744051370129-updateFoodRequests' or its corresponding type declarations.
+  [0m [90m 13 |[39m [36mimport[39m { [33mAssignmentsPantryIdNotUnique1758384669652[39m } [36mfrom[39m [32m'../migrations/1758384669652-AssignmentsPantryIdNotUnique'[39m[33m;[39m[0m
+  [0m [90m 14 |[39m [36mimport[39m { [33mUpdateOrdersTable1740367964915[39m } [36mfrom[39m [32m'../migrations/1740367964915-updateOrdersTable'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 15 |[39m [36mimport[39m { [33mUpdateFoodRequests1744051370129[39m } [36mfrom[39m [32m'../migrations/1744051370129-updateFoodRequests'[39m[33m;[39m[0m
+  [0m [90m    |[39m                                                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 16 |[39m [36mimport[39m { [33mUpdateRequestTable1741571847063[39m } [36mfrom[39m [32m'../migrations/1741571847063-updateRequestTable'[39m[33m;[39m[0m
+  [0m [90m 17 |[39m [36mimport[39m { [33mRemoveOrderIdFromRequests1744133526650[39m } [36mfrom[39m [32m'../migrations/1744133526650-removeOrderIdFromRequests'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mAddOrders1739496585940[39m } [36mfrom[39m [32m'../migrations/1739496585940-addOrders'[39m[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/config/typeorm.ts:[32m[1m17:56[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module '../migrations/1744133526650-removeOrderIdFromRequests' or its corresponding type declarations.
+  [0m [90m 15 |[39m [36mimport[39m { [33mUpdateFoodRequests1744051370129[39m } [36mfrom[39m [32m'../migrations/1744051370129-updateFoodRequests'[39m[33m;[39m[0m
+  [0m [90m 16 |[39m [36mimport[39m { [33mUpdateRequestTable1741571847063[39m } [36mfrom[39m [32m'../migrations/1741571847063-updateRequestTable'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 17 |[39m [36mimport[39m { [33mRemoveOrderIdFromRequests1744133526650[39m } [36mfrom[39m [32m'../migrations/1744133526650-removeOrderIdFromRequests'[39m[33m;[39m[0m
+  [0m [90m    |[39m                                                        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mAddOrders1739496585940[39m } [36mfrom[39m [32m'../migrations/1739496585940-addOrders'[39m[33m;[39m[0m
+  [0m [90m 19 |[39m [36mimport[39m { [33mUpdatePantriesTable1742739750279[39m } [36mfrom[39m [32m'../migrations/1742739750279-updatePantriesTable'[39m[33m;[39m[0m
+  [0m [90m 20 |[39m [36mimport[39m { [33mUpdatePantryUserFields1731171000000[39m } [36mfrom[39m [32m'../migrations/1731171000000-UpdatePantryUserFields'[39m[33m;[39m[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m19:31[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module './dtos/userSchema.dto' or its corresponding type declarations.
+  [0m [90m 17 |[39m [36mimport[39m { [33mRole[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mVOLUNTEER_ROLES[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 19 |[39m [36mimport[39m { userSchemaDto } [36mfrom[39m [32m'./dtos/userSchema.dto'[39m[33m;[39m[0m
+  [0m [90m    |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 20 |[39m [90m//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';[39m[0m
+  [0m [90m 21 |[39m[0m
+  [0m [90m 22 |[39m [33m@[39m[33mController[39m([32m'users'[39m)[0m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m57:72[22m[39m[1m[39m[22m
+[90mTS2554: [39mExpected 3-4 arguments, but got 5.
+  [0m [90m 55 |[39m   [36masync[39m createUser([33m@[39m[33mBody[39m() createUserDto[33m:[39m userSchemaDto)[33m:[39m [33mPromise[39m[33m<[39m[33mUser[39m[33m>[39m {[0m
+  [0m [90m 56 |[39m     [36mconst[39m { email[33m,[39m firstName[33m,[39m lastName[33m,[39m phone[33m,[39m role } [33m=[39m createUserDto[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 57 |[39m     [36mreturn[39m [36mthis[39m[33m.[39musersService[33m.[39mcreate(email[33m,[39m firstName[33m,[39m lastName[33m,[39m phone[33m,[39m role)[33m;[39m[0m
+  [0m [90m    |[39m                                                                        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 58 |[39m   }[0m
+  [0m [90m 59 |[39m }[0m
+  [0m [90m 60 |[39m[0m
+
+webpack compiled with [1m[31m6 errors[39m[22m (2673da48a69d03fa)
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 157 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+
+[1m[31mERROR[39m[22m in [1m./apps/backend/src/users/users.controller.ts:[32m[1m19:31[22m[39m[1m[39m[22m
+[90mTS2307: [39mCannot find module './dtos/userSchema.dto' or its corresponding type declarations.
+  [0m [90m 17 |[39m [36mimport[39m { [33mRole[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m [90m 18 |[39m [36mimport[39m { [33mVOLUNTEER_ROLES[39m } [36mfrom[39m [32m'./types'[39m[33m;[39m[0m
+  [0m[31m[1m>[22m[39m[90m 19 |[39m [36mimport[39m { userSchemaDto } [36mfrom[39m [32m'./dtos/userSchema.dto'[39m[33m;[39m[0m
+  [0m [90m    |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+  [0m [90m 20 |[39m [90m//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';[39m[0m
+  [0m [90m 21 |[39m[0m
+  [0m [90m 22 |[39m [33m@[39m[33mController[39m([32m'users'[39m)[0m
+
+webpack compiled with [1m[31m1 error[39m[22m (984f666ab3f52f6e)
+[1m[31mBuild failed, waiting for changes to restart...[39m[22m
