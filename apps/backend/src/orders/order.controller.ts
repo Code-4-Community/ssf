@@ -23,8 +23,9 @@ export class OrdersController {
     private readonly allocationsService: AllocationsService,
   ) {}
 
-  // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%2
+  // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
   // %20 is the URL encoded space character
+  // This gets all pantries with the name Test Pantry or Test Pantry 2 that have a pending status
   @Get('/')
   async getAllOrders(
     @Query('status') status?: string,
