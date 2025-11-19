@@ -217,6 +217,7 @@ const AdminDonation: React.FC = () => {
                 textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
+                py={0}
               >
                 <Button
                   variant="plain"
