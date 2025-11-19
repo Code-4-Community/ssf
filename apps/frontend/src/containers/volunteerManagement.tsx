@@ -10,7 +10,8 @@ import {
   InputGroup,
   Pagination,
   ButtonGroup,
-  IconButton
+  IconButton,
+  Alert
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -22,6 +23,8 @@ const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const pageSize = 8;
 
@@ -62,6 +65,12 @@ const VolunteerManagement: React.FC = () => {
   return (
     <Box flexDirection="column" p={4}>
       <Text fontSize="3xl">Volunteer Management</Text>
+      {alertMessage && (
+        <Alert.Root status="info">
+          <Alert.Indicator />
+          <Alert.Title>{alertMessage}</Alert.Title>
+        </Alert.Root>
+      )}
       <Box
         mt={5}
         display="block"
@@ -79,7 +88,11 @@ const VolunteerManagement: React.FC = () => {
                 onChange={handleSearchNameChange}
               />
             </InputGroup>
-            <NewVolunteerModal></NewVolunteerModal>
+            <NewVolunteerModal onSubmitSuccess={() => {
+                setAlertMessage("Volunteer added");
+                setTimeout(() => setAlertMessage(""), 3000);
+              }}
+            />
           </Flex>
         </VStack>
         <Table.Root variant="line">
