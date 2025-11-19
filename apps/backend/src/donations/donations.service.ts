@@ -18,6 +18,7 @@ export class DonationService {
 
     const donation = await this.repo.findOne({
       where: { donationId },
+      relations: ['foodManufacturer'],
     });
 
     if (!donation) {
@@ -30,6 +31,10 @@ export class DonationService {
     return this.repo.find({
       relations: ['foodManufacturer'],
     });
+  }
+
+  async getNumberOfDonations(): Promise<number> {
+    return this.repo.count();
   }
 
   async create(

@@ -10,6 +10,7 @@ import {
   Allocation,
   PantryApplicationDto,
   VolunteerPantryAssignment,
+  CreateFoodRequestBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -45,6 +46,12 @@ export class ApiClient {
       '/api/donation-items/create',
       body,
     ) as Promise<DonationItem>;
+  }
+
+  public async createFoodRequest(
+    body: CreateFoodRequestBody,
+  ): Promise<FoodRequest> {
+    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
@@ -142,12 +149,6 @@ export class ApiClient {
 
   public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
-  }
-
-  public async getDonationFromOrder(orderId: number): Promise<Donation | null> {
-    return this.axiosInstance
-      .get(`/api/orders/${orderId}/donation`)
-      .then((response) => response.data);
   }
 
   public async getOrderDonation(donationId: number): Promise<Donation> {
