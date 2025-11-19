@@ -2,20 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   Flex,
   Button,
-  Checkbox,
   Textarea,
-  SimpleGrid,
-  CheckboxGroup,
-  RadioGroup,
-  HStack,
+  Menu,
   Text,
   Field,
   Dialog,
-  Fieldset,
+  Tag
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
-import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -64,19 +59,17 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   }, [isOpen, previousRequest]);
 
   const shipmentSizeOptions = [
-    { value: '<20', label: '<20' },
-    { value: '20-50', label: '20-50' },
-    { value: '50-100', label: '50-100' },
-    { value: '100-150', label: '100-150' },
-    { value: '150-200', label: '150-200' },
-    { value: '>200', label: '>200' },
+    { value: 'Very Small (1-2 boxes)', label: 'Very Small (1-2 boxes)' },
+    { value: 'Small (2-5 boxes)', label: 'Small (2-5 boxes)' },
+    { value: 'Medium (5-10 boxes)', label: 'Medium (5-10 boxes)' },
+    { value: 'Large (10+ boxes)', label: 'Large (10+ boxes)' },
   ];
 
   return (
     <Dialog.Root
       open={isOpen}
       size="xl"
-      onOpenChange={(e: { open: boolean }) => {
+      onOpenChange={(e) => {
         if (!e.open) onClose();
       }}
       closeOnInteractOutside
@@ -85,20 +78,15 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
           <Dialog.Header>
-            <Dialog.Title fontSize={25} fontWeight={700}>
-              SSF Food Request Form
+            <Dialog.Title fontSize={25} fontWeight={700} fontFamily="body">
+              New Food Request
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
             <Text mb="1.5em">
-              Request a shipment of allergen-free food from SSF. You will be
-              placed on our waiting list for incoming donations targeted to your
-              needs.
-              <br />
-              <br />
-              Please keep in mind that we may not be able to accommodate
-              specific food requests at all times, but we will do our best to
-              match your preferences.
+              Please keep in mind that we may not be able to accommodate specific
+              food requests at all times, but we will do our best to match your
+              preferences.
             </Text>
             <Form
               method="post"
@@ -106,13 +94,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               onSubmit={(e) => {
                 if (selectedItems.length === 0) {
                   e.preventDefault();
-                  alert(
-                    'Please select at least one item from the shipment list.',
-                  );
+                  alert("Please select at least one item from the shipment list.");
                 }
                 if (requestedSize === '') {
                   e.preventDefault();
-                  alert('Please select a requested size.');
+                  alert("Please select a requested size.")
                 }
               }}
             >
@@ -120,86 +106,142 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               <Field.Root required mb="2em">
                 <Field.Label>
                   <Text fontSize={20} fontWeight={700}>
-                    Requested Size of Shipment
+                    Size of Shipment
                   </Text>
-                  <Field.RequiredIndicator
-                    color="red"
-                    fontSize={20}
-                    fontWeight={700}
-                  />
                 </Field.Label>
-                <RadioGroup.Root
-                  value={requestedSize}
-                  onValueChange={(e: { value: string }) =>
-                    setRequestedSize(e.value)
-                  }
-                  name="size"
-                  disabled={readOnly}
-                  required
-                >
-                  <HStack gap="24px">
-                    {shipmentSizeOptions.map((option) => (
-                      <RadioGroup.Item key={option.value} value={option.value}>
-                        <RadioGroup.ItemHiddenInput />
-                        <RadioGroup.ItemControl />
-                        <RadioGroup.ItemText>
-                          {option.label}
-                        </RadioGroup.ItemText>
-                      </RadioGroup.Item>
-                    ))}
-                  </HStack>
-                </RadioGroup.Root>
+                <input type="hidden" name="size" value={requestedSize} />
+                <Menu.Root>
+                  <Menu.Trigger asChild>
+                    <Button disabled={readOnly} w="full" bgColor={'white'} color={'gray'} borderColor={'black'} justifyContent="flex-start" mt={3}>
+                      {requestedSize || "Select Size"}
+                    </Button>
+                  </Menu.Trigger>
+
+                  <Menu.Positioner>
+                    <Menu.Content>
+                      <Menu.RadioItemGroup
+                        value={requestedSize}
+                        onValueChange={(val: string) => setRequestedSize(val)}
+                      >
+                        {shipmentSizeOptions.map((option) => (
+                          <Menu.RadioItem key={option.value} value={option.value}>
+                            <Menu.ItemIndicator />
+                            {option.label}
+                          </Menu.RadioItem>
+                        ))}
+                      </Menu.RadioItemGroup>
+                    </Menu.Content>
+                  </Menu.Positioner>
+                </Menu.Root>
               </Field.Root>
 
-              <Fieldset.Root mb="2em">
-                <Fieldset.Legend>
-                  <Text fontSize={20} fontWeight={700}>
-                    Requested Shipment{' '}
-                    <Text as="span" color="red">
-                      *
-                    </Text>
-                  </Text>
-                </Fieldset.Legend>
-                <CheckboxGroup
-                  value={selectedItems}
-                  onValueChange={setSelectedItems}
-                >
-                  <SimpleGrid gap={2} columns={2}>
-                    {getAllergens().map((allergen) => (
-                      <Checkbox.Root
-                        key={allergen}
-                        value={allergen}
-                        disabled={readOnly}
-                        name="restrictions"
+              <Field.Root mb="2em">
+                <Field.Label>
+                  <Text fontSize={20} fontWeight={700}>Food Type(s)</Text>
+                </Field.Label>
+
+                {selectedItems.map((item) => (
+                  <input key={item} type="hidden" name="restrictions" value={item} />
+                ))}
+
+                <Menu.Root closeOnSelect={false}>
+                  <Menu.Trigger asChild>
+                    <Button
+                      disabled={readOnly}
+                      w="full"
+                      bgColor="white"
+                      color="gray"
+                      borderColor="black"
+                      justifyContent="flex-start"
+                      mt={3}
+                    >
+                      {selectedItems.length > 0
+                        ? `Multi-Select`
+                        : "Select food types"}
+                    </Button>
+                  </Menu.Trigger>
+                 
+                  <Menu.Positioner>
+                    <Menu.Content maxH="250px" overflowY="auto">
+                      {getAllergens().map((allergen) => (
+                        <Menu.CheckboxItem
+                          key={allergen}
+                          checked={selectedItems.includes(allergen)}
+                          onCheckedChange={(checked: boolean) => {
+                            setSelectedItems((prev) =>
+                              checked
+                                ? [...prev, allergen]
+                                : prev.filter((i) => i !== allergen)
+                            );
+                          }}
+                          disabled={readOnly}
+                        >
+                          {allergen}
+                          <Menu.ItemIndicator>
+                          </Menu.ItemIndicator>
+                        </Menu.CheckboxItem>
+                      ))}
+                    </Menu.Content>
+                  </Menu.Positioner>
+                </Menu.Root>
+
+                {selectedItems.length > 0 && (
+                  <Flex wrap="wrap" mt={3} gap={2}>
+                    {selectedItems.map((item) => (
+                      <Tag.Root
+                        key={item}
+                        size="xl"
+                        variant="solid"
+                        bg="#E9F4F6"
+                        color="black"
+                        borderRadius="0"
                       >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                        <Checkbox.Label>{allergen}</Checkbox.Label>
-                      </Checkbox.Root>
+                        <Tag.Label>{item}</Tag.Label>
+                        <Tag.EndElement>
+                          {!readOnly && (
+                            <Tag.CloseTrigger
+                              onClick={() =>
+                                setSelectedItems((prev) => prev.filter((i) => i !== item))
+                              }
+                            />
+                          )}
+                        </Tag.EndElement>
+                      </Tag.Root>
                     ))}
-                  </SimpleGrid>
-                </CheckboxGroup>
-              </Fieldset.Root>
+                  </Flex>
+                )}
+              </Field.Root>
 
               <Field.Root mb="2em">
                 <Field.Label>
                   <Text fontSize={20} fontWeight={700}>
-                    Additional Comments
+                    Additional Information
                   </Text>
                 </Field.Label>
                 <Textarea
                   name="notes"
                   placeholder="Anything else we should know about"
-                  size="sm"
+                  size="lg"
                   value={additionalNotes}
-                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  onChange={(e) => {
+                    const inputText = e.target.value
+                    const words = inputText.trim().split(/\s+/)
+
+                    if (words.length <= 250) {
+                      setAdditionalNotes(e.target.value)
+                    } else {
+                      alert("Exceeded word limit")
+                    }
+                   
+                  }}
                   disabled={readOnly}
                 />
+                <Field.HelperText>Max 250 words</Field.HelperText>
               </Field.Root>
 
-              <Flex justifyContent="space-between" mt={4}>
-                <Button onClick={onClose}>Close</Button>
-                {!readOnly && <Button type="submit">Submit</Button>}
+              <Flex justifyContent="flex-end" mt={4} gap={2}>
+                {!readOnly && <Button type="submit" bg={'#213C4A'} color={'white'}>Continue</Button>}
+                <Button onClick={onClose} bg={'white'} color={'black'} borderColor={'black'}>Cancel</Button>
               </Flex>
             </Form>
           </Dialog.Body>
@@ -217,7 +259,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   const foodRequestData = new Map();
 
-  const pantryId = form.get('pantryId');
+  const pantryId = form.get('pantryId')
   foodRequestData.set('requestedSize', form.get('size'));
   form.delete('size');
   foodRequestData.set('additionalInformation', form.get('notes'));
@@ -249,7 +291,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       return null;
     }
   } catch (error) {
-    alert('Error submitting food request: ' + error);
+    console.error('Error submitting food request', error);
     window.location.href = `/request-form/${pantryId}`;
     return null;
   }
