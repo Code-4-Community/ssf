@@ -18,6 +18,7 @@ export class DonationService {
 
     const donation = await this.repo.findOne({
       where: { donationId },
+      relations: ['foodManufacturer'],
     });
 
     if (!donation) {

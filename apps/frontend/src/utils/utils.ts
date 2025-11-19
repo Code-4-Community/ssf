@@ -1,6 +1,6 @@
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-CA');
+  return date.toLocaleDateString('en-US');
 };
 
 export const formatReceivedDate = (dateString: string | null) => {
