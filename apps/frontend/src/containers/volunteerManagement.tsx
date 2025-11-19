@@ -13,6 +13,7 @@ import {
   Box,
   Portal,
   NativeSelect,
+  NativeSelectIndicator,
 } from '@chakra-ui/react';
 import { VolunteerType } from '../types/types';
 import { Link } from 'react-router-dom';
@@ -24,10 +25,7 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [changedVolunteers, setChangedVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const [checkedTypes, setCheckedTypes] = useState<string[]>([
-    'LEAD_VOLUNTEER',
-    'STANDARD_VOLUNTEER',
-  ]);
+  const [checkedTypes, setCheckedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -48,7 +46,7 @@ const VolunteerManagement: React.FC = () => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
     return (
       fullName.includes(searchName.toLowerCase()) &&
-      checkedTypes.includes(a.role.toUpperCase())
+      (checkedTypes.includes(a.role.toUpperCase()) || checkedTypes.length === 0)
     );
   });
 
@@ -76,6 +74,7 @@ const VolunteerManagement: React.FC = () => {
             </option>
           ))}
         </NativeSelect.Field>
+        <NativeSelectIndicator />
       </NativeSelect.Root>
     );
   };
@@ -100,7 +99,7 @@ const VolunteerManagement: React.FC = () => {
 
   const handleReset = () => {
     setSearchName('');
-    setCheckedTypes(['LEAD_VOLUNTEER', 'STANDARD_VOLUNTEER']);
+    setCheckedTypes([]);
 
     setChangedVolunteers(volunteers);
   };
@@ -169,11 +168,8 @@ const VolunteerManagement: React.FC = () => {
                         checked={checkedTypes.includes(
                           volunteerType.toUpperCase(),
                         )}
-                        onCheckedChange={(e) =>
-                          handleVolunteerFilterChange(
-                            volunteerType,
-                            e.target.checked,
-                          )
+                        onCheckedChange={(e: { checked: boolean }) =>
+                          handleVolunteerFilterChange(volunteerType, e.checked)
                         }
                       >
                         <Checkbox.HiddenInput />
@@ -195,8 +191,8 @@ const VolunteerManagement: React.FC = () => {
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
               <Button onClick={handleReset}>Reset unsaved changes</Button>
-              <Button as={Link} to="/add_volunteer_page">
-                Add a new volunteer
+              <Button asChild>
+                <Link to="/add_volunteer_page">Add a new volunteer</Link>
               </Button>
               <Button onClick={handleSaveChanges}>Save changes</Button>
             </Flex>
@@ -228,8 +224,10 @@ const VolunteerManagement: React.FC = () => {
                   })}
                 </Table.Cell>
                 <Table.Cell>
-                  <Button as={Link} to={`/pantry-management/${volunteer.id}`}>
-                    View assigned pantries
+                  <Button asChild>
+                    <Link to={`/pantry-management/${volunteer.id}`}>
+                      View assigned pantries
+                    </Link>
                   </Button>
                 </Table.Cell>
               </Table.Row>

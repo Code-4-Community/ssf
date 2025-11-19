@@ -13,38 +13,35 @@ import { DonationItem } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface DonationDetailsModalProps {
-  donationId: number;
+  donation: Donation;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
-  donationId,
+  donation,
   isOpen,
   onClose,
 }) => {
-  const [donation, setDonation] = useState<Donation | null>(null);
   const [items, setItems] = useState<DonationItem[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
         try {
-          const donationData = await ApiClient.getOrderDonation(donationId);
           const itemsData = await ApiClient.getDonationItemsByDonationId(
-            donationId,
+            donation.donationId,
           );
 
-          setDonation(donationData);
           setItems(itemsData);
         } catch (error) {
-          console.error('Error fetching donation details:', error);
+          alert('Error fetching donation details:' + error);
         }
       };
 
       fetchData();
     }
-  }, [isOpen, donationId]);
+  }, [isOpen, donation]);
 
   const groupedItems = items.reduce((acc, item) => {
     if (!acc[item.foodType]) {
@@ -55,7 +52,14 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   }, {} as Record<string, DonationItem[]>);
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
+      scrollBehavior="inside"
+    >
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.200" />
         <Dialog.Positioner>
@@ -72,7 +76,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   fontWeight="600"
                   fontFamily="'Inter', sans-serif"
                 >
-                  Donation #{donationId} Details
+                  Donation #{donation.donationId} Details
                 </Dialog.Title>
                 {donation && (
                   <>

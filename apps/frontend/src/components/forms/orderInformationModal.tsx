@@ -41,7 +41,10 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
     <Dialog.Root
       open={isOpen}
       size="lg"
-      onOpenChange={(e) => !e.open && onClose()}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
     >
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -52,9 +55,6 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
               <VStack gap={4} align="start">
                 <Text>
                   <strong>Pantry Name:</strong> {pantry.pantryName}
-                </Text>
-                <Text>
-                  <strong>Pantry Address:</strong> {pantry.address}
                 </Text>
                 <Text>
                   <strong>Order Items:</strong>

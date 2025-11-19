@@ -27,7 +27,10 @@ const FormRequests: React.FC = () => {
   const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
     'mostRecent',
   );
-  const { pantryId } = useParams<{ pantryId: string }>();
+
+  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
+  const pantryId = parseInt(pantryIdParam!, 10);
+
   const [allConfirmed, setAllConfirmed] = useState(false);
   const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
     number | null
@@ -40,9 +43,7 @@ const FormRequests: React.FC = () => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
-          const data = await ApiClient.getPantryRequests(
-            parseInt(pantryId, 10),
-          );
+          const data = await ApiClient.getPantryRequests(pantryId);
           setRequests(data);
 
           if (data.length > 0) {
@@ -93,6 +94,7 @@ const FormRequests: React.FC = () => {
           previousRequest={undefined}
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
+          pantryId={pantryId}
         />
         {previousRequest && (
           <>
@@ -107,6 +109,7 @@ const FormRequests: React.FC = () => {
               readOnly={false}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
+              pantryId={pantryId}
             />
           </>
         )}
@@ -129,8 +132,8 @@ const FormRequests: React.FC = () => {
       <Table.Root mt={6} width="80%">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Request Id</Table.ColumnHeader>
-            <Table.ColumnHeader>Order Id</Table.ColumnHeader>
+            <Table.ColumnHeader>Request ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Order ID</Table.ColumnHeader>
             <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
             <Table.ColumnHeader>Status</Table.ColumnHeader>
             <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
@@ -190,6 +193,7 @@ const FormRequests: React.FC = () => {
               readOnly={true}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
+              pantryId={pantryId}
             />
           )}
           {openOrderId && (
@@ -204,6 +208,7 @@ const FormRequests: React.FC = () => {
               requestId={openDeliveryRequestId}
               isOpen={openDeliveryRequestId !== null}
               onClose={() => setOpenDeliveryRequestId(null)}
+              pantryId={pantryId}
             />
           )}
         </Table.Body>

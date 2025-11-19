@@ -13,7 +13,8 @@
       "@containers/*": ["containers/*"],
       "@public/*": ["../public/*"],
       "@shared/*": ["../../../shared/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@loaders/*": ["loaders/*"],
     },
   },
   "files": [],

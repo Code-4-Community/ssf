@@ -23,7 +23,9 @@ export class OrdersController {
     private readonly allocationsService: AllocationsService,
   ) {}
 
-  @Get('/get-all-orders')
+  // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%2
+  // %20 is the URL encoded space character
+  @Get('/')
   async getAllOrders(
     @Query('status') status?: string,
     @Query('pantryName') pantryNames?: string | string[],
@@ -81,12 +83,12 @@ export class OrdersController {
 
   @Get('/order/:requestId')
   async getOrderByRequestId(
-    @Param('orderId', ParseIntPipe) orderId: number,
+    @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<Order> {
-    return this.ordersService.findOrderByRequest(orderId);
+    return this.ordersService.findOrderByRequest(requestId);
   }
 
-  @Get(':orderId/get-all-allocations')
+  @Get(':orderId/allocations')
   async getAllAllocationsByOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {

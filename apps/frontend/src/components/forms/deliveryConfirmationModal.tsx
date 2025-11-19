@@ -15,6 +15,7 @@ interface DeliveryConfirmationModalProps {
   requestId: number;
   isOpen: boolean;
   onClose: () => void;
+  pantryId: number;
 }
 
 const photoNames: string[] = [];
@@ -24,6 +25,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   requestId,
   isOpen,
   onClose,
+  pantryId,
 }) => {
   const handlePhotoChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -57,8 +59,11 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   return (
     <Dialog.Root
       open={isOpen}
-      onOpenChange={(e) => !e.open && onClose()}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
       size="xl"
+      closeOnInteractOutside
     >
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -74,6 +79,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
               action="/confirm-delivery"
               encType="multipart/form-data"
             >
+              <input type="hidden" name="pantryId" value={pantryId} />
               <input type="hidden" name="requestId" value={requestId} />
               <Field.Root required mb="2em">
                 <Field.Label>
@@ -125,7 +131,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
               </Field.Root>
               <HStack gap="24px" justifyContent="space-between" mt={4}>
                 <Button onClick={onClose}>Close</Button>
-                <Button type="submit" colorScheme="blue">
+                <Button type="submit" bg="blue">
                   Confirm Delivery
                 </Button>
               </HStack>
@@ -145,6 +151,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
+  const pantryId = form.get('pantryId');
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 
@@ -170,10 +177,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       confirmDeliveryData,
     );
     alert('Delivery confirmation submitted successfully');
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
   }
 };
 

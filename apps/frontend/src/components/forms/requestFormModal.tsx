@@ -11,9 +11,11 @@ import {
   Text,
   Field,
   Dialog,
+  Fieldset,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -74,7 +76,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     <Dialog.Root
       open={isOpen}
       size="xl"
-      onOpenChange={(e) => !e.open && onClose()}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
     >
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -95,7 +100,22 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               specific food requests at all times, but we will do our best to
               match your preferences.
             </Text>
-            <Form method="post" action="/food-request">
+            <Form
+              method="post"
+              action="/food-request"
+              onSubmit={(e) => {
+                if (selectedItems.length === 0) {
+                  e.preventDefault();
+                  alert(
+                    'Please select at least one item from the shipment list.',
+                  );
+                }
+                if (requestedSize === '') {
+                  e.preventDefault();
+                  alert('Please select a requested size.');
+                }
+              }}
+            >
               <input type="hidden" name="pantryId" value={pantryId} />
               <Field.Root required mb="2em">
                 <Field.Label>
@@ -110,9 +130,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Field.Label>
                 <RadioGroup.Root
                   value={requestedSize}
-                  onValueChange={(e) => setRequestedSize(e.value)}
+                  onValueChange={(e: { value: string }) =>
+                    setRequestedSize(e.value)
+                  }
                   name="size"
                   disabled={readOnly}
+                  required
                 >
                   <HStack gap="24px">
                     {shipmentSizeOptions.map((option) => (
@@ -128,17 +151,15 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </RadioGroup.Root>
               </Field.Root>
 
-              <Field.Root required mb="2em">
-                <Field.Label>
+              <Fieldset.Root mb="2em">
+                <Fieldset.Legend>
                   <Text fontSize={20} fontWeight={700}>
-                    Requested Shipment
+                    Requested Shipment{' '}
+                    <Text as="span" color="red">
+                      *
+                    </Text>
                   </Text>
-                  <Field.RequiredIndicator
-                    color="red"
-                    fontSize={20}
-                    fontWeight={700}
-                  />
-                </Field.Label>
+                </Fieldset.Legend>
                 <CheckboxGroup
                   value={selectedItems}
                   onValueChange={setSelectedItems}
@@ -158,18 +179,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     ))}
                   </SimpleGrid>
                 </CheckboxGroup>
-              </Field.Root>
+              </Fieldset.Root>
 
-              <Field.Root required mb="2em">
+              <Field.Root mb="2em">
                 <Field.Label>
                   <Text fontSize={20} fontWeight={700}>
                     Additional Comments
                   </Text>
-                  <Field.RequiredIndicator
-                    color="red"
-                    fontSize={20}
-                    fontWeight={700}
-                  />
                 </Field.Label>
                 <Textarea
                   name="notes"
@@ -201,6 +217,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   const foodRequestData = new Map();
 
+  const pantryId = form.get('pantryId');
   foodRequestData.set('requestedSize', form.get('size'));
   form.delete('size');
   foodRequestData.set('additionalInformation', form.get('notes'));
@@ -232,7 +249,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       return null;
     }
   } catch (error) {
-    console.error('Error submitting food request', error);
+    alert('Error submitting food request: ' + error);
     window.location.href = `/request-form/${pantryId}`;
     return null;
   }

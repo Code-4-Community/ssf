@@ -43,13 +43,13 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
       <VStack gap={4} width="80%">
         <ButtonGroup>
           <Button
-            colorScheme={orderType === 'current' ? 'blue' : 'gray'}
+            bg={orderType === 'current' ? 'blue' : 'gray'}
             onClick={() => setOrderType('current')}
           >
             Current Orders
           </Button>
           <Button
-            colorScheme={orderType === 'past' ? 'blue' : 'gray'}
+            bg={orderType === 'past' ? 'blue' : 'gray'}
             onClick={() => setOrderType('past')}
           >
             Past Orders
@@ -83,7 +83,7 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                   <ButtonGroup>
                     {order.status === 'pending' && (
                       <Button
-                        colorScheme="blue"
+                        bg="blue"
                         size="sm"
                         onClick={() =>
                           updateOrderStatus(order.orderId, 'shipped')
