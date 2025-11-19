@@ -109,7 +109,8 @@ const AdminDonation: React.FC = () => {
             borderColor="neutral.200"
             size="sm"
             p={3}
-            fontFamily="karrik"
+            fontFamily="ibm"
+            fontWeight="semibold"
           >
             <Funnel />
             Filter
@@ -171,7 +172,8 @@ const AdminDonation: React.FC = () => {
           borderColor="neutral.200"
           p={3}
           size="sm"
-          fontFamily="karrik"
+          fontFamily="ibm"
+          fontWeight="semibold"
         >
           <ArrowDownUp />
           Sort

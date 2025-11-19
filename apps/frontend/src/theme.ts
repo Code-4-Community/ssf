@@ -15,13 +15,13 @@ const textStyles = defineTextStyles({
   },
   h2: {
     value: {
-      fontFamily: 'karrik',
+      fontFamily: 'ibm',
       fontSize: '28px',
     },
   },
   h3: {
     value: {
-      fontFamily: 'karrik',
+      fontFamily: 'ibm',
       fontSize: '24px',
     },
   },
@@ -72,7 +72,7 @@ const customConfig = defineConfig({
       },
       fonts: {
         instrument: { value: `'Instrument Serif', serif` },
-        karrik: { value: `'Karrik', sans-serif` },
+        ibm: { value: `'IBM Plex Sans', sans-serif` },
         inter: { value: `'Inter', sans-serif` },
       },
     },
