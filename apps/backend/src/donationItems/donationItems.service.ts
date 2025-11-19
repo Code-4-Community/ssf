@@ -27,6 +27,7 @@ export class DonationItemsService {
     estimatedValue: number,
     foodType: string,
   ) {
+    validateId(donationId, 'Donation');
     const donation = await this.donationRepo.findOneBy({ donationId });
     if (!donation) throw new NotFoundException('Donation not found');
 
