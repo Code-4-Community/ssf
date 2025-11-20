@@ -14,9 +14,6 @@ export class DonationItem {
   @PrimaryGeneratedColumn({ name: 'item_id' })
   itemId: number;
 
-  @Column({ name: 'donation_id', type: 'int' })
-  donationId: number;
-
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
   donation: Donation;
