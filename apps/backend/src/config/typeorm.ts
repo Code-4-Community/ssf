@@ -16,6 +16,7 @@ import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-upd
 import { UpdateRequestTable1741571847063 } from '../migrations/1741571847063-updateRequestTable';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests';
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
+import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238-RemoveOrdersDonationId';
 
@@ -47,6 +48,7 @@ const config = {
     UpdateRequestTable1741571847063,
     UpdateFoodRequests1744051370129,
     RemoveOrderIdFromRequests1744133526650,
+    CreateDummyData1759636753110,
     UpdatePantriesTable1742739750279,
     RemoveOrdersDonationId1761500262238,
   ],
