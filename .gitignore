@@ -42,6 +42,3 @@ Thumbs.db
 *.env
 *.env.*
 !.env.example
-.nx/cache/
-terminalOutputs/
-project-graph.json-*
