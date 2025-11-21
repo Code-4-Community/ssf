@@ -31,6 +31,6 @@ Finally, run `yarn run typeorm:migrate` to load all the tables into your databas
 
 1. Create a **separate** Postgres database (for example `securing-safe-food-test`).
 2. Add a `DATABASE_NAME_TEST` entry (and optionally `DATABASE_HOST/PORT/USERNAME/PASSWORD`) to your `.env` so the test data source can connect to that database.
-3. Run the backend test suite with `npx nx test backend --runInBand`.
+3. Run the backend test suite with `npx jest`.
 
 Each spec truncates all data tables and runs the `CreateDummyData1759636753110` migration so every test receives the same dataset while keeping the schema created by the regular migrations.
