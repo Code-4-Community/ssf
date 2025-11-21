@@ -1,5 +1,6 @@
 import {
   ArrayNotEmpty,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsNotEmpty,
@@ -72,6 +73,13 @@ export class PantryApplicationDto {
   @IsIn(['Yes', 'Small quantities only', 'No'])
   refrigeratedDonation: string;
 
+  @IsBoolean()
+  acceptFoodDeliveries: boolean;
+
+  @IsOptional()
+  @IsString()
+  deliveryWindowInstructions?: string;
+
   @IsIn(['Yes', 'Some', 'No'])
   reserveFoodForAllergic: string;
 
@@ -80,12 +88,8 @@ export class PantryApplicationDto {
   @IsString()
   reservationExplanation?: string;
 
-  @IsIn([
-    'Yes, we have a dedicated shelf or box',
-    'Yes, we keep allergy-friendly items in a back room',
-    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-  ])
-  dedicatedAllergyFriendly: string;
+  @IsBoolean()
+  dedicatedAllergyFriendly: boolean;
 
   @IsOptional()
   @IsIn([
@@ -137,6 +141,6 @@ export class PantryApplicationDto {
   needMoreOptions: string;
 
   @IsOptional()
-  @IsIn(['Yes', 'No'])
-  newsletterSubscription?: string;
+  @IsBoolean()
+  newsletterSubscription?: boolean;
 }
