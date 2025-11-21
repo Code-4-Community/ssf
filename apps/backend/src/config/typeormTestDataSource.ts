@@ -9,6 +9,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { Assignments } from '../volunteerAssignments/volunteerAssignments.entity';
 
 import { User1725726359198 } from '../migrations/1725726359198-User';
 import { AddTables1726524792261 } from '../migrations/1726524792261-addTables';
@@ -26,16 +27,18 @@ import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-up
 import { UpdateFoodRequests1744051370129 } from '../migrations/1744051370129-updateFoodRequests';
 import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526650-removeOrderIdFromRequests';
 import { AssignmentsPantryIdNotUnique1758384669652 } from '../migrations/1758384669652-AssignmentsPantryIdNotUnique';
-import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238-RemoveOrdersDonationId';
 
 const testConfig: DataSourceOptions = {
   type: 'postgres',
-  host: `${process.env.DATABASE_HOST}`,
-  port: parseInt(`${process.env.DATABASE_PORT}`, 10),
-  database: `${process.env.DATABASE_NAME_TEST}`,
-  username: `${process.env.DATABASE_USERNAME}`,
-  password: `${process.env.DATABASE_PASSWORD}`,
+  host: process.env.DATABASE_HOST ?? '127.0.0.1',
+  port: parseInt(process.env.DATABASE_PORT ?? '5432', 10),
+  database:
+    process.env.DATABASE_NAME_TEST ??
+    process.env.DATABASE_NAME ??
+    'securing-safe-food-test',
+  username: process.env.DATABASE_USERNAME ?? 'postgres',
+  password: process.env.DATABASE_PASSWORD ?? 'postgres',
   synchronize: false,
   namingStrategy: new PluralNamingStrategy(),
   entities: [
@@ -47,6 +50,7 @@ const testConfig: DataSourceOptions = {
     FoodRequest,
     DonationItem,
     Allocation,
+    Assignments,
   ],
   migrations: [
     User1725726359198,
@@ -66,7 +70,6 @@ const testConfig: DataSourceOptions = {
     RemoveOrderIdFromRequests1744133526650,
     AssignmentsPantryIdNotUnique1758384669652,
     RemoveOrdersDonationId1761500262238,
-    CreateDummyData1759636753110,
   ],
 };
 

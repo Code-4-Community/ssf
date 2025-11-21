@@ -5,17 +5,17 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 
-describe('OrdersService', () => {
+//jest.setTimeout(30000);
+
+describe('OrdersService (integration)', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
-    // Initialize DB and run all migrations once to create tables
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
       await testDataSource.runMigrations();
     }
 
-    // Set up NestJS testing module
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -30,7 +30,6 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
-    // Truncate all tables in FK-safe order (removes data, keeps tables)
     const fkSafeOrder = [
       'volunteer_assignments',
       'allocations',
@@ -49,15 +48,19 @@ describe('OrdersService', () => {
       );
     }
 
-    // Reseed dummy data
     const queryRunner = testDataSource.createQueryRunner();
     await queryRunner.connect();
-    await new CreateDummyData1759636753110().up(queryRunner);
-    await queryRunner.release();
+    try {
+      await new CreateDummyData1759636753110().up(queryRunner);
+    } finally {
+      await queryRunner.release();
+    }
   });
 
   afterAll(async () => {
-    await testDataSource.destroy();
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
   });
 
   it('should be defined', () => {
@@ -65,14 +68,49 @@ describe('OrdersService', () => {
   });
 
   describe('getAll', () => {
-    it('should return orders filtered by status', async () => {
+    it('returns orders filtered by status', async () => {
       const orders = await service.getAll({ status: 'delivered' });
-      expect(orders.length).toBeGreaterThanOrEqual(1);
+
+      expect(orders).toHaveLength(3);
+      expect(orders.every((order) => order.status === 'delivered')).toBe(true);
     });
 
-    it('should return empty array when no status filters match', async () => {
+    it('returns empty array when status filter matches nothing', async () => {
       const orders = await service.getAll({ status: 'invalid' });
+
       expect(orders).toEqual([]);
+    });
+
+    it('returns orders filtered by pantry names', async () => {
+      const orders = await service.getAll({
+        pantryNames: ['Community Food Pantry Downtown'],
+      });
+
+      expect(orders).toHaveLength(3);
+      expect(
+        orders.every(
+          (order) => order.pantry.pantryName === 'Community Food Pantry Downtown',
+        ),
+      ).toBe(true);
+    });
+
+    it('returns empty array when pantry filter matches nothing', async () => {
+      const orders = await service.getAll({
+        pantryNames: ['Nonexistent Pantry'],
+      });
+
+      expect(orders).toEqual([]);
+    });
+
+    it('returns orders filtered by both pantry and status', async () => {
+      const orders = await service.getAll({
+        status: 'delivered',
+        pantryNames: ['Westside Community Kitchen'],
+      });
+
+      expect(orders).toHaveLength(1);
+      expect(orders[0].pantry.pantryName).toBe('Westside Community Kitchen');
+      expect(orders[0].status).toBe('delivered');
     });
   });
 });
