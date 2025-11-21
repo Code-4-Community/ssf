@@ -5,12 +5,11 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 
-//jest.setTimeout(30000);
-
 describe('OrdersService (integration)', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
+    // Create all tables and run migrations
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
       await testDataSource.runMigrations();
@@ -42,12 +41,14 @@ describe('OrdersService (integration)', () => {
       'users',
     ];
 
+    // Delete all data, keep schema
     for (const table of fkSafeOrder) {
       await testDataSource.query(
         `TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`,
       );
     }
 
+    // Seed dummy data
     const queryRunner = testDataSource.createQueryRunner();
     await queryRunner.connect();
     try {
@@ -58,6 +59,7 @@ describe('OrdersService (integration)', () => {
   });
 
   afterAll(async () => {
+    // Destroy all schemas
     if (testDataSource.isInitialized) {
       await testDataSource.destroy();
     }
