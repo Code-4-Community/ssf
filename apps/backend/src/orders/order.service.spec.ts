@@ -89,7 +89,8 @@ describe('OrdersService (integration)', () => {
       expect(orders).toHaveLength(3);
       expect(
         orders.every(
-          (order) => order.pantry.pantryName === 'Community Food Pantry Downtown',
+          (order) =>
+            order.pantry.pantryName === 'Community Food Pantry Downtown',
         ),
       ).toBe(true);
     });

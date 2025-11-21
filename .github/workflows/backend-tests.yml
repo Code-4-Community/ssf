@@ -1,12 +1,4 @@
-name: Backend Tests
-
-on:
-  push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
+on: [push, pull_request]
 
 jobs:
   backend-tests:
@@ -20,35 +12,19 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d securing-safe-food-test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     env:
       DATABASE_HOST: 127.0.0.1
       DATABASE_PORT: 5432
-      DATABASE_NAME: securing-safe-food-test
       DATABASE_NAME_TEST: securing-safe-food-test
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
-      NODE_ENV: test
-      CI: true
       NX_DAEMON: 'false'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Run backend tests
-        run: npx nx test backend --runInBand
+      - run: yarn install
+      - run: npx jest
 
 
