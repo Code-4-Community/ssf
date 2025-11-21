@@ -27,18 +27,18 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
 
     await queryRunner.query(`
            INSERT INTO public.pantries (
-               pantry_name, address, allergen_clients, refrigerated_donation,
+               pantry_name, allergen_clients, refrigerated_donation,
                reserve_food_for_allergic, reservation_explanation, dedicated_allergy_friendly,
                client_visit_frequency, identify_allergens_confidence, serve_allergic_children,
                newsletter_subscription, restrictions, ssf_representative_id, pantry_representative_id,
-               activities, questions, items_in_stock, need_more_options, status
+               activities, activities_comments, items_in_stock, need_more_options, status,
+               address_line_1, address_city, address_state, address_zip
            ) VALUES
            (
                'Community Food Pantry Downtown',
-               '123 Main St, Springfield, IL 62701',
                'yes',
                'yes',
-               true,
+               'Yes',
                'We have several clients with severe nut allergies and need to keep separate storage',
                'Dedicated shelf for allergen-free items',
                'weekly',
@@ -48,18 +48,21 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                ARRAY['peanuts', 'tree_nuts', 'shellfish'],
                (SELECT user_id FROM public.users WHERE email = 'john.smith@ssf.org'),
                (SELECT user_id FROM public.users WHERE email = 'mike.brown@pantry1.org'),
-               'Food distribution, nutrition education, cooking classes',
+               ARRAY['Food distribution', 'nutrition education', 'cooking classes'],
                'How can we better serve clients with multiple allergies?',
                'Canned goods, pasta, rice, cereal',
                'More fresh produce and dairy alternatives',
-               'active'
+               'active',
+               '123 Main Street',
+               'Boston',
+               'MA',
+               '02115'
            ),
            (
                'Westside Community Kitchen',
-               '456 Oak Ave, Springfield, IL 62702',
                'some',
                'no',
-               false,
+               'No',
                'Limited space for separate storage',
                'None currently',
                'monthly',
@@ -69,18 +72,21 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                ARRAY['gluten'],
                (SELECT user_id FROM public.users WHERE email = 'sarah.j@ssf.org'),
                (SELECT user_id FROM public.users WHERE email = 'emily.davis@pantry2.org'),
-               'Weekly meal service, food boxes',
+               ARRAY['Weekly meal service', 'food boxes'],
                NULL,
                'Bread, canned vegetables, soup',
                'Gluten-free options',
-               'active'
+               'active',
+               '456 Oak Avenue',
+               'Boston',
+               'MA',
+               '02116'
            ),
            (
                'North End Food Bank',
-               '789 Pine Rd, Springfield, IL 62703',
                'no',
                'yes',
-               true,
+               'Yes',
                'Expanding allergen-friendly program',
                'Separate refrigerator for allergen-free items',
                'bi-weekly',
@@ -90,11 +96,15 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                ARRAY['dairy', 'eggs'],
                (SELECT user_id FROM public.users WHERE email = 'john.smith@ssf.org'),
                (SELECT user_id FROM public.users WHERE email = 'robert.w@pantry3.org'),
-               'Emergency food assistance, senior programs',
+               ARRAY['Emergency food assistance', 'senior programs'],
                'Can we get more information about cross-contamination prevention?',
                'Proteins, grains, canned fruits',
                'Dairy-free and egg-free alternatives',
-               'pending'
+               'pending',
+               '789 Elm Street',
+               'Boston',
+               'MA',
+               '02113'
            )
        `);
 
@@ -283,7 +293,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
     await queryRunner.query(`
            INSERT INTO public.orders (
                request_id, pantry_id, shipped_by, status, created_at,
-               shipped_at, delivered_at, donation_id
+               shipped_at, delivered_at
            ) VALUES
            (
                (SELECT request_id FROM public.food_requests WHERE additional_information LIKE '%150 families%'),
@@ -292,8 +302,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                'delivered',
                '2024-01-16 09:00:00',
                '2024-01-17 08:00:00',
-               '2024-01-18 14:30:00',
-               (SELECT donation_id FROM public.donations WHERE total_items = 150)
+               '2024-01-18 14:30:00'
            ),
            (
                (SELECT request_id FROM public.food_requests WHERE additional_information LIKE '%75 clients%'),
@@ -302,8 +311,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                'delivered',
                '2024-01-21 10:00:00',
                '2024-01-22 09:00:00',
-               '2024-01-23 10:00:00',
-               (SELECT donation_id FROM public.donations WHERE total_items = 200)
+               '2024-01-23 10:00:00'
            ),
            (
                (SELECT request_id FROM public.food_requests WHERE additional_information = 'Regular monthly order'),
@@ -312,8 +320,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                'shipped',
                '2024-02-02 11:00:00',
                '2024-02-03 08:00:00',
-               NULL,
-               (SELECT donation_id FROM public.donations WHERE total_items = 100)
+               NULL
            ),
            (
                (SELECT request_id FROM public.food_requests WHERE additional_information LIKE '%breakfast items%'),
@@ -322,8 +329,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                'pending',
                '2024-02-03 12:00:00',
                NULL,
-               NULL,
-               (SELECT donation_id FROM public.donations WHERE total_items = 75)
+               NULL
            ),
            (
                (SELECT request_id FROM public.food_requests WHERE additional_information LIKE '%breakfast items%'),
@@ -332,8 +338,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
                'delivered',
                '2024-02-03 12:00:00',
                '2024-02-04 12:00:00',
-               '2024-02-05 12:00:00',
-               (SELECT donation_id FROM public.donations WHERE total_items = 75)
+               '2024-02-05 12:00:00'
            )
        `);
 

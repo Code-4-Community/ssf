@@ -3,20 +3,19 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { Repository } from 'typeorm';
 import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 
 describe('OrdersService', () => {
   let service: OrdersService;
-  let repository: Repository<Order>;
 
   beforeAll(async () => {
-    // Initialize DB and run all migrations once
+    // Initialize DB and run all migrations once to create tables
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
       await testDataSource.runMigrations();
     }
 
+    // Set up NestJS testing module
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -28,11 +27,10 @@ describe('OrdersService', () => {
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
-    repository = testDataSource.getRepository(Order);
   });
 
   beforeEach(async () => {
-    // Truncate all tables in FK-safe order
+    // Truncate all tables in FK-safe order (removes data, keeps tables)
     const fkSafeOrder = [
       'volunteer_assignments',
       'allocations',
