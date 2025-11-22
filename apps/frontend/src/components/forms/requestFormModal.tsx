@@ -7,7 +7,8 @@ import {
   Text,
   Field,
   Dialog,
-  Tag
+  Tag,
+  Box
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
@@ -59,10 +60,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   }, [isOpen, previousRequest]);
 
   const shipmentSizeOptions = [
-    { value: 'Very Small (1-2 boxes)', label: 'Very Small (1-2 boxes)' },
-    { value: 'Small (2-5 boxes)', label: 'Small (2-5 boxes)' },
-    { value: 'Medium (5-10 boxes)', label: 'Medium (5-10 boxes)' },
-    { value: 'Large (10+ boxes)', label: 'Large (10+ boxes)' },
+    "Very Small (1-2 boxes)",
+    "Small (2-5 boxes)",
+    "Medium (5-10 boxes)",
+    "Large (10+ boxes)"
   ];
 
   return (
@@ -78,7 +79,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
           <Dialog.Header>
-            <Dialog.Title fontSize={25} fontWeight={700} fontFamily="body">
+            <Dialog.Title mt={3} fontSize={25} fontWeight={700} fontFamily="body">
               New Food Request
             </Dialog.Title>
           </Dialog.Header>
@@ -112,7 +113,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button disabled={readOnly} w="full" bgColor={'white'} color={'gray'} borderColor={'black'} justifyContent="flex-start" mt={3}>
+                    <Button disabled={readOnly} w="full" bgColor={'white'} color="gray.700" borderColor={'black'} justifyContent="flex-start" mt={3}>
                       {requestedSize || "Select Size"}
                     </Button>
                   </Menu.Trigger>
@@ -121,12 +122,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     <Menu.Content>
                       <Menu.RadioItemGroup
                         value={requestedSize}
-                        onValueChange={(val: string) => setRequestedSize(val)}
+                        onValueChange={(val: { value: string }) => setRequestedSize(val.value)}
                       >
                         {shipmentSizeOptions.map((option) => (
-                          <Menu.RadioItem key={option.value} value={option.value}>
+                          <Menu.RadioItem key={option} value={option}>
                             <Menu.ItemIndicator />
-                            {option.label}
+                            {option}
                           </Menu.RadioItem>
                         ))}
                       </Menu.RadioItemGroup>
@@ -150,40 +151,55 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       disabled={readOnly}
                       w="full"
                       bgColor="white"
-                      color="gray"
+                      color="gray.700"
                       borderColor="black"
                       justifyContent="flex-start"
                       mt={3}
                     >
-                      {selectedItems.length > 0
-                        ? `Multi-Select`
-                        : "Select food types"}
+                      {selectedItems.length > 0 ? `Multi-Select` : "Select food types"}
                     </Button>
                   </Menu.Trigger>
-                 
+
                   <Menu.Positioner>
                     <Menu.Content maxH="250px" overflowY="auto">
-                      {getAllergens().map((allergen) => (
-                        <Menu.CheckboxItem
-                          key={allergen}
-                          checked={selectedItems.includes(allergen)}
-                          onCheckedChange={(checked: boolean) => {
-                            setSelectedItems((prev) =>
-                              checked
-                                ? [...prev, allergen]
-                                : prev.filter((i) => i !== allergen)
-                            );
-                          }}
-                          disabled={readOnly}
-                        >
-                          {allergen}
-                          <Menu.ItemIndicator>
-                          </Menu.ItemIndicator>
-                        </Menu.CheckboxItem>
-                      ))}
+                      {getAllergens().map((allergen) => {
+                        const isChecked = selectedItems.includes(allergen);
+                        return (
+                          <Menu.CheckboxItem
+                            key={allergen}
+                            checked={isChecked}
+                            onCheckedChange={(checked: boolean) => {
+                              setSelectedItems((prev) =>
+                                checked
+                                  ? [...prev, allergen]
+                                  : prev.filter((i) => i !== allergen)
+                              );
+                            }}
+                            disabled={readOnly}
+                            display="flex"
+                            alignItems="center"
+                          >
+                            <Box
+                              position="absolute"
+                              left={1}
+                              ml={0.5}
+                              w={5}
+                              h={5}
+                              borderWidth="1px"
+                              borderColor="gray.500"
+                            >
+                              
+                            </Box>
+                            <Menu.ItemIndicator />
+
+                            <Text color="gray.700">{allergen}</Text>
+                          </Menu.CheckboxItem>
+                        );
+                      })}
                     </Menu.Content>
                   </Menu.Positioner>
                 </Menu.Root>
+
 
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={3} gap={2}>
@@ -222,6 +238,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   name="notes"
                   placeholder="Anything else we should know about"
                   size="lg"
+                  color="gray.700"
                   value={additionalNotes}
                   onChange={(e) => {
                     const inputText = e.target.value
