@@ -4,16 +4,18 @@ import { Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
+import { Donation } from '../donations/donations.entity';
 
 @Injectable()
 export class DonationItemsService {
   constructor(
     @InjectRepository(DonationItem) private repo: Repository<DonationItem>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
   ) {}
 
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
-    return this.repo.findBy({ donationId });
+    return this.repo.find({ where: { donation: { donationId } } });
   }
 
   async create(
@@ -26,8 +28,12 @@ export class DonationItemsService {
     estimatedValue: number,
     foodType: FoodType,
   ) {
+    validateId(donationId, 'Donation');
+    const donation = await this.donationRepo.findOneBy({ donationId });
+    if (!donation) throw new NotFoundException('Donation not found');
+
     const donationItem = this.repo.create({
-      donationId,
+      donation,
       itemName,
       quantity,
       reservedQuantity,

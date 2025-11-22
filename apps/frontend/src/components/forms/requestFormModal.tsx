@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
-  FormControl,
-  FormLabel,
   Button,
   Checkbox,
   Textarea,
   SimpleGrid,
   CheckboxGroup,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   RadioGroup,
   HStack,
-  Radio,
   Text,
+  Field,
+  Dialog,
+  Fieldset,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
@@ -47,6 +41,7 @@ interface FoodRequestFormModalProps {
   readOnly?: boolean;
   isOpen: boolean;
   onClose: () => void;
+  pantryId: number;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
@@ -54,6 +49,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   readOnly = false,
   isOpen,
   onClose,
+  pantryId,
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
@@ -67,96 +63,150 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     }
   }, [isOpen, previousRequest]);
 
-  const handleCheckboxChange = (values: string[]) => {
-    setSelectedItems(values);
-  };
+  const shipmentSizeOptions = [
+    { value: '<20', label: '<20' },
+    { value: '20-50', label: '20-50' },
+    { value: '50-100', label: '50-100' },
+    { value: '100-150', label: '100-150' },
+    { value: '150-200', label: '150-200' },
+    { value: '>200', label: '>200' },
+  ];
 
   return (
-    <Modal isOpen={isOpen} size={'xl'} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent maxW="49em">
-        <ModalHeader fontSize={25} fontWeight={700}>
-          SSF Food Request Form
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text mb="1.5em">
-            Request a shipment of allergen-free food from SSF. You will be
-            placed on our waiting list for incoming donations targeted to your
-            needs.
-            <br />
-            <br />
-            Please keep in mind that we may not be able to accommodate specific
-            food requests at all times, but we will do our best to match your
-            preferences.
-          </Text>
-          <Form method="post" action="/food-request">
-            <FormControl as="fieldset" isRequired mb="2em">
-              <FormLabel as="legend" fontSize={20} fontWeight={700}>
-                Requested Size of Shipment
-              </FormLabel>
-              <RadioGroup
-                value={requestedSize}
-                onChange={setRequestedSize}
-                name="size"
-                isDisabled={readOnly}
-              >
-                <HStack spacing="24px">
-                  <Radio value="Very Small (1-2 boxes)">
-                    Very Small (1-2 boxes)
-                  </Radio>
-                  <Radio value="Small (2-5 boxes)">Small (2-5 boxes)</Radio>
-                  <Radio value="Medium (5-10 boxes)">Medium (5-10 boxes)</Radio>
-                  <Radio value="Large (10+ boxes)">Large (10+ boxes)</Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
+    <Dialog.Root
+      open={isOpen}
+      size="xl"
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
+    >
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW="49em">
+          <Dialog.Header>
+            <Dialog.Title fontSize={25} fontWeight={700}>
+              SSF Food Request Form
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <Text mb="1.5em">
+              Request a shipment of allergen-free food from SSF. You will be
+              placed on our waiting list for incoming donations targeted to your
+              needs.
+              <br />
+              <br />
+              Please keep in mind that we may not be able to accommodate
+              specific food requests at all times, but we will do our best to
+              match your preferences.
+            </Text>
+            <Form
+              method="post"
+              action="/food-request"
+              onSubmit={(e) => {
+                if (selectedItems.length === 0) {
+                  e.preventDefault();
+                  alert(
+                    'Please select at least one item from the shipment list.',
+                  );
+                }
+                if (requestedSize === '') {
+                  e.preventDefault();
+                  alert('Please select a requested size.');
+                }
+              }}
+            >
+              <input type="hidden" name="pantryId" value={pantryId} />
+              <Field.Root required mb="2em">
+                <Field.Label>
+                  <Text fontSize={20} fontWeight={700}>
+                    Requested Size of Shipment
+                  </Text>
+                  <Field.RequiredIndicator
+                    color="red"
+                    fontSize={20}
+                    fontWeight={700}
+                  />
+                </Field.Label>
+                <RadioGroup.Root
+                  value={requestedSize}
+                  onValueChange={(e: { value: string }) =>
+                    setRequestedSize(e.value)
+                  }
+                  name="size"
+                  disabled={readOnly}
+                  required
+                >
+                  <HStack gap="24px">
+                    {shipmentSizeOptions.map((option) => (
+                      <RadioGroup.Item key={option.value} value={option.value}>
+                        <RadioGroup.ItemHiddenInput />
+                        <RadioGroup.ItemControl />
+                        <RadioGroup.ItemText>
+                          {option.label}
+                        </RadioGroup.ItemText>
+                      </RadioGroup.Item>
+                    ))}
+                  </HStack>
+                </RadioGroup.Root>
+              </Field.Root>
 
-            <FormControl mb="2em">
-              <FormLabel fontSize={20} fontWeight={700}>
-                Requested Shipment
-              </FormLabel>
-              <CheckboxGroup
-                value={selectedItems}
-                onChange={handleCheckboxChange}
-                isDisabled={readOnly}
-              >
-                <SimpleGrid spacing={2} columns={2}>
-                  {getAllergens().map((allergen) => (
-                    <Checkbox
-                      key={allergen}
-                      name="restrictions"
-                      value={allergen}
-                    >
-                      {allergen}
-                    </Checkbox>
-                  ))}
-                </SimpleGrid>
-              </CheckboxGroup>
-            </FormControl>
+              <Fieldset.Root mb="2em">
+                <Fieldset.Legend>
+                  <Text fontSize={20} fontWeight={700}>
+                    Requested Shipment{' '}
+                    <Text as="span" color="red">
+                      *
+                    </Text>
+                  </Text>
+                </Fieldset.Legend>
+                <CheckboxGroup
+                  value={selectedItems}
+                  onValueChange={setSelectedItems}
+                >
+                  <SimpleGrid gap={2} columns={2}>
+                    {getAllergens().map((allergen) => (
+                      <Checkbox.Root
+                        key={allergen}
+                        value={allergen}
+                        disabled={readOnly}
+                        name="restrictions"
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>{allergen}</Checkbox.Label>
+                      </Checkbox.Root>
+                    ))}
+                  </SimpleGrid>
+                </CheckboxGroup>
+              </Fieldset.Root>
 
-            <FormControl mb="2em">
-              <FormLabel fontSize={20} fontWeight={700}>
-                Additional Comments
-              </FormLabel>
-              <Textarea
-                name="notes"
-                placeholder="Anything else we should know about"
-                size="sm"
-                value={additionalNotes}
-                onChange={(e) => setAdditionalNotes(e.target.value)}
-                isDisabled={readOnly}
-              />
-            </FormControl>
+              <Field.Root mb="2em">
+                <Field.Label>
+                  <Text fontSize={20} fontWeight={700}>
+                    Additional Comments
+                  </Text>
+                </Field.Label>
+                <Textarea
+                  name="notes"
+                  placeholder="Anything else we should know about"
+                  size="sm"
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  disabled={readOnly}
+                />
+              </Field.Root>
 
-            <Flex justifyContent="space-between" mt={4}>
-              <Button onClick={onClose}>Close</Button>
-              {!readOnly && <Button type="submit">Submit</Button>}
-            </Flex>
-          </Form>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+              <Flex justifyContent="space-between" mt={4}>
+                <Button onClick={onClose}>Close</Button>
+                {!readOnly && <Button type="submit">Submit</Button>}
+              </Flex>
+            </Form>
+          </Dialog.Body>
+          <Dialog.CloseTrigger />
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 };
 
@@ -167,24 +217,40 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
   const foodRequestData = new Map();
 
+  const pantryId = form.get('pantryId');
   foodRequestData.set('requestedSize', form.get('size'));
   form.delete('size');
   foodRequestData.set('additionalInformation', form.get('notes'));
   form.delete('notes');
   foodRequestData.set('requestedItems', form.getAll('restrictions'));
   form.delete('restrictions');
-  foodRequestData.set('pantryId', 1);
+  foodRequestData.set('pantryId', form.get('pantryId'));
 
   const data = Object.fromEntries(foodRequestData);
+  console.log(data);
 
   try {
-    await ApiClient.createFoodRequest(data);
-    alert('Food request submitted successfully');
-    window.location.href = '/request-form/1';
-    return null;
+    const response = await fetch('/api/requests/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      console.log('Food request submitted successfully');
+
+      window.location.href = `/request-form/${pantryId}`;
+      return null;
+    } else {
+      console.error('Failed to submit food request', await response.text());
+      window.location.href = `/request-form/${pantryId}`;
+      return null;
+    }
   } catch (error) {
     alert('Error submitting food request: ' + error);
-    window.location.href = '/request-form/1';
+    window.location.href = `/request-form/${pantryId}`;
     return null;
   }
 };

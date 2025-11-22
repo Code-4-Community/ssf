@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Center,
-  Table,
-  Tbody,
-  Thead,
-  Th,
-  Tr,
-  Td,
-  Button,
-  ButtonGroup,
-  VStack,
-} from '@chakra-ui/react';
+import { Center, Table, Button, ButtonGroup, VStack } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Order } from 'types/types';
 import OrderInformationModal from '@components/forms/orderInformationModal';
@@ -51,46 +40,50 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
-      <VStack spacing={4} width="80%">
+      <VStack gap={4} width="80%">
         <ButtonGroup>
           <Button
-            colorScheme={orderType === 'current' ? 'blue' : 'gray'}
+            bg={orderType === 'current' ? 'blue' : 'gray'}
             onClick={() => setOrderType('current')}
           >
             Current Orders
           </Button>
           <Button
-            colorScheme={orderType === 'past' ? 'blue' : 'gray'}
+            bg={orderType === 'past' ? 'blue' : 'gray'}
             onClick={() => setOrderType('past')}
           >
             Past Orders
           </Button>
         </ButtonGroup>
 
-        <Table variant="simple" mt={6} width="100%">
-          <Thead>
-            <Tr>
-              <Th>Order ID</Th>
-              <Th>Date Placed</Th>
-              <Th>Status</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+        <Table.Root mt={6} width="100%">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>Order ID</Table.ColumnHeader>
+              <Table.ColumnHeader>Date Placed</Table.ColumnHeader>
+              <Table.ColumnHeader>Status</Table.ColumnHeader>
+              <Table.ColumnHeader>Actions</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {orders.map((order) => (
-              <Tr key={order.orderId}>
-                <Td>
-                  <Button onClick={() => setOpenOrderId(order.orderId)}>
+              <Table.Row key={order.orderId}>
+                <Table.Cell>
+                  <Button
+                    onClick={() => setOpenOrderId(order.orderId)}
+                    bg="neutral.100"
+                    color="black"
+                  >
                     {order.orderId}
                   </Button>
-                </Td>
-                <Td>{formatDate(order.createdAt)}</Td>
-                <Td>{order.status}</Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>{formatDate(order.createdAt)}</Table.Cell>
+                <Table.Cell>{order.status}</Table.Cell>
+                <Table.Cell>
                   <ButtonGroup>
                     {order.status === 'pending' && (
                       <Button
-                        colorScheme="blue"
+                        bg="blue"
                         size="sm"
                         onClick={() =>
                           updateOrderStatus(order.orderId, 'shipped')
@@ -100,8 +93,8 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                       </Button>
                     )}
                   </ButtonGroup>
-                </Td>
-              </Tr>
+                </Table.Cell>
+              </Table.Row>
             ))}
             {openOrderId && (
               <OrderInformationModal
@@ -110,8 +103,8 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                 onClose={() => setOpenOrderId(null)}
               />
             )}
-          </Tbody>
-        </Table>
+          </Table.Body>
+        </Table.Root>
       </VStack>
     </Center>
   );

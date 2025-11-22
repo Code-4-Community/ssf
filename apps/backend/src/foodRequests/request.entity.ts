@@ -3,7 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 import { RequestSize } from './types';
@@ -46,6 +46,6 @@ export class FoodRequest {
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
 
-  @OneToOne(() => Order, (order) => order.request, { nullable: true })
+  @OneToMany(() => Order, (order) => order.request, { nullable: true })
   order: Order;
 }
