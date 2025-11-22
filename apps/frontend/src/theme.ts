@@ -1,4 +1,9 @@
-import { createSystem, defaultConfig, defineConfig, defineTextStyles } from '@chakra-ui/react';
+import {
+  createSystem,
+  defaultConfig,
+  defineConfig,
+  defineTextStyles,
+} from '@chakra-ui/react';
 
 const textStyles = defineTextStyles({
   body: {
@@ -10,7 +15,7 @@ const textStyles = defineTextStyles({
     value: {
       fontFamily: 'instrument',
       fontSize: '32px',
-      fontWeight: '400'
+      fontWeight: '400',
     },
   },
   h2: {
