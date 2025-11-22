@@ -97,6 +97,8 @@ export interface Pantry {
   serveAllergicChildren?: string;
   newsletterSubscription: boolean;
   restrictions: string[];
+  ssfRepresentative: User;
+  pantryRepresentativeId: number;
   status: string;
   dateApplied: string;
   activities: string[];
@@ -118,15 +120,16 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
+  pantry: Pantry;
+  request: FoodRequest;
   requestId: number;
-  pantryId: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
+  donation: Donation;
   status: string;
   createdAt: string;
-  shippedAt: string;
-  deliveredAt: string;
-  donationId: number;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 }
 
 export interface FoodManufacturer {
