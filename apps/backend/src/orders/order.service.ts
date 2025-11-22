@@ -135,12 +135,8 @@ export class OrdersService {
     return order.donation;
   }
 
-  async updateStatus(orderId: number, newStatus: string) {
+  async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
-
-    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
 
     // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo

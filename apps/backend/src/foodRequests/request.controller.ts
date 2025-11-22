@@ -18,6 +18,7 @@ import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { RequestSize } from './types';
+import { OrderStatus } from '../orders/types';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -164,7 +165,7 @@ export class FoodRequestsController {
     );
 
     const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(request.order.orderId, 'delivered');
+    await this.ordersService.updateStatus(request.order.orderId, OrderStatus.DELIVERED);
 
     return this.requestsService.updateDeliveryDetails(
       requestId,

@@ -502,10 +502,10 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   pantryApplicationData.set('activities', form.getAll('activities'));
   form.delete('activities');
 
-  const dedicatedShelfRaw = form.get('dedicatedShelf') as string;
+  const dedicatedShelfRaw = form.get('dedicatedAllergyFriendly') as string;
   const convertedShelf = AllergyFriendlyStorageMap[dedicatedShelfRaw];
-  pantryApplicationData.set('dedicatedShelf', convertedShelf);
-  form.delete('dedicatedShelf');
+  pantryApplicationData.set('dedicatedAllergyFriendly', convertedShelf);
+  form.delete('dedicatedAllergyFriendly');
 
   // Handle all other questions
   form.forEach((value, key) => pantryApplicationData.set(key, value));
