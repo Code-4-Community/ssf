@@ -13,7 +13,6 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Donation } from '../donations/donations.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 
 @Controller('orders')
