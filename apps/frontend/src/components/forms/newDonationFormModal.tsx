@@ -176,7 +176,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     <Dialog.Root
       open={isOpen}
       size={'xl'}
-      onOpenChange={(e) => {
+      onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
       closeOnInteractOutside

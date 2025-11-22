@@ -14,15 +14,15 @@ export class UsersService {
     email: string,
     firstName: string,
     lastName: string,
-    role: Role = Role.STANDARD_VOLUNTEER,
+    phone: string,
+    role: Role,
   ) {
-    const userId = (await this.repo.count()) + 1;
     const user = this.repo.create({
-      id: userId,
       role,
       firstName,
       lastName,
       email,
+      phone,
     });
 
     return this.repo.save(user);

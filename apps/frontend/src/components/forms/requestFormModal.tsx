@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
+import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -75,7 +76,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     <Dialog.Root
       open={isOpen}
       size="xl"
-      onOpenChange={(e) => {
+      onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
       closeOnInteractOutside
@@ -129,7 +130,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Field.Label>
                 <RadioGroup.Root
                   value={requestedSize}
-                  onValueChange={(e) => setRequestedSize(e.value)}
+                  onValueChange={(e: { value: string }) =>
+                    setRequestedSize(e.value)
+                  }
                   name="size"
                   disabled={readOnly}
                   required
@@ -246,7 +249,7 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
       return null;
     }
   } catch (error) {
-    console.error('Error submitting food request', error);
+    alert('Error submitting food request: ' + error);
     window.location.href = `/request-form/${pantryId}`;
     return null;
   }

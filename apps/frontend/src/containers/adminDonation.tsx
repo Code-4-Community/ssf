@@ -24,7 +24,7 @@ const AdminDonation: React.FC = () => {
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
     [],
   );
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
 
@@ -45,7 +45,11 @@ const AdminDonation: React.FC = () => {
   }, [selectedManufacturers]);
 
   const manufacturerOptions = [
-    ...new Set(donations.map((d) => d.foodManufacturer.foodManufacturerName)),
+    ...new Set(
+      donations
+        .map((d) => d.foodManufacturer?.foodManufacturerName)
+        .filter((name): name is string => !!name),
+    ),
   ].sort((a, b) => a.localeCompare(b));
 
   const handleFilterChange = (manufacturer: string, checked: boolean) => {
@@ -62,7 +66,10 @@ const AdminDonation: React.FC = () => {
     .filter((d) => {
       const matchesFilter =
         selectedManufacturers.length === 0 ||
-        selectedManufacturers.includes(d.foodManufacturer.foodManufacturerName);
+        (d.foodManufacturer &&
+          selectedManufacturers.includes(
+            d.foodManufacturer?.foodManufacturerName,
+          ));
       return matchesFilter;
     })
     .sort((a, b) =>
@@ -82,29 +89,14 @@ const AdminDonation: React.FC = () => {
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
     color: 'neutral.800',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: 'inter',
     fontWeight: '600',
     fontSize: 'sm',
   };
 
-  const tableCellStyles = {
-    borderBottom: '1px solid',
-    borderColor: 'neutral.100',
-    color: 'black',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 'sm',
-    py: 0,
-  };
-
   return (
     <Box p={12}>
-      <Heading
-        size="4xl"
-        color="gray.600"
-        fontWeight="normal"
-        mb={6}
-        fontFamily="'Instrument Serif', serif"
-      >
+      <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
@@ -117,6 +109,8 @@ const AdminDonation: React.FC = () => {
             borderColor="neutral.200"
             size="sm"
             p={3}
+            fontFamily="ibm"
+            fontWeight="semibold"
           >
             <Funnel />
             Filter
@@ -154,7 +148,7 @@ const AdminDonation: React.FC = () => {
                     <Checkbox.Root
                       key={manufacturer}
                       checked={selectedManufacturers.includes(manufacturer)}
-                      onCheckedChange={(e) =>
+                      onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(manufacturer, e.checked)
                       }
                       color="black"
@@ -178,6 +172,8 @@ const AdminDonation: React.FC = () => {
           borderColor="neutral.200"
           p={3}
           size="sm"
+          fontFamily="ibm"
+          fontWeight="semibold"
         >
           <ArrowDownUp />
           Sort
@@ -218,37 +214,34 @@ const AdminDonation: React.FC = () => {
               _hover={{ bg: 'gray.50' }}
             >
               <Table.Cell
-                {...tableCellStyles}
+                textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
+                py={0}
               >
                 <Button
                   variant="plain"
                   textDecoration="underline"
-                  onClick={() => setSelectedDonationId(donation.donationId)}
+                  onClick={() => setSelectedDonation(donation)}
                 >
                   {donation.donationId}
                 </Button>
-                {selectedDonationId && (
+                {selectedDonation && (
                   <DonationDetailsModal
-                    donationId={selectedDonationId}
-                    isOpen={selectedDonationId !== null}
-                    onClose={() => setSelectedDonationId(null)}
+                    donation={selectedDonation}
+                    isOpen={selectedDonation !== null}
+                    onClose={() => setSelectedDonation(null)}
                   />
                 )}
               </Table.Cell>
               <Table.Cell
-                {...tableCellStyles}
+                textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {donation.foodManufacturer.foodManufacturerName}
+                {donation.foodManufacturer?.foodManufacturerName}
               </Table.Cell>
-              <Table.Cell
-                {...tableCellStyles}
-                textAlign="right"
-                color="neutral.700"
-              >
+              <Table.Cell textStyle="p2" textAlign="right" color="neutral.700">
                 {formatDate(donation.dateDonated)}
               </Table.Cell>
             </Table.Row>
@@ -261,7 +254,7 @@ const AdminDonation: React.FC = () => {
           count={filteredDonations.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e) => setCurrentPage(e.page)}
+          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
         >
           <ButtonGroup
             display="flex"
@@ -274,7 +267,7 @@ const AdminDonation: React.FC = () => {
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
-              _hover={{ color: 'black' }}
+              _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronLeft size={16} />
             </Pagination.PrevTrigger>
@@ -295,7 +288,7 @@ const AdminDonation: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
-              _hover={{ color: 'black' }}
+              _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronRight size={16} />
             </Pagination.NextTrigger>

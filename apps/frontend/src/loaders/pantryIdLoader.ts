@@ -1,4 +1,6 @@
 import { json, LoaderFunctionArgs } from 'react-router-dom';
+import ApiClient from '@api/apiClient';
+import { AxiosError } from 'axios';
 
 export async function pantryIdLoader({ params }: LoaderFunctionArgs) {
   const { pantryId } = params;
@@ -7,16 +9,16 @@ export async function pantryIdLoader({ params }: LoaderFunctionArgs) {
     throw new Response('Pantry ID required', { status: 400 });
   }
 
-  const response = await fetch(`/api/pantries/${pantryId}`);
+  try {
+    const pantry = await ApiClient.getPantry(parseInt(pantryId, 10));
+    return json({ pantry });
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      if (error.response?.status === 404) {
+        throw new Response('Not Found', { status: 404 });
+      }
+    }
 
-  if (response.status === 404) {
-    throw new Response('Not Found', { status: 404 });
-  }
-
-  if (!response.ok) {
     throw new Response('Server Error', { status: 500 });
   }
-
-  const pantry = await response.json();
-  return json({ pantry });
 }

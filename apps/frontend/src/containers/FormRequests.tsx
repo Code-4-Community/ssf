@@ -27,7 +27,10 @@ const FormRequests: React.FC = () => {
   const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
     'mostRecent',
   );
-  const { pantryId } = useParams<{ pantryId: string }>();
+
+  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
+  const pantryId = parseInt(pantryIdParam!, 10);
+
   const [allConfirmed, setAllConfirmed] = useState(false);
   const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
     number | null
@@ -40,9 +43,7 @@ const FormRequests: React.FC = () => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
-          const data = await ApiClient.getPantryRequests(
-            parseInt(pantryId, 10),
-          );
+          const data = await ApiClient.getPantryRequests(pantryId);
           setRequests(data);
 
           if (data.length > 0) {
@@ -93,7 +94,7 @@ const FormRequests: React.FC = () => {
           previousRequest={undefined}
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
-          pantryId={parseInt(pantryId!)}
+          pantryId={pantryId}
         />
         {previousRequest && (
           <>
@@ -108,7 +109,7 @@ const FormRequests: React.FC = () => {
               readOnly={false}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
-              pantryId={parseInt(pantryId!)}
+              pantryId={pantryId}
             />
           </>
         )}
@@ -192,7 +193,7 @@ const FormRequests: React.FC = () => {
               readOnly={true}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={parseInt(pantryId!)}
+              pantryId={pantryId}
             />
           )}
           {openOrderId && (
@@ -207,7 +208,7 @@ const FormRequests: React.FC = () => {
               requestId={openDeliveryRequestId}
               isOpen={openDeliveryRequestId !== null}
               onClose={() => setOpenDeliveryRequestId(null)}
-              pantryId={parseInt(pantryId!)}
+              pantryId={pantryId}
             />
           )}
         </Table.Body>

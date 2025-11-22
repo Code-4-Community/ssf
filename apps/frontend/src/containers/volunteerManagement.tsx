@@ -168,7 +168,7 @@ const VolunteerManagement: React.FC = () => {
                         checked={checkedTypes.includes(
                           volunteerType.toUpperCase(),
                         )}
-                        onCheckedChange={(e) =>
+                        onCheckedChange={(e: { checked: boolean }) =>
                           handleVolunteerFilterChange(volunteerType, e.checked)
                         }
                       >
@@ -191,8 +191,8 @@ const VolunteerManagement: React.FC = () => {
           <TableCaption>
             <Flex justifyContent="space-between" width="100%">
               <Button onClick={handleReset}>Reset unsaved changes</Button>
-              <Button as={Link} to="/add_volunteer_page">
-                Add a new volunteer
+              <Button asChild>
+                <Link to="/add_volunteer_page">Add a new volunteer</Link>
               </Button>
               <Button onClick={handleSaveChanges}>Save changes</Button>
             </Flex>
@@ -224,8 +224,10 @@ const VolunteerManagement: React.FC = () => {
                   })}
                 </Table.Cell>
                 <Table.Cell>
-                  <Button as={Link} to={`/pantry-management/${volunteer.id}`}>
-                    View assigned pantries
+                  <Button asChild>
+                    <Link to={`/pantry-management/${volunteer.id}`}>
+                      View assigned pantries
+                    </Link>
                   </Button>
                 </Table.Cell>
               </Table.Row>
