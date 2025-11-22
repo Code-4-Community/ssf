@@ -10,6 +10,8 @@ import {
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { Donation } from '../donations/donations.entity';
+import { OrderStatus } from './types';
 
 @Entity('orders')
 export class Order {
@@ -43,8 +45,21 @@ export class Order {
   @Column({ name: 'shipped_by', nullable: true })
   shippedBy: number;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
-  status: string;
+  @ManyToOne(() => Donation, { nullable: false })
+  @JoinColumn({
+    name: 'donation_id',
+    referencedColumnName: 'donationId',
+  })
+  donation: Donation;
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enumName: 'orders_status_enum',
+    enum: OrderStatus,
+    default: OrderStatus.PENDING,
+  })
+  status: OrderStatus;
 
   @CreateDateColumn({
     name: 'created_at',

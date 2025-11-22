@@ -514,6 +514,14 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const pantryApplicationData = new Map();
 
+  // Backend enum mappings (reverse from frontend labels)
+  const AllergyFriendlyStorageMap: Record<string, string> = {
+    'Yes, we have a dedicated shelf or box': 'Yes, dedicated shelf',
+    'Yes, we keep allergy-friendly items in a back room': 'Yes, back room',
+    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item':
+      'No, throughout pantry',
+  };
+
   // Handle questions with checkboxes (we create an array of all
   // selected options)
 
@@ -529,6 +537,11 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   pantryApplicationData.set('activities', form.getAll('activities'));
   form.delete('activities');
+
+  const dedicatedShelfRaw = form.get('dedicatedAllergyFriendly') as string;
+  const convertedShelf = AllergyFriendlyStorageMap[dedicatedShelfRaw];
+  pantryApplicationData.set('dedicatedAllergyFriendly', convertedShelf);
+  form.delete('dedicatedAllergyFriendly');
 
   // Handle all other questions
   form.forEach((value, key) => pantryApplicationData.set(key, value));

@@ -9,13 +9,12 @@ import {
   RadioGroup,
   HStack,
   Text,
-  Field,
   Dialog,
+  Field,
   Fieldset,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
-import ApiClient from '@api/apiClient';
 
 const getAllergens = () => {
   return [
@@ -64,12 +63,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   }, [isOpen, previousRequest]);
 
   const shipmentSizeOptions = [
-    { value: '<20', label: '<20' },
-    { value: '20-50', label: '20-50' },
-    { value: '50-100', label: '50-100' },
-    { value: '100-150', label: '100-150' },
-    { value: '150-200', label: '150-200' },
-    { value: '>200', label: '>200' },
+    "Very Small (1-2 boxes)",
+    "Small (2-5 boxes)",
+    "Medium (5-10 boxes)",
+    "Large (10+ boxes)"
   ];
 
   return (
@@ -139,11 +136,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 >
                   <HStack gap="24px">
                     {shipmentSizeOptions.map((option) => (
-                      <RadioGroup.Item key={option.value} value={option.value}>
+                      <RadioGroup.Item key={option} value={option}>
                         <RadioGroup.ItemHiddenInput />
                         <RadioGroup.ItemControl />
                         <RadioGroup.ItemText>
-                          {option.label}
+                          {option}
                         </RadioGroup.ItemText>
                       </RadioGroup.Item>
                     ))}

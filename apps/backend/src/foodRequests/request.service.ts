@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
+import { RequestSize } from './types';
+import { OrderStatus } from '../orders/types';
 
 @Injectable()
 export class RequestsService {
@@ -30,7 +32,7 @@ export class RequestsService {
 
   async create(
     pantryId: number,
-    requestedSize: string,
+    requestedSize: RequestSize,
     requestedItems: string[],
     additionalInformation: string | undefined,
     dateReceived: Date | undefined,
@@ -91,7 +93,7 @@ export class RequestsService {
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.order.status = 'fulfilled';
+    request.order.status = OrderStatus.DELIVERED;
 
     return await this.repo.save(request);
   }

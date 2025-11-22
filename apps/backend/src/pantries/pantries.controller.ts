@@ -5,12 +5,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  BadRequestException
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { AllergensConfidence, AllergyFriendlyStorage, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
 
 @Controller('pantries')
 export class PantriesController {
@@ -112,13 +114,13 @@ export class PantriesController {
         },
         refrigeratedDonation: {
           type: 'string',
-          enum: ['Yes', 'Small quantities only', 'No'],
-          example: 'Yes',
+          enum: Object.values(RefrigeratedDonation),
+          example: RefrigeratedDonation.YES,
         },
         reserveFoodForAllergic: {
           type: 'string',
-          enum: ['Yes', 'Some', 'No'],
-          example: 'Some',
+          enum: Object.values(ReserveFoodForAllergic),
+          example: ReserveFoodForAllergic.NO,
         },
         reservationExplanation: {
           type: 'string',
@@ -127,37 +129,23 @@ export class PantriesController {
         },
         dedicatedAllergyFriendly: {
           type: 'string',
-          enum: [
-            'Yes, we have a dedicated shelf or box',
-            'Yes, we keep allergy-friendly items in a back room',
-            'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-          ],
-          example: 'Yes, we have a dedicated shelf or box',
+          enum: Object.values(AllergyFriendlyStorage),
+          example: AllergyFriendlyStorage.BACK_ROOM,
         },
         clientVisitFrequency: {
           type: 'string',
-          enum: [
-            'Daily',
-            'More than once a week',
-            'Once a week',
-            'A few times a month',
-            'Once a month',
-          ],
-          example: 'Once a week',
+          enum: Object.values(ClientVisitFrequency),
+          example: ClientVisitFrequency.DAILY,
         },
         identifyAllergensConfidence: {
           type: 'string',
-          enum: [
-            'Very confident',
-            'Somewhat confident',
-            'Not very confident (we need more education!)',
-          ],
-          example: 'Very confident',
+          enum: Object.values(AllergensConfidence),
+          example: AllergensConfidence.NOT_VERY_CONFIDENT,
         },
         serveAllergicChildren: {
           type: 'string',
-          enum: ['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'],
-          example: 'Yes, a few (< 10)',
+          enum: Object.values(ServeAllergicChildren),
+          example: ServeAllergicChildren.NO,
         },
         activities: {
           type: 'array',
@@ -221,6 +209,29 @@ export class PantriesController {
   async submitPantryApplication(
     @Body() pantryData: PantryApplicationDto,
   ): Promise<void> {
+    if (pantryData.refrigeratedDonation && !Object.values(RefrigeratedDonation).includes(pantryData.refrigeratedDonation)) {
+      throw new BadRequestException('Invalid refrigeratedDonation value');
+    }
+
+    if (pantryData.reserveFoodForAllergic && !Object.values(ReserveFoodForAllergic).includes(pantryData.reserveFoodForAllergic)) {
+      throw new BadRequestException('Invalid reserveFoodForAllergic value');
+    }
+
+    if (pantryData.dedicatedAllergyFriendly && !Object.values(AllergyFriendlyStorage).includes(pantryData.dedicatedAllergyFriendly)) {
+      throw new BadRequestException('Invalid dedicatedAllergyFriendly value');
+    }
+
+    if (pantryData.clientVisitFrequency && !Object.values(ClientVisitFrequency).includes(pantryData.clientVisitFrequency)) {
+      throw new BadRequestException('Invalid clientVisitFrequency value');
+    }
+
+    if (pantryData.identifyAllergensConfidence && !Object.values(AllergensConfidence).includes(pantryData.identifyAllergensConfidence)) {
+      throw new BadRequestException('Invalid identifyAllergensConfidence value');
+    }
+
+    if (pantryData.serveAllergicChildren && !Object.values(ServeAllergicChildren).includes(pantryData.serveAllergicChildren)) {
+      throw new BadRequestException('Invalid serveAllergicChildren value');
+    }
     return this.pantriesService.addPantry(pantryData);
   }
 
