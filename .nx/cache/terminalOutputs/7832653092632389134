@@ -1,0 +1,412 @@
+src/components/forms/deliveryConfirmationModal.tsx(3,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Field'.
+src/components/forms/deliveryConfirmationModal.tsx(9,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/donationDetailsModal.tsx(6,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/newDonationFormModal.tsx(10,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/newDonationFormModal.tsx(11,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelect'.
+src/components/forms/newDonationFormModal.tsx(12,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelectIndicator'.
+src/components/forms/newDonationFormModal.tsx(204,22): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(216,24): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(217,26): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(218,28): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(218,58): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(219,28): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(219,58): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(220,28): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(220,59): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(221,28): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(221,60): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(222,28): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(222,63): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(223,27): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(224,25): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(225,24): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(227,28): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(228,30): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(235,31): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(236,30): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(241,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/forms/newDonationFormModal.tsx(253,31): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(254,30): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(263,31): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(264,30): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(273,31): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(274,30): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(283,31): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(284,29): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(286,25): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/newDonationFormModal.tsx(287,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/components/forms/orderInformationModal.tsx(1,24): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/pantryApplicationForm.tsx(11,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Field'.
+src/components/forms/pantryApplicationForm.tsx(13,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Fieldset'.
+src/components/forms/pantryApplicationForm.tsx(179,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(194,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(195,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(196,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(197,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(197,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(198,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(201,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(219,47): error TS2322: Type '{ children: Element; value: string[]; onValueChange: Dispatch<SetStateAction<string[]>>; }' is not assignable to type 'IntrinsicAttributes & CheckboxGroupProps'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & CheckboxGroupProps'.
+src/components/forms/pantryApplicationForm.tsx(238,27): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(239,29): error TS2339: Property 'HiddenInput' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(240,29): error TS2339: Property 'Control' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(241,29): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(241,53): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(242,28): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(262,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(265,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(266,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(267,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(268,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(268,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(269,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(272,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(285,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(296,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(297,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(298,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(299,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(299,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(300,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(303,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(332,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(339,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(340,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(341,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(342,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(342,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(343,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(346,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(352,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(361,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(362,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(363,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(364,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(364,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(365,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(368,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(379,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(386,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(387,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(388,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(389,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(389,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(390,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(393,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(404,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(407,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(408,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(409,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(410,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(410,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(411,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(414,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(434,13): error TS2322: Type '{ children: Element; value: string[]; onValueChange: (activities: any) => void; }' is not assignable to type 'IntrinsicAttributes & CheckboxGroupProps'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & CheckboxGroupProps'.
+src/components/forms/pantryApplicationForm.tsx(434,29): error TS7006: Parameter 'activities' implicitly has an 'any' type.
+src/components/forms/pantryApplicationForm.tsx(448,27): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(454,29): error TS2339: Property 'HiddenInput' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(455,29): error TS2339: Property 'Control' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(456,29): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(456,53): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(457,28): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/pantryApplicationForm.tsx(492,23): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(495,29): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(496,31): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(497,31): error TS2339: Property 'ItemIndicator' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(498,31): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(498,60): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(499,30): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationForm.tsx(502,24): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/pantryApplicationModal.tsx(2,18): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/requestFormModal.tsx(12,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Field'.
+src/components/forms/requestFormModal.tsx(13,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Dialog'.
+src/components/forms/requestFormModal.tsx(14,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Fieldset'.
+src/components/forms/requestFormModal.tsx(131,29): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(142,35): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(143,37): error TS2339: Property 'ItemHiddenInput' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(144,37): error TS2339: Property 'ItemControl' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(145,37): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(147,38): error TS2339: Property 'ItemText' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(148,36): error TS2339: Property 'Item' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(151,30): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", RadioGroupProps>'.
+src/components/forms/requestFormModal.tsx(165,19): error TS2322: Type '{ children: Element; value: string[]; onValueChange: Dispatch<SetStateAction<string[]>>; }' is not assignable to type 'IntrinsicAttributes & CheckboxGroupProps'.
+  Property 'onValueChange' does not exist on type 'IntrinsicAttributes & CheckboxGroupProps'.
+src/components/forms/requestFormModal.tsx(169,33): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/requestFormModal.tsx(175,35): error TS2339: Property 'HiddenInput' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/requestFormModal.tsx(176,35): error TS2339: Property 'Control' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/requestFormModal.tsx(177,35): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/requestFormModal.tsx(177,62): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/components/forms/requestFormModal.tsx(178,34): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(8,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'Pagination'.
+src/containers/adminDonation.tsx(148,31): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(157,33): error TS2339: Property 'HiddenInput' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(158,33): error TS2339: Property 'Control' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(159,33): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(159,64): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(160,32): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/adminDonation.tsx(182,14): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(183,16): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(184,18): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(185,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(192,21): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(193,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(200,21): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(201,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(207,21): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(208,19): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(209,17): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(210,16): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(212,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(216,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(236,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(237,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(243,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(244,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(246,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(247,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(249,17): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(250,15): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/adminDonation.tsx(276,24): error TS7006: Parameter 'page' implicitly has an 'any' type.
+src/containers/adminDonation.tsx(277,18): error TS2741: Property '"aria-label"' is missing in type '{ children: any; borderColor: { base: "neutral.100"; _selected: "neutral.600"; }; }' but required in type 'IconButtonProps'.
+src/containers/approvePantries.tsx(7,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelect'.
+src/containers/approvePantries.tsx(8,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelectIndicator'.
+src/containers/approvePantries.tsx(73,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/containers/approvePantries.tsx(83,14): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(84,16): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(86,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(87,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(87,52): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(88,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(90,19): error TS2322: Type '{ children: Element; asChild: true; bg: "transparent"; color: "cyan"; fontWeight: "600"; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+src/containers/approvePantries.tsx(98,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(99,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(99,67): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(100,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(108,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(109,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(117,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(118,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(127,17): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/approvePantries.tsx(128,15): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(16,11): error TS2339: Property 'open' does not exist on type '{ isOpen: boolean; onOpen: () => void; onClose: () => void; onToggle: () => void; isControlled: boolean; getButtonProps: (props?: HTMLProps | undefined) => HTMLProps; getDisclosureProps: (props?: HTMLProps | undefined) => HTMLProps; }'.
+src/containers/donationManagement.tsx(94,14): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(95,16): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(96,18): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(97,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(97,52): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(98,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(98,53): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(99,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(99,47): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(100,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(100,56): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(101,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(101,48): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(102,19): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(103,17): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(104,16): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(106,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(107,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(107,56): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(108,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(108,69): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(109,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(109,52): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(110,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(136,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(137,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(147,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(148,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(150,17): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/donationManagement.tsx(151,15): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(59,16): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(60,18): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(61,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(62,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(62,51): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(63,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(63,54): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(64,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(64,49): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(65,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(65,50): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(66,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(67,19): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(68,18): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(70,22): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(71,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(79,25): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(80,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(80,66): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(81,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(81,51): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(82,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(96,25): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(97,23): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(106,19): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/foodManufacturerOrderDashboard.tsx(107,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(10,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelect'.
+src/containers/FormRequests.tsx(95,40): error TS2339: Property 'open' does not exist on type '{ isOpen: boolean; onOpen: () => void; onClose: () => void; onToggle: () => void; isControlled: boolean; getButtonProps: (props?: HTMLProps | undefined) => HTMLProps; getDisclosureProps: (props?: HTMLProps | undefined) => HTMLProps; }'.
+src/containers/FormRequests.tsx(110,49): error TS2339: Property 'open' does not exist on type '{ isOpen: boolean; onOpen: () => void; onClose: () => void; onToggle: () => void; isControlled: boolean; getButtonProps: (props?: HTMLProps | undefined) => HTMLProps; getDisclosureProps: (props?: HTMLProps | undefined) => HTMLProps; }'.
+src/containers/FormRequests.tsx(121,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/containers/FormRequests.tsx(132,14): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(133,16): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(134,18): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(135,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(135,51): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(136,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(136,49): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(137,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(137,55): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(138,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(138,47): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(139,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(139,51): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(140,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(140,55): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(141,20): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(141,48): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(142,19): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(143,17): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(144,16): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(146,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(147,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(151,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(152,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(164,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(165,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(165,68): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(166,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(166,71): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(167,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(171,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(172,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(174,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(175,22): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(187,23): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(188,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(214,17): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/FormRequests.tsx(215,15): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/homepage.tsx(27,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(29,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(34,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(41,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(46,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(53,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(59,18): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(66,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(68,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(75,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(80,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(86,18): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(93,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(95,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(100,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(105,21): error TS2322: Type '{ children: Element; asChild: true; href: string; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(112,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(118,18): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(125,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(127,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(132,21): error TS2322: Type '{ children: Element; asChild: true; color: "teal.500"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, keyof LinkProps> & { ...; } & LinkProps & { ...; }'.
+src/containers/homepage.tsx(136,18): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"ul", ListProps>'.
+src/containers/homepage.tsx(139,16): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/homepage.tsx(150,18): error TS2339: Property 'Content' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/homepage.tsx(151,20): error TS2339: Property 'Description' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/homepage.tsx(161,21): error TS2339: Property 'Description' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/homepage.tsx(162,19): error TS2339: Property 'Content' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/homepage.tsx(163,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", AlertProps>'.
+src/containers/pantryDashboard.tsx(63,17): error TS2339: Property 'Root' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(64,19): error TS2339: Property 'Trigger' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(73,20): error TS2339: Property 'Trigger' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(75,21): error TS2339: Property 'Positioner' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(76,23): error TS2339: Property 'Content' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(77,25): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(84,26): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(85,25): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(92,26): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(93,25): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(100,26): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(101,24): error TS2339: Property 'Content' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(102,22): error TS2339: Property 'Positioner' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(104,18): error TS2339: Property 'Root' does not exist on type 'FC<MenuProps>'.
+src/containers/pantryDashboard.tsx(108,13): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", CardProps>'.
+src/containers/pantryDashboard.tsx(123,14): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"div", CardProps>'.
+src/containers/pantryDashboard.tsx(126,9): error TS2322: Type '{ children: Element; asChild: true; mt: "6"; _hover: { textDecoration: string; }; _focus: { textDecoration: string; }; textDecoration: "none"; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+src/containers/volunteerManagement.tsx(15,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelect'.
+src/containers/volunteerManagement.tsx(16,3): error TS2305: Module '"@chakra-ui/react"' has no exported member 'NativeSelectIndicator'.
+src/containers/volunteerManagement.tsx(64,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/containers/volunteerManagement.tsx(155,17): error TS2339: Property 'Root' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(156,19): error TS2339: Property 'Trigger' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(161,20): error TS2339: Property 'Trigger' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(163,21): error TS2339: Property 'Positioner' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(164,23): error TS2339: Property 'Content' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(166,27): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(167,33): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(175,35): error TS2339: Property 'HiddenInput' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(176,35): error TS2339: Property 'Control' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(177,35): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(181,36): error TS2339: Property 'Label' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(182,34): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"input", CheckboxProps>'.
+src/containers/volunteerManagement.tsx(183,28): error TS2339: Property 'Item' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(185,24): error TS2339: Property 'Content' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(186,22): error TS2339: Property 'Positioner' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(188,18): error TS2339: Property 'Root' does not exist on type 'FC<MenuProps>'.
+src/containers/volunteerManagement.tsx(190,16): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(194,23): error TS2322: Type '{ children: Element; asChild: true; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+src/containers/volunteerManagement.tsx(200,18): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(201,20): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(202,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(202,57): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(203,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(203,48): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(204,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(204,48): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(205,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(205,47): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(206,22): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(206,60): error TS2339: Property 'ColumnHeader' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(207,21): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(208,19): error TS2339: Property 'Header' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(209,18): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(211,22): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(212,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(214,25): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(215,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(215,54): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(216,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(216,54): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(217,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(225,25): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(226,24): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(227,27): error TS2322: Type '{ children: Element; asChild: true; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, keyof ButtonProps> & { ...; } & ButtonProps & { ...; }'.
+src/containers/volunteerManagement.tsx(232,25): error TS2339: Property 'Cell' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(233,23): error TS2339: Property 'Row' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(235,19): error TS2339: Property 'Body' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/containers/volunteerManagement.tsx(236,17): error TS2339: Property 'Root' does not exist on type 'ComponentWithAs<"table", TableProps>'.
+src/main.tsx(13,21): error TS2322: Type '{ children: Element; value: any; }' is not assignable to type 'IntrinsicAttributes & ChakraProviderProps'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & ChakraProviderProps'.
+src/theme.ts(1,10): error TS2305: Module '"@chakra-ui/react"' has no exported member 'createSystem'.
+src/theme.ts(1,24): error TS2305: Module '"@chakra-ui/react"' has no exported member 'defaultConfig'.
+src/theme.ts(1,39): error TS2305: Module '"@chakra-ui/react"' has no exported member 'defineConfig'.
+src/theme.ts(1,53): error TS2724: '"@chakra-ui/react"' has no exported member named 'defineTextStyles'. Did you mean 'defineStyle'?
+Warning: run-commands command "tsc -p tsconfig.app.json --noEmit" exited with non-zero status code
