@@ -1,0 +1,21 @@
+{
+  "run": {
+    "command": "nx affected:lint --files=apps/backend/src/pantries/pantries.service.ts",
+    "startTime": "2025-11-22T18:29:22.623Z",
+    "endTime": "2025-11-22T18:29:23.716Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "backend:lint",
+      "target": "lint",
+      "projectName": "backend",
+      "hash": "10005517052106344434",
+      "startTime": "2025-11-22T18:29:22.663Z",
+      "endTime": "2025-11-22T18:29:23.715Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    }
+  ]
+}

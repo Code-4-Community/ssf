@@ -4,7 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
