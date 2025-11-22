@@ -91,6 +91,12 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'pantry',
         'food_manufacturer'
       );
+
+      CREATE TYPE "reserve_food_for_allergic_enum" as ENUM (
+        'Yes',
+        'Some',
+        'No'
+      );
     `);
   }
 
@@ -108,6 +114,7 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       DROP TYPE "donations_status_enum";
       DROP TYPE "food_type_enum";
       DROP TYPE "users_role_enum";
+      DROP TYPE "reserve_food_for_allergic_enum";
     `);
   }
 }

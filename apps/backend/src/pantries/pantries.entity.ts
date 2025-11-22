@@ -14,6 +14,7 @@ import {
   ClientVisitFrequency,
   PantryStatus,
   RefrigeratedDonation,
+  ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
 
@@ -64,7 +65,7 @@ export class Pantry {
   })
   refrigeratedDonation: RefrigeratedDonation;
 
-  @Column({ name: 'reserve_food_for_allergic', type: 'varchar', length: 25 })
+  @Column({ name: 'reserve_food_for_allergic', type: 'enum', enum: ReserveFoodForAllergic, enumName: 'reserve_food_for_allergic_enum' })
   reserveFoodForAllergic: string;
 
   @Column({ name: 'reservation_explanation', type: 'text', nullable: true })

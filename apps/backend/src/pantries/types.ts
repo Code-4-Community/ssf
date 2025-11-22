@@ -45,3 +45,9 @@ export enum Activities {
   COLLECT_FEEDBACK = 'Collect feedback from allergen-avoidant clients on SSF foods',
   SOMETHING_ELSE = 'Something else',
 }
+
+export enum ReserveFoodForAllergic {
+  YES = 'Yes',
+  SOME = 'Some',
+  NO = 'No',
+}
