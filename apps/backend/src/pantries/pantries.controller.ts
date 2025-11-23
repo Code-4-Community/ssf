@@ -10,10 +10,15 @@ import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { Order } from '../orders/order.entity';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('pantries')
 export class PantriesController {
-  constructor(private pantriesService: PantriesService) {}
+  constructor(
+    private pantriesService: PantriesService,
+    private ordersService: OrdersService,
+  ) {}
 
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
@@ -25,6 +30,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Get('/orders/:pantryId')
+  async getOrders(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<Order[]> {
+    return this.ordersService.getOrdersByPantry(pantryId);
   }
 
   @ApiBody({

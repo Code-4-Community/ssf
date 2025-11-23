@@ -132,4 +132,15 @@ export class OrdersService {
       .where('order_id = :orderId', { orderId })
       .execute();
   }
+
+  async getOrdersByPantry(pantryId: number): Promise<Order[]> {
+    validateId(pantryId, 'Pantry');
+
+    const orders = await this.repo.find({
+      where: { pantry: { pantryId } },
+      relations: ['request'],
+    });
+
+    return orders;
+  }
 }
