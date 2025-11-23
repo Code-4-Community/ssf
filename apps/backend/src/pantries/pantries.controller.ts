@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
-import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 
@@ -19,13 +18,6 @@ export class PantriesController {
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
-  }
-
-  @Get('/:pantryId/ssf-contact')
-  async getSSFRep(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<User> {
-    return this.pantriesService.findSSFRep(pantryId);
   }
 
   @Get('/:pantryId')
