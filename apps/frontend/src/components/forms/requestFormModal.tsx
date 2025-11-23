@@ -51,6 +51,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
+  const isFormValid =requestedSize !== '' && selectedItems.length > 0;
+
   useEffect(() => {
     if (isOpen && previousRequest) {
       setSelectedItems(previousRequest.requestedItems || []);
@@ -79,12 +81,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
           <Dialog.Header>
-            <Dialog.Title mt={3} fontSize={25} fontWeight={700} fontFamily="body">
+            <Dialog.Title mt={3} fontSize={28} fontWeight={700} fontFamily="body">
               New Food Request
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text mb="1.5em">
+            <Text mb="3em">
               Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your
               preferences.
@@ -104,16 +106,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               }}
             >
               <input type="hidden" name="pantryId" value={pantryId} />
-              <Field.Root required mb="2em">
+              <Field.Root required mb="1em">
                 <Field.Label>
-                  <Text fontSize={20} fontWeight={700}>
+                  <Text fontSize={16} fontWeight={600}>
                     Size of Shipment
                   </Text>
                 </Field.Label>
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button disabled={readOnly} w="full" bgColor={'white'} color="gray.700" borderColor={'black'} justifyContent="flex-start" mt={3}>
+                    <Button disabled={readOnly} w="full" bgColor={'white'} color="gray.700" borderColor={'black'} justifyContent="flex-start" mt={2}>
                       {requestedSize || "Select Size"}
                     </Button>
                   </Menu.Trigger>
@@ -136,9 +138,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Menu.Root>
               </Field.Root>
 
-              <Field.Root mb="2em">
+              <Field.Root mb="1em">
                 <Field.Label>
-                  <Text fontSize={20} fontWeight={700}>Food Type(s)</Text>
+                  <Text fontSize={16} fontWeight={600}>Food Type</Text>
                 </Field.Label>
 
                 {selectedItems.map((item) => (
@@ -154,7 +156,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       color="gray.700"
                       borderColor="black"
                       justifyContent="flex-start"
-                      mt={3}
+                      mt={2}
                     >
                       {selectedItems.length > 0 ? `Multi-Select` : "Select food types"}
                     </Button>
@@ -230,7 +232,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
               <Field.Root mb="2em">
                 <Field.Label>
-                  <Text fontSize={20} fontWeight={700}>
+                  <Text fontSize={16} fontWeight={600}>
                     Additional Information
                   </Text>
                 </Field.Label>
@@ -257,7 +259,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                {!readOnly && <Button type="submit" bg={'#213C4A'} color={'white'}>Continue</Button>}
+                {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'gray'} color={'white'} disabled={!isFormValid}>Continue</Button>}
                 <Button onClick={onClose} bg={'white'} color={'black'} borderColor={'black'}>Cancel</Button>
               </Flex>
             </Form>
