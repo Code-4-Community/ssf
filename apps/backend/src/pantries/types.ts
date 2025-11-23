@@ -1,7 +1,7 @@
 export enum RefrigeratedDonation {
-  YES = 'Yes',
+  YES = 'Yes, always',
   NO = 'No',
-  SMALL_QUANTITIES_ONLY = 'Small quantities only',
+  SOMETIMES = 'Sometimes (check in before sending)',
 }
 
 export enum ClientVisitFrequency {
@@ -36,7 +36,7 @@ export enum AllergyFriendlyStorage {
   THROUGHOUT_PANTRY = 'No, throughout pantry',
 }
 
-export enum Activities {
+export enum Activity {
   CREATE_LABELED_SHELF = 'Create a labeled, allergy-friendly shelf or shelves',
   PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide clients and staff/volunteers with educational pamphlets',
   TRACK_DIETARY_NEEDS = "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",

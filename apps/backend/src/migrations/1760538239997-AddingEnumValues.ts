@@ -22,7 +22,8 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
 
       CREATE TYPE "donations_status_enum" AS ENUM (
         'available',
-        'fulfilled'
+        'fulfilled',
+        'matching'
       );
 
       CREATE TYPE "donation_frequency_enum" AS ENUM (
@@ -47,9 +48,9 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       );
 
       CREATE TYPE "refrigerated_donation_enum" AS ENUM (
-        'Yes',
+        'Yes, always',
         'No',
-        'Small quantities only'
+        'Sometimes (check in before sending)'
       );
 
       CREATE TYPE "allergy_friendly_storage_enum" AS ENUM (

@@ -3,5 +3,5 @@ export enum DonationFrequency {
   BIWEEKLY = 'biweekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  WEEKLy = 'weekly',
+  WEEKLY = 'weekly',
 }

@@ -518,8 +518,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   const AllergyFriendlyStorageMap: Record<string, string> = {
     'Yes, we have a dedicated shelf or box': 'Yes, dedicated shelf',
     'Yes, we keep allergy-friendly items in a back room': 'Yes, back room',
-    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item':
-      'No, throughout pantry',
+    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item': 'No, throughout pantry',
   };
 
   // Handle questions with checkboxes (we create an array of all

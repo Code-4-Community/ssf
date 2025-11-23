@@ -188,9 +188,9 @@ export enum Role {
 }
 
 export enum RefrigeratedDonation {
-  YES = 'Yes',
+  YES = 'Yes, always',
   NO = 'No',
-  SMALL_QUANTITIES_ONLY = 'Small quantities only',
+  SOMETIMES = 'Sometimes (check in before sending)',
 }
 
 export enum ClientVisitFrequency {
@@ -259,11 +259,12 @@ export enum DonationFrequency {
   BIWEEKLY = 'biweekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  WEEKLy = 'weekly',
+  WEEKLY = 'weekly',
 }
 
 export enum DonationStatus {
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
 }
 

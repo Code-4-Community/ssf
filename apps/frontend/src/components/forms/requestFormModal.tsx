@@ -14,7 +14,7 @@ import {
   Fieldset,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
-import { FoodRequest } from 'types/types';
+import { FoodRequest, RequestSize } from '../../types/types';
 
 const getAllergens = () => {
   return [
@@ -61,13 +61,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       setAdditionalNotes(previousRequest.additionalInformation || '');
     }
   }, [isOpen, previousRequest]);
-
-  const shipmentSizeOptions = [
-    "Very Small (1-2 boxes)",
-    "Small (2-5 boxes)",
-    "Medium (5-10 boxes)",
-    "Large (10+ boxes)"
-  ];
 
   return (
     <Dialog.Root
@@ -135,7 +128,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   required
                 >
                   <HStack gap="24px">
-                    {shipmentSizeOptions.map((option) => (
+                    {Object.values(RequestSize).map((option) => (
                       <RadioGroup.Item key={option} value={option}>
                         <RadioGroup.ItemHiddenInput />
                         <RadioGroup.ItemControl />

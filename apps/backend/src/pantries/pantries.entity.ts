@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import {
-  Activities,
+  Activity,
   AllergensConfidence,
   AllergyFriendlyStorage,
   ClientVisitFrequency,
@@ -65,7 +65,11 @@ export class Pantry {
   })
   refrigeratedDonation: RefrigeratedDonation;
 
-  @Column({ name: 'reserve_food_for_allergic', type: 'enum', enum: ReserveFoodForAllergic, enumName: 'reserve_food_for_allergic_enum' })
+  @Column({ name: 'reserve_food_for_allergic', 
+    type: 'enum', 
+    enum: ReserveFoodForAllergic, 
+    enumName: 'reserve_food_for_allergic_enum' 
+  })
   reserveFoodForAllergic: string;
 
   @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
@@ -142,7 +146,7 @@ export class Pantry {
   dateApplied: Date;
 
   @Column({ name: 'activities', type: 'text', array: true })
-  activities: Activities[];
+  activities: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
   activitiesComments?: string;

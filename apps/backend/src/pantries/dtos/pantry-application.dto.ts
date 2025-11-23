@@ -1,6 +1,7 @@
 import {
   ArrayNotEmpty,
   IsEmail,
+  IsEnum,
   IsIn,
   IsNotEmpty,
   IsOptional,
@@ -16,7 +17,7 @@ import {
   ClientVisitFrequency,
   AllergensConfidence,
   ServeAllergicChildren,
-  Activities,
+  Activity,
 } from '../types';
 
 export class PantryApplicationDto {
@@ -78,10 +79,10 @@ export class PantryApplicationDto {
   @IsNotEmpty({ each: true })
   restrictions?: string[];
 
-  @IsIn(Object.values(RefrigeratedDonation))
+  @IsEnum(RefrigeratedDonation)
   refrigeratedDonation: RefrigeratedDonation;
 
-  @IsIn(Object.values(ReserveFoodForAllergic))
+  @IsEnum(ReserveFoodForAllergic)
   reserveFoodForAllergic: ReserveFoodForAllergic;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
@@ -89,24 +90,24 @@ export class PantryApplicationDto {
   @IsString()
   reservationExplanation?: string;
 
-  @IsIn(Object.values(AllergyFriendlyStorage))
+  @IsEnum(AllergyFriendlyStorage)
   dedicatedAllergyFriendly: AllergyFriendlyStorage;
 
   @IsOptional()
-  @IsIn(Object.values(ClientVisitFrequency))
+  @IsEnum(ClientVisitFrequency)
   clientVisitFrequency?: ClientVisitFrequency;
 
   @IsOptional()
-  @IsIn(Object.values(AllergensConfidence))
+  @IsEnum(AllergensConfidence)
   identifyAllergensConfidence?: AllergensConfidence;
 
   @IsOptional()
-  @IsIn(Object.values(ServeAllergicChildren))
+  @IsEnum(ServeAllergicChildren)
   serveAllergicChildren?: ServeAllergicChildren;
 
   @ArrayNotEmpty()
-  @IsIn(Object.values(Activities), { each: true })
-  activities: Activities[];
+  @IsEnum(Activity, { each: true })
+  activities: Activity[];
 
   @IsOptional()
   @IsString()
