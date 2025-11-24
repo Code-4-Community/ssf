@@ -53,12 +53,6 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'Sometimes (check in before sending)'
       );
 
-      CREATE TYPE "allergy_friendly_storage_enum" AS ENUM (
-        'Yes, dedicated shelf',
-        'Yes, back room',
-        'No, throughout pantry'
-      );
-
       CREATE TYPE "client_visit_frequency_enum" AS ENUM (
         'Daily',
         'More than once a week',
@@ -117,7 +111,6 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       DROP TYPE "serve_allergic_children_enum";
       DROP TYPE "allergens_confidence_enum";
       DROP TYPE "client_visit_frequency_enum";
-      DROP TYPE "allergy_friendly_storage_enum";
       DROP TYPE "refrigerated_donation_enum";
       DROP TYPE "orders_status_enum";
       DROP TYPE "request_size_enum";

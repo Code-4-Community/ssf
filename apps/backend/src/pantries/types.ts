@@ -30,12 +30,6 @@ export enum PantryStatus {
   PENDING = 'pending',
 }
 
-export enum AllergyFriendlyStorage {
-  DEDICATED_SHELF_OR_BOX = 'Yes, dedicated shelf',
-  BACK_ROOM = 'Yes, back room',
-  THROUGHOUT_PANTRY = 'No, throughout pantry',
-}
-
 export enum Activity {
   CREATE_LABELED_SHELF = 'Create labeled shelf',
   PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide educational pamphlets',

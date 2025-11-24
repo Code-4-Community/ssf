@@ -15,7 +15,7 @@ export interface PantryApplicationDto {
   refrigeratedDonation: RefrigeratedDonation;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
-  dedicatedAllergyFriendly: AllergyFriendlyStorage;
+  dedicatedAllergyFriendly: boolean;
   clientVisitFrequency?: ClientVisitFrequency;
   identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
@@ -43,7 +43,7 @@ export interface Pantry {
   refrigeratedDonation: RefrigeratedDonation;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
-  dedicatedAllergyFriendly: AllergyFriendlyStorage;
+  dedicatedAllergyFriendly: boolean;
   clientVisitFrequency?: ClientVisitFrequency;
   identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
@@ -87,12 +87,6 @@ export enum PantryStatus {
   APPROVED = 'approved',
   DENIED = 'denied',
   PENDING = 'pending',
-}
-
-export enum AllergyFriendlyStorage {
-  DEDICATED_SHELF_OR_BOX = 'Yes, dedicated shelf',
-  BACK_ROOM = 'Yes, back room',
-  THROUGHOUT_PANTRY = 'No, throughout pantry',
 }
 
 export enum Activity {

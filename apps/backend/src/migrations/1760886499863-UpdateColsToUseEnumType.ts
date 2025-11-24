@@ -33,7 +33,6 @@ export class UpdateColsToUseEnumType1760886499863
     await queryRunner.query(`
             ALTER TABLE pantries
                 ALTER COLUMN refrigerated_donation TYPE refrigerated_donation_enum USING refrigerated_donation::refrigerated_donation_enum,
-                ALTER COLUMN dedicated_allergy_friendly TYPE allergy_friendly_storage_enum USING dedicated_allergy_friendly::allergy_friendly_storage_enum,
                 ALTER COLUMN client_visit_frequency TYPE client_visit_frequency_enum USING client_visit_frequency::client_visit_frequency_enum,
                 ALTER COLUMN identify_allergens_confidence TYPE allergens_confidence_enum USING identify_allergens_confidence::allergens_confidence_enum,
                 ALTER COLUMN serve_allergic_children TYPE serve_allergic_children_enum USING serve_allergic_children::serve_allergic_children_enum,
@@ -43,7 +42,6 @@ export class UpdateColsToUseEnumType1760886499863
                 ALTER COLUMN status TYPE pantries_status_enum USING status::pantries_status_enum,
                 ALTER COLUMN status SET DEFAULT 'pending',
                 ALTER COLUMN refrigerated_donation SET NOT NULL,
-                ALTER COLUMN dedicated_allergy_friendly SET NOT NULL,
                 ALTER COLUMN reserve_food_for_allergic SET NOT NULL,
                 ALTER COLUMN activities SET NOT NULL;
         `);
@@ -85,7 +83,6 @@ export class UpdateColsToUseEnumType1760886499863
     await queryRunner.query(`
             ALTER TABLE pantries
                 ALTER COLUMN refrigerated_donation TYPE VARCHAR(25) USING refrigerated_donation::text,
-                ALTER COLUMN dedicated_allergy_friendly TYPE VARCHAR(255) USING dedicated_allergy_friendly::text,
                 ALTER COLUMN client_visit_frequency TYPE VARCHAR(25) USING client_visit_frequency::text,
                 ALTER COLUMN identify_allergens_confidence TYPE VARCHAR(50) USING identify_allergens_confidence::text,
                 ALTER COLUMN serve_allergic_children TYPE VARCHAR(25) USING serve_allergic_children::text,
@@ -95,7 +92,6 @@ export class UpdateColsToUseEnumType1760886499863
                 ALTER COLUMN status TYPE VARCHAR(50) USING status::text,
                 ALTER COLUMN status SET DEFAULT 'pending',
                 ALTER COLUMN refrigerated_donation DROP NOT NULL,
-                ALTER COLUMN dedicated_allergy_friendly DROP NOT NULL,
                 ALTER COLUMN reserve_food_for_allergic DROP NOT NULL,
                 ALTER COLUMN activities DROP NOT NULL;
         `);

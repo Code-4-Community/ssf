@@ -21,6 +21,7 @@ import { UpdateColsToUseEnumType1760886499863 } from '../migrations/176088649986
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 import { UpdatePantryUserFields1731171000000 } from '../migrations/1731171000000-UpdatePantryUserFields';
 import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238-RemoveOrdersDonationId';
+import { AllergyFriendlyToBoolType1763963056712 } from '../migrations/1763963056712-AllergyFriendlyToBoolType';
 
 const config = {
   type: 'postgres',
@@ -55,6 +56,7 @@ const config = {
     UpdatePantriesTable1742739750279,
     UpdatePantryUserFields1731171000000,
     RemoveOrdersDonationId1761500262238,
+    AllergyFriendlyToBoolType1763963056712
   ],
 };
 

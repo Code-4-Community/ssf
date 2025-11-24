@@ -9,7 +9,6 @@ import { User } from '../users/user.entity';
 import {
   Activity,
   AllergensConfidence,
-  AllergyFriendlyStorage,
   ClientVisitFrequency,
   PantryStatus,
   RefrigeratedDonation,
@@ -76,11 +75,9 @@ export class Pantry {
 
   @Column({
     name: 'dedicated_allergy_friendly',
-    type: 'enum',
-    enum: AllergyFriendlyStorage,
-    enumName: 'allergy_friendly_storage_enum',
+    type: 'boolean',
   })
-  dedicatedAllergyFriendly: AllergyFriendlyStorage;
+  dedicatedAllergyFriendly: boolean;
 
   @Column({
     name: 'client_visit_frequency',

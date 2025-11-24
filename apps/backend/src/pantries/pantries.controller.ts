@@ -5,14 +5,13 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  BadRequestException,
   ValidationPipe
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { Activity, AllergensConfidence, AllergyFriendlyStorage, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
+import { Activity, AllergensConfidence, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
 
 @Controller('pantries')
 export class PantriesController {
@@ -121,9 +120,8 @@ export class PantriesController {
             'We keep a dedicated section for clients with severe allergies',
         },
         dedicatedAllergyFriendly: {
-          type: 'string',
-          enum: Object.values(AllergyFriendlyStorage),
-          example: AllergyFriendlyStorage.BACK_ROOM,
+          type: 'boolean',
+          example: true,
         },
         clientVisitFrequency: {
           type: 'string',

@@ -1,5 +1,6 @@
 import {
   ArrayNotEmpty,
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsIn,
@@ -13,7 +14,6 @@ import {
 import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
-  AllergyFriendlyStorage,
   ClientVisitFrequency,
   AllergensConfidence,
   ServeAllergicChildren,
@@ -90,8 +90,8 @@ export class PantryApplicationDto {
   @IsString()
   reservationExplanation?: string;
 
-  @IsEnum(AllergyFriendlyStorage)
-  dedicatedAllergyFriendly: AllergyFriendlyStorage;
+  @IsBoolean()
+  dedicatedAllergyFriendly: boolean;
 
   @IsOptional()
   @IsEnum(ClientVisitFrequency)
