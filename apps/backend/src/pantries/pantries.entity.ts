@@ -88,16 +88,18 @@ export class Pantry {
     type: 'enum',
     enum: ClientVisitFrequency,
     enumName: 'client_visit_frequency_enum',
+    nullable: true,
   })
-  clientVisitFrequency: ClientVisitFrequency;
+  clientVisitFrequency?: ClientVisitFrequency;
 
   @Column({
     name: 'identify_allergens_confidence',
     type: 'enum',
     enum: AllergensConfidence,
     enumName: 'allergens_confidence_enum',
+    nullable: true,
   })
-  identifyAllergensConfidence: AllergensConfidence;
+  identifyAllergensConfidence?: AllergensConfidence;
 
   @Column({
     name: 'serve_allergic_children',
@@ -105,7 +107,7 @@ export class Pantry {
     enum: ServeAllergicChildren,
     enumName: 'serve_allergic_children_enum',
   })
-  serveAllergicChildren: ServeAllergicChildren;
+  serveAllergicChildren?: ServeAllergicChildren;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean' })
   newsletterSubscription: boolean;

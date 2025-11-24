@@ -49,7 +49,8 @@ export class DonationsController {
         status: { 
           type: 'string', 
           enum: Object.values(DonationStatus),
-          example: DonationStatus.AVAILABLE },
+          example: DonationStatus.AVAILABLE 
+        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
