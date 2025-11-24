@@ -5,14 +5,15 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  BadRequestException
+  BadRequestException,
+  ValidationPipe
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { AllergensConfidence, AllergyFriendlyStorage, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
+import { Activity, AllergensConfidence, AllergyFriendlyStorage, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
 
 @Controller('pantries')
 export class PantriesController {
@@ -151,19 +152,11 @@ export class PantriesController {
           type: 'array',
           items: {
             type: 'string',
-            enum: [
-              'Create a labeled, allergy-friendly shelf or shelves',
-              'Provide clients and staff/volunteers with educational pamphlets',
-              "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-              'Post allergen-free resource flyers throughout pantry',
-              'Survey your clients to determine their medical dietary needs',
-              'Collect feedback from allergen-avoidant clients on SSF foods',
-              'Something else',
-            ],
+            enum: Object.values(Activity)
           },
           example: [
-            'Create a labeled, allergy-friendly shelf or shelves',
-            'Provide clients and staff/volunteers with educational pamphlets',
+            Activity.COLLECT_FEEDBACK,
+            Activity.CREATE_LABELED_SHELF,
           ],
         },
         activitiesComments: {
@@ -207,31 +200,9 @@ export class PantriesController {
   })
   @Post()
   async submitPantryApplication(
-    @Body() pantryData: PantryApplicationDto,
+    @Body(new ValidationPipe()) 
+    pantryData: PantryApplicationDto,
   ): Promise<void> {
-    if (pantryData.refrigeratedDonation && !Object.values(RefrigeratedDonation).includes(pantryData.refrigeratedDonation)) {
-      throw new BadRequestException('Invalid refrigeratedDonation value');
-    }
-
-    if (pantryData.reserveFoodForAllergic && !Object.values(ReserveFoodForAllergic).includes(pantryData.reserveFoodForAllergic)) {
-      throw new BadRequestException('Invalid reserveFoodForAllergic value');
-    }
-
-    if (pantryData.dedicatedAllergyFriendly && !Object.values(AllergyFriendlyStorage).includes(pantryData.dedicatedAllergyFriendly)) {
-      throw new BadRequestException('Invalid dedicatedAllergyFriendly value');
-    }
-
-    if (pantryData.clientVisitFrequency && !Object.values(ClientVisitFrequency).includes(pantryData.clientVisitFrequency)) {
-      throw new BadRequestException('Invalid clientVisitFrequency value');
-    }
-
-    if (pantryData.identifyAllergensConfidence && !Object.values(AllergensConfidence).includes(pantryData.identifyAllergensConfidence)) {
-      throw new BadRequestException('Invalid identifyAllergensConfidence value');
-    }
-
-    if (pantryData.serveAllergicChildren && !Object.values(ServeAllergicChildren).includes(pantryData.serveAllergicChildren)) {
-      throw new BadRequestException('Invalid serveAllergicChildren value');
-    }
     return this.pantriesService.addPantry(pantryData);
   }
 

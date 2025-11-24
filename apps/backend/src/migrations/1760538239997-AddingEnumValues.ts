@@ -98,6 +98,16 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
         'Some',
         'No'
       );
+
+      CREATE TYPE "activity_enum" AS ENUM (
+        'Create labeled shelf',
+        'Provide educational pamphlets',
+        'Spreadsheet to track dietary needs',
+        'Post allergen-free resource flyers',
+        'Survey clients to determine medical dietary needs',
+        'Collect feedback from allergen-avoidant clients',
+        'Something else'
+      );
     `);
   }
 
@@ -116,6 +126,7 @@ export class AddingEnumValues1760538239997 implements MigrationInterface {
       DROP TYPE "food_type_enum";
       DROP TYPE "users_role_enum";
       DROP TYPE "reserve_food_for_allergic_enum";
+      DROP TYPE "activity_enum";
     `);
   }
 }

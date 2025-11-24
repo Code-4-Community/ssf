@@ -37,12 +37,12 @@ export enum AllergyFriendlyStorage {
 }
 
 export enum Activity {
-  CREATE_LABELED_SHELF = 'Create a labeled, allergy-friendly shelf or shelves',
-  PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide clients and staff/volunteers with educational pamphlets',
-  TRACK_DIETARY_NEEDS = "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-  POST_RESOURCE_FLYERS = 'Post allergen-free resource flyers throughout pantry',
-  SURVEY_CLIENTS = 'Survey your clients to determine their medical dietary needs',
-  COLLECT_FEEDBACK = 'Collect feedback from allergen-avoidant clients on SSF foods',
+  CREATE_LABELED_SHELF = 'Create labeled shelf',
+  PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide educational pamphlets',
+  TRACK_DIETARY_NEEDS ='Spreadsheet to track dietary needs',
+  POST_RESOURCE_FLYERS = 'Post allergen-free resource flyers',
+  SURVEY_CLIENTS = 'Survey clients to determine medical dietary needs',
+  COLLECT_FEEDBACK = 'Collect feedback from allergen-avoidant clients',
   SOMETHING_ELSE = 'Something else',
 }
 

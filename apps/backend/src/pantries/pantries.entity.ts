@@ -147,7 +147,12 @@ export class Pantry {
   })
   dateApplied: Date;
 
-  @Column({ name: 'activities', type: 'text', array: true })
+  @Column({ 
+    name: 'activities', 
+    type: 'enum',
+    enum: Activity, 
+    enumName: 'activity_enum',
+    array: true })
   activities: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })

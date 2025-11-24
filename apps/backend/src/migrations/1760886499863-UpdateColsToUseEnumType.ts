@@ -38,9 +38,14 @@ export class UpdateColsToUseEnumType1760886499863
                 ALTER COLUMN identify_allergens_confidence TYPE allergens_confidence_enum USING identify_allergens_confidence::allergens_confidence_enum,
                 ALTER COLUMN serve_allergic_children TYPE serve_allergic_children_enum USING serve_allergic_children::serve_allergic_children_enum,
                 ALTER COLUMN reserve_food_for_allergic TYPE reserve_food_for_allergic_enum USING reserve_food_for_allergic::reserve_food_for_allergic_enum,
+                ALTER COLUMN activities TYPE activity_enum[] USING activities::activity_enum[],
                 ALTER COLUMN status DROP DEFAULT,
                 ALTER COLUMN status TYPE pantries_status_enum USING status::pantries_status_enum,
-                ALTER COLUMN status SET DEFAULT 'pending';
+                ALTER COLUMN status SET DEFAULT 'pending',
+                ALTER COLUMN refrigerated_donation SET NOT NULL,
+                ALTER COLUMN dedicated_allergy_friendly SET NOT NULL,
+                ALTER COLUMN reserve_food_for_allergic SET NOT NULL,
+                ALTER COLUMN activities SET NOT NULL;
         `);
 
     await queryRunner.query(`
@@ -84,10 +89,15 @@ export class UpdateColsToUseEnumType1760886499863
                 ALTER COLUMN client_visit_frequency TYPE VARCHAR(25) USING client_visit_frequency::text,
                 ALTER COLUMN identify_allergens_confidence TYPE VARCHAR(50) USING identify_allergens_confidence::text,
                 ALTER COLUMN serve_allergic_children TYPE VARCHAR(25) USING serve_allergic_children::text,
-                ALTER COLUMN reserve_food_for_allergic TYPE VARCHAR(25) USING serve_allergic_children::text,
+                ALTER COLUMN reserve_food_for_allergic TYPE VARCHAR(25) USING reserve_food_for_allergic::text,
+                ALTER COLUMN activities TYPE varchar(255)[] USING activities::varchar[],        
                 ALTER COLUMN status DROP DEFAULT,
                 ALTER COLUMN status TYPE VARCHAR(50) USING status::text,
-                ALTER COLUMN status SET DEFAULT 'pending';
+                ALTER COLUMN status SET DEFAULT 'pending',
+                ALTER COLUMN refrigerated_donation DROP NOT NULL,
+                ALTER COLUMN dedicated_allergy_friendly DROP NOT NULL,
+                ALTER COLUMN reserve_food_for_allergic DROP NOT NULL,
+                ALTER COLUMN activities DROP NOT NULL;
         `);
 
     await queryRunner.query(`
