@@ -10,13 +10,12 @@ import {
   Link,
   Text,
   Alert,
-  AlertDescription,
 } from '@chakra-ui/react';
 
 const Homepage: React.FC = () => {
   return (
     <Container maxW="container.md" py={5}>
-      <VStack align="center" spacing={8}>
+      <VStack align="center" gap={8}>
         <Heading as="h2" size="lg" textAlign="center">
           Site Navigation
         </Heading>
@@ -25,99 +24,119 @@ const Homepage: React.FC = () => {
           <Heading as="h3" size="md" mb={3} textAlign="center">
             Pantry View
           </Heading>
-          <List spacing={2}>
+          <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/pantry-overview" color="teal.500">
-                Pantry Overview
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/pantry-dashboard/1" color="teal.500">
-                Pantry Dashboard (ID: 1)
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-dashboard/1">
+                  Pantry Dashboard (ID: 1)
+                </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/pantry-past-orders" color="teal.500">
-                Past Orders
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-past-orders">Past Orders</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/request-form/1" color="teal.500">
-                Request Form (Pantry ID: 1)
+              <Link asChild color="teal.500">
+                <RouterLink to="/request-form/1">
+                  Request Form (Pantry ID: 1)
+                </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/pantry-application" color="teal.500">
-                Pantry Application
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-application">
+                  Pantry Application
+                </RouterLink>
               </Link>
             </ListItem>
-          </List>
+          </List.Root>
         </Box>
 
         <Box w="full">
           <Heading as="h3" size="md" mb={3} textAlign="center">
             Food Manufacturer View
           </Heading>
-          <List spacing={2}>
+          <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link
-                as={RouterLink}
-                to="/food-manufacturer-order-dashboard"
-                color="teal.500"
-              >
-                Order Dashboard
+              <Link asChild color="teal.500">
+                <RouterLink to="/food-manufacturer-order-dashboard">
+                  Order Dashboard
+                </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/orders" color="teal.500">
-                Orders
+              <Link asChild color="teal.500">
+                <RouterLink to="/orders">Orders</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/donation-management" color="teal.500">
-                Donation Management
+              <Link asChild color="teal.500">
+                <RouterLink to="/donation-management">
+                  Donation Management
+                </RouterLink>
               </Link>
             </ListItem>
-          </List>
+          </List.Root>
         </Box>
 
         <Box w="full">
           <Heading as="h3" size="md" mb={3} textAlign="center">
             Admin View
           </Heading>
-          <List spacing={2}>
+          <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/approve-pantries" color="teal.500">
-                Approve Pantries
+              <Link asChild color="teal.500">
+                <RouterLink to="/approve-pantries">Approve Pantries</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/pantries" color="teal.500">
-                All Pantries
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantries">All Pantries</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/volunteer-management" color="teal.500">
-                Volunteer Management
+              <Link asChild href="/volunteer-management" color="teal.500">
+                <RouterLink to="/volunteer-management">
+                  Volunteer Management
+                </RouterLink>
               </Link>
             </ListItem>
-          </List>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/admin-donation">
+                  Donation Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+          </List.Root>
         </Box>
 
         <Box w="full">
           <Heading as="h3" size="md" mb={3} textAlign="center">
             Other Pages
           </Heading>
-          <List spacing={2}>
+          <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
-              <Link as={RouterLink} to="/landing-page" color="teal.500">
-                Landing Page
+              <Link asChild color="teal.500">
+                <RouterLink to="/landing-page">Landing Page</RouterLink>
               </Link>
             </ListItem>
-          </List>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
+              </Link>
+            </ListItem>
+          </List.Root>
         </Box>
 
-        <Alert
+        <Alert.Root
           status="info"
           variant="subtle"
           flexDirection="column"
@@ -125,20 +144,23 @@ const Homepage: React.FC = () => {
           justifyContent="center"
           textAlign="center"
           borderRadius="md"
+          w="50%"
           mt={5}
         >
-          <AlertDescription>
-            <VStack align="center" spacing={2}>
-              <Text>
-                <strong>Note:</strong> This is a temporary navigation page for
-                development purposes.
-              </Text>
-              <Text>
-                Routes with parameters are using default values (e.g., ID: 1)
-              </Text>
-            </VStack>
-          </AlertDescription>
-        </Alert>
+          <Alert.Content>
+            <Alert.Description>
+              <VStack align="center" gap={2}>
+                <Text>
+                  <strong>Note:</strong> This is a temporary navigation page for
+                  development purposes.
+                </Text>
+                <Text>
+                  Routes with parameters are using default values (e.g., ID: 1)
+                </Text>
+              </VStack>
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
       </VStack>
     </Container>
   );

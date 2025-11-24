@@ -10,7 +10,6 @@ import {
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { Donation } from '../donations/donations.entity';
 
 @Entity('orders')
 export class Order {
@@ -24,7 +23,7 @@ export class Order {
   })
   pantry: Pantry;
 
-  @OneToOne(() => FoodRequest, { nullable: false })
+  @ManyToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
     name: 'request_id',
     referencedColumnName: 'requestId',
@@ -34,7 +33,7 @@ export class Order {
   @Column({ name: 'request_id' })
   requestId: number;
 
-  @ManyToOne(() => FoodManufacturer, { nullable: true })
+  @ManyToOne(() => FoodManufacturer, { nullable: false })
   @JoinColumn({
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
@@ -43,13 +42,6 @@ export class Order {
 
   @Column({ name: 'shipped_by', nullable: true })
   shippedBy: number;
-
-  @ManyToOne(() => Donation, { nullable: false })
-  @JoinColumn({
-    name: 'donation_id',
-    referencedColumnName: 'donationId',
-  })
-  donation: Donation;
 
   @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
   status: string;
