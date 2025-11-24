@@ -40,7 +40,7 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
-  @Get('/orders/:pantryId')
+  @Get('/:pantryId/orders')
   async getOrders(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Order[]> {
