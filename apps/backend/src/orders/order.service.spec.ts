@@ -30,7 +30,7 @@ const mockPantry: Pantry = {
   serveAllergicChildren: ServeAllergicChildren.NO,
   newsletterSubscription: false,
   restrictions: [],
-  pantryRepresentative: null as unknown as User,
+  pantryUser: null as unknown as User,
   status: PantryStatus.APPROVED,
   dateApplied: new Date(),
   activities: [],
