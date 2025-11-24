@@ -22,7 +22,7 @@ import {
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import ApiClient from '@api/apiClient';
-import { PantryApplicationDto } from '../../types/types';
+import { PantryApplicationDto } from 'types/pantryTypes';
 import axios from 'axios';
 
 const PantryApplicationForm: React.FC = () => {

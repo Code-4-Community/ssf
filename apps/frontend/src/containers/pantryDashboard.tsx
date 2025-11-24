@@ -12,7 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { User, Pantry } from 'types/types';
+import { User } from 'types/types';
+import { Pantry } from 'types/pantryTypes';
 import ApiClient from '@api/apiClient';
 import { useParams } from 'react-router-dom';
 

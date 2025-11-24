@@ -1,7 +1,8 @@
 import { VStack, Text, Dialog } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
-import { Pantry, Allocation } from 'types/types';
+import { Allocation } from 'types/types';
+import { Pantry } from 'types/pantryTypes';
 
 interface OrderInformationModalProps {
   orderId: number;

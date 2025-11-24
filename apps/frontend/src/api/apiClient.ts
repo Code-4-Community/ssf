@@ -1,17 +1,16 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
-  Pantry,
   Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
   Allocation,
-  PantryApplicationDto,
   VolunteerPantryAssignment,
   CreateFoodRequestBody,
 } from 'types/types';
+import { PantryApplicationDto, Pantry } from 'types/pantryTypes';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';

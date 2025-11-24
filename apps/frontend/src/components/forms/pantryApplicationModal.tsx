@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/types';
+import { User } from 'types/types';
+import { Pantry } from 'types/pantryTypes';
 
 interface PantryApplicationModalProps {
   pantry: Pantry;
