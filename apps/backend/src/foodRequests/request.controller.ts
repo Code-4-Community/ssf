@@ -61,7 +61,7 @@ export class FoodRequestsController {
         requestedSize: { 
           type: 'string', 
           enum: Object.values(RequestSize),
-          example: RequestSize.LARGE 
+          example: RequestSize.LARGE,
         },
         requestedItems: {
           type: 'array',

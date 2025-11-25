@@ -41,7 +41,7 @@ export class DonationItemsController {
         foodType: { 
           type: 'string', 
           enum: Object.values(FoodType),
-          example: FoodType.DAIRY_FREE_ALTERNATIVES 
+          example: FoodType.DAIRY_FREE_ALTERNATIVES,
         },
       },
     },
