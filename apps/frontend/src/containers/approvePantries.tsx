@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react';
 import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
-import { Pantry } from 'types/pantryTypes';
+import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 const ApprovePantries: React.FC = () => {

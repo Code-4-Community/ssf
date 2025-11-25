@@ -1,3 +1,72 @@
+import { 
+  RefrigeratedDonation, 
+  ReserveFoodForAllergic, 
+  ClientVisitFrequency, 
+  ServeAllergicChildren,
+  AllergensConfidence,
+  PantryStatus,
+  Activity,
+} from "./pantryEnums";
+
+// Note: The API calls as currently written do not
+// return a pantry's SSF representative or pantry
+// representative, or their IDs, as part of the
+// Pantry data
+export interface Pantry {
+  pantryId: number;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  newsletterSubscription: boolean;
+  restrictions: string[];
+  status: PantryStatus;
+  dateApplied: Date;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+}
+
+export interface PantryApplicationDto {
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  restrictions?: string[];
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription?: string;
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;

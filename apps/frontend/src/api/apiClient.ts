@@ -9,8 +9,9 @@ import {
   Allocation,
   VolunteerPantryAssignment,
   CreateFoodRequestBody,
+  Pantry,
+  PantryApplicationDto,
 } from 'types/types';
-import { PantryApplicationDto, Pantry } from 'types/pantryTypes';
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';

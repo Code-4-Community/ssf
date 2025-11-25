@@ -20,8 +20,9 @@ import {
 } from 'react-router-dom';
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
+import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
-import { Activity, PantryApplicationDto } from '../../types/pantryTypes';
+import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
 
 const PantryApplicationForm: React.FC = () => {
