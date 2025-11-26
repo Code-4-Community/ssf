@@ -63,10 +63,11 @@ export class Pantry {
   })
   refrigeratedDonation: RefrigeratedDonation;
 
-  @Column({ name: 'reserve_food_for_allergic', 
-    type: 'enum', 
-    enum: ReserveFoodForAllergic, 
-    enumName: 'reserve_food_for_allergic_enum' 
+  @Column({
+    name: 'reserve_food_for_allergic',
+    type: 'enum',
+    enum: ReserveFoodForAllergic,
+    enumName: 'reserve_food_for_allergic_enum',
   })
   reserveFoodForAllergic: string;
 
@@ -140,12 +141,13 @@ export class Pantry {
   })
   dateApplied: Date;
 
-  @Column({ 
-    name: 'activities', 
+  @Column({
+    name: 'activities',
     type: 'enum',
-    enum: Activity, 
+    enum: Activity,
     enumName: 'activity_enum',
-    array: true })
+    array: true,
+  })
   activities: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })

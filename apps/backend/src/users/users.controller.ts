@@ -16,6 +16,8 @@ import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
+import { Pantry } from '../pantries/pantries.entity';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
@@ -35,7 +37,9 @@ export class UsersController {
   }
 
   @Get('/:id/pantries')
-  async getVolunteerPantries(@Param('id', ParseIntPipe) id: number) {
+  async getVolunteerPantries(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Pantry[]> {
     return this.usersService.getVolunteerPantries(id);
   }
 
@@ -65,7 +69,7 @@ export class UsersController {
   async assignPantries(
     @Param('id', ParseIntPipe) id: number,
     @Body('pantryIds') pantryIds: number[],
-  ) {
+  ): Promise<VolunteerAssignment[]> {
     return this.usersService.assignPantriesToVolunteer(id, pantryIds);
   }
 }
