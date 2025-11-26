@@ -8,7 +8,11 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
-import { Activity, PantryStatus, RefrigeratedDonation } from '../pantries/types';
+import {
+  Activity,
+  PantryStatus,
+  RefrigeratedDonation,
+} from '../pantries/types';
 
 const mockUserService = mock<UsersService>();
 
@@ -56,10 +60,7 @@ const mockPantries: Pantry[] = [
     pantryUser: mockUser1,
     status: PantryStatus.PENDING,
     dateApplied: new Date(),
-    activities: [
-      Activity.COLLECT_FEEDBACK, 
-      Activity.POST_RESOURCE_FLYERS,
-    ],
+    activities: [Activity.COLLECT_FEEDBACK, Activity.POST_RESOURCE_FLYERS],
     itemsInStock: 'bread',
     needMoreOptions: 'No',
   },
@@ -79,9 +80,7 @@ const mockPantries: Pantry[] = [
     pantryUser: mockUser1,
     status: PantryStatus.APPROVED,
     dateApplied: new Date(),
-    activities: [
-      Activity.SURVEY_CLIENTS,
-    ],
+    activities: [Activity.SURVEY_CLIENTS],
     itemsInStock: 'fruits',
     needMoreOptions: 'Yes',
   },
@@ -101,9 +100,7 @@ const mockPantries: Pantry[] = [
     pantryUser: mockUser2,
     status: PantryStatus.PENDING,
     dateApplied: new Date(),
-    activities: [
-      Activity.PROVIDE_EDUCATIONAL_PAMPHLETS,
-    ],
+    activities: [Activity.PROVIDE_EDUCATIONAL_PAMPHLETS],
     itemsInStock: 'fruits',
     needMoreOptions: 'Yes',
   },
