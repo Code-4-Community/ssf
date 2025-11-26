@@ -6,7 +6,7 @@ import { OrdersService } from './order.service';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
 import { User } from '../users/user.entity';
-import { AllergensConfidence, AllergyFriendlyStorage, ClientVisitFrequency, PantryStatus, RefrigeratedDonation, ServeAllergicChildren } from '../pantries/types';
+import { AllergensConfidence, ClientVisitFrequency, PantryStatus, RefrigeratedDonation, ServeAllergicChildren } from '../pantries/types';
 import { OrderStatus } from './types';
 
 const mockOrdersRepository = mock<Repository<Order>>();
@@ -24,7 +24,7 @@ const mockPantry: Pantry = {
   refrigeratedDonation: RefrigeratedDonation.NO,
   reserveFoodForAllergic: 'Yes',
   reservationExplanation: '',
-  dedicatedAllergyFriendly: AllergyFriendlyStorage.BACK_ROOM,
+  dedicatedAllergyFriendly: false,
   clientVisitFrequency: ClientVisitFrequency.DAILY,
   identifyAllergensConfidence: AllergensConfidence.NOT_VERY_CONFIDENT,
   serveAllergicChildren: ServeAllergicChildren.NO,
