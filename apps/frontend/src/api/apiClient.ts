@@ -1,16 +1,16 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
-  Pantry,
   Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
   Allocation,
-  PantryApplicationDto,
   VolunteerPantryAssignment,
   CreateFoodRequestBody,
+  Pantry,
+  PantryApplicationDto,
 } from 'types/types';
 
 const defaultBaseUrl =
