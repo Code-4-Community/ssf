@@ -73,11 +73,11 @@ export class Pantry {
   })
   deliveryWindowInstructions?: string;
 
-  @Column({ 
-    name: 'reserve_food_for_allergic', 
-    type: 'enum', 
-    enum: ReserveFoodForAllergic, 
-    enumName: 'reserve_food_for_allergic_enum' 
+  @Column({
+    name: 'reserve_food_for_allergic',
+    type: 'enum',
+    enum: ReserveFoodForAllergic,
+    enumName: 'reserve_food_for_allergic_enum',
   })
   reserveFoodForAllergic: string;
 
