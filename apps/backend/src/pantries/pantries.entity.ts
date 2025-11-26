@@ -24,33 +24,61 @@ export class Pantry {
   @Column({ name: 'pantry_name', type: 'varchar', length: 255 })
   pantryName: string;
 
-  @Column({ name: 'address_line_1', type: 'varchar', length: 255 })
-  addressLine1: string;
+  @Column({ name: 'shipment_address_line_1', type: 'varchar', length: 255 })
+  shipmentAddressLine1: string;
 
   @Column({
-    name: 'address_line_2',
+    name: 'shipment_address_line_2',
     type: 'varchar',
     length: 255,
     nullable: true,
   })
-  addressLine2?: string;
+  shipmentAddressLine2?: string;
 
-  @Column({ name: 'address_city', type: 'varchar', length: 255 })
-  addressCity: string;
+  @Column({ name: 'shipment_address_city', type: 'varchar', length: 255 })
+  shipmentAddressCity: string;
 
-  @Column({ name: 'address_state', type: 'varchar', length: 255 })
-  addressState: string;
+  @Column({ name: 'shipment_address_state', type: 'varchar', length: 255 })
+  shipmentAddressState: string;
 
-  @Column({ name: 'address_zip', type: 'varchar', length: 255 })
-  addressZip: string;
+  @Column({ name: 'shipment_address_zip', type: 'varchar', length: 255 })
+  shipmentAddressZip: string;
 
   @Column({
-    name: 'address_country',
+    name: 'shipment_address_country',
     type: 'varchar',
     length: 255,
     nullable: true,
   })
-  addressCountry?: string;
+  shipmentAddressCountry?: string;
+
+  @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
+  mailingAddressLine1: string;
+
+  @Column({
+    name: 'mailing_address_line_2',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  mailingAddressLine2?: string;
+
+  @Column({ name: 'mailing_address_city', type: 'varchar', length: 255 })
+  mailingAddressCity: string;
+
+  @Column({ name: 'mailing_address_state', type: 'varchar', length: 255 })
+  mailingAddressState: string;
+
+  @Column({ name: 'mailing_address_zip', type: 'varchar', length: 255 })
+  mailingAddressZip: string;
+
+  @Column({
+    name: 'mailing_address_country',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  mailingAddressCountry?: string;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients: string;
@@ -116,11 +144,33 @@ export class Pantry {
   })
   serveAllergicChildren?: ServeAllergicChildren;
 
-  @Column({ name: 'newsletter_subscription', type: 'boolean' })
+  @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
   newsletterSubscription: boolean;
 
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
+
+  @Column({ name: 'has_email_contact', type: 'boolean' })
+  hasEmailContact: boolean;
+
+  @Column({ name: 'has_email_contact_other', type: 'text', nullable: true })
+  hasEmailContactOther?: string;
+  
+  @Column({ name: 'secondary_contact_first_name', type: 'varchar', length: 255, nullable: true })
+  secondaryContactFirstName?: string;
+  
+  @Column({ name: 'secondary_contact_last_name', type: 'varchar', length: 255, nullable: true })
+  secondaryContactLastName?: string;
+  
+  @Column({ name: 'secondary_contact_email', type: 'varchar', length: 255, nullable: true })
+  secondaryContactEmail?: string;
+
+  @Column({
+    name: 'secondary_contact_phone',
+    type: 'varchar',
+    length: 20,
+  })
+  secondaryContactPhone?: string;
 
   // cascade: ['insert'] means that when we create a new
   // pantry, the pantry user will automatically be added

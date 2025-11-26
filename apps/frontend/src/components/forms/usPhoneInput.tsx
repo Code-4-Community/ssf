@@ -24,6 +24,7 @@ const isPhoneValid = (phone: string): boolean => {
 export interface USPhoneInputProps {
   value: string;
   onChange: (phone: string) => void;
+  allowEmpty?: boolean;
   inputProps?: object;
 }
 
@@ -34,6 +35,7 @@ export interface USPhoneInputProps {
 export const USPhoneInput: React.FC<USPhoneInputProps> = ({
   value,
   onChange,
+  allowEmpty = false,
   inputProps,
 }) => {
   const phoneInput = usePhoneInput({
@@ -45,7 +47,7 @@ export const USPhoneInput: React.FC<USPhoneInputProps> = ({
 
       if (isPhoneValid(data.phone)) {
         phoneInput.inputRef.current?.setCustomValidity('');
-      } else {
+      } else if (!allowEmpty) {
         phoneInput.inputRef.current?.setCustomValidity('Invalid phone number.');
       }
     },

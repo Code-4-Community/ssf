@@ -16,6 +16,8 @@ import {
   Wrap,
   createListCollection,
   Tag,
+  Separator,
+  Checkbox,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -66,6 +68,7 @@ const activityOptions = [
 
 const PantryApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
+  const [secondaryContactPhone, setSecondaryContactPhone] = useState<string>('');
   const [activities, setActivities] = useState<string[]>([]);
   const noActivitiesSelected: boolean = activities.length === 0;
   const allergenClientsExactOption: string = 'I have an exact number';
@@ -82,27 +85,29 @@ const PantryApplicationForm: React.FC = () => {
   const [serveAllergicChildren, setServeAllergicChildren] = useState<
     string | undefined
   >();
-  const [refrigeratedDonation, setRefrigeratedDonation] = useState<string | undefined>();
+  const [differentMailingAddress, setDifferentMailingAddress] = useState<boolean | null>();
   const [searchRestriction, setSearchRestriction] = useState<string>('');
   const [searchActivity, setSearchActivity] = useState<string>('');
 
   const sectionTitleStyles = {
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "inter",
     fontWeight: '600',
     fontSize: 'md',
+    color: 'gray.dark',
+    mb: '1.75em',
   };
 
   const sectionSubtitleStyles = {
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "inter",
     fontWeight: '400',
-    color: 'gray',
-    mb: '2em',
+    color: 'gray.light',
+    mb: '2.25em',
     fontSize: 'sm',
   }
 
   const fieldHeaderStyles = {
     color: 'neutral.800',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "inter",
     fontSize: 'sm',
     fontWeight: '600',
   };
@@ -135,39 +140,40 @@ const PantryApplicationForm: React.FC = () => {
 
   return (
     <Box width="100%" mx="11em" my="4em">
-      <Box as="section" mb="2em">
-        <Heading size="3xl" fontWeight="normal" mb=".5em">
-          Welcome to the Securing Safe Food Partner Pantry Application.
+      <Box as="section" mb="2.75em">
+        <Heading textStyle="h1" fontWeight="normal" mb=".5em" >
+          Partner Pantry Application
         </Heading>
-        <Text color="gray">
-          Thank you for your interest in partnering with Securing Safe Food (SSF) to help serve clients 
-          with food allergies and other adverse reactions to foods. This application helps us understand 
-          your pantry’s capacity and interest in distributing allergen-friendly food. We’ll ask about 
-          your pantry’s current practices, storage capabilities, and communication preferences. Please 
-          answer as accurately as possible. If you have any questions or need help, don’t hesitate to 
-          contact the SSF team.
+        <Text textStyle="p" color="gray.light">
+          Thank you for your interest in partnering with Securing Safe Food (SSF) to help 
+          serve clients with food allergies and other adverse reactions to foods.
         </Text>
       </Box>
       <Box 
-        as="section" bg="#FEFEFE" p={6} 
+        as="section" bg="#FEFEFE" p="2em" 
         border="1px solid" borderColor="neutral.200" rounded="sm"
       >
         <Form method="post" action="/pantry-application">
-          <Heading 
-            as="h3" fontSize="xl" color="neutral.800"
-            fontFamily="'Inter', sans-serif" fontWeight={600}>
-            Pantry Application
+          <Heading textStyle="h3" mb="1em" color="gray.dark" >
+            Pantry Application Form
           </Heading>
-          <Text color="gray" mb="2em" fontSize="lg">
-            Please fill out the folllowing information to get started.
-          </Text>
+          <Stack gap="1em" mb="2em" color="gray.light" textStyle="p" fontWeight="400">
+            <Text>
+              This application helps us understand your pantry’s capacity and interest in 
+              distributing allergen-friendly food. We’ll ask about your pantry’s current 
+              practices, storage capabilities, and communication preferences.
+            </Text>
+            <Text mb=".5em">
+              Please answer as accurately as possible. If you have any questions or need help, 
+              don’t hesitate to contact the SSF team.
+            </Text>
+            <Separator size="sm" color="neutral.100" />
+          </Stack>
+          
           <Text {...sectionTitleStyles}>
-            Point of Contact Information
+            Primary Contact Information
           </Text>
-          <Text {...sectionSubtitleStyles}>
-            Please provide information about whom we should contact at your pantry.
-          </Text>
-          <SimpleGrid columns={2} columnGap={8} rowGap={4} mb="2em">
+          <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="2.5em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 First Name
@@ -201,57 +207,261 @@ const PantryApplicationForm: React.FC = () => {
               <Input name="contactEmail" type="email" borderColor="neutral.100" />
             </Field.Root>
           </SimpleGrid>
+          <Field.Root required mb=".75em">
+            <Field.Label {...fieldHeaderStyles} mb=".5em">
+              Is there someone at your pantry who can regularly check and respond to emails from SSF as needed?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <RadioGroup.Root 
+              name="hasEmailContact"
+              variant="solid"
+            >
+              <Stack>
+                {['Yes', 'No', 'Other'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput required/>
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText 
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
+          </Field.Root>
+          <Field.Root mb="2.5em">
+            <Input 
+              name="hasEmailContactOther" 
+              type="text" 
+              borderColor="neutral.100" 
+              placeholder="If you selected other, please specify."
+              _placeholder={{ color: "neutral.300" }}
+              maxW="30em"
+            />
+          </Field.Root>
+
+          <Separator size="sm" color="neutral.100" mb="3em"/>
 
           <Text {...sectionTitleStyles}>
-            Address
+            Secondary Contact Information
+          </Text>
+          <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
+            <Field.Root>
+              <Field.Label {...fieldHeaderStyles}>
+                First Name
+              </Field.Label>
+              <Input name="secondaryContactFirstName" type="text" borderColor="neutral.100" />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label {...fieldHeaderStyles}>
+                Last Name
+              </Field.Label>
+              <Input name="secondaryContactLastName" type="text" borderColor="neutral.100" />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label {...fieldHeaderStyles}>
+                Phone Number
+              </Field.Label>
+              <USPhoneInput
+                value={secondaryContactPhone}
+                onChange={setSecondaryContactPhone}
+                allowEmpty={true}
+                inputProps={{ name: 'secondaryContactPhone', borderColor: 'neutral.100' }}
+              />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label {...fieldHeaderStyles}>
+                Email Address
+              </Field.Label>
+              <Input name="secondaryContactEmail" type="email" borderColor="neutral.100" />
+            </Field.Root>
+          </SimpleGrid>
+
+          <Separator size="sm" color="neutral.100" mb="3em"/>
+          
+          <Text {...sectionTitleStyles} mb="0">
+            Food Shipment Address
           </Text>
           <Text {...sectionSubtitleStyles}>
-            Please list your address for <b>food</b> shipments.
+            Please list your address for <b>food shipments</b>.
           </Text>
-          <SimpleGrid columns={2} columnGap={8} rowGap={4} mb="2em">
+          <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="2em" >
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 Address Line 1
                 <Field.RequiredIndicator color="red"/>
               </Field.Label>
-              <Input name="addressLine1" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressLine1" type="text" borderColor="neutral.100" />
             </Field.Root>
             <Field.Root>
               <Field.Label {...fieldHeaderStyles}>
                 Address Line 2
               </Field.Label>
-              <Input name="addressLine2" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressLine2" type="text" borderColor="neutral.100" />
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 City/Town
                 <Field.RequiredIndicator color="red"/>
               </Field.Label>
-              <Input name="addressCity" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressCity" type="text" borderColor="neutral.100" />
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 State/Region/Province
                 <Field.RequiredIndicator color="red"/>
               </Field.Label>
-              <Input name="addressState" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressState" type="text" borderColor="neutral.100" />
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 Zip/Post Code
                 <Field.RequiredIndicator color="red"/>
               </Field.Label>
-              <Input name="addressZip" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressZip" type="text" borderColor="neutral.100" />
             </Field.Root>
             <Field.Root>
               <Field.Label {...fieldHeaderStyles}>
                 Country
               </Field.Label>
-              <Input name="addressCountry" type="text" borderColor="neutral.100" />
+              <Input name="shipmentAddressCountry" type="text" borderColor="neutral.100" />
             </Field.Root>
           </SimpleGrid>
+          <Field.Root required mb="2em">
+            <Field.Label {...fieldHeaderStyles} mb=".5em">
+              Does this address differ from your pantry's mailing address for documents?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <RadioGroup.Root 
+              variant="solid"
+              onValueChange={(e: {value: string}) => setDifferentMailingAddress(e.value === 'Yes')}
+              name="differentMailingAddress"
+            >
+              <Stack>
+                {['Yes', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput required/>
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText 
+                      color="neutral.700" 
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
+          </Field.Root>
+          <Field.Root required mb="2em">
+            <Field.Label {...fieldHeaderStyles} mb=".5em">
+              Would your pantry be able to accept food deliveries 
+              during standard business hours Mon-Fri?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <RadioGroup.Root 
+              name="acceptFoodDeliveries"
+              variant="solid"
+            >
+              <Stack>
+                {['Yes', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput required />
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
+          </Field.Root>
+          <Field.Root mb="4em">
+            <Field.Label {...fieldHeaderStyles}>
+              Please note any delivery window instructions.
+            </Field.Label>
+            <Textarea name="deliveryWindowInstructions" borderColor="neutral.100" />
+          </Field.Root>
 
-          <Text {...sectionTitleStyles} mb="2em">
+          <Separator size="sm" color="neutral.100" my="3em"/>
+
+          {differentMailingAddress && (
+            <>
+              <Text {...sectionTitleStyles} mb="0">
+                Mailing Address
+              </Text>
+              <Text {...sectionSubtitleStyles}>
+                Please list your mailing address for <b>documents</b>.
+              </Text>
+              <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em" >
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Address Line 1
+                    <Field.RequiredIndicator color="red"/>
+                  </Field.Label>
+                  <Input name="mailingAddressLine1" type="text" borderColor="neutral.100" />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Address Line 2
+                  </Field.Label>
+                  <Input name="mailingAddressLine2" type="text" borderColor="neutral.100" />
+                </Field.Root>
+                <Field.Root required>
+                  <Field.Label {...fieldHeaderStyles}>
+                    City/Town
+                    <Field.RequiredIndicator color="red"/>
+                  </Field.Label>
+                  <Input name="mailingAddressCity" type="text" borderColor="neutral.100" />
+                </Field.Root>
+                <Field.Root required>
+                  <Field.Label {...fieldHeaderStyles}>
+                    State/Region/Province
+                    <Field.RequiredIndicator color="red"/>
+                  </Field.Label>
+                  <Input name="mailingAddressState" type="text" borderColor="neutral.100" />
+                </Field.Root>
+                <Field.Root required>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Zip/Post Code
+                    <Field.RequiredIndicator color="red"/>
+                  </Field.Label>
+                  <Input name="mailingAddressZip" type="text" borderColor="neutral.100" />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Country
+                  </Field.Label>
+                  <Input name="mailingAddressCountry" type="text" borderColor="neutral.100" />
+                </Field.Root>
+              </SimpleGrid>
+
+              <Separator size="sm" color="neutral.100" my="3em"/>
+            </>
+          )}
+          
+          <Text {...sectionTitleStyles}>
             Pantry Details
           </Text>
           <Field.Root required mb="2em">
@@ -263,7 +473,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <Input name="pantryName" type="text" borderColor="neutral.100" />
           </Field.Root>
-          <Field.Root required mb="2em">
+          <Field.Root required mb="2em" invalid={!allergenClients}>
             <Field.Label {...fieldHeaderStyles}>
               Approximately how many allergen-avoidant clients does your pantry
               serve?
@@ -274,6 +484,7 @@ const PantryApplicationForm: React.FC = () => {
                 value={allergenClients}
                 onChange={(e) => setAllergenClients(e.target.value)}
                 placeholder="Select an option"
+                color = {allergenClients ? 'neutral.800' : 'neutral.300'}
                 borderColor="neutral.100"
                 name="allergenClients"
               >
@@ -291,7 +502,7 @@ const PantryApplicationForm: React.FC = () => {
                   </option>
                 ))}
               </NativeSelect.Field>
-              <NativeSelectIndicator />
+              <NativeSelectIndicator/>
             </NativeSelect.Root>
           </Field.Root>
           {allergenClients === allergenClientsExactOption && (
@@ -323,7 +534,11 @@ const PantryApplicationForm: React.FC = () => {
               onInputValueChange={(e: {inputValue: string}) => setSearchRestriction(e.inputValue)}
             >
               <Combobox.Control>
-                <Combobox.Input placeholder="Type to search" borderColor="neutral.100" />
+                <Combobox.Input 
+                  placeholder="Type to search" 
+                  borderColor="neutral.100"
+                  _placeholder={{ color: "neutral.300" }}
+                />
                 <Combobox.IndicatorGroup>
                   <Combobox.Trigger />
                 </Combobox.IndicatorGroup>
@@ -337,7 +552,6 @@ const PantryApplicationForm: React.FC = () => {
                         <Combobox.Item 
                           key={value} 
                           item={value}
-                          name="restrictions"
                           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
                           onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '')}
                         >
@@ -392,101 +606,34 @@ const PantryApplicationForm: React.FC = () => {
           )}
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Would you be able to accept refrigerated/frozen donations from us?
-              <Field.RequiredIndicator color="red"/>
-            </Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
-                value={refrigeratedDonation}
-                onChange={(e) => setRefrigeratedDonation(e.target.value)}
-                placeholder="Select an option"
-                borderColor="neutral.100" 
-                name="refrigeratedDonation"
-              >
-                {['Yes', 'Small quantities only', 'No'].map((value) => (
-                  <option value={value}>
-                    {value}
-                  </option>
-                ))}
-              </NativeSelect.Field>
-              <NativeSelectIndicator />
-            </NativeSelect.Root>
-          </Field.Root>
-
-          <Field.Root required mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Would your pantry be able to accept food deliveries during standard business hours?{' '}
+              Would you be able to accept frozen donations that require refrigeration or freezing?
               <Field.RequiredIndicator color="red"/>
             </Field.Label>
             <RadioGroup.Root 
-              name="acceptFoodDeliveries"
+              name="refrigeratedDonation"
               variant="solid"
             >
               <Stack>
-                {['Yes', 'No'].map((value) => (
+                {['Yes, always', 'No', 'Sometimes (check in before sending)'].map((value) => (
                   <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemHiddenInput required/>
                     <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
                       <RadioGroup.ItemIndicator 
                         border="1px solid" 
                         borderColor="neutral.100"
                       />
                     </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                    <RadioGroup.ItemText 
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
                   </RadioGroup.Item>
                 ))}
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
-
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Please note any delivery window instructions.
-            </Field.Label>
-            <Textarea name="deliveryWindowInstructions" borderColor="neutral.100" />
-          </Field.Root>
-
-          <Field.Root required mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Are you willing to reserve our food shipments for allergen-avoidant
-                individuals?{' '}
-              <Field.RequiredIndicator color="red"/>
-            </Field.Label>
-            <RadioGroup.Root 
-              name="reserveFoodForAllergic"
-              variant="solid"
-              onValueChange={(e: {value: string}) => setReserveFoodForAllergic(e.value)}
-            >
-              <Stack>
-                {['Yes', 'Some', 'No'].map((value) => (
-                  <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
-                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
-                      <RadioGroup.ItemIndicator 
-                        border="1px solid" 
-                        borderColor="neutral.100"
-                      />
-                    </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                ))}
-              </Stack>
-            </RadioGroup.Root>
-          </Field.Root>
-
-          {reserveFoodForAllergic && ['Some', 'Yes'].includes(reserveFoodForAllergic) && (
-            <Field.Root required mb="2em">
-              <Field.Label {...fieldHeaderStyles}>
-                Please explain how you would do this.
-                <Field.RequiredIndicator color="red"/>
-              </Field.Label>
-              <Textarea name="reservationExplanation" borderColor="neutral.100" autoresize />
-              <Field.HelperText color="neutral.600">
-                For example: keeping allergen-friendly items on a separate shelf, encouraging non-allergic 
-                clients to save these items for clients who do not have other safe food options.
-              </Field.HelperText>
-            </Field.Root>
-          )}
 
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
@@ -501,19 +648,71 @@ const PantryApplicationForm: React.FC = () => {
               <Stack>
                 {['Yes', 'No'].map((value) => (
                   <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemHiddenInput required/>
                     <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
                       <RadioGroup.ItemIndicator 
                         border="1px solid" 
                         borderColor="neutral.100"
                       />
                     </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                    <RadioGroup.ItemText 
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
                   </RadioGroup.Item>
                 ))}
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
+
+          <Field.Root required mb="2em">
+            <Field.Label {...fieldHeaderStyles}>
+              Are you willing to reserve our food shipments for allergen-avoidant
+              individuals?{' '}
+              <Field.RequiredIndicator color="red"/>
+            </Field.Label>
+            <Field.HelperText color="neutral.600" mb=".5em">
+              For example, grouping allergen-friendly items on a separate shelf or 
+              in separate bins and encouraging non-allergic clients to save these 
+              items for clients who do not have other safe food options.
+            </Field.HelperText>
+            <RadioGroup.Root 
+              name="reserveFoodForAllergic"
+              variant="solid"
+              onValueChange={(e: {value: string}) => setReserveFoodForAllergic(e.value)}
+            >
+              <Stack>
+                {['Yes', 'Some', 'No'].map((value) => (
+                  <RadioGroup.Item key={value} value={value}>
+                    <RadioGroup.ItemHiddenInput required/>
+                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }} >
+                      <RadioGroup.ItemIndicator 
+                        border="1px solid" 
+                        borderColor="neutral.100"
+                      />
+                    </RadioGroup.ItemControl>
+                    <RadioGroup.ItemText 
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
+                  </RadioGroup.Item>
+                ))}
+              </Stack>
+            </RadioGroup.Root>
+          </Field.Root>
+
+          {reserveFoodForAllergic === 'Some' && (
+            <Field.Root mb="2em">
+              <Field.Label {...fieldHeaderStyles}>
+                Please explain why you selected "Some."
+              </Field.Label>
+              <Textarea name="reservationExplanation" borderColor="neutral.100" autoresize />
+            </Field.Root>
+          )}
 
           <Field.Root mb="2em">
             <Field.Label {...fieldHeaderStyles}>
@@ -526,6 +725,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="clientVisitFrequency"
                 borderColor="neutral.100"
+                _placeholder={{ color: "neutral.300" }}
               >
                 {[
                   'Daily',
@@ -554,6 +754,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="identifyAllergensConfidence"
                 borderColor="neutral.100"
+                _placeholder={{ color: "neutral.300" }}
               >
                 {[
                   'Very confident',
@@ -584,6 +785,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="serveAllergicChildren"
                 borderColor="neutral.100"
+                _placeholder={{ color: "neutral.300" }}
               >
                 {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
                   <option value={value}>
@@ -613,7 +815,11 @@ const PantryApplicationForm: React.FC = () => {
               required={noActivitiesSelected}
             >
               <Combobox.Control name="activities">
-                <Combobox.Input placeholder="Type to search" borderColor="neutral.100"/>
+                <Combobox.Input 
+                  placeholder="Type to search" 
+                  borderColor="neutral.100"
+                  _placeholder={{ color: "neutral.300" }}
+                />
                 <Combobox.IndicatorGroup>
                   <Combobox.Trigger />
                 </Combobox.IndicatorGroup>
@@ -680,7 +886,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <Textarea name="activitiesComments" borderColor="neutral.100" autoresize/>
             <Field.HelperText color="neutral.600">
-              If you answered "Something Else", please elaborate.
+              If you answered "Something Else," please elaborate.
             </Field.HelperText>
           </Field.Root>
           <Field.Root required mb="2em">
@@ -721,18 +927,38 @@ const PantryApplicationForm: React.FC = () => {
                         borderColor="neutral.100"
                       />
                     </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                    <RadioGroup.ItemText
+                      color="neutral.700"
+                      textStyle="p2"
+                    >
+                      {value}
+                    </RadioGroup.ItemText>
                   </RadioGroup.Item>
                 ))}
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
-          <Box display="flex" gap={2} justifyContent="flex-end">
+          <Field.Root required mb="4em">
+            <Checkbox.Root>
+              <Checkbox.HiddenInput/>
+              <Checkbox.Control 
+                border="1px solid" 
+                borderColor="neutral.100" 
+                _checked={{ bg: 'neutral.800' }}
+              />
+              <Checkbox.Label {...fieldHeaderStyles}>
+                By submitting this form, you agree to our Privacy Policy.{' '}
+                <Field.RequiredIndicator color="red"/>
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </Field.Root>
+          <Box display="flex" gap={2} justifyContent="flex-end" mb={6}>
             <Button
               border="1px solid" 
               color="neutral.800" 
               borderColor="neutral.200"
               fontWeight={600}
+              bg="white"
             >
               Cancel
             </Button>
@@ -799,6 +1025,16 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   pantryApplicationData.set('newsletterSubscription', form.get("newsletterSubscription") === "Yes");
   pantryApplicationData.set('acceptFoodDeliveries', form.get("acceptFoodDeliveries") === "Yes");
   pantryApplicationData.set('dedicatedAllergyFriendly', form.get("dedicatedAllergyFriendly") === "Yes");
+  pantryApplicationData.set('hasEmailContact', form.get("hasEmailContact") === "Yes");
+
+  if (form.get("differentMailingAddress") === "No") {
+    pantryApplicationData.set('mailingAddressLine1', pantryApplicationData.get('shipmentAddressLine1'));
+    pantryApplicationData.set('mailingAddressLine2', pantryApplicationData.get('shipmentAddressLine2'));
+    pantryApplicationData.set('mailingAddressCity', pantryApplicationData.get('shipmentAddressCity'));
+    pantryApplicationData.set('mailingAddressState', pantryApplicationData.get('shipmentAddressState'));
+    pantryApplicationData.set('mailingAddressZip', pantryApplicationData.get('shipmentAddressZip'));
+    pantryApplicationData.set('mailingAddressCountry', pantryApplicationData.get('shipmentAddressCountry'));
+  }
 
   console.log('Pantry Application Data:', Object.fromEntries(pantryApplicationData));
 
