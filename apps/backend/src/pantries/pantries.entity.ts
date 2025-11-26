@@ -73,10 +73,11 @@ export class Pantry {
   })
   deliveryWindowInstructions?: string;
 
-  @Column({ name: 'reserve_food_for_allergic', 
-    type: 'enum', 
-    enum: ReserveFoodForAllergic, 
-    enumName: 'reserve_food_for_allergic_enum' 
+  @Column({
+    name: 'reserve_food_for_allergic',
+    type: 'enum',
+    enum: ReserveFoodForAllergic,
+    enumName: 'reserve_food_for_allergic_enum',
   })
   reserveFoodForAllergic: string;
 
@@ -124,7 +125,11 @@ export class Pantry {
   // cascade: ['insert'] means that when we create a new
   // pantry, the pantry user will automatically be added
   // to the User table
-  @OneToOne(() => User, { nullable: false, cascade: ['insert'], onDelete: 'CASCADE' })  
+  @OneToOne(() => User, {
+    nullable: false,
+    cascade: ['insert'],
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'pantry_user_id',
     referencedColumnName: 'id',
@@ -146,12 +151,13 @@ export class Pantry {
   })
   dateApplied: Date;
 
-  @Column({ 
-    name: 'activities', 
+  @Column({
+    name: 'activities',
     type: 'enum',
-    enum: Activity, 
+    enum: Activity,
     enumName: 'activity_enum',
-    array: true })
+    array: true,
+  })
   activities: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
