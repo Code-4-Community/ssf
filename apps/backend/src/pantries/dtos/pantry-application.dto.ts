@@ -39,35 +39,90 @@ export class PantryApplicationDto {
   })
   contactPhone: string;
 
+  @IsBoolean()
+  hasEmailContact: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  hasEmailContactOther?: string;
+  
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  secondaryContactFirstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  secondaryContactLastName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  secondaryContactEmail?: string;
+
+  @IsOptional()
+  @IsPhoneNumber('US', {
+    message:
+      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+  })
+  secondaryContactPhone?: string;
+
   @IsString()
   @Length(1, 255)
   pantryName: string;
 
   @IsString()
   @Length(1, 255)
-  addressLine1: string;
+  shipmentAddressLine1: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  addressLine2?: string;
+  shipmentAddressLine2?: string;
 
   @IsString()
   @Length(1, 255)
-  addressCity: string;
+  shipmentAddressCity: string;
 
   @IsString()
   @Length(1, 255)
-  addressState: string;
+  shipmentAddressState: string;
 
   @IsString()
   @Length(1, 255)
-  addressZip: string;
+  shipmentAddressZip: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  addressCountry?: string;
+  shipmentAddressCountry?: string;
+
+  @IsString()
+  @Length(1, 255)
+  mailingAddressLine1: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  mailingAddressLine2?: string;
+
+  @IsString()
+  @Length(1, 255)
+  mailingAddressCity: string;
+
+  @IsString()
+  @Length(1, 255)
+  mailingAddressState: string;
+
+  @IsString()
+  @Length(1, 255)
+  mailingAddressZip: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  mailingAddressCountry?: string;
 
   @IsString()
   @Length(1, 25)

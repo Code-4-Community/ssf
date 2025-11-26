@@ -8,10 +8,10 @@ const PantryApplicationSubmitted: React.FC = () => {
     <Center>
       <Box width="100%" mx="11em" my="4em">
         <Box as="section" mb="2em">
-          <Heading size="3xl" fontWeight="normal" mb=".5em">
+          <Heading textStyle="h1" mb=".5em">
             Thank you!
           </Heading>
-          <Text color="gray">Your application has been submitted.</Text>
+          <Text textStyle="p" color="gray.light">Your application has been submitted.</Text>
         </Box>
         <Box
           as="section"
@@ -22,15 +22,14 @@ const PantryApplicationSubmitted: React.FC = () => {
           borderColor="neutral.200"
           rounded="sm"
           alignItems="center"
-          color="neutral.800"
           width="100%"
         >
-          <VStack gap={4}>
-            <Icon as={FileCheck} size="lg" />
-            <Text fontWeight="semibold" fontSize="md">
+          <VStack gap={3}>
+            <Icon as={FileCheck} size="lg" color="neutral.800"/>
+            <Text color="neutral.800" fontWeight="semibold" textStyle="p">
               Application Submitted
             </Text>
-            <Text color="neutral.700" fontSize="sm">
+            <Text color="neutral.700" textStyle="p2">
               Please check your inbox for status updates.
             </Text>
           </VStack>

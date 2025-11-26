@@ -10,25 +10,28 @@ const textStyles = defineTextStyles({
     value: {
       fontFamily: 'instrument',
       fontSize: '32px',
-      fontWeight: '400'
+      fontWeight: '400',
     },
   },
   h2: {
     value: {
       fontFamily: 'ibm',
       fontSize: '28px',
+      fontWeight: '600',
     },
   },
   h3: {
     value: {
       fontFamily: 'ibm',
       fontSize: '24px',
+      fontWeight: '600',
     },
   },
   h4: {
     value: {
       fontFamily: 'inter',
       fontSize: '20px',
+      fontWeight: '400',
     },
   },
   p: {
@@ -42,6 +45,7 @@ const textStyles = defineTextStyles({
     value: {
       fontFamily: 'inter',
       fontSize: '14px',
+      fontWeight: '400',
     },
   },
 });
@@ -64,12 +68,16 @@ const customConfig = defineConfig({
           50: { value: '#FAFAFA' },
           100: { value: '#E7E7E7' },
           200: { value: '#CFCFCF' },
+          300: { value: '#B8B8B8' },
           600: { value: '#707070' },
           700: { value: '#585858' },
           800: { value: '#414141' },
           900: { value: '#212529' },
         },
-        gray: { value: '#515151' },
+        gray: { 
+          light: { value: '#515151' },
+          dark: { value: '#111' },
+        },
         teal: {
           400: { value: '#A9D5DB' },
           100: { value: '#E9F4F6' },
