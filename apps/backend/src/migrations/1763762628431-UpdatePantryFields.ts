@@ -1,9 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UpdatePantryFields1763762628431 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             ALTER TABLE pantries
                 ADD COLUMN accept_food_deliveries boolean NOT NULL DEFAULT false,
                 ADD COLUMN delivery_window_instructions text,
@@ -39,10 +38,10 @@ export class UpdatePantryFields1763762628431 implements MigrationInterface {
             ALTER TABLE pantries
                 RENAME COLUMN address_country TO shipment_address_country;
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             ALTER TABLE "pantries" 
                 DROP COLUMN IF EXISTS delivery_window_instructions,
                 DROP COLUMN IF EXISTS accept_food_deliveries,
@@ -78,6 +77,5 @@ export class UpdatePantryFields1763762628431 implements MigrationInterface {
             ALTER TABLE pantries
                 RENAME COLUMN shipment_address_country TO address_country;
         `);
-    }
-
+  }
 }

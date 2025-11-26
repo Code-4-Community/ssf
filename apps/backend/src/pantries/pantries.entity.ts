@@ -155,14 +155,29 @@ export class Pantry {
 
   @Column({ name: 'has_email_contact_other', type: 'text', nullable: true })
   hasEmailContactOther?: string;
-  
-  @Column({ name: 'secondary_contact_first_name', type: 'varchar', length: 255, nullable: true })
+
+  @Column({
+    name: 'secondary_contact_first_name',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   secondaryContactFirstName?: string;
-  
-  @Column({ name: 'secondary_contact_last_name', type: 'varchar', length: 255, nullable: true })
+
+  @Column({
+    name: 'secondary_contact_last_name',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   secondaryContactLastName?: string;
-  
-  @Column({ name: 'secondary_contact_email', type: 'varchar', length: 255, nullable: true })
+
+  @Column({
+    name: 'secondary_contact_email',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   secondaryContactEmail?: string;
 
   @Column({
