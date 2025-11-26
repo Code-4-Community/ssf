@@ -6,7 +6,6 @@ import {
   ParseIntPipe,
   Put,
   Post,
-  Patch,
   BadRequestException,
   Body,
   //UseGuards,
@@ -25,7 +24,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('/volunteers')
-  async getAllVolunteers(): Promise<User[]> {
+  async getAllVolunteers() {
     return this.usersService.getVolunteersAndPantryAssignments();
   }
 
@@ -35,16 +34,21 @@ export class UsersController {
     return this.usersService.findOne(userId);
   }
 
+  @Get('/:id/pantries')
+  async getVolunteerPantries(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getVolunteerPantries(id);
+  }
+
   @Delete('/:id')
-  removeUser(@Param('id', ParseIntPipe) userId: number) {
+  removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.remove(userId);
   }
 
-  @Put(':id/role')
+  @Put('/:id/role')
   async updateRole(
     @Param('id', ParseIntPipe) id: number,
     @Body('role') role: string,
-  ) {
+  ): Promise<User> {
     if (!Object.values(Role).includes(role as Role)) {
       throw new BadRequestException('Invalid role');
     }
@@ -57,13 +61,8 @@ export class UsersController {
     return this.usersService.create(email, firstName, lastName, phone, role);
   }
 
-  @Get('/:id/pantries')
-  async getVolunteerPantries(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getVolunteerPantries(id);
-  }
-
-  @Patch(':id/pantries')
-  async assignPantry(
+  @Post('/:id/pantries')
+  async assignPantries(
     @Param('id', ParseIntPipe) id: number,
     @Body('pantryIds') pantryIds: number[],
   ) {

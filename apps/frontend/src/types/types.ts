@@ -174,18 +174,10 @@ export enum VolunteerType {
 }
 
 export interface VolunteerPantryAssignment {
-  volunteer: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
-  pantry: {
-    pantryId: number;
-    pantryName: string;
-  };
+  volunteerId: number;
+  pantryId: number;
+  volunteer: User;
+  pantry: Pantry;
 }
 
 export enum Role {
