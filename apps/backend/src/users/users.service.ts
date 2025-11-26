@@ -9,7 +9,7 @@ import { In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Role, VOLUNTEER_ROLES } from './types';
 import { validateId } from '../utils/validation.utils';
-import { Assignments } from '../volunteerAssignments/volunteerAssignments.entity';
+import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Injectable()
@@ -18,8 +18,8 @@ export class UsersService {
     @InjectRepository(User)
     private repo: Repository<User>,
 
-    @InjectRepository(Assignments)
-    private assignmentsRepo: Repository<Assignments>,
+    @InjectRepository(VolunteerAssignment)
+    private assignmentsRepo: Repository<VolunteerAssignment>,
 
     @InjectRepository(Pantry)
     private pantryRepo: Repository<Pantry>,
@@ -103,28 +103,30 @@ export class UsersService {
     });
   }
 
-  async getVolunteerPantries(volunteerId: number) {
+  async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
     validateId(volunteerId, 'Volunteer');
+
+    const volunteer = await this.repo.findOne({ where: { id: volunteerId } });
+    if (!volunteer)
+      throw new NotFoundException(`Volunteer ${volunteerId} not found`);
+
     const assignments = await this.assignmentsRepo.find({
-      where: { volunteer: { id: volunteerId } },
+      where: { volunteer: volunteer},
       relations: ['pantry'],
     });
 
     return assignments.map((a) => a.pantry);
   }
 
-  async assignPantriesToVolunteer(volunteerId: number, pantryIds: number[]) {
+  async assignPantriesToVolunteer(volunteerId: number, pantryIds: number[]): Promise<VolunteerAssignment[]> {
     validateId(volunteerId, 'Volunteer');
-    for (const pantryId of pantryIds) {
-      validateId(pantryId, 'Pantry');
-    }
+    pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
     const volunteer = await this.repo.findOne({ where: { id: volunteerId } });
     if (!volunteer)
       throw new NotFoundException(`Volunteer ${volunteerId} not found`);
 
     const pantries = await this.pantryRepo.findBy({ pantryId: In(pantryIds) });
-
     if (pantries.length !== pantryIds.length) {
       throw new BadRequestException('One or more pantries not found');
     }

@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Assignments } from './volunteerAssignments.entity';
-import { UsersService } from '../users/users.service';
+import { VolunteerAssignment } from './volunteerAssignments.entity';
 
 @Injectable()
 export class AssignmentsService {
   constructor(
-    @InjectRepository(Assignments) private repo: Repository<Assignments>,
-    private usersService: UsersService,
+    @InjectRepository(VolunteerAssignment) private repo: Repository<VolunteerAssignment>,
   ) {}
 
   // Gets the volunteer details and the corresponding pantry

@@ -3,7 +3,7 @@ import { User } from '../users/user.entity';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Entity('volunteer_assignments')
-export class Assignments {
+export class VolunteerAssignment {
   @PrimaryColumn({ name: 'volunteer_id' })
   volunteerId: number;
 

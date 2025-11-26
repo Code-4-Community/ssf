@@ -8,8 +8,12 @@ import { Role } from './types';
 import { mock } from 'jest-mock-extended';
 import { In } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
+import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
+import { Pantry } from '../pantries/pantries.entity';
 
 const mockUserRepository = mock<Repository<User>>();
+const mockAssignmentsRepository = mock<Repository<VolunteerAssignment>>();
+const mockPantryRepository = mock<Repository<Pantry>>();
 
 const mockUser: User = {
   id: 1,
@@ -24,12 +28,30 @@ describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
+    mockUserRepository.create.mockReset();
+    mockUserRepository.save.mockReset();
+    mockUserRepository.findOneBy.mockReset();
+    mockUserRepository.find.mockReset();
+    mockUserRepository.remove.mockReset();
+    mockAssignmentsRepository.find.mockReset();
+    mockAssignmentsRepository.save.mockReset();
+    mockAssignmentsRepository.create.mockReset();
+    mockPantryRepository.findBy.mockReset();
+
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: getRepositoryToken(VolunteerAssignment),
+          useValue: mockAssignmentsRepository,
+        },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: mockPantryRepository,
         },
       ],
     }).compile();
@@ -43,6 +65,10 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
+    mockAssignmentsRepository.find.mockReset();
+    mockAssignmentsRepository.save.mockReset();
+    mockAssignmentsRepository.create.mockReset();
+    mockPantryRepository.findBy.mockReset();
   });
 
   afterEach(() => {

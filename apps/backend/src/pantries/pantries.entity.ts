@@ -114,7 +114,11 @@ export class Pantry {
   // cascade: ['insert'] means that when we create a new
   // pantry, the pantry user will automatically be added
   // to the User table
-  @OneToOne(() => User, { nullable: false, cascade: ['insert'], onDelete: 'CASCADE' })  
+  @OneToOne(() => User, {
+    nullable: false,
+    cascade: ['insert'],
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'pantry_user_id',
     referencedColumnName: 'id',
