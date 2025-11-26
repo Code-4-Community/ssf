@@ -11,7 +11,9 @@ const PantryApplicationSubmitted: React.FC = () => {
           <Heading textStyle="h1" mb=".5em">
             Thank you!
           </Heading>
-          <Text textStyle="p" color="gray.light">Your application has been submitted.</Text>
+          <Text textStyle="p" color="gray.light">
+            Your application has been submitted.
+          </Text>
         </Box>
         <Box
           as="section"
@@ -25,7 +27,7 @@ const PantryApplicationSubmitted: React.FC = () => {
           width="100%"
         >
           <VStack gap={3}>
-            <Icon as={FileCheck} size="lg" color="neutral.800"/>
+            <Icon as={FileCheck} size="lg" color="neutral.800" />
             <Text color="neutral.800" fontWeight="semibold" textStyle="p">
               Application Submitted
             </Text>
