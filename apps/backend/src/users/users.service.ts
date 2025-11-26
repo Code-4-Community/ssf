@@ -111,14 +111,17 @@ export class UsersService {
       throw new NotFoundException(`Volunteer ${volunteerId} not found`);
 
     const assignments = await this.assignmentsRepo.find({
-      where: { volunteer: volunteer},
+      where: { volunteer: volunteer },
       relations: ['pantry'],
     });
 
     return assignments.map((a) => a.pantry);
   }
 
-  async assignPantriesToVolunteer(volunteerId: number, pantryIds: number[]): Promise<VolunteerAssignment[]> {
+  async assignPantriesToVolunteer(
+    volunteerId: number,
+    pantryIds: number[],
+  ): Promise<VolunteerAssignment[]> {
     validateId(volunteerId, 'Volunteer');
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 

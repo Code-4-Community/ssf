@@ -6,7 +6,8 @@ import { VolunteerAssignment } from './volunteerAssignments.entity';
 @Injectable()
 export class AssignmentsService {
   constructor(
-    @InjectRepository(VolunteerAssignment) private repo: Repository<VolunteerAssignment>,
+    @InjectRepository(VolunteerAssignment)
+    private repo: Repository<VolunteerAssignment>,
   ) {}
 
   // Gets the volunteer details and the corresponding pantry
