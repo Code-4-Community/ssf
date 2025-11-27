@@ -8,7 +8,7 @@ import {
   Field,
   Dialog,
   Tag,
-  Box
+  Box,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest } from 'types/types';
@@ -80,14 +80,14 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     >
       <Dialog.Backdrop />
       <Dialog.Positioner>
-        <Dialog.Content maxW="49em">
+        <Dialog.Content mt={3} maxW={700}>
           <Dialog.Header>
-            <Dialog.Title mt={3} fontSize={28} fontWeight={700} fontFamily="body">
+            <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
               New Food Request
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text mb="3em" color="#52525B">
+            <Text mb={12} color="#52525B" textStyle="p2">
               Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your
               preferences.
@@ -107,17 +107,18 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               }}
             >
               <input type="hidden" name="pantryId" value={pantryId} />
-              <Field.Root required mb="1em">
+              <Field.Root required mb={3}>
                 <Field.Label>
-                  <Text fontSize={16} fontWeight={600} color="neutral.800">
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Size of Shipment
                   </Text>
                 </Field.Label>
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button disabled={readOnly} w="full" bgColor={'white'} fontFamily="Inter" color={requestedSize ? "#111111" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="flex-start" mt={2}>
+                    <Button disabled={readOnly} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "#111111" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
                       {requestedSize || "Select Size"}
+                      <ChevronDownIcon w={5} h={5} />
                     </Button>
                   </Menu.Trigger>
 
@@ -139,9 +140,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Menu.Root>
               </Field.Root>
 
-              <Field.Root mb="1em">
+              <Field.Root mb={3}>
                 <Field.Label>
-                  <Text fontSize={16} fontWeight={600} color="neutral.800">Food Type(s)</Text>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">Food Type(s)</Text>
                 </Field.Label>
 
                 {selectedItems.map((item) => (
@@ -158,12 +159,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       borderColor='neutral.100' 
                       borderWidth="1px" 
                       borderRadius="4px"
-                      justifyContent="flex-start"
-                      fontFamily="Inter"
+                      justifyContent="space-between"
+                      textStyle="p2"
                       mt={2}
-                      rightIcon={<ChevronDownIcon color={selectedItems.length > 0 ? "#111111" : "neutral.300"} />}
                     >
                       {selectedItems.length > 0 ? `Multi-Select` : "Select food types"}
+                      <ChevronDownIcon w={5} h={5} />
                     </Button>
                   </Menu.Trigger>
 
@@ -199,15 +200,14 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                             </Box>
                             <Menu.ItemIndicator />
 
-                            <Text color="gray.700">{allergen}</Text>
+                            <Text color="neutral.800">{allergen}</Text>
                           </Menu.CheckboxItem>
                         );
                       })}
                     </Menu.Content>
                   </Menu.Positioner>
                 </Menu.Root>
-
-
+      
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={3} gap={2}>
                     {selectedItems.map((item) => (
@@ -238,9 +238,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 )}
               </Field.Root>
 
-              <Field.Root mb="2em">
+              <Field.Root mb={6}>
                 <Field.Label>
-                  <Text fontSize={16} fontWeight={600} color="neutral.800">
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Additional Information
                   </Text>
                 </Field.Label>
@@ -249,8 +249,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   placeholder="Anything else we should know about"
                   _placeholder={{ color: "neutral.300", fontFamily: "Inter", fontWeight: 400 }}
                   size="lg"
-                  fontFamily="Inter"
-                  fontSize={14}
+                  textStyle="p2"
                   color={additionalNotes !== "" ? "neutral.800" : "neutral.300"}
                   value={additionalNotes}
                   onChange={(e) => {
@@ -266,11 +265,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   }}
                   disabled={readOnly}
                 />
-                <Field.HelperText color="#52525B">Max 250 words</Field.HelperText>
+                <Field.HelperText color="neutral.600">Max 250 words</Field.HelperText>
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'gray'} color={'white'} disabled={!isFormValid}>Continue</Button>}
+                {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'neutral.400'} color={'white'} disabled={!isFormValid}>Continue</Button>}
                 <Button onClick={onClose} bg={'white'} color={'black'} borderColor='neutral.100'>Cancel</Button>
               </Flex>
             </Form>
