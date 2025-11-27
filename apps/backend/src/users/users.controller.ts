@@ -26,7 +26,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('/volunteers')
-  async getAllVolunteers() {
+  async getAllVolunteers(): Promise<(User & { pantryIds: number[] })[]> {
     return this.usersService.getVolunteersAndPantryAssignments();
   }
 
