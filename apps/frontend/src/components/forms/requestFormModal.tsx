@@ -10,27 +10,8 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
-import { FoodRequest } from 'types/types';
+import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
-
-const getAllergens = () => {
-  return [
-    'Dairy-Free Alternatives',
-    'Dried Beans (Gluten-Free, Nut-Free)',
-    'Gluten-Free Baking/Pancake Mixes',
-    'Gluten-Free Bread',
-    'Gluten-Free Tortillas',
-    'Granola',
-    'Masa Harina Flour',
-    'Nut-Free Granola Bars',
-    'Olive Oil',
-    'Refrigerated Meals',
-    'Rice Noodles',
-    'Seed Butters (Peanut Butter Alternative)',
-    'Whole-Grain Cookies',
-    'Quinoa',
-  ];
-};
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -60,13 +41,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       setAdditionalNotes(previousRequest.additionalInformation || '');
     }
   }, [isOpen, previousRequest]);
-
-  const shipmentSizeOptions = [
-    "Very Small (1-2 boxes)",
-    "Small (2-5 boxes)",
-    "Medium (5-10 boxes)",
-    "Large (10+ boxes)"
-  ];
 
   return (
     <Dialog.Root
@@ -126,7 +100,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         value={requestedSize}
                         onValueChange={(val: { value: string }) => setRequestedSize(val.value)}
                       >
-                        {shipmentSizeOptions.map((option) => (
+                        {Object.values(RequestSize).map((option) => (
                           <Menu.RadioItem key={option} value={option}>
                             <Menu.ItemIndicator />
                             {option}
@@ -168,7 +142,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
                   <Menu.Positioner w="full">
                     <Menu.Content maxH="250px" overflowY="auto">
-                      {getAllergens().map((allergen) => {
+                      {FoodTypes.map((allergen) => {
                         const isChecked = selectedItems.includes(allergen);
                         return (
                           <Menu.CheckboxItem
