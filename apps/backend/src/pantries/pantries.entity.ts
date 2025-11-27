@@ -4,9 +4,17 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import {
+  Activity,
+  AllergensConfidence,
+  ClientVisitFrequency,
+  PantryStatus,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
 
 @Entity('pantries')
 export class Pantry {
@@ -16,36 +24,86 @@ export class Pantry {
   @Column({ name: 'pantry_name', type: 'varchar', length: 255 })
   pantryName: string;
 
-  @Column({ name: 'address', type: 'varchar', length: 255 })
-  address: string;
+  @Column({ name: 'address_line_1', type: 'varchar', length: 255 })
+  addressLine1: string;
+
+  @Column({
+    name: 'address_line_2',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  addressLine2?: string;
+
+  @Column({ name: 'address_city', type: 'varchar', length: 255 })
+  addressCity: string;
+
+  @Column({ name: 'address_state', type: 'varchar', length: 255 })
+  addressState: string;
+
+  @Column({ name: 'address_zip', type: 'varchar', length: 255 })
+  addressZip: string;
+
+  @Column({
+    name: 'address_country',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  addressCountry?: string;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients: string;
 
-  @Column({ name: 'refrigerated_donation', type: 'varchar', length: 25 })
-  refrigeratedDonation: string;
+  @Column({
+    name: 'refrigerated_donation',
+    type: 'enum',
+    enum: RefrigeratedDonation,
+    enumName: 'refrigerated_donation_enum',
+  })
+  refrigeratedDonation: RefrigeratedDonation;
 
-  @Column({ name: 'reserve_food_for_allergic', type: 'boolean' })
-  reserveFoodForAllergic: boolean;
+  @Column({ name: 'reserve_food_for_allergic', 
+    type: 'enum', 
+    enum: ReserveFoodForAllergic, 
+    enumName: 'reserve_food_for_allergic_enum' 
+  })
+  reserveFoodForAllergic: string;
 
-  @Column({ name: 'reservation_explanation', type: 'text' })
-  reservationExplanation: string;
+  @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
+  reservationExplanation?: string;
 
-  @Column({ name: 'dedicated_allergy_friendly', type: 'varchar', length: 255 })
-  dedicatedAllergyFriendly: string;
+  @Column({
+    name: 'dedicated_allergy_friendly',
+    type: 'boolean',
+  })
+  dedicatedAllergyFriendly: boolean;
 
-  @Column({ name: 'client_visit_frequency', type: 'varchar', length: 25 })
-  clientVisitFrequency: string;
+  @Column({
+    name: 'client_visit_frequency',
+    type: 'enum',
+    enum: ClientVisitFrequency,
+    enumName: 'client_visit_frequency_enum',
+    nullable: true,
+  })
+  clientVisitFrequency?: ClientVisitFrequency;
 
   @Column({
     name: 'identify_allergens_confidence',
-    type: 'varchar',
-    length: 50,
+    type: 'enum',
+    enum: AllergensConfidence,
+    enumName: 'allergens_confidence_enum',
+    nullable: true,
   })
-  identifyAllergensConfidence: string;
+  identifyAllergensConfidence?: AllergensConfidence;
 
-  @Column({ name: 'serve_allergic_children', type: 'varchar', length: 25 })
-  serveAllergicChildren: string;
+  @Column({
+    name: 'serve_allergic_children',
+    type: 'enum',
+    enum: ServeAllergicChildren,
+    enumName: 'serve_allergic_children_enum',
+  })
+  serveAllergicChildren?: ServeAllergicChildren;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean' })
   newsletterSubscription: boolean;
@@ -53,22 +111,23 @@ export class Pantry {
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
 
-  @ManyToOne(() => User, { nullable: false })
+  // cascade: ['insert'] means that when we create a new
+  // pantry, the pantry user will automatically be added
+  // to the User table
+  @OneToOne(() => User, { nullable: false, cascade: ['insert'], onDelete: 'CASCADE' })  
   @JoinColumn({
-    name: 'ssf_representative_id',
+    name: 'pantry_user_id',
     referencedColumnName: 'id',
   })
-  ssfRepresentative: User;
+  pantryUser: User;
 
-  @OneToOne(() => User, { nullable: false })
-  @JoinColumn({
-    name: 'pantry_representative_id',
-    referencedColumnName: 'id',
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: PantryStatus,
+    enumName: 'pantries_status_enum',
   })
-  pantryRepresentative: User;
-
-  @Column({ name: 'status', type: 'varchar', length: 50 })
-  status: string;
+  status: PantryStatus;
 
   @Column({
     name: 'date_applied',
@@ -77,11 +136,16 @@ export class Pantry {
   })
   dateApplied: Date;
 
-  @Column({ name: 'activities', type: 'text' })
-  activities: string;
+  @Column({ 
+    name: 'activities', 
+    type: 'enum',
+    enum: Activity, 
+    enumName: 'activity_enum',
+    array: true })
+  activities: Activity[];
 
-  @Column({ name: 'questions', type: 'text', nullable: true })
-  questions: string;
+  @Column({ name: 'activities_comments', type: 'text', nullable: true })
+  activitiesComments?: string;
 
   @Column({ name: 'items_in_stock', type: 'text' })
   itemsInStock: string;

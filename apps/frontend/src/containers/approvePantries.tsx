@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Center, Table, Tbody, Tr, Td, Button, Select } from '@chakra-ui/react';
+import {
+  Center,
+  Table,
+  Button,
+  Link,
+  NativeSelect,
+  NativeSelectIndicator,
+} from '@chakra-ui/react';
 import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
+import { formatDate } from '@utils/utils';
 
 const ApprovePantries: React.FC = () => {
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
@@ -57,61 +65,57 @@ const ApprovePantries: React.FC = () => {
     setSortedPantries(sorted);
   }, [sort, pendingPantries]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-    });
-  };
-
   return (
     <Center flexDirection="column" p={4}>
-      <Select
-        width="40%"
-        mb={4}
-        placeholder="Sort By"
-        onChange={(e) => setSort(e.target.value)}
-      >
-        <option value="name">Pantry Name (A-Z)</option>
-        <option value="name-reverse">Pantry Name (Z-A)</option>
-        <option value="date-recent">Date Applied (Most Recent)</option>
-        <option value="date-oldest">Date Applied (Oldest First)</option>
-      </Select>
+      <NativeSelect.Root width="40%" mb={4}>
+        <NativeSelect.Field
+          placeholder="Sort By"
+          onChange={(e) => setSort(e.target.value)}
+        >
+          <option value="name">Pantry Name (A-Z)</option>
+          <option value="name-reverse">Pantry Name (Z-A)</option>
+          <option value="date-recent">Date Applied (Most Recent)</option>
+          <option value="date-oldest">Date Applied (Oldest First)</option>
+        </NativeSelect.Field>
+        <NativeSelectIndicator />
+      </NativeSelect.Root>
 
-      <Table variant="simple" mt={6} width="80%">
-        <Tbody>
+      <Table.Root variant="line" mt={6} width="80%">
+        <Table.Body>
           {sortedPantries.map((pantry) => (
-            <Tr key={pantry.pantryId}>
-              <Td>{pantry.pantryId}</Td>
-              <Td>
+            <Table.Row key={pantry.pantryId}>
+              <Table.Cell>{pantry.pantryId}</Table.Cell>
+              <Table.Cell>
                 <Button
-                  variant="link"
-                  colorScheme="blue"
+                  asChild
+                  bg="transparent"
+                  color="cyan"
+                  fontWeight="600"
                   onClick={() => setOpenPantry(pantry)}
                 >
-                  {pantry.pantryName}
+                  <Link>{pantry.pantryName}</Link>
                 </Button>
-              </Td>
-              <Td>{formatDate(pantry.dateApplied)}</Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>{formatDate(pantry.dateApplied)}</Table.Cell>
+              <Table.Cell>
                 <Button
-                  colorScheme="green"
+                  bg="green.600"
+                  fontWeight="600"
                   onClick={() => updatePantry(pantry.pantryId, 'approve')}
                 >
                   Approve
                 </Button>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 <Button
-                  colorScheme="red"
+                  bg="red"
+                  fontWeight="600"
                   onClick={() => updatePantry(pantry.pantryId, 'deny')}
                 >
                   Deny
                 </Button>
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
           {openPantry && (
             <PantryApplicationModal
@@ -120,8 +124,8 @@ const ApprovePantries: React.FC = () => {
               onClose={() => setOpenPantry(null)}
             />
           )}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

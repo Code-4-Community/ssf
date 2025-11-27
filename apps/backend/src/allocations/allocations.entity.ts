@@ -15,7 +15,7 @@ export class Allocation {
   @Column({ name: 'order_id', type: 'int' })
   orderId: number;
 
-  @Column({ name: 'item_id', type: 'int' })
+  @Column({ name: 'item_id', type: 'int', nullable: false })
   itemId: number;
 
   @ManyToOne(() => DonationItem, (item) => item.allocations)

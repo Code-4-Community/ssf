@@ -19,6 +19,9 @@ import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
+import AdminDonation from '@containers/adminDonation';
+import { pantryIdLoader } from '@loaders/pantryIdLoader';
+import Homepage from '@containers/homepage';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +29,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <NotFound />,
     children: [
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         path: '/landing-page',
         element: <LandingPage />,
@@ -37,6 +44,7 @@ const router = createBrowserRouter([
       {
         path: '/pantry-dashboard/:pantryId',
         element: <PantryDashboard />,
+        loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
@@ -62,6 +70,7 @@ const router = createBrowserRouter([
       {
         path: '/request-form/:pantryId',
         element: <FormRequests />,
+        loader: pantryIdLoader,
       },
       {
         path: '/donation-management',
@@ -78,6 +87,10 @@ const router = createBrowserRouter([
       {
         path: '/approve-pantries',
         element: <ApprovePantries />,
+      },
+      {
+        path: '/admin-donation',
+        element: <AdminDonation />,
       },
       {
         path: '/volunteer-management',

@@ -7,25 +7,32 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
+import { DonationStatus } from './types';
 
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
+  @Get()
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
+
+  @Get('/count')
+  async getNumberOfDonations(): Promise<number> {
+    return this.donationService.getNumberOfDonations();
+  }
+
   @Get('/:donationId')
-  async getOrder(
+  async getDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.findOne(donationId);
-  }
-
-  @Get('/get-all-donations')
-  async getAllDonations(): Promise<Donation[]> {
-    return this.donationService.getAll();
   }
 
   @Post('/create')
@@ -39,7 +46,11 @@ export class DonationsController {
           type: 'string',
           format: 'date-time',
         },
-        status: { type: 'string', example: 'in progress' },
+        status: { 
+          type: 'string', 
+          enum: Object.values(DonationStatus),
+          example: DonationStatus.AVAILABLE,
+        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
@@ -51,16 +62,22 @@ export class DonationsController {
     body: {
       foodManufacturerId: number;
       dateDonated: Date;
-      status: string;
+      status: DonationStatus;
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
     },
   ): Promise<Donation> {
+    if (
+      body.status &&
+      !Object.values(DonationStatus).includes(body.status as DonationStatus)
+    ) {
+      throw new BadRequestException('Invalid status');
+    }
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
-      body.status,
+      body.status ?? DonationStatus.AVAILABLE,
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
@@ -69,7 +86,7 @@ export class DonationsController {
 
   @Patch('/:donationId/fulfill')
   async fulfillDonation(
-    @Param('donationId') donationId: number,
+    @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     const updatedDonation = await this.donationService.fulfill(donationId);
     if (!updatedDonation) {

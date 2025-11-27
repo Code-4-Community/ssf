@@ -2,11 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Center,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Button,
   Box,
   Text,
@@ -18,7 +13,7 @@ import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
 
 const DonationManagement: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [expandedDonationIds, setExpandedDonationIds] = useState<number[]>([]);
   const [donationItems, setDonationItems] = useState<{
@@ -30,8 +25,8 @@ const DonationManagement: React.FC = () => {
 
   const fetchDonations = async () => {
     try {
-      const data = await ApiClient.get('/api/donations/get-all-donations');
-      const sortedDonations = (data as Donation[]).sort((a, b) => {
+      const data = await ApiClient.getAllDonations();
+      const sortedDonations = data.sort((a, b) => {
         if (a.status === 'fulfilled' && b.status !== 'fulfilled') return 1;
         if (a.status !== 'fulfilled' && b.status === 'fulfilled') return -1;
         return 0;
@@ -93,26 +88,26 @@ const DonationManagement: React.FC = () => {
       <Button onClick={onOpen}>Submit new donation</Button>
       <NewDonationFormModal
         onDonationSuccess={fetchDonations}
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
       />
-      <Table variant="simple" mt={6} width="80%">
-        <Thead>
-          <Tr>
-            <Th>Donation Id</Th>
-            <Th>Date Donated</Th>
-            <Th>Status</Th>
-            <Th>Remaining Stock</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      <Table.Root variant="line" mt={6} width="80%">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Donation ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Donated</Table.ColumnHeader>
+            <Table.ColumnHeader>Status</Table.ColumnHeader>
+            <Table.ColumnHeader>Remaining Stock</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {donations.map((donation) => (
-            <Tr key={donation.donationId}>
-              <Td>{donation.donationId}</Td>
-              <Td>{formatDate(donation.dateDonated)}</Td>
-              <Td>{donation.status}</Td>
-              <Td>
+            <Table.Row key={donation.donationId}>
+              <Table.Cell>{donation.donationId}</Table.Cell>
+              <Table.Cell>{formatDate(donation.dateDonated)}</Table.Cell>
+              <Table.Cell>{donation.status}</Table.Cell>
+              <Table.Cell>
                 {expandedDonationIds.includes(donation.donationId) &&
                   donationItems[donation.donationId]?.map((item) => (
                     <Box key={item.itemId} borderBottom="1px solid" py={1}>
@@ -138,21 +133,22 @@ const DonationManagement: React.FC = () => {
                     ? 'Hide Information'
                     : 'Show Information'}
                 </Text>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 {donation.status !== 'fulfilled' && (
                   <Button
-                    colorScheme="green"
+                    bg="green.600"
+                    fontWeight="600"
                     onClick={() => fulfillDonation(donation.donationId)}
                   >
                     Fulfill
                   </Button>
                 )}
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
     </Center>
   );
 };

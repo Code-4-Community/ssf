@@ -3,16 +3,14 @@ import {
   Button,
   Checkbox,
   CheckboxGroup,
-  FormControl,
-  FormHelperText,
-  FormLabel,
   Heading,
   Input,
-  Radio,
   RadioGroup,
   Stack,
   Text,
+  Field,
   Textarea,
+  Fieldset,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -20,12 +18,15 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
-
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
+import { PantryApplicationDto } from '../../types/types';
+import ApiClient from '@api/apiClient';
+import { Activity } from '../../types/pantryEnums';
+import axios from 'axios';
 
 const PantryApplicationForm: React.FC = () => {
-  const [phone, setPhone] = useState<string>('');
+  const [contactPhone, setContactPhone] = useState<string>('');
 
   // We need to keep track of the activities selected so we can provide custom
   // validation (at least one activity chosen).
@@ -35,20 +36,18 @@ const PantryApplicationForm: React.FC = () => {
 
   // Option values and state below are for options that, when selected
 
-  const allergenAvoidantClientsExactOption: string = 'I have an exact number';
-  const otherDietaryRestrictionsOptions: string[] = [
+  const allergenClientsExactOption: string = 'I have an exact number';
+  const otherRestrictionsOptions: string[] = [
     'Other allergy (e.g., yeast, sunflower, etc.)',
     'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
     'Other dietary restriction',
   ];
-  const willingToReserveYesOption: string = 'Yes';
-  const willingToReserveSomeOption: string = 'Some';
+  const reserveFoodForAllergicYesOption: string = 'Yes';
+  const reserveFoodForAllergicSomeOption: string = 'Some';
 
-  const [allergenAvoidantClients, setAllergenAvoidantClients] = useState<
-    string | undefined
-  >();
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
-  const [willingToReserve, setWillingToReserve] = useState<
+  const [allergenClients, setAllergenClients] = useState<string | undefined>();
+  const [restrictions, setRestrictions] = useState<string[]>([]);
+  const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<
     string | undefined
   >();
 
@@ -65,43 +64,59 @@ const PantryApplicationForm: React.FC = () => {
           </Text>
           <Text>Please fill out the following information to get started.</Text>
         </Box>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
-            First and Last Name
-          </FormLabel>
-          <FormHelperText mb="1em">
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
+            First Name
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             Whom should we contact at your pantry?
-          </FormHelperText>
-          <Input maxW="20em" name="contactName" type="text" />
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+          </Field.HelperText>
+          <Input maxW="20em" name="contactFirstName" type="text" />
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
+            Last Name
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
+            Whom should we contact at your pantry?
+          </Field.HelperText>
+          <Input maxW="20em" name="contactLastName" type="text" />
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Email Address
-          </FormLabel>
-          <FormHelperText mb="1em">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             Please provide the email address of the pantry contact listed above.
-          </FormHelperText>
+          </Field.HelperText>
           <Input maxW="20em" name="contactEmail" type="email" />
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Phone Number
-          </FormLabel>
-          <FormHelperText mb="1em">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             Please provide the phone number of the pantry contact listed above.
-          </FormHelperText>
+          </Field.HelperText>
           <USPhoneInput
-            value={phone}
-            onChange={setPhone}
+            value={contactPhone}
+            onChange={setContactPhone}
             inputProps={{ maxW: '20em', name: 'contactPhone' }}
           />
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
-            Food Pantry Name
-          </FormLabel>
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label asChild>
+            <Text fontSize={25} fontWeight={700}>
+              Food Pantry Name
+              <Field.RequiredIndicator color="red" />
+            </Text>
+          </Field.Label>
           <Input maxW="20em" name="pantryName" type="text" />
-        </FormControl>
+        </Field.Root>
         <section>
           <Heading as="h3" size="lg" mb="0.5em">
             Address <span style={{ color: 'red' }}>*</span>
@@ -109,57 +124,62 @@ const PantryApplicationForm: React.FC = () => {
           <Text mb="1em">
             Please list your address for <b>food</b> shipments.
           </Text>
-          <FormControl isRequired mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          <Field.Root required mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Address Line 1
-            </FormLabel>
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
             <Input maxW="20em" name="addressLine1" type="text" />
-          </FormControl>
-          <FormControl mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </Field.Root>
+          <Field.Root mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Address Line 2
-            </FormLabel>
+            </Field.Label>
             <Input maxW="20em" name="addressLine2" type="text" />
-          </FormControl>
-          <FormControl isRequired mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </Field.Root>
+          <Field.Root required mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               City/Town
-            </FormLabel>
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
             <Input maxW="20em" name="addressCity" type="text" />
-          </FormControl>
-          <FormControl isRequired mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </Field.Root>
+          <Field.Root required mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               State/Region/Province
-            </FormLabel>
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
             <Input maxW="20em" name="addressRegion" type="text" />
-          </FormControl>
-          <FormControl isRequired mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </Field.Root>
+          <Field.Root required mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Zip/Post Code
-            </FormLabel>
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
             <Input maxW="20em" name="addressZip" type="text" />
-          </FormControl>
-          <FormControl mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </Field.Root>
+          <Field.Root mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Country
-            </FormLabel>
+            </Field.Label>
             <Input maxW="20em" name="addressCountry" type="text" />
-          </FormControl>
+          </Field.Root>
         </section>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Approximately how many allergen-avoidant clients does your pantry
             serve?
-          </FormLabel>
-          <FormHelperText mb="1em">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             Please note that our target population is NOT individuals with
             diabetic, low sugar/sodium, halal, vegan/vegetarian, or kosher
             needs.
-          </FormHelperText>
-          <RadioGroup
-            name="allergenAvoidantClients"
-            value={allergenAvoidantClients}
-            onChange={setAllergenAvoidantClients}
+          </Field.HelperText>
+          <RadioGroup.Root
+            name="allergenClients"
+            value={allergenClients}
+            onValueChange={setAllergenClients}
           >
             <Stack>
               {[
@@ -169,41 +189,34 @@ const PantryApplicationForm: React.FC = () => {
                 '50 to 100',
                 '> 100',
                 "I'm not sure",
-                allergenAvoidantClientsExactOption,
+                allergenClientsExactOption,
               ].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        {allergenAvoidantClients === allergenAvoidantClientsExactOption && (
-          <FormControl mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        {allergenClients === allergenClientsExactOption && (
+          <Field.Root mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Please provide the exact number, if known:
-            </FormLabel>
-            <Input
-              maxW="20em"
-              name="allergenAvoidantClientsExact"
-              type="number"
-            />
-          </FormControl>
+            </Field.Label>
+            <Input maxW="20em" name="allergenClientsExact" type="number" />
+          </Field.Root>
         )}
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        <Fieldset.Root mb="2em">
+          <Fieldset.Legend fontSize={25} fontWeight={700}>
             Which food allergies or other medical dietary restrictions do
             clients at your pantry report?
-          </FormLabel>
-          <FormHelperText mb="1em">
+          </Fieldset.Legend>
+          <Fieldset.HelperText mb="1em">
             Please select all that apply.
-          </FormHelperText>
-          <CheckboxGroup
-            value={dietaryRestrictions}
-            onChange={(restrictions) =>
-              setDietaryRestrictions(restrictions as string[])
-            }
-          >
+          </Fieldset.HelperText>
+          <CheckboxGroup value={restrictions} onValueChange={setRestrictions}>
             <Stack>
               {[
                 'Egg allergy',
@@ -219,112 +232,124 @@ const PantryApplicationForm: React.FC = () => {
                 'Celiac disease',
                 'Gluten sensitivity (not celiac disease)',
                 "Gastrointestinal illness (IBS, Crohn's, gastroparesis, etc.)",
-                ...otherDietaryRestrictionsOptions,
+                ...otherRestrictionsOptions,
                 'Unsure',
               ].map((value) => (
-                <Checkbox name="dietaryRestrictions" key={value} value={value}>
-                  {value}
-                </Checkbox>
+                <Checkbox.Root key={value} value={value} name="restrictions">
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                  <Checkbox.Label>{value}</Checkbox.Label>
+                </Checkbox.Root>
               ))}
             </Stack>
           </CheckboxGroup>
-        </FormControl>
-        {dietaryRestrictions.find((option) =>
-          otherDietaryRestrictionsOptions.includes(option),
+        </Fieldset.Root>
+        {restrictions.find((option) =>
+          otherRestrictionsOptions.includes(option),
         ) && (
-          <FormControl mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          <Field.Root mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               If you selected "Other," please specify:
-            </FormLabel>
-            <Input maxW="20em" name="dietaryRestrictionsOther" type="text" />
-          </FormControl>
+            </Field.Label>
+            <Input maxW="20em" name="restrictionsOther" type="text" />
+          </Field.Root>
         )}
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Would you be able to accept refrigerated/frozen donations from us?
-          </FormLabel>
-          <RadioGroup name="acceptRefrigerated">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <RadioGroup.Root name="refrigeratedDonation">
             <Stack>
               {['Yes', 'Small quantities only', 'No'].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Are you willing to reserve our food shipments for allergen-avoidant
             individuals?
-          </FormLabel>
-          <FormHelperText mb="1em">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             For example: keeping allergen-friendly items on a separate shelf,
             encouraging non-allergic clients to save these items for clients who
             do not have other safe food options.
-          </FormHelperText>
-          <RadioGroup
-            name="willingToReserve"
-            value={willingToReserve}
-            onChange={setWillingToReserve}
+          </Field.HelperText>
+          <RadioGroup.Root
+            name="reserveFoodForAllergic"
+            value={reserveFoodForAllergic}
+            onValueChange={setReserveFoodForAllergic}
           >
             <Stack>
               {[
-                willingToReserveYesOption,
-                willingToReserveSomeOption,
+                reserveFoodForAllergicYesOption,
+                reserveFoodForAllergicSomeOption,
                 'No',
               ].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        {willingToReserve === willingToReserveYesOption && (
-          <FormControl isRequired mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        {reserveFoodForAllergic === reserveFoodForAllergicYesOption && (
+          <Field.Root required mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               Please explain how you would do this:
-            </FormLabel>
-            <Textarea maxW="20em" name="howWillReserveYes" />
-          </FormControl>
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
+            <Textarea maxW="20em" name="reservationExplanation" />
+          </Field.Root>
         )}
-        {willingToReserve === willingToReserveSomeOption && (
-          <FormControl mb="2em">
-            <FormLabel fontSize={20} fontWeight={700}>
+        {reserveFoodForAllergic === reserveFoodForAllergicSomeOption && (
+          <Field.Root mb="2em">
+            <Field.Label fontSize={20} fontWeight={700}>
               If you chose "some," please explain:
-            </FormLabel>
-            <Textarea maxW="20em" name="howWillReserveSome" />
-          </FormControl>
+            </Field.Label>
+            <Textarea maxW="20em" name="reservationExplanation" />
+          </Field.Root>
         )}
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Do you have a dedicated shelf or section of your pantry for
             allergy-friendly items?
-          </FormLabel>
-          <FormHelperText mb="1em">
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Field.HelperText mb="1em">
             If not, we would love to have a conversation and offer resources to
             help you build one!
-          </FormHelperText>
-          <RadioGroup name="dedicatedShelf">
+          </Field.HelperText>
+          <RadioGroup.Root name="dedicatedAllergyFriendly">
             <Stack>
               {[
                 'Yes, we have a dedicated shelf or box',
                 'Yes, we keep allergy-friendly items in a back room',
                 'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
               ].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        <Field.Root mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             How often do allergen-avoidant clients visit your food pantry?
-          </FormLabel>
-          <RadioGroup name="allergenAvoidantVisits">
+          </Field.Label>
+          <RadioGroup.Root name="clientVisitFrequency">
             <Stack>
               {[
                 'Daily',
@@ -333,71 +358,82 @@ const PantryApplicationForm: React.FC = () => {
                 'A few times a month',
                 'Once a month',
               ].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        <Field.Root mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Are you confident in identifying the top 9 allergens in an
             ingredient list?
-          </FormLabel>
-          <FormHelperText mb="1em">
+          </Field.Label>
+          <Field.HelperText mb="1em">
             The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy,
             fish, shellfish, and sesame.
-          </FormHelperText>
-          <RadioGroup name="confidentIdentifyingAllergens">
+          </Field.HelperText>
+          <RadioGroup.Root name="identifyAllergensConfidence">
             <Stack>
               {[
                 'Very confident',
                 'Somewhat confident',
                 'Not very confident (we need more education!)',
               ].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+          </RadioGroup.Root>
+        </Field.Root>
+        <Field.Root mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Do you serve allergen-avoidant or food-allergic children at your
             pantry?
-          </FormLabel>
-          <FormHelperText mb="1em">
+          </Field.Label>
+          <Field.HelperText mb="1em">
             "Children" is defined as any individual under the age of 18 either
             living independently or as part of a household.
-          </FormHelperText>
-          <RadioGroup name="allergenAvoidantChildren">
+          </Field.HelperText>
+          <RadioGroup.Root name="serveAllergicChildren">
             <Stack>
               {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
-            What activities are you open to doing with SSF?
-          </FormLabel>
-          <FormHelperText mb="1em">
+          </RadioGroup.Root>
+        </Field.Root>
+        <Fieldset.Root required mb="2em">
+          <Fieldset.Legend fontSize={25} fontWeight={700}>
+            What activities are you open to doing with SSF?{' '}
+            <Text as="span" color="red">
+              *
+            </Text>
+          </Fieldset.Legend>
+          <Fieldset.HelperText mb="1em">
             <p>
               Food donations are one part of being a partner pantry. The
               following are additional ways to help us better support you!
               (Please select all that apply.)
             </p>
             <p>Please select at least one option!</p>
-          </FormHelperText>
+          </Fieldset.HelperText>
           {/* TODO: Fix input validation message */}
           <CheckboxGroup
             value={activities}
-            onChange={(activities) => setActivities(activities as string[])}
+            onValueChange={(activities) =>
+              setActivities(activities as string[])
+            }
           >
             <Stack>
               {[
@@ -409,56 +445,62 @@ const PantryApplicationForm: React.FC = () => {
                 'Collect feedback from allergen-avoidant clients on SSF foods',
                 'Something else',
               ].map((value) => (
-                <Checkbox
+                <Checkbox.Root
                   name="activities"
                   key={value}
                   value={value}
-                  isRequired={noActivitiesSelected}
+                  required={noActivitiesSelected}
                 >
-                  {value}
-                </Checkbox>
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                  <Checkbox.Label>{value}</Checkbox.Label>
+                </Checkbox.Root>
               ))}
             </Stack>
           </CheckboxGroup>
-        </FormControl>
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        </Fieldset.Root>
+        <Field.Root mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Please list any comments/concerns related to the previous question.
-          </FormLabel>
-          <FormHelperText mb="1em">
+          </Field.Label>
+          <Field.HelperText mb="1em">
             If you answered "something else," please elaborate!
-          </FormHelperText>
+          </Field.HelperText>
           <Textarea maxW="20em" name="activitiesComments" />
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             What types of allergen-free items, if any, do you currently have in
             stock? (i.e., gluten-free breads, sunflower seed butters, non-dairy
             beverages, etc.)
-          </FormLabel>
-          <Textarea maxW="20em" name="allergenFreeItems" />
-        </FormControl>
-        <FormControl isRequired mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Textarea maxW="20em" name="itemsInStock" />
+        </Field.Root>
+        <Field.Root required mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Do allergen-avoidant clients at your pantry ever request a greater
             variety of items or not have enough options?
-          </FormLabel>
-          <Textarea maxW="20em" name="allergenAvoidantRequests" />
-        </FormControl>
-        <FormControl mb="2em">
-          <FormLabel fontSize={25} fontWeight={700}>
+            <Field.RequiredIndicator color="red" />
+          </Field.Label>
+          <Textarea maxW="20em" name="needMoreOptions" />
+        </Field.Root>
+        <Field.Root mb="2em">
+          <Field.Label fontSize={25} fontWeight={700}>
             Would you like to subscribe to our quarterly newsletter?
-          </FormLabel>
-          <RadioGroup name="subscribeToNewsletter">
+          </Field.Label>
+          <RadioGroup.Root name="newsletterSubscription">
             <Stack>
               {['Yes', 'No'].map((value) => (
-                <Radio key={value} value={value}>
-                  {value}
-                </Radio>
+                <RadioGroup.Item key={value} value={value}>
+                  <RadioGroup.ItemHiddenInput />
+                  <RadioGroup.ItemIndicator />
+                  <RadioGroup.ItemText>{value}</RadioGroup.ItemText>
+                </RadioGroup.Item>
               ))}
             </Stack>
-          </RadioGroup>
-        </FormControl>
+          </RadioGroup.Root>
+        </Field.Root>
         <Button type="submit">Submit</Button>
       </Form>
     </Box>
@@ -472,26 +514,74 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const pantryApplicationData = new Map();
 
+  const ActivityStorageMap: Record<string, string> = {
+    'Create a labeled, allergy-friendly shelf or shelves': Activity.CREATE_LABELED_SHELF,
+    'Provide clients and staff/volunteers with educational pamphlets': Activity.PROVIDE_EDUCATIONAL_PAMPHLETS,
+    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month": Activity.TRACK_DIETARY_NEEDS,
+    'Post allergen-free resource flyers throughout pantry': Activity.POST_RESOURCE_FLYERS,
+    'Survey your clients to determine their medical dietary needs': Activity.SURVEY_CLIENTS,
+    'Collect feedback from allergen-avoidant clients on SSF foods': Activity.COLLECT_FEEDBACK,
+    'Something else': Activity.SOMETHING_ELSE,
+  };
+
   // Handle questions with checkboxes (we create an array of all
   // selected options)
 
-  pantryApplicationData.set(
-    'dietaryRestrictions',
-    form.getAll('dietaryRestrictions'),
-  );
-  form.delete('dietaryRestrictions');
+  const restrictions = form.getAll('restrictions');
+  const restrictionsOther = form.get('restrictionsOther');
 
-  pantryApplicationData.set('activities', form.getAll('activities'));
+  if (restrictionsOther !== null && restrictionsOther !== '') {
+    restrictions.push(restrictionsOther);
+  }
+
+  pantryApplicationData.set('restrictions', restrictions);
+  form.delete('restrictions');
+
+  const selectedActivities = form.getAll('activities') as string[];
+  const convertedActivities = selectedActivities.map((activity) => ActivityStorageMap[activity]);
+  pantryApplicationData.set('activities', convertedActivities);
   form.delete('activities');
+
+  pantryApplicationData.set('dedicatedAllergyFriendly', form.get('dedicatedAllergyFriendly'));
+  form.delete('dedicatedAllergyFriendly');
 
   // Handle all other questions
   form.forEach((value, key) => pantryApplicationData.set(key, value));
 
+  // Replace the answer for allergenClients with the answer
+  // for allergenClientsExact if it is given
+
+  const allergenClientsExact = pantryApplicationData.get(
+    'allergenClientsExact',
+  );
+
+  if ((allergenClientsExact ?? '') !== '') {
+    pantryApplicationData.set('allergenClients', allergenClientsExact);
+  }
+
   const data = Object.fromEntries(pantryApplicationData);
 
-  // TODO: API Call to update database
-  console.log(data);
-  return redirect('/');
+  let submissionSuccessful: boolean = false;
+
+  await ApiClient.postPantry(data as PantryApplicationDto).then(
+    () => (submissionSuccessful = true),
+    (error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        alert(
+          'Form submission failed with the following errors: \n\n' +
+            // Creates a bullet-point list of the errors
+            // returned from the backend
+            error.response?.data?.message
+              .map((line: string) => '- ' + line)
+              .join('\n'),
+        );
+      } else {
+        alert('Form submission failed; please try again');
+      }
+    },
+  );
+
+  return submissionSuccessful ? redirect('/') : null;
 };
 
 export default PantryApplicationForm;
