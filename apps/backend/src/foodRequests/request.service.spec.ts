@@ -67,7 +67,9 @@ describe('RequestsService', () => {
   describe('findOne', () => {
     it('should return a food request with the corresponding id', async () => {
       const requestId = 1;
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest as FoodRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest as FoodRequest,
+      );
       const result = await service.findOne(requestId);
       expect(result).toEqual(mockRequest);
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
@@ -97,9 +99,15 @@ describe('RequestsService', () => {
       mockPantryRepository.findOneBy.mockResolvedValueOnce({
         pantryId: 1,
       } as unknown as Pantry);
-      mockRequestsRepository.create.mockReturnValueOnce(mockRequest as FoodRequest);
-      mockRequestsRepository.save.mockResolvedValueOnce(mockRequest as FoodRequest);
-      mockRequestsRepository.find.mockResolvedValueOnce([mockRequest as FoodRequest]);
+      mockRequestsRepository.create.mockReturnValueOnce(
+        mockRequest as FoodRequest,
+      );
+      mockRequestsRepository.save.mockResolvedValueOnce(
+        mockRequest as FoodRequest,
+      );
+      mockRequestsRepository.find.mockResolvedValueOnce([
+        mockRequest as FoodRequest,
+      ]);
 
       const result = await service.create(
         mockRequest.pantryId,
@@ -214,13 +222,18 @@ describe('RequestsService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2 as FoodRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest2 as FoodRequest,
+      );
       mockRequestsRepository.save.mockResolvedValueOnce({
         ...mockRequest,
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...(mockOrder as Order), status: OrderStatus.DELIVERED } as Order,
+        order: {
+          ...(mockOrder as Order),
+          status: OrderStatus.DELIVERED,
+        } as Order,
       } as FoodRequest);
 
       const result = await service.updateDeliveryDetails(
@@ -281,7 +294,9 @@ describe('RequestsService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest as FoodRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest as FoodRequest,
+      );
 
       await expect(
         service.updateDeliveryDetails(
@@ -322,7 +337,9 @@ describe('RequestsService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2 as FoodRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest2 as FoodRequest,
+      );
 
       await expect(
         service.updateDeliveryDetails(

@@ -56,7 +56,9 @@ describe('RequestsController', () => {
     it('should call requestsService.findOne and return a specific food request', async () => {
       const requestId = 1;
 
-      mockRequestsService.findOne.mockResolvedValueOnce(foodRequest as FoodRequest);
+      mockRequestsService.findOne.mockResolvedValueOnce(
+        foodRequest as FoodRequest,
+      );
 
       const result = await controller.getRequest(requestId);
 
@@ -76,7 +78,9 @@ describe('RequestsController', () => {
       ];
       const pantryId = 1;
 
-      mockRequestsService.find.mockResolvedValueOnce(foodRequests as FoodRequest[]);
+      mockRequestsService.find.mockResolvedValueOnce(
+        foodRequests as FoodRequest[],
+      );
 
       const result = await controller.getAllPantryRequests(pantryId);
 
@@ -104,7 +108,9 @@ describe('RequestsController', () => {
         order: null,
       };
 
-      mockRequestsService.create.mockResolvedValueOnce(createdRequest as FoodRequest);
+      mockRequestsService.create.mockResolvedValueOnce(
+        createdRequest as FoodRequest,
+      );
 
       const result = await controller.createRequest(createBody as FoodRequest);
 
@@ -158,10 +164,13 @@ describe('RequestsController', () => {
           filename: '',
           path: '',
           stream: mockStream,
-        }
+        },
       ];
 
-      const uploadedUrls = ['https://fake-s3/photo1.jpg', 'https://fake-s3/photo2.jpg'];
+      const uploadedUrls = [
+        'https://fake-s3/photo1.jpg',
+        'https://fake-s3/photo2.jpg',
+      ];
 
       // Mock AWS upload
       mockAWSS3Service.upload.mockResolvedValue(uploadedUrls);
@@ -183,7 +192,9 @@ describe('RequestsController', () => {
         photos: uploadedUrls,
       };
 
-      mockRequestsService.updateDeliveryDetails.mockResolvedValue(updatedRequest as FoodRequest);
+      mockRequestsService.updateDeliveryDetails.mockResolvedValue(
+        updatedRequest as FoodRequest,
+      );
 
       const result = await controller.confirmDelivery(requestId, body, photos);
 
@@ -191,7 +202,10 @@ describe('RequestsController', () => {
 
       expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
 
-      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(99, OrderStatus.DELIVERED);
+      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
+        99,
+        OrderStatus.DELIVERED,
+      );
 
       expect(mockRequestsService.updateDeliveryDetails).toHaveBeenCalledWith(
         requestId,
@@ -205,7 +219,11 @@ describe('RequestsController', () => {
 
     it('should throw an error for invalid date', async () => {
       await expect(
-        controller.confirmDelivery(1, { dateReceived: 'bad-date', feedback: '' }, []),
+        controller.confirmDelivery(
+          1,
+          { dateReceived: 'bad-date', feedback: '' },
+          [],
+        ),
       ).rejects.toThrow('Invalid date format for deliveryDate');
     });
   });
