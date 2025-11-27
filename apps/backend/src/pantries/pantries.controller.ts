@@ -5,13 +5,20 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  ValidationPipe
+  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { Activity, AllergensConfidence, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
+import {
+  Activity,
+  AllergensConfidence,
+  ClientVisitFrequency,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
 
 @Controller('pantries')
 export class PantriesController {
@@ -142,12 +149,9 @@ export class PantriesController {
           type: 'array',
           items: {
             type: 'string',
-            enum: Object.values(Activity)
+            enum: Object.values(Activity),
           },
-          example: [
-            Activity.COLLECT_FEEDBACK,
-            Activity.CREATE_LABELED_SHELF,
-          ],
+          example: [Activity.COLLECT_FEEDBACK, Activity.CREATE_LABELED_SHELF],
         },
         activitiesComments: {
           type: 'string',
@@ -190,7 +194,7 @@ export class PantriesController {
   })
   @Post()
   async submitPantryApplication(
-    @Body(new ValidationPipe()) 
+    @Body(new ValidationPipe())
     pantryData: PantryApplicationDto,
   ): Promise<void> {
     return this.pantriesService.addPantry(pantryData);
