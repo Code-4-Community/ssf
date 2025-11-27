@@ -50,8 +50,8 @@ export class RequestsController {
       type: 'object',
       properties: {
         pantryId: { type: 'integer', example: 1 },
-        requestedSize: { 
-          type: 'string', 
+        requestedSize: {
+          type: 'string',
           enum: Object.values(RequestSize),
           example: RequestSize.LARGE,
         },
@@ -158,7 +158,10 @@ export class RequestsController {
     );
 
     const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(request.order.orderId, OrderStatus.DELIVERED);
+    await this.ordersService.updateStatus(
+      request.order.orderId,
+      OrderStatus.DELIVERED,
+    );
 
     return this.requestsService.updateDeliveryDetails(
       requestId,
