@@ -8,101 +8,36 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
-import {
-  Activity,
-  PantryStatus,
-  RefrigeratedDonation,
-} from '../pantries/types';
 
 const mockUserService = mock<UsersService>();
 
-const mockUser1: User = {
+const mockUser1: Partial<User> = {
   id: 1,
-  email: 'john@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '1234567890',
   role: Role.STANDARD_VOLUNTEER,
 };
 
-const mockUser2: User = {
+const mockUser2: Partial<User> = {
   id: 2543210,
-  email: 'bobsmith@example.com',
-  firstName: 'Bob',
-  lastName: 'Smith',
-  phone: '9876',
   role: Role.LEAD_VOLUNTEER,
 };
 
-const mockUser3: User = {
+const mockUser3: Partial<User> = {
   id: 3,
-  email: 'test@test.com',
-  firstName: 'Test',
-  lastName: 'User',
-  phone: '5555555555',
   role: Role.STANDARD_VOLUNTEER,
 };
 
-const mockPantries: Pantry[] = [
+const mockPantries: Partial<Pantry>[] = [
   {
     pantryId: 1,
-    pantryName: 'Pantry A',
-    addressLine1: '123 Main St',
-    addressCity: 'City',
-    addressState: 'State',
-    addressZip: '12345',
-    allergenClients: 'Daily',
-    refrigeratedDonation: RefrigeratedDonation.NO,
-    reserveFoodForAllergic: 'Yes',
-    dedicatedAllergyFriendly: false,
-    newsletterSubscription: false,
-    restrictions: ['Egg allergy'],
-    pantryUser: mockUser1,
-    status: PantryStatus.PENDING,
-    dateApplied: new Date(),
-    activities: [Activity.COLLECT_FEEDBACK, Activity.POST_RESOURCE_FLYERS],
-    itemsInStock: 'bread',
-    needMoreOptions: 'No',
+    pantryUser: mockUser1 as User,
   },
   {
     pantryId: 2,
-    pantryName: 'Pantry B',
-    addressLine1: '456 Side St',
-    addressCity: 'Town',
-    addressState: 'Province',
-    addressZip: '67890',
-    allergenClients: 'Weekly',
-    refrigeratedDonation: RefrigeratedDonation.SOMETIMES,
-    reserveFoodForAllergic: 'No',
-    dedicatedAllergyFriendly: true,
-    newsletterSubscription: true,
-    restrictions: ['Milk allergy'],
-    pantryUser: mockUser1,
-    status: PantryStatus.APPROVED,
-    dateApplied: new Date(),
-    activities: [Activity.SURVEY_CLIENTS],
-    itemsInStock: 'fruits',
-    needMoreOptions: 'Yes',
+    pantryUser: mockUser1 as User,
   },
   {
     pantryId: 3,
-    pantryName: 'Pantry C',
-    addressLine1: 'Address',
-    addressCity: 'City',
-    addressState: 'State',
-    addressZip: '10001',
-    allergenClients: 'Weekly',
-    refrigeratedDonation: RefrigeratedDonation.YES,
-    reserveFoodForAllergic: 'No',
-    dedicatedAllergyFriendly: false,
-    newsletterSubscription: true,
-    restrictions: ['Milk allergy'],
-    pantryUser: mockUser2,
-    status: PantryStatus.PENDING,
-    dateApplied: new Date(),
-    activities: [Activity.PROVIDE_EDUCATIONAL_PAMPHLETS],
-    itemsInStock: 'fruits',
-    needMoreOptions: 'Yes',
+    pantryUser: mockUser2 as User,
   },
 ];
 
@@ -135,7 +70,7 @@ describe('UsersController', () => {
 
   describe('GET /:id', () => {
     it('should return a user by id', async () => {
-      mockUserService.findOne.mockResolvedValue(mockUser1);
+      mockUserService.findOne.mockResolvedValue(mockUser1 as User);
 
       const result = await controller.getUser(1);
 
@@ -146,7 +81,7 @@ describe('UsersController', () => {
 
   describe('DELETE /:id', () => {
     it('should remove a user by id', async () => {
-      mockUserService.remove.mockResolvedValue(mockUser1);
+      mockUserService.remove.mockResolvedValue(mockUser1 as User);
 
       const result = await controller.removeUser(1);
 
@@ -158,7 +93,7 @@ describe('UsersController', () => {
   describe('PUT :id/role', () => {
     it('should update user role with valid role', async () => {
       const updatedUser = { ...mockUser1, role: Role.ADMIN };
-      mockUserService.update.mockResolvedValue(updatedUser);
+      mockUserService.update.mockResolvedValue(updatedUser as User);
 
       const result = await controller.updateRole(1, Role.ADMIN);
 
@@ -222,9 +157,9 @@ describe('UsersController', () => {
   describe('GET /volunteers', () => {
     it('should return all volunteers with their pantry assignments', async () => {
       const assignments = [
-        { ...mockUser1, pantryIds: [1, 2] },
-        { ...mockUser2, pantryIds: [1] },
-        { ...mockUser3, pantryIds: [] },
+        { ...(mockUser1 as User), pantryIds: [1, 2] },
+        { ...(mockUser2 as User), pantryIds: [1] },
+        { ...(mockUser3 as User), pantryIds: [] },
       ];
 
       mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
@@ -253,7 +188,7 @@ describe('UsersController', () => {
   describe('GET /:id/pantries', () => {
     it('should return pantries assigned to a user', async () => {
       mockUserService.getVolunteerPantries.mockResolvedValue(
-        mockPantries.slice(0, 2),
+        mockPantries.slice(0, 2) as Pantry[],
       );
 
       const result = await controller.getVolunteerPantries(1);
@@ -271,14 +206,14 @@ describe('UsersController', () => {
         {
           volunteerId: 3,
           pantryId: 1,
-          volunteer: mockUser3,
-          pantry: mockPantries[0],
+          volunteer: mockUser3 as User,
+          pantry: mockPantries[0] as Pantry,
         },
         {
           volunteerId: 3,
           pantryId: 3,
-          volunteer: mockUser3,
-          pantry: mockPantries[2],
+          volunteer: mockUser3 as User,
+          pantry: mockPantries[2] as Pantry,
         },
       ];
       mockUserService.assignPantriesToVolunteer.mockResolvedValue(
