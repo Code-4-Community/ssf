@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Body,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
@@ -14,6 +15,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
+import { OrderStatus } from './types';
 
 @Controller('orders')
 export class OrdersController {
@@ -100,6 +102,9 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body('newStatus') newStatus: string,
   ): Promise<void> {
-    return this.ordersService.updateStatus(orderId, newStatus);
+    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
+      throw new BadRequestException('Invalid status');
+    }
+    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 }

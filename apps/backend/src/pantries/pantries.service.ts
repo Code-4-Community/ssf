@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
+import { PantryStatus } from './types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
 
@@ -23,7 +24,10 @@ export class PantriesService {
   }
 
   async getPendingPantries(): Promise<Pantry[]> {
-    return await this.repo.find({ where: { status: 'pending' } });
+    return await this.repo.find({
+      where: { status: PantryStatus.PENDING },
+      relations: ['pantryUser'],
+    });
   }
 
   async addPantry(pantryData: PantryApplicationDto) {
@@ -36,7 +40,7 @@ export class PantriesService {
     pantryContact.email = pantryData.contactEmail;
     pantryContact.phone = pantryData.contactPhone;
 
-    pantry.pantryRepresentative = pantryContact;
+    pantry.pantryUser = pantryContact;
 
     pantry.pantryName = pantryData.pantryName;
     pantry.addressLine1 = pantryData.addressLine1;
@@ -73,7 +77,7 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: 'approved' });
+    await this.repo.update(id, { status: PantryStatus.APPROVED });
   }
 
   async deny(id: number) {
@@ -84,21 +88,6 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: 'denied' });
-  }
-
-  async findSSFRep(pantryId: number): Promise<User> {
-    validateId(pantryId, 'Pantry');
-
-    const pantry = await this.repo.findOne({
-      where: { pantryId },
-      relations: ['ssfRepresentative'],
-    });
-
-    if (!pantry) {
-      throw new NotFoundException(`Pantry ${pantryId} not found`);
-    }
-
-    return pantry.ssfRepresentative;
+    await this.repo.update(id, { status: PantryStatus.DENIED });
   }
 }

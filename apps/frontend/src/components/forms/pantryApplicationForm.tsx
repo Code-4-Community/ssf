@@ -18,11 +18,11 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
-
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
-import ApiClient from '@api/apiClient';
 import { PantryApplicationDto } from '../../types/types';
+import ApiClient from '@api/apiClient';
+import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
 
 const PantryApplicationForm: React.FC = () => {
@@ -514,6 +514,16 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const pantryApplicationData = new Map();
 
+  const ActivityStorageMap: Record<string, string> = {
+    'Create a labeled, allergy-friendly shelf or shelves': Activity.CREATE_LABELED_SHELF,
+    'Provide clients and staff/volunteers with educational pamphlets': Activity.PROVIDE_EDUCATIONAL_PAMPHLETS,
+    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month": Activity.TRACK_DIETARY_NEEDS,
+    'Post allergen-free resource flyers throughout pantry': Activity.POST_RESOURCE_FLYERS,
+    'Survey your clients to determine their medical dietary needs': Activity.SURVEY_CLIENTS,
+    'Collect feedback from allergen-avoidant clients on SSF foods': Activity.COLLECT_FEEDBACK,
+    'Something else': Activity.SOMETHING_ELSE,
+  };
+
   // Handle questions with checkboxes (we create an array of all
   // selected options)
 
@@ -527,8 +537,13 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   pantryApplicationData.set('restrictions', restrictions);
   form.delete('restrictions');
 
-  pantryApplicationData.set('activities', form.getAll('activities'));
+  const selectedActivities = form.getAll('activities') as string[];
+  const convertedActivities = selectedActivities.map((activity) => ActivityStorageMap[activity]);
+  pantryApplicationData.set('activities', convertedActivities);
   form.delete('activities');
+
+  pantryApplicationData.set('dedicatedAllergyFriendly', form.get('dedicatedAllergyFriendly'));
+  form.delete('dedicatedAllergyFriendly');
 
   // Handle all other questions
   form.forEach((value, key) => pantryApplicationData.set(key, value));
