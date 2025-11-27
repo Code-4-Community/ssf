@@ -1,6 +1,8 @@
 import {
   ArrayNotEmpty,
+  IsBoolean,
   IsEmail,
+  IsEnum,
   IsIn,
   IsNotEmpty,
   IsOptional,
@@ -9,6 +11,14 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import {
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
+  AllergensConfidence,
+  ServeAllergicChildren,
+  Activity,
+} from '../types';
 
 export class PantryApplicationDto {
   @IsString()
@@ -69,60 +79,35 @@ export class PantryApplicationDto {
   @IsNotEmpty({ each: true })
   restrictions?: string[];
 
-  @IsIn(['Yes', 'Small quantities only', 'No'])
-  refrigeratedDonation: string;
+  @IsEnum(RefrigeratedDonation)
+  refrigeratedDonation: RefrigeratedDonation;
 
-  @IsIn(['Yes', 'Some', 'No'])
-  reserveFoodForAllergic: string;
+  @IsEnum(ReserveFoodForAllergic)
+  reserveFoodForAllergic: ReserveFoodForAllergic;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
   @IsOptional()
   @IsString()
   reservationExplanation?: string;
 
-  @IsIn([
-    'Yes, we have a dedicated shelf or box',
-    'Yes, we keep allergy-friendly items in a back room',
-    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-  ])
-  dedicatedAllergyFriendly: string;
+  @IsBoolean()
+  dedicatedAllergyFriendly: boolean;
 
   @IsOptional()
-  @IsIn([
-    'Daily',
-    'More than once a week',
-    'Once a week',
-    'A few times a month',
-    'Once a month',
-  ])
-  clientVisitFrequency?: string;
+  @IsEnum(ClientVisitFrequency)
+  clientVisitFrequency?: ClientVisitFrequency;
 
   @IsOptional()
-  @IsIn([
-    'Very confident',
-    'Somewhat confident',
-    'Not very confident (we need more education!)',
-  ])
-  identifyAllergensConfidence?: string;
+  @IsEnum(AllergensConfidence)
+  identifyAllergensConfidence?: AllergensConfidence;
 
   @IsOptional()
-  @IsIn(['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'])
-  serveAllergicChildren?: string;
+  @IsEnum(ServeAllergicChildren)
+  serveAllergicChildren?: ServeAllergicChildren;
 
   @ArrayNotEmpty()
-  @IsIn(
-    [
-      'Create a labeled, allergy-friendly shelf or shelves',
-      'Provide clients and staff/volunteers with educational pamphlets',
-      "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-      'Post allergen-free resource flyers throughout pantry',
-      'Survey your clients to determine their medical dietary needs',
-      'Collect feedback from allergen-avoidant clients on SSF foods',
-      'Something else',
-    ],
-    { each: true },
-  )
-  activities: string[];
+  @IsEnum(Activity, { each: true })
+  activities: Activity[];
 
   @IsOptional()
   @IsString()

@@ -7,6 +7,7 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -16,6 +17,8 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
+import { RequestSize } from './types';
+import { OrderStatus } from '../orders/types';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -55,7 +58,11 @@ export class FoodRequestsController {
       type: 'object',
       properties: {
         pantryId: { type: 'integer', example: 1 },
-        requestedSize: { type: 'string', example: 'Medium (5-10 boxes)' },
+        requestedSize: { 
+          type: 'string', 
+          enum: Object.values(RequestSize),
+          example: RequestSize.LARGE,
+        },
         requestedItems: {
           type: 'array',
           items: { type: 'string' },
@@ -66,8 +73,6 @@ export class FoodRequestsController {
           nullable: true,
           example: 'Urgent request',
         },
-        status: { type: 'string', example: 'pending' },
-        fulfilledBy: { type: 'integer', nullable: true, example: null },
         dateReceived: {
           type: 'string',
           format: 'date-time',
@@ -88,7 +93,7 @@ export class FoodRequestsController {
     @Body()
     body: {
       pantryId: number;
-      requestedSize: string;
+      requestedSize: RequestSize;
       requestedItems: string[];
       additionalInformation: string;
       dateReceived: Date;
@@ -96,6 +101,11 @@ export class FoodRequestsController {
       photos: string[];
     },
   ): Promise<FoodRequest> {
+    if (
+      !Object.values(RequestSize).includes(body.requestedSize as RequestSize)
+    ) {
+      throw new BadRequestException('Invalid request size');
+    }
     return this.requestsService.create(
       body.pantryId,
       body.requestedSize,
@@ -156,7 +166,7 @@ export class FoodRequestsController {
     );
 
     const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(request.order.orderId, 'delivered');
+    await this.ordersService.updateStatus(request.order.orderId, OrderStatus.DELIVERED);
 
     return this.requestsService.updateDeliveryDetails(
       requestId,
