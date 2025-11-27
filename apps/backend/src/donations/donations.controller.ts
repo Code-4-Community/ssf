@@ -46,8 +46,8 @@ export class DonationsController {
           type: 'string',
           format: 'date-time',
         },
-        status: { 
-          type: 'string', 
+        status: {
+          type: 'string',
           enum: Object.values(DonationStatus),
           example: DonationStatus.AVAILABLE,
         },
