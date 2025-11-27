@@ -83,14 +83,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content mt={3} maxW={700}>
           <Dialog.Header>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              New Food Request
+              {previousRequest ? "Resubmit Latest Order" : "New Food Request"}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
             <Text mb={12} color="#52525B" textStyle="p2">
-              Please keep in mind that we may not be able to accommodate specific
-              food requests at all times, but we will do our best to match your
-              preferences.
+              {previousRequest ? "Confirm order details." : `Please keep in mind that we may not be able to accommodate specific
+              food requests at all times, but we will do our best to match your preferences.`}
             </Text>
             <Form
               method="post"
