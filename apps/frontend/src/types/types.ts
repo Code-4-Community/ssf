@@ -1,12 +1,12 @@
-import { 
-  RefrigeratedDonation, 
-  ReserveFoodForAllergic, 
-  ClientVisitFrequency, 
+import {
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
   PantryStatus,
   Activity,
-} from "./pantryEnums";
+} from './pantryEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -223,4 +223,3 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
   MATCHING = 'matching',
 }
-
