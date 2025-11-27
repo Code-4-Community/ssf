@@ -4,16 +4,17 @@ import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { RequestsService } from './request.service';
 import { mock } from 'jest-mock-extended';
-import { get } from 'http';
 import { Pantry } from '../pantries/pantries.entity';
+import { RequestSize } from './types';
+import { Order } from '../orders/order.entity';
+import { OrderStatus } from '../orders/types';
 
 const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
 
-const mockRequest = {
+const mockRequest: Partial<FoodRequest> = {
   requestId: 1,
   pantryId: 1,
-  requestedSize: 'Medium (5-10 boxes)',
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
   requestedAt: null,
@@ -23,7 +24,7 @@ const mockRequest = {
   order: null,
 };
 
-describe('OrdersService', () => {
+describe('RequestsService', () => {
   let service: RequestsService;
 
   beforeAll(async () => {
@@ -66,7 +67,7 @@ describe('OrdersService', () => {
   describe('findOne', () => {
     it('should return a food request with the corresponding id', async () => {
       const requestId = 1;
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest as FoodRequest);
       const result = await service.findOne(requestId);
       expect(result).toEqual(mockRequest);
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
@@ -96,9 +97,9 @@ describe('OrdersService', () => {
       mockPantryRepository.findOneBy.mockResolvedValueOnce({
         pantryId: 1,
       } as unknown as Pantry);
-      mockRequestsRepository.create.mockReturnValueOnce(mockRequest);
-      mockRequestsRepository.save.mockResolvedValueOnce(mockRequest);
-      mockRequestsRepository.find.mockResolvedValueOnce([mockRequest]);
+      mockRequestsRepository.create.mockReturnValueOnce(mockRequest as FoodRequest);
+      mockRequestsRepository.save.mockResolvedValueOnce(mockRequest as FoodRequest);
+      mockRequestsRepository.find.mockResolvedValueOnce([mockRequest as FoodRequest]);
 
       const result = await service.create(
         mockRequest.pantryId,
@@ -129,7 +130,7 @@ describe('OrdersService', () => {
       await expect(
         service.create(
           invalidPantryId,
-          'Medium (5-10 boxes)',
+          RequestSize.MEDIUM,
           ['Canned Goods', 'Vegetables'],
           'Additional info',
           null,
@@ -174,7 +175,7 @@ describe('OrdersService', () => {
       ];
       const pantryId = 1;
       mockRequestsRepository.find.mockResolvedValueOnce(
-        mockRequests.slice(0, 2),
+        mockRequests.slice(0, 2) as FoodRequest[],
       );
 
       const result = await service.find(pantryId);
@@ -189,7 +190,7 @@ describe('OrdersService', () => {
 
   describe('updateDeliveryDetails', () => {
     it('should update and return the food request with new delivery details', async () => {
-      const mockOrder = {
+      const mockOrder: Partial<Order> = {
         orderId: 1,
         pantry: null,
         request: null,
@@ -197,15 +198,15 @@ describe('OrdersService', () => {
         foodManufacturer: null,
         shippedBy: 1,
         donation: null,
-        status: 'shipped',
+        status: OrderStatus.SHIPPED,
         createdAt: new Date(),
         shippedAt: new Date(),
         deliveredAt: null,
       };
 
-      const mockRequest2 = {
+      const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder,
+        order: mockOrder as Order,
       };
 
       const requestId = 1;
@@ -213,14 +214,14 @@ describe('OrdersService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2 as FoodRequest);
       mockRequestsRepository.save.mockResolvedValueOnce({
         ...mockRequest,
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'fulfilled' },
-      });
+        order: { ...(mockOrder as Order), status: OrderStatus.DELIVERED } as Order,
+      } as FoodRequest);
 
       const result = await service.updateDeliveryDetails(
         requestId,
@@ -234,7 +235,7 @@ describe('OrdersService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'fulfilled' },
+        order: { ...mockOrder, status: 'delivered' },
       });
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
@@ -247,7 +248,7 @@ describe('OrdersService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'fulfilled' },
+        order: { ...mockOrder, status: 'delivered' },
       });
     });
 
@@ -280,7 +281,7 @@ describe('OrdersService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest as FoodRequest);
 
       await expect(
         service.updateDeliveryDetails(
@@ -298,7 +299,7 @@ describe('OrdersService', () => {
     });
 
     it('should throw an error if the order does not have a food manufacturer', async () => {
-      const mockOrder = {
+      const mockOrder: Partial<Order> = {
         orderId: 1,
         pantry: null,
         request: null,
@@ -306,14 +307,14 @@ describe('OrdersService', () => {
         foodManufacturer: null,
         shippedBy: null,
         donation: null,
-        status: 'shipped',
+        status: OrderStatus.SHIPPED,
         createdAt: new Date(),
         shippedAt: new Date(),
         deliveredAt: null,
       };
-      const mockRequest2 = {
+      const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder,
+        order: mockOrder as Order,
       };
 
       const requestId = 1;
@@ -321,7 +322,7 @@ describe('OrdersService', () => {
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2);
+      mockRequestsRepository.findOne.mockResolvedValueOnce(mockRequest2 as FoodRequest);
 
       await expect(
         service.updateDeliveryDetails(

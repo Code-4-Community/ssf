@@ -5,22 +5,17 @@ import { mock } from 'jest-mock-extended';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { OrdersService } from '../orders/order.service';
 import { Readable } from 'stream';
+import { FoodRequest } from './request.entity';
+import { RequestSize } from './types';
+import { OrderStatus } from '../orders/types';
 
 const mockRequestsService = mock<RequestsService>();
 const mockOrdersService = mock<OrdersService>();
 const mockAWSS3Service = mock<AWSS3Service>();
 
-const foodRequest = {
+const foodRequest: Partial<FoodRequest> = {
   requestId: 1,
   pantryId: 1,
-  requestedSize: 'Medium (5-10 boxes)',
-  requestedItems: ['Canned Goods', 'Vegetables'],
-  additionalInformation: 'No onions, please.',
-  requestedAt: null,
-  dateReceived: null,
-  feedback: null,
-  photos: null,
-  order: null,
 };
 
 describe('RequestsController', () => {
@@ -40,11 +35,11 @@ describe('RequestsController', () => {
           useValue: mockRequestsService,
         },
         {
-          provide: AWSS3Service,
+          provide: OrdersService,
           useValue: mockOrdersService,
         },
         {
-          provide: OrdersService,
+          provide: AWSS3Service,
           useValue: mockAWSS3Service,
         },
       ],
@@ -61,7 +56,7 @@ describe('RequestsController', () => {
     it('should call requestsService.findOne and return a specific food request', async () => {
       const requestId = 1;
 
-      mockRequestsService.findOne.mockResolvedValueOnce(foodRequest);
+      mockRequestsService.findOne.mockResolvedValueOnce(foodRequest as FoodRequest);
 
       const result = await controller.getRequest(requestId);
 
@@ -72,24 +67,16 @@ describe('RequestsController', () => {
 
   describe('GET /get-all-requests/:pantryId', () => {
     it('should call requestsService.find and return all food requests for a specific pantry', async () => {
-      const foodRequests = [
+      const foodRequests: Partial<FoodRequest>[] = [
         foodRequest,
         {
           requestId: 2,
           pantryId: 1,
-          requestedSize: 'Large (10-20 boxes)',
-          requestedItems: ['Rice', 'Beans'],
-          additionalInformation: 'Gluten-free items only.',
-          requestedAt: null,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
-          order: null,
         },
       ];
       const pantryId = 1;
 
-      mockRequestsService.find.mockResolvedValueOnce(foodRequests);
+      mockRequestsService.find.mockResolvedValueOnce(foodRequests as FoodRequest[]);
 
       const result = await controller.getAllPantryRequests(pantryId);
 
@@ -100,9 +87,9 @@ describe('RequestsController', () => {
 
   describe('POST /create', () => {
     it('should call requestsService.create and return the created food request', async () => {
-      const createBody = {
+      const createBody: Partial<FoodRequest> = {
         pantryId: 1,
-        requestedSize: 'Medium (5-10 boxes)',
+        requestedSize: RequestSize.MEDIUM,
         requestedItems: ['Test item 1', 'Test item 2'],
         additionalInformation: 'Test information.',
         dateReceived: null,
@@ -110,16 +97,16 @@ describe('RequestsController', () => {
         photos: null,
       };
 
-      const createdRequest = {
+      const createdRequest: Partial<FoodRequest> = {
         requestId: 1,
         ...createBody,
         requestedAt: new Date(),
         order: null,
       };
 
-      mockRequestsService.create.mockResolvedValueOnce(createdRequest);
+      mockRequestsService.create.mockResolvedValueOnce(createdRequest as FoodRequest);
 
-      const result = await controller.createRequest(createBody);
+      const result = await controller.createRequest(createBody as FoodRequest);
 
       expect(result).toEqual(createdRequest);
       expect(mockRequestsService.create).toHaveBeenCalledWith(
@@ -134,14 +121,16 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('POST /confirm-delivery', () => {
-    it('should call awsService.upload and then call orderService.updateDeliveryDetails and then call requestsService.updateDeliveryDetails and return the updated food request', async () => {
+  describe('POST /:requestId/confirm-delivery', () => {
+    it('should upload photos, update the order, then update the request', async () => {
       const requestId = 1;
-      const updateBody = {
-        deliveryDate: new Date(),
-        feedback: 'Delivery was on time.',
+
+      const body = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'Nice delivery!',
       };
 
+      // Mock Photos
       const mockStream = new Readable();
       mockStream._read = () => {};
 
@@ -151,8 +140,8 @@ describe('RequestsController', () => {
           originalname: 'photo1.jpg',
           encoding: '7bit',
           mimetype: 'image/jpeg',
-          buffer: Buffer.from('fake image content 1'),
-          size: 1234,
+          buffer: Buffer.from('image1'),
+          size: 1000,
           destination: '',
           filename: '',
           path: '',
@@ -163,75 +152,61 @@ describe('RequestsController', () => {
           originalname: 'photo2.jpg',
           encoding: '7bit',
           mimetype: 'image/jpeg',
-          buffer: Buffer.from('fake image content 2'),
-          size: 5678,
+          buffer: Buffer.from('image2'),
+          size: 2000,
           destination: '',
           filename: '',
           path: '',
           stream: mockStream,
-        },
+        }
       ];
 
-      const updatedPhotoUrls = [
-        'https://s3.amazonaws.com/bucket/photo1.jpg',
-        'https://s3.amazonaws.com/bucket/photo2.jpg',
-      ];
-      mockAWSS3Service.upload.mockResolvedValueOnce(updatedPhotoUrls);
+      const uploadedUrls = ['https://fake-s3/photo1.jpg', 'https://fake-s3/photo2.jpg'];
 
-      const photoResult = await mockAWSS3Service.upload(photos);
-      expect(photoResult).toEqual(updatedPhotoUrls);
-      expect(mockAWSS3Service.upload).toHaveBeenCalledWith(photos);
+      // Mock AWS upload
+      mockAWSS3Service.upload.mockResolvedValue(uploadedUrls);
 
-      await mockOrdersService.updateStatus(requestId, 'deivered');
-      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
+      // Mock RequestsService.findOne
+      mockRequestsService.findOne.mockResolvedValue({
         requestId,
-        'deivered',
-      );
+        pantryId: 1,
+        order: { orderId: 99 },
+      } as FoodRequest);
 
-      // Mock the RequestsService.updateDeliveryDetails method
+      mockOrdersService.updateStatus.mockResolvedValue();
+
       const updatedRequest = {
         requestId,
         pantryId: 1,
-        requestedSize: 'Medium (5-10 boxes)',
-        requestedItems: ['Canned Goods', 'Vegetables'],
-        additionalInformation: 'No onions, please.',
-        requestedAt: new Date(),
-        dateReceived: updateBody.deliveryDate,
-        feedback: updateBody.feedback,
-        photos: updatedPhotoUrls,
-        order: null,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: uploadedUrls,
       };
 
-      mockRequestsService.updateDeliveryDetails.mockResolvedValueOnce(
-        updatedRequest,
-      );
+      mockRequestsService.updateDeliveryDetails.mockResolvedValue(updatedRequest as FoodRequest);
 
-      const requestResult = await mockRequestsService.updateDeliveryDetails(
-        requestId,
-        updateBody.deliveryDate,
-        updateBody.feedback,
-        updatedPhotoUrls,
-      );
+      const result = await controller.confirmDelivery(requestId, body, photos);
 
-      expect(requestResult).toEqual(updatedRequest);
+      expect(mockAWSS3Service.upload).toHaveBeenCalledWith(photos);
+
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
+
+      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(99, OrderStatus.DELIVERED);
+
       expect(mockRequestsService.updateDeliveryDetails).toHaveBeenCalledWith(
         requestId,
-        updateBody.deliveryDate,
-        updateBody.feedback,
-        updatedPhotoUrls,
+        new Date(body.dateReceived),
+        body.feedback,
+        uploadedUrls,
       );
+
+      expect(result).toEqual(updatedRequest);
     });
 
-    it('should throw an error if the received date is not properly formatted', async () => {
-      const requestId = 1;
-      const updateBody = {
-        dateReceived: 'invalid-date',
-        feedback: 'Delivery was on time.',
-      };
-
+    it('should throw an error for invalid date', async () => {
       await expect(
-        controller.confirmDelivery(requestId, updateBody, []),
-      ).rejects.toThrow();
+        controller.confirmDelivery(1, { dateReceived: 'bad-date', feedback: '' }, []),
+      ).rejects.toThrow('Invalid date format for deliveryDate');
     });
   });
 });
