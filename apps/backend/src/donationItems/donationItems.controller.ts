@@ -104,7 +104,7 @@ export class DonationItemsController {
       status: string;
       ozPerItem: number;
       estimatedValue: number;
-      foodType: string;
+      foodType: FoodType;
     }[],
   ): Promise<DonationItem[]> {
     const createdDonationItems: DonationItem[] = [];
