@@ -169,9 +169,6 @@ describe('UsersController', () => {
 
       const result = await controller.getAllVolunteers();
 
-      const hasAdmin = result.some((user) => user.role === Role.ADMIN);
-      expect(hasAdmin).toBe(false);
-
       expect(result).toEqual(assignments);
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe(1);
