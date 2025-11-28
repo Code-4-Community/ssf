@@ -19,7 +19,7 @@ export class UsersService {
     private repo: Repository<User>,
 
     @InjectRepository(VolunteerAssignment)
-    private volunteerAssignmentsRepo: Repository<VolunteerAssignment>,
+    private volunteerAssignmentRepo: Repository<VolunteerAssignment>,
 
     @InjectRepository(Pantry)
     private pantryRepo: Repository<Pantry>,
@@ -91,7 +91,7 @@ export class UsersService {
   async getVolunteersAndPantryAssignments() {
     const volunteers = await this.findUsersByRoles(VOLUNTEER_ROLES);
 
-    const assignments = await this.volunteerAssignmentsRepo.find({
+    const assignments = await this.volunteerAssignmentRepo.find({
       relations: ['pantry', 'volunteer'],
     });
 
@@ -110,7 +110,7 @@ export class UsersService {
     if (!volunteer)
       throw new NotFoundException(`Volunteer ${volunteerId} not found`);
 
-    const assignments = await this.volunteerAssignmentsRepo.find({
+    const assignments = await this.volunteerAssignmentRepo.find({
       where: { volunteer: volunteer },
       relations: ['pantry'],
     });
@@ -141,9 +141,9 @@ export class UsersService {
     }
 
     const assignments = pantries.map((pantry) =>
-      this.volunteerAssignmentsRepo.create({ volunteer: user, pantry }),
+      this.volunteerAssignmentRepo.create({ volunteer: user, pantry }),
     );
 
-    return this.volunteerAssignmentsRepo.save(assignments);
+    return this.volunteerAssignmentRepo.save(assignments);
   }
 }
