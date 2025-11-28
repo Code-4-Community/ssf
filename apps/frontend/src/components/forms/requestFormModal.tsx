@@ -8,6 +8,7 @@ import {
   Dialog,
   Tag,
   Box,
+  Field
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
@@ -53,14 +54,14 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     >
       <Dialog.Backdrop />
       <Dialog.Positioner>
-        <Dialog.Content mt={3} maxW={700}>
+        <Dialog.Content mt={3} maxW={650}>
           <Dialog.Header>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
               {previousRequest ? "Resubmit Latest Order" : "New Food Request"}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text mb={12} color="#52525B" textStyle="p2">
+            <Text mb={10} color="#52525B" textStyle="p2">
               {previousRequest ? "Confirm order details." : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
@@ -141,7 +142,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   </Menu.Trigger>
 
                   <Menu.Positioner w="full">
-                    <Menu.Content maxH="250px" overflowY="auto">
+                    <Menu.Content maxH="250px" overflowY="auto" >
                       {FoodTypes.map((allergen) => {
                         const isChecked = selectedItems.includes(allergen);
                         return (
@@ -172,7 +173,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                             </Box>
                             <Menu.ItemIndicator />
 
-                            <Text color="neutral.800">{allergen}</Text>
+                            <Text color="neutral.800" fontWeight={500} fontFamily="Inter">{allergen}</Text>
                           </Menu.CheckboxItem>
                         );
                       })}
@@ -193,6 +194,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         borderColor='teal.400' 
                         borderWidth="1px" 
                         fontFamily="Inter"
+                        fontWeight={500}
                       >
                         <Tag.Label>{item}</Tag.Label>
                         <Tag.EndElement>
@@ -212,7 +214,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
               <Field.Root mb={6}>
                 <Field.Label>
-                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800" mb={1}>
                     Additional Information
                   </Text>
                 </Field.Label>
@@ -241,8 +243,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'neutral.400'} color={'white'} disabled={!isFormValid}>Continue</Button>}
                 <Button onClick={onClose} bg={'white'} color={'black'} borderColor='neutral.100'>Cancel</Button>
+                {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'neutral.400'} color={'white'} disabled={!isFormValid}>Continue</Button>}
               </Flex>
             </Form>
           </Dialog.Body>

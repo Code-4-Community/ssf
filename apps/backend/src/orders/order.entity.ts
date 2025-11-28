@@ -45,13 +45,6 @@ export class Order {
   @Column({ name: 'shipped_by', nullable: true })
   shippedBy: number;
 
-  @ManyToOne(() => Donation, { nullable: false })
-  @JoinColumn({
-    name: 'donation_id',
-    referencedColumnName: 'donationId',
-  })
-  donation: Donation;
-
   @Column({
     name: 'status',
     type: 'enum',

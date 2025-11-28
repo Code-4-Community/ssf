@@ -121,20 +121,6 @@ export class OrdersService {
     return order.foodManufacturer;
   }
 
-  async findOrderDonation(orderId: number): Promise<Donation> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['donation'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-    return order.donation;
-  }
-
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
