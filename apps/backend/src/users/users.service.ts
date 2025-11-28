@@ -125,9 +125,15 @@ export class UsersService {
     validateId(volunteerId, 'Volunteer');
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
-    const volunteer = await this.repo.findOne({ where: { id: volunteerId } });
-    if (!volunteer)
-      throw new NotFoundException(`Volunteer ${volunteerId} not found`);
+    const user = await this.repo.findOne({ where: { id: volunteerId } });
+    if (!user) {
+      throw new NotFoundException(`User ${volunteerId} not found`);
+    }
+    if (!VOLUNTEER_ROLES.includes(user.role)) {
+      throw new BadRequestException(
+        `User ${volunteerId} is not a volunteer and cannot be assigned to pantries`,
+      );
+    }
 
     const pantries = await this.pantryRepo.findBy({ pantryId: In(pantryIds) });
     if (pantries.length !== pantryIds.length) {
@@ -135,7 +141,7 @@ export class UsersService {
     }
 
     const assignments = pantries.map((pantry) =>
-      this.volunteerAssignmentsRepo.create({ volunteer, pantry }),
+      this.volunteerAssignmentsRepo.create({ volunteer: user, pantry }),
     );
 
     return this.volunteerAssignmentsRepo.save(assignments);
