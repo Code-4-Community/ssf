@@ -31,6 +31,7 @@ export interface Pantry {
   serveAllergicChildren?: ServeAllergicChildren;
   newsletterSubscription: boolean;
   restrictions: string[];
+  pantryUser: User;
   status: PantryStatus;
   dateApplied: Date;
   activities: Activity[];

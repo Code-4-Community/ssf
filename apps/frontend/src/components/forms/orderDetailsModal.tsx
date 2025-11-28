@@ -8,8 +8,7 @@ import {
   CloseButton,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Donation, FoodRequest, Order } from 'types/types';
-import { DonationItem } from 'types/types';
+import { FoodRequest } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface OrderDetailsModalProps {
@@ -43,7 +42,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root 
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+    >
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.200" />
         <Dialog.Positioner>

@@ -16,6 +16,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
+import { Donation } from '../donations/donations.entity';
 
 @Controller('orders')
 export class OrdersController {

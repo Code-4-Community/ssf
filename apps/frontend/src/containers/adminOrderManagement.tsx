@@ -154,7 +154,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                     <Checkbox.Root
                       key={pantry}
                       checked={selectedPantries.includes(pantry)}
-                      onCheckedChange={(e) =>
+                      onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(pantry, !!e.checked)
                       }
                       color="black"
@@ -337,8 +337,8 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                   my={2}
                   p={2}
                 >
-                  {order.pantry.ssfRepresentative.firstName[0]}
-                  {order.pantry.ssfRepresentative.lastName[0]}
+                  {order.pantry.pantryUser.firstName[0]}
+                  {order.pantry.pantryUser.lastName[0]}
                 </Box>
               </Table.Cell>
               <Table.Cell
