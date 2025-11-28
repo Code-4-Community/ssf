@@ -239,7 +239,7 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root mb="2.5em">
             <Input 
-              name="hasEmailContactOther" 
+              name="emailContactOther" 
               type="text" 
               borderColor="neutral.100" 
               placeholder="If you selected other, please specify."
@@ -507,7 +507,7 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           {allergenClients === allergenClientsExactOption && (
             <Field.Root required mb="2em">
-              <Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
                 Please provide the exact number, if known
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
@@ -705,6 +705,16 @@ const PantryApplicationForm: React.FC = () => {
             </RadioGroup.Root>
           </Field.Root>
 
+          {reserveFoodForAllergic === 'Yes' && (
+            <Field.Root mb="2em">
+              <Field.Label {...fieldHeaderStyles}>
+                How would you work to ensure that allergen-friendly foods are distributed to 
+                clients with food allergies or other adverse reactions to foods?
+              </Field.Label>
+              <Textarea name="reservationExplanation" borderColor="neutral.100" autoresize />
+            </Field.Root>
+          )}
+
           {reserveFoodForAllergic === 'Some' && (
             <Field.Root mb="2em">
               <Field.Label {...fieldHeaderStyles}>
@@ -725,7 +735,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="clientVisitFrequency"
                 borderColor="neutral.100"
-                _placeholder={{ color: "neutral.300" }}
+                color = {clientVisitFrequency ? 'neutral.800' : 'neutral.300'}
               >
                 {[
                   'Daily',
@@ -754,7 +764,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="identifyAllergensConfidence"
                 borderColor="neutral.100"
-                _placeholder={{ color: "neutral.300" }}
+                color = {identifyAllergensConfidence ? 'neutral.800' : 'neutral.300'}
               >
                 {[
                   'Very confident',
@@ -785,7 +795,7 @@ const PantryApplicationForm: React.FC = () => {
                 placeholder="Select an option"
                 name="serveAllergicChildren"
                 borderColor="neutral.100"
-                _placeholder={{ color: "neutral.300" }}
+                color = {serveAllergicChildren ? 'neutral.800' : 'neutral.300'}
               >
                 {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
                   <option value={value}>
@@ -884,7 +894,12 @@ const PantryApplicationForm: React.FC = () => {
             <Field.Label {...fieldHeaderStyles}>
               Please list any comments/concerns related to the previous question.
             </Field.Label>
-            <Textarea name="activitiesComments" borderColor="neutral.100" autoresize/>
+            <Textarea 
+              name="activitiesComments" 
+              borderColor="neutral.100" 
+              autoresize 
+              required={activities.includes('Something else')}
+            />
             <Field.HelperText color="neutral.600">
               If you answered "Something Else," please elaborate.
             </Field.HelperText>
