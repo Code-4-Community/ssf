@@ -12,7 +12,8 @@ import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignment
 import { Pantry } from '../pantries/pantries.entity';
 
 const mockUserRepository = mock<Repository<User>>();
-const mockAssignmentsRepository = mock<Repository<VolunteerAssignment>>();
+const mockVolunteerAssignmentsRepository =
+  mock<Repository<VolunteerAssignment>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
 
 const mockUser: User = {
@@ -33,9 +34,9 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
-    mockAssignmentsRepository.find.mockReset();
-    mockAssignmentsRepository.save.mockReset();
-    mockAssignmentsRepository.create.mockReset();
+    mockVolunteerAssignmentsRepository.find.mockReset();
+    mockVolunteerAssignmentsRepository.save.mockReset();
+    mockVolunteerAssignmentsRepository.create.mockReset();
     mockPantryRepository.findBy.mockReset();
 
     const module = await Test.createTestingModule({
@@ -47,7 +48,7 @@ describe('UsersService', () => {
         },
         {
           provide: getRepositoryToken(VolunteerAssignment),
-          useValue: mockAssignmentsRepository,
+          useValue: mockVolunteerAssignmentsRepository,
         },
         {
           provide: getRepositoryToken(Pantry),
@@ -65,9 +66,9 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
-    mockAssignmentsRepository.find.mockReset();
-    mockAssignmentsRepository.save.mockReset();
-    mockAssignmentsRepository.create.mockReset();
+    mockVolunteerAssignmentsRepository.find.mockReset();
+    mockVolunteerAssignmentsRepository.save.mockReset();
+    mockVolunteerAssignmentsRepository.create.mockReset();
     mockPantryRepository.findBy.mockReset();
   });
 

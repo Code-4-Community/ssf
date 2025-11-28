@@ -8,6 +8,7 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
+import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
 
 const mockUserService = mock<UsersService>();
 
@@ -156,7 +157,7 @@ describe('UsersController', () => {
 
   describe('GET /volunteers', () => {
     it('should return all volunteers with their pantry assignments', async () => {
-      const assignments = [
+      const assignments: (User & { pantryIds: number[] })[] = [
         { ...(mockUser1 as User), pantryIds: [1, 2] },
         { ...(mockUser2 as User), pantryIds: [1] },
         { ...(mockUser3 as User), pantryIds: [] },
@@ -202,7 +203,7 @@ describe('UsersController', () => {
   describe('POST /:id/pantries', () => {
     it('should assign pantries to a volunteer and return result', async () => {
       const pantryIds = [1, 3];
-      const mockAssignments = [
+      const mockAssignments: VolunteerAssignment[] = [
         {
           volunteerId: 3,
           pantryId: 1,
