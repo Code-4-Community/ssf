@@ -22,7 +22,7 @@ import { OrderStatus } from '../orders/types';
 
 @Controller('requests')
 // @UseInterceptors()
-export class FoodRequestsController {
+export class RequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
@@ -43,14 +43,6 @@ export class FoodRequestsController {
     return this.requestsService.find(pantryId);
   }
 
-  @Get('get-order/:requestId')
-  async getOrderByRequestId(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order> {
-    const request = await this.requestsService.findOne(requestId);
-    return request.order;
-  }
-
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',
@@ -58,8 +50,8 @@ export class FoodRequestsController {
       type: 'object',
       properties: {
         pantryId: { type: 'integer', example: 1 },
-        requestedSize: { 
-          type: 'string', 
+        requestedSize: {
+          type: 'string',
           enum: Object.values(RequestSize),
           example: RequestSize.LARGE,
         },
@@ -166,7 +158,10 @@ export class FoodRequestsController {
     );
 
     const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(request.order.orderId, OrderStatus.DELIVERED);
+    await this.ordersService.updateStatus(
+      request.order.orderId,
+      OrderStatus.DELIVERED,
+    );
 
     return this.requestsService.updateDeliveryDetails(
       requestId,
