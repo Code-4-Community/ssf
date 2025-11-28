@@ -43,7 +43,7 @@ export class PantriesService {
 
     pantry.pantryUser = pantryContact;
     pantry.hasEmailContact = pantryData.hasEmailContact;
-    pantry.hasEmailContactOther = pantryData.hasEmailContactOther;
+    pantry.emailContactOther = pantryData.emailContactOther;
 
     // secondary contact information
     pantry.secondaryContactFirstName = pantryData.secondaryContactFirstName;

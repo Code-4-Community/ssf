@@ -153,8 +153,8 @@ export class Pantry {
   @Column({ name: 'has_email_contact', type: 'boolean' })
   hasEmailContact: boolean;
 
-  @Column({ name: 'has_email_contact_other', type: 'text', nullable: true })
-  hasEmailContactOther?: string;
+  @Column({ name: 'email_contact_other', type: 'text', nullable: true })
+  emailContactOther?: string;
 
   @Column({
     name: 'secondary_contact_first_name',
