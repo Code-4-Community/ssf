@@ -42,7 +42,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Dialog.Root 
+    <Dialog.Root
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
