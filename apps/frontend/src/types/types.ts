@@ -1,12 +1,12 @@
-import { 
-  RefrigeratedDonation, 
-  ReserveFoodForAllergic, 
-  ClientVisitFrequency, 
+import {
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
   PantryStatus,
   Activity,
-} from "./pantryEnums";
+} from './pantryEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -31,6 +31,7 @@ export interface Pantry {
   serveAllergicChildren?: ServeAllergicChildren;
   newsletterSubscription: boolean;
   restrictions: string[];
+  pantryUser: User;
   status: PantryStatus;
   dateApplied: Date;
   activities: Activity[];
@@ -128,15 +129,16 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
+  pantry: Pantry;
+  request: FoodRequest;
   requestId: number;
-  pantryId: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
+  donation: Donation;
   status: string;
   createdAt: string;
-  shippedAt: string;
-  deliveredAt: string;
-  donationId: number;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 }
 
 export interface FoodManufacturer {
@@ -223,4 +225,3 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
   MATCHING = 'matching',
 }
-

@@ -56,7 +56,7 @@ const config = {
     UpdatePantriesTable1742739750279,
     UpdatePantryUserFields1731171000000,
     RemoveOrdersDonationId1761500262238,
-    AllergyFriendlyToBoolType1763963056712
+    AllergyFriendlyToBoolType1763963056712,
   ],
 };
 
