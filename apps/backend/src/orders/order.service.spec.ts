@@ -43,6 +43,7 @@ const mockPantry: Pantry = {
   activitiesComments: '',
   itemsInStock: '',
   needMoreOptions: '',
+  volunteers: [],
 };
 
 describe('OrdersService', () => {

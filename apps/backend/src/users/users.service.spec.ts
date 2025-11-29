@@ -8,22 +8,19 @@ import { Role } from './types';
 import { mock } from 'jest-mock-extended';
 import { In } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
-import { Pantry } from '../pantries/pantries.entity';
+import { PantriesService } from '../pantries/pantries.service';
 
 const mockUserRepository = mock<Repository<User>>();
-const mockVolunteerAssignmentRepository =
-  mock<Repository<VolunteerAssignment>>();
-const mockPantryRepository = mock<Repository<Pantry>>();
+const mockPantriesService = mock<PantriesService>();
 
-const mockUser: User = {
+const mockUser = {
   id: 1,
   email: 'test@example.com',
   firstName: 'John',
   lastName: 'Doe',
   phone: '1234567890',
   role: Role.STANDARD_VOLUNTEER,
-};
+} as User;
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -34,10 +31,7 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
-    mockVolunteerAssignmentRepository.find.mockReset();
-    mockVolunteerAssignmentRepository.save.mockReset();
-    mockVolunteerAssignmentRepository.create.mockReset();
-    mockPantryRepository.findBy.mockReset();
+    mockPantriesService.findByIds.mockReset();
 
     const module = await Test.createTestingModule({
       providers: [
@@ -47,12 +41,8 @@ describe('UsersService', () => {
           useValue: mockUserRepository,
         },
         {
-          provide: getRepositoryToken(VolunteerAssignment),
-          useValue: mockVolunteerAssignmentRepository,
-        },
-        {
-          provide: getRepositoryToken(Pantry),
-          useValue: mockPantryRepository,
+          provide: PantriesService,
+          useValue: mockPantriesService,
         },
       ],
     }).compile();
@@ -66,10 +56,7 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
-    mockVolunteerAssignmentRepository.find.mockReset();
-    mockVolunteerAssignmentRepository.save.mockReset();
-    mockVolunteerAssignmentRepository.create.mockReset();
-    mockPantryRepository.findBy.mockReset();
+    mockPantriesService.findByIds.mockReset();
   });
 
   afterEach(() => {
@@ -88,7 +75,7 @@ describe('UsersService', () => {
         lastName: 'Smith',
         phone: '9876543210',
         role: Role.ADMIN,
-      };
+      } as User;
 
       const createdUser = { ...userData, id: 1 };
       mockUserRepository.create.mockReturnValue(createdUser);
