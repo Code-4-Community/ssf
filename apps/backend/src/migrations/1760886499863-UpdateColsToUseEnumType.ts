@@ -82,12 +82,12 @@ export class UpdateColsToUseEnumType1760886499863
 
     await queryRunner.query(`
             ALTER TABLE pantries
-                ALTER COLUMN refrigerated_donation TYPE VARCHAR(25) USING refrigerated_donation::text,
+                ALTER COLUMN refrigerated_donation TYPE VARCHAR(50) USING refrigerated_donation::text,
                 ALTER COLUMN client_visit_frequency TYPE VARCHAR(25) USING client_visit_frequency::text,
                 ALTER COLUMN identify_allergens_confidence TYPE VARCHAR(50) USING identify_allergens_confidence::text,
                 ALTER COLUMN serve_allergic_children TYPE VARCHAR(25) USING serve_allergic_children::text,
                 ALTER COLUMN reserve_food_for_allergic TYPE VARCHAR(25) USING reserve_food_for_allergic::text,
-                ALTER COLUMN activities TYPE varchar(255)[] USING activities::varchar[],        
+                ALTER COLUMN activities TYPE varchar(255)[] USING activities::varchar[],
                 ALTER COLUMN status DROP DEFAULT,
                 ALTER COLUMN status TYPE VARCHAR(50) USING status::text,
                 ALTER COLUMN status SET DEFAULT 'pending',
