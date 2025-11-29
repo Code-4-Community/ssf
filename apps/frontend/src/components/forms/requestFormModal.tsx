@@ -47,7 +47,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     <Dialog.Root
       open={isOpen}
       size="xl"
-      onOpenChange={(e) => {
+      onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
       closeOnInteractOutside
@@ -61,7 +61,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text mb={10} color="#52525B" textStyle="p2">
+            <Text mb={previousRequest ? 8 : 10} color="#52525B" textStyle="p2">
               {previousRequest ? "Confirm order details." : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
@@ -71,7 +71,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               onSubmit={(e) => {
                 if (selectedItems.length === 0) {
                   e.preventDefault();
-                  alert("Please select at least one item from the shipment list.");
+                  alert("Please select at least one food type");
                 }
                 if (requestedSize === '') {
                   e.preventDefault();
@@ -89,13 +89,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button disabled={readOnly} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "#111111" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
-                      {requestedSize || "Select Size"}
-                      <ChevronDownIcon w={5} h={5} />
+                    <Button disabled={readOnly} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "neutral.800" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
+                      {requestedSize || "Select size"}
+                      <ChevronDownIcon stroke='#B8B8B8'/>
                     </Button>
                   </Menu.Trigger>
 
-                  <Menu.Positioner>
+                  <Menu.Positioner w="full">
                     <Menu.Content>
                       <Menu.RadioItemGroup
                         value={requestedSize}
@@ -128,7 +128,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       disabled={readOnly}
                       w="full"
                       bgColor="white"
-                      color={selectedItems.length > 0 ? "#111111" : "neutral.300"} 
+                      color={selectedItems.length > 0 ? "neutral.800" : "neutral.300"} 
                       borderColor='neutral.100' 
                       borderWidth="1px" 
                       borderRadius="4px"
@@ -137,12 +137,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       mt={2}
                     >
                       {selectedItems.length > 0 ? `Multi-Select` : "Select food types"}
-                      <ChevronDownIcon w={5} h={5} />
+                      <ChevronDownIcon/>
                     </Button>
                   </Menu.Trigger>
 
                   <Menu.Positioner w="full">
-                    <Menu.Content maxH="250px" overflowY="auto" >
+                    <Menu.Content maxH="200px" overflowY="auto" >
                       {FoodTypes.map((allergen) => {
                         const isChecked = selectedItems.includes(allergen);
                         return (
@@ -167,7 +167,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                               w={5}
                               h={5}
                               borderWidth="1px"
-                              borderColor="gray.500"
+                              borderRadius="4px"
+                              borderColor="neutral.200"
                             >
                               
                             </Box>
@@ -182,7 +183,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Menu.Root>
       
                 {selectedItems.length > 0 && (
-                  <Flex wrap="wrap" mt={3} gap={2}>
+                  <Flex wrap="wrap" mt={1} gap={2}>
                     {selectedItems.map((item) => (
                       <Tag.Root
                         key={item}
@@ -200,6 +201,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         <Tag.EndElement>
                           {!readOnly && (
                             <Tag.CloseTrigger
+                              cursor="pointer"
                               onClick={() =>
                                 setSelectedItems((prev) => prev.filter((i) => i !== item))
                               }
