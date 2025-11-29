@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import {
@@ -158,4 +159,7 @@ export class Pantry {
 
   @Column({ name: 'need_more_options', type: 'text' })
   needMoreOptions: string;
+
+  @ManyToMany(() => User, (user) => user.pantries)
+  volunteers?: User[];
 }

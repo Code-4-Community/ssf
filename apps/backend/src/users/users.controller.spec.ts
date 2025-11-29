@@ -8,7 +8,6 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
-import { VolunteerAssignment } from '../volunteerAssignments/volunteerAssignments.entity';
 
 const mockUserService = mock<UsersService>();
 
@@ -122,7 +121,7 @@ describe('UsersController', () => {
         role: Role.ADMIN,
       };
 
-      const createdUser = { ...createUserSchema, id: 2 };
+      const createdUser = { ...createUserSchema, id: 2 } as User;
       mockUserService.create.mockResolvedValue(createdUser);
 
       const result = await controller.createUser(createUserSchema);
@@ -200,27 +199,19 @@ describe('UsersController', () => {
   describe('POST /:id/pantries', () => {
     it('should assign pantries to a volunteer and return result', async () => {
       const pantryIds = [1, 3];
-      const mockAssignments: VolunteerAssignment[] = [
-        {
-          volunteerId: 3,
-          pantryId: 1,
-          volunteer: mockUser3 as User,
-          pantry: mockPantries[0] as Pantry,
-        },
-        {
-          volunteerId: 3,
-          pantryId: 3,
-          volunteer: mockUser3 as User,
-          pantry: mockPantries[2] as Pantry,
-        },
-      ];
-      mockUserService.assignPantriesToVolunteer.mockResolvedValue(
-        mockAssignments,
-      );
+      const updatedUser = {
+        ...mockUser3,
+        pantries: [mockPantries[0] as Pantry, mockPantries[2] as Pantry],
+      } as User;
+
+      mockUserService.assignPantriesToVolunteer.mockResolvedValue(updatedUser);
 
       const result = await controller.assignPantries(3, pantryIds);
 
-      expect(result).toEqual(mockAssignments);
+      expect(result).toEqual(updatedUser);
+      expect(result.pantries).toHaveLength(2);
+      expect(result.pantries[0].pantryId).toBe(1);
+      expect(result.pantries[1].pantryId).toBe(3);
       expect(mockUserService.assignPantriesToVolunteer).toHaveBeenCalledWith(
         3,
         pantryIds,
