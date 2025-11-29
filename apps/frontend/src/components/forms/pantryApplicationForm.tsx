@@ -75,6 +75,7 @@ const PantryApplicationForm: React.FC = () => {
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
+  const noRestrictionsSelected: boolean = restrictions.length === 0;
   const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<string>();
   const [clientVisitFrequency, setClientVisitFrequency] = useState<
     string | undefined
@@ -430,21 +431,21 @@ const PantryApplicationForm: React.FC = () => {
                   </Field.Label>
                   <Input name="mailingAddressLine2" type="text" borderColor="neutral.100" />
                 </Field.Root>
-                <Field.Root required>
+                <Field.Root required={differentMailingAddress}>
                   <Field.Label {...fieldHeaderStyles}>
                     City/Town
                     <Field.RequiredIndicator color="red"/>
                   </Field.Label>
                   <Input name="mailingAddressCity" type="text" borderColor="neutral.100" />
                 </Field.Root>
-                <Field.Root required>
+                <Field.Root required={differentMailingAddress}>
                   <Field.Label {...fieldHeaderStyles}>
                     State/Region/Province
                     <Field.RequiredIndicator color="red"/>
                   </Field.Label>
                   <Input name="mailingAddressState" type="text" borderColor="neutral.100" />
                 </Field.Root>
-                <Field.Root required>
+                <Field.Root required={differentMailingAddress}>
                   <Field.Label {...fieldHeaderStyles}>
                     Zip/Post Code
                     <Field.RequiredIndicator color="red"/>
@@ -522,10 +523,11 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
           )}
-          <Field.Root mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Which food allergies or other medical dietary restrictions do
               clients at your pantry report?
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <Combobox.Root
               multiple
@@ -534,6 +536,7 @@ const PantryApplicationForm: React.FC = () => {
               collection={restrictionsCollection}
               onValueChange={(e: {value: string[]}) => setRestrictions(e.value)}
               onInputValueChange={(e: {inputValue: string}) => setSearchRestriction(e.inputValue)}
+              required={noRestrictionsSelected}
             >
               <Combobox.Control>
                 <Combobox.Input 
@@ -599,9 +602,13 @@ const PantryApplicationForm: React.FC = () => {
           {restrictions.find((option) =>
             otherRestrictionsOptions.includes(option),
           ) && (
-            <Field.Root mb="2em">
+            <Field.Root 
+              required={restrictions.find((option) => otherRestrictionsOptions.includes(option))}
+              mb="2em"
+            >
               <Field.Label {...fieldHeaderStyles}>
                 If you selected "Other," please specify:
+                <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input maxW="20em" name="restrictionsOther" type="text" />
             </Field.Root>
@@ -998,7 +1005,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
-
   const pantryApplicationData = new Map();
 
   const ActivityStorageMap: Record<string, string> = {
@@ -1011,28 +1017,51 @@ export const submitPantryApplicationForm: ActionFunction = async ({
     'Something else': Activity.SOMETHING_ELSE,
   };
 
-  // Handle questions with checkboxes (we create an array of all
-  // selected options)
-
   const restrictions = form.getAll('restrictions');
   const restrictionsOther = form.get('restrictionsOther');
-
   if (restrictionsOther !== null && restrictionsOther !== '') {
-    restrictions.push(restrictionsOther);
+    restrictions.push(restrictionsOther as string);
   }
-
   pantryApplicationData.set('restrictions', restrictions);
-  form.delete('restrictions');
+  form.delete('restrictions')
+  form.delete('restrictionsOther');
 
   const selectedActivities = form.getAll('activities') as string[];
   const convertedActivities = selectedActivities.map((activity) => ActivityStorageMap[activity]);
   pantryApplicationData.set('activities', convertedActivities);
   form.delete('activities');
 
-  pantryApplicationData.set('dedicatedAllergyFriendly', form.get('dedicatedAllergyFriendly'));
-  form.delete('dedicatedAllergyFriendly');
+  pantryApplicationData.set('newsletterSubscription', form.get("newsletterSubscription") === "Yes");
+  pantryApplicationData.set('acceptFoodDeliveries', form.get("acceptFoodDeliveries") === "Yes");
+  pantryApplicationData.set('dedicatedAllergyFriendly', form.get("dedicatedAllergyFriendly") === "Yes");
+  pantryApplicationData.set('hasEmailContact', form.get("hasEmailContact") === "Yes");
+  form.delete('newsletterSubscription')
+  form.delete('acceptFoodDeliveries')
+  form.delete('dedicatedAllergyFriendly')
+  form.delete('hasEmailContact')
 
-  // Handle all other questions
+  // Handle mailing address
+  if (form.get("differentMailingAddress") === "No") {
+    pantryApplicationData.set('mailingAddressLine1', form.get('shipmentAddressLine1'));
+    pantryApplicationData.set('mailingAddressLine2', form.get('shipmentAddressLine2') || null);
+    pantryApplicationData.set('mailingAddressCity', form.get('shipmentAddressCity'));
+    pantryApplicationData.set('mailingAddressState', form.get('shipmentAddressState'));
+    pantryApplicationData.set('mailingAddressZip', form.get('shipmentAddressZip'));
+    pantryApplicationData.set('mailingAddressCountry', form.get('shipmentAddressCountry') || null);
+  }
+  form.delete('differentMailingAddress')
+
+  // Replace the answer for allergenClients with the answer
+  // for allergenClientsExact if it is given
+  const allergenClientsExact = form.get(
+    'allergenClientsExact',
+  );
+  if ((allergenClientsExact ?? '') !== '') {
+    pantryApplicationData.set('allergenClients', allergenClientsExact);
+  }
+  form.delete('allergenClientsExact');
+
+  // Copy all form data to Map
   form.forEach((value, key) => {
     if (value === '') {
       pantryApplicationData.set(key, null);
@@ -1040,33 +1069,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
       pantryApplicationData.set(key, value)
     }
   });
-
-  pantryApplicationData.set('newsletterSubscription', form.get("newsletterSubscription") === "Yes");
-  pantryApplicationData.set('acceptFoodDeliveries', form.get("acceptFoodDeliveries") === "Yes");
-  pantryApplicationData.set('dedicatedAllergyFriendly', form.get("dedicatedAllergyFriendly") === "Yes");
-  pantryApplicationData.set('hasEmailContact', form.get("hasEmailContact") === "Yes");
-
-  if (form.get("differentMailingAddress") === "No") {
-    pantryApplicationData.set('mailingAddressLine1', pantryApplicationData.get('shipmentAddressLine1'));
-    pantryApplicationData.set('mailingAddressLine2', pantryApplicationData.get('shipmentAddressLine2'));
-    pantryApplicationData.set('mailingAddressCity', pantryApplicationData.get('shipmentAddressCity'));
-    pantryApplicationData.set('mailingAddressState', pantryApplicationData.get('shipmentAddressState'));
-    pantryApplicationData.set('mailingAddressZip', pantryApplicationData.get('shipmentAddressZip'));
-    pantryApplicationData.set('mailingAddressCountry', pantryApplicationData.get('shipmentAddressCountry'));
-  }
-
-  console.log('Pantry Application Data:', Object.fromEntries(pantryApplicationData));
-
-  // Replace the answer for allergenClients with the answer
-  // for allergenClientsExact if it is given
-
-  const allergenClientsExact = pantryApplicationData.get(
-    'allergenClientsExact',
-  );
-
-  if ((allergenClientsExact ?? '') !== '') {
-    pantryApplicationData.set('allergenClients', allergenClientsExact);
-  }
 
   const data = Object.fromEntries(pantryApplicationData);
 
