@@ -140,8 +140,10 @@ export class UsersService {
     }
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
+    const existingPantryIds = user.pantries.map((p) => p.pantryId);
+    const newPantries = pantries.filter(p => !existingPantryIds.includes(p.pantryId));
 
-    user.pantries = [...user.pantries, ...pantries];
+    user.pantries = [...user.pantries, ...newPantries];
     return this.repo.save(user);
   }
 }
