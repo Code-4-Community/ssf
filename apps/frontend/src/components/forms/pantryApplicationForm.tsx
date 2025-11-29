@@ -88,6 +88,7 @@ const PantryApplicationForm: React.FC = () => {
   const [differentMailingAddress, setDifferentMailingAddress] = useState<boolean | null>();
   const [searchRestriction, setSearchRestriction] = useState<string>('');
   const [searchActivity, setSearchActivity] = useState<string>('');
+  const [otherEmailContact, setOtherEmailContact] = useState<boolean>(false);
 
   const sectionTitleStyles = {
     fontFamily: "inter",
@@ -215,6 +216,7 @@ const PantryApplicationForm: React.FC = () => {
             <RadioGroup.Root 
               name="hasEmailContact"
               variant="solid"
+              onValueChange={(e: {value: string}) => setOtherEmailContact(e.value === 'Other')}
             >
               <Stack>
                 {['Yes', 'No', 'Other'].map((value) => (
@@ -237,7 +239,7 @@ const PantryApplicationForm: React.FC = () => {
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
-          <Field.Root mb="2.5em">
+          <Field.Root required={otherEmailContact} mb="2.5em">
             <Input 
               name="emailContactOther" 
               type="text" 
@@ -890,15 +892,17 @@ const PantryApplicationForm: React.FC = () => {
             </Field.HelperText>
           </Field.Root>
 
-          <Field.Root mb="2em">
+          <Field.Root required={activities.includes('Something else')} mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Please list any comments/concerns related to the previous question.
+              {activities.includes('Something else') && (
+                <Field.RequiredIndicator color="red"/>
+              )}
             </Field.Label>
             <Textarea 
               name="activitiesComments" 
               borderColor="neutral.100" 
-              autoresize 
-              required={activities.includes('Something else')}
+              autoresize
             />
             <Field.HelperText color="neutral.600">
               If you answered "Something Else," please elaborate.
