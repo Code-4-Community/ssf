@@ -173,13 +173,6 @@ export enum VolunteerType {
   STANDARD_VOLUNTEER = 'standard_volunteer',
 }
 
-export interface VolunteerPantryAssignment {
-  volunteerId: number;
-  pantryId: number;
-  volunteer: User;
-  pantry: Pantry;
-}
-
 export enum Role {
   ADMIN = 'admin',
   LEAD_VOLUNTEER = 'lead_volunteer',
