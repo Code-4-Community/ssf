@@ -1,12 +1,12 @@
-import { 
-  RefrigeratedDonation, 
-  ReserveFoodForAllergic, 
-  ClientVisitFrequency, 
+import {
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
   PantryStatus,
   Activity,
-} from "./pantryEnums";
+} from './pantryEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -173,22 +173,6 @@ export enum VolunteerType {
   STANDARD_VOLUNTEER = 'standard_volunteer',
 }
 
-export interface VolunteerPantryAssignment {
-  assignmentId: number;
-  volunteer: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
-  pantry: {
-    pantryId: number;
-    pantryName: string;
-  };
-}
-
 export enum Role {
   ADMIN = 'admin',
   LEAD_VOLUNTEER = 'lead_volunteer',
@@ -223,4 +207,3 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
   MATCHING = 'matching',
 }
-
