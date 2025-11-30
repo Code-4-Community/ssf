@@ -44,7 +44,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
   const handleChange = (id: number, field: string, value: string) => {
     const updatedRows = rows.map((row) =>
-      row.id === id ? { ...row, [field]: value } : row
+      row.id === id ? { ...row, [field]: value } : row,
     );
 
     setRows(updatedRows);
@@ -99,7 +99,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         !row.foodType ||
         !row.numItems ||
         !row.ozPerItem ||
-        !row.valuePerItem
+        !row.valuePerItem,
     );
 
     if (hasEmpty) {
@@ -221,11 +221,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             <NativeSelect.Field
                               value={row.foodType}
                               onChange={(e) =>
-                                handleChange(
-                                  row.id,
-                                  'foodType',
-                                  e.target.value
-                                )
+                                handleChange(row.id, 'foodType', e.target.value)
                               }
                             >
                               <option value="">Select food type...</option>
@@ -270,7 +266,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               handleChange(
                                 row.id,
                                 'valuePerItem',
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />

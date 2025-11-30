@@ -84,4 +84,4 @@ const customConfig = defineConfig({
   },
 });
 
-export const system = createSystem(defaultConfig, customConfig); 
+export const system = createSystem(defaultConfig, customConfig);
