@@ -34,7 +34,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       try {
         const donationData = await ApiClient.getOrderDonation(donationId);
         const itemsData = await ApiClient.getDonationItemsByDonationId(
-          donationId
+          donationId,
         );
 
         setLoadedDonation(donationData);
