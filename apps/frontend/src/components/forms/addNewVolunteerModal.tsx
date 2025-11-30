@@ -70,8 +70,8 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Button variant="outline">
-          + Add
+        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="Karrik" fontWeight={400} fontSize="14px">
+          +  Add
         </Button>
       </Dialog.Trigger>
       <Dialog.Backdrop />

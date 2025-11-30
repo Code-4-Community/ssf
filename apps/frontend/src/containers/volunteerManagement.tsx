@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   Table,
   Text,
-  Button,
   Flex,
   Input,
   VStack,
@@ -11,9 +10,9 @@ import {
   Pagination,
   ButtonGroup,
   IconButton,
-  Alert
+  Alert,
+  Link,
 } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
@@ -63,8 +62,8 @@ const VolunteerManagement: React.FC = () => {
   };
 
   return (
-    <Box flexDirection="column" p={4}>
-      <Text fontSize="3xl">Volunteer Management</Text>
+    <Box flexDirection="column" p={4} mt={3}>
+      <Text fontSize="32px" fontWeight={400} fontFamily="Instrument Serif" color="#515151">Volunteer Management</Text>
       {alertMessage && (
         <Alert.Root status="info">
           <Alert.Indicator />
@@ -72,7 +71,7 @@ const VolunteerManagement: React.FC = () => {
         </Alert.Root>
       )}
       <Box
-        mt={5}
+        mt={3}
         display="block"
         maxW="100%"
         overflowX="auto"
@@ -81,11 +80,18 @@ const VolunteerManagement: React.FC = () => {
       >
         <VStack mt={2} mb={7} align="start" >
           <Flex justify="space-between" align="center" w="100%">
-            <InputGroup startElement = {<SearchIcon size={15}></SearchIcon>} maxW={300}>
+            <InputGroup startElement = {<SearchIcon color="#707070" size={13}></SearchIcon>} maxW={300}>
               <Input
                 placeholder="Search"
                 value={searchName}
+                borderColor="neutral.200"
+                ps="7"
                 onChange={handleSearchNameChange}
+                color="neutral.600"
+                fontFamily="Karrik"
+                fontWeight={400}
+                fontSize="14px"
+                _placeholder={{ color: "neutral.600", fontFamily: "Karrik", fontWeight: 400, fontSize: 14 }}
               />
             </InputGroup>
             <NewVolunteerModal onSubmitSuccess={() => {
@@ -95,15 +101,15 @@ const VolunteerManagement: React.FC = () => {
             />
           </Flex>
         </VStack>
-        <Table.Root variant="line">
+        <Table.Root variant="line" showColumnBorder>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader>Volunteer</Table.ColumnHeader>
-              <Table.ColumnHeader>Email</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="right">Actions</Table.ColumnHeader>
+              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Volunteer</Table.ColumnHeader>
+              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Email</Table.ColumnHeader>
+              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600} textAlign="right">Actions</Table.ColumnHeader>
             </Table.Row> 
           </Table.Header>
-          <Table.Body>
+          <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
             {paginatedVolunteers?.map((volunteer) => (
               <Table.Row key={volunteer.id}>
                 <Table.Cell>
@@ -113,9 +119,9 @@ const VolunteerManagement: React.FC = () => {
                   {volunteer.email}
                 </Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Button textDecoration="underline" color="gray" as={Link} to={`/pantry-management/${volunteer.id}`}>
+                  <Link color="neutral.700" fontWeight={400} textStyle="p2" variant="underline" href={`/pantry-management/${volunteer.id}`}>
                     View assigned pantries
-                  </Button>
+                  </Link>
                 </Table.Cell>
               </Table.Row>
             ))}
