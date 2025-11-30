@@ -1,16 +1,7 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  VStack,
-  Text,
-} from '@chakra-ui/react';
+import { VStack, Text, Dialog } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
-import { Pantry, Allocation } from 'types/types';
+import { Allocation, Pantry } from 'types/types';
 
 interface OrderInformationModalProps {
   orderId: number;
@@ -47,37 +38,46 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
   }, [isOpen, orderId]);
 
   return (
-    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Order Details</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {pantry ? (
-            <VStack spacing={4} align="start">
-              <Text>
-                <strong>Pantry Name:</strong> {pantry.pantryName}
-              </Text>
-              <Text>
-                <strong>Order Items:</strong>
-                {allocationItems.length > 0 ? (
-                  allocationItems.map((allocation) => (
-                    <Text key={allocation.allocationId}>
-                      - {allocation.allocatedQuantity}{' '}
-                      {allocation.item.itemName}
-                    </Text>
-                  ))
-                ) : (
-                  <Text>No order contents available</Text>
-                )}
-              </Text>
-            </VStack>
-          ) : (
-            <Text>No data to load</Text>
-          )}
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root
+      open={isOpen}
+      size="lg"
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
+    >
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.Header>Order Details</Dialog.Header>
+          <Dialog.Body>
+            {pantry ? (
+              <VStack gap={4} align="start">
+                <Text>
+                  <strong>Pantry Name:</strong> {pantry.pantryName}
+                </Text>
+                <Text>
+                  <strong>Order Items:</strong>
+                  {allocationItems.length > 0 ? (
+                    allocationItems.map((allocation) => (
+                      <Text key={allocation.allocationId}>
+                        - {allocation.allocatedQuantity}{' '}
+                        {allocation.item.itemName}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text>No order contents available</Text>
+                  )}
+                </Text>
+              </VStack>
+            ) : (
+              <Text>No data to load</Text>
+            )}
+          </Dialog.Body>
+          <Dialog.CloseTrigger />
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 };
 

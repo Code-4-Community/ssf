@@ -1,16 +1,16 @@
 import axios, { type AxiosInstance, AxiosResponse } from 'axios';
 import {
   User,
-  Pantry,
   Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
   Allocation,
-  PantryApplicationDto,
   VolunteerPantryAssignment,
   CreateFoodRequestBody,
+  Pantry,
+  PantryApplicationDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -149,12 +149,6 @@ export class ApiClient {
 
   public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
-  }
-
-  public async getDonationFromOrder(orderId: number): Promise<Donation | null> {
-    return this.axiosInstance
-      .get(`/api/orders/${orderId}/donation`)
-      .then((response) => response.data);
   }
 
   public async getOrderDonation(donationId: number): Promise<Donation> {
