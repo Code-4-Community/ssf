@@ -34,6 +34,7 @@ export class PantriesService {
     const pantryContact: User = new User();
     const pantry: Pantry = new Pantry();
 
+    // primary contact information
     pantryContact.role = Role.PANTRY;
     pantryContact.firstName = pantryData.contactFirstName;
     pantryContact.lastName = pantryData.contactLastName;
@@ -41,20 +42,39 @@ export class PantriesService {
     pantryContact.phone = pantryData.contactPhone;
 
     pantry.pantryUser = pantryContact;
+    pantry.hasEmailContact = pantryData.hasEmailContact;
+    pantry.emailContactOther = pantryData.emailContactOther;
 
+    // secondary contact information
+    pantry.secondaryContactFirstName = pantryData.secondaryContactFirstName;
+    pantry.secondaryContactLastName = pantryData.secondaryContactLastName;
+    pantry.secondaryContactEmail = pantryData.secondaryContactEmail;
+    pantry.secondaryContactPhone = pantryData.secondaryContactPhone;
+
+    // food shipment address information
+    pantry.shipmentAddressLine1 = pantryData.shipmentAddressLine1;
+    pantry.shipmentAddressLine2 = pantryData.shipmentAddressLine2;
+    pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
+    pantry.shipmentAddressState = pantryData.shipmentAddressState;
+    pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry;
+
+    // mailing address information
+    pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
+    pantry.mailingAddressLine2 = pantryData.mailingAddressLine2;
+    pantry.mailingAddressCity = pantryData.mailingAddressCity;
+    pantry.mailingAddressState = pantryData.mailingAddressState;
+    pantry.mailingAddressZip = pantryData.mailingAddressZip;
+    pantry.mailingAddressCountry = pantryData.mailingAddressCountry;
+
+    // pantry details information
     pantry.pantryName = pantryData.pantryName;
-    pantry.addressLine1 = pantryData.addressLine1;
-    pantry.addressLine2 = pantryData.addressLine2;
-    pantry.addressCity = pantryData.addressCity;
-    pantry.addressState = pantryData.addressState;
-    pantry.addressZip = pantryData.addressZip;
-    pantry.addressCountry = pantryData.addressCountry;
     pantry.allergenClients = pantryData.allergenClients;
     pantry.restrictions = pantryData.restrictions;
     pantry.refrigeratedDonation = pantryData.refrigeratedDonation;
+    pantry.dedicatedAllergyFriendly = pantryData.dedicatedAllergyFriendly;
     pantry.reserveFoodForAllergic = pantryData.reserveFoodForAllergic;
     pantry.reservationExplanation = pantryData.reservationExplanation;
-    pantry.dedicatedAllergyFriendly = pantryData.dedicatedAllergyFriendly;
     pantry.clientVisitFrequency = pantryData.clientVisitFrequency;
     pantry.identifyAllergensConfidence = pantryData.identifyAllergensConfidence;
     pantry.serveAllergicChildren = pantryData.serveAllergicChildren;
@@ -62,8 +82,7 @@ export class PantriesService {
     pantry.activitiesComments = pantryData.activitiesComments;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
-    pantry.newsletterSubscription =
-      pantryData?.newsletterSubscription === 'Yes';
+    pantry.newsletterSubscription = pantryData.newsletterSubscription;
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
