@@ -77,15 +77,6 @@ const PantryApplicationForm: React.FC = () => {
   const [restrictions, setRestrictions] = useState<string[]>([]);
   const noRestrictionsSelected: boolean = restrictions.length === 0;
   const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<string>();
-  const [clientVisitFrequency, setClientVisitFrequency] = useState<
-    string | undefined
-  >();
-  const [identifyAllergensConfidence, setIdentifyAllergensConfidence] = useState<
-    string | undefined
-  >();
-  const [serveAllergicChildren, setServeAllergicChildren] = useState<
-    string | undefined
-  >();
   const [differentMailingAddress, setDifferentMailingAddress] = useState<boolean | null>();
   const [searchRestriction, setSearchRestriction] = useState<string>('');
   const [searchActivity, setSearchActivity] = useState<string>('');
@@ -246,7 +237,7 @@ const PantryApplicationForm: React.FC = () => {
               type="text" 
               borderColor="neutral.100" 
               placeholder="If you selected other, please specify."
-              _placeholder={{ color: "neutral.300" }}
+              _placeholder={{ color: "neutral.800" }}
               maxW="30em"
             />
           </Field.Root>
@@ -487,7 +478,7 @@ const PantryApplicationForm: React.FC = () => {
                 value={allergenClients}
                 onChange={(e) => setAllergenClients(e.target.value)}
                 placeholder="Select an option"
-                color = {allergenClients ? 'neutral.800' : 'neutral.300'}
+                color="neutral.800"
                 borderColor="neutral.100"
                 name="allergenClients"
               >
@@ -518,6 +509,7 @@ const PantryApplicationForm: React.FC = () => {
                 maxW="10em"
                 name="allergenClientsExact"
                 type="number"
+                color="neutral.800"
                 borderColor="neutral.100"
                 min="0"
               />
@@ -542,7 +534,7 @@ const PantryApplicationForm: React.FC = () => {
                 <Combobox.Input 
                   placeholder="Type to search" 
                   borderColor="neutral.100"
-                  _placeholder={{ color: "neutral.300" }}
+                  _placeholder={{ color: "neutral.800" }}
                 />
                 <Combobox.IndicatorGroup>
                   <Combobox.Trigger />
@@ -557,6 +549,7 @@ const PantryApplicationForm: React.FC = () => {
                         <Combobox.Item 
                           key={value} 
                           item={value}
+                          color="neutral.800"
                           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
                           onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '')}
                         >
@@ -739,12 +732,10 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <NativeSelect.Root >
               <NativeSelect.Field
-                value={clientVisitFrequency}
-                onChange={(e) => setClientVisitFrequency(e.target.value)}
                 placeholder="Select an option"
                 name="clientVisitFrequency"
                 borderColor="neutral.100"
-                color = {clientVisitFrequency ? 'neutral.800' : 'neutral.300'}
+                color="neutral.800"
               >
                 {[
                   'Daily',
@@ -768,12 +759,10 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <NativeSelect.Root >
               <NativeSelect.Field
-                value={identifyAllergensConfidence}
-                onChange={(e) => setIdentifyAllergensConfidence(e.target.value)}
                 placeholder="Select an option"
                 name="identifyAllergensConfidence"
                 borderColor="neutral.100"
-                color = {identifyAllergensConfidence ? 'neutral.800' : 'neutral.300'}
+                color="neutral.800"
               >
                 {[
                   'Very confident',
@@ -799,12 +788,10 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <NativeSelect.Root >
               <NativeSelect.Field
-                value={serveAllergicChildren}
-                onChange={(e) => setServeAllergicChildren(e.target.value)}
                 placeholder="Select an option"
                 name="serveAllergicChildren"
                 borderColor="neutral.100"
-                color = {serveAllergicChildren ? 'neutral.800' : 'neutral.300'}
+                color="neutral.800"
               >
                 {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
                   <option value={value}>
@@ -837,7 +824,7 @@ const PantryApplicationForm: React.FC = () => {
                 <Combobox.Input 
                   placeholder="Type to search" 
                   borderColor="neutral.100"
-                  _placeholder={{ color: "neutral.300" }}
+                  _placeholder={{ color: "neutral.800" }}
                 />
                 <Combobox.IndicatorGroup>
                   <Combobox.Trigger />
@@ -852,6 +839,7 @@ const PantryApplicationForm: React.FC = () => {
                         <Combobox.Item 
                           key={value} 
                           item={value}
+                          color="neutral.800"
                           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
                           onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '')}
                         >
