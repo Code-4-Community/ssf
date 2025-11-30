@@ -90,7 +90,7 @@ describe('UsersController', () => {
     });
   });
 
-  describe('PUT :id/role', () => {
+  describe('PUT /:id/role', () => {
     it('should update user role with valid role', async () => {
       const updatedUser = { ...mockUser1, role: Role.ADMIN };
       mockUserService.update.mockResolvedValue(updatedUser as User);

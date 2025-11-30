@@ -37,6 +37,7 @@ export interface Pantry {
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
+  volunteers?: User[];
 }
 
 export interface PantryApplicationDto {
@@ -113,6 +114,7 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  pantries?: Pantry[];
 }
 
 export interface FoodRequest {

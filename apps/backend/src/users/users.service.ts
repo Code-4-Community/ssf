@@ -50,6 +50,21 @@ export class UsersService {
     return user;
   }
 
+  async findVolunteer(volunteerId: number): Promise<User> {
+    validateId(volunteerId, 'Volunteer');
+
+    const volunteer = await this.repo.findOne({
+      where: { id: volunteerId },
+      relations: ['pantries'],
+    });
+
+    if (!volunteer) throw new NotFoundException(`User ${volunteerId} not found`);
+    if (!VOLUNTEER_ROLES.includes(volunteer.role)) {
+      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
+    }
+    return volunteer;
+  }
+
   find(email: string) {
     return this.repo.find({ where: { email } });
   }
@@ -81,16 +96,16 @@ export class UsersService {
   }
 
   async findUsersByRoles(roles: Role[]): Promise<User[]> {
-    return this.repo.find({ where: { role: In(roles) } });
+    return this.repo.find({ 
+      where: { role: In(roles) },
+      relations: ['pantries'],
+    });
   }
 
   async getVolunteersAndPantryAssignments(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
   > {
-    const volunteers = await this.repo.find({
-      where: { role: In(VOLUNTEER_ROLES) },
-      relations: ['pantries'],
-    });
+    const volunteers = await this.findUsersByRoles(VOLUNTEER_ROLES);
 
     return volunteers.map((v) => {
       const { pantries, ...volunteerWithoutPantries } = v;
@@ -104,17 +119,8 @@ export class UsersService {
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
     validateId(volunteerId, 'Volunteer');
 
-    const user = await this.repo.findOne({
-      where: { id: volunteerId },
-      relations: ['pantries'],
-    });
-
-    if (!user) throw new NotFoundException(`User ${volunteerId} not found`);
-    if (!VOLUNTEER_ROLES.includes(user.role)) {
-      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
-    }
-
-    return user.pantries;
+    const volunteer = await this.findVolunteer(volunteerId);
+    return volunteer.pantries;
   }
 
   async assignPantriesToVolunteer(
@@ -124,28 +130,15 @@ export class UsersService {
     validateId(volunteerId, 'Volunteer');
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
-    const user = await this.repo.findOne({
-      where: { id: volunteerId },
-      relations: ['pantries'],
-    });
-
-    if (!user) {
-      throw new NotFoundException(`User ${volunteerId} not found`);
-    }
-
-    if (!VOLUNTEER_ROLES.includes(user.role)) {
-      throw new BadRequestException(
-        `User ${volunteerId} is not a volunteer and cannot be assigned pantries`,
-      );
-    }
+    const volunteer = await this.findVolunteer(volunteerId);
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
-    const existingPantryIds = user.pantries.map((p) => p.pantryId);
+    const existingPantryIds = volunteer.pantries.map((p) => p.pantryId);
     const newPantries = pantries.filter(
       (p) => !existingPantryIds.includes(p.pantryId),
     );
 
-    user.pantries = [...user.pantries, ...newPantries];
-    return this.repo.save(user);
+    volunteer.pantries = [...volunteer.pantries, ...newPantries];
+    return this.repo.save(volunteer);
   }
 }

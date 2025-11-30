@@ -212,6 +212,7 @@ describe('UsersService', () => {
       expect(result).toEqual(users);
       expect(mockUserRepository.find).toHaveBeenCalledWith({
         where: { role: In(roles) },
+        relations: ['pantries'],
       });
     });
 
