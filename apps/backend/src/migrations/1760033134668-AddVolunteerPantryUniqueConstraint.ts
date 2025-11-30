@@ -31,7 +31,7 @@ export class AddVolunteerPantryUniqueConstraint1760033134668
             ALTER TABLE volunteer_assignments ADD COLUMN assignment_id SERIAL PRIMARY KEY;
 
             ALTER TABLE volunteer_assignments
-            ADD CONSTRAINT fk_volunteer_id FOREIGN KEY(volunteer_id) REFERENCES users(user_id);
+            ADD CONSTRAINT fk_volunteer_id FOREIGN KEY(volunteer_id) REFERENCES users(user_id),
             ADD CONSTRAINT fk_pantry_id FOREIGN KEY(pantry_id) REFERENCES pantries(pantry_id);
         `);
   }
