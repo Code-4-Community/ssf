@@ -58,7 +58,8 @@ export class UsersService {
       relations: ['pantries'],
     });
 
-    if (!volunteer) throw new NotFoundException(`User ${volunteerId} not found`);
+    if (!volunteer)
+      throw new NotFoundException(`User ${volunteerId} not found`);
     if (!VOLUNTEER_ROLES.includes(volunteer.role)) {
       throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
     }
@@ -96,7 +97,7 @@ export class UsersService {
   }
 
   async findUsersByRoles(roles: Role[]): Promise<User[]> {
-    return this.repo.find({ 
+    return this.repo.find({
       where: { role: In(roles) },
       relations: ['pantries'],
     });
