@@ -70,34 +70,34 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>{pantry.pantryName}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Line 1</Text>
+                <Text fontWeight="bold">Shipping AddressLine 1</Text>
               </GridItem>
-              <GridItem>{pantry.addressLine1}</GridItem>
+              <GridItem>{pantry.shippingAddressLine1}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Line 2</Text>
+                <Text fontWeight="bold">Shipping AddressLine 2</Text>
               </GridItem>
-              <GridItem>{pantry.addressLine2 ?? ''}</GridItem>
+              <GridItem>{pantry.shippingAddressLine2 ?? ''}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address City</Text>
+                <Text fontWeight="bold">Shipping AddressCity</Text>
               </GridItem>
-              <GridItem>{pantry.addressCity}</GridItem>
+              <GridItem>{pantry.shippingAddressCity}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address State</Text>
+                <Text fontWeight="bold">Shipping AddressState</Text>
               </GridItem>
-              <GridItem>{pantry.addressState}</GridItem>
+              <GridItem>{pantry.shippingAddressState}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Zip</Text>
+                <Text fontWeight="bold">Shipping AddressZip</Text>
               </GridItem>
-              <GridItem>{pantry.addressZip}</GridItem>
+              <GridItem>{pantry.shippingAddressZip}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Country</Text>
+                <Text fontWeight="bold">Shipping AddressCountry</Text>
               </GridItem>
-              <GridItem>{pantry.addressCountry ?? ''}</GridItem>
+              <GridItem>{pantry.shippingAddressCountry ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Allergen Clients</Text>

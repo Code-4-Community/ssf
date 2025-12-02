@@ -141,11 +141,12 @@ export class Pantry {
     type: 'enum',
     enum: ServeAllergicChildren,
     enumName: 'serve_allergic_children_enum',
+    nullable: true,
   })
   serveAllergicChildren?: ServeAllergicChildren;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription: boolean;
+  newsletterSubscription?: boolean;
 
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions: string[];
@@ -184,6 +185,7 @@ export class Pantry {
     name: 'secondary_contact_phone',
     type: 'varchar',
     length: 20,
+    nullable: true,
   })
   secondaryContactPhone?: string;
 

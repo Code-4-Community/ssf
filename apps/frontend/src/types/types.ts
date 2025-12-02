@@ -45,7 +45,7 @@ export interface Pantry {
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
-  pantryUser: User;
+  pantryUser?: User;
   status: PantryStatus;
   dateApplied: Date;
   activities: Activity[];

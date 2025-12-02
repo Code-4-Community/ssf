@@ -393,7 +393,7 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root mb="4em">
             <Field.Label {...fieldHeaderStyles}>
-              Please note any delivery window instructions.
+              Please note any delivery window restrictions.
             </Field.Label>
             <Textarea name="deliveryWindowInstructions" borderColor="neutral.100" />
           </Field.Root>
@@ -491,7 +491,7 @@ const PantryApplicationForm: React.FC = () => {
                   "I'm not sure",
                   allergenClientsExactOption,
                 ].map((value) => (
-                  <option value={value}>
+                  <option key={value} value={value}>
                     {value}
                   </option>
                 ))}
@@ -565,8 +565,8 @@ const PantryApplicationForm: React.FC = () => {
 
               <Wrap gap="2">
                 {restrictions.map((value) => (
-                  <>
-                    <input key={value} type="hidden" name="restrictions" value={value} />
+                  <React.Fragment key={value}>
+                    <input type="hidden" name="restrictions" value={value} />
                     <Tag.Root 
                       key={value}
                       bg="teal.100"
@@ -586,7 +586,7 @@ const PantryApplicationForm: React.FC = () => {
                         />
                       </Tag.EndElement>
                     </Tag.Root>
-                  </>
+                  </React.Fragment>
                 ))}
               </Wrap>
             </Combobox.Root>
@@ -744,7 +744,7 @@ const PantryApplicationForm: React.FC = () => {
                   'A few times a month',
                   'Once a month',
                 ].map((value) => (
-                  <option value={value}>
+                  <option key={value} value={value}>
                     {value}
                   </option>
                 ))}
@@ -769,7 +769,7 @@ const PantryApplicationForm: React.FC = () => {
                   'Somewhat confident',
                   'Not very confident (we need more education!)',
                 ].map((value) => (
-                  <option value={value}>
+                  <option key={value} value={value}>
                     {value}
                   </option>
                 ))}
@@ -794,7 +794,7 @@ const PantryApplicationForm: React.FC = () => {
                 color="neutral.800"
               >
                 {['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'].map((value) => (
-                  <option value={value}>
+                  <option key={value} value={value}>
                     {value}
                   </option>
                 ))}
@@ -855,8 +855,8 @@ const PantryApplicationForm: React.FC = () => {
 
               <Wrap gap="2">
                 {activities.map((value) => (
-                  <>
-                    <input key={value} type="hidden" name="activities" value={value} />
+                  <React.Fragment key={value}>
+                    <input type="hidden" name="activities" value={value} />
                     <Tag.Root 
                       key={value}
                       bg="teal.100"
@@ -876,7 +876,7 @@ const PantryApplicationForm: React.FC = () => {
                         />
                       </Tag.EndElement>
                     </Tag.Root>
-                  </>
+                  </React.Fragment>
                 ))}
               </Wrap>
             </Combobox.Root>
@@ -914,7 +914,7 @@ const PantryApplicationForm: React.FC = () => {
               For example, gluten-free breads, sunflower seed butters, nondairy beverages, etc.
             </Field.HelperText>
           </Field.Root>
-          <Field.Root required mb="2em">
+          <Field.Root required mb="4em">
             <Field.Label {...fieldHeaderStyles}>
               Do allergen-avoidant clients at your pantry ever request a greater
               variety of items or not have enough options? Please explain.
@@ -922,6 +922,8 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Label>
             <Textarea name="needMoreOptions" borderColor="neutral.100" autoresize />
           </Field.Root>
+
+          <Separator size="sm" color="neutral.100" my="3em"/>
 
           <Field.Root mb="2em">
             <Field.Label {...fieldHeaderStyles}>

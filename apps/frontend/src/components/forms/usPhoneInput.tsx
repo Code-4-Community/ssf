@@ -45,9 +45,13 @@ export const USPhoneInput: React.FC<USPhoneInputProps> = ({
     onChange: (data) => {
       onChange(data.phone);
 
-      if (isPhoneValid(data.phone)) {
+      const isEmpty = !data.phone || data.phone.trim() === '';
+
+      if (isEmpty && allowEmpty) {
         phoneInput.inputRef.current?.setCustomValidity('');
-      } else if (!allowEmpty) {
+      } else if (isPhoneValid(data.phone)) {
+        phoneInput.inputRef.current?.setCustomValidity('');
+      } else {
         phoneInput.inputRef.current?.setCustomValidity('Invalid phone number.');
       }
     },
