@@ -8,11 +8,13 @@ import {
   Dialog,
   Tag,
   Box,
-  Field
+  Field,
+  CloseButton,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import apiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -32,6 +34,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [pantryName, setPantryName] = useState<string>('');
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -39,9 +42,21 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     if (isOpen && previousRequest) {
       setSelectedItems(previousRequest.requestedItems || []);
       setRequestedSize(previousRequest.requestedSize || '');
-      setAdditionalNotes(previousRequest.additionalInformation || '');
+      setAdditionalNotes(previousRequest.additionalInformation || 'No additional information supplied');
     }
   }, [isOpen, previousRequest]);
+
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pantry = await apiClient.getPantry(pantryId);
+        setPantryName(pantry.pantryName);
+      } catch (error) {
+        console.error('Error fetching pantry data', error);
+      }
+    };
+    fetchData();
+   });
 
   return (
     <Dialog.Root
@@ -57,12 +72,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content mt={3} maxW={650}>
           <Dialog.Header>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              {previousRequest ? "Resubmit Latest Order" : "New Food Request"}
+              {readOnly ? `Order ${previousRequest?.requestId}` : previousRequest ? "Resubmit Latest Order" : "New Food Request"}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
+            {readOnly && <Text textStyle="p2" color="#111111">{pantryName}</Text>}
             <Text mb={previousRequest ? 8 : 10} color="#52525B" textStyle="p2">
-              {previousRequest ? "Confirm order details." : `Please keep in mind that we may not be able to accommodate specific
+              {readOnly && previousRequest ? `Requested ${new Date(previousRequest.requestedAt).toLocaleDateString()}` : previousRequest ? "Confirm order details." : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
             <Form
@@ -89,9 +105,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button disabled={readOnly} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "neutral.800" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
+                    <Button disabled={readOnly} _disabled={{color: "neutral.800", opacity: 1}} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "neutral.800" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
                       {requestedSize || "Select size"}
-                      <ChevronDownIcon stroke='#B8B8B8'/>
+                      {!readOnly && <ChevronDownIcon stroke='#B8B8B8'/>}
                     </Button>
                   </Menu.Trigger>
 
@@ -122,65 +138,67 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <input key={item} type="hidden" name="restrictions" value={item} />
                 ))}
 
-                <Menu.Root closeOnSelect={false}>
-                  <Menu.Trigger asChild>
-                    <Button
-                      disabled={readOnly}
-                      w="full"
-                      bgColor="white"
-                      color={selectedItems.length > 0 ? "neutral.800" : "neutral.300"} 
-                      borderColor='neutral.100' 
-                      borderWidth="1px" 
-                      borderRadius="4px"
-                      justifyContent="space-between"
-                      textStyle="p2"
-                      mt={2}
-                    >
-                      {selectedItems.length > 0 ? `Multi-Select` : "Select food types"}
-                      <ChevronDownIcon/>
-                    </Button>
-                  </Menu.Trigger>
+                {!readOnly && 
+                  <Menu.Root closeOnSelect={false}>
+                    <Menu.Trigger asChild>
+                      <Button
+                        disabled={readOnly}
+                        w="full"
+                        bgColor="white"
+                        color={"neutral.300"} 
+                        borderColor='neutral.100' 
+                        borderWidth="1px" 
+                        borderRadius="4px"
+                        justifyContent="space-between"
+                        textStyle="p2"
+                        mt={2}
+                      >
+                        {selectedItems.length > 0 ? `Select more food types` : "Select food types"}
+                        <ChevronDownIcon/>
+                      </Button>
+                    </Menu.Trigger>
 
-                  <Menu.Positioner w="full">
-                    <Menu.Content maxH="200px" overflowY="auto" >
-                      {FoodTypes.map((allergen) => {
-                        const isChecked = selectedItems.includes(allergen);
-                        return (
-                          <Menu.CheckboxItem
-                            key={allergen}
-                            checked={isChecked}
-                            onCheckedChange={(checked: boolean) => {
-                              setSelectedItems((prev) =>
-                                checked
-                                  ? [...prev, allergen]
-                                  : prev.filter((i) => i !== allergen)
-                              );
-                            }}
-                            disabled={readOnly}
-                            display="flex"
-                            alignItems="center"
-                          >
-                            <Box
-                              position="absolute"
-                              left={1}
-                              ml={0.5}
-                              w={5}
-                              h={5}
-                              borderWidth="1px"
-                              borderRadius="4px"
-                              borderColor="neutral.200"
+                    <Menu.Positioner w="full">
+                      <Menu.Content maxH="200px" overflowY="auto" >
+                        {FoodTypes.map((allergen) => {
+                          const isChecked = selectedItems.includes(allergen);
+                          return (
+                            <Menu.CheckboxItem
+                              key={allergen}
+                              checked={isChecked}
+                              onCheckedChange={(checked: boolean) => {
+                                setSelectedItems((prev) =>
+                                  checked
+                                    ? [...prev, allergen]
+                                    : prev.filter((i) => i !== allergen)
+                                );
+                              }}
+                              disabled={readOnly}
+                              display="flex"
+                              alignItems="center"
                             >
-                              
-                            </Box>
-                            <Menu.ItemIndicator />
+                              <Box
+                                position="absolute"
+                                left={1}
+                                ml={0.5}
+                                w={5}
+                                h={5}
+                                borderWidth="1px"
+                                borderRadius="4px"
+                                borderColor="neutral.200"
+                              >
+                                
+                              </Box>
+                              <Menu.ItemIndicator />
 
-                            <Text color="neutral.800" fontWeight={500} fontFamily="Inter">{allergen}</Text>
-                          </Menu.CheckboxItem>
-                        );
-                      })}
-                    </Menu.Content>
-                  </Menu.Positioner>
-                </Menu.Root>
+                              <Text color="neutral.800" fontWeight={500} fontFamily="Inter">{allergen}</Text>
+                            </Menu.CheckboxItem>
+                          );
+                        })}
+                      </Menu.Content>
+                    </Menu.Positioner>
+                  </Menu.Root>
+                }
       
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={1} gap={2}>
@@ -189,10 +207,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         key={item}
                         size="xl"
                         variant="solid"
-                        bg="#E9F4F6"
+                        bg={!readOnly ? "#E9F4F6" : "neutral.100"}
                         color="neutral.800"
                         borderRadius="4px"
-                        borderColor='teal.400' 
+                        borderColor={!readOnly ? 'teal.400' : 'neutral.300'}
                         borderWidth="1px" 
                         fontFamily="Inter"
                         fontWeight={500}
@@ -241,16 +259,20 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   }}
                   disabled={readOnly}
                 />
-                <Field.HelperText color="neutral.600">Max 250 words</Field.HelperText>
+                {!readOnly && 
+                  <Field.HelperText color="neutral.600">Max 250 words</Field.HelperText>
+                }
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                <Button onClick={onClose} bg={'white'} color={'black'} borderColor='neutral.100'>Cancel</Button>
+                {!readOnly && <Button onClick={onClose} bg={'white'} color={'black'} borderColor='neutral.100'>Cancel</Button>}
                 {!readOnly && <Button type="submit" bg={isFormValid ? '#213C4A' : 'neutral.400'} color={'white'} disabled={!isFormValid}>Continue</Button>}
               </Flex>
             </Form>
           </Dialog.Body>
-          <Dialog.CloseTrigger />
+          <Dialog.CloseTrigger asChild>
+            {readOnly && <CloseButton size="lg" />}
+          </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>
     </Dialog.Root>
