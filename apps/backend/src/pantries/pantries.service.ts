@@ -6,6 +6,8 @@ import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { Assignments } from '../volunteerAssignments/volunteerAssignments.entity';
+import { ApprovedPantryResponse } from './types';
 
 @Injectable()
 export class PantriesService {
@@ -88,5 +90,81 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: 'denied' });
+  }
+
+  async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
+    const [pantries, assignments] = await Promise.all([
+      this.repo.find({
+        where: { status: 'approved' },
+        relations: ['pantryUser'],
+      }),
+      this.repo.manager.find(Assignments, {
+        relations: ['volunteer', 'pantry'],
+      }),
+    ]);
+
+    const assignmentsByPantry = assignments.reduce((acc, assignment) => {
+      const pantryId = assignment.pantry?.pantryId;
+      if (pantryId) {
+        if (!acc[pantryId]) acc[pantryId] = [];
+        acc[pantryId].push(assignment);
+      }
+      return acc;
+    }, {} as Record<number, Assignments[]>);
+
+    return pantries.map((pantry) => ({
+      pantryId: pantry.pantryId,
+      pantryName: pantry.pantryName,
+      address: {
+        line1: pantry.addressLine1,
+        line2: pantry.addressLine2,
+        city: pantry.addressCity,
+        state: pantry.addressState,
+        zip: pantry.addressZip,
+        country: pantry.addressCountry,
+      },
+      contactInfo: {
+        firstName: pantry.pantryUser.firstName,
+        lastName: pantry.pantryUser.lastName,
+        email: pantry.pantryUser.email,
+        phone: pantry.pantryUser.phone,
+      },
+      refrigeratedDonation: pantry.refrigeratedDonation,
+      allergenClients: pantry.allergenClients,
+      status: pantry.status,
+      dateApplied: pantry.dateApplied,
+      assignedVolunteers: (assignmentsByPantry[pantry.pantryId] || []).map(
+        (assignment) => ({
+          assignmentId: assignment.assignmentId,
+          userId: assignment.volunteer.id,
+          name: `${assignment.volunteer.firstName} ${assignment.volunteer.lastName}`,
+          email: assignment.volunteer.email,
+          phone: assignment.volunteer.phone,
+          role: assignment.volunteer.role,
+        }),
+      ),
+    }));
+  }
+
+  async updatePantryVolunteers(
+    pantryId: number,
+    volunteerIds: number[],
+  ): Promise<void> {
+    validateId(pantryId, 'Pantry');
+
+    await this.findOne(pantryId);
+
+    await this.repo.manager.delete(Assignments, { pantry: { pantryId } });
+
+    if (volunteerIds.length > 0) {
+      const newAssignments = volunteerIds.map((volunteerId) =>
+        this.repo.manager.create(Assignments, {
+          volunteer: { id: volunteerId },
+          pantry: { pantryId },
+        }),
+      );
+
+      await this.repo.manager.save(Assignments, newAssignments);
+    }
   }
 }
