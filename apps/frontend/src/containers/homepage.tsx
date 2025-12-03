@@ -133,6 +133,11 @@ const Homepage: React.FC = () => {
                 <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
               </Link>
             </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-assigned-pantries">Volunteer Assigned Pantries</RouterLink>
+              </Link>
+            </ListItem>
           </List.Root>
         </Box>
 

@@ -20,7 +20,6 @@ const AssignedPantries: React.FC = () => {
   const [pantryDetails, setPantryDetails] = useState<Map<number, Pantry>>(new Map());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] = useState<boolean | null>(null);
-  const [selectedPantry, setSelectedPantry] = useState<Pantry | null>(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -72,16 +71,6 @@ const AssignedPantries: React.FC = () => {
     setFilteredAssignments(filtered);
   }, [filterRefrigeratorFriendly, assignments, pantryDetails]);
 
-  const handlePantryClick = async (pantryId: number) => {
-    // TODO: navigate to pantr details page
-    try {
-      const fullPantryDetails = await ApiClient.getPantry(pantryId);
-      setSelectedPantry(fullPantryDetails);
-    } catch (error) {
-      console.error('Error fetching pantry details:', error);
-      alert('Error fetching pantry details: ' + error);
-    }
-  };
 
   const handleViewOrders = (pantryId: number) => {
     // TODO: Redirect to Order Management page when it's created
@@ -252,7 +241,7 @@ const AssignedPantries: React.FC = () => {
                   <Button
                     variant="plain"
                     textDecoration="underline"
-                    onClick={() => assignment.pantry && handlePantryClick(assignment.pantry.pantryId)}
+                    onClick={() => assignment.pantry}
                     fontFamily="inter"
                   >
                     {assignment.pantry.pantryName}
@@ -293,147 +282,6 @@ const AssignedPantries: React.FC = () => {
           })}
         </Table.Body>
       </Table.Root>
-
-      {/* Temporary: Show selected pantry details (will be a separate page later) */}
-      {selectedPantry && (
-        <Box
-          mt={8}
-          p={6}
-          border="1px solid"
-          borderColor="gray.200"
-          borderRadius="md"
-          bg="gray.50"
-        >
-          <Heading size="md" mb={4}>
-            Pantry Information
-          </Heading>
-          <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-            Note: This is a temporary view. A dedicated pantry details page will be created later.
-          </Text>
-          <VStack align="stretch" gap={4} fontSize="sm">
-            <Box>
-              <Text fontWeight="bold" mb={1}>Pantry Name:</Text>
-              <Text>{selectedPantry.pantryName}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Address:</Text>
-              <Text>
-                {selectedPantry.addressLine1}<br />
-                {selectedPantry.addressLine2 && <>{selectedPantry.addressLine2}<br /></>}
-                {selectedPantry.addressCity}, {selectedPantry.addressState} {selectedPantry.addressZip}
-                {selectedPantry.addressCountry && <><br />{selectedPantry.addressCountry}</>}
-              </Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Status:</Text>
-              <Text>{selectedPantry.status}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Date Applied:</Text>
-              <Text>{new Date(selectedPantry.dateApplied).toLocaleDateString()}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Approximately how many allergen-avoidant clients does your pantry serve?</Text>
-              <Text>{selectedPantry.allergenClients}</Text>
-            </Box>
-            
-            {selectedPantry.restrictions && selectedPantry.restrictions.length > 0 && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>Which food allergies or other medical dietary restrictions do clients at your pantry report?</Text>
-                <Text>{selectedPantry.restrictions.join(', ')}</Text>
-              </Box>
-            )}
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Would you be able to accept refrigerated/frozen donations from us?</Text>
-              <Text>{selectedPantry.refrigeratedDonation}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Are you willing to reserve our food shipments for allergen-avoidant individuals?</Text>
-              <Text>{selectedPantry.reserveFoodForAllergic}</Text>
-            </Box>
-            
-            {selectedPantry.reservationExplanation && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>Reservation Explanation:</Text>
-                <Text>{selectedPantry.reservationExplanation}</Text>
-              </Box>
-            )}
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Do you have a dedicated shelf or section of your pantry for allergy-friendly items?</Text>
-              <Text>
-                {selectedPantry.dedicatedAllergyFriendly 
-                  ? 'Yes, we have a dedicated shelf or box' 
-                  : 'No, we keep allergy-friendly items throughout the pantry, depending on the type of item'}
-              </Text>
-            </Box>
-            
-            {selectedPantry.clientVisitFrequency && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>How often do allergen-avoidant clients visit your food pantry?</Text>
-                <Text>{selectedPantry.clientVisitFrequency}</Text>
-              </Box>
-            )}
-            
-            {selectedPantry.identifyAllergensConfidence && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>Are you confident in identifying the top 9 allergens in an ingredient list?</Text>
-                <Text>{selectedPantry.identifyAllergensConfidence}</Text>
-              </Box>
-            )}
-            
-            {selectedPantry.serveAllergicChildren && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>Do you serve allergen-avoidant or food-allergic children at your pantry?</Text>
-                <Text>{selectedPantry.serveAllergicChildren}</Text>
-              </Box>
-            )}
-            
-            {selectedPantry.activities && selectedPantry.activities.length > 0 && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>What activities are you open to doing with SSF?</Text>
-                <Text>{selectedPantry.activities.join(', ')}</Text>
-              </Box>
-            )}
-            
-            {selectedPantry.activitiesComments && (
-              <Box>
-                <Text fontWeight="bold" mb={1}>Activities Comments:</Text>
-                <Text>{selectedPantry.activitiesComments}</Text>
-              </Box>
-            )}
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>What types of allergen-free items, if any, do you currently have in stock?</Text>
-              <Text>{selectedPantry.itemsInStock}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Do allergen-avoidant clients at your pantry ever request a greater variety of items or not have enough options?</Text>
-              <Text>{selectedPantry.needMoreOptions}</Text>
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Would you like to subscribe to our quarterly newsletter?</Text>
-              <Text>{selectedPantry.newsletterSubscription ? 'Yes' : 'No'}</Text>
-            </Box>
-          </VStack>
-          <Button
-            mt={4}
-            size="sm"
-            onClick={() => setSelectedPantry(null)}
-            variant="outline"
-          >
-            Close
-          </Button>
-        </Box>
-      )}
     </Box>
   );
 };
