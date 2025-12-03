@@ -6,10 +6,12 @@ import {
   Get,
   Patch,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
+import { FoodType } from './types';
 
 @Controller('donation-items')
 //@UseInterceptors()
@@ -36,7 +38,11 @@ export class DonationItemsController {
         status: { type: 'string', example: 'available' },
         ozPerItem: { type: 'integer', example: 5 },
         estimatedValue: { type: 'integer', example: 100 },
-        foodType: { type: 'string', example: 'grain' },
+        foodType: { 
+          type: 'string', 
+          enum: Object.values(FoodType),
+          example: FoodType.DAIRY_FREE_ALTERNATIVES,
+        },
       },
     },
   })
@@ -50,9 +56,12 @@ export class DonationItemsController {
       status: string;
       ozPerItem: number;
       estimatedValue: number;
-      foodType: string;
+      foodType: FoodType;
     },
   ): Promise<DonationItem> {
+    if (body.foodType && !Object.values(FoodType).includes(body.foodType as FoodType)) {
+      throw new BadRequestException('Invalid foodtype');
+    }
     return this.donationItemsService.create(
       body.donationId,
       body.itemName,

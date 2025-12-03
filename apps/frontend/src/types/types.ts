@@ -1,3 +1,72 @@
+import { 
+  RefrigeratedDonation, 
+  ReserveFoodForAllergic, 
+  ClientVisitFrequency, 
+  ServeAllergicChildren,
+  AllergensConfidence,
+  PantryStatus,
+  Activity,
+} from "./pantryEnums";
+
+// Note: The API calls as currently written do not
+// return a pantry's SSF representative or pantry
+// representative, or their IDs, as part of the
+// Pantry data
+export interface Pantry {
+  pantryId: number;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  newsletterSubscription: boolean;
+  restrictions: string[];
+  status: PantryStatus;
+  dateApplied: Date;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+}
+
+export interface PantryApplicationDto {
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  pantryName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+  addressCountry?: string;
+  allergenClients: string;
+  restrictions?: string[];
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription?: string;
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -44,66 +113,6 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
-}
-
-export interface PantryApplicationDto {
-  contactFirstName: string;
-  contactLastName: string;
-  contactEmail: string;
-  contactPhone: string;
-  pantryName: string;
-  addressLine1: string;
-  addressLine2?: string;
-  addressCity: string;
-  addressState: string;
-  addressZip: string;
-  addressCountry?: string;
-  allergenClients: string;
-  restrictions?: string[];
-  refrigeratedDonation: string;
-  reserveFoodForAllergic: string;
-  reservationExplanation?: string;
-  dedicatedAllergyFriendly: string;
-  clientVisitFrequency?: string;
-  identifyAllergensConfidence?: string;
-  serveAllergicChildren?: string;
-  activities: string[];
-  activitiesComments?: string;
-  itemsInStock: string;
-  needMoreOptions: string;
-  newsletterSubscription?: string;
-}
-
-// Note: The API calls as currently written do not
-// return a pantry's SSF representative or pantry
-// representative, or their IDs, as part of the
-// Pantry data
-export interface Pantry {
-  pantryId: number;
-  pantryName: string;
-  addressLine1: string;
-  addressLine2?: string;
-  addressCity: string;
-  addressState: string;
-  addressZip: string;
-  addressCountry?: string;
-  allergenClients: string;
-  refrigeratedDonation: string;
-  reserveFoodForAllergic: string;
-  reservationExplanation?: string;
-  dedicatedAllergyFriendly: string;
-  clientVisitFrequency?: string;
-  identifyAllergensConfidence?: string;
-  serveAllergicChildren?: string;
-  newsletterSubscription: boolean;
-  restrictions: string[];
-  pantryUser?: User;
-  status: string;
-  dateApplied: string;
-  activities: string[];
-  activitiesComments?: string;
-  itemsInStock: string;
-  needMoreOptions: string;
 }
 
 export interface FoodRequest {
@@ -179,3 +188,39 @@ export interface VolunteerPantryAssignment {
     pantryName: string;
   };
 }
+
+export enum Role {
+  ADMIN = 'admin',
+  LEAD_VOLUNTEER = 'lead_volunteer',
+  STANDARD_VOLUNTEER = 'standard_volunteer',
+  PANTRY = 'pantry',
+  FOODMANUFACTURER = 'food_manufacturer',
+}
+
+export enum OrderStatus {
+  DELIVERED = 'delivered',
+  PENDING = 'pending',
+  SHIPPED = 'shipped',
+}
+
+export enum RequestSize {
+  VERY_SMALL = 'Very Small (1-2 boxes)',
+  SMALL = 'Small (2-5 boxes)',
+  MEDIUM = 'Medium (5-10 boxes)',
+  LARGE = 'Large (10+ boxes)',
+}
+
+export enum DonationFrequency {
+  YEARLY = 'yearly',
+  BIWEEKLY = 'biweekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  WEEKLY = 'weekly',
+}
+
+export enum DonationStatus {
+  AVAILABLE = 'available',
+  FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
+}
+

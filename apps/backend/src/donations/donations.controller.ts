@@ -7,10 +7,12 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
+import { DonationStatus } from './types';
 
 @Controller('donations')
 export class DonationsController {
@@ -44,7 +46,11 @@ export class DonationsController {
           type: 'string',
           format: 'date-time',
         },
-        status: { type: 'string', example: 'in progress' },
+        status: { 
+          type: 'string', 
+          enum: Object.values(DonationStatus),
+          example: DonationStatus.AVAILABLE,
+        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
@@ -56,16 +62,22 @@ export class DonationsController {
     body: {
       foodManufacturerId: number;
       dateDonated: Date;
-      status: string;
+      status: DonationStatus;
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
     },
   ): Promise<Donation> {
+    if (
+      body.status &&
+      !Object.values(DonationStatus).includes(body.status as DonationStatus)
+    ) {
+      throw new BadRequestException('Invalid status');
+    }
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
-      body.status,
+      body.status ?? DonationStatus.AVAILABLE,
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
