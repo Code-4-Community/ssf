@@ -5,6 +5,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { Order } from './order.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
+import { OrderStatus } from './types';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -13,8 +14,8 @@ describe('OrdersController', () => {
   let controller: OrdersController;
 
   const mockOrders: Partial<Order>[] = [
-    { orderId: 1, status: 'pending' },
-    { orderId: 2, status: 'delivered' },
+    { orderId: 1, status: OrderStatus.PENDING },
+    { orderId: 2, status: OrderStatus.DELIVERED },
   ];
 
   const mockAllocations: Partial<Allocation>[] = [

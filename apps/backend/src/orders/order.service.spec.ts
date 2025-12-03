@@ -6,6 +6,8 @@ import { OrdersService } from './order.service';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
 import { User } from '../users/user.entity';
+import { AllergensConfidence, ClientVisitFrequency, PantryStatus, RefrigeratedDonation, ServeAllergicChildren } from '../pantries/types';
+import { OrderStatus } from './types';
 
 const mockOrdersRepository = mock<Repository<Order>>();
 
@@ -19,17 +21,17 @@ const mockPantry: Pantry = {
   addressZip: '02115',
   addressCountry: 'US',
   allergenClients: '',
-  refrigeratedDonation: '',
+  refrigeratedDonation: RefrigeratedDonation.NO,
   reserveFoodForAllergic: 'Yes',
   reservationExplanation: '',
-  dedicatedAllergyFriendly: '',
-  clientVisitFrequency: '',
-  identifyAllergensConfidence: '',
-  serveAllergicChildren: '',
+  dedicatedAllergyFriendly: false,
+  clientVisitFrequency: ClientVisitFrequency.DAILY,
+  identifyAllergensConfidence: AllergensConfidence.NOT_VERY_CONFIDENT,
+  serveAllergicChildren: ServeAllergicChildren.NO,
   newsletterSubscription: false,
   restrictions: [],
   pantryUser: null as unknown as User,
-  status: 'active',
+  status: PantryStatus.APPROVED,
   dateApplied: new Date(),
   activities: [],
   activitiesComments: '',
@@ -75,17 +77,17 @@ describe('OrdersService', () => {
   describe('getAll', () => {
     it('should return orders filtered by status', async () => {
       const mockOrders: Partial<Order>[] = [
-        { orderId: 1, status: 'pending' },
-        { orderId: 2, status: 'delivered' },
+        { orderId: 1, status: OrderStatus.PENDING },
+        { orderId: 2, status: OrderStatus.DELIVERED },
       ];
 
       (qb.getMany as jest.Mock).mockResolvedValue([mockOrders[0] as Order]);
 
-      const result = await service.getAll({ status: 'pending' });
+      const result = await service.getAll({ status: OrderStatus.PENDING });
 
       expect(result).toEqual([mockOrders[0]]);
       expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
-        status: 'pending',
+        status: OrderStatus.PENDING,
       });
     });
 
@@ -104,17 +106,17 @@ describe('OrdersService', () => {
       const mockOrders: Partial<Order>[] = [
         {
           orderId: 3,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry' },
         },
         {
           orderId: 4,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry 3' },
         },
       ];
@@ -152,17 +154,17 @@ describe('OrdersService', () => {
       const mockOrders: Partial<Order>[] = [
         {
           orderId: 3,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry 1' },
         },
         {
           orderId: 4,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
-          status: 'delivered',
+          status: OrderStatus.DELIVERED,
           pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
         },
       ];

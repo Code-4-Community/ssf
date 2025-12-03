@@ -5,8 +5,8 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Donation } from '../donations/donations.entity';
 import { validateId } from '../utils/validation.utils';
+import { OrderStatus } from './types';
 
 @Injectable()
 export class OrdersService {
@@ -40,13 +40,13 @@ export class OrdersService {
 
   async getCurrentOrders() {
     return this.repo.find({
-      where: { status: In(['pending', 'shipped']) },
+      where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
     });
   }
 
   async getPastOrders() {
     return this.repo.find({
-      where: { status: 'delivered' },
+      where: { status: OrderStatus.DELIVERED },
     });
   }
 
@@ -116,7 +116,7 @@ export class OrdersService {
     return order.foodManufacturer;
   }
 
-  async updateStatus(orderId: number, newStatus: string) {
+  async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
     // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
@@ -124,12 +124,23 @@ export class OrdersService {
       .createQueryBuilder()
       .update(Order)
       .set({
-        status: newStatus,
+        status: newStatus as OrderStatus,
         shippedBy: 1,
-        shippedAt: newStatus === 'shipped' ? new Date() : null,
-        deliveredAt: newStatus === 'delivered' ? new Date() : null,
+        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : null,
+        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : null,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
+  }
+
+  async getOrdersByPantry(pantryId: number): Promise<Order[]> {
+    validateId(pantryId, 'Pantry');
+
+    const orders = await this.repo.find({
+      where: { pantry: { pantryId } },
+      relations: ['request'],
+    });
+
+    return orders;
   }
 }

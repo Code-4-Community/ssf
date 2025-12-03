@@ -6,9 +6,10 @@ import { PantriesController } from './pantries.controller';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
 import { Pantry } from './pantries.entity';
+import { OrdersModule } from '../orders/order.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pantry, User])],
+  imports: [TypeOrmModule.forFeature([Pantry, User]), OrdersModule],
   controllers: [PantriesController],
   providers: [PantriesService, AuthService, JwtStrategy],
 })
