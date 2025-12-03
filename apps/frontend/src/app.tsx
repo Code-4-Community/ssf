@@ -22,6 +22,7 @@ import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
 import { pantryIdLoader } from '@loaders/pantryIdLoader';
 import Homepage from '@containers/homepage';
+import AssignedPantries from '@containers/volunteerAssignedPantries'
 
 const router = createBrowserRouter([
   {
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
       {
         path: '/volunteer-management',
         element: <VolunteerManagement />,
+      },
+      {
+        path: '/volunteer-assigned-pantries',
+        element: <AssignedPantries />,
       },
     ],
   },
