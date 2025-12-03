@@ -5,12 +5,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -32,6 +34,11 @@ export class PantriesController {
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
+  }
+
+  @Get('/approved')
+  async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
 
   @Get('/:pantryId')
@@ -224,5 +231,17 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.deny(pantryId);
+  }
+
+  @Put('/:pantryId/volunteers')
+  async updatePantryVolunteers(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Body() body: { volunteerIds: number[] },
+  ): Promise<{ message: string }> {
+    await this.pantriesService.updatePantryVolunteers(
+      pantryId,
+      body.volunteerIds,
+    );
+    return { message: 'Volunteers updated successfully' };
   }
 }
