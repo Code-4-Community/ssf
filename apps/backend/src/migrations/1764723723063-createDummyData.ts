@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateDummyData1759636753110 implements MigrationInterface {
+export class CreateDummyData1764723723063 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const existingUsers = await queryRunner.query(
       `SELECT COUNT(*) as count FROM public.users WHERE email IN ('john.smith@ssf.org', 'sarah.j@ssf.org')`,
@@ -13,18 +13,18 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO public.users (first_name, last_name, email, phone, role) VALUES
-      ('John', 'Smith', 'john.smith@ssf.org', '555-0101', 'SSF_REPRESENTATIVE'),
-      ('Sarah', 'Johnson', 'sarah.j@ssf.org', '555-0102', 'SSF_REPRESENTATIVE'),
-      ('Mike', 'Brown', 'mike.brown@pantry1.org', '555-0201', 'PANTRY_REPRESENTATIVE'),
-      ('Emily', 'Davis', 'emily.davis@pantry2.org', '555-0202', 'PANTRY_REPRESENTATIVE'),
-      ('Robert', 'Wilson', 'robert.w@pantry3.org', '555-0203', 'PANTRY_REPRESENTATIVE'),
-      ('Lisa', 'Martinez', 'lisa.m@foodcorp.com', '555-0301', 'MANUFACTURER_REPRESENTATIVE'),
-      ('David', 'Anderson', 'david.a@healthyfoods.com', '555-0302', 'MANUFACTURER_REPRESENTATIVE'),
-      ('Jennifer', 'Taylor', 'jennifer.t@organic.com', '555-0303', 'MANUFACTURER_REPRESENTATIVE'),
-      ('James', 'Thomas', 'james.t@volunteer.org', '555-0401', 'VOLUNTEER'),
-      ('Maria', 'Garcia', 'maria.g@volunteer.org', '555-0402', 'VOLUNTEER'),
-      ('William', 'Moore', 'william.m@volunteer.org', '555-0403', 'VOLUNTEER'),
-      ('Patricia', 'Jackson', 'patricia.j@volunteer.org', '555-0404', 'VOLUNTEER')
+      ('John', 'Smith', 'john.smith@ssf.org', '555-0101', 'admin'),
+      ('Sarah', 'Johnson', 'sarah.j@ssf.org', '555-0102', 'admin'),
+      ('Mike', 'Brown', 'mike.brown@pantry1.org', '555-0201', 'pantry'),
+      ('Emily', 'Davis', 'emily.davis@pantry2.org', '555-0202', 'pantry'),
+      ('Robert', 'Wilson', 'robert.w@pantry3.org', '555-0203', 'pantry'),
+      ('Lisa', 'Martinez', 'lisa.m@foodcorp.com', '555-0301', 'food_manufacturer'),
+      ('David', 'Anderson', 'david.a@healthyfoods.com', '555-0302', 'food_manufacturer'),
+      ('Jennifer', 'Taylor', 'jennifer.t@organic.com', '555-0303', 'food_manufacturer'),
+      ('James', 'Thomas', 'james.t@volunteer.org', '555-0401', 'standard_volunteer'),
+      ('Maria', 'Garcia', 'maria.g@volunteer.org', '555-0402', 'standard_volunteer'),
+      ('William', 'Moore', 'william.m@volunteer.org', '555-0403', 'standard_volunteer'),
+      ('Patricia', 'Jackson', 'patricia.j@volunteer.org', '555-0404', 'standard_volunteer')
     `);
 
     await queryRunner.query(`
@@ -35,75 +35,89 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
+      INSERT INTO public.users (first_name, last_name, email, phone, role) VALUES
+      ('Pantry1', 'User', 'pantry1@ssf.org', '555-1001', 'pantry'),
+      ('Pantry2', 'User', 'pantry2@ssf.org', '555-1002', 'pantry'),
+      ('Pantry3', 'User', 'pantry3@ssf.org', '555-1003', 'pantry')
+    `);
+
+    await queryRunner.query(`
       INSERT INTO public.pantries (
-        pantry_name, address, allergen_clients, refrigerated_donation,
-        reserve_food_for_allergic, reservation_explanation, dedicated_allergy_friendly,
+        pantry_name, address_line_1, address_city, address_state, address_zip,
+        allergen_clients, refrigerated_donation, reserve_food_for_allergic, 
+        reservation_explanation, dedicated_allergy_friendly,
         client_visit_frequency, identify_allergens_confidence, serve_allergic_children,
-        newsletter_subscription, restrictions, ssf_representative_id, pantry_representative_id,
-        activities, questions, items_in_stock, need_more_options, status
+        newsletter_subscription, restrictions, pantry_user_id,
+        activities, items_in_stock, need_more_options, status, date_applied
       ) VALUES
       (
         'Community Food Pantry Downtown',
-        '123 Main St, Springfield, IL 62701',
+        '123 Main St',
+        'Springfield',
+        'IL',
+        '62701',
         'yes',
-        'yes',
-        true,
+        'Yes, always',
+        'Yes',
         'We have several clients with severe nut allergies and need to keep separate storage',
-        'Dedicated shelf for allergen-free items',
-        'weekly',
-        'very_confident',
-        'yes',
+        true,
+        'Once a week',
+        'Very confident',
+        'Yes, a few (< 10)',
         true,
         ARRAY['peanuts', 'tree_nuts', 'shellfish'],
-        (SELECT user_id FROM public.users WHERE email = 'john.smith@ssf.org' LIMIT 1),
-        (SELECT user_id FROM public.users WHERE email = 'mike.brown@pantry1.org' LIMIT 1),
-        'Food distribution, nutrition education, cooking classes',
-        'How can we better serve clients with multiple allergies?',
+        (SELECT user_id FROM public.users WHERE email = 'pantry1@ssf.org' LIMIT 1),
+        ARRAY['Create labeled shelf', 'Provide educational pamphlets', 'Survey clients to determine medical dietary needs']::"activity_enum"[],
         'Canned goods, pasta, rice, cereal',
         'More fresh produce and dairy alternatives',
-        'active'
+        'approved',
+        NOW()
       ),
       (
         'Westside Community Kitchen',
-        '456 Oak Ave, Springfield, IL 62702',
+        '456 Oak Ave',
+        'Springfield',
+        'IL',
+        '62702',
         'some',
-        'no',
-        false,
+        'No',
+        'No',
         'Limited space for separate storage',
-        'None currently',
-        'monthly',
-        'somewhat_confident',
-        'no',
+        false,
+        'Once a month',
+        'Somewhat confident',
+        'No',
         true,
         ARRAY['gluten'],
-        (SELECT user_id FROM public.users WHERE email = 'sarah.j@ssf.org' LIMIT 1),
-        (SELECT user_id FROM public.users WHERE email = 'emily.davis@pantry2.org' LIMIT 1),
-        'Weekly meal service, food boxes',
-        NULL,
+        (SELECT user_id FROM public.users WHERE email = 'pantry2@ssf.org' LIMIT 1),
+        ARRAY['Spreadsheet to track dietary needs', 'Post allergen-free resource flyers']::"activity_enum"[],
         'Bread, canned vegetables, soup',
         'Gluten-free options',
-        'active'
+        'approved',
+        NOW()
       ),
       (
         'North End Food Bank',
-        '789 Pine Rd, Springfield, IL 62703',
+        '789 Pine Rd',
+        'Springfield',
+        'IL',
+        '62703',
         'no',
-        'yes',
-        true,
+        'Yes, always',
+        'Yes',
         'Expanding allergen-friendly program',
-        'Separate refrigerator for allergen-free items',
-        'bi-weekly',
-        'confident',
-        'yes',
+        true,
+        'A few times a month',
+        'Somewhat confident',
+        'Yes, many (> 10)',
         false,
         ARRAY['dairy', 'eggs'],
-        (SELECT user_id FROM public.users WHERE email = 'john.smith@ssf.org' LIMIT 1),
-        (SELECT user_id FROM public.users WHERE email = 'robert.w@pantry3.org' LIMIT 1),
-        'Emergency food assistance, senior programs',
-        'Can we get more information about cross-contamination prevention?',
+        (SELECT user_id FROM public.users WHERE email = 'pantry3@ssf.org' LIMIT 1),
+        ARRAY['Create labeled shelf', 'Collect feedback from allergen-avoidant clients']::"activity_enum"[],
         'Proteins, grains, canned fruits',
         'Dairy-free and egg-free alternatives',
-        'pending'
+        'approved',
+        NOW()
       )
     `);
 
@@ -122,7 +136,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       (
         (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'Healthy Foods Co' LIMIT 1),
         '2024-01-20 14:00:00',
-        'partially_allocated',
+        'matching',
         200,
         3200.00,
         1200.00
@@ -138,7 +152,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       (
         (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
         '2024-02-01 11:00:00',
-        'fully_allocated',
+        'fulfilled',
         75,
         1200.00,
         450.00
@@ -161,7 +175,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         16.00,
         4.50,
-        'protein'
+        'Seed Butters (Peanut Butter Alternative)'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -174,7 +188,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         24.00,
         3.00,
-        'grain'
+        'Gluten-Free Bread'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -187,7 +201,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         8.01,
         2.00,
-        'vegetable'
+        'Refrigerated Meals'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -200,7 +214,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'partially_reserved',
         16.00,
         5.00,
-        'grain'
+        'Gluten-Free Bread'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -213,7 +227,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'partially_reserved',
         32.00,
         4.50,
-        'dairy_alternative'
+        'Dairy-Free Alternatives'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -226,7 +240,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         5.00,
         3.50,
-        'fruit'
+        'Dried Beans (Gluten-Free, Nut-Free)'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -239,7 +253,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         80.00,
         12.00,
-        'grain'
+        'Gluten-Free Bread'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -252,7 +266,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'available',
         10.75,
         2.50,
-        'vegetable'
+        'Refrigerated Meals'
       ),
       (
         (SELECT donation_id FROM public.donations 
@@ -265,7 +279,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'fully_reserved',
         16.00,
         6.00,
-        'grain'
+        'Gluten-Free Bread'
       )
     `);
 
@@ -276,7 +290,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       ) VALUES
       (
         (SELECT pantry_id FROM public.pantries WHERE pantry_name = 'Community Food Pantry Downtown' LIMIT 1),
-        'large',
+        'Large (10+ boxes)',
         ARRAY['peanut_butter', 'bread', 'vegetables', 'dairy_alternatives'],
         'We have 150 families to serve this week. Need extra allergen-free options.',
         '2024-01-16 08:00:00',
@@ -286,7 +300,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       ),
       (
         (SELECT pantry_id FROM public.pantries WHERE pantry_name = 'Westside Community Kitchen' LIMIT 1),
-        'medium',
+        'Medium (5-10 boxes)',
         ARRAY['gluten_free_pasta', 'vegetables', 'fruits'],
         'Preparing meals for 75 clients this month',
         '2024-01-21 09:30:00',
@@ -296,7 +310,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       ),
       (
         (SELECT pantry_id FROM public.pantries WHERE pantry_name = 'North End Food Bank' LIMIT 1),
-        'small',
+        'Small (2-5 boxes)',
         ARRAY['rice', 'canned_goods', 'cereal'],
         'Regular monthly order',
         '2024-02-02 10:00:00',
@@ -306,7 +320,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
       ),
       (
         (SELECT pantry_id FROM public.pantries WHERE pantry_name = 'Community Food Pantry Downtown' LIMIT 1),
-        'medium',
+        'Medium (5-10 boxes)',
         ARRAY['cereal', 'milk_alternatives', 'fruits'],
         'Running low on breakfast items',
         '2024-02-03 11:00:00',
@@ -319,7 +333,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
     await queryRunner.query(`
       INSERT INTO public.orders (
         request_id, pantry_id, shipped_by, status, created_at,
-        shipped_at, delivered_at, donation_id
+        shipped_at, delivered_at
       ) VALUES
       (
         (SELECT request_id FROM public.food_requests 
@@ -331,11 +345,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'delivered',
         '2024-01-16 09:00:00',
         '2024-01-17 08:00:00',
-        '2024-01-18 14:30:00',
-        (SELECT donation_id FROM public.donations 
-         WHERE total_items = 150
-         AND food_manufacturer_id = (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1)
-         ORDER BY donation_id DESC LIMIT 1)
+        '2024-01-18 14:30:00'
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -347,11 +357,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'delivered',
         '2024-01-21 10:00:00',
         '2024-01-22 09:00:00',
-        '2024-01-23 10:00:00',
-        (SELECT donation_id FROM public.donations 
-         WHERE total_items = 200
-         AND food_manufacturer_id = (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'Healthy Foods Co' LIMIT 1)
-         ORDER BY donation_id DESC LIMIT 1)
+        '2024-01-23 10:00:00'
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -363,11 +369,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'shipped',
         '2024-02-02 11:00:00',
         '2024-02-03 08:00:00',
-        NULL,
-        (SELECT donation_id FROM public.donations 
-         WHERE total_items = 100
-         AND food_manufacturer_id = (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'Organic Suppliers LLC' LIMIT 1)
-         ORDER BY donation_id DESC LIMIT 1)
+        NULL
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -379,11 +381,7 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
         'pending',
         '2024-02-03 12:00:00',
         NULL,
-        NULL,
-        (SELECT donation_id FROM public.donations 
-         WHERE total_items = 75
-         AND food_manufacturer_id = (SELECT food_manufacturer_id FROM public.food_manufacturers WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1)
-         ORDER BY donation_id DESC LIMIT 1)
+        NULL
       )
     `);
 
@@ -479,20 +477,33 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-    DELETE FROM public.volunteer_assignments 
-    WHERE volunteer_id IN (
-      SELECT user_id FROM public.users 
-      WHERE email IN (
-        'james.t@volunteer.org', 'maria.g@volunteer.org', 
-        'william.m@volunteer.org', 'patricia.j@volunteer.org'
+      DELETE FROM public.allocations 
+      WHERE order_id IN (
+        SELECT order_id FROM public.orders 
+        WHERE pantry_id IN (
+          SELECT pantry_id FROM public.pantries 
+          WHERE pantry_name IN (
+            'Community Food Pantry Downtown',
+            'Westside Community Kitchen',
+            'North End Food Bank'
+          )
+        )
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.allocations 
-    WHERE order_id IN (
-      SELECT order_id FROM public.orders 
+      DELETE FROM public.volunteer_assignments 
+      WHERE volunteer_id IN (
+        SELECT user_id FROM public.users 
+        WHERE email IN (
+          'james.t@volunteer.org', 'maria.g@volunteer.org', 
+          'william.m@volunteer.org', 'patricia.j@volunteer.org'
+        )
+      )
+    `);
+
+    await queryRunner.query(`
+      DELETE FROM public.orders 
       WHERE pantry_id IN (
         SELECT pantry_id FROM public.pantries 
         WHERE pantry_name IN (
@@ -501,37 +512,37 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
           'North End Food Bank'
         )
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.orders 
-    WHERE pantry_id IN (
-      SELECT pantry_id FROM public.pantries 
-      WHERE pantry_name IN (
-        'Community Food Pantry Downtown',
-        'Westside Community Kitchen',
-        'North End Food Bank'
+      DELETE FROM public.food_requests 
+      WHERE pantry_id IN (
+        SELECT pantry_id FROM public.pantries 
+        WHERE pantry_name IN (
+          'Community Food Pantry Downtown',
+          'Westside Community Kitchen',
+          'North End Food Bank'
+        )
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.food_requests 
-    WHERE pantry_id IN (
-      SELECT pantry_id FROM public.pantries 
-      WHERE pantry_name IN (
-        'Community Food Pantry Downtown',
-        'Westside Community Kitchen',
-        'North End Food Bank'
+      DELETE FROM public.donation_items 
+      WHERE donation_id IN (
+        SELECT donation_id FROM public.donations 
+        WHERE food_manufacturer_id IN (
+          SELECT food_manufacturer_id FROM public.food_manufacturers 
+          WHERE food_manufacturer_name IN (
+            'FoodCorp Industries',
+            'Healthy Foods Co',
+            'Organic Suppliers LLC'
+          )
+        )
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.donation_items 
-    WHERE donation_id IN (
-      SELECT donation_id FROM public.donations 
+      DELETE FROM public.donations 
       WHERE food_manufacturer_id IN (
         SELECT food_manufacturer_id FROM public.food_manufacturers 
         WHERE food_manufacturer_name IN (
@@ -540,47 +551,35 @@ export class CreateDummyData1759636753110 implements MigrationInterface {
           'Organic Suppliers LLC'
         )
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.donations 
-    WHERE food_manufacturer_id IN (
-      SELECT food_manufacturer_id FROM public.food_manufacturers 
+      DELETE FROM public.pantries 
+      WHERE pantry_name IN (
+        'Community Food Pantry Downtown',
+        'Westside Community Kitchen',
+        'North End Food Bank'
+      )
+    `);
+
+    await queryRunner.query(`
+      DELETE FROM public.food_manufacturers 
       WHERE food_manufacturer_name IN (
         'FoodCorp Industries',
         'Healthy Foods Co',
         'Organic Suppliers LLC'
       )
-    )
-  `);
+    `);
 
     await queryRunner.query(`
-    DELETE FROM public.pantries 
-    WHERE pantry_name IN (
-      'Community Food Pantry Downtown',
-      'Westside Community Kitchen',
-      'North End Food Bank'
-    )
-  `);
-
-    await queryRunner.query(`
-    DELETE FROM public.food_manufacturers 
-    WHERE food_manufacturer_name IN (
-      'FoodCorp Industries',
-      'Healthy Foods Co',
-      'Organic Suppliers LLC'
-    )
-  `);
-
-    await queryRunner.query(`
-    DELETE FROM public.users 
-    WHERE email IN (
-      'john.smith@ssf.org', 'sarah.j@ssf.org', 'mike.brown@pantry1.org',
-      'emily.davis@pantry2.org', 'robert.w@pantry3.org', 'lisa.m@foodcorp.com',
-      'david.a@healthyfoods.com', 'jennifer.t@organic.com', 'james.t@volunteer.org',
-      'maria.g@volunteer.org', 'william.m@volunteer.org', 'patricia.j@volunteer.org'
-    )
-  `);
+      DELETE FROM public.users 
+      WHERE email IN (
+        'john.smith@ssf.org', 'sarah.j@ssf.org', 'mike.brown@pantry1.org',
+        'emily.davis@pantry2.org', 'robert.w@pantry3.org', 'lisa.m@foodcorp.com',
+        'david.a@healthyfoods.com', 'jennifer.t@organic.com', 'james.t@volunteer.org',
+        'maria.g@volunteer.org', 'william.m@volunteer.org', 'patricia.j@volunteer.org',
+        'pantry1@ssf.org', 'pantry2@ssf.org', 'pantry3@ssf.org'
+      )
+    `);
   }
 }
