@@ -50,7 +50,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
       const message = error.response?.data?.message;
       const hasEmailOrPhoneError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("phone")));
       if (hasEmailOrPhoneError) {
-        setError("Please specify a valid email and phone number")
+        setError("Please specify a valid email and phone number*")
       } else {
         if (onSubmitFail) onSubmitFail();
         handleClear();

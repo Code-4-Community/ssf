@@ -24,6 +24,7 @@ const VolunteerManagement: React.FC = () => {
   const [searchName, setSearchName] = useState<string>('');
 
   const [alertMessage, setAlertMessage] = useState<string>('');
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
   const pageSize = 8;
 
@@ -39,7 +40,7 @@ const VolunteerManagement: React.FC = () => {
     };
 
     fetchVolunteers();
-  }, []);
+  }, [alertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -65,9 +66,9 @@ const VolunteerManagement: React.FC = () => {
     <Box flexDirection="column" p={4} mt={3}>
       <Text fontSize="32px" fontWeight={400} fontFamily="Instrument Serif" color="#515151">Volunteer Management</Text>
       {alertMessage && (
-        <Alert.Root status="info">
+        <Alert.Root color={submitSuccess ? "neutral.800" : "red"} status="info" bg="white" variant="subtle" boxShadow="lg"  position="absolute" top="12px" right="12px" w="fit-content" maxW="400px">
           <Alert.Indicator />
-          <Alert.Title>{alertMessage}</Alert.Title>
+          <Alert.Title textStyle="p2" fontWeight={500} >{alertMessage}</Alert.Title>
         </Alert.Root>
       )}
       <Box
@@ -95,7 +96,12 @@ const VolunteerManagement: React.FC = () => {
               />
             </InputGroup>
             <NewVolunteerModal onSubmitSuccess={() => {
-                setAlertMessage("Volunteer added");
+                setAlertMessage("Volunteer added.");
+                setSubmitSuccess(true);
+                setTimeout(() => setAlertMessage(""), 3000);
+              }} onSubmitFail={() => {
+                setAlertMessage("Volunteer could not be added.");
+                setSubmitSuccess(false);
                 setTimeout(() => setAlertMessage(""), 3000);
               }}
             />
