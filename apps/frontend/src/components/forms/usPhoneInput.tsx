@@ -43,13 +43,12 @@ export const USPhoneInput: React.FC<USPhoneInputProps> = ({
     disableDialCodeAndPrefix: true,
     value,
     onChange: (data) => {
-      onChange(data.phone);
+      const digits = data.phone.replace(/\D/g, '')
+      const isEmpty = !data.phone || data.phone.trim() === '' || digits.length <= 1;
 
-      const isEmpty = !data.phone || data.phone.trim() === '';
+      onChange(isEmpty ? '' : data.phone);
 
-      if (isEmpty && allowEmpty) {
-        phoneInput.inputRef.current?.setCustomValidity('');
-      } else if (isPhoneValid(data.phone)) {
+      if ((isEmpty && allowEmpty) || isPhoneValid(data.phone)) {
         phoneInput.inputRef.current?.setCustomValidity('');
       } else {
         phoneInput.inputRef.current?.setCustomValidity('Invalid phone number.');
