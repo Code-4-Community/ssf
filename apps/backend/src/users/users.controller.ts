@@ -17,6 +17,7 @@ import { User } from './user.entity';
 import { Role } from './types';
 import { VOLUNTEER_ROLES } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { updateUserInfo } from './dtos/updateUserInfo.dto';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
@@ -49,6 +50,21 @@ export class UsersController {
       throw new BadRequestException('Invalid role');
     }
     return this.usersService.update(id, { role: role as Role });
+  }
+
+  @Put(':id/info')
+  async updateInfo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserInfo: updateUserInfo,
+  ) {
+    const { firstName, lastName, phone } = updateUserInfo;
+
+    const updateData: Partial<User> = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (phone !== undefined) updateData.phone = phone;
+
+    return this.usersService.update(id, updateData);
   }
 
   @Post('/')

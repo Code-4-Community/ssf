@@ -7,6 +7,7 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import { updateUserInfo } from './dtos/updateUserInfo.dto';
 
 const mockUserService = mock<UsersService>();
 
@@ -113,6 +114,38 @@ describe('UsersController', () => {
         BadRequestException,
       );
       expect(mockUserService.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('PUT :id/info', () => {
+    it('should update user info with valid information', async () => {
+      const updatedUser = {
+        ...mockUser1,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
+      mockUserService.update.mockResolvedValue(updatedUser);
+
+      const updateUserSchema: updateUserInfo = {
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
+      const result = await controller.updateInfo(1, updateUserSchema);
+
+      expect(result).toEqual(updatedUser);
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
+    });
+
+    it('should update user info with defaults', async () => {
+      mockUserService.update.mockResolvedValue(mockUser1);
+
+      const updateUserSchema: Partial<updateUserInfo> = {};
+      const result = await controller.updateInfo(1, updateUserSchema);
+
+      expect(result).toEqual(mockUser1);
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
     });
   });
 
