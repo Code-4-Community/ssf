@@ -17,7 +17,7 @@ const mockUser: User = {
   firstName: 'John',
   lastName: 'Doe',
   phone: '1234567890',
-  role: Role.STANDARD_VOLUNTEER,
+  role: Role.VOLUNTEER,
 };
 
 describe('UsersService', () => {
@@ -189,7 +189,7 @@ describe('UsersService', () => {
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const roles = [Role.ADMIN, Role.LEAD_VOLUNTEER];
+      const roles = [Role.ADMIN, Role.VOLUNTEER];
       const users = [mockUser];
       mockUserRepository.find.mockResolvedValue(users);
 

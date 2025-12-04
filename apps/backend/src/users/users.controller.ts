@@ -15,7 +15,6 @@ import { UsersService } from './users.service';
 //import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
-import { VOLUNTEER_ROLES } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 //import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
@@ -26,7 +25,7 @@ export class UsersController {
 
   @Get('/volunteers')
   async getAllVolunteers(): Promise<User[]> {
-    return this.usersService.findUsersByRoles(VOLUNTEER_ROLES);
+    return this.usersService.findUsersByRoles([Role.VOLUNTEER]);
   }
 
   // @UseGuards(AuthGuard('jwt'))

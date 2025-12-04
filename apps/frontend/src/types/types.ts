@@ -168,11 +168,6 @@ export interface Allocation {
   status: string;
 }
 
-export enum VolunteerType {
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
-}
-
 export interface VolunteerPantryAssignment {
   assignmentId: number;
   volunteer: {
@@ -191,8 +186,7 @@ export interface VolunteerPantryAssignment {
 
 export enum Role {
   ADMIN = 'admin',
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
+  VOLUNTEER = 'volunteer',
   PANTRY = 'pantry',
   FOODMANUFACTURER = 'food_manufacturer',
 }

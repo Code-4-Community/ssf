@@ -16,7 +16,7 @@ const mockUser1: User = {
   firstName: 'John',
   lastName: 'Doe',
   phone: '1234567890',
-  role: Role.STANDARD_VOLUNTEER,
+  role: Role.VOLUNTEER,
 };
 
 const mockUser2: User = {
@@ -25,7 +25,7 @@ const mockUser2: User = {
   firstName: 'Bob',
   lastName: 'Smith',
   phone: '9876',
-  role: Role.LEAD_VOLUNTEER,
+  role: Role.VOLUNTEER,
 };
 
 describe('UsersController', () => {
@@ -67,8 +67,7 @@ describe('UsersController', () => {
 
       expect(result).toEqual(volunteers);
       expect(mockUserService.findUsersByRoles).toHaveBeenCalledWith([
-        Role.LEAD_VOLUNTEER,
-        Role.STANDARD_VOLUNTEER,
+        Role.VOLUNTEER
       ]);
     });
   });
@@ -147,7 +146,7 @@ describe('UsersController', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.STANDARD_VOLUNTEER,
+        role: Role.VOLUNTEER,
       };
 
       const error = new Error('Database error');
