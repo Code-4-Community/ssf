@@ -19,10 +19,15 @@ import {
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+import { Order } from '../orders/order.entity';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('pantries')
 export class PantriesController {
-  constructor(private pantriesService: PantriesService) {}
+  constructor(
+    private pantriesService: PantriesService,
+    private ordersService: OrdersService,
+  ) {}
 
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
@@ -34,6 +39,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Get('/:pantryId/orders')
+  async getOrders(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<Order[]> {
+    return this.ordersService.getOrdersByPantry(pantryId);
   }
 
   @ApiBody({

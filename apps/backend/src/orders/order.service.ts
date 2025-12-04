@@ -1,15 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Donation } from '../donations/donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 
@@ -110,20 +105,6 @@ export class OrdersService {
     return (await order).foodManufacturer;
   }
 
-  async findOrderDonation(orderId: number): Promise<Donation> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['donation'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-    return order.donation;
-  }
-
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
@@ -139,5 +120,16 @@ export class OrdersService {
       })
       .where('order_id = :orderId', { orderId })
       .execute();
+  }
+
+  async getOrdersByPantry(pantryId: number): Promise<Order[]> {
+    validateId(pantryId, 'Pantry');
+
+    const orders = await this.repo.find({
+      where: { pantry: { pantryId } },
+      relations: ['request'],
+    });
+
+    return orders;
   }
 }
