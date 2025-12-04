@@ -118,8 +118,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         onValueChange={(val: { value: string }) => setRequestedSize(val.value)}
                       >
                         {Object.values(RequestSize).map((option) => (
-                          <Menu.RadioItem key={option} value={option}>
-                            <Menu.ItemIndicator />
+                          <Menu.RadioItem key={option} value={option} pl={2}>
                             {option}
                           </Menu.RadioItem>
                         ))}
