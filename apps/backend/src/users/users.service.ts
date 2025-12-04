@@ -1,14 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { User } from './user.entity';
-import { Role } from './types';
+import { Role, VOLUNTEER_ROLES } from './types';
 import { validateId } from '../utils/validation.utils';
+import { Pantry } from '../pantries/pantries.entity';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private repo: Repository<User>,
+
+    private pantriesService: PantriesService,
+  ) {}
 
   async create(
     email: string,
@@ -37,6 +48,22 @@ export class UsersService {
       throw new NotFoundException(`User ${id} not found`);
     }
     return user;
+  }
+
+  async findVolunteer(volunteerId: number): Promise<User> {
+    validateId(volunteerId, 'Volunteer');
+
+    const volunteer = await this.repo.findOne({
+      where: { id: volunteerId },
+      relations: ['pantries'],
+    });
+
+    if (!volunteer)
+      throw new NotFoundException(`User ${volunteerId} not found`);
+    if (!VOLUNTEER_ROLES.includes(volunteer.role)) {
+      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
+    }
+    return volunteer;
   }
 
   find(email: string) {
@@ -70,6 +97,46 @@ export class UsersService {
   }
 
   async findUsersByRoles(roles: Role[]): Promise<User[]> {
-    return this.repo.find({ where: { role: In(roles) } });
+    return this.repo.find({
+      where: { role: In(roles) },
+      relations: ['pantries'],
+    });
+  }
+
+  async getVolunteersAndPantryAssignments(): Promise<
+    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
+  > {
+    const volunteers = await this.findUsersByRoles(VOLUNTEER_ROLES);
+
+    return volunteers.map((v) => {
+      const { pantries, ...volunteerWithoutPantries } = v;
+      return {
+        ...volunteerWithoutPantries,
+        pantryIds: pantries.map((p) => p.pantryId),
+      };
+    });
+  }
+
+  async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
+    const volunteer = await this.findVolunteer(volunteerId);
+    return volunteer.pantries;
+  }
+
+  async assignPantriesToVolunteer(
+    volunteerId: number,
+    pantryIds: number[],
+  ): Promise<User> {
+    pantryIds.forEach((id) => validateId(id, 'Pantry'));
+
+    const volunteer = await this.findVolunteer(volunteerId);
+
+    const pantries = await this.pantriesService.findByIds(pantryIds);
+    const existingPantryIds = volunteer.pantries.map((p) => p.pantryId);
+    const newPantries = pantries.filter(
+      (p) => !existingPantryIds.includes(p.pantryId),
+    );
+
+    volunteer.pantries = [...volunteer.pantries, ...newPantries];
+    return this.repo.save(volunteer);
   }
 }

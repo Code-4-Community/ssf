@@ -6,7 +6,13 @@ import { OrdersService } from './order.service';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
 import { User } from '../users/user.entity';
-import { AllergensConfidence, ClientVisitFrequency, PantryStatus, RefrigeratedDonation, ServeAllergicChildren } from '../pantries/types';
+import {
+  AllergensConfidence,
+  ClientVisitFrequency,
+  PantryStatus,
+  RefrigeratedDonation,
+  ServeAllergicChildren,
+} from '../pantries/types';
 import { OrderStatus } from './types';
 
 const mockOrdersRepository = mock<Repository<Order>>();
@@ -37,6 +43,7 @@ const mockPantry: Pantry = {
   activitiesComments: '',
   itemsInStock: '',
   needMoreOptions: '',
+  volunteers: [],
 };
 
 describe('OrdersService', () => {
