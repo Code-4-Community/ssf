@@ -96,7 +96,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               }}
             >
               <input type="hidden" name="pantryId" value={pantryId} />
-              <Field.Root required mb={3}>
+              <Field.Root required mb={4}>
                 <Field.Label>
                   <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Size of Shipment
@@ -105,7 +105,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
-                    <Button pl={2} disabled={readOnly} _disabled={{color: "neutral.800", opacity: 1}} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "neutral.800" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between" mt={2}>
+                    <Button pl={2.5} disabled={readOnly} _disabled={{color: "neutral.800", opacity: 1}} textStyle="p2" w="full" bgColor={'white'} color={requestedSize ? "neutral.800" : "neutral.300"} borderColor='neutral.100' borderWidth="1px" borderRadius="4px" justifyContent="space-between">
                       {requestedSize || "Select size"}
                       {!readOnly && <ChevronDownIcon stroke='#B8B8B8'/>}
                     </Button>
@@ -118,7 +118,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         onValueChange={(val: { value: string }) => setRequestedSize(val.value)} 
                       >
                         {Object.values(RequestSize).map((option, idx) => (
-                          <Menu.RadioItem key={option} value={option} pl={2} mt={idx === 0 ? 0 : 2}>
+                          <Menu.RadioItem key={option} value={option} pl={1} mt={idx === 0 ? 0 : 2}>
                             {option}
                           </Menu.RadioItem>
                         ))}
@@ -128,7 +128,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Menu.Root>
               </Field.Root>
 
-              <Field.Root mb={3}>
+              <Field.Root mb={4}>
                 <Field.Label>
                   <Text textStyle="p2"fontWeight={600} color="neutral.800">Food Type(s)</Text>
                 </Field.Label>
@@ -141,7 +141,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Menu.Root closeOnSelect={false}>
                     <Menu.Trigger asChild>
                       <Button
-                        pl={2}
+                        pl={2.5}
                         disabled={readOnly}
                         w="full"
                         bgColor="white"
@@ -151,7 +151,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         borderRadius="4px"
                         justifyContent="space-between"
                         textStyle="p2"
-                        mt={2}
                       >
                         {selectedItems.length > 0 ? `Select more food types` : "Select food types"}
                         <ChevronDownIcon/>
@@ -188,7 +187,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                                 borderColor="neutral.200"
                               />
                               <Menu.ItemIndicator />
-                              <Text ml={2} color="neutral.800" fontWeight={500} fontFamily="Inter">{allergen}</Text>
+                              <Text ml={0.5} color="neutral.800" fontWeight={500} fontFamily="Inter">{allergen}</Text>
                             </Menu.CheckboxItem>
                           );
                         })}
@@ -211,33 +210,33 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         borderWidth="1px" 
                         fontFamily="Inter"
                         fontWeight={500}
-                        pr={readOnly ? 0 : 2}
                       >
                         <Tag.Label>{item}</Tag.Label>
-                        <Tag.EndElement>
-                          {!readOnly && (
+                        {!readOnly && (
+                          <Tag.EndElement>
                             <Tag.CloseTrigger
                               cursor="pointer"
                               onClick={() =>
                                 setSelectedItems((prev) => prev.filter((i) => i !== item))
                               }
                             />
-                          )}
-                        </Tag.EndElement>
+                          </Tag.EndElement>
+                        )}
+                        
                       </Tag.Root>
                     ))}
                   </Flex>
                 )}
               </Field.Root>
 
-              <Field.Root mb={6}>
+              <Field.Root mb={4}>
                 <Field.Label>
-                  <Text textStyle="p2" fontWeight={600} color="neutral.800" mb={1}>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Additional Information
                   </Text>
                 </Field.Label>
                 <Textarea
-                  pl={2}
+                  pl={2.5}
                   name="notes"
                   placeholder="Anything else we should know about"
                   _placeholder={{ color: "neutral.300", fontFamily: "Inter", fontWeight: 400 }}
