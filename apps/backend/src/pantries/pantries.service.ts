@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
@@ -108,5 +108,21 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: PantryStatus.DENIED });
+  }
+
+  async findByIds(pantryIds: number[]): Promise<Pantry[]> {
+    pantryIds.forEach((id) => validateId(id, 'Pantry'));
+
+    const pantries = await this.repo.findBy({ pantryId: In(pantryIds) });
+
+    if (pantries.length !== pantryIds.length) {
+      const foundIds = pantries.map((p) => p.pantryId);
+      const missingIds = pantryIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException(
+        `Pantries not found: ${missingIds.join(', ')}`,
+      );
+    }
+
+    return pantries;
   }
 }

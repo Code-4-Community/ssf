@@ -52,6 +52,7 @@ export interface Pantry {
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
+  volunteers?: User[];
 }
 
 export interface PantryApplicationDto {
@@ -142,6 +143,7 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  pantries?: Pantry[];
 }
 
 export interface FoodRequest {
@@ -200,22 +202,6 @@ export interface Allocation {
 export enum VolunteerType {
   LEAD_VOLUNTEER = 'lead_volunteer',
   STANDARD_VOLUNTEER = 'standard_volunteer',
-}
-
-export interface VolunteerPantryAssignment {
-  assignmentId: number;
-  volunteer: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
-  pantry: {
-    pantryId: number;
-    pantryName: string;
-  };
 }
 
 export enum Role {
