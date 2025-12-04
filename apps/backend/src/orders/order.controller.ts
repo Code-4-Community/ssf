@@ -70,12 +70,12 @@ export class OrdersController {
     return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
-  @Get(':orderId/donation')
-  async getDonationFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Donation | null> {
-    return this.ordersService.findOrderDonation(orderId);
-  }
+  // @Get(':orderId/donation')
+  // async getDonationFromOrder(
+  //   @Param('orderId', ParseIntPipe) orderId: number,
+  // ): Promise<Donation | null> {
+  //   return this.ordersService.findOrderDonation(orderId);
+  // }
 
   @Get('/:orderId')
   async getOrder(
