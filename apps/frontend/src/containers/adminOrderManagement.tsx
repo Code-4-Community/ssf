@@ -449,27 +449,30 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 borderRightColor="neutral.100"
               >
                 <Box direction="row" gap={2} display="flex" alignItems="center">
-                  {order.pantry.volunteers && order.pantry.volunteers.length > 0 ? (
-                    order.pantry.volunteers.slice(0,5).map((volunteer, index) => (
-                      <Box
-                        key={index}
-                        borderRadius="full"
-                        bg={
-                          assigneeColors[
-                            Math.floor(Math.random() * assigneeColors.length)
-                          ]
-                        }
-                        width="38px"
-                        height="38px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        p={2}
-                      >
-                        {volunteer.firstName.charAt(0).toUpperCase()}
-                        {volunteer.lastName.charAt(0).toUpperCase()}
-                      </Box>
-                    ))
+                  {order.pantry.volunteers &&
+                  order.pantry.volunteers.length > 0 ? (
+                    order.pantry.volunteers
+                      .slice(0, 5)
+                      .map((volunteer, index) => (
+                        <Box
+                          key={index}
+                          borderRadius="full"
+                          bg={
+                            assigneeColors[
+                              Math.floor(Math.random() * assigneeColors.length)
+                            ]
+                          }
+                          width="38px"
+                          height="38px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          p={2}
+                        >
+                          {volunteer.firstName.charAt(0).toUpperCase()}
+                          {volunteer.lastName.charAt(0).toUpperCase()}
+                        </Box>
+                      ))
                   ) : (
                     <Box>No Assignees</Box>
                   )}
