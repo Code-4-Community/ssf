@@ -23,6 +23,7 @@ import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238
 import { AddVolunteerPantryUniqueConstraint1760033134668 } from '../migrations/1760033134668-AddVolunteerPantryUniqueConstraint';
 import { AllergyFriendlyToBoolType1763963056712 } from '../migrations/1763963056712-AllergyFriendlyToBoolType';
 import { UpdatePantryUserFieldsFixed1764350314832 } from '../migrations/1764350314832-UpdatePantryUserFieldsFixed';
+import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-RemoveUnusedStatuses';
 
 const config = {
   type: 'postgres',
@@ -59,6 +60,7 @@ const config = {
     AddVolunteerPantryUniqueConstraint1760033134668,
     AllergyFriendlyToBoolType1763963056712,
     UpdatePantryUserFieldsFixed1764350314832,
+    RemoveUnusedStatuses1764816885341,
   ],
 };
 

@@ -20,7 +20,6 @@ export class AllocationsService {
         allocatedQuantity: true,
         reservedAt: true,
         fulfilledAt: true,
-        status: true,
       },
     });
   }
