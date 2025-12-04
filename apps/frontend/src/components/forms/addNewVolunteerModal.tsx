@@ -77,42 +77,42 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW="49em">
-          <Dialog.Header>
-            <Dialog.Title fontSize={25} fontWeight={700} fontFamily="'Instrument Serif', serif">
+          <Dialog.Header pb={1}>
+            <Dialog.Title fontSize="18px" fontWeight={600} fontFamily="Inter" color="#000">
               Add New Volunteer
             </Dialog.Title>
-            <CloseButton onClick={() => setIsOpen(false)} size="sm" position="absolute" top={3} right={3}/>
+            <CloseButton onClick={() => setIsOpen(false)} size="md" position="absolute" top={3} right={3}/>
           </Dialog.Header>
-          <Dialog.Body>
-            <Text mb="1.5em">
+          <Dialog.Body color="neutral.800" fontWeight={600} textStyle="p2">
+            <Text mb="1.5em" color="#52525B" fontWeight={400}>
               Complete all information in the form to register a new volunteer.
             </Text>
             <Flex gap={8} justifyContent="flex-start" my={4}>
               <Field.Root>
                 <Field.Label>First Name</Field.Label>
-                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
+                <Input color="neutral.700" textStyle="p2" fontWeight={400} value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
               </Field.Root>
               <Field.Root>
                 <Field.Label>Last Name</Field.Label>
-                <Input value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+                <Input color="neutral.700" textStyle="p2" fontWeight={400} value={lastName} onChange={(e) => setLastName(e.target.value)}/>
               </Field.Root>
             </Flex>
             <Field.Root>
               <Field.Label>Email</Field.Label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)}/>
+              <Input color="neutral.700" textStyle="p2" fontWeight={400} value={email} onChange={(e) => setEmail(e.target.value)}/>
             </Field.Root>
             <Field.Root my={4}>
               <Field.Label>Phone Number</Field.Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)}/>
+              <Input color="neutral.700" textStyle="p2" fontWeight={400} value={phone} onChange={(e) => setPhone(e.target.value)}/>
             </Field.Root>
             {error && (
-              <Text color="red" mb={3} fontWeight="semibold">
+              <Text color="red" mb={3} fontWeight={400} fontSize="12px" fontFamily="Inter">
                 {error}
               </Text>
             )}
             <Flex justifyContent="flex-end" mt={4} gap={4}>
-              <Button bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
-              <Button variant='outline' onClick={handleClear}>Cancel</Button>
+              <Button textStyle="p2" fontWeight={600} bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
+              <Button textStyle="p2" fontWeight={600} color="neutral.800" variant='outline' onClick={handleClear}>Cancel</Button>
             </Flex>
           </Dialog.Body>
         </Dialog.Content>
