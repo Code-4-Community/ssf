@@ -132,9 +132,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       <RadioGroup.Item key={option} value={option}>
                         <RadioGroup.ItemHiddenInput />
                         <RadioGroup.ItemControl />
-                        <RadioGroup.ItemText>
-                          {option}
-                        </RadioGroup.ItemText>
+                        <RadioGroup.ItemText>{option}</RadioGroup.ItemText>
                       </RadioGroup.Item>
                     ))}
                   </HStack>

@@ -67,7 +67,7 @@ describe('UsersController', () => {
 
       expect(result).toEqual(volunteers);
       expect(mockUserService.findUsersByRoles).toHaveBeenCalledWith([
-        Role.VOLUNTEER
+        Role.VOLUNTEER,
       ]);
     });
   });
