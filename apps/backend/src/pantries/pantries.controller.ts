@@ -5,17 +5,29 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  ValidationPipe
+  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { Activity, AllergensConfidence, ClientVisitFrequency, RefrigeratedDonation, ReserveFoodForAllergic, ServeAllergicChildren } from './types';
+import {
+  Activity,
+  AllergensConfidence,
+  ClientVisitFrequency,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
+import { Order } from '../orders/order.entity';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('pantries')
 export class PantriesController {
-  constructor(private pantriesService: PantriesService) {}
+  constructor(
+    private pantriesService: PantriesService,
+    private ordersService: OrdersService,
+  ) {}
 
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
@@ -27,6 +39,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Get('/:pantryId/orders')
+  async getOrders(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<Order[]> {
+    return this.ordersService.getOrdersByPantry(pantryId);
   }
 
   @ApiBody({
@@ -142,12 +161,9 @@ export class PantriesController {
           type: 'array',
           items: {
             type: 'string',
-            enum: Object.values(Activity)
+            enum: Object.values(Activity),
           },
-          example: [
-            Activity.COLLECT_FEEDBACK,
-            Activity.CREATE_LABELED_SHELF,
-          ],
+          example: [Activity.COLLECT_FEEDBACK, Activity.CREATE_LABELED_SHELF],
         },
         activitiesComments: {
           type: 'string',
@@ -190,7 +206,7 @@ export class PantriesController {
   })
   @Post()
   async submitPantryApplication(
-    @Body(new ValidationPipe()) 
+    @Body(new ValidationPipe())
     pantryData: PantryApplicationDto,
   ): Promise<void> {
     return this.pantriesService.addPantry(pantryData);
