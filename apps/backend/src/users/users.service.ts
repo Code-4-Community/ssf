@@ -118,8 +118,6 @@ export class UsersService {
   }
 
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
-    validateId(volunteerId, 'Volunteer');
-
     const volunteer = await this.findVolunteer(volunteerId);
     return volunteer.pantries;
   }
@@ -128,7 +126,6 @@ export class UsersService {
     volunteerId: number,
     pantryIds: number[],
   ): Promise<User> {
-    validateId(volunteerId, 'Volunteer');
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
     const volunteer = await this.findVolunteer(volunteerId);
