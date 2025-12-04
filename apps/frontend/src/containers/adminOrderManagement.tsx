@@ -448,7 +448,8 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {order.pantry.volunteers && order.pantry.volunteers.length > 0 ? (
+                {order.pantry.volunteers &&
+                order.pantry.volunteers.length > 0 ? (
                   <Box
                     borderRadius="full"
                     bg={
@@ -463,26 +464,30 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                     my={2}
                     p={2}
                   >
-                    {order.pantry.volunteers[0].firstName.charAt(0).toUpperCase()}
-                    {order.pantry.volunteers[0].lastName.charAt(0).toUpperCase()}
+                    {order.pantry.volunteers[0].firstName
+                      .charAt(0)
+                      .toUpperCase()}
+                    {order.pantry.volunteers[0].lastName
+                      .charAt(0)
+                      .toUpperCase()}
                   </Box>
                 ) : (
-                <Box
-                  borderRadius="full"
-                  bg={
-                    assigneeColors[
-                      Math.floor(Math.random() * assigneeColors.length)
-                    ]
-                  }
-                  width="38px"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  my={2}
-                  p={2}
-                >
-                  {'A' /* Placeholder for assignee initials */}
-                </Box>
+                  <Box
+                    borderRadius="full"
+                    bg={
+                      assigneeColors[
+                        Math.floor(Math.random() * assigneeColors.length)
+                      ]
+                    }
+                    width="38px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    my={2}
+                    p={2}
+                  >
+                    {'A' /* Placeholder for assignee initials */}
+                  </Box>
                 )}
               </Table.Cell>
               <Table.Cell
