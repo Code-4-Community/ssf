@@ -9,15 +9,13 @@ import {
   Field,
   Textarea,
   SimpleGrid,
-  Portal,
   NativeSelect,
   NativeSelectIndicator,
-  Combobox,
-  Wrap,
-  createListCollection,
   Tag,
   Separator,
   Checkbox,
+  Menu,
+  Flex,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -31,6 +29,7 @@ import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
+import { ChevronDownIcon } from 'lucide-react';
 
 const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
@@ -70,16 +69,12 @@ const PantryApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
   const [secondaryContactPhone, setSecondaryContactPhone] = useState<string>('');
   const [activities, setActivities] = useState<string[]>([]);
-  const noActivitiesSelected: boolean = activities.length === 0;
   const allergenClientsExactOption: string = 'I have an exact number';
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
-  const noRestrictionsSelected: boolean = restrictions.length === 0;
   const [reserveFoodForAllergic, setReserveFoodForAllergic] = useState<string>();
   const [differentMailingAddress, setDifferentMailingAddress] = useState<boolean | null>();
-  const [searchRestriction, setSearchRestriction] = useState<string>('');
-  const [searchActivity, setSearchActivity] = useState<string>('');
   const [otherEmailContact, setOtherEmailContact] = useState<boolean>(false);
 
   const sectionTitleStyles = {
@@ -104,32 +99,6 @@ const PantryApplicationForm: React.FC = () => {
     fontSize: 'sm',
     fontWeight: '600',
   };
-
-  const filteredRestrictions = useMemo(
-    () =>
-      dietaryRestrictionOptions.filter((option) =>
-        option.toLowerCase().includes(searchRestriction.toLowerCase()),
-      ),
-    [searchRestriction],
-  );
-
-  const restrictionsCollection = useMemo(
-    () => createListCollection({ items: filteredRestrictions}),
-    [filteredRestrictions],
-  );
-
-  const filteredActivities = useMemo(
-    () =>
-      activityOptions.filter((option) =>
-        option.toLowerCase().includes(searchActivity.toLowerCase()),
-      ),
-    [searchActivity],
-  );
-
-  const activitiesCollection = useMemo(
-    () => createListCollection({ items: filteredActivities}),
-    [filteredActivities],
-  );
 
   return (
     <Box width="100%" mx="11em" my="4em">
@@ -521,75 +490,112 @@ const PantryApplicationForm: React.FC = () => {
               clients at your pantry report?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
-            <Combobox.Root
-              multiple
-              closeOnSelect={false}
-              value={restrictions}
-              collection={restrictionsCollection}
-              onValueChange={(e: {value: string[]}) => setRestrictions(e.value)}
-              onInputValueChange={(e: {inputValue: string}) => setSearchRestriction(e.inputValue)}
-              required={noRestrictionsSelected}
-            >
-              <Combobox.Control>
-                <Combobox.Input 
-                  placeholder="Type to search" 
-                  borderColor="neutral.100"
-                  _placeholder={{ color: "neutral.800" }}
-                />
-                <Combobox.IndicatorGroup>
-                  <Combobox.Trigger />
-                </Combobox.IndicatorGroup>
-              </Combobox.Control>
 
-              <Portal>
-                <Combobox.Positioner>
-                  <Combobox.Content>
-                    <Combobox.ItemGroup>
-                      {filteredRestrictions.map((value) => (
-                        <Combobox.Item 
-                          key={value} 
-                          item={value}
+            {restrictions.map((value) => (
+              <input type="hidden" name="restrictions" key={value} value={value} />
+            ))}
+
+            <Menu.Root closeOnSelect={false}>
+              <Menu.Trigger asChild>
+                <Button
+                  pl={3}
+                  pr={2}
+                  w="full"
+                  bgColor="white"
+                  color='neutral.800'
+                  borderColor="neutral.100"
+                  justifyContent="space-between"
+                  textStyle="p2"
+                  size="sm"
+                >
+                  {restrictions.length > 0
+                    ? `Select more restrictions`
+                    : 'Select restrictions'}
+                  <ChevronDownIcon />
+
+                  <input 
+                    type="text"
+                    name="restrictions-required"
+                    value={restrictions.length > 0 ? 'selected' : ''}
+                    required
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </Button>
+              </Menu.Trigger>
+
+              <Menu.Positioner w="full">
+                <Menu.Content maxH="500px" overflowY="auto">
+                  {dietaryRestrictionOptions.map((value) => {
+                    const isChecked = restrictions.includes(value);
+                    return (
+                      <Menu.CheckboxItem
+                        key={value}
+                        checked={isChecked}
+                        onCheckedChange={(checked: boolean) => {
+                          setRestrictions((prev) =>
+                            checked
+                              ? [...prev, value]
+                              : prev.filter((i) => i !== value),
+                          );
+                        }}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Box
+                          position="absolute"
+                          left={1}
+                          ml={0.5}
+                          w={5}
+                          h={5}
+                          borderWidth="1px"
+                          borderRadius="4px"
+                          borderColor="neutral.200"
+                        />
+                        <Menu.ItemIndicator />
+                        <Text
+                          ml={0.5}
                           color="neutral.800"
-                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                          onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '')}
+                          fontWeight={500}
+                          fontFamily="Inter"
                         >
                           {value}
-                          <Combobox.ItemIndicator />
-                        </Combobox.Item>
-                      ))}
-                      <Combobox.Empty>No dietary restrictions found</Combobox.Empty>
-                    </Combobox.ItemGroup>
-                  </Combobox.Content>
-                </Combobox.Positioner>
-              </Portal>
+                        </Text>
+                      </Menu.CheckboxItem>
+                    );
+                  })}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Menu.Root>
 
-              <Wrap gap="2">
+            {restrictions.length > 0 && (
+              <Flex wrap="wrap" mt={1} gap={2}>
                 {restrictions.map((value) => (
-                  <React.Fragment key={value}>
-                    <input type="hidden" name="restrictions" value={value} />
-                    <Tag.Root 
-                      key={value}
-                      bg="teal.100"
-                      p={2}
-                      border="1px solid"
-                      borderColor="teal.400"
-                    >
-                      <Tag.Label>{value}</Tag.Label>
-                      <Tag.EndElement ml={4}>
-                        <Tag.CloseTrigger 
-                          onClick={() =>
-                            setRestrictions((prev) =>
-                              prev.filter((item) => item !== value)
-                            )
-                          }
-                          style={{ cursor: 'pointer' }}
-                        />
-                      </Tag.EndElement>
-                    </Tag.Root>
-                  </React.Fragment>
+                  <Tag.Root 
+                    key={value}
+                    bg="teal.100"
+                    p={2}
+                    border="1px solid"
+                    borderColor="teal.400"
+                  >
+                    <Tag.Label>{value}</Tag.Label>
+                    <Tag.EndElement ml={4}>
+                      <Tag.CloseTrigger 
+                        onClick={() =>
+                          setRestrictions((prev) =>
+                            prev.filter((item) => item !== value)
+                          )
+                        }
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </Tag.EndElement>
+                  </Tag.Root>
                 ))}
-              </Wrap>
-            </Combobox.Root>
+              </Flex>
+            )}
           </Field.Root>
 
           {restrictions.find((option) =>
@@ -808,85 +814,121 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              What activities are you open to doing with SSF?{" "}
-              <Field.RequiredIndicator color="red"/>
+              What activities are you open to doing with SSF?
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
-            <Combobox.Root
-              multiple
-              closeOnSelect={false}
-              value={activities}
-              collection={activitiesCollection}
-              onValueChange={(e: {value: string[]}) => setActivities(e.value)}
-              onInputValueChange={(e: {inputValue: string}) => setSearchActivity(e.inputValue)}
-              required={noActivitiesSelected}
-            >
-              <Combobox.Control name="activities">
-                <Combobox.Input 
-                  placeholder="Type to search" 
-                  borderColor="neutral.100"
-                  _placeholder={{ color: "neutral.800" }}
-                />
-                <Combobox.IndicatorGroup>
-                  <Combobox.Trigger />
-                </Combobox.IndicatorGroup>
-              </Combobox.Control>
 
-              <Portal>
-                <Combobox.Positioner>
-                  <Combobox.Content>
-                    <Combobox.ItemGroup>
-                      {filteredActivities.map((value) => (
-                        <Combobox.Item 
-                          key={value} 
-                          item={value}
+            {activities.map((value) => (
+              <input type="hidden" name="activities" key={value} value={value} />
+            ))}
+
+            <Menu.Root closeOnSelect={false}>
+              <Menu.Trigger asChild>
+                <Button
+                  pl={3}
+                  pr={2}
+                  w="full"
+                  bgColor="white"
+                  color='neutral.800'
+                  borderColor="neutral.100"
+                  justifyContent="space-between"
+                  textStyle="p2"
+                  size="sm"
+                >
+                  {activities.length > 0
+                    ? `Select more activities`
+                    : 'Select activities'}
+                  <ChevronDownIcon />
+
+                  <input 
+                    type="text"
+                    name="activities-required"
+                    value={activities.length > 0 ? 'selected' : ''}
+                    required
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </Button>
+              </Menu.Trigger>
+
+              <Menu.Positioner w="full">
+                <Menu.Content maxH="500px" overflowY="auto">
+                  {activityOptions.map((value) => {
+                    const isChecked = activities.includes(value);
+                    return (
+                      <Menu.CheckboxItem
+                        key={value}
+                        checked={isChecked}
+                        onCheckedChange={(checked: boolean) => {
+                          setActivities((prev) =>
+                            checked
+                              ? [...prev, value]
+                              : prev.filter((i) => i !== value),
+                          );
+                        }}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Box
+                          position="absolute"
+                          left={1}
+                          ml={0.5}
+                          w={5}
+                          h={5}
+                          borderWidth="1px"
+                          borderRadius="4px"
+                          borderColor="neutral.200"
+                        />
+                        <Menu.ItemIndicator />
+                        <Text
+                          ml={0.5}
                           color="neutral.800"
-                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                          onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => (e.currentTarget.style.backgroundColor = '')}
+                          fontWeight={500}
+                          fontFamily="Inter"
                         >
                           {value}
-                          <Combobox.ItemIndicator />
-                        </Combobox.Item>
-                      ))}
-                      <Combobox.Empty>No activities found</Combobox.Empty>
-                    </Combobox.ItemGroup>
-                  </Combobox.Content>
-                </Combobox.Positioner>
-              </Portal>
+                        </Text>
+                      </Menu.CheckboxItem>
+                    );
+                  })}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Menu.Root>
 
-              <Wrap gap="2">
+            {activities.length > 0 && (
+              <Flex wrap="wrap" mt={1} gap={2}>
                 {activities.map((value) => (
-                  <React.Fragment key={value}>
-                    <input type="hidden" name="activities" value={value} />
-                    <Tag.Root 
-                      key={value}
-                      bg="teal.100"
-                      p={2}
-                      border="1px solid"
-                      borderColor="teal.400"
-                    >
-                      <Tag.Label>{value}</Tag.Label>
-                      <Tag.EndElement ml={4}>
-                        <Tag.CloseTrigger 
-                          onClick={() =>
-                            setActivities((prev) =>
-                              prev.filter((item) => item !== value)
-                            )
-                          }
-                          style={{ cursor: 'pointer' }}
-                        />
-                      </Tag.EndElement>
-                    </Tag.Root>
-                  </React.Fragment>
+                  <Tag.Root 
+                    key={value}
+                    bg="teal.100"
+                    p={2}
+                    border="1px solid"
+                    borderColor="teal.400"
+                  >
+                    <Tag.Label>{value}</Tag.Label>
+                    <Tag.EndElement ml={4}>
+                      <Tag.CloseTrigger 
+                        onClick={() =>
+                          setActivities((prev) =>
+                            prev.filter((item) => item !== value)
+                          )
+                        }
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </Tag.EndElement>
+                  </Tag.Root>
                 ))}
-              </Wrap>
-            </Combobox.Root>
+              </Flex>
+            )}
             <Field.HelperText color="neutral.600">
               Food donations are one part of being a partner pantry. The
               following are additional ways to help us better support you!
               Please select all that apply.
             </Field.HelperText>
-          </Field.Root>
-
+          </Field.Root>       
           <Field.Root required={activities.includes('Something else')} mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Please list any comments/concerns related to the previous question.
