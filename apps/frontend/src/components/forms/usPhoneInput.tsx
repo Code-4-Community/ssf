@@ -43,6 +43,9 @@ export const USPhoneInput: React.FC<USPhoneInputProps> = ({
     disableDialCodeAndPrefix: true,
     value,
     onChange: (data) => {
+      // +1 country code is automatically added to data.phone, so after removing
+      // all non-digits, a length of 0-1 means the field is empty
+      // (the input does not allow non-digit characters)
       const digits = data.phone.replace(/\D/g, '')
       const isEmpty = !data.phone || data.phone.trim() === '' || digits.length <= 1;
 
