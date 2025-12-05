@@ -108,17 +108,17 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry 3' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 3' },
         },
       ];
 
@@ -156,17 +156,17 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry 1' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 1' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry as Pantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
       ];
 
