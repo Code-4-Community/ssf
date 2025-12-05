@@ -54,15 +54,20 @@ export class OrdersService {
     });
   }
 
-  async findOne(orderId: number) {
+  async findOne(orderId: number): Promise<Order> {
     validateId(orderId, 'Order');
 
-    return await this.repo.findOne({
-      where: { orderId },
-    });
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    return order;
   }
 
   async findOrderByRequest(requestId: number): Promise<Order> {
+    validateId(requestId, 'Request');
+
     const order = await this.repo.findOne({
       where: { requestId },
       relations: ['request'],
@@ -72,45 +77,47 @@ export class OrdersService {
       throw new NotFoundException(
         `Order with request ID ${requestId} not found`,
       );
-    } else {
-      return order;
     }
+    return order;
   }
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
+    validateId(orderId, 'Order');
+
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['pantry'],
     });
 
     if (!order) {
-      throw new NotFoundException(`Order ID ${orderId} not found`);
-    } else {
-      return order.pantry;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.pantry;
   }
 
   async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
+    validateId(orderId, 'Order');
+
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['request'],
     });
 
     if (!order) {
-      throw new NotFoundException(`Order ID ${orderId} not found`);
-    } else {
-      return order.request;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.request;
   }
 
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
-    const order = this.findOne(orderId);
+    validateId(orderId, 'Order');
+
+    const order = await this.findOne(orderId);
 
     if (!order) {
-      throw new NotFoundException(`Order ID ${orderId} not found`);
-    } else {
-      return (await order).foodManufacturer;
+      throw new NotFoundException(`Order ${orderId} not found`);
     }
+    return order.foodManufacturer;
   }
 
   async updateStatus(orderId: number, newStatus: OrderStatus) {

@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   Funnel,
   Mail,
+  CircleCheck,
 } from 'lucide-react';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -25,45 +26,27 @@ import OrderDetailsModal from '@components/forms/orderDetailsModal';
 const AdminOrderManagement: React.FC = () => {
   const [statusOrders, setStatusOrders] = useState<Record<string, Order[]>>({});
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
 
   const STATUS_ORDER = [
     OrderStatus.PENDING,
     OrderStatus.SHIPPED,
     OrderStatus.DELIVERED,
   ];
-  // Map of colors as per status (background color, text color)
-  const STATUS_COLORS = {
-    [OrderStatus.PENDING]: ['#FEECD1', '#9C5D00'],
-    [OrderStatus.SHIPPED]: ['#D5DCDF', '#2B4E60'],
-    [OrderStatus.DELIVERED]: ['#D4EAED', '#19717D'],
-  };
+  
+  const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
+    [OrderStatus.PENDING, ['#FEECD1', '#9C5D00']],
+    [OrderStatus.SHIPPED, ['#D5DCDF', '#2B4E60']],
+    [OrderStatus.DELIVERED, ['#D4EAED', '#19717D']],
+  ]);
 
   const MAX_PER_STATUS = 5;
-
-  const totalPages =
-    Math.max(
-      ...Object.values(statusOrders).map((orders) =>
-        Math.ceil(orders.length / MAX_PER_STATUS),
-      ),
-    ) || 1;
-
-  const displayedStatusOrders = Object.fromEntries(
-    Object.entries(statusOrders).map(([status, orders]) => [
-      status,
-      orders.slice(
-        (currentPage - 1) * MAX_PER_STATUS,
-        currentPage * MAX_PER_STATUS,
-      ),
-    ]),
-  );
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const data = await ApiClient.getAllOrders();
 
-        // Build the grouped object first
         const grouped: Record<string, Order[]> = {};
 
         for (const order of data) {
@@ -72,8 +55,14 @@ const AdminOrderManagement: React.FC = () => {
           grouped[status].push(order);
         }
 
-        // Set state once
         setStatusOrders(grouped);
+        
+        // Initialize current page for each status
+        const initialPages: Record<string, number> = {};
+        STATUS_ORDER.forEach(status => {
+          initialPages[status] = 1;
+        });
+        setCurrentPages(initialPages);
       } catch (error) {
         alert('Error fetching orders: ' + error);
       }
@@ -82,74 +71,90 @@ const AdminOrderManagement: React.FC = () => {
     fetchOrders();
   }, []);
 
+  const handlePageChange = (status: string, page: number) => {
+    setCurrentPages(prev => ({
+      ...prev,
+      [status]: page
+    }));
+  };
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Order Management
       </Heading>
 
-      {STATUS_ORDER.map((status, index) => {
-        const orders = displayedStatusOrders[status] || [];
-        if (orders.length === 0) return null;
+      {STATUS_ORDER.map((status) => {
+        const allOrders = statusOrders[status] || [];
+        const currentPage = currentPages[status] || 1;
+        const displayedOrders = allOrders.slice(
+          (currentPage - 1) * MAX_PER_STATUS,
+          currentPage * MAX_PER_STATUS
+        );
+        const totalPages = Math.ceil(allOrders.length / MAX_PER_STATUS);
 
         return (
-          <Box key={status} mb={12}>
+          <Box key={status} mb={12} position="relative" minHeight="380px">
             <OrderTableSection
-              key={status}
-              orders={orders}
-              colors={STATUS_COLORS[orders[0].status]}
+              orders={allOrders.length > 0 ? displayedOrders : []}
+              status={status}
+              colors={STATUS_COLORS.get(status)!}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
             />
+            
+            {totalPages > 1 && (
+              <Box position="absolute" bottom="-12" left="0" right="0">
+                <Pagination.Root
+                  count={allOrders.length}
+                  pageSize={MAX_PER_STATUS}
+                  page={currentPage}
+                  onPageChange={(e) => handlePageChange(status, e.page)}
+                >
+                  <ButtonGroup
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Pagination.PrevTrigger
+                      color="neutral.800"
+                      _hover={{ color: 'black' }}
+                    >
+                      <ChevronLeft size={16} cursor="pointer"/>
+                    </Pagination.PrevTrigger>
+
+                    <Pagination.Items
+                      render={(page) => (
+                        <IconButton
+                          borderColor={{ base: 'neutral.100', _selected: 'neutral.600' }}
+                        >
+                          {page.value}
+                        </IconButton>
+                      )}
+                    />
+
+                    <Pagination.NextTrigger
+                      color="neutral.800"
+                      _hover={{ color: 'black' }}
+                    >
+                      <ChevronRight size={16} cursor="pointer" />
+                    </Pagination.NextTrigger>
+                  </ButtonGroup>
+                </Pagination.Root>
+              </Box>
+            )}
           </Box>
         );
       })}
-
-      <Pagination.Root
-        count={totalPages * MAX_PER_STATUS}
-        pageSize={MAX_PER_STATUS}
-        page={currentPage}
-        onPageChange={(e) => setCurrentPage(e.page)}
-      >
-        <ButtonGroup
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          mt={12}
-          variant="outline"
-          size="sm"
-        >
-          <Pagination.PrevTrigger
-            color="neutral.800"
-            _hover={{ color: 'black' }}
-          >
-            <ChevronLeft size={16} />
-          </Pagination.PrevTrigger>
-
-          <Pagination.Items
-            render={(page) => (
-              <IconButton
-                borderColor={{ base: 'neutral.100', _selected: 'neutral.600' }}
-              >
-                {page.value}
-              </IconButton>
-            )}
-          />
-
-          <Pagination.NextTrigger
-            color="neutral.800"
-            _hover={{ color: 'black' }}
-          >
-            <ChevronRight size={16} />
-          </Pagination.NextTrigger>
-        </ButtonGroup>
-      </Pagination.Root>
     </Box>
   );
 };
 
 interface OrderTableSectionProps {
   orders: Order[];
+  status: string;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
   selectedOrderId: number | null;
@@ -157,6 +162,7 @@ interface OrderTableSectionProps {
 
 const OrderTableSection: React.FC<OrderTableSectionProps> = ({
   orders,
+  status,
   colors,
   onOrderSelect,
   selectedOrderId,
@@ -167,6 +173,9 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
   const [sortAsc, setSortAsc] = useState(true);
 
   const ASSIGNEE_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+  const ROW_HEIGHT = 5;
+  const MAX_ROWS = 5;
+  const MIN_SECTION_HEIGHT = MAX_ROWS * ROW_HEIGHT;
 
   const pantryOptions = [
     ...new Set(orders.map((o) => o.pantry.pantryName)),
@@ -178,7 +187,6 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
     );
   };
 
-  // Filter and sort the orders based on properties defined above (display this in the UI)
   const filteredOrders = orders
     .filter(
       (o) =>
@@ -228,18 +236,43 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {orders[0].status.charAt(0).toUpperCase() + orders[0].status.slice(1)}
+          {status.charAt(0).toUpperCase() + status.slice(1)}
         </Box>
       </Box>
-      <Box
-        display="flex"
-        justifyContent="flex-end"
-        alignItems="center"
-        gap={2}
-        mb={3}
-        position="relative"
-        fontFamily="'Inter', sans-serif"
-      >
+      
+      {orders.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          minHeight="300px"
+          gap={2}
+        >
+          <Box mb={2}>
+            <CircleCheck size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            No Orders
+          </Box>
+          <Box color="neutral.300">
+            You have no {status.toLowerCase()} orders at this time.
+          </Box>
+        </Box>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="flex-end"
+            alignItems="center"
+            mb={3}
+            position="relative"
+            fontFamily="'Inter', sans-serif"
+          >
         <Box position="relative">
           <Button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -473,11 +506,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         <Box
                           key={index}
                           borderRadius="full"
-                          bg={
-                            ASSIGNEE_COLORS[
-                              Math.floor(Math.random() * ASSIGNEE_COLORS.length)
-                            ]
-                          }
+                          bg={ASSIGNEE_COLORS[index % ASSIGNEE_COLORS.length]}
                           width="33px"
                           height="33px"
                           display="flex"
@@ -524,6 +553,8 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           ))}
         </Table.Body>
       </Table.Root>
+        </>
+      )}
     </Box>
   );
 };
