@@ -69,7 +69,9 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with request ID ${requestId} not found`);
+      throw new NotFoundException(
+        `Order with request ID ${requestId} not found`,
+      );
     } else {
       return order;
     }
@@ -101,9 +103,7 @@ export class OrdersService {
     }
   }
 
-  async findOrderFoodManufacturer(
-    orderId: number,
-  ): Promise<FoodManufacturer> {
+  async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
     const order = this.findOne(orderId);
 
     if (!order) {

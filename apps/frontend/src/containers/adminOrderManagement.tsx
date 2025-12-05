@@ -27,12 +27,16 @@ const AdminOrderManagement: React.FC = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const STATUS_ORDER = [OrderStatus.PENDING, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
+  const STATUS_ORDER = [
+    OrderStatus.PENDING,
+    OrderStatus.SHIPPED,
+    OrderStatus.DELIVERED,
+  ];
   // Map of colors as per status (background color, text color)
   const STATUS_COLORS = {
     [OrderStatus.PENDING]: ['#FEECD1', '#9C5D00'],
     [OrderStatus.SHIPPED]: ['#D5DCDF', '#2B4E60'],
-    [OrderStatus.DELIVERED]: ['#D4EAED', '#19717D']
+    [OrderStatus.DELIVERED]: ['#D4EAED', '#19717D'],
   };
 
   const MAX_PER_STATUS = 5;
@@ -80,11 +84,7 @@ const AdminOrderManagement: React.FC = () => {
 
   return (
     <Box p={12}>
-      <Heading
-        textStyle="h1"
-        color="gray.600"
-        mb={8}
-      >
+      <Heading textStyle="h1" color="gray.600" mb={8}>
         Order Management
       </Heading>
 
@@ -195,7 +195,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
     color: 'neutral.800',
-    fontFamily: "ibm",
+    fontFamily: 'ibm',
     fontWeight: '600',
     fontSize: 'sm',
   };
@@ -221,7 +221,13 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
         minW="fit-content"
       >
         <Mail size={18} />
-        <Box ml={3} fontFamily="ibm" fontSize="14px" fontWeight="semibold" color="neutral.700">
+        <Box
+          ml={3}
+          fontFamily="ibm"
+          fontSize="14px"
+          fontWeight="semibold"
+          color="neutral.700"
+        >
           {orders[0].status.charAt(0).toUpperCase() + orders[0].status.slice(1)}
         </Box>
       </Box>
@@ -276,7 +282,14 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 overflowY="auto"
                 zIndex={20}
               >
-                <VStack align="stretch" fontSize="12px" fontFamily="Inter" color="neutral.800" fontWeight="500" gap={2}>
+                <VStack
+                  align="stretch"
+                  fontSize="12px"
+                  fontFamily="Inter"
+                  color="neutral.800"
+                  fontWeight="500"
+                  gap={2}
+                >
                   {pantryOptions.map((pantry) => (
                     <Checkbox.Root
                       key={pantry}
