@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Not } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
@@ -55,48 +55,47 @@ export class OrdersService {
   }
 
   async findOne(orderId: number) {
-    if (!orderId || orderId < 1) {
-      throw new NotFoundException('Invalid order ID');
-    }
+    validateId(orderId, 'Order');
+
     return await this.repo.findOne({
       where: { orderId },
     });
   }
 
-  async findOrderByRequest(requestId: number): Promise<Order | null> {
+  async findOrderByRequest(requestId: number): Promise<Order> {
     const order = await this.repo.findOne({
       where: { requestId },
       relations: ['request'],
     });
 
     if (!order) {
-      return null;
+      throw new NotFoundException(`Order with request ID ${requestId} not found`);
     } else {
       return order;
     }
   }
 
-  async findOrderPantry(orderId: number): Promise<Pantry | null> {
+  async findOrderPantry(orderId: number): Promise<Pantry> {
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['pantry'],
     });
 
     if (!order) {
-      return null;
+      throw new NotFoundException(`Order ID ${orderId} not found`);
     } else {
       return order.pantry;
     }
   }
 
-  async findOrderFoodRequest(orderId: number): Promise<FoodRequest | null> {
+  async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
     const order = await this.repo.findOne({
       where: { orderId },
       relations: ['request'],
     });
 
     if (!order) {
-      return null;
+      throw new NotFoundException(`Order ID ${orderId} not found`);
     } else {
       return order.request;
     }
@@ -104,9 +103,14 @@ export class OrdersService {
 
   async findOrderFoodManufacturer(
     orderId: number,
-  ): Promise<FoodManufacturer | null> {
+  ): Promise<FoodManufacturer> {
     const order = this.findOne(orderId);
-    return (await order).foodManufacturer;
+
+    if (!order) {
+      throw new NotFoundException(`Order ID ${orderId} not found`);
+    } else {
+      return (await order).foodManufacturer;
+    }
   }
 
   async updateStatus(orderId: number, newStatus: OrderStatus) {

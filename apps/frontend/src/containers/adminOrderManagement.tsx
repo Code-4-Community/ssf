@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { Order } from 'types/types';
+import { Order, OrderStatus } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 
 const AdminOrderManagement: React.FC = () => {
@@ -27,8 +27,14 @@ const AdminOrderManagement: React.FC = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const STATUS_ORDER = ['pending', 'shipped', 'delivered'];
-  const STATUS_COLORS = ['#FEECD1', '#D5DCDF', '#D4EAED'];
+  const STATUS_ORDER = [OrderStatus.PENDING, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
+  // Map of colors as per status (background color, text color)
+  const STATUS_COLORS = {
+    [OrderStatus.PENDING]: ['#FEECD1', '#9C5D00'],
+    [OrderStatus.SHIPPED]: ['#D5DCDF', '#2B4E60'],
+    [OrderStatus.DELIVERED]: ['#D4EAED', '#19717D']
+  };
+
   const MAX_PER_STATUS = 5;
 
   const totalPages =
@@ -75,11 +81,9 @@ const AdminOrderManagement: React.FC = () => {
   return (
     <Box p={12}>
       <Heading
-        size="4xl"
+        textStyle="h1"
         color="gray.600"
-        fontWeight="normal"
-        mb={6}
-        fontFamily="'Instrument Serif', serif"
+        mb={8}
       >
         Order Management
       </Heading>
@@ -93,8 +97,7 @@ const AdminOrderManagement: React.FC = () => {
             <OrderTableSection
               key={status}
               orders={orders}
-              status={status.charAt(0).toUpperCase() + status.slice(1)} // Capitalize first letter
-              color={STATUS_COLORS[index % STATUS_COLORS.length]}
+              colors={STATUS_COLORS[orders[0].status]}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
             />
@@ -147,16 +150,14 @@ const AdminOrderManagement: React.FC = () => {
 
 interface OrderTableSectionProps {
   orders: Order[];
-  status: string;
-  color: string;
+  colors: string[];
   onOrderSelect: (orderId: number | null) => void;
   selectedOrderId: number | null;
 }
 
 const OrderTableSection: React.FC<OrderTableSectionProps> = ({
   orders,
-  status,
-  color,
+  colors,
   onOrderSelect,
   selectedOrderId,
 }) => {
@@ -165,7 +166,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
 
-  const assigneeColors = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+  const ASSIGNEE_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
 
   const pantryOptions = [
     ...new Set(orders.map((o) => o.pantry.pantryName)),
@@ -194,7 +195,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
     color: 'neutral.800',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "ibm",
     fontWeight: '600',
     fontSize: 'sm',
   };
@@ -208,28 +209,28 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
     py: 0,
   };
 
-  console.log('Filtered Orders:', filteredOrders);
-
   return (
     <Box>
       <Box
         display="inline-flex"
         alignItems="center"
         justifyContent="space-between"
-        backgroundColor={color}
+        backgroundColor={colors[0]}
         p={3}
         borderRadius="md"
         minW="fit-content"
       >
         <Mail size={18} />
-        <Box ml={3}>{status}</Box>
+        <Box ml={3} fontFamily="ibm" fontSize="14px" fontWeight="semibold" color="neutral.700">
+          {orders[0].status.charAt(0).toUpperCase() + orders[0].status.slice(1)}
+        </Box>
       </Box>
       <Box
         display="flex"
         justifyContent="flex-end"
         alignItems="center"
         gap={2}
-        mb={6}
+        mb={3}
         position="relative"
         fontFamily="'Inter', sans-serif"
       >
@@ -237,7 +238,8 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           <Button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             variant="outline"
-            color="neutral.600"
+            color="neutral.800"
+            fontWeight="semibold"
             border="1px solid"
             borderColor="neutral.200"
             size="sm"
@@ -274,7 +276,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 overflowY="auto"
                 zIndex={20}
               >
-                <VStack align="stretch" gap={2}>
+                <VStack align="stretch" fontSize="12px" fontFamily="Inter" color="neutral.800" fontWeight="500" gap={2}>
                   {pantryOptions.map((pantry) => (
                     <Checkbox.Root
                       key={pantry}
@@ -282,8 +284,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                       onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(pantry, !!e.checked)
                       }
-                      color="black"
-                      size="sm"
+                      size="md"
                     >
                       <Checkbox.HiddenInput />
                       <Checkbox.Control borderRadius="sm" />
@@ -300,7 +301,8 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           <Button
             onClick={() => setIsSortOpen(!isSortOpen)}
             variant="outline"
-            color="neutral.600"
+            color="neutral.800"
+            fontWeight="semibold"
             border="1px solid"
             borderColor="neutral.200"
             p={3}
@@ -335,7 +337,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 minW="120px"
                 zIndex={20}
               >
-                <VStack align="stretch" gap={1}>
+                <VStack align="stretch" color="neutral.800" gap={1}>
                   <Box
                     cursor="pointer"
                     px={2}
@@ -423,6 +425,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
               >
                 <Button
                   variant="plain"
+                  fontWeight="400"
                   textDecoration="underline"
                   onClick={() => onOrderSelect(order.orderId)}
                 >
@@ -430,7 +433,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 </Button>
                 {selectedOrderId === order.orderId && (
                   <OrderDetailsModal
-                    orderId={selectedOrderId}
+                    order={order}
                     isOpen={true}
                     onClose={() => onOrderSelect(null)}
                   />
@@ -448,7 +451,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                <Box direction="row" gap={2} display="flex" alignItems="center">
+                <Box direction="row" gap={1} display="flex" alignItems="center">
                   {order.pantry.volunteers &&
                   order.pantry.volunteers.length > 0 ? (
                     order.pantry.volunteers
@@ -458,15 +461,16 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                           key={index}
                           borderRadius="full"
                           bg={
-                            assigneeColors[
-                              Math.floor(Math.random() * assigneeColors.length)
+                            ASSIGNEE_COLORS[
+                              Math.floor(Math.random() * ASSIGNEE_COLORS.length)
                             ]
                           }
-                          width="38px"
-                          height="38px"
+                          width="33px"
+                          height="33px"
                           display="flex"
                           alignItems="center"
                           justifyContent="center"
+                          color="white"
                           p={2}
                         >
                           {volunteer.firstName.charAt(0).toUpperCase()}
@@ -485,12 +489,15 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
               >
                 <Box
                   borderRadius="md"
-                  bg={color}
+                  bg={colors[0]}
+                  color={colors[1]}
                   display="inline-block"
+                  fontWeight="500"
                   my={2}
-                  p={1}
+                  py={1}
+                  px={3}
                 >
-                  {status}
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </Box>
               </Table.Cell>
               <Table.Cell

@@ -8,17 +8,17 @@ import {
   CloseButton,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodRequest } from 'types/types';
+import { FoodRequest, Order } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface OrderDetailsModalProps {
-  orderId: number;
+  order: Order;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
-  orderId,
+  order,
   isOpen,
   onClose,
 }) => {
@@ -29,7 +29,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       const fetchData = async () => {
         try {
           const foodRequestData = await ApiClient.getFoodRequestFromOrder(
-            orderId,
+            order.orderId,
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
@@ -39,7 +39,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
       fetchData();
     }
-  }, [isOpen, orderId]);
+  }, [isOpen, order.orderId]);
 
   return (
     <Dialog.Root
@@ -64,12 +64,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   fontWeight="600"
                   fontFamily="'Inter', sans-serif"
                 >
-                  Order #{orderId} Details
+                  Order {order.orderId}
                 </Dialog.Title>
                 {foodRequest && (
                   <>
                     <Text fontSize="sm" color="neutral.800">
-                      Request Id #{foodRequest.requestId}
+                      {order.pantry.pantryName}
                     </Text>
                     <Text fontSize="sm" color="neutral.800">
                       Requested {formatDate(foodRequest.requestedAt)}
@@ -86,29 +86,26 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <Text fontSize="md" fontWeight="600" mb={1}>
                       Size of Shipment
                     </Text>
-                    <Text fontSize="sm" fontWeight="400" ml={2}>
+                    <Text fontSize="sm" fontWeight="400">
                       {foodRequest.requestedSize}
                     </Text>
                   </Box>
                   <Box>
-                    <Text fontSize="md" fontWeight="600" mb={1}>
+                    <Text fontSize="md" fontWeight="600" mb={3}>
                       Food Type(s)
                     </Text>
-                    <Box>
+                    <Box display="flex" flexWrap="wrap" gap={2}>
                       {foodRequest.requestedItems.map((type, index) => (
                         <Box
                           display="inline-flex"
                           alignItems="center"
                           justifyContent="space-between"
-                          backgroundColor="neutral.100"
-                          borderRadius="md"
-                          pl={2}
-                          pr={3}
-                          py={2}
-                          mr={2}
-                          mb={2}
+                          bg="neutral.100"
+                          border="1px solid"
+                          borderColor="neutral.300"
+                          borderRadius="4px"
+                          p={2}
                           key={index}
-                          minW="fit-content"
                         >
                           <Text fontSize="sm" fontWeight="400" mr={10}>
                             {type}
@@ -124,7 +121,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     <Text fontSize="md" fontWeight="600" mb={1}>
                       Additional Information
                     </Text>
-                    <Text fontSize="sm" fontWeight="400" ml={2}>
+                    <Text fontSize="sm" fontWeight="400">
                       {foodRequest.additionalInformation ||
                         'No details provided.'}
                     </Text>

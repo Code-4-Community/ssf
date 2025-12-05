@@ -137,7 +137,7 @@ export interface Order {
   foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
   donation: Donation;
-  status: string;
+  status: OrderStatus;
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;

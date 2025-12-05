@@ -16,7 +16,6 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
-import { Donation } from '../donations/donations.entity';
 
 @Controller('orders')
 export class OrdersController {
@@ -49,33 +48,26 @@ export class OrdersController {
     return this.ordersService.getPastOrders();
   }
 
-  @Get(':orderId/pantry')
+  @Get('/:orderId/pantry')
   async getPantryFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Pantry | null> {
+  ): Promise<Pantry> {
     return this.ordersService.findOrderPantry(orderId);
   }
 
-  @Get(':orderId/request')
+  @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodRequest | null> {
+  ): Promise<FoodRequest> {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
-  @Get(':orderId/manufacturer')
+  @Get('/:orderId/manufacturer')
   async getManufacturerFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodManufacturer | null> {
+  ): Promise<FoodManufacturer> {
     return this.ordersService.findOrderFoodManufacturer(orderId);
   }
-
-  // @Get(':orderId/donation')
-  // async getDonationFromOrder(
-  //   @Param('orderId', ParseIntPipe) orderId: number,
-  // ): Promise<Donation | null> {
-  //   return this.ordersService.findOrderDonation(orderId);
-  // }
 
   @Get('/:orderId')
   async getOrder(
@@ -91,7 +83,7 @@ export class OrdersController {
     return this.ordersService.findOrderByRequest(requestId);
   }
 
-  @Get(':orderId/allocations')
+  @Get('/:orderId/allocations')
   async getAllAllocationsByOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {
