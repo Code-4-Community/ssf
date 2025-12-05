@@ -18,6 +18,7 @@ import { RemoveOrderIdFromRequests1744133526650 } from '../migrations/1744133526
 import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { AddingEnumValues1760538239997 } from '../migrations/1760538239997-AddingEnumValues';
 import { UpdateColsToUseEnumType1760886499863 } from '../migrations/1760886499863-UpdateColsToUseEnumType';
+import { CreateDummyData1764723723063 } from '../migrations/1764723723063-createDummyData';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
 import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238-RemoveOrdersDonationId';
 import { AddVolunteerPantryUniqueConstraint1760033134668 } from '../migrations/1760033134668-AddVolunteerPantryUniqueConstraint';
@@ -61,6 +62,7 @@ const config = {
     AddVolunteerPantryUniqueConstraint1760033134668,
     AllergyFriendlyToBoolType1763963056712,
     UpdatePantryUserFieldsFixed1764350314832,
+    CreateDummyData1764723723063,
   ],
 };
 
