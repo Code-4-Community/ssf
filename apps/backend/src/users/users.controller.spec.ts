@@ -13,17 +13,25 @@ const mockUserService = mock<UsersService>();
 
 const mockUser1: Partial<User> = {
   id: 1,
-  role: Role.STANDARD_VOLUNTEER,
+  email: 'john@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  phone: '1234567890',
+  role: Role.VOLUNTEER,
 };
 
 const mockUser2: Partial<User> = {
   id: 2543210,
-  role: Role.LEAD_VOLUNTEER,
+  email: 'bobsmith@example.com',
+  firstName: 'Bob',
+  lastName: 'Smith',
+  phone: '9876',
+  role: Role.VOLUNTEER,
 };
 
 const mockUser3: Partial<User> = {
   id: 3,
-  role: Role.STANDARD_VOLUNTEER,
+  role: Role.VOLUNTEER,
 };
 
 const mockPantries: Partial<Pantry>[] = [
@@ -66,6 +74,23 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('GET /volunteers', () => {
+    it('should return all volunteers', async () => {
+      const volunteers = [mockUser1, mockUser2];
+      mockUserService.findUsersByRoles.mockResolvedValue(volunteers as User[]);
+
+      const result = await controller.getAllVolunteers();
+
+      const hasAdmin = result.some((user) => user.role === Role.ADMIN);
+      expect(hasAdmin).toBe(false);
+
+      expect(result).toEqual(volunteers);
+      expect(mockUserService.findUsersByRoles).toHaveBeenCalledWith([
+        Role.VOLUNTEER,
+      ]);
+    });
   });
 
   describe('GET /:id', () => {
@@ -142,7 +167,7 @@ describe('UsersController', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.STANDARD_VOLUNTEER,
+        role: Role.VOLUNTEER,
       };
 
       const error = new Error('Database error');
@@ -171,11 +196,11 @@ describe('UsersController', () => {
       expect(result).toEqual(assignments);
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe(1);
-      expect(result[0].pantryIds).toEqual([1, 2]);
+      expect(result[0].pantries).toEqual([1, 2]);
       expect(result[1].id).toBe(2543210);
-      expect(result[1].pantryIds).toEqual([1]);
+      expect(result[1].pantries).toEqual([1]);
       expect(result[2].id).toBe(3);
-      expect(result[2].pantryIds).toEqual([]);
+      expect(result[2].pantries).toEqual([]);
       expect(
         mockUserService.getVolunteersAndPantryAssignments,
       ).toHaveBeenCalled();
