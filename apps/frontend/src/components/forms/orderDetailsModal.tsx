@@ -75,14 +75,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Size of Shipment
                     </Text>
                   </Field.Label>
-                  <Text 
+                  <Text
                     fontSize="sm"
                     fontWeight="400"
-                    color="neutral.800" 
-                    border="1px solid" 
-                    borderColor="neutral.200" 
+                    color="neutral.800"
+                    border="1px solid"
+                    borderColor="neutral.200"
                     borderRadius="4px"
-                    p={2} 
+                    p={2}
                     mt={1}
                     w="full"
                   >
