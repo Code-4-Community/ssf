@@ -125,27 +125,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     Size of Shipment
                   </Text>
                 </Field.Label>
-<<<<<<< HEAD
-                <RadioGroup.Root
-                  value={requestedSize}
-                  onValueChange={(e: { value: string }) =>
-                    setRequestedSize(e.value)
-                  }
-                  name="size"
-                  disabled={readOnly}
-                  required
-                >
-                  <HStack gap="24px">
-                    {Object.values(RequestSize).map((option) => (
-                      <RadioGroup.Item key={option} value={option}>
-                        <RadioGroup.ItemHiddenInput />
-                        <RadioGroup.ItemControl />
-                        <RadioGroup.ItemText>{option}</RadioGroup.ItemText>
-                      </RadioGroup.Item>
-                    ))}
-                  </HStack>
-                </RadioGroup.Root>
-=======
                 <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
@@ -189,7 +168,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     </Menu.Content>
                   </Menu.Positioner>
                 </Menu.Root>
->>>>>>> main
               </Field.Root>
 
               <Field.Root mb={4}>
