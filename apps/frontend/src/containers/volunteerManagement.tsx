@@ -63,8 +63,8 @@ const VolunteerManagement: React.FC = () => {
   };
 
   return (
-    <Box flexDirection="column" p={4} mt={3}>
-      <Text fontSize="32px" fontWeight={400} fontFamily="Instrument Serif" color="#515151">Volunteer Management</Text>
+    <Box flexDirection="column" p={4} pt={12}>
+      <Text textStyle="h1" color="#515151">Volunteer Management</Text>
       {alertMessage && (
         <Alert.Root color={submitSuccess ? "neutral.800" : "red"} status="info" bg="white" variant="subtle" boxShadow="lg"  position="absolute" top="12px" right="12px" w="fit-content" maxW="400px">
           <Alert.Indicator />
@@ -89,10 +89,9 @@ const VolunteerManagement: React.FC = () => {
                 ps="7"
                 onChange={handleSearchNameChange}
                 color="neutral.600"
-                fontFamily="Karrik"
+                fontFamily="ibm"
                 fontWeight={400}
                 fontSize="14px"
-                _placeholder={{ color: "neutral.600", fontFamily: "Karrik", fontWeight: 400, fontSize: 14 }}
               />
             </InputGroup>
             <NewVolunteerModal onSubmitSuccess={() => {
@@ -126,7 +125,7 @@ const VolunteerManagement: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell textAlign="right">
                   <Link color="neutral.700" fontWeight={400} textStyle="p2" variant="underline" href={`/pantry-management/${volunteer.id}`}>
-                    View assigned pantries
+                    View Assigned Pantries
                   </Link>
                 </Table.Cell>
               </Table.Row>
