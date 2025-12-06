@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
   Text,
-  VStack,
   Dialog,
-  Portal,
   CloseButton,
-  Spacer,
+  Flex,
+  Textarea,
+  Field,
+  Tag,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, Order } from 'types/types';
@@ -45,91 +45,110 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   return (
     <Dialog.Root
       open={isOpen}
+      size="xl"
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
+      closeOnInteractOutside
     >
-      <Portal>
-        <Dialog.Backdrop bg="blackAlpha.200" />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.CloseTrigger asChild>
-              <CloseButton />
-            </Dialog.CloseTrigger>
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW={650}>
+          <Dialog.Header pb={0} mt={2}>
+            <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
+              Order {order.orderId}
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            {foodRequest && (
+              <>
+                <Text textStyle="p2" color="#111111">
+                  {order.pantry.pantryName}
+                </Text>
+                <Text mb={8} color="#52525B" textStyle="p2" pt={0} mt={0}>
+                  Requested {formatDate(foodRequest.requestedAt)}
+                </Text>
 
-            <Dialog.Header>
-              <VStack align="stretch" gap={0}>
-                <Dialog.Title
-                  fontSize="lg"
-                  mb={2}
-                  fontWeight="600"
-                  fontFamily="'Inter', sans-serif"
-                >
-                  Order {order.orderId}
-                </Dialog.Title>
-                {foodRequest && (
-                  <>
-                    <Text fontSize="sm" color="neutral.800">
-                      {order.pantry.pantryName}
-                    </Text>
-                    <Text fontSize="sm" color="neutral.800">
-                      Requested {formatDate(foodRequest.requestedAt)}
-                    </Text>
-                  </>
-                )}
-              </VStack>
-            </Dialog.Header>
-
-            <Dialog.Body>
-              {foodRequest && (
-                <VStack align="stretch" gap={6} my={2} color="neutral.800">
-                  <Box>
-                    <Text fontSize="md" fontWeight="600" mb={1}>
+                <Field.Root mb={4}>
+                  <Field.Label>
+                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
                       Size of Shipment
                     </Text>
-                    <Text fontSize="sm" fontWeight="400">
-                      {foodRequest.requestedSize}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontSize="md" fontWeight="600" mb={3}>
+                  </Field.Label>
+                  <Text 
+                    fontSize="sm"
+                    fontWeight="400"
+                    color="neutral.800" 
+                    border="1px solid" 
+                    borderColor="neutral.200" 
+                    borderRadius="4px"
+                    p={2} 
+                    mt={1}
+                    w="full"
+                  >
+                    {foodRequest.requestedSize}
+                  </Text>
+                </Field.Root>
+
+                <Field.Root mb={4}>
+                  <Field.Label>
+                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
                       Food Type(s)
                     </Text>
-                    <Box display="flex" flexWrap="wrap" gap={2}>
-                      {foodRequest.requestedItems.map((type, index) => (
-                        <Box
-                          display="inline-flex"
-                          alignItems="center"
-                          bg="neutral.100"
-                          border="2px solid"
-                          borderColor="neutral.300"
-                          borderRadius="4px"
-                          p={2}
-                          key={index}
-                          gap={4}
-                        >
-                          <Text fontSize="sm" fontWeight="400">
-                            {type}
-                          </Text>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Box>
-                  <Box>
-                    <Text fontSize="md" fontWeight="600" mb={1}>
+                  </Field.Label>
+                  <Flex wrap="wrap" mt={1} gap={2}>
+                    {foodRequest.requestedItems.map((item, index) => (
+                      <Tag.Root
+                        key={index}
+                        size="xl"
+                        variant="solid"
+                        bg="neutral.100"
+                        color="neutral.800"
+                        borderRadius="4px"
+                        borderColor="neutral.300"
+                        borderWidth="1px"
+                        fontFamily="Inter"
+                        fontWeight={500}
+                      >
+                        <Tag.Label>{item}</Tag.Label>
+                      </Tag.Root>
+                    ))}
+                  </Flex>
+                </Field.Root>
+
+                <Field.Root mb={4}>
+                  <Field.Label>
+                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
                       Additional Information
                     </Text>
-                    <Text fontSize="sm" fontWeight="400">
-                      {foodRequest.additionalInformation ||
-                        'No details provided.'}
-                    </Text>
-                  </Box>
-                </VStack>
-              )}
-            </Dialog.Body>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
+                  </Field.Label>
+                  <Textarea
+                    pl={2.5}
+                    value={
+                      foodRequest.additionalInformation ||
+                      'No additional information supplied.'
+                    }
+                    readOnly
+                    size="lg"
+                    textStyle="p2"
+                    color="neutral.800"
+                    bg="white"
+                    borderColor="neutral.100"
+                    borderWidth="1px"
+                    borderRadius="4px"
+                    resize="none"
+                    disabled
+                  />
+                </Field.Root>
+              </>
+            )}
+          </Dialog.Body>
+
+          <Dialog.CloseTrigger asChild>
+            <CloseButton size="lg" />
+          </Dialog.CloseTrigger>
+        </Dialog.Content>
+      </Dialog.Positioner>
     </Dialog.Root>
   );
 };
