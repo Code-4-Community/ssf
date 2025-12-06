@@ -123,16 +123,22 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       onDonationSuccess();
 
       if (donationId) {
-        const multipleItems: Partial<DonationItem>[] = rows.map((row) => ({
-          donationId,
+        const items = rows.map((row) => ({
           itemName: row.foodItem,
           quantity: parseInt(row.numItems),
+          reservedQuantity: 0,
+          status: 'available',
           ozPerItem: parseFloat(row.ozPerItem),
           estimatedValue: parseFloat(row.valuePerItem),
           foodType: row.foodType,
         }));
 
-        await ApiClient.postMultipleDonationItems(multipleItems);
+        const body = {
+          donationId,
+          items,
+        };
+
+        await ApiClient.postMultipleDonationItems(body);
 
         setRows([
           {
