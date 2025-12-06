@@ -3,6 +3,7 @@ import { DonationItemsController } from './donationItems.controller';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { mock } from 'jest-mock-extended';
+import { FoodType } from './types';
 
 const mockDonationItemsService = mock<DonationItemsService>();
 
@@ -19,7 +20,7 @@ describe('DonationItemsController', () => {
       status: 'available',
       ozPerItem: 15,
       estimatedValue: 200,
-      foodType: 'legume',
+      foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
     },
     {
       itemId: 2,
@@ -30,7 +31,7 @@ describe('DonationItemsController', () => {
       status: 'available',
       ozPerItem: 20,
       estimatedValue: 150,
-      foodType: 'grain',
+      foodType: FoodType.GLUTEN_FREE_BAKING_PANCAKE_MIXES,
     },
   ];
 
