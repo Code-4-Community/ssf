@@ -91,13 +91,17 @@ describe('UsersController', () => {
         },
       ];
 
-      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],);
+      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
+        volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
+      );
 
       const result = await controller.getAllVolunteers();
 
       expect(result).toEqual(volunteers);
       expect(result.some((u) => u.role === Role.ADMIN)).toBe(false);
-      expect(mockUserService.getVolunteersAndPantryAssignments).toHaveBeenCalled();
+      expect(
+        mockUserService.getVolunteersAndPantryAssignments,
+      ).toHaveBeenCalled();
     });
   });
 
