@@ -175,10 +175,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
 
-  const ASSIGNEE_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
-  const ROW_HEIGHT = 5;
-  const MAX_ROWS = 5;
-  const MIN_SECTION_HEIGHT = MAX_ROWS * ROW_HEIGHT;
+  const ASSIGNEE_COLORS = ['yellow', 'red', 'cyan', 'blue.ssf'];
 
   const pantryOptions = [
     ...new Set(orders.map((o) => o.pantry.pantryName)),

@@ -111,12 +111,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           <Text fontSize="sm" fontWeight="400">
                             {type}
                           </Text>
-
-                          <Spacer />
-
-                          <Text cursor="pointer" fontWeight="400">
-                            x
-                          </Text>
                         </Box>
                       ))}
                     </Box>
