@@ -17,15 +17,9 @@ import { OrderStatus } from './types';
 
 const mockOrdersRepository = mock<Repository<Order>>();
 
-const mockPantry: Pantry = {
+const mockPantry: Partial<Pantry> = {
   pantryId: 1,
   pantryName: 'Test Pantry',
-  addressLine1: '123 Test St',
-  addressLine2: 'Apt. 1',
-  addressCity: 'Boston',
-  addressState: 'MA',
-  addressZip: '02115',
-  addressCountry: 'US',
   allergenClients: '',
   refrigeratedDonation: RefrigeratedDonation.NO,
   reserveFoodForAllergic: 'Yes',
@@ -114,17 +108,17 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry 3' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 3' },
         },
       ];
 
@@ -162,17 +156,17 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry 1' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 1' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...mockPantry, pantryName: 'Test Pantry 2' },
+          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
       ];
 
