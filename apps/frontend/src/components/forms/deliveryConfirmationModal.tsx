@@ -59,7 +59,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   return (
     <Dialog.Root
       open={isOpen}
-      onOpenChange={(e: { open: boolean}) => {
+      onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
       size="xl"

@@ -79,8 +79,6 @@ export class DonationItemsService {
     return this.repo.save(donationItems);
   }
 
-
-
   async updateDonationItemQuantity(itemId: number): Promise<DonationItem> {
     validateId(itemId, 'Donation Item');
 

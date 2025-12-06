@@ -56,7 +56,9 @@ export class ApiClient {
   public async postMultipleDonationItems(
     body: unknown,
   ): Promise<DonationItem[]> {
-    return this.post('/api/donation-items/create-multiple', body) as Promise<DonationItem[]>;
+    return this.post('/api/donation-items/create-multiple', body) as Promise<
+      DonationItem[]
+    >;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
