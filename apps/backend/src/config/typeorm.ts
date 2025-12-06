@@ -19,9 +19,11 @@ import { AddOrders1739496585940 } from '../migrations/1739496585940-addOrders';
 import { AddingEnumValues1760538239997 } from '../migrations/1760538239997-AddingEnumValues';
 import { UpdateColsToUseEnumType1760886499863 } from '../migrations/1760886499863-UpdateColsToUseEnumType';
 import { UpdatePantriesTable1742739750279 } from '../migrations/1742739750279-updatePantriesTable';
-import { UpdatePantryUserFields1731171000000 } from '../migrations/1731171000000-UpdatePantryUserFields';
 import { RemoveOrdersDonationId1761500262238 } from '../migrations/1761500262238-RemoveOrdersDonationId';
+import { AddVolunteerPantryUniqueConstraint1760033134668 } from '../migrations/1760033134668-AddVolunteerPantryUniqueConstraint';
 import { AllergyFriendlyToBoolType1763963056712 } from '../migrations/1763963056712-AllergyFriendlyToBoolType';
+import { UpdatePantryUserFieldsFixed1764350314832 } from '../migrations/1764350314832-UpdatePantryUserFieldsFixed';
+import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 
 const config = {
   type: 'postgres',
@@ -54,9 +56,11 @@ const config = {
     AddingEnumValues1760538239997,
     UpdateColsToUseEnumType1760886499863,
     UpdatePantriesTable1742739750279,
-    UpdatePantryUserFields1731171000000,
     RemoveOrdersDonationId1761500262238,
+    UpdatePantryFields1763762628431,
+    AddVolunteerPantryUniqueConstraint1760033134668,
     AllergyFriendlyToBoolType1763963056712,
+    UpdatePantryUserFieldsFixed1764350314832,
   ],
 };
 

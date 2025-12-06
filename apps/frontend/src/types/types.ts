@@ -15,14 +15,22 @@ import {
 export interface Pantry {
   pantryId: number;
   pantryName: string;
-  addressLine1: string;
-  addressLine2?: string;
-  addressCity: string;
-  addressState: string;
-  addressZip: string;
-  addressCountry?: string;
+  shippingAddressLine1: string;
+  shippingAddressLine2?: string;
+  shippingAddressCity: string;
+  shippingAddressState: string;
+  shippingAddressZip: string;
+  shippingAddressCountry?: string;
+  mailingAddressLine1: string;
+  mailingAddressLine2?: string;
+  mailingAddressCity: string;
+  mailingAddressState: string;
+  mailingAddressZip: string;
+  mailingAddressCountry?: string;
   allergenClients: string;
   refrigeratedDonation: RefrigeratedDonation;
+  acceptFoodDeliveries: boolean;
+  deliveryWindowInstructions?: string;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
   dedicatedAllergyFriendly: boolean;
@@ -31,12 +39,20 @@ export interface Pantry {
   serveAllergicChildren?: ServeAllergicChildren;
   newsletterSubscription: boolean;
   restrictions: string[];
+  hasEmailContact: boolean;
+  emailContactOther?: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  pantryUser?: User;
   status: PantryStatus;
   dateApplied: Date;
   activities: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
+  volunteers?: User[];
 }
 
 export interface PantryApplicationDto {
@@ -44,16 +60,30 @@ export interface PantryApplicationDto {
   contactLastName: string;
   contactEmail: string;
   contactPhone: string;
+  hasEmailContact: boolean;
+  emailContactOther?: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
   pantryName: string;
-  addressLine1: string;
-  addressLine2?: string;
-  addressCity: string;
-  addressState: string;
-  addressZip: string;
-  addressCountry?: string;
+  shippingAddressLine1: string;
+  shippingAddressLine2?: string;
+  shippingAddressCity: string;
+  shippingAddressState: string;
+  shippingAddressZip: string;
+  shippingAddressCountry?: string;
+  mailingAddressLine1: string;
+  mailingAddressLine2?: string;
+  mailingAddressCity: string;
+  mailingAddressState: string;
+  mailingAddressZip: string;
+  mailingAddressCountry?: string;
   allergenClients: string;
   restrictions?: string[];
   refrigeratedDonation: RefrigeratedDonation;
+  acceptFoodDeliveries: boolean;
+  deliveryWindowInstructions?: string;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
   dedicatedAllergyFriendly: boolean;
@@ -113,6 +143,7 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  pantries?: Pantry[];
 }
 
 export interface FoodRequest {
@@ -171,22 +202,6 @@ export interface Allocation {
 export enum VolunteerType {
   LEAD_VOLUNTEER = 'lead_volunteer',
   STANDARD_VOLUNTEER = 'standard_volunteer',
-}
-
-export interface VolunteerPantryAssignment {
-  assignmentId: number;
-  volunteer: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
-  pantry: {
-    pantryId: number;
-    pantryName: string;
-  };
 }
 
 export enum Role {

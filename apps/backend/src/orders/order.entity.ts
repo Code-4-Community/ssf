@@ -5,12 +5,10 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToOne,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { Donation } from '../donations/donations.entity';
 import { OrderStatus } from './types';
 
 @Entity('orders')
@@ -44,13 +42,6 @@ export class Order {
 
   @Column({ name: 'shipped_by', nullable: true })
   shippedBy: number;
-
-  @ManyToOne(() => Donation, { nullable: false })
-  @JoinColumn({
-    name: 'donation_id',
-    referencedColumnName: 'donationId',
-  })
-  donation: Donation;
 
   @Column({
     name: 'status',
