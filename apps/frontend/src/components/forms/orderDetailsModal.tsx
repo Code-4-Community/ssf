@@ -6,6 +6,7 @@ import {
   Dialog,
   Portal,
   CloseButton,
+  Spacer,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, Order } from 'types/types';
@@ -99,17 +100,20 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <Box
                           display="inline-flex"
                           alignItems="center"
-                          justifyContent="space-between"
                           bg="neutral.100"
-                          border="1px solid"
+                          border="2px solid"
                           borderColor="neutral.300"
                           borderRadius="4px"
                           p={2}
                           key={index}
+                          gap={4}
                         >
-                          <Text fontSize="sm" fontWeight="400" mr={10}>
+                          <Text fontSize="sm" fontWeight="400">
                             {type}
                           </Text>
+
+                          <Spacer />
+
                           <Text cursor="pointer" fontWeight="400">
                             x
                           </Text>
