@@ -78,18 +78,26 @@ describe('UsersController', () => {
 
   describe('GET /volunteers', () => {
     it('should return all volunteers', async () => {
-      const volunteers = [mockUser1, mockUser2];
-      mockUserService.findUsersByRoles.mockResolvedValue(volunteers as User[]);
+      const volunteers: Partial<User>[] = [
+        {
+          id: 1,
+          role: Role.VOLUNTEER,
+          pantries: [{ pantryId: 1 }] as Pantry[],
+        },
+        {
+          id: 2,
+          role: Role.VOLUNTEER,
+          pantries: [{ pantryId: 2 }] as Pantry[],
+        },
+      ];
+
+      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],);
 
       const result = await controller.getAllVolunteers();
 
-      const hasAdmin = result.some((user) => user.role === Role.ADMIN);
-      expect(hasAdmin).toBe(false);
-
       expect(result).toEqual(volunteers);
-      expect(mockUserService.findUsersByRoles).toHaveBeenCalledWith([
-        Role.VOLUNTEER,
-      ]);
+      expect(result.some((u) => u.role === Role.ADMIN)).toBe(false);
+      expect(mockUserService.getVolunteersAndPantryAssignments).toHaveBeenCalled();
     });
   });
 
@@ -196,11 +204,11 @@ describe('UsersController', () => {
       expect(result).toEqual(assignments);
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe(1);
-      expect(result[0].pantries).toEqual([1, 2]);
+      expect(result[0].pantryIds).toEqual([1, 2]);
       expect(result[1].id).toBe(2543210);
-      expect(result[1].pantries).toEqual([1]);
+      expect(result[1].pantryIds).toEqual([1]);
       expect(result[2].id).toBe(3);
-      expect(result[2].pantries).toEqual([]);
+      expect(result[2].pantryIds).toEqual([]);
       expect(
         mockUserService.getVolunteersAndPantryAssignments,
       ).toHaveBeenCalled();
