@@ -34,7 +34,7 @@ export class CreateDonationItemDto {
   ozPerItem: number;
 
   @IsNumber()
-  @Min(0  )
+  @Min(0)
   estimatedValue: number;
 
   @IsEnum(FoodType)
