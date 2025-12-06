@@ -8,8 +8,10 @@ import { Role } from './types';
 import { mock } from 'jest-mock-extended';
 import { In } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
+import { PantriesService } from '../pantries/pantries.service';
 
 const mockUserRepository = mock<Repository<User>>();
+const mockPantriesService = mock<PantriesService>();
 
 const mockUser: User = {
   id: 1,
@@ -24,12 +26,23 @@ describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
+    mockUserRepository.create.mockReset();
+    mockUserRepository.save.mockReset();
+    mockUserRepository.findOneBy.mockReset();
+    mockUserRepository.find.mockReset();
+    mockUserRepository.remove.mockReset();
+    mockPantriesService.findByIds.mockReset();
+
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: PantriesService,
+          useValue: mockPantriesService,
         },
       ],
     }).compile();
@@ -43,6 +56,7 @@ describe('UsersService', () => {
     mockUserRepository.findOneBy.mockReset();
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
+    mockPantriesService.findByIds.mockReset();
   });
 
   afterEach(() => {
@@ -61,7 +75,7 @@ describe('UsersService', () => {
         lastName: 'Smith',
         phone: '9876543210',
         role: Role.ADMIN,
-      };
+      } as User;
 
       const createdUser = { ...userData, id: 1 };
       mockUserRepository.create.mockReturnValue(createdUser);
@@ -198,6 +212,7 @@ describe('UsersService', () => {
       expect(result).toEqual(users);
       expect(mockUserRepository.find).toHaveBeenCalledWith({
         where: { role: In(roles) },
+        relations: ['pantries'],
       });
     });
 
