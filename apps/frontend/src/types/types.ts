@@ -159,15 +159,16 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
+  pantry: Pantry;
+  request: FoodRequest;
   requestId: number;
-  pantryId: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
-  status: string;
+  donation: Donation;
+  status: OrderStatus;
   createdAt: string;
-  shippedAt: string;
-  deliveredAt: string;
-  donationId: number;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 }
 
 export interface FoodManufacturer {
