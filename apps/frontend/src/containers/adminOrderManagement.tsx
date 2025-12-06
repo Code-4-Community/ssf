@@ -387,7 +387,14 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                     minW="120px"
                     zIndex={20}
                   >
-                    <VStack align="stretch" color="neutral.800" gap={1} fontSize="12px" fontFamily="Inter" fontWeight="500">
+                    <VStack
+                      align="stretch"
+                      color="neutral.800"
+                      gap={1}
+                      fontSize="12px"
+                      fontFamily="Inter"
+                      fontWeight="500"
+                    >
                       <Box
                         cursor="pointer"
                         px={2}
