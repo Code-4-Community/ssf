@@ -94,11 +94,11 @@ const AdminOrderManagement: React.FC = () => {
         const totalPages = Math.ceil(allOrders.length / MAX_PER_STATUS);
 
         return (
-          <Box 
+          <Box
             key={status}
             mb={12}
             position="relative"
-            minHeight={totalPages > 1 ? "380px" : "auto"}
+            minHeight={totalPages > 1 ? '380px' : 'auto'}
           >
             <OrderTableSection
               orders={allOrders.length > 0 ? displayedOrders : []}
@@ -114,7 +114,9 @@ const AdminOrderManagement: React.FC = () => {
                   count={allOrders.length}
                   pageSize={MAX_PER_STATUS}
                   page={currentPage}
-                  onPageChange={(e: { page: number }) => handlePageChange(status, e.page)}
+                  onPageChange={(e: { page: number }) =>
+                    handlePageChange(status, e.page)
+                  }
                 >
                   <ButtonGroup
                     display="flex"
