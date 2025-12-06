@@ -302,79 +302,90 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
               </Button>
 
               {isFilterOpen && (
-              <>
-                <Box
-                  position="fixed"
-                  top={0}
-                  left={0}
-                  right={0}
-                  bottom={0}
-                  onClick={() => setIsFilterOpen(false)}
-                  zIndex={10}
-                />
-                <Box
-                  position="absolute"
-                  top="100%"
-                  right={0}
-                  mt={2}
-                  bg="white"
-                  border="1px solid"
-                  borderColor="gray.200"
-                  borderRadius="md"
-                  boxShadow="lg"
-                  p={4}
-                  minW="275px"
-                  maxH="200px"
-                  overflowY="auto"
-                  zIndex={20}
-                >
-                  <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
-                    <Search
-                      size={16}
-                      color="#A3A3A3"
-                      style={{ position: "absolute", top: "50%", left: 8, transform: "translateY(-50%)" }}
-                    />
-                    <Input
-                      placeholder="Search"
-                      color={searchPantry ? "neutral.800" : "neutral.300"}
-                      value={searchPantry}
-                      onChange={(e) => setSearchPantry(e.target.value)}
-                      fontSize="12px"
-                      pl="30px"
-                      border="none"
-                      bg="transparent"
-                      _focus={{ boxShadow: "none", border: "none", outline: "none" }}
-                    />
-                  </Box>
-                  <VStack
-                    align="stretch"
-                    fontSize="12px"
-                    fontFamily="Inter"
-                    color="neutral.800"
-                    fontWeight="500"
-                    gap={2}
+                <>
+                  <Box
+                    position="fixed"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    onClick={() => setIsFilterOpen(false)}
+                    zIndex={10}
+                  />
+                  <Box
+                    position="absolute"
+                    top="100%"
+                    right={0}
+                    mt={2}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p={4}
+                    minW="275px"
+                    maxH="200px"
+                    overflowY="auto"
+                    zIndex={20}
                   >
-                    {pantryOptions
-                      .filter((pantry) =>
-                        pantry.toLowerCase().includes(searchPantry.toLowerCase())
-                      )
-                      .map((pantry) => (
-                        <Checkbox.Root
-                          key={pantry}
-                          checked={selectedPantries.includes(pantry)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(pantry, !!e.checked)
-                          }
-                          size="md"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{pantry}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
-                  </VStack>
-                </Box>
-              </>
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={16}
+                        color="#A3A3A3"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={searchPantry ? 'neutral.800' : 'neutral.300'}
+                        value={searchPantry}
+                        onChange={(e) => setSearchPantry(e.target.value)}
+                        fontSize="12px"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
+                    <VStack
+                      align="stretch"
+                      fontSize="12px"
+                      fontFamily="Inter"
+                      color="neutral.800"
+                      fontWeight="500"
+                      gap={2}
+                    >
+                      {pantryOptions
+                        .filter((pantry) =>
+                          pantry
+                            .toLowerCase()
+                            .includes(searchPantry.toLowerCase()),
+                        )
+                        .map((pantry) => (
+                          <Checkbox.Root
+                            key={pantry}
+                            checked={selectedPantries.includes(pantry)}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(pantry, !!e.checked)
+                            }
+                            size="md"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{pantry}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
+                    </VStack>
+                  </Box>
+                </>
               )}
             </Box>
 
@@ -550,9 +561,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         <Box
                           key={index}
                           borderRadius="full"
-                          bg={
-                            ASSIGNEE_COLORS[index % ASSIGNEE_COLORS.length]
-                          }
+                          bg={ASSIGNEE_COLORS[index % ASSIGNEE_COLORS.length]}
                           width="33px"
                           height="33px"
                           display="flex"
@@ -562,8 +571,12 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                           p={2}
                         >
                           {/* TODO: Change logic later to only get one volunteer */}
-                          {order.pantry.volunteers[0].firstName.charAt(0).toUpperCase()}
-                          {order.pantry.volunteers[0].lastName.charAt(0).toUpperCase()}
+                          {order.pantry.volunteers[0].firstName
+                            .charAt(0)
+                            .toUpperCase()}
+                          {order.pantry.volunteers[0].lastName
+                            .charAt(0)
+                            .toUpperCase()}
                         </Box>
                       ) : (
                         <Box>No Assignees</Box>
