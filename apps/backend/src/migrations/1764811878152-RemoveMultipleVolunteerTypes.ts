@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveMultipleVolunteerTypes1764811878152 implements MigrationInterface {
+export class RemoveMultipleVolunteerTypes1764811878152
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE users ALTER COLUMN role DROP DEFAULT;
