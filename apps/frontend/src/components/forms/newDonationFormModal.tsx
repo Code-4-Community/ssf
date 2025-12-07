@@ -131,7 +131,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           foodType: row.foodType,
         }));
 
-        await ApiClient.postMultipleDonationItems({ donationId, items});
+        await ApiClient.postMultipleDonationItems({ donationId, items });
 
         setRows([
           {
