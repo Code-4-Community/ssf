@@ -100,7 +100,7 @@ export interface PantryApplicationDto {
 export interface Donation {
   donationId: number;
   dateDonated: string;
-  status: string;
+  status: DonationStatus;
   totalItems: number;
   totalOz: number;
   totalEstimatedValue: number;
@@ -162,7 +162,7 @@ export interface Order {
   pantryId: number;
   foodManufacturer: FoodManufacturer;
   shippedBy: number | null;
-  status: string;
+  status: OrderStatus;
   createdAt: string;
   shippedAt: string;
   deliveredAt: string;
