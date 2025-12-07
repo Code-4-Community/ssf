@@ -9,8 +9,6 @@ import {
   VStack,
   ButtonGroup,
   Checkbox,
-  InputGroup,
-  InputElement,
   Input,
 } from '@chakra-ui/react';
 import {
