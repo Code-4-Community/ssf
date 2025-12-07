@@ -24,6 +24,7 @@ const isPhoneValid = (phone: string): boolean => {
 export interface USPhoneInputProps {
   value: string;
   onChange: (phone: string) => void;
+  allowEmpty?: boolean;
   inputProps?: object;
 }
 
@@ -34,6 +35,7 @@ export interface USPhoneInputProps {
 export const USPhoneInput: React.FC<USPhoneInputProps> = ({
   value,
   onChange,
+  allowEmpty = false,
   inputProps,
 }) => {
   const phoneInput = usePhoneInput({
@@ -41,9 +43,15 @@ export const USPhoneInput: React.FC<USPhoneInputProps> = ({
     disableDialCodeAndPrefix: true,
     value,
     onChange: (data) => {
-      onChange(data.phone);
+      // +1 country code is automatically added to data.phone, so after removing
+      // all non-digits, a length of 0-1 means the field is empty
+      // (the input does not allow non-digit characters)
+      const digits = data.phone.replace(/\D/g, '')
+      const isEmpty = !data.phone || data.phone.trim() === '' || digits.length <= 1;
 
-      if (isPhoneValid(data.phone)) {
+      onChange(isEmpty ? '' : data.phone);
+
+      if ((isEmpty && allowEmpty) || isPhoneValid(data.phone)) {
         phoneInput.inputRef.current?.setCustomValidity('');
       } else {
         phoneInput.inputRef.current?.setCustomValidity('Invalid phone number.');
