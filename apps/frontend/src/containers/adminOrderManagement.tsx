@@ -81,7 +81,7 @@ const AdminOrderManagement: React.FC = () => {
   };
 
   return (
-    <Box p={12} bg="white">
+    <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Order Management
       </Heading>
@@ -130,8 +130,13 @@ const AdminOrderManagement: React.FC = () => {
                     <Pagination.PrevTrigger
                       color="neutral.800"
                       _hover={{ color: 'black' }}
+                      disabled={currentPage === 1}
                     >
-                      <ChevronLeft size={16} cursor="pointer" />
+                      <ChevronLeft
+                        size={16}
+                        style={{ cursor: currentPage !== 1 ? "pointer" : "default" }}
+                      />
+
                     </Pagination.PrevTrigger>
 
                     <Pagination.Items
@@ -150,8 +155,12 @@ const AdminOrderManagement: React.FC = () => {
                     <Pagination.NextTrigger
                       color="neutral.800"
                       _hover={{ color: 'black' }}
+                      disabled={currentPage === totalPages}
                     >
-                      <ChevronRight size={16} cursor="pointer" />
+                      <ChevronRight 
+                        size={16}
+                        style={{ cursor: currentPage !== totalPages ? "pointer" : "default" }}
+                       />
                     </Pagination.NextTrigger>
                   </ButtonGroup>
                 </Pagination.Root>
@@ -260,7 +269,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           fontFamily="'Inter', sans-serif"
           fontSize="sm"
           color="neutral.600"
-          minHeight="300px"
+          py={10}
           gap={2}
         >
           <Box mb={2}>
@@ -269,7 +278,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
           <Box fontWeight="600" fontSize="lg" color="neutral.800">
             No Orders
           </Box>
-          <Box color="neutral.300">
+          <Box color="neutral.700" fontWeight="400">
             You have no {status.toLowerCase()} orders at this time.
           </Box>
         </Box>
@@ -328,7 +337,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                   >
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
-                        size={16}
+                        size={18}
                         color="#B8B8B8"
                         style={{
                           position: 'absolute',
