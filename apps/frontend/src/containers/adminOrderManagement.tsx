@@ -331,7 +331,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
                         size={16}
-                        color="#A3A3A3"
+                        color="#B8B8B8"
                         style={{
                           position: 'absolute',
                           top: '50%',
@@ -344,7 +344,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         color={searchPantry ? 'neutral.800' : 'neutral.300'}
                         value={searchPantry}
                         onChange={(e) => setSearchPantry(e.target.value)}
-                        fontSize="12px"
+                        fontSize="sm"
                         pl="30px"
                         border="none"
                         bg="transparent"

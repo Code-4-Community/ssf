@@ -82,7 +82,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     border="1px solid"
                     borderColor="neutral.200"
                     borderRadius="4px"
-                    p={2}
                     mt={1}
                     w="full"
                   >
