@@ -85,8 +85,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   };
 
   const deleteRow = () => {
-    if (rows.length === 1) return;
-
     const newRows = rows.slice(0, -1);
     setRows(newRows);
     calculateTotals(newRows);
@@ -133,12 +131,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           foodType: row.foodType,
         }));
 
-        const body = {
-          donationId,
-          items,
-        };
-
-        await ApiClient.postMultipleDonationItems(body);
+        await ApiClient.postMultipleDonationItems({ donationId, items});
 
         setRows([
           {

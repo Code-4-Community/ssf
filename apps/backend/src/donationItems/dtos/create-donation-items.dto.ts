@@ -6,7 +6,6 @@ import {
   Min,
   IsEnum,
   IsNotEmpty,
-  Max,
   Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -19,7 +18,7 @@ export class CreateDonationItemDto {
   itemName: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   quantity: number;
 
   @IsNumber()
@@ -27,14 +26,16 @@ export class CreateDonationItemDto {
   reservedQuantity: number;
 
   @IsString()
+  @IsNotEmpty()
+  @Length(1, 25)
   status: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   ozPerItem: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   estimatedValue: number;
 
   @IsEnum(FoodType)

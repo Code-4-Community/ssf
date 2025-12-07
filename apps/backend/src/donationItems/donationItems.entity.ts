@@ -31,7 +31,7 @@ export class DonationItem {
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
   reservedQuantity: number;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'avaliable' })
+  @Column({ name: 'status', type: 'varchar', length: 25, default: 'available' })
   status: string;
 
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })

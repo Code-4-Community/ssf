@@ -12,7 +12,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { FoodType } from './types';
-import { CreateMultipleDonationItemsDto } from './dtos/create-donationItems.dto';
+import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
 
 @Controller('donation-items')
 //@UseInterceptors()

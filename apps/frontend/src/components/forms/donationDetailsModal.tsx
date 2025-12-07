@@ -12,7 +12,7 @@ import { Donation, DonationItem } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface DonationDetailsModalProps {
-  donation: Donation | null;
+  donation?: Donation;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -22,7 +22,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [loadedDonation, setLoadedDonation] = useState<Donation | null>(null);
+  const [loadedDonation, setLoadedDonation] = useState<Donation>();
   const [items, setItems] = useState<DonationItem[]>([]);
 
   const donationId = donation?.donationId; // adjust if your ID field is different
