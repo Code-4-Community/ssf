@@ -84,7 +84,6 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  status: string;
   ozPerItem: number;
   estimatedValue: number;
   foodType: string;
@@ -167,7 +166,6 @@ export interface Allocation {
   allocatedQuantity: number;
   reservedAt: string;
   fulfilledAt: string;
-  status: string;
 }
 
 export enum VolunteerType {
