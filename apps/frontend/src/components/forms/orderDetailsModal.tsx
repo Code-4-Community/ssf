@@ -79,9 +79,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     fontSize="sm"
                     fontWeight="400"
                     color="neutral.800"
-                    border="1px solid"
-                    borderColor="neutral.200"
-                    borderRadius="4px"
                     mt={1}
                     w="full"
                   >
@@ -122,19 +119,17 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
                   <Textarea
-                    pl={2.5}
                     value={
                       foodRequest.additionalInformation ||
                       'No additional information supplied.'
                     }
                     readOnly
+                    pl={-2}
                     size="lg"
                     textStyle="p2"
                     color="neutral.800"
                     bg="white"
-                    borderColor="neutral.100"
-                    borderWidth="1px"
-                    borderRadius="4px"
+                    border="none"
                     resize="none"
                     disabled
                   />
