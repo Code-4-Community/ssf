@@ -99,7 +99,7 @@ export class DonationItemsController {
               status: { type: 'string', example: 'available' },
               ozPerItem: { type: 'integer', example: 5 },
               estimatedValue: { type: 'integer', example: 100 },
-              foodType: { type: 'string', example: 'grain' },
+              foodType: { type: 'string', enum: Object.values(FoodType), example: FoodType.DAIRY_FREE_ALTERNATIVES },
             },
           },
         },

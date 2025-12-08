@@ -60,6 +60,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();
       }}
+      closeOnInteractOutside
       scrollBehavior="inside"
     >
       <Portal>

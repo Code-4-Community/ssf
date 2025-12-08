@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
-import { DonationItem, FoodTypes } from '../../types/types';
+import { FoodTypes } from '../../types/types';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
