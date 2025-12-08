@@ -134,9 +134,10 @@ const AdminOrderManagement: React.FC = () => {
                     >
                       <ChevronLeft
                         size={16}
-                        style={{ cursor: currentPage !== 1 ? "pointer" : "default" }}
+                        style={{
+                          cursor: currentPage !== 1 ? 'pointer' : 'default',
+                        }}
                       />
-
                     </Pagination.PrevTrigger>
 
                     <Pagination.Items
@@ -157,10 +158,13 @@ const AdminOrderManagement: React.FC = () => {
                       _hover={{ color: 'black' }}
                       disabled={currentPage === totalPages}
                     >
-                      <ChevronRight 
+                      <ChevronRight
                         size={16}
-                        style={{ cursor: currentPage !== totalPages ? "pointer" : "default" }}
-                       />
+                        style={{
+                          cursor:
+                            currentPage !== totalPages ? 'pointer' : 'default',
+                        }}
+                      />
                     </Pagination.NextTrigger>
                   </ButtonGroup>
                 </Pagination.Root>
