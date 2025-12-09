@@ -30,7 +30,4 @@ export class Allocation {
 
   @Column({ name: 'fulfilled_at', type: 'timestamp' })
   fulfilledAt: Date;
-
-  @Column({ name: 'status', type: 'varchar', length: 255 })
-  status: string;
 }
