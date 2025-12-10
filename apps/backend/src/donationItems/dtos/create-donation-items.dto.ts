@@ -25,11 +25,6 @@ export class CreateDonationItemDto {
   @Min(0)
   reservedQuantity: number;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(1, 25)
-  status: string;
-
   @IsNumber()
   @Min(1)
   ozPerItem: number;

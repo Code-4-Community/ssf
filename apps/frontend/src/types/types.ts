@@ -193,7 +193,6 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    status: string;
     ozPerItem: number;
     estimatedValue: number;
     foodType: string;

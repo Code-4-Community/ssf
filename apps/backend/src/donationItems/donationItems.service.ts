@@ -50,7 +50,6 @@ export class DonationItemsService {
       itemName: string;
       quantity: number;
       reservedQuantity: number;
-      status: string;
       ozPerItem: number;
       estimatedValue: number;
       foodType: FoodType;
@@ -67,7 +66,6 @@ export class DonationItemsService {
         itemName: item.itemName,
         quantity: item.quantity,
         reservedQuantity: item.reservedQuantity,
-        status: item.status,
         ozPerItem: item.ozPerItem,
         estimatedValue: item.estimatedValue,
         foodType: item.foodType,

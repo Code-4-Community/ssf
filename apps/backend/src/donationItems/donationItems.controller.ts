@@ -93,7 +93,6 @@ export class DonationItemsController {
               itemName: { type: 'string', example: 'Rice Noodles' },
               quantity: { type: 'integer', example: 100 },
               reservedQuantity: { type: 'integer', example: 0 },
-              status: { type: 'string', example: 'available' },
               ozPerItem: { type: 'integer', example: 5 },
               estimatedValue: { type: 'integer', example: 100 },
               foodType: {
