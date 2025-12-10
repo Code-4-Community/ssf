@@ -13,17 +13,25 @@ const mockUserService = mock<UsersService>();
 
 const mockUser1: Partial<User> = {
   id: 1,
-  role: Role.STANDARD_VOLUNTEER,
+  email: 'john@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  phone: '1234567890',
+  role: Role.VOLUNTEER,
 };
 
 const mockUser2: Partial<User> = {
   id: 2543210,
-  role: Role.LEAD_VOLUNTEER,
+  email: 'bobsmith@example.com',
+  firstName: 'Bob',
+  lastName: 'Smith',
+  phone: '9876',
+  role: Role.VOLUNTEER,
 };
 
 const mockUser3: Partial<User> = {
   id: 3,
-  role: Role.STANDARD_VOLUNTEER,
+  role: Role.VOLUNTEER,
 };
 
 const mockPantries: Partial<Pantry>[] = [
@@ -66,6 +74,35 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('GET /volunteers', () => {
+    it('should return all volunteers', async () => {
+      const volunteers: Partial<User>[] = [
+        {
+          id: 1,
+          role: Role.VOLUNTEER,
+          pantries: [{ pantryId: 1 }] as Pantry[],
+        },
+        {
+          id: 2,
+          role: Role.VOLUNTEER,
+          pantries: [{ pantryId: 2 }] as Pantry[],
+        },
+      ];
+
+      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
+        volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
+      );
+
+      const result = await controller.getAllVolunteers();
+
+      expect(result).toEqual(volunteers);
+      expect(result.some((u) => u.role === Role.ADMIN)).toBe(false);
+      expect(
+        mockUserService.getVolunteersAndPantryAssignments,
+      ).toHaveBeenCalled();
+    });
   });
 
   describe('GET /:id', () => {
@@ -142,7 +179,7 @@ describe('UsersController', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.STANDARD_VOLUNTEER,
+        role: Role.VOLUNTEER,
       };
 
       const error = new Error('Database error');

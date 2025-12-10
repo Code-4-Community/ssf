@@ -52,7 +52,7 @@ export class PantryApplicationDto {
   @IsNotEmpty()
   @MaxLength(255)
   emailContactOther?: string;
-  
+
   @IsOptional()
   @IsString()
   @IsNotEmpty()
