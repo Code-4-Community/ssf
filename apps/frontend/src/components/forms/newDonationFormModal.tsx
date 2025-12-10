@@ -125,7 +125,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           itemName: row.foodItem,
           quantity: parseInt(row.numItems),
           reservedQuantity: 0,
-          status: 'available',
           ozPerItem: parseFloat(row.ozPerItem),
           estimatedValue: parseFloat(row.valuePerItem),
           foodType: row.foodType,
