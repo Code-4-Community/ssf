@@ -226,7 +226,7 @@ describe('RequestsController', () => {
         dateReceived: new Date().toISOString(),
         feedback: 'No photos delivery!',
       };
-      
+
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
@@ -271,7 +271,7 @@ describe('RequestsController', () => {
         dateReceived: new Date().toISOString(),
         feedback: 'Empty photos array delivery!',
       };
-      
+
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
