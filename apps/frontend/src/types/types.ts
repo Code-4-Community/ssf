@@ -187,6 +187,18 @@ export interface CreateFoodRequestBody {
   photos: string[] | null | undefined;
 }
 
+export interface CreateMultipleDonationItemsBody {
+  donationId: number;
+  items: {
+    itemName: string;
+    quantity: number;
+    reservedQuantity: number;
+    ozPerItem: number;
+    estimatedValue: number;
+    foodType: string;
+  }[];
+}
+
 export interface Allocation {
   allocationId: number;
   orderId: number;

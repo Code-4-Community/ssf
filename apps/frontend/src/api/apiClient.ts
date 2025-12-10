@@ -10,6 +10,7 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  CreateMultipleDonationItemsBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -51,6 +52,14 @@ export class ApiClient {
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
+  public async postMultipleDonationItems(
+    body: CreateMultipleDonationItemsBody,
+  ): Promise<DonationItem[]> {
+    return this.post('/api/donation-items/create-multiple', body) as Promise<
+      DonationItem[]
+    >;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
