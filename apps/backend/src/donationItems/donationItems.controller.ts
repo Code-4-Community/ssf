@@ -36,7 +36,6 @@ export class DonationItemsController {
         itemName: { type: 'string', example: 'Rice Noodles' },
         quantity: { type: 'integer', example: 100 },
         reservedQuantity: { type: 'integer', example: 0 },
-        status: { type: 'string', example: 'available' },
         ozPerItem: { type: 'integer', example: 5 },
         estimatedValue: { type: 'integer', example: 100 },
         foodType: {
@@ -54,7 +53,6 @@ export class DonationItemsController {
       itemName: string;
       quantity: number;
       reservedQuantity: number;
-      status: string;
       ozPerItem: number;
       estimatedValue: number;
       foodType: FoodType;
@@ -71,7 +69,6 @@ export class DonationItemsController {
       body.itemName,
       body.quantity,
       body.reservedQuantity,
-      body.status,
       body.ozPerItem,
       body.estimatedValue,
       body.foodType,
