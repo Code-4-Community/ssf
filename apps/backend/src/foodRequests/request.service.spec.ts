@@ -154,12 +154,12 @@ describe('RequestsService', () => {
 
   describe('find', () => {
     it('should return all food requests for a specific pantry', async () => {
-      const mockRequests = [
+      const mockRequests: Partial<FoodRequest>[] = [
         mockRequest,
         {
           requestId: 2,
           pantryId: 1,
-          requestedSize: 'Large (10-20 boxes)',
+          requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
           requestedAt: null,
@@ -171,7 +171,7 @@ describe('RequestsService', () => {
         {
           requestId: 3,
           pantryId: 2,
-          requestedSize: 'Small (1-5 boxes)',
+          requestedSize: RequestSize.SMALL,
           requestedItems: ['Fruits', 'Snacks'],
           additionalInformation: 'No nuts, please.',
           requestedAt: null,

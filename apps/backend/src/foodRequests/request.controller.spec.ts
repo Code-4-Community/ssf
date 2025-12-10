@@ -26,6 +26,8 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.updateDeliveryDetails?.mockReset();
+    mockAWSS3Service.upload.mockReset();
+    mockOrdersService.updateStatus.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RequestsController],
@@ -184,7 +186,7 @@ describe('RequestsController', () => {
 
       mockOrdersService.updateStatus.mockResolvedValue();
 
-      const updatedRequest = {
+      const updatedRequest: Partial<FoodRequest> = {
         requestId,
         pantryId: 1,
         dateReceived: new Date(body.dateReceived),
@@ -214,6 +216,96 @@ describe('RequestsController', () => {
         uploadedUrls,
       );
 
+      expect(result).toEqual(updatedRequest);
+    });
+
+    it('should handle no photos being uploaded', async () => {
+      const requestId = 1;
+
+      const body = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'No photos delivery!',
+      };
+      
+      mockRequestsService.findOne.mockResolvedValue({
+        requestId,
+        pantryId: 1,
+        order: { orderId: 100 },
+      } as FoodRequest);
+
+      mockOrdersService.updateStatus.mockResolvedValue();
+
+      const updatedRequest: Partial<FoodRequest> = {
+        requestId,
+        pantryId: 1,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: [],
+      };
+
+      mockRequestsService.updateDeliveryDetails.mockResolvedValue(
+        updatedRequest as FoodRequest,
+      );
+
+      const result = await controller.confirmDelivery(requestId, body);
+
+      expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
+      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
+        100,
+        OrderStatus.DELIVERED,
+      );
+      expect(mockRequestsService.updateDeliveryDetails).toHaveBeenCalledWith(
+        requestId,
+        new Date(body.dateReceived),
+        body.feedback,
+        [],
+      );
+      expect(result).toEqual(updatedRequest);
+    });
+
+    it('should handle empty photos array', async () => {
+      const requestId = 1;
+
+      const body = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'Empty photos array delivery!',
+      };
+      
+      mockRequestsService.findOne.mockResolvedValue({
+        requestId,
+        pantryId: 1,
+        order: { orderId: 101 },
+      } as FoodRequest);
+
+      mockOrdersService.updateStatus.mockResolvedValue();
+
+      const updatedRequest: Partial<FoodRequest> = {
+        requestId,
+        pantryId: 1,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: [],
+      };
+
+      mockRequestsService.updateDeliveryDetails.mockResolvedValue(
+        updatedRequest as FoodRequest,
+      );
+
+      const result = await controller.confirmDelivery(requestId, body, []);
+
+      expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
+      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
+        101,
+        OrderStatus.DELIVERED,
+      );
+      expect(mockRequestsService.updateDeliveryDetails).toHaveBeenCalledWith(
+        requestId,
+        new Date(body.dateReceived),
+        body.feedback,
+        [],
+      );
       expect(result).toEqual(updatedRequest);
     });
 
