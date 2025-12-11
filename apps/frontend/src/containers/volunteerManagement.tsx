@@ -28,6 +28,8 @@ const VolunteerManagement: React.FC = () => {
 
   const pageSize = 8;
 
+  const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+
   useEffect(() => {
     const fetchVolunteers = async () => {
       try {
@@ -118,7 +120,27 @@ const VolunteerManagement: React.FC = () => {
             {paginatedVolunteers?.map((volunteer) => (
               <Table.Row key={volunteer.id}>
                 <Table.Cell>
-                  {volunteer.firstName} {volunteer.lastName}
+                  <Box display="flex" alignItems="center" gap={5}>
+                    <Box
+                        borderRadius="full"
+                        bg={USER_ICON_COLORS[Math.floor(Math.random() * USER_ICON_COLORS.length)]}
+                        width="33px"
+                        height="33px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        color="white"
+                        p={2}
+                      >
+                        {volunteer.firstName
+                          .charAt(0)
+                          .toUpperCase()}
+                        {volunteer.lastName
+                          .charAt(0)
+                          .toUpperCase()}
+                      </Box>
+                    {volunteer.firstName} {volunteer.lastName}
+                  </Box>
                 </Table.Cell>
                 <Table.Cell>
                   {volunteer.email}
