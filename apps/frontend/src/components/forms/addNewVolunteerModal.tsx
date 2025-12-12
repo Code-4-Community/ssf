@@ -75,8 +75,8 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
         </Button>
       </Dialog.Trigger>
       <Dialog.Backdrop />
-      <Dialog.Positioner>
-        <Dialog.Content maxW="49em">
+      <Dialog.Positioner alignItems="center">
+        <Dialog.Content maxW="40em" mt="-8">
           <Dialog.Header pb={1}>
             <Dialog.Title fontSize="18px" fontWeight={600} fontFamily="Inter" color="#000">
               Add New Volunteer
@@ -89,20 +89,20 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
             </Text>
             <Flex gap={8} justifyContent="flex-start" my={4}>
               <Field.Root>
-                <Field.Label>First Name</Field.Label>
+                <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>First Name</Field.Label>
                 <Input color="neutral.700" textStyle="p2" fontWeight={400} value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
               </Field.Root>
               <Field.Root>
-                <Field.Label>Last Name</Field.Label>
+                <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>Last Name</Field.Label>
                 <Input color="neutral.700" textStyle="p2" fontWeight={400} value={lastName} onChange={(e) => setLastName(e.target.value)}/>
               </Field.Root>
             </Flex>
             <Field.Root>
-              <Field.Label>Email</Field.Label>
+              <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>Email</Field.Label>
               <Input color="neutral.700" textStyle="p2" fontWeight={400} value={email} onChange={(e) => setEmail(e.target.value)}/>
             </Field.Root>
             <Field.Root my={4}>
-              <Field.Label>Phone Number</Field.Label>
+              <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>Phone Number</Field.Label>
               <Input color="neutral.700" textStyle="p2" fontWeight={400} value={phone} onChange={(e) => setPhone(e.target.value)}/>
             </Field.Root>
             {error && (
@@ -111,8 +111,8 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
               </Text>
             )}
             <Flex justifyContent="flex-end" mt={4} gap={4}>
-              <Button textStyle="p2" fontWeight={600} bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
               <Button textStyle="p2" fontWeight={600} color="neutral.800" variant='outline' onClick={handleClear}>Cancel</Button>
+              <Button textStyle="p2" fontWeight={600} bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
             </Flex>
           </Dialog.Body>
         </Dialog.Content>

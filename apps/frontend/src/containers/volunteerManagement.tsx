@@ -65,7 +65,7 @@ const VolunteerManagement: React.FC = () => {
   };
 
   return (
-    <Box flexDirection="column" p={4} pt={12}>
+    <Box flexDirection="column" p={12}>
       <Text textStyle="h1" color="#515151">Volunteer Management</Text>
       {alertMessage && (
         <Alert.Root color={submitSuccess ? "neutral.800" : "red"} status="info" bg="white" variant="subtle" boxShadow="lg"  position="absolute" top="12px" right="12px" w="fit-content" maxW="400px">
@@ -92,8 +92,9 @@ const VolunteerManagement: React.FC = () => {
                 onChange={handleSearchNameChange}
                 color="neutral.600"
                 fontFamily="ibm"
-                fontWeight={400}
+                fontWeight="semibold"
                 fontSize="14px"
+                _focusVisible={{ boxShadow: "none", outline: "none" }}
               />
             </InputGroup>
             <NewVolunteerModal onSubmitSuccess={() => {
