@@ -10,6 +10,7 @@ import {
 import { useState } from 'react';
 import { Role, UserDto } from "../../types/types";
 import ApiClient from '@api/apiClient';
+import { USPhoneInput } from './usPhoneInput';
 
 interface NewVolunteerModalProps {
   onSubmitSuccess?: () => void; 
@@ -103,7 +104,15 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
             </Field.Root>
             <Field.Root my={4}>
               <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>Phone Number</Field.Label>
-              <Input color="neutral.700" textStyle="p2" fontWeight={400} value={phone} onChange={(e) => setPhone(e.target.value)}/>
+              <USPhoneInput
+                value={phone}
+                onChange={setPhone}
+                inputProps={{
+                  color: 'neutral.700',
+                  textStyle: 'p2',
+                  fontWeight: 400,
+                }}
+              />
             </Field.Root>
             {error && (
               <Text color="red" mb={3} fontWeight={400} fontSize="12px" fontFamily="Inter">
