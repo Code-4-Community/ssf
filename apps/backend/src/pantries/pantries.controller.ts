@@ -232,16 +232,4 @@ export class PantriesController {
   ): Promise<void> {
     return this.pantriesService.deny(pantryId);
   }
-
-  @Put('/:pantryId/volunteers')
-  async updatePantryVolunteers(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-    @Body() body: { volunteerIds: number[] },
-  ): Promise<{ message: string }> {
-    await this.pantriesService.updatePantryVolunteers(
-      pantryId,
-      body.volunteerIds,
-    );
-    return { message: 'Volunteers updated successfully' };
-  }
 }

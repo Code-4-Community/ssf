@@ -38,8 +38,8 @@ export class DonationItemsController {
         status: { type: 'string', example: 'available' },
         ozPerItem: { type: 'integer', example: 5 },
         estimatedValue: { type: 'integer', example: 100 },
-        foodType: { 
-          type: 'string', 
+        foodType: {
+          type: 'string',
           enum: Object.values(FoodType),
           example: FoodType.DAIRY_FREE_ALTERNATIVES,
         },
@@ -59,7 +59,10 @@ export class DonationItemsController {
       foodType: FoodType;
     },
   ): Promise<DonationItem> {
-    if (body.foodType && !Object.values(FoodType).includes(body.foodType as FoodType)) {
+    if (
+      body.foodType &&
+      !Object.values(FoodType).includes(body.foodType as FoodType)
+    ) {
       throw new BadRequestException('Invalid foodtype');
     }
     return this.donationItemsService.create(
