@@ -5,12 +5,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -32,6 +34,11 @@ export class PantriesController {
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
+  }
+
+  @Get('/approved')
+  async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
 
   @Get('/:pantryId')
