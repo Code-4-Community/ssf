@@ -25,7 +25,6 @@ import { AllergyFriendlyToBoolType1763963056712 } from '../migrations/1763963056
 import { UpdatePantryUserFieldsFixed1764350314832 } from '../migrations/1764350314832-UpdatePantryUserFieldsFixed';
 import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-RemoveUnusedStatuses';
 import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
-import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 
 const config = {
   type: 'postgres',
