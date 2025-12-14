@@ -124,7 +124,7 @@ const VolunteerManagement: React.FC = () => {
                   <Box display="flex" alignItems="center" gap={5}>
                     <Box
                         borderRadius="full"
-                        bg={USER_ICON_COLORS[Math.floor(Math.random() * USER_ICON_COLORS.length)]}
+                        bg={USER_ICON_COLORS[volunteer.id % USER_ICON_COLORS.length]}
                         width="33px"
                         height="33px"
                         display="flex"
@@ -155,7 +155,7 @@ const VolunteerManagement: React.FC = () => {
             ))}
           </Table.Body>
         </Table.Root>
-        <Flex justify="center" mt={4}>
+        <Flex justify="center" mt={12}>
           <Pagination.Root count={Math.ceil(filteredVolunteers.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
             <ButtonGroup variant="outline" size="sm">
               <Pagination.PrevTrigger asChild>

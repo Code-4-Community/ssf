@@ -28,8 +28,9 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!firstName || !lastName || !email || !phone) {
-      setError("Please fill in all fields.*");
+    console.log("RAW phone value:", phone);
+    if (!firstName || !lastName || !email || !phone || phone === "+1") {
+      setError("Please fill in all fields. *");
       return;
     }
 
@@ -49,9 +50,13 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
       handleClear();
     } catch (error: any) {
       const message = error.response?.data?.message;
-      const hasEmailOrPhoneError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("phone")));
-      if (hasEmailOrPhoneError) {
-        setError("Please specify a valid email and phone number*")
+      const hasEmailError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("email")));
+      const hasPhoneError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("phone")));
+
+      if (hasEmailError) {
+        setError("Please specify a valid email. *")
+      } else if (hasPhoneError) {
+        setError("Please specify a valid phone number. *")
       } else {
         if (onSubmitFail) onSubmitFail();
         handleClear();
@@ -71,7 +76,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="Karrik" fontWeight={400} fontSize="14px">
+        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="ibm" fontWeight="semibold" fontSize="14px">
           +  Add
         </Button>
       </Dialog.Trigger>
@@ -119,7 +124,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
                 {error}
               </Text>
             )}
-            <Flex justifyContent="flex-end" mt={4} gap={4}>
+            <Flex justifyContent="flex-end" mt={12} gap={4}>
               <Button textStyle="p2" fontWeight={600} color="neutral.800" variant='outline' onClick={handleClear}>Cancel</Button>
               <Button textStyle="p2" fontWeight={600} bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
             </Flex>
