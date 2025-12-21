@@ -147,7 +147,7 @@ const VolunteerManagement: React.FC = () => {
                   {volunteer.email}
                 </Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Link color="neutral.700" fontWeight={400} textStyle="p2" variant="underline" href={`/pantry-management/${volunteer.id}`}>
+                  <Link color="neutral.700" fontWeight={400} textStyle="p2" variant="underline" textDecorationColor="neutral.700" href={`/pantry-management/${volunteer.id}`}>
                     View Assigned Pantries
                   </Link>
                 </Table.Cell>

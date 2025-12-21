@@ -6,11 +6,13 @@ import {
     Field,
     Input,
     CloseButton,
+    Box
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { Role, UserDto } from "../../types/types";
 import ApiClient from '@api/apiClient';
 import { USPhoneInput } from './usPhoneInput';
+import { PlusIcon } from 'lucide-react';
 
 interface NewVolunteerModalProps {
   onSubmitSuccess?: () => void; 
@@ -76,8 +78,9 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="ibm" fontWeight="semibold" fontSize="14px">
-          +  Add
+        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="ibm" fontWeight="semibold" fontSize="14px" gap={1.5}>
+          <Box as={PlusIcon} boxSize="17px" strokeWidth={2.5} />
+          Add
         </Button>
       </Dialog.Trigger>
       <Dialog.Backdrop />
@@ -124,7 +127,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
                 {error}
               </Text>
             )}
-            <Flex justifyContent="flex-end" mt={12} gap={4}>
+            <Flex justifyContent="flex-end" mt={10} gap={2.5}>
               <Button textStyle="p2" fontWeight={600} color="neutral.800" variant='outline' onClick={handleClear}>Cancel</Button>
               <Button textStyle="p2" fontWeight={600} bg={'#213C4A'} color={'white'} onClick={handleSubmit}>Submit</Button>
             </Flex>

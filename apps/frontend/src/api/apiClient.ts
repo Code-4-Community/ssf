@@ -97,7 +97,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postUser(data: UserDto): Promise<AxiosResponse<void>> {
+  public async postUser(data: UserDto): Promise<User> {
     return this.axiosInstance.post(`/api/users`, data);
   }
 
