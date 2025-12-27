@@ -78,18 +78,27 @@ describe('UsersController', () => {
 
   describe('GET /volunteers', () => {
     it('should return all volunteers', async () => {
-      const volunteers: Partial<User>[] = [
+      const users: (Omit<Partial<User>, 'pantries'> & {
+        pantryIds: number[];
+      })[] = [
         {
           id: 1,
           role: Role.VOLUNTEER,
-          pantries: [{ pantryId: 1 }] as Pantry[],
+          pantryIds: [1],
         },
         {
           id: 2,
           role: Role.VOLUNTEER,
-          pantries: [{ pantryId: 2 }] as Pantry[],
+          pantryIds: [2],
+        },
+        {
+          id: 3,
+          role: Role.ADMIN,
+          pantryIds: [3],
         },
       ];
+
+      const volunteers = users.slice(0, 2);
 
       mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
         volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
@@ -98,7 +107,8 @@ describe('UsersController', () => {
       const result = await controller.getAllVolunteers();
 
       expect(result).toEqual(volunteers);
-      expect(result.some((u) => u.role === Role.ADMIN)).toBe(false);
+      expect(result.length).toBe(2);
+      expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
       expect(
         mockUserService.getVolunteersAndPantryAssignments,
       ).toHaveBeenCalled();
