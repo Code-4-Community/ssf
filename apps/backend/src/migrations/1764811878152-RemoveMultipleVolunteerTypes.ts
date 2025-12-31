@@ -46,6 +46,9 @@ export class RemoveMultipleVolunteerTypes1764811878152
 
             ALTER TYPE users_role_enum_old
               RENAME TO users_role_enum;
+
+            ALTER TABLE users
+              ALTER COLUMN role SET DEFAULT 'standard_volunteer';
         `);
   }
 }
