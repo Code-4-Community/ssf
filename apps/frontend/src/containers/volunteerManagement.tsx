@@ -83,12 +83,12 @@ const VolunteerManagement: React.FC = () => {
       >
         <VStack mt={2} mb={7} align="start" >
           <Flex justify="space-between" align="center" w="100%">
-            <InputGroup startElement = {<SearchIcon color="#707070" size={13}></SearchIcon>} maxW={300}>
+            <InputGroup startElement = {<SearchIcon color="#707070" size={13}></SearchIcon>} maxW={200}>
               <Input
                 placeholder="Search"
                 value={searchName}
                 borderColor="neutral.200"
-                ps="7"
+                ps="8"
                 onChange={handleSearchNameChange}
                 color="neutral.600"
                 fontFamily="ibm"

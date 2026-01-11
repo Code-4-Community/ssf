@@ -78,7 +78,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Button borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="ibm" fontWeight="semibold" fontSize="14px" gap={1.5}>
+        <Button pl={3} borderColor="neutral.200" variant="outline" color="neutral.600" fontFamily="ibm" fontWeight="semibold" fontSize="14px" gap={1}>
           <Box as={PlusIcon} boxSize="17px" strokeWidth={2.5} />
           Add
         </Button>
