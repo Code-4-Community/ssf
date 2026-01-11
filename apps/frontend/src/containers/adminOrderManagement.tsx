@@ -20,15 +20,43 @@ import {
   CircleCheck,
   Search,
 } from 'lucide-react';
-import { formatDate } from '@utils/utils';
+import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { Order, OrderStatus } from '../types/types';
+import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 
+// Extending the OrderSummary type to include assignee color for display
+type OrderWithColor = OrderSummary & { assigneeColor?: string };
+
 const AdminOrderManagement: React.FC = () => {
-  const [statusOrders, setStatusOrders] = useState<Record<string, Order[]>>({});
+  // State to hold orders grouped by status
+  const [statusOrders, setStatusOrders] = useState<Record<OrderStatus, OrderWithColor[]>>({
+    [OrderStatus.PENDING]: [],
+    [OrderStatus.SHIPPED]: [],
+    [OrderStatus.DELIVERED]: [],
+  });
+  
+  // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
+  
+  // State to hold current page per status
+  const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>({
+    [OrderStatus.PENDING]: 1,
+    [OrderStatus.SHIPPED]: 1,
+    [OrderStatus.DELIVERED]: 1,
+  });
+
+  // State to hold filter state per status
+  type FilterState = {
+    selectedPantries: string[];
+    searchPantry: string;
+    sortAsc: boolean;
+  };
+  const [filterStates, setFilterStates] = useState<Record<OrderStatus, FilterState>>({
+    [OrderStatus.PENDING]: { selectedPantries: [], searchPantry: '', sortAsc: true },
+    [OrderStatus.SHIPPED]: { selectedPantries: [], searchPantry: '', sortAsc: true },
+    [OrderStatus.DELIVERED]: { selectedPantries: [], searchPantry: '', sortAsc: true },
+  });
 
   const STATUS_ORDER = [
     OrderStatus.PENDING,
@@ -36,6 +64,7 @@ const AdminOrderManagement: React.FC = () => {
     OrderStatus.DELIVERED,
   ];
 
+  // Color mapping for statuses
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
     [OrderStatus.PENDING, ['#FEECD1', '#9C5D00']],
     [OrderStatus.SHIPPED, ['#D5DCDF', '#2B4E60']],
@@ -44,17 +73,35 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
+  const ASSIGNEE_COLORS = ['yellow', 'red', 'cyan', 'blue.ssf'];
+
   useEffect(() => {
+    // Fetch all orders on component mount and sorts them into their appropriate status lists
     const fetchOrders = async () => {
       try {
         const data = await ApiClient.getAllOrders();
+        
+        const grouped: Record<OrderStatus, OrderWithColor[]> = {
+          [OrderStatus.PENDING]: [],
+          [OrderStatus.SHIPPED]: [],
+          [OrderStatus.DELIVERED]: [],
+        };
 
-        const grouped: Record<string, Order[]> = {};
+        // Use a status specific counter for assignee color assignment
+        const counters: Record<OrderStatus, number> = {
+          [OrderStatus.PENDING]: 0,
+          [OrderStatus.SHIPPED]: 0,
+          [OrderStatus.DELIVERED]: 0,
+        };
 
         for (const order of data) {
           const status = order.status;
-          if (!grouped[status]) grouped[status] = [];
-          grouped[status].push(order);
+          const orderWithColor: OrderWithColor = { ...order };
+          if (order.pantry.volunteers && order.pantry.volunteers.length > 0) {
+            orderWithColor.assigneeColor = ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
+            counters[status]++;
+          }
+          grouped[status].push(orderWithColor);
         }
 
         setStatusOrders(grouped);
@@ -88,88 +135,50 @@ const AdminOrderManagement: React.FC = () => {
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];
+        const filterState = filterStates[status];
+        
+        // Get pantry options through all orders in the status
+        const pantryOptions = [
+          ...new Set(allOrders.map((o) => o.pantry.pantryName)),
+        ].sort((a, b) => a.localeCompare(b));
+        
+        // Apply filters and sorting to all orders
+        const filteredOrders = allOrders
+          .filter(
+            (o) =>
+              filterState.selectedPantries.length === 0 ||
+              filterState.selectedPantries.includes(o.pantry.pantryName),
+          )
+          .sort((a, b) =>
+            filterState.sortAsc
+              ? a.createdAt.localeCompare(b.createdAt)
+              : b.createdAt.localeCompare(a.createdAt),
+          );
+        
+        const totalFiltered = filteredOrders.length;
         const currentPage = currentPages[status] || 1;
-        const displayedOrders = allOrders.slice(
+        const displayedOrders = filteredOrders.slice(
           (currentPage - 1) * MAX_PER_STATUS,
           currentPage * MAX_PER_STATUS,
         );
-        const totalPages = Math.ceil(allOrders.length / MAX_PER_STATUS);
 
         return (
-          <Box
-            key={status}
-            mb={12}
-            position="relative"
-            minHeight={totalPages > 1 ? '380px' : 'auto'}
-          >
-            <OrderTableSection
-              orders={allOrders.length > 0 ? displayedOrders : []}
+          <Box key={status} mb={12}>
+            <OrderStatusSection
+              orders={displayedOrders}
               status={status}
               colors={STATUS_COLORS.get(status)!}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
+              totalOrders={totalFiltered}
+              currentPage={currentPage}
+              onPageChange={(page) => handlePageChange(status, page)}
+              pantryOptions={pantryOptions}
+              filterState={filterState} 
+              onFilterChange={(newState: FilterState) =>
+                setFilterStates((prev) => ({ ...prev, [status]: newState }))
+              }
             />
-
-            {totalPages > 1 && (
-              <Box position="absolute" bottom="-12" left="0" right="0">
-                <Pagination.Root
-                  count={allOrders.length}
-                  pageSize={MAX_PER_STATUS}
-                  page={currentPage}
-                  onPageChange={(e: { page: number }) =>
-                    handlePageChange(status, e.page)
-                  }
-                >
-                  <ButtonGroup
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Pagination.PrevTrigger
-                      color="neutral.800"
-                      _hover={{ color: 'black' }}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft
-                        size={16}
-                        style={{
-                          cursor: currentPage !== 1 ? 'pointer' : 'default',
-                        }}
-                      />
-                    </Pagination.PrevTrigger>
-
-                    <Pagination.Items
-                      render={(page) => (
-                        <IconButton
-                          borderColor={{
-                            base: 'neutral.100',
-                            _selected: 'neutral.600',
-                          }}
-                        >
-                          {page.value}
-                        </IconButton>
-                      )}
-                    />
-
-                    <Pagination.NextTrigger
-                      color="neutral.800"
-                      _hover={{ color: 'black' }}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight
-                        size={16}
-                        style={{
-                          cursor:
-                            currentPage !== totalPages ? 'pointer' : 'default',
-                        }}
-                      />
-                    </Pagination.NextTrigger>
-                  </ButtonGroup>
-                </Pagination.Root>
-              </Box>
-            )}
           </Box>
         );
       })}
@@ -177,50 +186,49 @@ const AdminOrderManagement: React.FC = () => {
   );
 };
 
-interface OrderTableSectionProps {
-  orders: Order[];
+interface OrderStatusSectionProps {
+  orders: OrderWithColor[];
   status: string;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
   selectedOrderId: number | null;
+  totalOrders: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  pantryOptions: string[];
+  filterState: {
+    selectedPantries: string[];
+    searchPantry: string;
+    sortAsc: boolean;
+  };
+  onFilterChange: (newState: { selectedPantries: string[]; searchPantry: string; sortAsc: boolean }) => void;
 }
 
-const OrderTableSection: React.FC<OrderTableSectionProps> = ({
+const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   orders,
   status,
   colors,
   onOrderSelect,
   selectedOrderId,
+  totalOrders,
+  currentPage,
+  onPageChange,
+  pantryOptions,
+  filterState,
+  onFilterChange,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
-  const [searchPantry, setSearchPantry] = useState('');
-  const [sortAsc, setSortAsc] = useState(true);
 
-  const ASSIGNEE_COLORS = ['yellow', 'red', 'cyan', 'blue.ssf'];
-
-  const pantryOptions = [
-    ...new Set(orders.map((o) => o.pantry.pantryName)),
-  ].sort((a, b) => a.localeCompare(b));
+  const MAX_PER_STATUS = 5;
+  const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
-    setSelectedPantries((prev) =>
-      checked ? [...prev, pantry] : prev.filter((p) => p !== pantry),
-    );
+    const newSelected = checked
+      ? [...filterState.selectedPantries, pantry]
+      : filterState.selectedPantries.filter((p) => p !== pantry);
+    onFilterChange({ ...filterState, selectedPantries: newSelected });
   };
-
-  const filteredOrders = orders
-    .filter(
-      (o) =>
-        selectedPantries.length === 0 ||
-        selectedPantries.includes(o.pantry.pantryName),
-    )
-    .sort((a, b) =>
-      sortAsc
-        ? a.createdAt.localeCompare(b.createdAt)
-        : b.createdAt.localeCompare(a.createdAt),
-    );
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -352,9 +360,9 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                       />
                       <Input
                         placeholder="Search"
-                        color={searchPantry ? 'neutral.800' : 'neutral.300'}
-                        value={searchPantry}
-                        onChange={(e) => setSearchPantry(e.target.value)}
+                        color={filterState.searchPantry ? 'neutral.800' : 'neutral.300'}
+                        value={filterState.searchPantry}
+                        onChange={(e) => onFilterChange({ ...filterState, searchPantry: e.target.value })}
                         fontSize="sm"
                         pl="30px"
                         border="none"
@@ -378,12 +386,12 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         .filter((pantry) =>
                           pantry
                             .toLowerCase()
-                            .includes(searchPantry.toLowerCase()),
+                            .includes(filterState.searchPantry.toLowerCase()),
                         )
                         .map((pantry) => (
                           <Checkbox.Root
                             key={pantry}
-                            checked={selectedPantries.includes(pantry)}
+                            checked={filterState.selectedPantries.includes(pantry)}
                             onCheckedChange={(e: { checked: boolean }) =>
                               handleFilterChange(pantry, !!e.checked)
                             }
@@ -454,7 +462,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         py={1}
                         _hover={{ bg: 'gray.100' }}
                         onClick={() => {
-                          setSortAsc(false);
+                          onFilterChange({ ...filterState, sortAsc: false });
                           setIsSortOpen(false);
                         }}
                       >
@@ -466,7 +474,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         py={1}
                         _hover={{ bg: 'gray.100' }}
                         onClick={() => {
-                          setSortAsc(true);
+                          onFilterChange({ ...filterState, sortAsc: true });
                           setIsSortOpen(false);
                         }}
                       >
@@ -523,7 +531,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {filteredOrders.map((order, index) => (
+              {orders.map((order, index) => (
                 <Table.Row
                   key={`${order.orderId}-${index}`}
                   _hover={{ bg: 'gray.50' }}
@@ -572,7 +580,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                         <Box
                           key={index}
                           borderRadius="full"
-                          bg={ASSIGNEE_COLORS[index % ASSIGNEE_COLORS.length]}
+                          bg={order.assigneeColor || 'gray'}
                           width="33px"
                           height="33px"
                           display="flex"
@@ -609,8 +617,7 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
                       py={1}
                       px={3}
                     >
-                      {order.status.charAt(0).toUpperCase() +
-                        order.status.slice(1)}
+                      {capitalize(order.status)}
                     </Box>
                   </Table.Cell>
                   <Table.Cell
@@ -624,6 +631,65 @@ const OrderTableSection: React.FC<OrderTableSectionProps> = ({
               ))}
             </Table.Body>
           </Table.Root>
+
+          {totalPages > 1 && (
+            <Box mt={4}>
+              <Pagination.Root
+                count={totalOrders}
+                pageSize={MAX_PER_STATUS}
+                page={currentPage}
+                onPageChange={(e: { page: number }) => onPageChange(e.page)}
+              >
+                <ButtonGroup
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Pagination.PrevTrigger
+                    color="neutral.800"
+                    _hover={{ color: 'black' }}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft
+                      size={16}
+                      style={{
+                        cursor: currentPage !== 1 ? 'pointer' : 'default',
+                      }}
+                    />
+                  </Pagination.PrevTrigger>
+
+                  <Pagination.Items
+                    render={(page) => (
+                      <IconButton
+                        borderColor={{
+                          base: 'neutral.100',
+                          _selected: 'neutral.600',
+                        }}
+                      >
+                        {page.value}
+                      </IconButton>
+                    )}
+                  />
+
+                  <Pagination.NextTrigger
+                    color="neutral.800"
+                    _hover={{ color: 'black' }}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight
+                      size={16}
+                      style={{
+                        cursor:
+                          currentPage !== totalPages ? 'pointer' : 'default',
+                      }}
+                    />
+                  </Pagination.NextTrigger>
+                </ButtonGroup>
+              </Pagination.Root>
+            </Box>
+          )}
         </>
       )}
     </Box>

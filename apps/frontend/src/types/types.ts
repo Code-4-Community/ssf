@@ -158,7 +158,7 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
-  pantry: Pantry;
+  pantry?: Pantry;
   request: FoodRequest;
   requestId: number;
   foodManufacturer: FoodManufacturer | null;
@@ -231,8 +231,18 @@ export enum DonationFrequency {
   WEEKLY = 'weekly',
 }
 
-export enum DonationStatus {
-  AVAILABLE = 'available',
-  FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
+export interface OrderSummary {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantry: {
+    pantryName: string;
+    volunteers?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    }[];
+  };
 }

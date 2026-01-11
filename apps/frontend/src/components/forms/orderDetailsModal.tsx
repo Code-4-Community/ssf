@@ -9,11 +9,11 @@ import {
   Tag,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodRequest, Order } from 'types/types';
+import { FoodRequest, OrderSummary } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface OrderDetailsModalProps {
-  order: Order;
+  order: OrderSummary;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -34,7 +34,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
-          console.error('Error fetching food request details:', error);
+          alert('Error fetching food request details:' + error);
         }
       };
 

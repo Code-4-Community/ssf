@@ -13,7 +13,6 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Donation } from '../donations/donations.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 
@@ -27,6 +26,7 @@ export class OrdersController {
   // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
   // %20 is the URL encoded space character
   // This gets all pantries with the name Test Pantry or Test Pantry 2 that have a pending status
+  // and then returns the Orders that have either of these attributes
   @Get('/')
   async getAllOrders(
     @Query('status') status?: string,
