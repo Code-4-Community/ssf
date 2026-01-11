@@ -30,21 +30,25 @@ type OrderWithColor = OrderSummary & { assigneeColor?: string };
 
 const AdminOrderManagement: React.FC = () => {
   // State to hold orders grouped by status
-  const [statusOrders, setStatusOrders] = useState<Record<OrderStatus, OrderWithColor[]>>({
+  const [statusOrders, setStatusOrders] = useState<
+    Record<OrderStatus, OrderWithColor[]>
+  >({
     [OrderStatus.PENDING]: [],
     [OrderStatus.SHIPPED]: [],
     [OrderStatus.DELIVERED]: [],
   });
-  
+
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  
+
   // State to hold current page per status
-  const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>({
-    [OrderStatus.PENDING]: 1,
-    [OrderStatus.SHIPPED]: 1,
-    [OrderStatus.DELIVERED]: 1,
-  });
+  const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
+    {
+      [OrderStatus.PENDING]: 1,
+      [OrderStatus.SHIPPED]: 1,
+      [OrderStatus.DELIVERED]: 1,
+    },
+  );
 
   // State to hold filter state per status
   type FilterState = {
@@ -52,10 +56,24 @@ const AdminOrderManagement: React.FC = () => {
     searchPantry: string;
     sortAsc: boolean;
   };
-  const [filterStates, setFilterStates] = useState<Record<OrderStatus, FilterState>>({
-    [OrderStatus.PENDING]: { selectedPantries: [], searchPantry: '', sortAsc: true },
-    [OrderStatus.SHIPPED]: { selectedPantries: [], searchPantry: '', sortAsc: true },
-    [OrderStatus.DELIVERED]: { selectedPantries: [], searchPantry: '', sortAsc: true },
+  const [filterStates, setFilterStates] = useState<
+    Record<OrderStatus, FilterState>
+  >({
+    [OrderStatus.PENDING]: {
+      selectedPantries: [],
+      searchPantry: '',
+      sortAsc: true,
+    },
+    [OrderStatus.SHIPPED]: {
+      selectedPantries: [],
+      searchPantry: '',
+      sortAsc: true,
+    },
+    [OrderStatus.DELIVERED]: {
+      selectedPantries: [],
+      searchPantry: '',
+      sortAsc: true,
+    },
   });
 
   const STATUS_ORDER = [
@@ -80,7 +98,7 @@ const AdminOrderManagement: React.FC = () => {
     const fetchOrders = async () => {
       try {
         const data = await ApiClient.getAllOrders();
-        
+
         const grouped: Record<OrderStatus, OrderWithColor[]> = {
           [OrderStatus.PENDING]: [],
           [OrderStatus.SHIPPED]: [],
@@ -98,7 +116,8 @@ const AdminOrderManagement: React.FC = () => {
           const status = order.status;
           const orderWithColor: OrderWithColor = { ...order };
           if (order.pantry.volunteers && order.pantry.volunteers.length > 0) {
-            orderWithColor.assigneeColor = ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
+            orderWithColor.assigneeColor =
+              ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
             counters[status]++;
           }
           grouped[status].push(orderWithColor);
@@ -136,12 +155,12 @@ const AdminOrderManagement: React.FC = () => {
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
-        
+
         // Get pantry options through all orders in the status
         const pantryOptions = [
           ...new Set(allOrders.map((o) => o.pantry.pantryName)),
         ].sort((a, b) => a.localeCompare(b));
-        
+
         // Apply filters and sorting to all orders
         const filteredOrders = allOrders
           .filter(
@@ -154,7 +173,7 @@ const AdminOrderManagement: React.FC = () => {
               ? a.createdAt.localeCompare(b.createdAt)
               : b.createdAt.localeCompare(a.createdAt),
           );
-        
+
         const totalFiltered = filteredOrders.length;
         const currentPage = currentPages[status] || 1;
         const displayedOrders = filteredOrders.slice(
@@ -174,7 +193,7 @@ const AdminOrderManagement: React.FC = () => {
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               pantryOptions={pantryOptions}
-              filterState={filterState} 
+              filterState={filterState}
               onFilterChange={(newState: FilterState) =>
                 setFilterStates((prev) => ({ ...prev, [status]: newState }))
               }
@@ -201,7 +220,11 @@ interface OrderStatusSectionProps {
     searchPantry: string;
     sortAsc: boolean;
   };
-  onFilterChange: (newState: { selectedPantries: string[]; searchPantry: string; sortAsc: boolean }) => void;
+  onFilterChange: (newState: {
+    selectedPantries: string[];
+    searchPantry: string;
+    sortAsc: boolean;
+  }) => void;
 }
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
@@ -360,9 +383,18 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       />
                       <Input
                         placeholder="Search"
-                        color={filterState.searchPantry ? 'neutral.800' : 'neutral.300'}
+                        color={
+                          filterState.searchPantry
+                            ? 'neutral.800'
+                            : 'neutral.300'
+                        }
                         value={filterState.searchPantry}
-                        onChange={(e) => onFilterChange({ ...filterState, searchPantry: e.target.value })}
+                        onChange={(e) =>
+                          onFilterChange({
+                            ...filterState,
+                            searchPantry: e.target.value,
+                          })
+                        }
                         fontSize="sm"
                         pl="30px"
                         border="none"
@@ -391,7 +423,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         .map((pantry) => (
                           <Checkbox.Root
                             key={pantry}
-                            checked={filterState.selectedPantries.includes(pantry)}
+                            checked={filterState.selectedPantries.includes(
+                              pantry,
+                            )}
                             onCheckedChange={(e: { checked: boolean }) =>
                               handleFilterChange(pantry, !!e.checked)
                             }
