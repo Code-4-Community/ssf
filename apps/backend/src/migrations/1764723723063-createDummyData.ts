@@ -21,10 +21,10 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
       ('Lisa', 'Martinez', 'lisa.m@foodcorp.com', '555-030-0301', 'food_manufacturer'),
       ('David', 'Anderson', 'david.a@healthyfoods.com', '555-030-0302', 'food_manufacturer'),
       ('Jennifer', 'Taylor', 'jennifer.t@organic.com', '555-030-0303', 'food_manufacturer'),
-      ('James', 'Thomas', 'james.t@volunteer.org', '555-040-0401', 'standard_volunteer'),
-      ('Maria', 'Garcia', 'maria.g@volunteer.org', '555-040-0402', 'standard_volunteer'),
-      ('William', 'Moore', 'william.m@volunteer.org', '555-040-0403', 'standard_volunteer'),
-      ('Patricia', 'Jackson', 'patricia.j@volunteer.org', '555-040-0404', 'standard_volunteer')
+      ('James', 'Thomas', 'james.t@volunteer.org', '555-040-0401', 'volunteer'),
+      ('Maria', 'Garcia', 'maria.g@volunteer.org', '555-040-0402', 'volunteer'),
+      ('William', 'Moore', 'william.m@volunteer.org', '555-040-0403', 'volunteer'),
+      ('Patricia', 'Jackson', 'patricia.j@volunteer.org', '555-040-0404', 'volunteer')
     `);
 
     await queryRunner.query(`
@@ -51,7 +51,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         reservation_explanation, dedicated_allergy_friendly,
         client_visit_frequency, identify_allergens_confidence, serve_allergic_children,
         newsletter_subscription, restrictions, pantry_user_id,
-        activities, items_in_stock, need_more_options, status, date_applied
+        activities, items_in_stock, need_more_options, status, date_applied, activities_comments
       ) VALUES
       (
         'Community Food Pantry Downtown',
@@ -74,7 +74,8 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Canned goods, pasta, rice, cereal',
         'More fresh produce and dairy alternatives',
         'approved',
-        NOW()
+        NOW(),
+        ''
       ),
       (
         'Westside Community Kitchen',
@@ -97,7 +98,8 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Bread, canned vegetables, soup',
         'Gluten-free options',
         'approved',
-        NOW()
+        NOW(),
+        ''
       ),
       (
         'North End Food Bank',
@@ -120,7 +122,8 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Proteins, grains, canned fruits',
         'Dairy-free and egg-free alternatives',
         'approved',
-        NOW()
+        NOW(),
+        ''
       ),
       (
         'Riverside Food Assistance',
@@ -139,11 +142,12 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         false,
         ARRAY['Unsure'],
         (SELECT user_id FROM public.users WHERE email = 'pantry4@ssf.org' LIMIT 1),
-        ARRAY['Collect feedback from allergen-avoidant clients', 'Provide educational pamphlets']::"activity_enum"[],
+        ARRAY['Something else']::"activity_enum"[],
         'Basic non-perishables',
         'Training on allergen management',
         'denied',
-        NOW() - INTERVAL '7 days'
+        NOW() - INTERVAL '7 days',
+        ''
       ),
       (
         'Harbor Community Center',
@@ -166,7 +170,8 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Mixed inventory, some allergen-free items',
         'More allergen-free protein options',
         'pending',
-        NOW() - INTERVAL '2 days'
+        NOW() - INTERVAL '2 days',
+        ''
       ),
       (
         'Southside Pantry Network',
@@ -189,7 +194,8 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Wide variety including allergen-free sections',
         'Specialty items for complex dietary needs',
         'pending',
-        NOW() - INTERVAL '1 day'
+        NOW() - INTERVAL '1 day',
+        'Create a food goal tracking schedule'
       )
     `);
 
@@ -233,7 +239,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO public.donation_items (
-        donation_id, item_name, quantity, reserved_quantity, status,
+        donation_id, item_name, quantity, reserved_quantity,
         oz_per_item, estimated_value, food_type
       ) VALUES
       (
@@ -244,7 +250,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Peanut Butter (16oz)',
         50,
         10,
-        'available',
         16.00,
         4.50,
         'Seed Butters (Peanut Butter Alternative)'
@@ -257,7 +262,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Whole Wheat Bread',
         50,
         0,
-        'available',
         24.00,
         3.00,
         'Gluten-Free Bread'
@@ -270,7 +274,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Canned Green Beans',
         50,
         5,
-        'available',
         8.01,
         2.00,
         'Refrigerated Meals'
@@ -283,7 +286,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Gluten-Free Pasta',
         75,
         30,
-        'partially_reserved',
         16.00,
         5.00,
         'Gluten-Free Bread'
@@ -296,7 +298,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Almond Milk',
         75,
         20,
-        'partially_reserved',
         32.00,
         4.50,
         'Dairy-Free Alternatives'
@@ -309,7 +310,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Organic Apples',
         50,
         0,
-        'available',
         5.00,
         3.50,
         'Dried Beans (Gluten-Free, Nut-Free)'
@@ -322,7 +322,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Rice (5lb bag)',
         40,
         0,
-        'available',
         80.00,
         12.00,
         'Gluten-Free Bread'
@@ -335,7 +334,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Canned Tomatoes',
         60,
         0,
-        'available',
         10.75,
         2.50,
         'Refrigerated Meals'
@@ -348,7 +346,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Cereal Boxes',
         75,
         75,
-        'fully_reserved',
         16.00,
         6.00,
         'Gluten-Free Bread'
@@ -459,7 +456,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO public.allocations (
-        order_id, item_id, allocated_quantity, reserved_at, fulfilled_at, status
+        order_id, item_id, allocated_quantity, reserved_at, fulfilled_at
       ) VALUES
 
       (
@@ -472,7 +469,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         10,
         '2024-01-16 09:00:00',
         '2024-01-18 14:30:00',
-        'fulfilled'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -484,7 +480,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         5,
         '2024-01-16 09:00:00',
         '2024-01-18 14:30:00',
-        'fulfilled'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -496,7 +491,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         25,
         '2024-01-16 09:00:00',
         '2024-01-18 14:30:00',
-        'fulfilled'
       ),
       
       (
@@ -509,7 +503,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         30,
         '2024-01-21 10:00:00',
         '2024-01-23 10:00:00',
-        'fulfilled'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -521,7 +514,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         20,
         '2024-01-21 10:00:00',
         '2024-01-23 10:00:00',
-        'fulfilled'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -533,7 +525,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         15,
         '2024-01-21 10:00:00',
         '2024-01-23 10:00:00',
-        'fulfilled'
       ),
       
       (
@@ -546,7 +537,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         10,
         '2024-02-02 11:00:00',
         NULL,
-        'pending'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -558,7 +548,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         20,
         '2024-02-02 11:00:00',
         NULL,
-        'pending'
       ),
       
       (
@@ -571,7 +560,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         75,
         '2024-02-03 12:00:00',
         NULL,
-        'pending'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -583,7 +571,6 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         10,
         '2024-02-03 12:00:00',
         NULL,
-        'pending'
       )
     `);
 
