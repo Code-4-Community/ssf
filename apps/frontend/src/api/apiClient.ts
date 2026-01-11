@@ -7,7 +7,6 @@ import {
   DonationItem,
   Donation,
   Allocation,
-  VolunteerPantryAssignment,
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
@@ -130,10 +129,6 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAllAssignments(): Promise<VolunteerPantryAssignment[]> {
-    return this.get('/api/assignments') as Promise<VolunteerPantryAssignment[]>;
-  }
-
   public async getVolunteers(): Promise<User[]> {
     return this.get('/api/users/volunteers') as Promise<User[]>;
   }
@@ -191,12 +186,6 @@ export class ApiClient {
 
   public async getOrder(orderId: number): Promise<Order> {
     return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
-  }
-
-  public async getOrderByRequestId(requestId: number): Promise<Order> {
-    return this.axiosInstance.get(
-      `api/requests/get-order/${requestId}`,
-    ) as Promise<Order>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
