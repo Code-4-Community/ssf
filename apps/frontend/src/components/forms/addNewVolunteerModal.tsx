@@ -43,17 +43,30 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({ onSubmitSuccess, 
       lastName,
       email,
       phone,
-      role: Role.STANDARD_VOLUNTEER
+      role: Role.VOLUNTEER
     };
 
     try {
       await ApiClient.postUser(newVolunteer);
       if (onSubmitSuccess) onSubmitSuccess();
       handleClear();
-    } catch (error: any) {
-      const message = error.response?.data?.message;
-      const hasEmailError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("email")));
-      const hasPhoneError = Array.isArray(message) && message.some((msg: any) => typeof msg === "string" && (msg.toLowerCase().includes("phone")));
+    } catch (error: unknown) {
+
+      let hasEmailError = false
+      let hasPhoneError = false
+
+      if (typeof error === "object" && error !== null) {
+        const e = error as { response?: { data?: { message?: string | string[] } } };
+        const message = e.response?.data?.message;
+
+        hasEmailError =
+          Array.isArray(message) &&
+          message.some((msg) => typeof msg === "string" && msg.toLowerCase().includes("email"));
+
+        hasPhoneError =
+          Array.isArray(message) &&
+          message.some((msg) => typeof msg === "string" && msg.toLowerCase().includes("phone"));
+      }
 
       if (hasEmailError) {
         setError("Please specify a valid email. *")

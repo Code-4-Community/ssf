@@ -14,7 +14,6 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
