@@ -145,6 +145,14 @@ export interface User {
   pantries?: Pantry[];
 }
 
+export interface UserDto {
+  email: string,
+  firstName: string,
+  lastName: string,
+  phone: string,
+  role: Role,
+}
+
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
