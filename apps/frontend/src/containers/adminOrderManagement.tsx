@@ -126,10 +126,11 @@ const AdminOrderManagement: React.FC = () => {
         setStatusOrders(grouped);
 
         // Initialize current page for each status
-        const initialPages: Record<string, number> = {};
-        STATUS_ORDER.forEach((status) => {
-          initialPages[status] = 1;
-        });
+        const initialPages: Record<OrderStatus, number> = {
+          [OrderStatus.PENDING]: 1,
+          [OrderStatus.SHIPPED]: 1,
+          [OrderStatus.DELIVERED]: 1,
+        };
         setCurrentPages(initialPages);
       } catch (error) {
         alert('Error fetching orders: ' + error);
@@ -139,7 +140,29 @@ const AdminOrderManagement: React.FC = () => {
     fetchOrders();
   }, []);
 
-  const handlePageChange = (status: string, page: number) => {
+  // Set current page to 1 when filters change for any status
+  useEffect(() => {
+    setCurrentPages((prev) => ({
+      ...prev,
+      [OrderStatus.PENDING]: 1,
+    }));
+  }, [filterStates[OrderStatus.PENDING].selectedPantries]);
+
+  useEffect(() => {
+    setCurrentPages((prev) => ({
+      ...prev,
+      [OrderStatus.SHIPPED]: 1,
+    }));
+  }, [filterStates[OrderStatus.SHIPPED].selectedPantries]);
+
+  useEffect(() => {
+    setCurrentPages((prev) => ({
+      ...prev,
+      [OrderStatus.DELIVERED]: 1,
+    }));
+  }, [filterStates[OrderStatus.DELIVERED].selectedPantries]);
+
+  const handlePageChange = (status: OrderStatus, page: number) => {
     setCurrentPages((prev) => ({
       ...prev,
       [status]: page,
@@ -207,7 +230,7 @@ const AdminOrderManagement: React.FC = () => {
 
 interface OrderStatusSectionProps {
   orders: OrderWithColor[];
-  status: string;
+  status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
   selectedOrderId: number | null;
@@ -290,7 +313,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {capitalize(status)}
         </Box>
       </Box>
 
