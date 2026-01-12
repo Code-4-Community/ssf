@@ -46,7 +46,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO public.pantries (
-        pantry_name, address_line_1, address_city, address_state, address_zip,
+        pantry_name, shipment_address_line_1, shipment_address_city, shipment_address_state, shipment_address_zip,
         allergen_clients, refrigerated_donation, reserve_food_for_allergic, 
         reservation_explanation, dedicated_allergy_friendly,
         client_visit_frequency, identify_allergens_confidence, serve_allergic_children,
@@ -468,7 +468,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Peanut Butter (16oz)' ORDER BY item_id DESC LIMIT 1),
         10,
         '2024-01-16 09:00:00',
-        '2024-01-18 14:30:00',
+        '2024-01-18 14:30:00'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -479,7 +479,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Canned Green Beans' ORDER BY item_id DESC LIMIT 1),
         5,
         '2024-01-16 09:00:00',
-        '2024-01-18 14:30:00',
+        '2024-01-18 14:30:00'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -490,7 +490,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Whole Wheat Bread' ORDER BY item_id DESC LIMIT 1),
         25,
         '2024-01-16 09:00:00',
-        '2024-01-18 14:30:00',
+        '2024-01-18 14:30:00'
       ),
       
       (
@@ -502,7 +502,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Gluten-Free Pasta' ORDER BY item_id DESC LIMIT 1),
         30,
         '2024-01-21 10:00:00',
-        '2024-01-23 10:00:00',
+        '2024-01-23 10:00:00'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -513,7 +513,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Almond Milk' ORDER BY item_id DESC LIMIT 1),
         20,
         '2024-01-21 10:00:00',
-        '2024-01-23 10:00:00',
+        '2024-01-23 10:00:00'
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -524,7 +524,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Organic Apples' ORDER BY item_id DESC LIMIT 1),
         15,
         '2024-01-21 10:00:00',
-        '2024-01-23 10:00:00',
+        '2024-01-23 10:00:00'
       ),
       
       (
@@ -536,7 +536,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Rice (5lb bag)' ORDER BY item_id DESC LIMIT 1),
         10,
         '2024-02-02 11:00:00',
-        NULL,
+        NULL
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -547,7 +547,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Canned Tomatoes' ORDER BY item_id DESC LIMIT 1),
         20,
         '2024-02-02 11:00:00',
-        NULL,
+        NULL
       ),
       
       (
@@ -559,7 +559,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Cereal Boxes' ORDER BY item_id DESC LIMIT 1),
         75,
         '2024-02-03 12:00:00',
-        NULL,
+        NULL
       ),
       (
         (SELECT order_id FROM public.orders 
@@ -570,7 +570,7 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         (SELECT item_id FROM public.donation_items WHERE item_name = 'Almond Milk' ORDER BY item_id DESC LIMIT 1),
         10,
         '2024-02-03 12:00:00',
-        NULL,
+        NULL
       )
     `);
 
