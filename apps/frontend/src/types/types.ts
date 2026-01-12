@@ -145,6 +145,14 @@ export interface User {
   pantries?: Pantry[];
 }
 
+export interface UserDto {
+  email: string,
+  firstName: string,
+  lastName: string,
+  phone: string,
+  role: Role,
+}
+
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
@@ -197,15 +205,9 @@ export interface Allocation {
   fulfilledAt: string;
 }
 
-export enum VolunteerType {
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
-}
-
 export enum Role {
   ADMIN = 'admin',
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
+  VOLUNTEER = 'volunteer',
   PANTRY = 'pantry',
   FOODMANUFACTURER = 'food_manufacturer',
 }
