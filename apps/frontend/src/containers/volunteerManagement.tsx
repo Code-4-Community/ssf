@@ -65,7 +65,7 @@ const VolunteerManagement: React.FC = () => {
   };
 
   return (
-    <Box minH="100vh" bg="white" flexDirection="column" p={12}>
+    <Box flexDirection="column" p={12}>
       <Text textStyle="h1" color="#515151">Volunteer Management</Text>
       {alertMessage && (
         <Alert.Root color={submitSuccess ? "neutral.800" : "red"} status="info" bg="white" variant="subtle" boxShadow="lg"  position="absolute" top="12px" right="12px" w="fit-content" maxW="400px">
