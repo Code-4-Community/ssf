@@ -51,7 +51,10 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         reservation_explanation, dedicated_allergy_friendly,
         client_visit_frequency, identify_allergens_confidence, serve_allergic_children,
         newsletter_subscription, restrictions, pantry_user_id,
-        activities, items_in_stock, need_more_options, status, date_applied, activities_comments
+        activities, items_in_stock, need_more_options, status, date_applied, activities_comments, shipment_address_line_2,
+        shipment_address_country, delivery_window_instructions, mailing_address_line_1, mailing_address_city, mailing_address_state, mailing_address_zip,
+        mailing_address_country, has_email_contact, email_contact_other, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_email,
+        secondary_contact_phone
       ) VALUES
       (
         'Community Food Pantry Downtown',
@@ -75,7 +78,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'More fresh produce and dairy alternatives',
         'approved',
         NOW(),
-        ''
+        NULL,
+        NULL,
+        'US',
+        NULL,
+        '814 Cedar Hollow Way',
+        'Madison',
+        'WI',
+        '53711',
+        'US',
+        false,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
       ),
       (
         'Westside Community Kitchen',
@@ -99,7 +116,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Gluten-free options',
         'approved',
         NOW(),
-        ''
+        NULL,
+        NULL,
+        'US',
+        NULL,
+        '29 Seaview Terrace',
+        'Cape May',
+        'NJ',
+        '08204',
+        'US',
+        false,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
       ),
       (
         'North End Food Bank',
@@ -123,7 +154,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Dairy-free and egg-free alternatives',
         'approved',
         NOW(),
-        ''
+        NULL,
+        '2308 Desert Willow Court',
+        'US',
+        NULL,
+        '3675 Ironwood Loop',
+        'Flagstaff',
+        'AZ', 
+        '86001',
+        'US',
+        true,
+        'NorthEnd@gmail.com',
+        NULL,
+        NULL,
+        NULL,
+        NULL
       ),
       (
         'Riverside Food Assistance',
@@ -147,7 +192,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Training on allergen management',
         'denied',
         NOW() - INTERVAL '7 days',
-        ''
+        NULL,
+        '1569 Brookstone Avenue',
+        'US',
+        'Handle with care',
+        '1024 Willow Bend Drive',
+        'Plano',
+        'TX',
+        '75075',
+        'US',
+        true,
+        'Riverside@gmail.com',
+        'Joe',
+        'Smith',
+        'j@gmail.com',
+        '2013334958'
       ),
       (
         'Harbor Community Center',
@@ -171,7 +230,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'More allergen-free protein options',
         'pending',
         NOW() - INTERVAL '2 days',
-        ''
+        NULL,
+        '77 Silver Pine Road',
+        'US',
+        'Handle with care',
+        '58 Granite Peak Road',
+        'Bozeman',
+        'MT',
+        '59715',
+        'US',
+        false,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
       ),
       (
         'Southside Pantry Network',
@@ -195,7 +268,21 @@ export class CreateDummyData1764723723063 implements MigrationInterface {
         'Specialty items for complex dietary needs',
         'pending',
         NOW() - INTERVAL '1 day',
-        'Create a food goal tracking schedule'
+        'Create a food goal tracking schedule',
+        '4021 Sunset Plaza Blvd',
+        'US',
+        'Handle with care',
+        '4419 Magnolia Court',
+        'Savannah',
+        'GA',
+        '31405',
+        'US',
+        false,
+        NULL,
+        'Dave',
+        'Jones',
+        'Dave@gmail.com',
+        '2013334029'
       )
     `);
 
