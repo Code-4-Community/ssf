@@ -140,27 +140,10 @@ const AdminOrderManagement: React.FC = () => {
     fetchOrders();
   }, []);
 
-  // Set current page to 1 when filters change for any status
-  useEffect(() => {
-    setCurrentPages((prev) => ({
-      ...prev,
-      [OrderStatus.PENDING]: 1,
-    }));
-  }, [filterStates[OrderStatus.PENDING].selectedPantries]);
-
-  useEffect(() => {
-    setCurrentPages((prev) => ({
-      ...prev,
-      [OrderStatus.SHIPPED]: 1,
-    }));
-  }, [filterStates[OrderStatus.SHIPPED].selectedPantries]);
-
-  useEffect(() => {
-    setCurrentPages((prev) => ({
-      ...prev,
-      [OrderStatus.DELIVERED]: 1,
-    }));
-  }, [filterStates[OrderStatus.DELIVERED].selectedPantries]);
+  // Helper to reset page for a specific status
+  const resetPageForStatus = (status: OrderStatus) => {
+    setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
+  };
 
   const handlePageChange = (status: OrderStatus, page: number) => {
     setCurrentPages((prev) => ({
@@ -218,7 +201,15 @@ const AdminOrderManagement: React.FC = () => {
               pantryOptions={pantryOptions}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
-                setFilterStates((prev) => ({ ...prev, [status]: newState }))
+                setFilterStates((prev) => {
+                  const prevSelected = prev[status]?.selectedPantries || [];
+                  const prevKey = [...prevSelected].sort().join(',');
+                  const newKey = [...newState.selectedPantries].sort().join(',');
+                  if (prevKey !== newKey) {
+                    resetPageForStatus(status);
+                  }
+                  return { ...prev, [status]: newState };
+                })
               }
             />
           </Box>
