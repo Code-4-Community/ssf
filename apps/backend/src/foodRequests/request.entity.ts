@@ -3,7 +3,10 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Order } from '../orders/order.entity';
+import { RequestSize } from './types';
 
 @Entity('food_requests')
 export class FoodRequest {
@@ -13,8 +16,13 @@ export class FoodRequest {
   @Column({ name: 'pantry_id', type: 'int' })
   pantryId: number;
 
-  @Column({ name: 'requested_size', type: 'varchar', length: 50 })
-  requestedSize: string;
+  @Column({
+    name: 'requested_size',
+    type: 'enum',
+    enum: RequestSize,
+    enumName: 'request_size_enum',
+  })
+  requestedSize: RequestSize;
 
   @Column({ name: 'requested_items', type: 'text', array: true })
   requestedItems: string[];
@@ -29,12 +37,6 @@ export class FoodRequest {
   })
   requestedAt: Date;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'pending' })
-  status: string;
-
-  @Column({ name: 'fulfilled_by', type: 'int', nullable: true })
-  fulfilledBy: number;
-
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
   dateReceived: Date;
 
@@ -43,4 +45,7 @@ export class FoodRequest {
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
+
+  @OneToMany(() => Order, (order) => order.request, { nullable: true })
+  order: Order;
 }

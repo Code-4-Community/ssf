@@ -1,0 +1,407 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Flex,
+  Button,
+  Textarea,
+  Menu,
+  Text,
+  Dialog,
+  Tag,
+  Box,
+  Field,
+  CloseButton,
+} from '@chakra-ui/react';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
+import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
+import { ChevronDownIcon } from 'lucide-react';
+import apiClient from '@api/apiClient';
+
+interface FoodRequestFormModalProps {
+  previousRequest?: FoodRequest;
+  readOnly?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  pantryId: number;
+}
+
+const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
+  previousRequest,
+  readOnly = false,
+  isOpen,
+  onClose,
+  pantryId,
+}) => {
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [requestedSize, setRequestedSize] = useState<string>('');
+  const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [pantryName, setPantryName] = useState<string>('');
+
+  const isFormValid = requestedSize !== '' && selectedItems.length > 0;
+
+  useEffect(() => {
+    if (isOpen && previousRequest) {
+      setSelectedItems(previousRequest.requestedItems || []);
+      setRequestedSize(previousRequest.requestedSize || '');
+      setAdditionalNotes(
+        previousRequest.additionalInformation ||
+          'No additional information supplied',
+      );
+    }
+  }, [isOpen, previousRequest]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pantry = await apiClient.getPantry(pantryId);
+        setPantryName(pantry.pantryName);
+      } catch (error) {
+        console.error('Error fetching pantry data', error);
+      }
+    };
+    fetchData();
+  });
+
+  return (
+    <Dialog.Root
+      open={isOpen}
+      size="xl"
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+      closeOnInteractOutside
+    >
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW={650}>
+          <Dialog.Header pb={0} mt={2}>
+            <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
+              {readOnly
+                ? `Order ${previousRequest?.requestId}`
+                : previousRequest
+                ? 'Resubmit Latest Order'
+                : 'New Food Request'}
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            {readOnly && (
+              <Text textStyle="p2" color="#111111">
+                {pantryName}
+              </Text>
+            )}
+            <Text
+              mb={previousRequest ? 8 : 10}
+              color="#52525B"
+              textStyle="p2"
+              pt={0}
+              mt={0}
+            >
+              {readOnly && previousRequest
+                ? `Requested ${new Date(
+                    previousRequest.requestedAt,
+                  ).toLocaleDateString()}`
+                : previousRequest
+                ? 'Confirm order details.'
+                : `Please keep in mind that we may not be able to accommodate specific
+              food requests at all times, but we will do our best to match your preferences.`}
+            </Text>
+            <Form
+              method="post"
+              action="/food-request"
+              onSubmit={(e) => {
+                if (selectedItems.length === 0) {
+                  e.preventDefault();
+                  alert('Please select at least one food type');
+                }
+                if (requestedSize === '') {
+                  e.preventDefault();
+                  alert('Please select a requested size.');
+                }
+              }}
+            >
+              <input type="hidden" name="pantryId" value={pantryId} />
+              <Field.Root required mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Size of Shipment
+                  </Text>
+                </Field.Label>
+                <input type="hidden" name="size" value={requestedSize} />
+                <Menu.Root>
+                  <Menu.Trigger asChild>
+                    <Button
+                      pl={2.5}
+                      disabled={readOnly}
+                      _disabled={{ color: 'neutral.800', opacity: 1 }}
+                      textStyle="p2"
+                      w="full"
+                      bgColor={'white'}
+                      color={requestedSize ? 'neutral.800' : 'neutral.300'}
+                      borderColor="neutral.100"
+                      borderWidth="1px"
+                      borderRadius="4px"
+                      justifyContent="space-between"
+                    >
+                      {requestedSize || 'Select size'}
+                      {!readOnly && <ChevronDownIcon stroke="#B8B8B8" />}
+                    </Button>
+                  </Menu.Trigger>
+
+                  <Menu.Positioner w="full">
+                    <Menu.Content>
+                      <Menu.RadioItemGroup
+                        value={requestedSize}
+                        onValueChange={(val: { value: string }) =>
+                          setRequestedSize(val.value)
+                        }
+                      >
+                        {Object.values(RequestSize).map((option, idx) => (
+                          <Menu.RadioItem
+                            key={option}
+                            value={option}
+                            pl={1}
+                            mt={idx === 0 ? 0 : 2}
+                          >
+                            {option}
+                          </Menu.RadioItem>
+                        ))}
+                      </Menu.RadioItemGroup>
+                    </Menu.Content>
+                  </Menu.Positioner>
+                </Menu.Root>
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Food Type(s)
+                  </Text>
+                </Field.Label>
+
+                {selectedItems.map((item) => (
+                  <input
+                    key={item}
+                    type="hidden"
+                    name="restrictions"
+                    value={item}
+                  />
+                ))}
+
+                {!readOnly && (
+                  <Menu.Root closeOnSelect={false}>
+                    <Menu.Trigger asChild>
+                      <Button
+                        pl={2.5}
+                        disabled={readOnly}
+                        w="full"
+                        bgColor="white"
+                        color={'neutral.300'}
+                        borderColor="neutral.100"
+                        borderWidth="1px"
+                        borderRadius="4px"
+                        justifyContent="space-between"
+                        textStyle="p2"
+                      >
+                        {selectedItems.length > 0
+                          ? `Select more food types`
+                          : 'Select food types'}
+                        <ChevronDownIcon />
+                      </Button>
+                    </Menu.Trigger>
+
+                    <Menu.Positioner w="full">
+                      <Menu.Content maxH="200px" overflowY="auto">
+                        {FoodTypes.map((allergen) => {
+                          const isChecked = selectedItems.includes(allergen);
+                          return (
+                            <Menu.CheckboxItem
+                              key={allergen}
+                              checked={isChecked}
+                              onCheckedChange={(checked: boolean) => {
+                                setSelectedItems((prev) =>
+                                  checked
+                                    ? [...prev, allergen]
+                                    : prev.filter((i) => i !== allergen),
+                                );
+                              }}
+                              disabled={readOnly}
+                              display="flex"
+                              alignItems="center"
+                            >
+                              <Box
+                                position="absolute"
+                                left={1}
+                                ml={0.5}
+                                w={5}
+                                h={5}
+                                borderWidth="1px"
+                                borderRadius="4px"
+                                borderColor="neutral.200"
+                              />
+                              <Menu.ItemIndicator />
+                              <Text
+                                ml={0.5}
+                                color="neutral.800"
+                                fontWeight={500}
+                                fontFamily="Inter"
+                              >
+                                {allergen}
+                              </Text>
+                            </Menu.CheckboxItem>
+                          );
+                        })}
+                      </Menu.Content>
+                    </Menu.Positioner>
+                  </Menu.Root>
+                )}
+
+                {selectedItems.length > 0 && (
+                  <Flex wrap="wrap" mt={1} gap={2}>
+                    {selectedItems.map((item) => (
+                      <Tag.Root
+                        key={item}
+                        size="xl"
+                        variant="solid"
+                        bg={!readOnly ? '#E9F4F6' : 'neutral.100'}
+                        color="neutral.800"
+                        borderRadius="4px"
+                        borderColor={!readOnly ? 'teal.400' : 'neutral.300'}
+                        borderWidth="1px"
+                        fontFamily="Inter"
+                        fontWeight={500}
+                      >
+                        <Tag.Label>{item}</Tag.Label>
+                        {!readOnly && (
+                          <Tag.EndElement>
+                            <Tag.CloseTrigger
+                              cursor="pointer"
+                              onClick={() =>
+                                setSelectedItems((prev) =>
+                                  prev.filter((i) => i !== item),
+                                )
+                              }
+                            />
+                          </Tag.EndElement>
+                        )}
+                      </Tag.Root>
+                    ))}
+                  </Flex>
+                )}
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Additional Information
+                  </Text>
+                </Field.Label>
+                <Textarea
+                  pl={2.5}
+                  name="notes"
+                  placeholder="Anything else we should know about"
+                  _placeholder={{
+                    color: 'neutral.300',
+                    fontFamily: 'Inter',
+                    fontWeight: 400,
+                  }}
+                  size="lg"
+                  textStyle="p2"
+                  color={additionalNotes !== '' ? 'neutral.800' : 'neutral.300'}
+                  value={additionalNotes}
+                  onChange={(e) => {
+                    const inputText = e.target.value;
+                    const words = inputText.trim().split(/\s+/);
+
+                    if (words.length <= 250) {
+                      setAdditionalNotes(e.target.value);
+                    } else {
+                      alert('Exceeded word limit');
+                    }
+                  }}
+                  disabled={readOnly}
+                />
+                {!readOnly && (
+                  <Field.HelperText color="neutral.600">
+                    Max 250 words
+                  </Field.HelperText>
+                )}
+              </Field.Root>
+
+              <Flex justifyContent="flex-end" mt={4} gap={2}>
+                {!readOnly && (
+                  <Button
+                    onClick={onClose}
+                    bg={'white'}
+                    color={'black'}
+                    borderColor="neutral.100"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {!readOnly && (
+                  <Button
+                    type="submit"
+                    bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                    color={'white'}
+                    disabled={!isFormValid}
+                  >
+                    Continue
+                  </Button>
+                )}
+              </Flex>
+            </Form>
+          </Dialog.Body>
+          <Dialog.CloseTrigger asChild>
+            {readOnly && <CloseButton size="lg" />}
+          </Dialog.CloseTrigger>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
+  );
+};
+
+export const submitFoodRequestFormModal: ActionFunction = async ({
+  request,
+}: ActionFunctionArgs) => {
+  const form = await request.formData();
+
+  const foodRequestData = new Map();
+
+  const pantryId = form.get('pantryId');
+  foodRequestData.set('requestedSize', form.get('size'));
+  form.delete('size');
+  foodRequestData.set('additionalInformation', form.get('notes'));
+  form.delete('notes');
+  foodRequestData.set('requestedItems', form.getAll('restrictions'));
+  form.delete('restrictions');
+  foodRequestData.set('pantryId', form.get('pantryId'));
+
+  const data = Object.fromEntries(foodRequestData);
+  console.log(data);
+
+  try {
+    const response = await fetch('/api/requests/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      console.log('Food request submitted successfully');
+
+      window.location.href = `/request-form/${pantryId}`;
+      return null;
+    } else {
+      console.error('Failed to submit food request', await response.text());
+      window.location.href = `/request-form/${pantryId}`;
+      return null;
+    }
+  } catch (error) {
+    console.error('Error submitting food request', error);
+    window.location.href = `/request-form/${pantryId}`;
+    return null;
+  }
+};
+
+export default FoodRequestFormModal;

@@ -3,22 +3,22 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { DonationStatus } from './types';
 
 @Entity('donations')
 export class Donation {
   @PrimaryGeneratedColumn({ name: 'donation_id' })
   donationId: number;
 
-  @OneToOne(() => FoodManufacturer, { nullable: false })
+  @ManyToOne(() => FoodManufacturer, (manufacturer) => manufacturer.donations, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'food_manufacturer_id' })
   foodManufacturer: FoodManufacturer;
-
-  @Column({ name: 'food_manufacturer_id', type: 'int' })
-  foodManufacturerId: number;
 
   @CreateDateColumn({
     name: 'date_donated',
@@ -29,11 +29,12 @@ export class Donation {
 
   @Column({
     name: 'status',
-    type: 'varchar',
-    length: 25,
-    default: 'avaliable',
+    type: 'enum',
+    enum: DonationStatus,
+    enumName: 'donations_status_enum',
+    default: DonationStatus.AVAILABLE,
   })
-  status: string;
+  status: DonationStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
   totalItems: number;

@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
@@ -30,9 +29,7 @@ import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
 
-
 Amplify.configure(CognitoAuthConfig);
-
 
 const components = {
   SignUp: {
@@ -49,7 +46,6 @@ const components = {
     },
   },
 
-
   SignIn: {
     Footer() {
       return (
@@ -65,7 +61,6 @@ const components = {
   },
 };
 
-
 const router = createBrowserRouter([
   {
     path: '/',
@@ -73,6 +68,10 @@ const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       // Public routes (no auth needed)
+      {
+        index: true,
+        element: <Homepage />,
+      },
       {
         index: true,
         element: <Homepage />,
@@ -90,8 +89,6 @@ const router = createBrowserRouter([
         path: '/pantry-application/submitted',
         element: <PantryApplicationSubmitted />,
       },
-
-
       // Private routes (protected by auth)
       {
         path: '/landing-page',
@@ -175,11 +172,7 @@ const router = createBrowserRouter([
           </Authenticator>
         ),
       },
-
-
       // Actions
-
-
       {
         path: '/food-request',
         action: submitFoodRequestFormModal,
