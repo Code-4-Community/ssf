@@ -204,7 +204,9 @@ const AdminOrderManagement: React.FC = () => {
                 setFilterStates((prev) => {
                   const prevSelected = prev[status]?.selectedPantries || [];
                   const prevKey = [...prevSelected].sort().join(',');
-                  const newKey = [...newState.selectedPantries].sort().join(',');
+                  const newKey = [...newState.selectedPantries]
+                    .sort()
+                    .join(',');
                   if (prevKey !== newKey) {
                     resetPageForStatus(status);
                   }
