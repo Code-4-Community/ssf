@@ -133,7 +133,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/food-manufacturer-order-dashboard',
-        element:  (
+        element: (
           <Authenticator components={components}>
             <FoodManufacturerOrderDashboard />
           </Authenticator>
@@ -197,13 +197,11 @@ const router = createBrowserRouter([
   },
 ]);
 
-
 export const App: React.FC = () => {
   useEffect(() => {
     document.title = 'SSF';
     apiClient.getHello().then((res) => console.log(res));
   }, []);
-
 
   return (
     <Authenticator.Provider>
@@ -211,6 +209,5 @@ export const App: React.FC = () => {
     </Authenticator.Provider>
   );
 };
-
 
 export default App;
