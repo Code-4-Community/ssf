@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
+
 import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
@@ -10,19 +11,28 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
+import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import VolunteerManagement from '@containers/volunteerManagement';
+import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
+import DonationManagement from '@containers/donationManagement';
+import AdminDonation from '@containers/adminDonation';
+import { pantryIdLoader } from '@loaders/pantryIdLoader';
+import Homepage from '@containers/homepage';
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
 
+
 Amplify.configure(CognitoAuthConfig);
+
 
 const components = {
   SignUp: {
@@ -39,6 +49,7 @@ const components = {
     },
   },
 
+
   SignIn: {
     Footer() {
       return (
@@ -54,6 +65,7 @@ const components = {
   },
 };
 
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -61,15 +73,26 @@ const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       // Public routes (no auth needed)
-
+      {
+        index: true,
+        element: <Homepage />,
+      },
+      {
+        path: '/landing-page',
+        element: <LandingPage />,
+      },
       {
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
       },
+      {
+        path: '/pantry-application/submitted',
+        element: <PantryApplicationSubmitted />,
+      },
+
 
       // Private routes (protected by auth)
-
       {
         path: '/landing-page',
         element: (
@@ -93,6 +116,7 @@ const router = createBrowserRouter([
             <PantryDashboard />
           </Authenticator>
         ),
+        loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
@@ -111,6 +135,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/food-manufacturer-order-dashboard',
+        element:  (
+          <Authenticator components={components}>
+            <FoodManufacturerOrderDashboard />
+          </Authenticator>
+        ),
+      },
+      {
         path: '/orders',
         element: (
           <Authenticator components={components}>
@@ -125,6 +157,15 @@ const router = createBrowserRouter([
             <FormRequests />
           </Authenticator>
         ),
+        loader: pantryIdLoader,
+      },
+      {
+        path: '/donation-management',
+        element: (
+          <Authenticator components={components}>
+            <DonationManagement />
+          </Authenticator>
+        ),
       },
       {
         path: '/approve-pantries',
@@ -135,7 +176,9 @@ const router = createBrowserRouter([
         ),
       },
 
+
       // Actions
+
 
       {
         path: '/food-request',
@@ -145,9 +188,22 @@ const router = createBrowserRouter([
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
       },
+      {
+        path: '/approve-pantries',
+        element: <ApprovePantries />,
+      },
+      {
+        path: '/admin-donation',
+        element: <AdminDonation />,
+      },
+      {
+        path: '/volunteer-management',
+        element: <VolunteerManagement />,
+      },
     ],
   },
 ]);
+
 
 export const App: React.FC = () => {
   useEffect(() => {
@@ -155,11 +211,13 @@ export const App: React.FC = () => {
     apiClient.getHello().then((res) => console.log(res));
   }, []);
 
+
   return (
     <Authenticator.Provider>
       <RouterProvider router={router} />
     </Authenticator.Provider>
   );
 };
+
 
 export default App;
