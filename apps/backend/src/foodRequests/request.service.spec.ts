@@ -21,7 +21,7 @@ const mockRequest: Partial<FoodRequest> = {
   dateReceived: null,
   feedback: null,
   photos: null,
-  order: null,
+  orders: null,
 };
 
 describe('RequestsService', () => {
@@ -166,7 +166,7 @@ describe('RequestsService', () => {
           dateReceived: null,
           feedback: null,
           photos: null,
-          order: null,
+          orders: null,
         },
         {
           requestId: 3,
@@ -178,7 +178,7 @@ describe('RequestsService', () => {
           dateReceived: null,
           feedback: null,
           photos: null,
-          order: null,
+          orders: null,
         },
       ];
       const pantryId = 1;
@@ -213,7 +213,7 @@ describe('RequestsService', () => {
 
       const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder as Order,
+        orders: [mockOrder] as Order[],
       };
 
       const requestId = 1;
@@ -224,15 +224,15 @@ describe('RequestsService', () => {
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest2 as FoodRequest,
       );
+
+      const updatedOrder = { ...mockOrder, status: OrderStatus.DELIVERED };
+
       mockRequestsRepository.save.mockResolvedValueOnce({
         ...mockRequest,
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: {
-          ...(mockOrder as Order),
-          status: OrderStatus.DELIVERED,
-        } as Order,
+        orders: [updatedOrder],
       } as FoodRequest);
 
       const result = await service.updateDeliveryDetails(
@@ -247,7 +247,7 @@ describe('RequestsService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'delivered' },
+        orders: [updatedOrder],
       });
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
@@ -260,7 +260,7 @@ describe('RequestsService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'delivered' },
+        orders: [updatedOrder],
       });
     });
 
@@ -304,7 +304,7 @@ describe('RequestsService', () => {
           feedback,
           photos,
         ),
-      ).rejects.toThrow('No associated order found for this request');
+      ).rejects.toThrow('No associated orders found for this request');
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
@@ -327,7 +327,7 @@ describe('RequestsService', () => {
       };
       const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder as Order,
+        orders: [mockOrder] as Order[],
       };
 
       const requestId = 1;
@@ -346,7 +346,9 @@ describe('RequestsService', () => {
           feedback,
           photos,
         ),
-      ).rejects.toThrow('No associated food manufacturer found for this order');
+      ).rejects.toThrow(
+        'No associated food manufacturer found for an associated order',
+      );
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },

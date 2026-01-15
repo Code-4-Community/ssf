@@ -107,7 +107,7 @@ describe('RequestsController', () => {
         requestId: 1,
         ...createBody,
         requestedAt: new Date(),
-        order: null,
+        orders: null,
       };
 
       mockRequestsService.create.mockResolvedValueOnce(
@@ -181,7 +181,7 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        order: { orderId: 99 },
+        orders: [{ orderId: 99 }],
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();
@@ -230,7 +230,7 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        order: { orderId: 100 },
+        orders: [{ orderId: 100 }],
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();
@@ -275,7 +275,7 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        order: { orderId: 101 },
+        orders: [{ orderId: 101 }],
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();

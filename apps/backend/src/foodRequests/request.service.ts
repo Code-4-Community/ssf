@@ -87,22 +87,28 @@ export class RequestsService {
       throw new NotFoundException('Invalid request ID');
     }
 
-    if (!request.order) {
-      throw new ConflictException('No associated order found for this request');
+    if (!request.orders || request.orders.length == 0) {
+      throw new ConflictException(
+        'No associated orders found for this request',
+      );
     }
 
-    const order = request.order;
+    const orders = request.orders;
 
-    if (!order.shippedBy) {
-      throw new ConflictException(
-        'No associated food manufacturer found for this order',
-      );
+    for (const order of orders) {
+      if (!order.shippedBy) {
+        throw new ConflictException(
+          'No associated food manufacturer found for an associated order',
+        );
+      }
     }
 
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.order.status = OrderStatus.DELIVERED;
+    request.orders.forEach((order) => {
+      order.status = OrderStatus.DELIVERED;
+    });
 
     return await this.repo.save(request);
   }
