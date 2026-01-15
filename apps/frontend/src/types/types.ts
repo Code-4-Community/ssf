@@ -161,7 +161,7 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string;
   orderId: number;
-  order?: Order;
+  orders?: Order[];
 }
 
 export interface Order {
@@ -175,6 +175,19 @@ export interface Order {
   shippedAt: string;
   deliveredAt: string;
   donationId: number;
+}
+
+export interface OrderItemDetails {
+  name: string;
+  quantity: number;
+  foodType: (typeof FoodTypes)[number];
+}
+
+export interface OrderDetails {
+  orderId: number;
+  status: OrderStatus;
+  foodManufacturerName: string;
+  items: OrderItemDetails[];
 }
 
 export interface FoodManufacturer {

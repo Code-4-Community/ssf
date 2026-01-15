@@ -150,32 +150,32 @@ const FormRequests: React.FC = () => {
                 </Button>
               </Table.Cell>
               <Table.Cell>
-                {request.order?.orderId ? (
+                {request.orders?.[0]?.orderId ? (
                   <Button
                     onClick={() =>
-                      setOpenOrderId(request.order?.orderId ?? null)
+                      setOpenOrderId(request.orders?.[0]?.orderId ?? null)
                     }
                   >
-                    {request.order?.orderId}
+                    {request.orders?.[0]?.orderId}
                   </Button>
                 ) : (
                   'N/A'
                 )}
               </Table.Cell>
               <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
-              <Table.Cell>{request.order?.status ?? 'pending'}</Table.Cell>
+              <Table.Cell>{request.orders?.[0]?.status ?? 'pending'}</Table.Cell>
               <Table.Cell>
-                {request.order?.status === 'pending'
+                {request.orders?.[0]?.status === 'pending'
                   ? 'N/A'
-                  : request.order?.shippedBy ?? 'N/A'}
+                  : request.orders?.[0]?.shippedBy ?? 'N/A'}
               </Table.Cell>
               <Table.Cell>
                 {formatReceivedDate(request.dateReceived)}
               </Table.Cell>
               <Table.Cell>
-                {!request.order || request.order?.status === 'pending' ? (
+                {!request.orders?.[0] || request.orders?.[0]?.status === 'pending' ? (
                   <Text>Awaiting Order Assignment</Text>
-                ) : request.order?.status === 'delivered' ? (
+                ) : request.orders?.[0]?.status === 'delivered' ? (
                   <Text>Food Request is Already Delivered</Text>
                 ) : (
                   <Button

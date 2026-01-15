@@ -6,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Order } from '../orders/order.entity';
 
 @Entity('allocations')
 export class Allocation {
@@ -14,6 +15,10 @@ export class Allocation {
 
   @Column({ name: 'order_id', type: 'int' })
   orderId: number;
+
+  @ManyToOne(() => Order, (order) => order.allocations)
+  @JoinColumn({ name: 'order_id' })
+  order: Order;
 
   @Column({ name: 'item_id', type: 'int', nullable: false })
   itemId: number;

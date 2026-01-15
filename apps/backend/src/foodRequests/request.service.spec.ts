@@ -11,6 +11,8 @@ import { OrderStatus } from '../orders/types';
 
 const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
+const mockOrdersRepository = mock<Repository<Order>>();
+
 
 const mockRequest: Partial<FoodRequest> = {
   requestId: 1,
@@ -46,6 +48,10 @@ describe('RequestsService', () => {
           provide: getRepositoryToken(Pantry),
           useValue: mockPantryRepository,
         },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: mockOrdersRepository,
+        },
       ],
     }).compile();
 
@@ -74,7 +80,7 @@ describe('RequestsService', () => {
       expect(result).toEqual(mockRequest);
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
@@ -89,7 +95,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
   });
@@ -191,7 +197,7 @@ describe('RequestsService', () => {
       expect(result).toEqual(mockRequests.slice(0, 2));
       expect(mockRequestsRepository.find).toHaveBeenCalledWith({
         where: { pantryId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
   });
@@ -252,7 +258,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
 
       expect(mockRequestsRepository.save).toHaveBeenCalledWith({
@@ -283,7 +289,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
@@ -308,7 +314,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
@@ -352,7 +358,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
   });

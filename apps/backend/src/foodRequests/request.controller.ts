@@ -18,6 +18,7 @@ import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -40,6 +41,13 @@ export class RequestsController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
+  }
+
+  @Get('/get-all-order-details/:requestId')
+  async getAllOrderDetailsFromRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ) : Promise<OrderDetailsDto[]> {
+    return this.requestsService.getOrderDetails(requestId);
   }
 
   @Post('/create')
