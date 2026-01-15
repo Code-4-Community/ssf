@@ -35,9 +35,17 @@ export class RequestsService {
     return request;
   }
 
-  async getOrderDetails(
-    requestId: number,
-  ): Promise<OrderDetailsDto[]> {
+  async getOrderDetails(requestId: number): Promise<OrderDetailsDto[]> {
+    validateId(requestId, 'Request');
+
+    const requestExists = await this.repo.findOne({
+      where: { requestId },
+    });
+
+    if (!requestExists) {
+      throw new Error(`Request ${requestId} not found`);
+    }
+
     const orders = await this.orderRepo.find({
       where: { requestId },
       relations: {
@@ -47,6 +55,10 @@ export class RequestsService {
         },
       },
     });
+
+    if (!orders.length) {
+      return [];
+    }
 
     return orders.map((order) => ({
       orderId: order.orderId,
@@ -59,7 +71,6 @@ export class RequestsService {
       })),
     }));
   }
-
 
   async create(
     pantryId: number,

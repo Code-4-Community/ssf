@@ -8,6 +8,8 @@ import { Readable } from 'stream';
 import { FoodRequest } from './request.entity';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
+import { FoodType } from '../donationItems/types';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 
 const mockRequestsService = mock<RequestsService>();
 const mockOrdersService = mock<OrdersService>();
@@ -26,6 +28,7 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.updateDeliveryDetails?.mockReset();
+    mockRequestsService.getOrderDetails.mockReset();
     mockAWSS3Service.upload.mockReset();
     mockOrdersService.updateStatus.mockReset();
 
@@ -88,6 +91,55 @@ describe('RequestsController', () => {
 
       expect(result).toEqual(foodRequests);
       expect(mockRequestsService.find).toHaveBeenCalledWith(pantryId);
+    });
+  });
+
+  describe('GET /get-all-order-details/:requestId', () => {
+    it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
+      const mockOrderDetails = [
+        {
+          orderId: 10,
+          status: OrderStatus.DELIVERED,
+          foodManufacturerName: 'Test Manufacturer',
+          items: [
+            {
+              name: 'Rice',
+              quantity: 5,
+              foodType: FoodType.GRANOLA,
+            },
+            {
+              name: 'Beans',
+              quantity: 3,
+              foodType: FoodType.DRIED_BEANS,
+            },
+          ],
+        },
+        {
+          orderId: 11,
+          status: OrderStatus.PENDING,
+          foodManufacturerName: 'Another Manufacturer',
+          items: [
+            {
+              name: 'Milk',
+              quantity: 2,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+            },
+          ],
+        },
+      ];
+
+      const requestId = 1;
+
+      mockRequestsService.getOrderDetails.mockResolvedValueOnce(
+        mockOrderDetails as OrderDetailsDto[],
+      );
+
+      const result = await controller.getAllOrderDetailsFromRequest(requestId);
+
+      expect(result).toEqual(mockOrderDetails);
+      expect(mockRequestsService.getOrderDetails).toHaveBeenCalledWith(
+        requestId,
+      );
     });
   });
 
