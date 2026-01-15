@@ -43,3 +43,19 @@ This can be found next to your profile name when you login to the main page. Som
 
 3. `AWS_BUCKET_NAME`:
 This one is already given to you. As of right now, we only use one bucket, confirm-delivery-photos to store photos in a public S3 Bucket. This may be subject to change as we use S3 more in the project.
+
+4. `COGNITO_CLIENT_SECRET`:
+This is used to help authenticate you with AWS Cognito and allow you to properly sign in using proper credential. To find this:
+   - Navigate to AWS Cognito
+   - Go to App Clients, and click on 'ssf client w secret'
+   - There, you can validate the information in `aws_exports.ts`, as well copy the client secret into your env file
+
+5. Creating a new user within AWS Cognito
+   There are 2 ways you can create a new user in AWS Cognito. The simplest, is through loading the up, going to the landing page, and creating a new account there. If you choose to do it alternatively through the console, follow these steps:
+   - Navigate to AWS Cognito
+   - Go to Users
+   - If you do not already see your email there, create a new User, setting an email in password (this will be what you login with on the frontend)
+   - Click 'Create User'
+   - Load up the app, and go to the landing page
+   - Verify you are able to login with these new credentials you created
+      

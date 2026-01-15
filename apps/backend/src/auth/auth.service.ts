@@ -32,6 +32,8 @@ export class AuthService {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
     });
+
+    this.clientSecret = process.env.COGNITO_CLIENT_SECRET;
   }
 
   // Computes secret hash to authenticate this backend to Cognito
