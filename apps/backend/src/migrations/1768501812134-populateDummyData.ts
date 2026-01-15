@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateDummyData1764723723063 implements MigrationInterface {
+export class PopulateDummyData1768501812134 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const existingUsers = await queryRunner.query(
       `SELECT COUNT(*) as count FROM public.users WHERE email IN ('john.smith@ssf.org', 'sarah.j@ssf.org')`,
