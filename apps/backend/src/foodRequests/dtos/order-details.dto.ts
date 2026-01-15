@@ -1,5 +1,5 @@
-import { FoodType } from "../../donationItems/types";
-import { OrderStatus } from "../../orders/types";
+import { FoodType } from '../../donationItems/types';
+import { OrderStatus } from '../../orders/types';
 
 export class OrderItemDetailsDto {
   name: string;

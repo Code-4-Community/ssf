@@ -163,7 +163,9 @@ const FormRequests: React.FC = () => {
                 )}
               </Table.Cell>
               <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
-              <Table.Cell>{request.orders?.[0]?.status ?? 'pending'}</Table.Cell>
+              <Table.Cell>
+                {request.orders?.[0]?.status ?? 'pending'}
+              </Table.Cell>
               <Table.Cell>
                 {request.orders?.[0]?.status === 'pending'
                   ? 'N/A'
@@ -173,7 +175,8 @@ const FormRequests: React.FC = () => {
                 {formatReceivedDate(request.dateReceived)}
               </Table.Cell>
               <Table.Cell>
-                {!request.orders?.[0] || request.orders?.[0]?.status === 'pending' ? (
+                {!request.orders?.[0] ||
+                request.orders?.[0]?.status === 'pending' ? (
                   <Text>Awaiting Order Assignment</Text>
                 ) : request.orders?.[0]?.status === 'delivered' ? (
                   <Text>Food Request is Already Delivered</Text>

@@ -46,7 +46,7 @@ export class RequestsController {
   @Get('/get-all-order-details/:requestId')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ) : Promise<OrderDetailsDto[]> {
+  ): Promise<OrderDetailsDto[]> {
     return this.requestsService.getOrderDetails(requestId);
   }
 
