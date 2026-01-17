@@ -15,9 +15,6 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
       INSERT INTO public.users (first_name, last_name, email, phone, role) VALUES
       ('John', 'Smith', 'john.smith@ssf.org', '555-010-0101', 'admin'),
       ('Sarah', 'Johnson', 'sarah.j@ssf.org', '555-010-0102', 'admin'),
-      ('Mike', 'Brown', 'mike.brown@pantry1.org', '555-020-0201', 'pantry'),
-      ('Emily', 'Davis', 'emily.davis@pantry2.org', '555-020-0202', 'pantry'),
-      ('Robert', 'Wilson', 'robert.w@pantry3.org', '555-020-0203', 'pantry'),
       ('Lisa', 'Martinez', 'lisa.m@foodcorp.com', '555-030-0301', 'food_manufacturer'),
       ('David', 'Anderson', 'david.a@healthyfoods.com', '555-030-0302', 'food_manufacturer'),
       ('Jennifer', 'Taylor', 'jennifer.t@organic.com', '555-030-0303', 'food_manufacturer'),
@@ -54,7 +51,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         activities, items_in_stock, need_more_options, status, date_applied, activities_comments, shipment_address_line_2,
         shipment_address_country, delivery_window_instructions, mailing_address_line_1, mailing_address_city, mailing_address_state, mailing_address_zip,
         mailing_address_country, has_email_contact, email_contact_other, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_email,
-        secondary_contact_phone
+        secondary_contact_phone, accept_food_deliveries
       ) VALUES
       (
         'Community Food Pantry Downtown',
@@ -88,11 +85,12 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         '53711',
         'US',
         false,
+        'Use work phone instead for contact',
         NULL,
         NULL,
         NULL,
         NULL,
-        NULL
+        true
       ),
       (
         'Westside Community Kitchen',
@@ -130,7 +128,8 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        true
       ),
       (
         'North End Food Bank',
@@ -164,11 +163,12 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         '86001',
         'US',
         true,
-        'NorthEnd@gmail.com',
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        NULL,
+        true
       ),
       (
         'Riverside Food Assistance',
@@ -192,7 +192,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'Training on allergen management',
         'denied',
         NOW() - INTERVAL '7 days',
-        NULL,
+        'Create a food goal tracking schedule',
         '1569 Brookstone Avenue',
         'US',
         'Handle with care',
@@ -202,11 +202,12 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         '75075',
         'US',
         true,
-        'Riverside@gmail.com',
+        NULL,
         'Joe',
         'Smith',
         'j@gmail.com',
-        '2013334958'
+        '2013334958',
+        false
       ),
       (
         'Harbor Community Center',
@@ -244,7 +245,8 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        false
       ),
       (
         'Southside Pantry Network',
@@ -282,7 +284,8 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'Dave',
         'Jones',
         'Dave@gmail.com',
-        '2013334029'
+        '2013334029',
+        false
       )
     `);
 
