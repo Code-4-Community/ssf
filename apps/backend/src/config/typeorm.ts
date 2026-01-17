@@ -27,6 +27,7 @@ import { RemoveMultipleVolunteerTypes1764811878152 } from '../migrations/1764811
 import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-RemoveUnusedStatuses';
 import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
+import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
 
 const config = {
   type: 'postgres',
@@ -67,6 +68,7 @@ const config = {
     RemoveMultipleVolunteerTypes1764811878152,
     RemoveUnusedStatuses1764816885341,
     PopulateDummyData1768501812134,
+    UpdateManufacturerEntity1768680807820,
   ],
 };
 

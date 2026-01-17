@@ -72,42 +72,104 @@ export class PantriesController {
           example: '(508) 508-6789',
           description: 'Must be a valid US phone number',
         },
+        hasEmailContact: {
+          type: 'boolean',
+          example: true,
+        },
+        emailContactOther: {
+          type: 'string',
+          maxLength: 255,
+          example: 'No we do not use email',
+        },
+        secondaryContactFirstName: {
+          type: 'string',
+          example: 'Jane',
+        },
+        secondaryContactLastName: {
+          type: 'string',
+          example: 'Smith',
+        },
+        secondaryContactEmail: {
+          type: 'string',
+          format: 'email',
+          example: 'jane.smith@example.com',
+        },
+        secondaryContactPhone: {
+          type: 'string',
+          format: 'phone',
+          example: '(508) 528-6789',
+          description: 'Must be a valid US phone number',
+        },
         pantryName: {
           type: 'string',
           minLength: 1,
           maxLength: 255,
           example: 'Community Food Pantry',
         },
-        addressLine1: {
+        shipmentAddressLine1: {
           type: 'string',
           minLength: 1,
           maxLength: 255,
           example: '123 Main Street',
         },
-        addressLine2: {
+        shipmentAddressLine2: {
           type: 'string',
           maxLength: 255,
           example: 'Suite 200',
         },
-        addressCity: {
+        shipmentAddressCity: {
           type: 'string',
           minLength: 1,
           maxLength: 255,
           example: 'Boston',
         },
-        addressState: {
+        shipmentAddressState: {
           type: 'string',
           minLength: 1,
           maxLength: 255,
           example: 'MA',
         },
-        addressZip: {
+        shipmentAddressZip: {
           type: 'string',
           minLength: 1,
           maxLength: 255,
           example: '02101',
         },
-        addressCountry: {
+        shipmentAddressCountry: {
+          type: 'string',
+          maxLength: 255,
+          example: 'United States',
+        },
+        mailingAddressLine1: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+          example: '456 Main Street',
+        },
+        mailingAddressLine2: {
+          type: 'string',
+          maxLength: 255,
+          example: 'Suite 200',
+        },
+        mailingAddressCity: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+          example: 'Boston',
+        },
+        mailingAddressState: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+          example: 'MA',
+        },
+        mailingAddressZip: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+          example: '02101',
+        },
+        mailingAddressCountry: {
           type: 'string',
           maxLength: 255,
           example: 'United States',
@@ -128,6 +190,15 @@ export class PantriesController {
           enum: Object.values(RefrigeratedDonation),
           example: RefrigeratedDonation.YES,
         },
+        acceptFoodDeliveries: {
+          type: 'boolean',
+          example: true,
+        },
+        deliveryWindowInstructions: {
+          type: 'string',
+          maxLength: 255,
+          example: 'Deliveries can be made between 9 AM and 5 PM on weekdays.',
+        },
         reserveFoodForAllergic: {
           type: 'string',
           enum: Object.values(ReserveFoodForAllergic),
@@ -135,6 +206,7 @@ export class PantriesController {
         },
         reservationExplanation: {
           type: 'string',
+          maxLength: 255,
           example:
             'We keep a dedicated section for clients with severe allergies',
         },
@@ -167,21 +239,25 @@ export class PantriesController {
         },
         activitiesComments: {
           type: 'string',
+          maxLength: 255,
           example:
             'We would be willing to implement these activities over the next quarter',
         },
         itemsInStock: {
           type: 'string',
+          minLength: 1,
+          maxLength: 255,
           example: 'Rice, pasta, canned vegetables, gluten-free bread',
         },
         needMoreOptions: {
           type: 'string',
+          minLength: 1,
+          maxLength: 255,
           example: 'Quite often',
         },
         newsletterSubscription: {
-          type: 'string',
-          enum: ['Yes', 'No'],
-          example: 'Yes',
+          type: 'boolean',
+          example: true,
         },
       },
       required: [
@@ -189,13 +265,19 @@ export class PantriesController {
         'contactLastName',
         'contactEmail',
         'contactPhone',
+        'hasEmailContact',
         'pantryName',
-        'addressLine1',
-        'addressCity',
-        'addressState',
-        'addressZip',
+        'shipmentAddressLine1',
+        'shipmentAddressCity',
+        'shipmentAddressState',
+        'shipmentAddressZip',
+        'mailingAddressLine1',
+        'mailingAddressCity',
+        'mailingAddressState',
+        'mailingAddressZip',
         'allergenClients',
         'refrigeratedDonation',
+        'acceptFoodDeliveries',
         'reserveFoodForAllergic',
         'dedicatedAllergyFriendly',
         'activities',

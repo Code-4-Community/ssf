@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { mock } from 'jest-mock-extended';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 const mockDonationRepository = mock<Repository<Donation>>();
 const mockFoodManufacturerRepository = mock<Repository<FoodManufacturer>>();
