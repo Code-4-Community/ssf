@@ -56,6 +56,12 @@ const AdminOrderManagement: React.FC = () => {
     searchPantry: string;
     sortAsc: boolean;
   };
+
+  // Record to store the filter state for each status
+  // selectedPantries represents the pantries selected in the filter
+  // searchPantry is the current search input for pantry filtering
+  // sortAsc indicates whether the sorting is ascending (oldest first) or descending (newest first)
+  // We store all these here to determine what orders to display for each status
   const [filterStates, setFilterStates] = useState<
     Record<OrderStatus, FilterState>
   >({
@@ -201,12 +207,14 @@ const AdminOrderManagement: React.FC = () => {
               pantryOptions={pantryOptions}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
+                // Update filter state for the specific status
                 setFilterStates((prev) => {
                   const prevSelected = prev[status]?.selectedPantries || [];
                   const prevKey = [...prevSelected].sort().join(',');
                   const newKey = [...newState.selectedPantries]
                     .sort()
                     .join(',');
+                  // Reset page if selected pantries changed
                   if (prevKey !== newKey) {
                     resetPageForStatus(status);
                   }
