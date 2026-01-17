@@ -73,10 +73,6 @@ const router = createBrowserRouter([
         element: <Homepage />,
       },
       {
-        index: true,
-        element: <Homepage />,
-      },
-      {
         path: '/landing-page',
         element: <LandingPage />,
       },
@@ -90,14 +86,6 @@ const router = createBrowserRouter([
         element: <PantryApplicationSubmitted />,
       },
       // Private routes (protected by auth)
-      {
-        path: '/landing-page',
-        element: (
-          <Authenticator components={components}>
-            <LandingPage />
-          </Authenticator>
-        ),
-      },
       {
         path: '/pantry-overview',
         element: (
@@ -172,6 +160,22 @@ const router = createBrowserRouter([
           </Authenticator>
         ),
       },
+      {
+        path: '/admin-donation',
+        element: (
+          <Authenticator components={components}>
+            <AdminDonation />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/volunteer-management',
+        element: (
+          <Authenticator components={components}>
+            <VolunteerManagement />
+          </Authenticator>
+        ),
+      },
       // Actions
       {
         path: '/food-request',
@@ -180,18 +184,6 @@ const router = createBrowserRouter([
       {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
-      },
-      {
-        path: '/approve-pantries',
-        element: <ApprovePantries />,
-      },
-      {
-        path: '/admin-donation',
-        element: <AdminDonation />,
-      },
-      {
-        path: '/volunteer-management',
-        element: <VolunteerManagement />,
       },
     ],
   },
