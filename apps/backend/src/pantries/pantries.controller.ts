@@ -22,6 +22,7 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { EmailsService } from '../emails/email.service';
+import { SendEmailDTO } from '../emails/types';
 
 @Controller('pantries')
 export class PantriesController {
@@ -229,18 +230,9 @@ export class PantriesController {
   }
 
   @Post('/email')
-  async sendEmail(
-    @Body()
-    {
-      toEmail,
-      subject,
-      bodyHtml,
-    }: {
-      toEmail: string;
-      subject: string;
-      bodyHtml: string;
-    },
-  ): Promise<void> {
-    await this.emailsService.sendEmail(toEmail, subject, bodyHtml);
+  async sendEmail(@Body() sendEmailDTO: SendEmailDTO): Promise<void> {
+    const { toEmail, subject, bodyHtml, attachments } = sendEmailDTO;
+
+    await this.emailsService.sendEmail(toEmail, subject, bodyHtml, attachments);
   }
 }
