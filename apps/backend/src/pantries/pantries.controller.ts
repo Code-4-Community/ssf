@@ -231,8 +231,16 @@ export class PantriesController {
   @Post('/email')
   async sendEmail(
     @Body()
-    { to, subject, body }: { to: string; subject: string; body: string },
+    {
+      toEmail,
+      subject,
+      bodyHtml,
+    }: {
+      toEmail: string;
+      subject: string;
+      bodyHtml: string;
+    },
   ): Promise<void> {
-    await this.emailsService.sendEmail(to, subject, body);
+    await this.emailsService.sendEmail(toEmail, subject, bodyHtml);
   }
 }
