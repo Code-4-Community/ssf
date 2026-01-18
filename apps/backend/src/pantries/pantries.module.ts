@@ -4,9 +4,10 @@ import { PantriesService } from './pantries.service';
 import { PantriesController } from './pantries.controller';
 import { Pantry } from './pantries.entity';
 import { OrdersModule } from '../orders/order.module';
+import { EmailsModule } from '../emails/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pantry]), OrdersModule],
+  imports: [TypeOrmModule.forFeature([Pantry]), OrdersModule, EmailsModule],
   controllers: [PantriesController],
   providers: [PantriesService],
   exports: [PantriesService],
