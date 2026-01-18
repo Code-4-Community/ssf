@@ -146,11 +146,11 @@ export interface User {
 }
 
 export interface UserDto {
-  email: string,
-  firstName: string,
-  lastName: string,
-  phone: string,
-  role: Role,
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: Role;
 }
 
 export interface FoodRequest {
@@ -166,15 +166,15 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
+  pantry?: Pantry;
+  request: FoodRequest;
   requestId: number;
-  pantryId: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string;
-  deliveredAt: string;
-  donationId: number;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 }
 
 export interface FoodManufacturer {
@@ -233,8 +233,18 @@ export enum DonationFrequency {
   WEEKLY = 'weekly',
 }
 
-export enum DonationStatus {
-  AVAILABLE = 'available',
-  FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
+export interface OrderSummary {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantry: {
+    pantryName: string;
+    volunteers?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    }[];
+  };
 }

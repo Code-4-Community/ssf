@@ -23,6 +23,7 @@ import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
 import { pantryIdLoader } from '@loaders/pantryIdLoader';
 import Homepage from '@containers/homepage';
+import AdminOrderManagement from '@containers/adminOrderManagement';
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
@@ -173,6 +174,14 @@ const router = createBrowserRouter([
         element: (
           <Authenticator components={components}>
             <VolunteerManagement />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/admin-order-management',
+        element: (
+          <Authenticator components={components}>
+            <AdminOrderManagement />
           </Authenticator>
         ),
       },
