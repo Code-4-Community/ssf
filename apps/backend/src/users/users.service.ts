@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { User } from './user.entity';
-import { Role } from './types';
+import { Role, VOLUNTEER_ROLES } from './types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
@@ -60,7 +60,7 @@ export class UsersService {
 
     if (!volunteer)
       throw new NotFoundException(`User ${volunteerId} not found`);
-    if (volunteer.role !== Role.VOLUNTEER) {
+    if (!VOLUNTEER_ROLES.includes(volunteer.role)) {
       throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
     }
     return volunteer;
@@ -106,7 +106,7 @@ export class UsersService {
   async getVolunteersAndPantryAssignments(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
   > {
-    const volunteers = await this.findUsersByRoles([Role.VOLUNTEER]);
+    const volunteers = await this.findUsersByRoles(VOLUNTEER_ROLES);
 
     return volunteers.map((v) => {
       const { pantries, ...volunteerWithoutPantries } = v;

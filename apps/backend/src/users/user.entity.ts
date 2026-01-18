@@ -19,7 +19,7 @@ export class User {
     name: 'role',
     enum: Role,
     enumName: 'users_role_enum',
-    default: Role.VOLUNTEER,
+    default: Role.STANDARD_VOLUNTEER,
   })
   role: Role;
 

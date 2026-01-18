@@ -7,6 +7,7 @@ import { validateId } from '../utils/validation.utils';
 import { PantryStatus } from './types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { ApprovedPantryResponse } from './types';
 
 @Injectable()
 export class PantriesService {
@@ -108,6 +109,44 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: PantryStatus.DENIED });
+  }
+
+  
+  async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
+    const pantries = await this.repo.find({
+      where: { status: PantryStatus.APPROVED },
+      relations: ['pantryUser', 'volunteers'],
+    });
+  
+    return pantries.map((pantry) => ({
+      pantryId: pantry.pantryId,
+      pantryName: pantry.pantryName,
+      address: {
+        line1: pantry.shipmentAddressLine1,
+        line2: pantry.shipmentAddressLine2,
+        city: pantry.shipmentAddressCity,
+        state: pantry.shipmentAddressState,
+        zip: pantry.shipmentAddressZip,
+        country: pantry.shipmentAddressCountry,
+      },
+      contactInfo: {
+        firstName: pantry.pantryUser.firstName,
+        lastName: pantry.pantryUser.lastName,
+        email: pantry.pantryUser.email,
+        phone: pantry.pantryUser.phone,
+      },
+      refrigeratedDonation: pantry.refrigeratedDonation,
+      allergenClients: pantry.allergenClients,
+      status: pantry.status,
+      dateApplied: pantry.dateApplied,
+      assignedVolunteers: (pantry.volunteers || []).map((volunteer) => ({
+        userId: volunteer.id,
+        name: `${volunteer.firstName} ${volunteer.lastName}`,
+        email: volunteer.email,
+        phone: volunteer.phone,
+        role: volunteer.role,
+      })),
+    }));
   }
 
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {

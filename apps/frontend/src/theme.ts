@@ -1,9 +1,4 @@
-import {
-  createSystem,
-  defaultConfig,
-  defineConfig,
-  defineTextStyles,
-} from '@chakra-ui/react';
+import { createSystem, defaultConfig, defineConfig, defineTextStyles } from '@chakra-ui/react';
 
 const textStyles = defineTextStyles({
   body: {
@@ -62,7 +57,7 @@ const customConfig = defineConfig({
       colors: {
         white: { value: '#fff' },
         black: { value: '#000' },
-        blue: {
+        blue: { 
           ssf: { value: '#2B5061' },
           100: { value: '#bee3f8' },
         },
@@ -82,14 +77,14 @@ const customConfig = defineConfig({
           800: { value: '#414141' },
           900: { value: '#212529' },
         },
-        gray: {
+        gray: { 
           light: { value: '#515151' },
           dark: { value: '#111' },
         },
         teal: {
           400: { value: '#A9D5DB' },
           100: { value: '#E9F4F6' },
-        },
+        }
       },
       fonts: {
         instrument: { value: `'Instrument Serif', serif` },
@@ -105,10 +100,10 @@ const customConfig = defineConfig({
     'h1, h2, h3, h4, h5, h6': {
       fontFamily: 'heading',
     },
-    body: {
-      bg: '#FFF',
+    'body': {
+      bg: '#FAFAFA',
     },
   },
 });
 
-export const system = createSystem(defaultConfig, customConfig);
+export const system = createSystem(defaultConfig, customConfig); 

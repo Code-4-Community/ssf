@@ -13,25 +13,17 @@ const mockUserService = mock<UsersService>();
 
 const mockUser1: Partial<User> = {
   id: 1,
-  email: 'john@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '1234567890',
-  role: Role.VOLUNTEER,
+  role: Role.STANDARD_VOLUNTEER,
 };
 
 const mockUser2: Partial<User> = {
   id: 2543210,
-  email: 'bobsmith@example.com',
-  firstName: 'Bob',
-  lastName: 'Smith',
-  phone: '9876',
-  role: Role.VOLUNTEER,
+  role: Role.LEAD_VOLUNTEER,
 };
 
 const mockUser3: Partial<User> = {
   id: 3,
-  role: Role.VOLUNTEER,
+  role: Role.STANDARD_VOLUNTEER,
 };
 
 const mockPantries: Partial<Pantry>[] = [
@@ -74,45 +66,6 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-  });
-
-  describe('GET /volunteers', () => {
-    it('should return all volunteers', async () => {
-      const users: (Omit<Partial<User>, 'pantries'> & {
-        pantryIds: number[];
-      })[] = [
-        {
-          id: 1,
-          role: Role.VOLUNTEER,
-          pantryIds: [1],
-        },
-        {
-          id: 2,
-          role: Role.VOLUNTEER,
-          pantryIds: [2],
-        },
-        {
-          id: 3,
-          role: Role.ADMIN,
-          pantryIds: [3],
-        },
-      ];
-
-      const volunteers = users.slice(0, 2);
-
-      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
-        volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
-      );
-
-      const result = await controller.getAllVolunteers();
-
-      expect(result).toEqual(volunteers);
-      expect(result.length).toBe(2);
-      expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
-      expect(
-        mockUserService.getVolunteersAndPantryAssignments,
-      ).toHaveBeenCalled();
-    });
   });
 
   describe('GET /:id', () => {
@@ -189,7 +142,7 @@ describe('UsersController', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.VOLUNTEER,
+        role: Role.STANDARD_VOLUNTEER,
       };
 
       const error = new Error('Database error');

@@ -34,7 +34,7 @@ export class AuthController {
       signUpDto.firstName,
       signUpDto.lastName,
       signUpDto.phone,
-      Role.VOLUNTEER,
+      Role.STANDARD_VOLUNTEER,
     );
 
     return user;

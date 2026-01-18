@@ -9,13 +9,11 @@ import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
-import { Pantry } from '../pantries/pantries.entity';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
-    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -41,13 +39,6 @@ export class RequestsService {
     feedback: string | undefined,
     photos: string[] | undefined,
   ): Promise<FoodRequest> {
-    validateId(pantryId, 'Pantry');
-
-    const pantry = await this.pantryRepo.findOneBy({ pantryId });
-    if (!pantry) {
-      throw new NotFoundException(`Pantry ${pantryId} not found`);
-    }
-
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
