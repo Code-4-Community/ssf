@@ -146,11 +146,11 @@ export interface User {
 }
 
 export interface UserDto {
-  email: string,
-  firstName: string,
-  lastName: string,
-  phone: string,
-  role: Role,
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: Role;
 }
 
 export interface FoodRequest {
