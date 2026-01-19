@@ -76,9 +76,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
               {readOnly
-                ? `Order ${previousRequest?.requestId}`
+                ? `Request ${previousRequest?.requestId}`
                 : previousRequest
-                ? 'Resubmit Latest Order'
+                ? 'Resubmit Latest Request'
                 : 'New Food Request'}
             </Dialog.Title>
           </Dialog.Header>
@@ -100,7 +100,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     previousRequest.requestedAt,
                   ).toLocaleDateString()}`
                 : previousRequest
-                ? 'Confirm order details.'
+                ? 'Confirm request details.'
                 : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
