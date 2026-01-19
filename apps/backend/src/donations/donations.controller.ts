@@ -15,7 +15,6 @@ import { DonationService } from './donations.service';
 import { DonationStatus } from './types';
 
 @Controller('donations')
-@UseGuards(AuthGuard('jwt'))
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
