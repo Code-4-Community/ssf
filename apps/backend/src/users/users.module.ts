@@ -6,10 +6,7 @@ import { User } from './user.entity';
 import { PantriesModule } from '../pantries/pantries.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    forwardRef(() => PantriesModule),
-  ],
+  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => PantriesModule)],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
