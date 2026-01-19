@@ -25,6 +25,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
+import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -221,7 +222,7 @@ const router = createBrowserRouter([
           </Authenticator>
         ),
       },
-      
+
       // Actions
       {
         path: '/food-request',
