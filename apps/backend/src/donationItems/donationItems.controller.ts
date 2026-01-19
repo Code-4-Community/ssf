@@ -6,11 +6,14 @@ import {
   Get,
   Patch,
   UseGuards,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { FoodType } from './types';
 
 @Controller('donation-items')
 //@UseInterceptors()
@@ -20,7 +23,7 @@ export class DonationItemsController {
 
   @Get('/get-donation-items/:donationId')
   async getAllDonationIdItems(
-    @Param('donationId') donationId: number,
+    @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
@@ -35,10 +38,13 @@ export class DonationItemsController {
         itemName: { type: 'string', example: 'Rice Noodles' },
         quantity: { type: 'integer', example: 100 },
         reservedQuantity: { type: 'integer', example: 0 },
-        status: { type: 'string', example: 'available' },
         ozPerItem: { type: 'integer', example: 5 },
         estimatedValue: { type: 'integer', example: 100 },
-        foodType: { type: 'string', example: 'grain' },
+        foodType: {
+          type: 'string',
+          enum: Object.values(FoodType),
+          example: FoodType.DAIRY_FREE_ALTERNATIVES,
+        },
       },
     },
   })
@@ -49,18 +55,22 @@ export class DonationItemsController {
       itemName: string;
       quantity: number;
       reservedQuantity: number;
-      status: string;
       ozPerItem: number;
       estimatedValue: number;
-      foodType: string;
+      foodType: FoodType;
     },
   ): Promise<DonationItem> {
+    if (
+      body.foodType &&
+      !Object.values(FoodType).includes(body.foodType as FoodType)
+    ) {
+      throw new BadRequestException('Invalid foodtype');
+    }
     return this.donationItemsService.create(
       body.donationId,
       body.itemName,
       body.quantity,
       body.reservedQuantity,
-      body.status,
       body.ozPerItem,
       body.estimatedValue,
       body.foodType,
@@ -69,7 +79,7 @@ export class DonationItemsController {
 
   @Patch('/update-quantity/:itemId')
   async updateDonationItemQuantity(
-    @Param('itemId') itemId: number,
+    @Param('itemId', ParseIntPipe) itemId: number,
   ): Promise<DonationItem> {
     return this.donationItemsService.updateDonationItemQuantity(itemId);
   }

@@ -7,36 +7,26 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitFoodRequestFormModal } from '@components/forms/requestFormModalButton';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModalButton';
+import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
+import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
+import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import VolunteerManagement from '@containers/volunteerManagement';
+import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
+import DonationManagement from '@containers/donationManagement';
+import AdminDonation from '@containers/adminDonation';
+import { pantryIdLoader } from '@loaders/pantryIdLoader';
+import Homepage from '@containers/homepage';
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
-import { Hub, HubCapsule } from 'aws-amplify/utils';
-import { AuthHubEventData } from '@aws-amplify/core/dist/esm/Hub/types';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
-
-async function signInListener(data: HubCapsule<'auth', AuthHubEventData>) {
-  if (data.payload.event !== 'signedIn') {
-    return;
-  }
-
-  const { tokens } = await fetchAuthSession();
-  const b64token = tokens?.accessToken.toString();
-  console.log(b64token);
-  localStorage.setItem('accessToken', b64token || '');
-}
-
-Hub.listen('auth', signInListener);
 
 const components = {
   SignUp: {
@@ -75,7 +65,14 @@ const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       // Public routes (no auth needed)
-
+      {
+        index: true,
+        element: <Homepage />,
+      },
+      {
+        path: '/landing-page',
+        element: <LandingPage />,
+      },
       {
         path: '/pantry-application',
         element: <PantryApplication />,
@@ -130,6 +127,52 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/pantry-application/submitted',
+        element: <PantryApplicationSubmitted />,
+      },
+      // Private routes (protected by auth)
+      {
+        path: '/pantry-overview',
+        element: (
+          <Authenticator components={components}>
+            <PantryOverview />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <Authenticator components={components}>
+            <PantryDashboard />
+          </Authenticator>
+        ),
+        loader: pantryIdLoader,
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <Authenticator components={components}>
+            <PantryPastOrders />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <Authenticator components={components}>
+            <Pantries />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/food-manufacturer-order-dashboard',
+        element: (
+          <Authenticator components={components}>
+            <FoodManufacturerOrderDashboard />
+          </Authenticator>
+        ),
+      },
+      {
         path: '/orders',
         element: (
           <Authenticator components={components}>
@@ -152,10 +195,34 @@ const router = createBrowserRouter([
             <ApprovePantries />
           </Authenticator>
         ),
+        loader: pantryIdLoader,
       },
-
+      {
+        path: '/donation-management',
+        element: (
+          <Authenticator components={components}>
+            <DonationManagement />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/admin-donation',
+        element: (
+          <Authenticator components={components}>
+            <AdminDonation />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/volunteer-management',
+        element: (
+          <Authenticator components={components}>
+            <VolunteerManagement />
+          </Authenticator>
+        ),
+      },
+      
       // Actions
-
       {
         path: '/food-request',
         action: submitFoodRequestFormModal,

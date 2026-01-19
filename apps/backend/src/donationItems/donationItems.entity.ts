@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Donation } from '../donations/donations.entity';
+import { Allocation } from '../allocations/allocations.entity';
+import { FoodType } from './types';
 
 @Entity('donation_items')
 export class DonationItem {
@@ -13,7 +16,7 @@ export class DonationItem {
   itemId: number;
 
   @Column({ name: 'donation_id', type: 'int' })
-  donationId: number;
+  donation_id: number;
 
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
@@ -28,15 +31,21 @@ export class DonationItem {
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
   reservedQuantity: number;
 
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'avaliable' })
-  status: string;
-
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })
   ozPerItem: number;
 
   @Column({ name: 'estimated_value', type: 'int', nullable: true })
   estimatedValue: number;
 
-  @Column({ name: 'food_type', type: 'varchar', length: 255, nullable: true })
-  foodType: string;
+  @Column({
+    name: 'food_type',
+    type: 'enum',
+    enum: FoodType,
+    enumName: 'food_type_enum',
+    nullable: true,
+  })
+  foodType: FoodType;
+
+  @OneToMany(() => Allocation, (allocation) => allocation.item)
+  allocations: Allocation[];
 }

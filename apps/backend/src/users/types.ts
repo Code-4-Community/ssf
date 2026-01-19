@@ -1,6 +1,6 @@
 export enum Role {
-  ADMIN = 'ADMIN',
-  VOLUNTEER = 'VOLUNTEER',
-  PANTRY = 'PANTRY',
-  FOODMANUFACTURER = 'FOODMANUFACTURER',
+  ADMIN = 'admin',
+  VOLUNTEER = 'volunteer',
+  PANTRY = 'pantry',
+  FOODMANUFACTURER = 'food_manufacturer',
 }

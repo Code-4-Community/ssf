@@ -42,7 +42,8 @@ export class AWSS3Service {
       }
       return uploadedFileUrls;
     } catch (error) {
-      throw new Error(`File upload to AWS failed: ${error}`);
+      console.error('Detailed AWS upload error:', error);
+      throw new Error('File upload to AWS failed');
     }
   }
 }

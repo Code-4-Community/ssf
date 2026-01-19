@@ -5,10 +5,11 @@ import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
 import { ManufacturerModule } from '../foodManufacturers/manufacturer.module';
 import { AuthModule } from '../auth/auth.module';
+import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Donation]),
+    TypeOrmModule.forFeature([Donation, FoodManufacturer]),
     ManufacturerModule,
     AuthModule,
   ],

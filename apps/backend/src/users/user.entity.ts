@@ -1,6 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 
 import { Role } from './types';
+import { Pantry } from '../pantries/pantries.entity';
 
 @Entity()
 export class User {
@@ -9,7 +16,9 @@ export class User {
 
   @Column({
     type: 'enum',
+    name: 'role',
     enum: Role,
+    enumName: 'users_role_enum',
     default: Role.VOLUNTEER,
   })
   role: Role;
@@ -28,4 +37,18 @@ export class User {
     length: 20,
   })
   phone: string;
+
+  @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
+  @JoinTable({
+    name: 'volunteer_assignments',
+    joinColumn: {
+      name: 'volunteer_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'pantry_id',
+      referencedColumnName: 'pantryId',
+    },
+  })
+  pantries?: Pantry[];
 }
