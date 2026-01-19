@@ -31,7 +31,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload) {
     const user = await this.authService.getUser(payload.sub);
+    console.log('Cognito user retrieved:', user);
     const dbUser = await this.usersService.findByEmail(user.email);
+    console.log('Database user retrieved:', dbUser);
     return dbUser;
   }
 }

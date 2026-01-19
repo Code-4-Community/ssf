@@ -28,7 +28,6 @@ import { OrderStatus } from '../orders/types';
 @Controller('requests')
 // @UseInterceptors()
 @UseGuards(RolesGuard)
-@UseGuards(AuthGuard('jwt'))
 export class RequestsController {
   constructor(
     private requestsService: RequestsService,

@@ -29,9 +29,12 @@ export class ApiClient {
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
 
+    // Attach the access token to each request if available
+    // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = this.accessToken || localStorage.getItem('accessToken');
+        console.log('Attaching token to request:', token);
         if (token) {
           config.headers = config.headers || {};
           config.headers['Authorization'] = `Bearer ${token}`;

@@ -4,17 +4,12 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  UseGuards,
-  UseInterceptors,
   Put,
   Post,
   BadRequestException,
   Body,
-  //UseGuards,
-  //UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
@@ -31,7 +26,6 @@ export class UsersController {
     return this.usersService.getVolunteersAndPantryAssignments();
   }
 
-  // @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);

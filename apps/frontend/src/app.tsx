@@ -197,7 +197,6 @@ const router = createBrowserRouter([
             <ApprovePantries />
           </Authenticator>
         ),
-        loader: pantryIdLoader,
       },
       {
         path: '/donation-management',
