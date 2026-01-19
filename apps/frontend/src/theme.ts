@@ -103,7 +103,11 @@ const customConfig = defineConfig({
       fontFamily: 'heading',
     },
     body: {
+<<<<<<< HEAD
       bg: '#FAFAFA',
+=======
+      bg: '#FFF',
+>>>>>>> main
     },
   },
 });

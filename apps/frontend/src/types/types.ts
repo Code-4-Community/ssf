@@ -145,6 +145,14 @@ export interface User {
   pantries?: Pantry[];
 }
 
+export interface UserDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: Role;
+}
+
 export interface FoodRequest {
   requestId: number;
   requestedAt: string;
@@ -158,15 +166,15 @@ export interface FoodRequest {
 
 export interface Order {
   orderId: number;
+  pantry?: Pantry;
+  request: FoodRequest;
   requestId: number;
-  pantryId: number;
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer: FoodManufacturer | null;
   shippedBy: number | null;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string;
-  deliveredAt: string;
-  donationId: number;
+  shippedAt: string | null;
+  deliveredAt: string | null;
 }
 
 export interface FoodManufacturer {
@@ -209,15 +217,9 @@ export interface Allocation {
   fulfilledAt: string;
 }
 
-export enum VolunteerType {
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
-}
-
 export enum Role {
   ADMIN = 'admin',
-  LEAD_VOLUNTEER = 'lead_volunteer',
-  STANDARD_VOLUNTEER = 'standard_volunteer',
+  VOLUNTEER = 'volunteer',
   PANTRY = 'pantry',
   FOODMANUFACTURER = 'food_manufacturer',
 }
@@ -243,8 +245,18 @@ export enum DonationFrequency {
   WEEKLY = 'weekly',
 }
 
-export enum DonationStatus {
-  AVAILABLE = 'available',
-  FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
+export interface OrderSummary {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantry: {
+    pantryName: string;
+    volunteers?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    }[];
+  };
 }
