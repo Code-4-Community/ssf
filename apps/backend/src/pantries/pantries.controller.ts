@@ -26,16 +26,15 @@ import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { Public } from '../auth/public.decorator';
 
-@Controller('pantries')
-// @UseInterceptors(CurrentUserInterceptor)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
+@Controller('pantries')
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.VOLUNTEER)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
