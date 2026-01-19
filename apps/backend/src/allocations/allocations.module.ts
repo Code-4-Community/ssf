@@ -6,7 +6,10 @@ import { AllocationsService } from './allocations.service';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Allocation]), forwardRef(() => AuthModule)],
+  imports: [
+    TypeOrmModule.forFeature([Allocation]),
+    forwardRef(() => AuthModule),
+  ],
   controllers: [AllocationsController],
   providers: [AllocationsService],
   exports: [AllocationsService],

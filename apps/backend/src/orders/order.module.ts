@@ -7,7 +7,11 @@ import { AllocationModule } from '../allocations/allocations.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order]), AllocationModule, forwardRef(() => AuthModule)],
+  imports: [
+    TypeOrmModule.forFeature([Order]),
+    AllocationModule,
+    forwardRef(() => AuthModule),
+  ],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],
