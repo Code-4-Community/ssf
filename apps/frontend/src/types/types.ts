@@ -124,7 +124,6 @@ export enum FoodType {
   QUINOA = 'Quinoa',
 }
 
-
 export interface DonationItem {
   itemId: number;
   donationId: number;
