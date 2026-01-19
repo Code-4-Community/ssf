@@ -105,8 +105,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    onClose();
-
     const donation_body = {
       foodManufacturerId: 1,
       totalItems,
@@ -117,8 +115,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
-
-      onDonationSuccess();
 
       if (donationId) {
         const items = rows.map((row) => ({
@@ -131,6 +127,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         }));
 
         await ApiClient.postMultipleDonationItems({ donationId, items });
+        onDonationSuccess();
 
         setRows([
           {
@@ -151,6 +148,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     } catch (error) {
       alert('Error submitting new donation: ' + error);
     }
+    onClose();
   };
 
   return (

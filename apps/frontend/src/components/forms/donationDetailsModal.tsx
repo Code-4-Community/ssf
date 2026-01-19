@@ -8,7 +8,7 @@ import {
   CloseButton,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Donation, DonationItem } from 'types/types';
+import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 interface DonationDetailsModalProps {
@@ -52,7 +52,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     if (!acc[item.foodType]) acc[item.foodType] = [];
     acc[item.foodType].push(item);
     return acc;
-  }, {} as Record<string, DonationItem[]>);
+  }, {} as Record<FoodType, DonationItem[]>);
 
   return (
     <Dialog.Root

@@ -107,6 +107,24 @@ export interface Donation {
   foodManufacturer?: FoodManufacturer;
 }
 
+export enum FoodType {
+  DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
+  DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
+  GLUTEN_FREE_BAKING_PANCAKE_MIXES = 'Gluten-Free Baking/Pancake Mixes',
+  GLUTEN_FREE_BREAD = 'Gluten-Free Bread',
+  GLUTEN_FREE_TORTILLAS = 'Gluten-Free Tortillas',
+  GRANOLA = 'Granola',
+  MASA_HARINA_FLOUR = 'Masa Harina Flour',
+  NUT_FREE_GRANOLA_BARS = 'Nut-Free Granola Bars',
+  OLIVE_OIL = 'Olive Oil',
+  REFRIGERATED_MEALS = 'Refrigerated Meals',
+  RICE_NOODLES = 'Rice Noodles',
+  SEED_BUTTERS = 'Seed Butters (Peanut Butter Alternative)',
+  WHOLE_GRAIN_COOKIES = 'Whole-Grain Cookies',
+  QUINOA = 'Quinoa',
+}
+
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
@@ -115,7 +133,7 @@ export interface DonationItem {
   reservedQuantity: number;
   ozPerItem: number;
   estimatedValue: number;
-  foodType: string;
+  foodType: FoodType;
 }
 
 export const FoodTypes = [
