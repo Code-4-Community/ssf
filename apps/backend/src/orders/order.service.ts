@@ -16,6 +16,7 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.pantry', 'pantry')
+      .leftJoinAndSelect('pantry.volunteers', 'volunteers')
       .select([
         'order.orderId',
         'order.status',
@@ -23,6 +24,9 @@ export class OrdersService {
         'order.shippedAt',
         'order.deliveredAt',
         'pantry.pantryName',
+        'volunteers.id',
+        'volunteers.firstName',
+        'volunteers.lastName',
       ]);
 
     if (filters?.status) {
