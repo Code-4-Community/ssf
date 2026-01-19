@@ -8,7 +8,7 @@ export function useAuth() {
     const updateToken = async () => {
       try {
         const session = await fetchAuthSession();
-        const idToken = session.tokens?.idToken?.toString();        
+        const idToken = session.tokens?.idToken?.toString();
         apiClient.setAccessToken(idToken);
       } catch (error) {
         console.error('Error fetching auth session:', error);
