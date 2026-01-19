@@ -117,7 +117,7 @@ const ManufacturerApplicationForm: React.FC = () => {
           </Stack>
 
           <Text {...sectionTitleStyles}>Company Information</Text>
-          <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="2.5em">
+          <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="4em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
                 Company Name
@@ -141,6 +141,8 @@ const ManufacturerApplicationForm: React.FC = () => {
               />
             </Field.Root>
           </SimpleGrid>
+
+          <Separator size="sm" color="neutral.100" mb="3em" />
 
           <Text {...sectionTitleStyles}>Primary Contact Information</Text>
           <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="4em">
