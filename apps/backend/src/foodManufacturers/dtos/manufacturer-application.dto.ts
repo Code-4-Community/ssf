@@ -97,6 +97,7 @@ export class FoodManufacturerApplicationDto {
   @IsEnum(DonateWastedFood)
   donateWastedFood: DonateWastedFood;
 
+  @IsOptional()
   @IsEnum(ManufacturerAttribute)
   manufacturerAttribute?: ManufacturerAttribute;
 
