@@ -10,6 +10,7 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
 } from 'types/types';
@@ -170,6 +171,12 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async postManufacturer(
+    data: ManufacturerApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/manufacturers`, data);
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {

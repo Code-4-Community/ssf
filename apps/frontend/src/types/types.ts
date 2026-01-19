@@ -6,6 +6,11 @@ import {
   AllergensConfidence,
   Activity,
 } from './pantryEnums';
+import {
+  DonateWastedFood,
+  Allergen,
+  ManufacturerAttribute,
+} from './manufacturerEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -106,6 +111,12 @@ export interface Donation {
   foodManufacturer?: FoodManufacturer;
 }
 
+export enum DonationStatus {
+  AVAILABLE = 'available',
+  FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
@@ -180,6 +191,29 @@ export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
   foodManufacturerRepresentative?: User;
+}
+
+export interface ManufacturerApplicationDto {
+  foodManufacturerName: string;
+  foodManufacturerWebsite: string;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  unlistedProductAllergens: Allergen[];
+  facilityFreeAllergens: Allergen[];
+  productsGlutenFree: boolean;
+  productsContainSulfites: boolean;
+  productsSustainableExplanation: string;
+  inKindDonations: boolean;
+  donateWastedFood: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: string;
 }
 
 export interface CreateFoodRequestBody {
