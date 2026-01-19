@@ -9,7 +9,7 @@ import { JwtStrategy } from '../auth/jwt.strategy';
 @Module({
   imports: [TypeOrmModule.forFeature([Allocation])],
   controllers: [AllocationsController],
-  providers: [AllocationsService, AuthService, JwtStrategy],
+  providers: [AllocationsService],
   exports: [AllocationsService],
 })
 export class AllocationModule {}

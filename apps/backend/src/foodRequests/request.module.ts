@@ -9,16 +9,15 @@ import { AuthModule } from '../auth/auth.module';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { AuthService } from '../auth/auth.service';
-import { JwtStrategy } from '../auth/jwt.strategy';
 
 @Module({
   imports: [
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     TypeOrmModule.forFeature([FoodRequest, Order, Pantry]),
+    AuthModule,
   ],
   controllers: [RequestsController],
-  providers: [RequestsService, OrdersService, AuthService, JwtStrategy],
+  providers: [RequestsService, OrdersService],
 })
 export class RequestsModule {}
