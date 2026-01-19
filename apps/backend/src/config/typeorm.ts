@@ -47,6 +47,7 @@ const config = {
     UpdateUserRole1737816745912,
     UpdatePantriesTable1737906317154,
     UpdateDonationColTypes1741708808976,
+    UpdateDonations1738697216020,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
     AssignmentsPantryIdNotUnique1758384669652,
