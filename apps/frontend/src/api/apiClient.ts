@@ -199,7 +199,7 @@ export class ApiClient {
   ): Promise<OrderDetails[]> {
     return this.axiosInstance.get(
       `api/requests/get-all-order-details/${requestId}`,
-    ) as Promise<OrderDetails[]>;
+    ).then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {

@@ -16,9 +16,8 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
-import OrderInformationModal from '@components/forms/orderInformationModal';
 import { OrderStatus, FoodRequest } from '../types/types';
+import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
@@ -35,18 +34,10 @@ const FormRequests: React.FC = () => {
   const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
   const pantryId = parseInt(pantryIdParam!, 10);
 
-  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
-    number | null
-  >(null);
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
-  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   const pageSize = 8;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, []);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -150,26 +141,10 @@ const FormRequests: React.FC = () => {
             </Table.Row>
           ))}
           {openReadOnlyRequest && (
-            <FoodRequestFormModal
-              previousRequest={openReadOnlyRequest}
-              readOnly={true}
+            <RequestDetailsModal
+              request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId}
-            />
-          )}
-          {openOrderId && (
-            <OrderInformationModal
-              orderId={openOrderId}
-              isOpen={openOrderId !== null}
-              onClose={() => setOpenOrderId(null)}
-            />
-          )}
-          {openDeliveryRequestId && (
-            <DeliveryConfirmationModal
-              requestId={openDeliveryRequestId}
-              isOpen={openDeliveryRequestId !== null}
-              onClose={() => setOpenDeliveryRequestId(null)}
               pantryId={pantryId}
             />
           )}
