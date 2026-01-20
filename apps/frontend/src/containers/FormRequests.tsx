@@ -44,7 +44,9 @@ const FormRequests: React.FC = () => {
       if (pantryId) {
         try {
           const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data.slice().sort((a, b) => b.requestId - a.requestId);
+          const sortedData = data
+            .slice()
+            .sort((a, b) => b.requestId - a.requestId);
           setRequests(sortedData);
 
           if (sortedData.length > 0) {
@@ -61,61 +63,93 @@ const FormRequests: React.FC = () => {
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   return (
     <Box flexDirection="column" p={12}>
-        <Text textStyle="h1" color="#515151">Food Request Management</Text>
-        <HStack gap={3} my={5}>
-          <Button textStyle="p2" color="neutral.50" bgColor="#2B4E60" onClick={newRequestDisclosure.onOpen}>
+      <Text textStyle="h1" color="#515151">
+        Food Request Management
+      </Text>
+      <HStack gap={3} my={5}>
+        <Button
+          textStyle="p2"
+          color="neutral.50"
+          bgColor="#2B4E60"
+          onClick={newRequestDisclosure.onOpen}
+        >
           New Request
-          </Button>
-          <FoodRequestFormModal
-            previousRequest={undefined}
-            isOpen={newRequestDisclosure.open}
-            onClose={newRequestDisclosure.onClose}
-            pantryId={pantryId}
-          />
-          {previousRequest && (
-            <>
-              <Button
-                onClick={previousRequestDisclosure.onOpen}
-                textStyle="p2"
-                color="neutral.600" 
-                bgColor={'white'}
-                borderColor="neutral.300"
-              >
-                Resubmit Latest
-              </Button>
-              <FoodRequestFormModal
-                previousRequest={previousRequest}
-                readOnly={false}
-                isOpen={previousRequestDisclosure.open}
-                onClose={previousRequestDisclosure.onClose}
-                pantryId={pantryId}
-              />
-            </>
-          )}
-        </HStack>
-      <Table.Root mt={6}  variant="line" showColumnBorder>
+        </Button>
+        <FoodRequestFormModal
+          previousRequest={undefined}
+          isOpen={newRequestDisclosure.open}
+          onClose={newRequestDisclosure.onClose}
+          pantryId={pantryId}
+        />
+        {previousRequest && (
+          <>
+            <Button
+              onClick={previousRequestDisclosure.onOpen}
+              textStyle="p2"
+              color="neutral.600"
+              bgColor={'white'}
+              borderColor="neutral.300"
+            >
+              Resubmit Latest
+            </Button>
+            <FoodRequestFormModal
+              previousRequest={previousRequest}
+              readOnly={false}
+              isOpen={previousRequestDisclosure.open}
+              onClose={previousRequestDisclosure.onClose}
+              pantryId={pantryId}
+            />
+          </>
+        )}
+      </HStack>
+      <Table.Root mt={6} variant="line" showColumnBorder>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Request #</Table.ColumnHeader>
-            <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Status</Table.ColumnHeader>
-            <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600} textAlign="right">Date Requested</Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+            >
+              Request #
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+            >
+              Status
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+              textAlign="right"
+            >
+              Date Requested
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {paginatedRequests.map((request) => (
             <Table.Row key={request.requestId}>
               <Table.Cell color="#111111" textStyle="p2">
-                <Link textDecorationColor="#111111" variant="underline" onClick={() => setOpenReadOnlyRequest(request)}>
+                <Link
+                  textDecorationColor="#111111"
+                  variant="underline"
+                  onClick={() => setOpenReadOnlyRequest(request)}
+                >
                   {request.requestId}
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {request.orders?.every(order => order.status === OrderStatus.DELIVERED) ? (
+                {request.orders?.every(
+                  (order) => order.status === OrderStatus.DELIVERED,
+                ) ? (
                   <Badge
                     bgColor="neutral.300"
                     color="#111111"
@@ -137,7 +171,9 @@ const FormRequests: React.FC = () => {
                   </Badge>
                 )}
               </Table.Cell>
-              <Table.Cell color="neutral.700" textStyle="p2" textAlign="right">{formatDate(request.requestedAt)}</Table.Cell>
+              <Table.Cell color="neutral.700" textStyle="p2" textAlign="right">
+                {formatDate(request.requestedAt)}
+              </Table.Cell>
             </Table.Row>
           ))}
           {openReadOnlyRequest && (
@@ -151,33 +187,48 @@ const FormRequests: React.FC = () => {
         </Table.Body>
       </Table.Root>
       <Flex justify="center" mt={12}>
-          <Pagination.Root count={Math.ceil(requests.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
-            <ButtonGroup variant="outline" size="sm">
-              <Pagination.PrevTrigger asChild>
-                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
-                  <ChevronLeft />
-                </IconButton>
-              </Pagination.PrevTrigger>
+        <Pagination.Root
+          count={Math.ceil(requests.length / pageSize)}
+          pageSize={1}
+          page={currentPage}
+          onChange={(page) => setCurrentPage(page)}
+        >
+          <ButtonGroup variant="outline" size="sm">
+            <Pagination.PrevTrigger asChild>
+              <IconButton
+                variant="ghost"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              >
+                <ChevronLeft />
+              </IconButton>
+            </Pagination.PrevTrigger>
 
-              <Pagination.Items
-                render={(page) => (
-                  <IconButton
-                    variant={{ base: "outline", _selected: "outline" }}
-                    onClick={() => setCurrentPage(page.value)}
-                  >
-                    {page.value}
-                  </IconButton>
-                )}
-              />
-
-              <Pagination.NextTrigger asChild>
-                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(requests.length / pageSize)))}>
-                  <ChevronRight />
+            <Pagination.Items
+              render={(page) => (
+                <IconButton
+                  variant={{ base: 'outline', _selected: 'outline' }}
+                  onClick={() => setCurrentPage(page.value)}
+                >
+                  {page.value}
                 </IconButton>
-              </Pagination.NextTrigger>
-            </ButtonGroup>
-          </Pagination.Root>
-        </Flex>
+              )}
+            />
+
+            <Pagination.NextTrigger asChild>
+              <IconButton
+                variant="ghost"
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, Math.ceil(requests.length / pageSize)),
+                  )
+                }
+              >
+                <ChevronRight />
+              </IconButton>
+            </Pagination.NextTrigger>
+          </ButtonGroup>
+        </Pagination.Root>
+      </Flex>
     </Box>
   );
 };
