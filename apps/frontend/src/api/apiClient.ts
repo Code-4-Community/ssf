@@ -10,6 +10,8 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  OrderSummary,
+  UserDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -95,6 +97,10 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async postUser(data: UserDto): Promise<User> {
+    return this.axiosInstance.post(`/api/users`, data);
+  }
+
   public async getPantrySSFRep(pantryId: number): Promise<User> {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
@@ -166,7 +172,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAllOrders(): Promise<Order[]> {
+  public async getAllOrders(): Promise<OrderSummary[]> {
     return this.axiosInstance
       .get('/api/orders/')
       .then((response) => response.data);
@@ -186,12 +192,6 @@ export class ApiClient {
 
   public async getOrder(orderId: number): Promise<Order> {
     return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
-  }
-
-  public async getOrderByRequestId(requestId: number): Promise<Order> {
-    return this.axiosInstance.get(
-      `api/requests/get-order/${requestId}`,
-    ) as Promise<Order>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
