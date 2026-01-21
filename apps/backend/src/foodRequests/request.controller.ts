@@ -8,6 +8,8 @@ import {
   UploadedFiles,
   UseInterceptors,
   BadRequestException,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -43,7 +45,7 @@ export class RequestsController {
     return this.requestsService.find(pantryId);
   }
 
-  @Get('/get-all-order-details/:requestId')
+  @Get('/all-order-details/:requestId')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<OrderDetailsDto[]> {
@@ -164,19 +166,29 @@ export class RequestsController {
       photos?.length,
     );
 
-    const request = await this.requestsService.findOne(requestId);
-
-    await Promise.all(
-      request.orders.map((order) =>
-        this.ordersService.updateStatus(order.orderId, OrderStatus.DELIVERED),
-      ),
-    );
-
-    return this.requestsService.updateDeliveryDetails(
+    const updatedRequest = await this.requestsService.updateDeliveryDetails(
       requestId,
       formattedDate,
       body.feedback,
       uploadedPhotoUrls,
     );
+
+    if (!updatedRequest) {
+      throw new NotFoundException('Invalid request ID');
+    }
+    
+    if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
+      throw new ConflictException(
+        'No associated orders found for this request',
+      );
+    }
+
+    await Promise.all(
+      updatedRequest.orders.map((order) =>
+        this.ordersService.updateStatus(order.orderId, OrderStatus.DELIVERED),
+      ),
+    );
+
+    return updatedRequest
   }
 }

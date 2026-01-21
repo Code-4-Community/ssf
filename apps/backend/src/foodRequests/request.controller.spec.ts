@@ -94,9 +94,9 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /get-all-order-details/:requestId', () => {
+  describe('GET /all-order-details/:requestId', () => {
     it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
-      const mockOrderDetails = [
+      const mockOrderDetails: OrderDetailsDto[] = [
         {
           orderId: 10,
           status: OrderStatus.DELIVERED,

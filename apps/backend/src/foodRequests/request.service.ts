@@ -43,7 +43,7 @@ export class RequestsService {
     });
 
     if (!requestExists) {
-      throw new Error(`Request ${requestId} not found`);
+      throw new NotFoundException(`Request ${requestId} not found`);
     }
 
     const orders = await this.orderRepo.find({
@@ -146,9 +146,6 @@ export class RequestsService {
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.orders.forEach((order) => {
-      order.status = OrderStatus.DELIVERED;
-    });
 
     return await this.repo.save(request);
   }

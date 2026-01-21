@@ -13,7 +13,7 @@ export class Allocation {
   @PrimaryGeneratedColumn({ name: 'allocation_id' })
   allocationId: number;
 
-  @Column({ name: 'order_id', type: 'int' })
+  @Column({ name: 'order_id', type: 'int', nullable: false })
   orderId: number;
 
   @ManyToOne(() => Order, (order) => order.allocations)
