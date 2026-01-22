@@ -11,5 +11,6 @@ import { AllocationModule } from '../allocations/allocations.module';
   imports: [TypeOrmModule.forFeature([Order]), AllocationModule],
   controllers: [OrdersController],
   providers: [OrdersService, AuthService, JwtStrategy],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

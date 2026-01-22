@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
+import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
 
 @Injectable()
@@ -22,10 +23,9 @@ export class DonationItemsService {
     itemName: string,
     quantity: number,
     reservedQuantity: number,
-    status: string,
     ozPerItem: number,
     estimatedValue: number,
-    foodType: string,
+    foodType: FoodType,
   ) {
     validateId(donationId, 'Donation');
     const donation = await this.donationRepo.findOneBy({ donationId });
@@ -36,7 +36,6 @@ export class DonationItemsService {
       itemName,
       quantity,
       reservedQuantity,
-      status,
       ozPerItem,
       estimatedValue,
       foodType,

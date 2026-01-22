@@ -5,27 +5,33 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
-import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import {
+  Activity,
+  AllergensConfidence,
+  ClientVisitFrequency,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
+import { Order } from '../orders/order.entity';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('pantries')
 export class PantriesController {
-  constructor(private pantriesService: PantriesService) {}
+  constructor(
+    private pantriesService: PantriesService,
+    private ordersService: OrdersService,
+  ) {}
 
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
-  }
-
-  @Get('/:pantryId/ssf-contact')
-  async getSSFRep(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<User> {
-    return this.pantriesService.findSSFRep(pantryId);
   }
 
   @Get('/:pantryId')
@@ -33,6 +39,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Pantry> {
     return this.pantriesService.findOne(pantryId);
+  }
+
+  @Get('/:pantryId/orders')
+  async getOrders(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<Order[]> {
+    return this.ordersService.getOrdersByPantry(pantryId);
   }
 
   @ApiBody({
@@ -112,13 +125,13 @@ export class PantriesController {
         },
         refrigeratedDonation: {
           type: 'string',
-          enum: ['Yes', 'Small quantities only', 'No'],
-          example: 'Yes',
+          enum: Object.values(RefrigeratedDonation),
+          example: RefrigeratedDonation.YES,
         },
         reserveFoodForAllergic: {
           type: 'string',
-          enum: ['Yes', 'Some', 'No'],
-          example: 'Some',
+          enum: Object.values(ReserveFoodForAllergic),
+          example: ReserveFoodForAllergic.NO,
         },
         reservationExplanation: {
           type: 'string',
@@ -126,57 +139,31 @@ export class PantriesController {
             'We keep a dedicated section for clients with severe allergies',
         },
         dedicatedAllergyFriendly: {
-          type: 'string',
-          enum: [
-            'Yes, we have a dedicated shelf or box',
-            'Yes, we keep allergy-friendly items in a back room',
-            'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-          ],
-          example: 'Yes, we have a dedicated shelf or box',
+          type: 'boolean',
+          example: true,
         },
         clientVisitFrequency: {
           type: 'string',
-          enum: [
-            'Daily',
-            'More than once a week',
-            'Once a week',
-            'A few times a month',
-            'Once a month',
-          ],
-          example: 'Once a week',
+          enum: Object.values(ClientVisitFrequency),
+          example: ClientVisitFrequency.DAILY,
         },
         identifyAllergensConfidence: {
           type: 'string',
-          enum: [
-            'Very confident',
-            'Somewhat confident',
-            'Not very confident (we need more education!)',
-          ],
-          example: 'Very confident',
+          enum: Object.values(AllergensConfidence),
+          example: AllergensConfidence.NOT_VERY_CONFIDENT,
         },
         serveAllergicChildren: {
           type: 'string',
-          enum: ['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'],
-          example: 'Yes, a few (< 10)',
+          enum: Object.values(ServeAllergicChildren),
+          example: ServeAllergicChildren.NO,
         },
         activities: {
           type: 'array',
           items: {
             type: 'string',
-            enum: [
-              'Create a labeled, allergy-friendly shelf or shelves',
-              'Provide clients and staff/volunteers with educational pamphlets',
-              "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-              'Post allergen-free resource flyers throughout pantry',
-              'Survey your clients to determine their medical dietary needs',
-              'Collect feedback from allergen-avoidant clients on SSF foods',
-              'Something else',
-            ],
+            enum: Object.values(Activity),
           },
-          example: [
-            'Create a labeled, allergy-friendly shelf or shelves',
-            'Provide clients and staff/volunteers with educational pamphlets',
-          ],
+          example: [Activity.COLLECT_FEEDBACK, Activity.CREATE_LABELED_SHELF],
         },
         activitiesComments: {
           type: 'string',
@@ -219,7 +206,8 @@ export class PantriesController {
   })
   @Post()
   async submitPantryApplication(
-    @Body() pantryData: PantryApplicationDto,
+    @Body(new ValidationPipe())
+    pantryData: PantryApplicationDto,
   ): Promise<void> {
     return this.pantriesService.addPantry(pantryData);
   }

@@ -8,6 +8,9 @@ import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 
 const mockPantriesService = mock<PantriesService>();
+import { OrdersService } from '../orders/order.service';
+import { Order } from '../orders/order.entity';
+const mockOrdersService = mock<OrdersService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
@@ -207,6 +210,34 @@ describe('PantriesController', () => {
       expect(mockPantriesService.addPantry).toHaveBeenCalledWith(
         mockPantryApplication,
       );
+  describe('getOrders', () => {
+    it('should return orders for a pantry', async () => {
+      const pantryId = 24;
+
+      const mockOrders: Partial<Order>[] = [
+        {
+          orderId: 26,
+          requestId: 26,
+          shippedBy: 32,
+        },
+        {
+          orderId: 27,
+          requestId: 27,
+          shippedBy: 33,
+        },
+      ];
+
+      mockOrdersService.getOrdersByPantry.mockResolvedValue(
+        mockOrders as Order[],
+      );
+
+      const result = await controller.getOrders(pantryId);
+
+      expect(result).toEqual(mockOrders);
+      expect(result).toHaveLength(2);
+      expect(result[0].orderId).toBe(26);
+      expect(result[1].orderId).toBe(27);
+      expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
     });
   });
 });
