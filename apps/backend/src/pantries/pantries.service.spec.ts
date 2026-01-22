@@ -52,15 +52,22 @@ describe('PantriesService', () => {
     contactPhone: '(508) 222-2222',
     pantryName: 'New Community Pantry',
     addressLine1: '456 New St',
+    addressLine2: 'Suite 200',
     addressCity: 'Cambridge',
     addressState: 'MA',
     addressZip: '02139',
+    addressCountry: 'USA',
     allergenClients: '15',
     restrictions: ['Peanut allergy', 'Gluten'],
     refrigeratedDonation: 'Yes',
     reserveFoodForAllergic: 'Yes',
+    reservationExplanation: 'We have a dedicated allergen-free section',
     dedicatedAllergyFriendly: 'No',
+    clientVisitFrequency: 'Few times a month',
+    identifyAllergensConfidence: 'Very confident',
+    serveAllergicChildren: 'Yes, a few',
     activities: ['Food distribution', 'Counseling'],
+    activitiesComments: 'We provide nutritional counseling',
     itemsInStock: 'Canned goods, pasta',
     needMoreOptions: 'More fresh produce',
     newsletterSubscription: 'Yes',
@@ -236,18 +243,31 @@ describe('PantriesService', () => {
   describe('addPantry', () => {
     it('should add a new pantry application', async () => {
       mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
-
+    
       await service.addPantry(mockPantryApplication);
-
+    
       expect(mockRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           pantryName: mockPantryApplication.pantryName,
           addressLine1: mockPantryApplication.addressLine1,
+          addressLine2: mockPantryApplication.addressLine2,
           addressCity: mockPantryApplication.addressCity,
           addressState: mockPantryApplication.addressState,
           addressZip: mockPantryApplication.addressZip,
+          addressCountry: mockPantryApplication.addressCountry,
           allergenClients: mockPantryApplication.allergenClients,
           restrictions: mockPantryApplication.restrictions,
+          refrigeratedDonation: mockPantryApplication.refrigeratedDonation,
+          reserveFoodForAllergic: mockPantryApplication.reserveFoodForAllergic,
+          reservationExplanation: mockPantryApplication.reservationExplanation,
+          dedicatedAllergyFriendly: mockPantryApplication.dedicatedAllergyFriendly,
+          clientVisitFrequency: mockPantryApplication.clientVisitFrequency,
+          identifyAllergensConfidence: mockPantryApplication.identifyAllergensConfidence,
+          serveAllergicChildren: mockPantryApplication.serveAllergicChildren,
+          activities: mockPantryApplication.activities,
+          activitiesComments: mockPantryApplication.activitiesComments,
+          itemsInStock: mockPantryApplication.itemsInStock,
+          needMoreOptions: mockPantryApplication.needMoreOptions,
           newsletterSubscription: true,
         }),
       );
