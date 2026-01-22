@@ -29,6 +29,7 @@ export interface AssignedVolunteer {
   phone: string;
   role: string;
 }
+
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',

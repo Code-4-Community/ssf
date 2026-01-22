@@ -117,7 +117,7 @@ export class PantriesService {
       where: { status: PantryStatus.APPROVED },
       relations: ['pantryUser', 'volunteers'],
     });
-  
+
     return pantries.map((pantry) => ({
       pantryId: pantry.pantryId,
       pantryName: pantry.pantryName,

@@ -5,7 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Put,
+  Put, 
   ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
@@ -40,6 +40,7 @@ export class PantriesController {
   async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
     return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
+
 
   @Get('/:pantryId')
   async getPantry(
