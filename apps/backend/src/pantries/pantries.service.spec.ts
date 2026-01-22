@@ -8,10 +8,6 @@ import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 
-jest.mock('../utils/validation.utils', () => ({
-  validateId: jest.fn(),
-}));
-
 const mockRepository = mock<Repository<Pantry>>();
 
 describe('PantriesService', () => {
