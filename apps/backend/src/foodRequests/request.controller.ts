@@ -118,6 +118,7 @@ export class RequestsController {
     );
   }
 
+  //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',
