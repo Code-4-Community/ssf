@@ -177,7 +177,7 @@ export class RequestsController {
     if (!updatedRequest) {
       throw new NotFoundException('Invalid request ID');
     }
-    
+
     if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
       throw new ConflictException(
         'No associated orders found for this request',
@@ -190,6 +190,6 @@ export class RequestsController {
       ),
     );
 
-    return updatedRequest
+    return updatedRequest;
   }
 }
