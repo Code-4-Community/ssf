@@ -138,4 +138,12 @@ export class UsersService {
     volunteer.pantries = [...volunteer.pantries, ...newPantries];
     return this.repo.save(volunteer);
   }
+
+  async findUserByCognitoId(cognitoId: string): Promise<User> {
+    const user = await this.repo.findOneBy({ userCognitoSub: cognitoId });
+    if (!user) {
+      throw new NotFoundException(`User with cognitoId ${cognitoId} not found`);
+    }
+    return user;
+  }
 }

@@ -10,7 +10,6 @@ import { AuthService } from './auth.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private usersService: UsersService,
-    private authService: AuthService,
   ) {
     const cognitoAuthority = `https://cognito-idp.${CognitoAuthConfig.region}.amazonaws.com/${CognitoAuthConfig.userPoolId}`;
 
@@ -30,9 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload) {
-    const user = await this.authService.getUser(payload.sub);
-    console.log('Cognito user retrieved:', user);
-    const dbUser = await this.usersService.findByEmail(user.email);
+    const dbUser = await this.usersService.findUserByCognitoId(payload.sub);
     console.log('Database user retrieved:', dbUser);
     return dbUser;
   }
