@@ -197,9 +197,9 @@ export class ApiClient {
   public async getOrderDetailsListFromRequest(
     requestId: number,
   ): Promise<OrderDetails[]> {
-    return this.axiosInstance.get(
-      `/api/requests/all-order-details/${requestId}`,
-    ) as Promise<OrderDetails[]>;
+    return this.axiosInstance
+      .get(`api/requests/get-all-order-details/${requestId}`)
+      .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
