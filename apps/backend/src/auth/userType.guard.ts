@@ -1,7 +1,7 @@
-import { 
-  Injectable, 
-  CanActivate, 
-  ExecutionContext, 
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,17 +11,14 @@ import { OWNERSHIP_CHECK_KEY, OwnershipConfig } from './userType.decorator';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private moduleRef: ModuleRef,
-  ) {}
+  constructor(private reflector: Reflector, private moduleRef: ModuleRef) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const config = this.reflector.get<OwnershipConfig>(
       OWNERSHIP_CHECK_KEY,
       context.getHandler(),
     );
-    
+
     if (!config) {
       return true;
     }
@@ -34,7 +31,7 @@ export class OwnershipGuard implements CanActivate {
     }
 
     const entityId = Number(req.params[config.idParam]);
-    
+
     if (isNaN(entityId)) {
       throw new ForbiddenException(`Invalid ${config.idParam}`);
     }
@@ -54,19 +51,21 @@ export class OwnershipGuard implements CanActivate {
     }
 
     const ownerId = this.extractValue(resource, config.ownerField);
-    
+
     if (ownerId === null || ownerId === undefined) {
       throw new ForbiddenException(
-        `Unable to determine ownership: field '${config.ownerField}' not found`
+        `Unable to determine ownership: field '${config.ownerField}' not found`,
       );
     }
 
     if (ownerId !== user.id) {
-      throw new ForbiddenException('Access denied - you do not own this resource');
+      throw new ForbiddenException(
+        'Access denied - you do not own this resource',
+      );
     }
 
     req.resource = resource;
-    
+
     return true;
   }
 
@@ -83,7 +82,7 @@ export class OwnershipGuard implements CanActivate {
         return current?.[prop];
       }, obj);
     }
-    
+
     // Simple property access
     return obj[path];
   }

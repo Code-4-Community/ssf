@@ -46,7 +46,7 @@ export class PantriesController {
   @CheckOwnership({
     service: PantriesService,
     idParam: 'pantryId',
-    ownerField: 'pantryUser.id'
+    ownerField: 'pantryUser.id',
   })
   @Get('/:pantryId')
   async getPantry(
