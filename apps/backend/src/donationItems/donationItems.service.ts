@@ -22,7 +22,7 @@ export class DonationItemsService {
     }
     return donationItem;
   }
-  
+
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
     return this.repo.find({ where: { donation: { donationId } } });

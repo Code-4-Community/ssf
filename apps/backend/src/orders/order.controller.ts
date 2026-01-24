@@ -64,15 +64,19 @@ export class OrdersController {
   @CheckOwnership({
     idParam: 'orderId',
     resolver: async ({ entityId, services }) => {
-      const request = await services.get(OrdersService).findOrderFoodRequest(entityId);
-      
+      const request = await services
+        .get(OrdersService)
+        .findOrderFoodRequest(entityId);
+
       if (!request) {
         console.log('Request not found on order');
         return null;
       }
-      
-      const pantry = await services.get(PantriesService).findOne(request.pantryId);
-      
+
+      const pantry = await services
+        .get(PantriesService)
+        .findOne(request.pantryId);
+
       if (!pantry) {
         console.log('Pantry not found');
         return null;

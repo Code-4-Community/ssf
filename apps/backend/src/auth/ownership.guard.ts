@@ -1,28 +1,29 @@
-import { 
-  Injectable, 
-  CanActivate, 
-  ExecutionContext, 
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
   ForbiddenException,
   NotFoundException,
   Type,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
-import { OWNERSHIP_CHECK_KEY, OwnershipConfig, ServiceRegistry } from './ownership.decorator';
+import {
+  OWNERSHIP_CHECK_KEY,
+  OwnershipConfig,
+  ServiceRegistry,
+} from './ownership.decorator';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private moduleRef: ModuleRef,
-  ) {}
+  constructor(private reflector: Reflector, private moduleRef: ModuleRef) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const config = this.reflector.get<OwnershipConfig>(
       OWNERSHIP_CHECK_KEY,
       context.getHandler(),
     );
-    
+
     console.log('Entered ownership guard with config:', config);
 
     if (!config) {
@@ -37,7 +38,7 @@ export class OwnershipGuard implements CanActivate {
     }
 
     const entityId = Number(req.params[config.idParam]);
-    
+
     if (isNaN(entityId)) {
       throw new ForbiddenException(`Invalid ${config.idParam}`);
     }
@@ -59,12 +60,17 @@ export class OwnershipGuard implements CanActivate {
       }
 
       if (ownerId !== user.id) {
-        throw new ForbiddenException('Access denied - you do not own this resource');
+        throw new ForbiddenException(
+          'Access denied - you do not own this resource',
+        );
       }
 
       return true;
     } catch (error) {
-      if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException
+      ) {
         throw error;
       }
       console.error('Error in ownership resolver:', error);
