@@ -15,7 +15,10 @@ export class PantriesService {
   async findOne(pantryId: number): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
 
-    const pantry = await this.repo.findOne({ where: { pantryId } });
+    const pantry = await this.repo.findOne({ 
+      where: { pantryId }, 
+      relations: ['pantryUser']
+    });
 
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);

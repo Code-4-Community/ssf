@@ -26,6 +26,8 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { OwnershipGuard } from '../auth/userType.guard';
+import { CheckOwnership } from '../auth/userType.decorator';
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('pantries')
@@ -35,13 +37,17 @@ export class PantriesController {
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.VOLUNTEER)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
   }
 
-  @Roles(Role.PANTRY, Role.ADMIN)
+  @UseGuards(AuthGuard('jwt'), OwnershipGuard)
+  @CheckOwnership({
+    service: PantriesService,
+    idParam: 'pantryId',
+    ownerField: 'pantryUser.id'
+  })
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -49,7 +55,6 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
-  @Roles(Role.ADMIN)
   @Get('/:pantryId/orders')
   async getOrders(
     @Param('pantryId', ParseIntPipe) pantryId: number,

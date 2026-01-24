@@ -35,7 +35,6 @@ export class RequestsController {
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.PANTRY)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -50,7 +49,6 @@ export class RequestsController {
     return this.requestsService.find(pantryId);
   }
 
-  @Roles(Role.PANTRY)
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',

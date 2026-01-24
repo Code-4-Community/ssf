@@ -44,7 +44,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/request-form/1">
+                <RouterLink to="/request-form/2">
                   Request Form (Pantry ID: 1)
                 </RouterLink>
               </Link>

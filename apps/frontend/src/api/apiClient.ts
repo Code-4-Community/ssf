@@ -154,6 +154,7 @@ export class ApiClient {
   }
 
   public async getPantry(pantryId: number): Promise<Pantry> {
+    console.log('Fetching pantry with ID:', pantryId);
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
   }
 
