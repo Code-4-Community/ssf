@@ -14,7 +14,7 @@ export class OwnershipGuard implements CanActivate {
   constructor(private reflector: Reflector, private moduleRef: ModuleRef) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const config = this.reflector.get<OwnershipConfig>(
+    const config = this.reflector.get<OwnershipConfig<unknown>>(
       OWNERSHIP_CHECK_KEY,
       context.getHandler(),
     );

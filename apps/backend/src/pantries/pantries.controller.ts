@@ -43,7 +43,7 @@ export class PantriesController {
   }
 
   @UseGuards(AuthGuard('jwt'), OwnershipGuard)
-  @CheckOwnership({
+  @CheckOwnership<PantriesService>({
     service: PantriesService,
     idParam: 'pantryId',
     ownerField: 'pantryUser.id',
