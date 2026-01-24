@@ -26,8 +26,8 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
-import { OwnershipGuard } from '../auth/userType.guard';
-import { CheckOwnership } from '../auth/userType.decorator';
+import { OwnershipGuard } from '../auth/ownership.guard';
+import { CheckOwnership } from '../auth/ownership.decorator';
 
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('pantries')
@@ -43,10 +43,12 @@ export class PantriesController {
   }
 
   @UseGuards(AuthGuard('jwt'), OwnershipGuard)
-  @CheckOwnership<PantriesService>({
-    service: PantriesService,
+  @CheckOwnership({
     idParam: 'pantryId',
-    ownerField: 'pantryUser.id',
+    resolver: async ({ entityId, services }) => {
+      const pantry = await services.get(PantriesService).findOne(entityId);
+      return pantry?.pantryUser?.id ?? null;
+    },
   })
   @Get('/:pantryId')
   async getPantry(

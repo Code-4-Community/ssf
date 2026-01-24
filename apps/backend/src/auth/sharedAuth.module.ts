@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OwnershipGuard } from './userType.guard';
+import { OwnershipGuard } from './ownership.guard';
 
 @Module({
   providers: [OwnershipGuard],

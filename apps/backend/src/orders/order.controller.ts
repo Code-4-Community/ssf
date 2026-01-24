@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
@@ -15,6 +16,10 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
+import { AuthGuard } from '@nestjs/passport';
+import { OwnershipGuard } from '../auth/ownership.guard';
+import { CheckOwnership } from '../auth/ownership.decorator';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Controller('orders')
 export class OrdersController {
@@ -54,6 +59,28 @@ export class OrdersController {
     return this.ordersService.findOrderPantry(orderId);
   }
 
+  // Test endpoint for right now
+  @UseGuards(AuthGuard('jwt'), OwnershipGuard)
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) => {
+      const request = await services.get(OrdersService).findOrderFoodRequest(entityId);
+      
+      if (!request) {
+        console.log('Request not found on order');
+        return null;
+      }
+      
+      const pantry = await services.get(PantriesService).findOne(request.pantryId);
+      
+      if (!pantry) {
+        console.log('Pantry not found');
+        return null;
+      }
+      console.log('Found pantry:', pantry);
+      return pantry?.pantryUser?.id ?? null;
+    },
+  })
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,

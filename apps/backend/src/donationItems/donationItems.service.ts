@@ -13,6 +13,16 @@ export class DonationItemsService {
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
   ) {}
 
+  async findOne(itemId: number): Promise<DonationItem> {
+    validateId(itemId, 'Donation Item');
+
+    const donationItem = await this.repo.findOneBy({ itemId });
+    if (!donationItem) {
+      throw new NotFoundException(`Donation item ${itemId} not found`);
+    }
+    return donationItem;
+  }
+  
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
     return this.repo.find({ where: { donation: { donationId } } });
