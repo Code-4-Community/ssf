@@ -75,7 +75,7 @@ export class OwnershipGuard implements CanActivate {
    * - Nested property: 'user.id' -> obj.user.id
    * - Deeply nested: 'order.pantry.user.id' -> obj.order.pantry.user.id
    */
-  private extractValue(obj: any, path: string): any {
+  private extractValue(obj: unknown, path: string): unknown {
     // Handle dot notation for nested properties
     if (path.includes('.')) {
       return path.split('.').reduce((current, prop) => {
