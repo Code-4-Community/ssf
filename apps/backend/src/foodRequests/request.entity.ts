@@ -46,6 +46,6 @@ export class FoodRequest {
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos: string[];
 
-  @OneToMany(() => Order, (order) => order.request)
+  @OneToMany(() => Order, (order) => order.request, { nullable: true })
   orders: Order[];
 }
