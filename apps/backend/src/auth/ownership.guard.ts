@@ -24,26 +24,31 @@ export class OwnershipGuard implements CanActivate {
       context.getHandler(),
     );
 
-    console.log('Entered ownership guard with config:', config);
-
     if (!config) {
       return true;
     }
 
+    // Process all request information and the logged in user
     const req = context.switchToHttp().getRequest();
     const user = req.user;
+
+    // Admins bypass ownership checks
+    if (user.role === 'ADMIN') {
+      return true;
+    }
 
     if (!user) {
       throw new ForbiddenException('Not authenticated');
     }
 
+    // Get the id from the parameters
     const entityId = Number(req.params[config.idParam]);
 
     if (isNaN(entityId)) {
       throw new ForbiddenException(`Invalid ${config.idParam}`);
     }
-    //console.log('Creating service registry for ownership check');
-    // Create a service registry that lazily resolves services
+
+    // Create a service registry that easily resolves services
     const services = this.createServiceRegistry();
 
     try {
@@ -53,38 +58,29 @@ export class OwnershipGuard implements CanActivate {
         services,
       });
 
-      //console.log(`Ownership check: entityId=${entityId}, ownerId=${ownerId}, userId=${user.id}`);
-
       if (ownerId === null || ownerId === undefined) {
         throw new ForbiddenException('Unable to determine resource ownership');
       }
 
       if (ownerId !== user.id) {
-        throw new ForbiddenException(
-          'Access denied - you do not own this resource',
-        );
+        throw new ForbiddenException('Access denied');
       }
 
       return true;
     } catch (error) {
-      if (
-        error instanceof ForbiddenException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
       console.error('Error in ownership resolver:', error);
       throw new ForbiddenException('Error verifying resource ownership');
     }
   }
 
+  // Use a service registry for easy service resolution and caching
   private createServiceRegistry(): ServiceRegistry {
     const cache = new Map<Type<unknown>, unknown>();
     const moduleRef = this.moduleRef;
 
     return {
       get<T>(serviceClass: Type<T>): T {
-        // Return cached service if already resolved
+        // Return cached service if already resolved before
         if (cache.has(serviceClass)) {
           return cache.get(serviceClass) as T;
         }
