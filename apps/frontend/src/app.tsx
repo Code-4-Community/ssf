@@ -17,6 +17,7 @@ import PantryApplication from '@containers/pantryApplication';
 import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import ApplicationDetails from '@containers/applicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
@@ -158,6 +159,14 @@ const router = createBrowserRouter([
         element: (
           <Authenticator components={components}>
             <ApprovePantries />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/application-details/:applicationId',
+        element: (
+          <Authenticator components={components}>
+            <ApplicationDetails />
           </Authenticator>
         ),
       },
