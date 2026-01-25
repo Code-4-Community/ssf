@@ -200,7 +200,6 @@ describe('RequestsService', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: null,
         request: null,
         requestId: 1,
         foodManufacturer: null,
@@ -315,7 +314,6 @@ describe('RequestsService', () => {
     it('should throw an error if the order does not have a food manufacturer', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: null,
         request: null,
         requestId: 1,
         foodManufacturer: null,
