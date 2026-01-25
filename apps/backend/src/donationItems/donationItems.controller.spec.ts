@@ -49,28 +49,6 @@ describe('DonationItemsController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should call donationItemsService.create and return a donationItem', async () => {
-      const donationItemData = mockDonationItemsCreateData[0];
-      mockDonationItemsService.create.mockResolvedValue(
-        donationItemData as DonationItem,
-      );
-      const result = await controller.createDonationItem(
-        donationItemData as DonationItem,
-      );
-      expect(result).toEqual(donationItemData as DonationItem);
-      expect(mockDonationItemsService.create).toHaveBeenCalledWith(
-        donationItemData.donationId,
-        donationItemData.itemName,
-        donationItemData.quantity,
-        donationItemData.reservedQuantity,
-        donationItemData.ozPerItem,
-        donationItemData.estimatedValue,
-        donationItemData.foodType,
-      );
-    });
-  });
-
   describe('createMultipleDonationItems', () => {
     it('should call donationItemsService.createMultipleDonationItems with donationId and items, and return the created donation items', async () => {
       const mockBody: CreateMultipleDonationItemsDto = {

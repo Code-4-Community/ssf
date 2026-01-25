@@ -43,13 +43,6 @@ export class ApiClient {
     return this.post('/api/donations/create', body) as Promise<Donation>;
   }
 
-  public async postDonationItem(body: unknown): Promise<DonationItem> {
-    return this.post(
-      '/api/donation-items/create',
-      body,
-    ) as Promise<DonationItem>;
-  }
-
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {

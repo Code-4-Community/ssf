@@ -26,55 +26,6 @@ export class DonationItemsController {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
 
-  @Post('/create')
-  @ApiBody({
-    description: 'Details for creating a donation item',
-    schema: {
-      type: 'object',
-      properties: {
-        donationId: { type: 'integer', example: 1 },
-        itemName: { type: 'string', example: 'Rice Noodles' },
-        quantity: { type: 'integer', example: 100 },
-        reservedQuantity: { type: 'integer', example: 0 },
-        ozPerItem: { type: 'integer', example: 5 },
-        estimatedValue: { type: 'integer', example: 100 },
-        foodType: {
-          type: 'string',
-          enum: Object.values(FoodType),
-          example: FoodType.DAIRY_FREE_ALTERNATIVES,
-        },
-      },
-    },
-  })
-  async createDonationItem(
-    @Body()
-    body: {
-      donationId: number;
-      itemName: string;
-      quantity: number;
-      reservedQuantity: number;
-      ozPerItem: number;
-      estimatedValue: number;
-      foodType: FoodType;
-    },
-  ): Promise<DonationItem> {
-    if (
-      body.foodType &&
-      !Object.values(FoodType).includes(body.foodType as FoodType)
-    ) {
-      throw new BadRequestException('Invalid foodtype');
-    }
-    return this.donationItemsService.create(
-      body.donationId,
-      body.itemName,
-      body.quantity,
-      body.reservedQuantity,
-      body.ozPerItem,
-      body.estimatedValue,
-      body.foodType,
-    );
-  }
-
   @Post('/create-multiple')
   @ApiBody({
     description: 'Bulk create donation items for a single donation',
