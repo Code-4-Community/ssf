@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -56,7 +55,7 @@ export class RequestsService {
     });
 
     if (!orders) {
-      throw new ConflictException(
+      throw new NotFoundException(
         'No associated orders found for this request',
       );
     }
@@ -133,7 +132,7 @@ export class RequestsService {
     }
 
     if (!request.orders || request.orders.length == 0) {
-      throw new ConflictException(
+      throw new NotFoundException(
         'No associated orders found for this request',
       );
     }
@@ -142,7 +141,7 @@ export class RequestsService {
 
     for (const order of orders) {
       if (!order.shippedBy) {
-        throw new ConflictException(
+        throw new NotFoundException(
           'No associated food manufacturer found for an associated order',
         );
       }
