@@ -179,7 +179,10 @@ export class ApiClient {
   public async postManufacturer(
     data: ManufacturerApplicationDto,
   ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/manufacturers`, data);
+    return this.axiosInstance.post(
+      `/api/manufacturers/submit-application`,
+      data,
+    );
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {
