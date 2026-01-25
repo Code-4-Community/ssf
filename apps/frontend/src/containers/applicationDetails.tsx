@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Center,
@@ -17,10 +17,21 @@ import {
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
+type PantryWithShipment = Pantry & {
+  shipmentAddressLine1?: string | null;
+  shipmentAddressLine2?: string | null;
+  shipmentAddressCity?: string | null;
+  shipmentAddressState?: string | null;
+  shipmentAddressZip?: string | null;
+  shipmentAddressCountry?: string | null;
+};
+
 const ApplicationDetails: React.FC = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
-  const [application, setApplication] = useState<Pantry | null>(null);
+  const [application, setApplication] = useState<PantryWithShipment | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +44,7 @@ const ApplicationDetails: React.FC = () => {
     return phone;
   };
 
-  const fetchApplicationDetails = async () => {
+  const fetchApplicationDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -42,17 +53,20 @@ const ApplicationDetails: React.FC = () => {
         return;
       }
       const data = await ApiClient.getPantry(parseInt(applicationId, 10));
-      setApplication(data);
+      setApplication(data as PantryWithShipment);
     } catch (err) {
-      setError('Error loading application details: ' + (err instanceof Error ? err.message : String(err)));
+      setError(
+        'Error loading application details: ' +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [applicationId]);
 
   useEffect(() => {
     fetchApplicationDetails();
-  }, [applicationId]);
+  }, [fetchApplicationDetails]);
 
   const handleApprove = async () => {
     if (application) {
@@ -141,17 +155,22 @@ const ApplicationDetails: React.FC = () => {
                 </Heading>
                 <VStack align="stretch" gap={2}>
                   <Text textStyle="p">
-                    {pantryUser 
-                      ? `${pantryUser.firstName} ${pantryUser.lastName}` 
-                      : application.secondaryContactFirstName && application.secondaryContactLastName
+                    {pantryUser
+                      ? `${pantryUser.firstName} ${pantryUser.lastName}`
+                      : application.secondaryContactFirstName &&
+                        application.secondaryContactLastName
                       ? `${application.secondaryContactFirstName} ${application.secondaryContactLastName}`
                       : 'N/A'}
                   </Text>
                   <Text textStyle="p">
-                    {formatPhone(pantryUser?.phone ?? application.secondaryContactPhone) ?? 'N/A'}
+                    {formatPhone(
+                      pantryUser?.phone ?? application.secondaryContactPhone,
+                    ) ?? 'N/A'}
                   </Text>
                   <Text textStyle="p">
-                    {pantryUser?.email ?? application.secondaryContactEmail ?? 'N/A'}
+                    {pantryUser?.email ??
+                      application.secondaryContactEmail ??
+                      'N/A'}
                   </Text>
                 </VStack>
               </GridItem>
@@ -160,11 +179,19 @@ const ApplicationDetails: React.FC = () => {
                   Shipping Address
                 </Heading>
                 <VStack align="stretch" gap={1}>
-                  <Text textStyle="p">{(application as any).shipmentAddressLine1},</Text>
                   <Text textStyle="p">
-                    {(application as any).shipmentAddressCity}, {(application as any).shipmentAddressState} {(application as any).shipmentAddressZip}
+                    {application.shipmentAddressLine1 ?? 'N/A'},
                   </Text>
-                  <Text textStyle="p">{(application as any).shipmentAddressCountry === 'US' ? 'United States of America' : (application as any).shipmentAddressCountry}</Text>
+                  <Text textStyle="p">
+                    {application.shipmentAddressCity ?? 'N/A'},{' '}
+                    {application.shipmentAddressState ?? 'N/A'}{' '}
+                    {application.shipmentAddressZip ?? ''}
+                  </Text>
+                  <Text textStyle="p">
+                    {application.shipmentAddressCountry === 'US'
+                      ? 'United States of America'
+                      : application.shipmentAddressCountry ?? 'N/A'}
+                  </Text>
                 </VStack>
               </GridItem>
             </Grid>
