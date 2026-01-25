@@ -34,6 +34,7 @@ export class FoodManufacturerApplicationDto {
   contactLastName: string;
 
   @IsEmail()
+  @IsNotEmpty()
   @Length(1, 255)
   contactEmail: string;
 
