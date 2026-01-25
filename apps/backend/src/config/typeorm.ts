@@ -27,6 +27,7 @@ import { RemoveMultipleVolunteerTypes1764811878152 } from '../migrations/1764811
 import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-RemoveUnusedStatuses';
 import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
+import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 
 const config = {
   type: 'postgres',
@@ -46,8 +47,8 @@ const config = {
     ReviseTables1737522923066,
     UpdateUserRole1737816745912,
     UpdatePantriesTable1737906317154,
-    UpdateDonations1738697216020,
     UpdateDonationColTypes1741708808976,
+    UpdateDonations1738697216020,
     UpdatePantriesTable1738172265266,
     UpdatePantriesTable1739056029076,
     AssignmentsPantryIdNotUnique1758384669652,
@@ -67,6 +68,7 @@ const config = {
     RemoveMultipleVolunteerTypes1764811878152,
     RemoveUnusedStatuses1764816885341,
     PopulateDummyData1768501812134,
+    AddUserPoolId1769189327767,
   ],
 };
 

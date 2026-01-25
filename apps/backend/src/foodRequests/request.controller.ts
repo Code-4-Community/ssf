@@ -7,6 +7,7 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
@@ -15,6 +16,10 @@ import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
+import { RolesGuard } from '../auth/roles.guard';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { RequestSize } from './types';
@@ -22,6 +27,7 @@ import { OrderStatus } from '../orders/types';
 
 @Controller('requests')
 // @UseInterceptors()
+@UseGuards(RolesGuard)
 export class RequestsController {
   constructor(
     private requestsService: RequestsService,
@@ -109,6 +115,7 @@ export class RequestsController {
     );
   }
 
+  @Roles(Role.PANTRY)
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',

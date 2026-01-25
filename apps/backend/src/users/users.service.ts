@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-
 import { User } from './user.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
@@ -66,8 +65,8 @@ export class UsersService {
     return volunteer;
   }
 
-  find(email: string) {
-    return this.repo.find({ where: { email } });
+  async findByEmail(email: string): Promise<User | null> {
+    return this.repo.findOneBy({ email });
   }
 
   async update(id: number, attrs: Partial<User>) {
@@ -138,5 +137,13 @@ export class UsersService {
 
     volunteer.pantries = [...volunteer.pantries, ...newPantries];
     return this.repo.save(volunteer);
+  }
+
+  async findUserByCognitoId(cognitoId: string): Promise<User> {
+    const user = await this.repo.findOneBy({ userCognitoSub: cognitoId });
+    if (!user) {
+      throw new NotFoundException(`User with cognitoId ${cognitoId} not found`);
+    }
+    return user;
   }
 }

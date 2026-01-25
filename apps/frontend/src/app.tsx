@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import LandingPage from '@containers/landingPage';
@@ -29,6 +26,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
+import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -81,6 +79,54 @@ const router = createBrowserRouter([
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
+      },
+
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />,
+      },
+
+      // Private routes (protected by auth)
+
+      {
+        path: '/landing-page',
+        element: (
+          <Authenticator components={components}>
+            <LandingPage />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-overview',
+        element: (
+          <Authenticator components={components}>
+            <PantryOverview />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <Authenticator components={components}>
+            <PantryDashboard />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <Authenticator components={components}>
+            <PantryPastOrders />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <Authenticator components={components}>
+            <Pantries />
+          </Authenticator>
+        ),
       },
       {
         path: '/pantry-application/submitted',
@@ -143,21 +189,20 @@ const router = createBrowserRouter([
             <FormRequests />
           </Authenticator>
         ),
-        loader: pantryIdLoader,
-      },
-      {
-        path: '/donation-management',
-        element: (
-          <Authenticator components={components}>
-            <DonationManagement />
-          </Authenticator>
-        ),
       },
       {
         path: '/approve-pantries',
         element: (
           <Authenticator components={components}>
             <ApprovePantries />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/donation-management',
+        element: (
+          <Authenticator components={components}>
+            <DonationManagement />
           </Authenticator>
         ),
       },
@@ -199,10 +244,10 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  useEffect(() => {
-    document.title = 'SSF';
-    apiClient.getHello().then((res) => console.log(res));
-  }, []);
+  // useEffect(() => {
+  //   document.title = 'SSF';
+  //   apiClient.getHello().then((res) => console.log(res));
+  // }, []);
 
   return (
     <Authenticator.Provider>
