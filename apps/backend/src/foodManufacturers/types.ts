@@ -12,7 +12,7 @@ export enum DonateWastedFood {
   NEVER = 'Never',
 }
 
-export enum ManufacturerStatus {
+export enum Status {
   APPROVED = 'approved',
   DENIED = 'denied',
   PENDING = 'pending',

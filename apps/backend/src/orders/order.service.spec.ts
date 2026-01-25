@@ -9,9 +9,9 @@ import { User } from '../users/user.entity';
 import {
   AllergensConfidence,
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ServeAllergicChildren,
+  Status,
 } from '../pantries/types';
 import { OrderStatus } from './types';
 
@@ -31,7 +31,7 @@ const mockPantry: Partial<Pantry> = {
   newsletterSubscription: false,
   restrictions: [],
   pantryUser: null as unknown as User,
-  status: PantryStatus.APPROVED,
+  status: Status.APPROVED,
   dateApplied: new Date(),
   activities: [],
   activitiesComments: '',

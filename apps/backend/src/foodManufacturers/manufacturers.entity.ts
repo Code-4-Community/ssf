@@ -12,7 +12,7 @@ import {
   Allergen,
   DonateWastedFood,
   ManufacturerAttribute,
-  ManufacturerStatus,
+  Status,
 } from './types';
 
 @Entity('food_manufacturers')
@@ -137,10 +137,10 @@ export class FoodManufacturer {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: ManufacturerStatus,
-    enumName: 'manufacturers_status_enum',
+    enum: Status,
+    enumName: 'status_enum',
   })
-  status: ManufacturerStatus;
+  status: Status;
 
   @Column({
     name: 'date_applied',
