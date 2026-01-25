@@ -14,11 +14,9 @@ import {
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
-import apiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
-  readOnly?: boolean;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;
@@ -26,7 +24,6 @@ interface FoodRequestFormModalProps {
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
-  readOnly = false,
   isOpen,
   onClose,
   pantryId,
@@ -34,7 +31,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-  const [pantryName, setPantryName] = useState<string>('');
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -48,18 +44,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const pantry = await apiClient.getPantry(pantryId);
-        setPantryName(pantry.pantryName);
-      } catch (error) {
-        console.error('Error fetching pantry data', error);
-      }
-    };
-    fetchData();
-  });
 
   return (
     <Dialog.Root
@@ -75,19 +59,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              {readOnly
-                ? `Request ${previousRequest?.requestId}`
-                : previousRequest
+              {previousRequest
                 ? 'Resubmit Latest Request'
                 : 'New Food Request'}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            {readOnly && (
-              <Text textStyle="p2" color="#111111">
-                {pantryName}
-              </Text>
-            )}
             <Text
               mb={previousRequest ? 8 : 10}
               color="#52525B"
@@ -95,11 +72,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               pt={0}
               mt={0}
             >
-              {readOnly && previousRequest
-                ? `Requested ${new Date(
-                    previousRequest.requestedAt,
-                  ).toLocaleDateString()}`
-                : previousRequest
+              {previousRequest
                 ? 'Confirm request details.'
                 : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
@@ -130,7 +103,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Menu.Trigger asChild>
                     <Button
                       pl={2.5}
-                      disabled={readOnly}
                       _disabled={{ color: 'neutral.800', opacity: 1 }}
                       textStyle="p2"
                       w="full"
@@ -142,7 +114,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                     >
                       {requestedSize || 'Select size'}
-                      {!readOnly && <ChevronDownIcon stroke="#B8B8B8" />}
+                      <ChevronDownIcon stroke="#B8B8B8"></ChevronDownIcon>
                     </Button>
                   </Menu.Trigger>
 
@@ -186,12 +158,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   />
                 ))}
 
-                {!readOnly && (
+                
                   <Menu.Root closeOnSelect={false}>
                     <Menu.Trigger asChild>
                       <Button
                         pl={2.5}
-                        disabled={readOnly}
                         w="full"
                         bgColor="white"
                         color={'neutral.300'}
@@ -223,7 +194,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                                     : prev.filter((i) => i !== allergen),
                                 );
                               }}
-                              disabled={readOnly}
                               display="flex"
                               alignItems="center"
                             >
@@ -252,7 +222,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       </Menu.Content>
                     </Menu.Positioner>
                   </Menu.Root>
-                )}
+                
 
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={1} gap={2}>
@@ -261,16 +231,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         key={item}
                         size="xl"
                         variant="solid"
-                        bg={!readOnly ? '#E9F4F6' : 'neutral.100'}
+                        bg={'neutral.100'}
                         color="neutral.800"
                         borderRadius="4px"
-                        borderColor={!readOnly ? 'teal.400' : 'neutral.300'}
+                        borderColor={'neutral.300'}
                         borderWidth="1px"
                         fontFamily="Inter"
                         fontWeight={500}
                       >
                         <Tag.Label>{item}</Tag.Label>
-                        {!readOnly && (
+                        
                           <Tag.EndElement>
                             <Tag.CloseTrigger
                               cursor="pointer"
@@ -281,7 +251,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                               }
                             />
                           </Tag.EndElement>
-                        )}
+                        
                       </Tag.Root>
                     ))}
                   </Flex>
@@ -317,17 +287,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       alert('Exceeded word limit');
                     }
                   }}
-                  disabled={readOnly}
                 />
-                {!readOnly && (
+                
                   <Field.HelperText color="neutral.600">
                     Max 250 words
                   </Field.HelperText>
-                )}
+                
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                {!readOnly && (
+                
                   <Button
                     onClick={onClose}
                     bg={'white'}
@@ -336,8 +305,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   >
                     Cancel
                   </Button>
-                )}
-                {!readOnly && (
+                
+                
                   <Button
                     type="submit"
                     bg={isFormValid ? '#213C4A' : 'neutral.400'}
@@ -346,12 +315,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   >
                     Continue
                   </Button>
-                )}
+                
               </Flex>
             </Form>
           </Dialog.Body>
           <Dialog.CloseTrigger asChild>
-            {readOnly && <CloseButton size="lg" />}
+            <CloseButton size="lg" />
           </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>

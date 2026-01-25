@@ -8,7 +8,6 @@ import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
 import { RequestSize } from './types';
-import { OrderStatus } from '../orders/types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -56,6 +55,12 @@ export class RequestsService {
       },
     });
 
+    if (!orders) {
+      throw new ConflictException(
+        'No associated orders found for this request',
+      );
+    }
+    
     if (!orders.length) {
       return [];
     }
