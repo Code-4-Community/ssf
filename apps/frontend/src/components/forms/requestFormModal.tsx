@@ -59,9 +59,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              {previousRequest
-                ? 'Resubmit Latest Request'
-                : 'New Food Request'}
+              {previousRequest ? 'Resubmit Latest Request' : 'New Food Request'}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
@@ -158,71 +156,69 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   />
                 ))}
 
-                
-                  <Menu.Root closeOnSelect={false}>
-                    <Menu.Trigger asChild>
-                      <Button
-                        pl={2.5}
-                        w="full"
-                        bgColor="white"
-                        color={'neutral.300'}
-                        borderColor="neutral.100"
-                        borderWidth="1px"
-                        borderRadius="4px"
-                        justifyContent="space-between"
-                        textStyle="p2"
-                      >
-                        {selectedItems.length > 0
-                          ? `Select more food types`
-                          : 'Select food types'}
-                        <ChevronDownIcon />
-                      </Button>
-                    </Menu.Trigger>
+                <Menu.Root closeOnSelect={false}>
+                  <Menu.Trigger asChild>
+                    <Button
+                      pl={2.5}
+                      w="full"
+                      bgColor="white"
+                      color={'neutral.300'}
+                      borderColor="neutral.100"
+                      borderWidth="1px"
+                      borderRadius="4px"
+                      justifyContent="space-between"
+                      textStyle="p2"
+                    >
+                      {selectedItems.length > 0
+                        ? `Select more food types`
+                        : 'Select food types'}
+                      <ChevronDownIcon />
+                    </Button>
+                  </Menu.Trigger>
 
-                    <Menu.Positioner w="full">
-                      <Menu.Content maxH="200px" overflowY="auto">
-                        {FoodTypes.map((allergen) => {
-                          const isChecked = selectedItems.includes(allergen);
-                          return (
-                            <Menu.CheckboxItem
-                              key={allergen}
-                              checked={isChecked}
-                              onCheckedChange={(checked: boolean) => {
-                                setSelectedItems((prev) =>
-                                  checked
-                                    ? [...prev, allergen]
-                                    : prev.filter((i) => i !== allergen),
-                                );
-                              }}
-                              display="flex"
-                              alignItems="center"
+                  <Menu.Positioner w="full">
+                    <Menu.Content maxH="200px" overflowY="auto">
+                      {FoodTypes.map((allergen) => {
+                        const isChecked = selectedItems.includes(allergen);
+                        return (
+                          <Menu.CheckboxItem
+                            key={allergen}
+                            checked={isChecked}
+                            onCheckedChange={(checked: boolean) => {
+                              setSelectedItems((prev) =>
+                                checked
+                                  ? [...prev, allergen]
+                                  : prev.filter((i) => i !== allergen),
+                              );
+                            }}
+                            display="flex"
+                            alignItems="center"
+                          >
+                            <Box
+                              position="absolute"
+                              left={1}
+                              ml={0.5}
+                              w={5}
+                              h={5}
+                              borderWidth="1px"
+                              borderRadius="4px"
+                              borderColor="neutral.200"
+                            />
+                            <Menu.ItemIndicator />
+                            <Text
+                              ml={0.5}
+                              color="neutral.800"
+                              fontWeight={500}
+                              fontFamily="Inter"
                             >
-                              <Box
-                                position="absolute"
-                                left={1}
-                                ml={0.5}
-                                w={5}
-                                h={5}
-                                borderWidth="1px"
-                                borderRadius="4px"
-                                borderColor="neutral.200"
-                              />
-                              <Menu.ItemIndicator />
-                              <Text
-                                ml={0.5}
-                                color="neutral.800"
-                                fontWeight={500}
-                                fontFamily="Inter"
-                              >
-                                {allergen}
-                              </Text>
-                            </Menu.CheckboxItem>
-                          );
-                        })}
-                      </Menu.Content>
-                    </Menu.Positioner>
-                  </Menu.Root>
-                
+                              {allergen}
+                            </Text>
+                          </Menu.CheckboxItem>
+                        );
+                      })}
+                    </Menu.Content>
+                  </Menu.Positioner>
+                </Menu.Root>
 
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={1} gap={2}>
@@ -240,18 +236,17 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         fontWeight={500}
                       >
                         <Tag.Label>{item}</Tag.Label>
-                        
-                          <Tag.EndElement>
-                            <Tag.CloseTrigger
-                              cursor="pointer"
-                              onClick={() =>
-                                setSelectedItems((prev) =>
-                                  prev.filter((i) => i !== item),
-                                )
-                              }
-                            />
-                          </Tag.EndElement>
-                        
+
+                        <Tag.EndElement>
+                          <Tag.CloseTrigger
+                            cursor="pointer"
+                            onClick={() =>
+                              setSelectedItems((prev) =>
+                                prev.filter((i) => i !== item),
+                              )
+                            }
+                          />
+                        </Tag.EndElement>
                       </Tag.Root>
                     ))}
                   </Flex>
@@ -288,34 +283,30 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     }
                   }}
                 />
-                
-                  <Field.HelperText color="neutral.600">
-                    Max 250 words
-                  </Field.HelperText>
-                
+
+                <Field.HelperText color="neutral.600">
+                  Max 250 words
+                </Field.HelperText>
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                
-                  <Button
-                    onClick={onClose}
-                    bg={'white'}
-                    color={'black'}
-                    borderColor="neutral.100"
-                  >
-                    Cancel
-                  </Button>
-                
-                
-                  <Button
-                    type="submit"
-                    bg={isFormValid ? '#213C4A' : 'neutral.400'}
-                    color={'white'}
-                    disabled={!isFormValid}
-                  >
-                    Continue
-                  </Button>
-                
+                <Button
+                  onClick={onClose}
+                  bg={'white'}
+                  color={'black'}
+                  borderColor="neutral.100"
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="submit"
+                  bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                  color={'white'}
+                  disabled={!isFormValid}
+                >
+                  Continue
+                </Button>
               </Flex>
             </Form>
           </Dialog.Body>

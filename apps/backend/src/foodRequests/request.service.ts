@@ -60,7 +60,7 @@ export class RequestsService {
         'No associated orders found for this request',
       );
     }
-    
+
     if (!orders.length) {
       return [];
     }
