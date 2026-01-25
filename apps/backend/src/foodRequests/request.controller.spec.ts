@@ -8,9 +8,6 @@ import { Readable } from 'stream';
 import { FoodRequest } from './request.entity';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
-import { FoodType } from '../donationItems/types';
-import { OrderDetailsDto } from './dtos/order-details.dto';
-import { Order } from '../orders/order.entity';
 
 const mockRequestsService = mock<RequestsService>();
 const mockOrdersService = mock<OrdersService>();
@@ -29,7 +26,6 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.updateDeliveryDetails?.mockReset();
-    mockRequestsService.getOrderDetails.mockReset();
     mockAWSS3Service.upload.mockReset();
     mockOrdersService.updateStatus.mockReset();
 
@@ -95,55 +91,6 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /all-order-details/:requestId', () => {
-    it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
-      const mockOrderDetails: OrderDetailsDto[] = [
-        {
-          orderId: 10,
-          status: OrderStatus.DELIVERED,
-          foodManufacturerName: 'Test Manufacturer',
-          items: [
-            {
-              name: 'Rice',
-              quantity: 5,
-              foodType: FoodType.GRANOLA,
-            },
-            {
-              name: 'Beans',
-              quantity: 3,
-              foodType: FoodType.DRIED_BEANS,
-            },
-          ],
-        },
-        {
-          orderId: 11,
-          status: OrderStatus.PENDING,
-          foodManufacturerName: 'Another Manufacturer',
-          items: [
-            {
-              name: 'Milk',
-              quantity: 2,
-              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-            },
-          ],
-        },
-      ];
-
-      const requestId = 1;
-
-      mockRequestsService.getOrderDetails.mockResolvedValueOnce(
-        mockOrderDetails as OrderDetailsDto[],
-      );
-
-      const result = await controller.getAllOrderDetailsFromRequest(requestId);
-
-      expect(result).toEqual(mockOrderDetails);
-      expect(mockRequestsService.getOrderDetails).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-  });
-
   describe('POST /create', () => {
     it('should call requestsService.create and return the created food request', async () => {
       const createBody: Partial<FoodRequest> = {
@@ -160,7 +107,7 @@ describe('RequestsController', () => {
         requestId: 1,
         ...createBody,
         requestedAt: new Date(),
-        orders: null,
+        order: null,
       };
 
       mockRequestsService.create.mockResolvedValueOnce(
@@ -234,13 +181,10 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        orders: [{ orderId: 99 }],
+        order: { orderId: 99 },
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();
-
-      const order = new Order();
-      order.orderId = 99;
 
       const updatedRequest: Partial<FoodRequest> = {
         requestId,
@@ -248,7 +192,6 @@ describe('RequestsController', () => {
         dateReceived: new Date(body.dateReceived),
         feedback: body.feedback,
         photos: uploadedUrls,
-        orders: [order],
       };
 
       mockRequestsService.updateDeliveryDetails.mockResolvedValue(
@@ -258,6 +201,8 @@ describe('RequestsController', () => {
       const result = await controller.confirmDelivery(requestId, body, photos);
 
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(photos);
+
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
 
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         99,
@@ -285,13 +230,10 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        orders: [{ orderId: 100 }],
+        order: { orderId: 100 },
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();
-
-      const order = new Order();
-      order.orderId = 100;
 
       const updatedRequest: Partial<FoodRequest> = {
         requestId,
@@ -299,7 +241,6 @@ describe('RequestsController', () => {
         dateReceived: new Date(body.dateReceived),
         feedback: body.feedback,
         photos: [],
-        orders: [order],
       };
 
       mockRequestsService.updateDeliveryDetails.mockResolvedValue(
@@ -309,6 +250,7 @@ describe('RequestsController', () => {
       const result = await controller.confirmDelivery(requestId, body);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         100,
         OrderStatus.DELIVERED,
@@ -333,13 +275,10 @@ describe('RequestsController', () => {
       mockRequestsService.findOne.mockResolvedValue({
         requestId,
         pantryId: 1,
-        orders: [{ orderId: 101 }],
+        order: { orderId: 101 },
       } as FoodRequest);
 
       mockOrdersService.updateStatus.mockResolvedValue();
-
-      const order = new Order();
-      order.orderId = 101;
 
       const updatedRequest: Partial<FoodRequest> = {
         requestId,
@@ -347,7 +286,6 @@ describe('RequestsController', () => {
         dateReceived: new Date(body.dateReceived),
         feedback: body.feedback,
         photos: [],
-        orders: [order],
       };
 
       mockRequestsService.updateDeliveryDetails.mockResolvedValue(
@@ -357,6 +295,7 @@ describe('RequestsController', () => {
       const result = await controller.confirmDelivery(requestId, body, []);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         101,
         OrderStatus.DELIVERED,
