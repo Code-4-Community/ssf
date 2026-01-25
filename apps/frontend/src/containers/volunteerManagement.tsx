@@ -50,12 +50,12 @@ const VolunteerManagement: React.FC = () => {
 
   const filteredVolunteers = volunteers.filter((a) => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
-    return (fullName.includes(searchName.toLowerCase()));
+    return fullName.includes(searchName.toLowerCase());
   });
 
   const paginatedVolunteers = filteredVolunteers.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   const handleSearchNameChange = (
@@ -66,11 +66,26 @@ const VolunteerManagement: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">Volunteer Management</Text>
+      <Text textStyle="h1" color="#515151">
+        Volunteer Management
+      </Text>
       {alertMessage && (
-        <Alert.Root color={submitSuccess ? "neutral.800" : "red"} status="info" bg="white" variant="subtle" boxShadow="lg"  position="absolute" top="12px" right="12px" w="fit-content" maxW="400px">
+        <Alert.Root
+          color={submitSuccess ? 'neutral.800' : 'red'}
+          status="info"
+          bg="white"
+          variant="subtle"
+          boxShadow="lg"
+          position="absolute"
+          top="12px"
+          right="12px"
+          w="fit-content"
+          maxW="400px"
+        >
           <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500} >{alertMessage}</Alert.Title>
+          <Alert.Title textStyle="p2" fontWeight={500}>
+            {alertMessage}
+          </Alert.Title>
         </Alert.Root>
       )}
       <Box
@@ -81,9 +96,12 @@ const VolunteerManagement: React.FC = () => {
         overflowY="hidden"
         whiteSpace="nowrap"
       >
-        <VStack mt={2} mb={7} align="start" >
+        <VStack mt={2} mb={7} align="start">
           <Flex justify="space-between" align="center" w="100%">
-            <InputGroup startElement = {<SearchIcon color="#707070" size={13}></SearchIcon>} maxW={200}>
+            <InputGroup
+              startElement={<SearchIcon color="#707070" size={13}></SearchIcon>}
+              maxW={200}
+            >
               <Input
                 placeholder="Search"
                 value={searchName}
@@ -94,17 +112,19 @@ const VolunteerManagement: React.FC = () => {
                 fontFamily="ibm"
                 fontWeight="semibold"
                 fontSize="14px"
-                _focusVisible={{ boxShadow: "none", outline: "none" }}
+                _focusVisible={{ boxShadow: 'none', outline: 'none' }}
               />
             </InputGroup>
-            <NewVolunteerModal onSubmitSuccess={() => {
-                setAlertMessage("Volunteer added.");
+            <NewVolunteerModal
+              onSubmitSuccess={() => {
+                setAlertMessage('Volunteer added.');
                 setSubmitSuccess(true);
-                setTimeout(() => setAlertMessage(""), 3000);
-              }} onSubmitFail={() => {
-                setAlertMessage("Volunteer could not be added.");
+                setTimeout(() => setAlertMessage(''), 3000);
+              }}
+              onSubmitFail={() => {
+                setAlertMessage('Volunteer could not be added.');
                 setSubmitSuccess(false);
-                setTimeout(() => setAlertMessage(""), 3000);
+                setTimeout(() => setAlertMessage(''), 3000);
               }}
             />
           </Flex>
@@ -112,10 +132,29 @@ const VolunteerManagement: React.FC = () => {
         <Table.Root variant="line" showColumnBorder>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Volunteer</Table.ColumnHeader>
-              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600}>Email</Table.ColumnHeader>
-              <Table.ColumnHeader color="neutral.800" textStyle="p2" fontWeight={600} textAlign="right">Actions</Table.ColumnHeader>
-            </Table.Row> 
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+              >
+                Volunteer
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+              >
+                Email
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+                textAlign="right"
+              >
+                Actions
+              </Table.ColumnHeader>
+            </Table.Row>
           </Table.Header>
           <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
             {paginatedVolunteers?.map((volunteer) => (
@@ -123,31 +162,34 @@ const VolunteerManagement: React.FC = () => {
                 <Table.Cell>
                   <Box display="flex" alignItems="center" gap={5}>
                     <Box
-                        borderRadius="full"
-                        bg={USER_ICON_COLORS[volunteer.id % USER_ICON_COLORS.length]}
-                        width="33px"
-                        height="33px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        color="white"
-                        p={2}
-                      >
-                        {volunteer.firstName
-                          .charAt(0)
-                          .toUpperCase()}
-                        {volunteer.lastName
-                          .charAt(0)
-                          .toUpperCase()}
-                      </Box>
+                      borderRadius="full"
+                      bg={
+                        USER_ICON_COLORS[volunteer.id % USER_ICON_COLORS.length]
+                      }
+                      width="33px"
+                      height="33px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      color="white"
+                      p={2}
+                    >
+                      {volunteer.firstName.charAt(0).toUpperCase()}
+                      {volunteer.lastName.charAt(0).toUpperCase()}
+                    </Box>
                     {volunteer.firstName} {volunteer.lastName}
                   </Box>
                 </Table.Cell>
-                <Table.Cell>
-                  {volunteer.email}
-                </Table.Cell>
+                <Table.Cell>{volunteer.email}</Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Link color="neutral.700" fontWeight={400} textStyle="p2" variant="underline" textDecorationColor="neutral.700" href={`/pantry-management/${volunteer.id}`}>
+                  <Link
+                    color="neutral.700"
+                    fontWeight={400}
+                    textStyle="p2"
+                    variant="underline"
+                    textDecorationColor="neutral.700"
+                    href={`/pantry-management/${volunteer.id}`}
+                  >
                     View Assigned Pantries
                   </Link>
                 </Table.Cell>
@@ -156,10 +198,20 @@ const VolunteerManagement: React.FC = () => {
           </Table.Body>
         </Table.Root>
         <Flex justify="center" mt={12}>
-          <Pagination.Root count={Math.ceil(filteredVolunteers.length / pageSize)} pageSize={1} page={currentPage} onChange={(page) => setCurrentPage(page)}>
+          <Pagination.Root
+            count={Math.ceil(filteredVolunteers.length / pageSize)}
+            pageSize={1}
+            page={currentPage}
+            onChange={(page) => setCurrentPage(page)}
+          >
             <ButtonGroup variant="outline" size="sm">
               <Pagination.PrevTrigger asChild>
-                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
+                <IconButton
+                  variant="ghost"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                >
                   <ChevronLeft />
                 </IconButton>
               </Pagination.PrevTrigger>
@@ -167,7 +219,7 @@ const VolunteerManagement: React.FC = () => {
               <Pagination.Items
                 render={(page) => (
                   <IconButton
-                    variant={{ base: "outline", _selected: "outline" }}
+                    variant={{ base: 'outline', _selected: 'outline' }}
                     onClick={() => setCurrentPage(page.value)}
                   >
                     {page.value}
@@ -176,7 +228,17 @@ const VolunteerManagement: React.FC = () => {
               />
 
               <Pagination.NextTrigger asChild>
-                <IconButton variant="ghost" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredVolunteers.length / pageSize)))}>
+                <IconButton
+                  variant="ghost"
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(
+                        prev + 1,
+                        Math.ceil(filteredVolunteers.length / pageSize),
+                      ),
+                    )
+                  }
+                >
                   <ChevronRight />
                 </IconButton>
               </Pagination.NextTrigger>

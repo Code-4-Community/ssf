@@ -9,7 +9,6 @@ import {
   UseInterceptors,
   BadRequestException,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -179,7 +178,7 @@ export class RequestsController {
     }
 
     if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
-      throw new ConflictException(
+      throw new NotFoundException(
         'No associated orders found for this request',
       );
     }

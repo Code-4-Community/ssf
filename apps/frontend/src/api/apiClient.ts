@@ -10,6 +10,7 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  OrderSummary,
   UserDto,
   OrderDetails,
 } from 'types/types';
@@ -172,7 +173,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAllOrders(): Promise<Order[]> {
+  public async getAllOrders(): Promise<OrderSummary[]> {
     return this.axiosInstance
       .get('/api/orders/')
       .then((response) => response.data);
@@ -191,7 +192,15 @@ export class ApiClient {
   }
 
   public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  public async getOrderDetailsListFromRequest(
+    requestId: number,
+  ): Promise<OrderDetails[]> {
+    return this.axiosInstance
+      .get(`/api/requests/all-order-details/${requestId}`)
+      .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   public async getOrderDetailsListFromRequest(

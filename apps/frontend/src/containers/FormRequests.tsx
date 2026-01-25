@@ -99,7 +99,6 @@ const FormRequests: React.FC = () => {
             </Button>
             <FoodRequestFormModal
               previousRequest={previousRequest}
-              readOnly={false}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
               pantryId={pantryId}

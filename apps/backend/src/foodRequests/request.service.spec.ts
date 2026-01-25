@@ -396,7 +396,7 @@ describe('RequestsService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        orders: [updatedOrder],
+        orders: [mockOrder],
       });
     });
 

@@ -1,14 +1,9 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
 import { RequestSize } from './types';
-import { OrderStatus } from '../orders/types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -55,6 +50,12 @@ export class RequestsService {
         },
       },
     });
+
+    if (!orders) {
+      throw new NotFoundException(
+        'No associated orders found for this request',
+      );
+    }
 
     if (!orders.length) {
       return [];
@@ -128,7 +129,7 @@ export class RequestsService {
     }
 
     if (!request.orders || request.orders.length == 0) {
-      throw new ConflictException(
+      throw new NotFoundException(
         'No associated orders found for this request',
       );
     }
@@ -137,7 +138,7 @@ export class RequestsService {
 
     for (const order of orders) {
       if (!order.shippedBy) {
-        throw new ConflictException(
+        throw new NotFoundException(
           'No associated food manufacturer found for an associated order',
         );
       }
