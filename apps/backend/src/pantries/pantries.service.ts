@@ -111,7 +111,6 @@ export class PantriesService {
     await this.repo.update(id, { status: PantryStatus.DENIED });
   }
 
-  
   async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
     const pantries = await this.repo.find({
       where: { status: PantryStatus.APPROVED },
