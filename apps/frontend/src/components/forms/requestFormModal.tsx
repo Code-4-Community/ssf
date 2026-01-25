@@ -14,9 +14,11 @@ import {
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import apiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
+  readOnly?: boolean;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;
@@ -24,6 +26,7 @@ interface FoodRequestFormModalProps {
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   previousRequest,
+  readOnly = false,
   isOpen,
   onClose,
   pantryId,
@@ -31,6 +34,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [pantryName, setPantryName] = useState<string>('');
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -44,6 +48,18 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pantry = await apiClient.getPantry(pantryId);
+        setPantryName(pantry.pantryName);
+      } catch (error) {
+        console.error('Error fetching pantry data', error);
+      }
+    };
+    fetchData();
+  });
 
   return (
     <Dialog.Root
@@ -59,10 +75,19 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              {previousRequest ? 'Resubmit Latest Request' : 'New Food Request'}
+              {readOnly
+                ? `Order ${previousRequest?.requestId}`
+                : previousRequest
+                ? 'Resubmit Latest Order'
+                : 'New Food Request'}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
+            {readOnly && (
+              <Text textStyle="p2" color="#111111">
+                {pantryName}
+              </Text>
+            )}
             <Text
               mb={previousRequest ? 8 : 10}
               color="#52525B"
@@ -70,8 +95,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               pt={0}
               mt={0}
             >
-              {previousRequest
-                ? 'Confirm request details.'
+              {readOnly && previousRequest
+                ? `Requested ${new Date(
+                    previousRequest.requestedAt,
+                  ).toLocaleDateString()}`
+                : previousRequest
+                ? 'Confirm order details.'
                 : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
@@ -101,6 +130,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   <Menu.Trigger asChild>
                     <Button
                       pl={2.5}
+                      disabled={readOnly}
                       _disabled={{ color: 'neutral.800', opacity: 1 }}
                       textStyle="p2"
                       w="full"
@@ -112,7 +142,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                     >
                       {requestedSize || 'Select size'}
-                      <ChevronDownIcon stroke="#B8B8B8"></ChevronDownIcon>
+                      {!readOnly && <ChevronDownIcon stroke="#B8B8B8" />}
                     </Button>
                   </Menu.Trigger>
 
@@ -156,69 +186,73 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   />
                 ))}
 
-                <Menu.Root closeOnSelect={false}>
-                  <Menu.Trigger asChild>
-                    <Button
-                      pl={2.5}
-                      w="full"
-                      bgColor="white"
-                      color={'neutral.300'}
-                      borderColor="neutral.100"
-                      borderWidth="1px"
-                      borderRadius="4px"
-                      justifyContent="space-between"
-                      textStyle="p2"
-                    >
-                      {selectedItems.length > 0
-                        ? `Select more food types`
-                        : 'Select food types'}
-                      <ChevronDownIcon />
-                    </Button>
-                  </Menu.Trigger>
+                {!readOnly && (
+                  <Menu.Root closeOnSelect={false}>
+                    <Menu.Trigger asChild>
+                      <Button
+                        pl={2.5}
+                        disabled={readOnly}
+                        w="full"
+                        bgColor="white"
+                        color={'neutral.300'}
+                        borderColor="neutral.100"
+                        borderWidth="1px"
+                        borderRadius="4px"
+                        justifyContent="space-between"
+                        textStyle="p2"
+                      >
+                        {selectedItems.length > 0
+                          ? `Select more food types`
+                          : 'Select food types'}
+                        <ChevronDownIcon />
+                      </Button>
+                    </Menu.Trigger>
 
-                  <Menu.Positioner w="full">
-                    <Menu.Content maxH="200px" overflowY="auto">
-                      {FoodTypes.map((allergen) => {
-                        const isChecked = selectedItems.includes(allergen);
-                        return (
-                          <Menu.CheckboxItem
-                            key={allergen}
-                            checked={isChecked}
-                            onCheckedChange={(checked: boolean) => {
-                              setSelectedItems((prev) =>
-                                checked
-                                  ? [...prev, allergen]
-                                  : prev.filter((i) => i !== allergen),
-                              );
-                            }}
-                            display="flex"
-                            alignItems="center"
-                          >
-                            <Box
-                              position="absolute"
-                              left={1}
-                              ml={0.5}
-                              w={5}
-                              h={5}
-                              borderWidth="1px"
-                              borderRadius="4px"
-                              borderColor="neutral.200"
-                            />
-                            <Menu.ItemIndicator />
-                            <Text
-                              ml={0.5}
-                              color="neutral.800"
-                              fontWeight={500}
-                              fontFamily="Inter"
+                    <Menu.Positioner w="full">
+                      <Menu.Content maxH="200px" overflowY="auto">
+                        {FoodTypes.map((allergen) => {
+                          const isChecked = selectedItems.includes(allergen);
+                          return (
+                            <Menu.CheckboxItem
+                              key={allergen}
+                              checked={isChecked}
+                              onCheckedChange={(checked: boolean) => {
+                                setSelectedItems((prev) =>
+                                  checked
+                                    ? [...prev, allergen]
+                                    : prev.filter((i) => i !== allergen),
+                                );
+                              }}
+                              disabled={readOnly}
+                              display="flex"
+                              alignItems="center"
                             >
-                              {allergen}
-                            </Text>
-                          </Menu.CheckboxItem>
-                        );
-                      })}
-                    </Menu.Content>
-                  </Menu.Positioner>
-                </Menu.Root>
+                              <Box
+                                position="absolute"
+                                left={1}
+                                ml={0.5}
+                                w={5}
+                                h={5}
+                                borderWidth="1px"
+                                borderRadius="4px"
+                                borderColor="neutral.200"
+                              />
+                              <Menu.ItemIndicator />
+                              <Text
+                                ml={0.5}
+                                color="neutral.800"
+                                fontWeight={500}
+                                fontFamily="Inter"
+                              >
+                                {allergen}
+                              </Text>
+                            </Menu.CheckboxItem>
+                          );
+                        })}
+                      </Menu.Content>
+                    </Menu.Positioner>
+                  </Menu.Root>
+                )}
 
                 {selectedItems.length > 0 && (
                   <Flex wrap="wrap" mt={1} gap={2}>
@@ -227,26 +261,27 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                         key={item}
                         size="xl"
                         variant="solid"
-                        bg={'neutral.100'}
+                        bg={!readOnly ? '#E9F4F6' : 'neutral.100'}
                         color="neutral.800"
                         borderRadius="4px"
-                        borderColor={'neutral.300'}
+                        borderColor={!readOnly ? 'teal.400' : 'neutral.300'}
                         borderWidth="1px"
                         fontFamily="Inter"
                         fontWeight={500}
                       >
                         <Tag.Label>{item}</Tag.Label>
-
-                        <Tag.EndElement>
-                          <Tag.CloseTrigger
-                            cursor="pointer"
-                            onClick={() =>
-                              setSelectedItems((prev) =>
-                                prev.filter((i) => i !== item),
-                              )
-                            }
-                          />
-                        </Tag.EndElement>
+                        {!readOnly && (
+                          <Tag.EndElement>
+                            <Tag.CloseTrigger
+                              cursor="pointer"
+                              onClick={() =>
+                                setSelectedItems((prev) =>
+                                  prev.filter((i) => i !== item),
+                                )
+                              }
+                            />
+                          </Tag.EndElement>
+                        )}
                       </Tag.Root>
                     ))}
                   </Flex>
@@ -282,36 +317,41 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       alert('Exceeded word limit');
                     }
                   }}
+                  disabled={readOnly}
                 />
-
-                <Field.HelperText color="neutral.600">
-                  Max 250 words
-                </Field.HelperText>
+                {!readOnly && (
+                  <Field.HelperText color="neutral.600">
+                    Max 250 words
+                  </Field.HelperText>
+                )}
               </Field.Root>
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
-                <Button
-                  onClick={onClose}
-                  bg={'white'}
-                  color={'black'}
-                  borderColor="neutral.100"
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  type="submit"
-                  bg={isFormValid ? '#213C4A' : 'neutral.400'}
-                  color={'white'}
-                  disabled={!isFormValid}
-                >
-                  Continue
-                </Button>
+                {!readOnly && (
+                  <Button
+                    onClick={onClose}
+                    bg={'white'}
+                    color={'black'}
+                    borderColor="neutral.100"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {!readOnly && (
+                  <Button
+                    type="submit"
+                    bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                    color={'white'}
+                    disabled={!isFormValid}
+                  >
+                    Continue
+                  </Button>
+                )}
               </Flex>
             </Form>
           </Dialog.Body>
           <Dialog.CloseTrigger asChild>
-            <CloseButton size="lg" />
+            {readOnly && <CloseButton size="lg" />}
           </Dialog.CloseTrigger>
         </Dialog.Content>
       </Dialog.Positioner>
