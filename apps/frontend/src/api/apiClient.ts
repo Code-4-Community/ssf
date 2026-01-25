@@ -12,6 +12,7 @@ import {
   PantryApplicationDto,
   OrderSummary,
   UserDto,
+  OrderDetails,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -191,12 +192,20 @@ export class ApiClient {
   }
 
   public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  public async getOrderDetailsListFromRequest(
+    requestId: number,
+  ): Promise<OrderDetails[]> {
+    return this.axiosInstance
+      .get(`/api/requests/all-order-details/${requestId}`)
+      .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/orders/${orderId}/allocations`)
+      .get(`/api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 
