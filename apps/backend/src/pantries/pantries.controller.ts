@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   ValidationPipe,
 } from '@nestjs/common';
@@ -294,14 +295,14 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
-  @Post('/approve/:pantryId')
+  @Patch('/approve/:pantryId')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.approve(pantryId);
   }
 
-  @Post('/deny/:pantryId')
+  @Patch('/deny/:pantryId')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {

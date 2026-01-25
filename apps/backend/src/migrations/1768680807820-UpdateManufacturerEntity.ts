@@ -31,11 +31,18 @@ export class UpdateManufacturerEntity1768680807820
           'None of the above'
         );
 
-        CREATE TYPE "manufacturer_status_enum" AS ENUM (
+        CREATE TYPE "status_enum" AS ENUM (
           'approved',
           'denied',
           'pending'
         );
+
+        ALTER TABLE pantries
+          ALTER COLUMN status DROP DEFAULT,
+          ALTER COLUMN status TYPE status_enum USING (status::text::status_enum),
+          ALTER COLUMN status SET DEFAULT 'pending';
+
+        DROP TYPE "pantries_status_enum";
 
         ALTER TABLE food_manufacturers
           ADD COLUMN food_manufacturer_website VARCHAR(255) NOT NULL DEFAULT 'https://example.com',
@@ -53,7 +60,7 @@ export class UpdateManufacturerEntity1768680807820
           ADD COLUMN manufacturer_attribute manufacturer_attribute_enum,
           ADD COLUMN additional_comments VARCHAR(255),
           ADD COLUMN newsletter_subscription BOOLEAN,
-          ADD COLUMN status manufacturer_status_enum NOT NULL DEFAULT 'pending',
+          ADD COLUMN status status_enum NOT NULL DEFAULT 'pending',
           ADD COLUMN date_applied TIMESTAMP NOT NULL DEFAULT NOW();
 
         ALTER TABLE food_manufacturers
@@ -87,10 +94,22 @@ export class UpdateManufacturerEntity1768680807820
             DROP COLUMN secondary_contact_first_name,
             DROP COLUMN food_manufacturer_website;
 
-          DROP TYPE IF EXISTS "manufacturer_status_enum";
           DROP TYPE IF EXISTS "manufacturer_attribute_enum";
           DROP TYPE IF EXISTS "donate_wasted_food_enum";
           DROP TYPE IF EXISTS "allergen_enum";
+
+          CREATE TYPE "pantries_status_enum" AS ENUM (
+            'approved',
+            'denied',
+            'pending'
+          );
+
+          ALTER TABLE pantries
+            ALTER COLUMN status DROP DEFAULT,
+            ALTER COLUMN status TYPE pantries_status_enum USING (status::text::pantries_status_enum),
+            ALTER COLUMN status SET DEFAULT 'pending';
+
+          DROP TYPE IF EXISTS "status_enum";
         `);
   }
 }

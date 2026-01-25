@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   ValidationPipe,
 } from '@nestjs/common';
@@ -151,7 +152,7 @@ export class FoodManufacturersController {
       ],
     },
   })
-  @Post()
+  @Post('/submit-application')
   async submitFoodManufacturerApplication(
     @Body(new ValidationPipe())
     foodManufacturerData: FoodManufacturerApplicationDto,
@@ -161,14 +162,14 @@ export class FoodManufacturersController {
     );
   }
 
-  @Post('/approve/:manufacturerId')
+  @Patch('/approve/:manufacturerId')
   async approveManufacturer(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
   ): Promise<void> {
     return this.foodManufacturersService.approve(manufacturerId);
   }
 
-  @Post('/deny/:manufacturerId')
+  @Patch('/deny/:manufacturerId')
   async denyManufacturer(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
   ): Promise<void> {
