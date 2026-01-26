@@ -6,22 +6,13 @@ import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 const ResetPasswordModal: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [code, setCode] = useState<string>('');
-    const [step, setStep] = useState<'reset' | 'verify' | 'new'>('reset');
+    const [step, setStep] = useState<'reset' | 'new'>('reset');
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
 
     const navigate = useNavigate();
 
     const handleSendCode = async () => {
-        try {
-            await resetPassword({ username: email });
-            setStep('verify');
-        } catch (error) {
-            alert(error || "Failed to send verification code");
-        }
-    };
-
-    const handleResendCode = async () => {
         try {
             await resetPassword({ username: email });
         } catch (error) {
@@ -69,31 +60,46 @@ const ResetPasswordModal: React.FC = () => {
                 borderRadius="xl"
                 boxShadow="xl"
             >
-                <VStack gap={10} align="stretch">
-                <Box>
-                    <Text textStyle="h1" >{step === 'reset' ? 'Reset Password' : step === 'verify' ? 'Enter Verification Code' : 'Enter New Password'}</Text>
+                <VStack gap={5} align="stretch">
+                <Box mb={4}>
+                    <Text textStyle="h1" >{step === 'reset' ? 'Reset Password' : 'Enter New Password'}</Text>
                     <Text color="#52525B" textStyle="p2" mt={2}>
-                    {step === 'reset' ? 'To reset your password please enter the email associated with your account.' : step === 'verify' ? 'To reset your password please enter the verification code sent to your account.' : 'Please set a new password.'}
+                    {step === 'reset' ? 'To reset your password please enter the email associated with your account.' : 'Please confirm your verification code and set a new password.'}
                     </Text>
                 </Box>
 
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
-                        {step === 'reset' ? 'Email' : step === 'verify' ? 'Verification Code' : 'New Password'}
+                        {step === 'reset' ? 'Email' : 'Verification Code'}
                     </Field.Label>
                     <Input
                         key={step}
                         type={step === 'new' ? 'password' : 'text'}
                         borderColor="neutral.100"
-                        placeholder={step === 'reset' ? 'Enter Email' : step === 'verify' ? 'Enter Code' : 'Enter new password'}
+                        placeholder={step === 'reset' ? 'Enter Email' : 'Enter Code'}
                         textStyle="p2"
                         color="neutral.700"
                         _placeholder={{...placeholderStyles}}
-                        onChange={step === "verify" ? e => setCode(e.target.value) : step === "new" ?  e => setPassword(e.target.value) : e => setEmail(e.target.value)}
+                        onChange={step === "new" ? e => setCode(e.target.value) : e => setEmail(e.target.value)}
                     />
                 </Field.Root>
 
                 {step === 'new' && 
+                <VStack gap={5} align="stretch">
+                <Field.Root required>
+                    <Field.Label {...fieldHeaderStyles}>
+                        New Password
+                    </Field.Label>
+                    <Input
+                        type="password"
+                        borderColor="neutral.100"
+                        placeholder="Enter new password"
+                        textStyle="p2"
+                        color="neutral.700"
+                        _placeholder={{...placeholderStyles}}
+                        onChange={e => setPassword(e.target.value)}
+                    />
+                </Field.Root>
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                         Confirm Password
@@ -108,13 +114,14 @@ const ResetPasswordModal: React.FC = () => {
                         onChange={e => setConfirmPassword(e.target.value)}
                     />
                 </Field.Root>
+                </VStack>
                 }
 
-                {step === 'verify' && 
+                {step === 'new' && 
                     <Button
                         bgColor='white'
                         w="full"
-                        onClick={handleResendCode}
+                        onClick={handleSendCode}
                         border="1px solid"
                         color="neutral.800"
                         textStyle="p2"
@@ -128,15 +135,15 @@ const ResetPasswordModal: React.FC = () => {
                 <Button
                     bgColor='neutral.800'
                     w="full"
-                    onClick={step === 'new' ? handleResetPassword: step === 'reset' ? handleSendCode : () => setStep('new')}
+                    onClick={step === 'new' ? handleResetPassword: () => { handleSendCode();  setStep('new');}}
                     borderRadius={5}
                     color="white"
                     textStyle="p2"
                     fontWeight={600}
-                    mt={step === 'verify' ? 0 : 8}
-                    disabled={step === 'reset' || step === 'verify' ? !email : !password || !confirmPassword}
+                    mt={step === 'new' ? 0 : 8}
+                    disabled={step === 'reset' ? !email : !password || !confirmPassword || !code}
                 >
-                    {step === 'reset' ? 'Send Verification Code' : step === 'verify' ? 'Submit' : 'Reset Password'}
+                    {step === 'reset' ? 'Send Verification Code' : 'Reset Password'}
                 </Button>
 
                 
