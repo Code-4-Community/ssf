@@ -26,7 +26,6 @@ import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { Public } from '../auth/public.decorator';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('pantries')
 export class PantriesController {
   constructor(
