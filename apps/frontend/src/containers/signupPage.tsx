@@ -1,0 +1,90 @@
+import { useNavigate } from 'react-router-dom';
+import { Box, Text, VStack, Input, Button, Link, Field, IconButton, Group } from '@chakra-ui/react';
+import loginBackground from '../assets/login_background.png';
+import { Eye } from 'lucide-react';
+
+const SignupPage: React.FC = () => {
+    const navigate = useNavigate();
+
+    const fieldHeaderStyles = {
+        color: 'neutral.800',
+        fontFamily: 'inter',
+        fontSize: 'sm',
+        fontWeight: '600',
+    };
+
+    const placeholderStyles = {
+        color: 'neutral.300',
+        fontFamily: 'inter',
+        fontSize: 'sm',
+        fontWeight: '400',
+    };
+
+    return (
+        <Box
+            minH="100vh"
+            w="full"
+            bgImage={`url(${loginBackground})`}
+            bgSize="cover"
+            bgPos="center"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+        >
+            <Box
+                maxW="500px"
+                w="full"
+                bg="white"
+                p={8}
+                borderRadius="xl"
+                boxShadow="xl"
+            >
+                <VStack gap={12} align="stretch">
+                <Box>
+                    <Text textStyle="h1" >Sign Up</Text>
+                    <Text color="#52525B" textStyle="p2" mt={2}>
+                    Please select your specified user type to begin your account creation.
+                    </Text>
+                </Box>
+
+                
+
+                <Button
+                    bgColor='#F89E19'
+                    w="full"
+                    borderRadius={5}
+                    color="white"
+                    textStyle="p2"
+                    fontWeight={600}
+                    onClick={() => navigate('/pantry-application')}
+                >
+                    Food Pantry Partner
+                </Button>
+
+                <Button
+                    bgColor='#2B4E60'
+                    w="full"
+                    borderRadius={5}
+                    color="white"
+                    textStyle="p2"
+                    fontWeight={600}
+                    onClick={() => navigate('/pantry-application')}
+                >
+                    Food Manufacturer (Donor) Partner
+                </Button>
+
+                <Text textStyle="p2" color="neutral.600" textAlign="center" mt={14}>
+                    Already have an account?{' '}
+                    <Link textStyle="p2" color="neutral.600" onClick={() => navigate('/login-page')} variant="underline">
+                    Log in
+                    </Link>
+                </Text>
+                </VStack>
+            </Box>
+        
+        </Box>
+    )
+
+}
+
+export default SignupPage

@@ -15,8 +15,8 @@ const LoginPage: React.FC = () => {
         try {
             await signIn({username: email, password});
             navigate('/landing-page');
-        } catch (err: any) {
-            alert(err.message || 'Login failed');
+        } catch (error) {
+            alert(error || 'Login failed');
         } 
     };
 

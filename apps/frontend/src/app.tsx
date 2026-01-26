@@ -30,6 +30,7 @@ import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
 import LoginPage from '@containers/loginPage';
+import SignupPage from '@containers/signupPage';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -84,7 +85,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/signup',
-        element: <LoginPage />,
+        element: <SignupPage />,
       },
       {
         path: '/forgot-password',
