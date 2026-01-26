@@ -14,6 +14,7 @@ import {
   ServeAllergicChildren,
 } from '../pantries/types';
 import { OrderStatus } from './types';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 const mockOrdersRepository = mock<Repository<Order>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
@@ -192,15 +193,15 @@ describe('OrdersService', () => {
 
   describe('findOrderPantry', () => {
     it('should return pantry for given order', async () => {
-      const mockFoodRequest = {
+      const mockFoodRequest: Partial<FoodRequest> = {
         requestId: 1,
         pantryId: 1,
       };
 
-      const mockOrder = {
+      const mockOrder: Partial<Order> = {
         orderId: 1,
         requestId: 1,
-        request: mockFoodRequest,
+        request: mockFoodRequest as FoodRequest,
       };
 
       (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
@@ -225,15 +226,15 @@ describe('OrdersService', () => {
     });
 
     it('should throw NotFoundException if pantry not found', async () => {
-      const mockFoodRequest = {
+      const mockFoodRequest: Partial<FoodRequest> = {
         requestId: 1,
         pantryId: 999,
       };
 
-      const mockOrder = {
+      const mockOrder: Partial<Order> = {
         orderId: 1,
         requestId: 1,
-        request: mockFoodRequest,
+        request: mockFoodRequest as FoodRequest,
       };
 
       (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
