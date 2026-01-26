@@ -47,5 +47,5 @@ export class FoodRequest {
   photos: string[];
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
-  order: Order;
+  orders: Order[];
 }
