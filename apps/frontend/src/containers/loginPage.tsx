@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { signIn } from '@aws-amplify/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Text, VStack, Input, Button, Link, Field, IconButton, Group } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
 import { Eye } from 'lucide-react';
@@ -10,11 +10,14 @@ const LoginPage: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || '/';
 
     const handleLogin = async () => {
         try {
             await signIn({username: email, password});
-            navigate('/landing-page');
+            navigate(from, { replace: true });
         } catch (error) {
             alert(error || 'Login failed');
         } 
@@ -64,7 +67,6 @@ const LoginPage: React.FC = () => {
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                         Email
-                        <Field.RequiredIndicator color="red" />
                     </Field.Label>
                     <Input
                         name="email"
@@ -81,7 +83,6 @@ const LoginPage: React.FC = () => {
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                         Password
-                        <Field.RequiredIndicator color="red" />
                     </Field.Label>
                     <Group attached w="full">
                         <Input
@@ -94,8 +95,8 @@ const LoginPage: React.FC = () => {
                             _placeholder={{...placeholderStyles}}
                             onChange={e => setPassword(e.target.value)}
                         />
-                        <IconButton variant="outline">
-                            <Eye color="#CFCFCF" onClick={e => setShowPassword(!showPassword)}></Eye>
+                        <IconButton variant="outline" onClick={() => setShowPassword(prev => !prev)}>
+                            <Eye color="#CFCFCF"></Eye>
                         </IconButton>
                     </Group>
                     

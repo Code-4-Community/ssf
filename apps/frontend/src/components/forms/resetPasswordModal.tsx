@@ -15,11 +15,15 @@ const ResetPasswordModal: React.FC = () => {
     const handleSendCode = async () => {
         try {
             await resetPassword({ username: email });
-            if (step === 'verify') {
-                setStep('new');
-            } else {
-                setStep('verify');
-            }
+            setStep('verify');
+        } catch (error) {
+            alert(error || "Failed to send verification code");
+        }
+    };
+
+    const handleResendCode = async () => {
+        try {
+            await resetPassword({ username: email });
         } catch (error) {
             alert(error || "Failed to send verification code");
         }
@@ -36,6 +40,7 @@ const ResetPasswordModal: React.FC = () => {
             alert('Password reset successful!');
             navigate('/login');
         } catch (error) {
+            alert(code)
             alert(error || "Failed to set new password");
         }
     };
@@ -75,11 +80,10 @@ const ResetPasswordModal: React.FC = () => {
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                         {step === 'reset' ? 'Email' : step === 'verify' ? 'Verification Code' : 'New Password'}
-                        <Field.RequiredIndicator color="red" />
                     </Field.Label>
                     <Input
-                        name="email"
-                        type="text"
+                        key={step}
+                        type={step === 'new' ? 'password' : 'text'}
                         borderColor="neutral.100"
                         placeholder={step === 'reset' ? 'Enter Email' : step === 'verify' ? 'Enter Code' : 'Enter new password'}
                         textStyle="p2"
@@ -93,11 +97,9 @@ const ResetPasswordModal: React.FC = () => {
                 <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                         Confirm Password
-                        <Field.RequiredIndicator color="red" />
                     </Field.Label>
                     <Input
-                        name="email"
-                        type="text"
+                        type="password"
                         borderColor="neutral.100"
                         placeholder="Confirm Password"
                         textStyle="p2"
@@ -112,12 +114,12 @@ const ResetPasswordModal: React.FC = () => {
                     <Button
                         bgColor='white'
                         w="full"
-                        onClick={handleSendCode}
+                        onClick={handleResendCode}
                         border="1px solid"
                         color="neutral.800"
                         textStyle="p2"
                         fontWeight={600}
-                        mt={12}
+                        mt={8}
                     >
                     Resend Code
                     </Button>
@@ -126,7 +128,7 @@ const ResetPasswordModal: React.FC = () => {
                 <Button
                     bgColor='neutral.800'
                     w="full"
-                    onClick={step === "new" ? handleResetPassword: handleSendCode}
+                    onClick={step === 'new' ? handleResetPassword: step === 'reset' ? handleSendCode : () => setStep('new')}
                     borderRadius={5}
                     color="white"
                     textStyle="p2"
