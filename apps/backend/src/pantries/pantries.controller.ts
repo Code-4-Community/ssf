@@ -23,6 +23,7 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { Public } from '../auth/public.decorator';
 
 @Controller('pantries')
 export class PantriesController {
@@ -31,7 +32,7 @@ export class PantriesController {
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.ADMIN)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
@@ -209,6 +210,7 @@ export class PantriesController {
       ],
     },
   })
+  @Public()
   @Post()
   async submitPantryApplication(
     @Body(new ValidationPipe())

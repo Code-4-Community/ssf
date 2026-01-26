@@ -16,6 +16,7 @@ import { DonationItemsModule } from './donationItems/donationItems.module';
 import { AllocationModule } from './allocations/allocations.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -48,6 +49,10 @@ import { RolesGuard } from './auth/roles.guard';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    }
   ],
 })
 export class AppModule {}

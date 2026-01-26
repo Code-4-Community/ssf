@@ -193,9 +193,10 @@ const router = createBrowserRouter([
       {
         path: '/approve-pantries',
         element: (
-          <Authenticator components={components}>
-            <ApprovePantries />
-          </Authenticator>
+          // <Authenticator components={components}>
+          //   <ApprovePantries />
+          // </Authenticator>
+          <ApprovePantries />
         ),
       },
       {
