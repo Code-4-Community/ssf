@@ -242,7 +242,7 @@ const ManufacturerApplicationForm: React.FC = () => {
           <Text {...sectionTitleStyles}>Product Details</Text>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Which allergen(s) are not listed in your products' ingredients?
+              What allergen(s) are not listed in your products' ingredients?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
 
@@ -358,7 +358,7 @@ const ManufacturerApplicationForm: React.FC = () => {
             )}
           </Field.Root>
 
-          <Field.Root required mb="2em">
+          <Field.Root required mb="3em">
             <Field.Label {...fieldHeaderStyles}>
               What allergen(s) is your facility free from?
               <Field.RequiredIndicator color="red" />
@@ -608,6 +608,7 @@ const ManufacturerApplicationForm: React.FC = () => {
                 name="manufacturerAttribute"
                 borderColor="neutral.100"
                 color="neutral.800"
+                textStyle="p2"
               >
                 {[
                   'Female-founded or women-led',
