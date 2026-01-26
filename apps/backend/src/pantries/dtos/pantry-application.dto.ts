@@ -31,6 +31,7 @@ export class PantryApplicationDto {
   contactLastName: string;
 
   @IsEmail()
+  @IsNotEmpty()
   @Length(1, 255)
   contactEmail: string;
 
