@@ -33,7 +33,7 @@ export class PantriesController {
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.ADMIN)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
