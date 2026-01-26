@@ -1,0 +1,137 @@
+import { useState } from 'react';
+import { signIn } from '@aws-amplify/auth';
+import { useNavigate } from 'react-router-dom';
+import { Box, Text, VStack, Input, Button, Link, Field, IconButton, Group } from '@chakra-ui/react';
+import loginBackground from '../assets/login_background.png';
+import { Eye } from 'lucide-react';
+
+const LoginPage: React.FC = () => {
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLogin = async () => {
+        try {
+            await signIn({username: email, password});
+            navigate('/landing-page');
+        } catch (err: any) {
+            alert(err.message || 'Login failed');
+        } 
+    };
+
+    const fieldHeaderStyles = {
+        color: 'neutral.800',
+        fontFamily: 'inter',
+        fontSize: 'sm',
+        fontWeight: '600',
+    };
+
+    const placeholderStyles = {
+        color: 'neutral.300',
+        fontFamily: 'inter',
+        fontSize: 'sm',
+        fontWeight: '400',
+    };
+
+    return (
+        <Box
+            minH="100vh"
+            w="full"
+            bgImage={`url(${loginBackground})`}
+            bgSize="cover"
+            bgPos="center"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+        >
+            <Box
+                maxW="500px"
+                w="full"
+                bg="white"
+                p={8}
+                borderRadius="xl"
+                boxShadow="xl"
+            >
+                <VStack gap={10} align="stretch">
+                <Box>
+                    <Text textStyle="h1" >Log In</Text>
+                    <Text color="#52525B" textStyle="p2" mt={2}>
+                    Welcome to the Securing Safe Food (SSF) Portal. Please log in with your account credentials.
+                    </Text>
+                </Box>
+
+                <Field.Root required>
+                    <Field.Label {...fieldHeaderStyles}>
+                        Email
+                        <Field.RequiredIndicator color="red" />
+                    </Field.Label>
+                    <Input
+                        name="email"
+                        type="text"
+                        borderColor="neutral.100"
+                        placeholder="Enter email"
+                        textStyle="p2"
+                        color="neutral.700"
+                        _placeholder={{...placeholderStyles}}
+                        onChange={e => setEmail(e.target.value)}
+                    />
+                </Field.Root>
+            
+                <Field.Root required>
+                    <Field.Label {...fieldHeaderStyles}>
+                        Password
+                        <Field.RequiredIndicator color="red" />
+                    </Field.Label>
+                    <Group attached w="full">
+                        <Input
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            borderColor="neutral.100"
+                            placeholder="Enter password"
+                            textStyle="p2"
+                            color="neutral.700"
+                            _placeholder={{...placeholderStyles}}
+                            onChange={e => setPassword(e.target.value)}
+                        />
+                        <IconButton variant="outline">
+                            <Eye color="#CFCFCF" onClick={e => setShowPassword(!showPassword)}></Eye>
+                        </IconButton>
+                    </Group>
+                    
+                </Field.Root>
+
+                <Button
+                    bgColor='neutral.800'
+                    w="full"
+                    onClick={handleLogin}
+                    borderRadius={5}
+                    color="white"
+                    textStyle="p2"
+                    fontWeight={600}
+                    disabled={!password || !email}
+                >
+                    Log In
+                </Button>
+
+                <Text textStyle="p2" color="neutral.600" textAlign="center">
+                    Don’t have an account?{' '}
+                    <Link textStyle="p2" color="neutral.600" onClick={() => navigate('/signup')} variant="underline">
+                    Sign up
+                    </Link>
+                </Text>
+
+                <Text fontSize="sm" textAlign="center">
+                    <Link color ="red" onClick={() => navigate('/forgot-password')}>
+                    Reset Password
+                    </Link>
+                </Text>
+                </VStack>
+            </Box>
+        
+        </Box>
+    )
+
+}
+
+export default LoginPage
