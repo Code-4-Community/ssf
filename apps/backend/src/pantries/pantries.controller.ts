@@ -5,14 +5,11 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
-import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -27,7 +24,6 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('pantries')
 export class PantriesController {
   constructor(
@@ -221,6 +217,7 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
+  @Roles(Role.ADMIN)
   @Post('/approve/:pantryId')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
