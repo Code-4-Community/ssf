@@ -142,13 +142,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         setTotalItems(0);
         setTotalOz(0);
         setTotalValue(0);
+        onClose();
       } else {
         alert('Failed to submit donation');
       }
     } catch (error) {
       alert('Error submitting new donation: ' + error);
     }
-    onClose();
   };
 
   return (
@@ -234,7 +234,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <Input
                             type="number"
-                            min={0}
+                            min={1}
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -245,7 +245,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <Input
                             type="number"
-                            min={0}
+                            min={1}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -256,7 +256,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <Input
                             type="number"
-                            min={0}
+                            min={1}
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
