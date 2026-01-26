@@ -113,20 +113,19 @@ const LoginPage: React.FC = () => {
                 >
                     Log In
                 </Button>
-
-                <Text textStyle="p2" color="neutral.600" textAlign="center">
+                </VStack>
+                <Text textStyle="p2" color="neutral.600" textAlign="center" mt={6}>
                     Don’t have an account?{' '}
                     <Link textStyle="p2" color="neutral.600" onClick={() => navigate('/signup')} variant="underline">
                     Sign up
                     </Link>
                 </Text>
 
-                <Text fontSize="sm" textAlign="center">
-                    <Link color ="red" onClick={() => navigate('/forgot-password')}>
+                <Text fontSize="sm" textAlign="center" mt={12}>
+                    <Link color="red" onClick={() => navigate('/forgot-password')}>
                     Reset Password
                     </Link>
                 </Text>
-                </VStack>
             </Box>
         
         </Box>
