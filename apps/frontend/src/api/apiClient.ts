@@ -11,6 +11,7 @@ import {
   Pantry,
   PantryApplicationDto,
   ManufacturerApplicationDto,
+  CreateMultipleDonationItemsBody,
   OrderSummary,
   UserDto,
   OrderDetails,
@@ -44,17 +45,18 @@ export class ApiClient {
     return this.post('/api/donations/create', body) as Promise<Donation>;
   }
 
-  public async postDonationItem(body: unknown): Promise<DonationItem> {
-    return this.post(
-      '/api/donation-items/create',
-      body,
-    ) as Promise<DonationItem>;
-  }
-
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
+  public async postMultipleDonationItems(
+    body: CreateMultipleDonationItemsBody,
+  ): Promise<DonationItem[]> {
+    return this.post('/api/donation-items/create-multiple', body) as Promise<
+      DonationItem[]
+    >;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {

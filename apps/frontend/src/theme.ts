@@ -85,8 +85,8 @@ const customConfig = defineConfig({
           dark: { value: '#111' },
         },
         teal: {
-          400: { value: '#A9D5DB' },
           100: { value: '#E9F4F6' },
+          400: { value: '#A9D5DB' },
         },
       },
       fonts: {
