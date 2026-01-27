@@ -19,7 +19,7 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
-      .leftJoin('pantries', 'pantry', 'pantry.pantryId = request.pantryId')
+      .leftJoinAndSelect('request.pantry', 'pantry')
       .leftJoinAndSelect('pantry.volunteers', 'volunteers')
       .select([
         'order.orderId',
@@ -27,6 +27,8 @@ export class OrdersService {
         'order.createdAt',
         'order.shippedAt',
         'order.deliveredAt',
+        'request.pantryId',
+        'pantry.pantryId',
         'pantry.pantryName',
         'volunteers.id',
         'volunteers.firstName',
