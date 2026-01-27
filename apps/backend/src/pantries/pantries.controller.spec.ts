@@ -4,6 +4,8 @@ import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
+import { ApprovedPantryResponse } from './types';
+import { RefrigeratedDonation } from './types';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -57,6 +59,56 @@ describe('PantriesController', () => {
       expect(result[0].orderId).toBe(26);
       expect(result[1].orderId).toBe(27);
       expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
+    });
+  });
+
+  describe('getApprovedPantries', () => {
+    it('should return approved pantries with volunteers', async () => {
+      const mockApprovedPantries: ApprovedPantryResponse[] = [
+        {
+          pantryId: 1,
+          pantryName: 'Community Food Pantry',
+          address: {
+            line1: '123 Main Street',
+            line2: null,
+            city: 'Boston',
+            state: 'MA',
+            zip: '02101',
+            country: 'United States',
+          },
+          contactInfo: {
+            firstName: 'John',
+            lastName: 'Smith',
+            email: 'john.smith@example.com',
+            phone: '(508) 508-6789',
+          },
+          refrigeratedDonation: RefrigeratedDonation.YES,
+          allergenClients: '10 to 20',
+          dedicatedAllergenFreeShelf: true,
+          dateApplied: new Date('2024-01-15'),
+          assignedVolunteers: [
+            {
+              userId: 10,
+              name: 'Jane Doe',
+              email: 'jane@example.com',
+              phone: '(555) 123-4567',
+              role: 'Volunteer',
+            },
+          ],
+          subscriptionToNewsletter: true,
+        },
+      ];
+
+      mockPantriesService.getApprovedPantriesWithVolunteers.mockResolvedValue(
+        mockApprovedPantries,
+      );
+
+      const result = await controller.getApprovedPantries();
+
+      expect(result).toEqual(mockApprovedPantries);
+      expect(
+        mockPantriesService.getApprovedPantriesWithVolunteers,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 });
