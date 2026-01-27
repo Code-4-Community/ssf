@@ -685,8 +685,8 @@ const ManufacturerApplicationForm: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" bg="blue.ssf" fontWeight={600} px={8}>
-              Submit Application
+            <Button type="submit" bg="blue.hover" fontWeight={600}>
+              Submit
             </Button>
           </Box>
         </Form>
