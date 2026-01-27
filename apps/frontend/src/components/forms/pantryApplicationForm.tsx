@@ -23,7 +23,7 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
@@ -1248,7 +1248,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   );
 
   return submissionSuccessful
-    ? redirect('/pantry-application/submitted')
+    ? redirect('/application/submitted')
     : null;
 };
 

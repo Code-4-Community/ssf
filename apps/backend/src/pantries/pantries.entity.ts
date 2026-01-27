@@ -11,10 +11,10 @@ import {
   Activity,
   AllergensConfidence,
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  Status,
 } from './types';
 
 @Entity('pantries')
@@ -207,10 +207,10 @@ export class Pantry {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: PantryStatus,
-    enumName: 'pantries_status_enum',
+    enum: Status,
+    enumName: 'status_enum',
   })
-  status: PantryStatus;
+  status: Status;
 
   @Column({
     name: 'date_applied',

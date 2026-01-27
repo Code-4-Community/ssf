@@ -1,21 +1,7 @@
-export enum DonationFrequency {
-  YEARLY = 'yearly',
-  BIWEEKLY = 'biweekly',
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  WEEKLY = 'weekly',
-}
-
 export enum DonateWastedFood {
-  ALWAYS = 'Always',
+  YES = 'Always',
   SOMETIMES = 'Sometimes',
   NEVER = 'Never',
-}
-
-export enum Status {
-  APPROVED = 'approved',
-  DENIED = 'denied',
-  PENDING = 'pending',
 }
 
 export enum Allergen {

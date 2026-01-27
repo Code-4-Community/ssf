@@ -4,9 +4,13 @@ import {
   ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
-  PantryStatus,
   Activity,
 } from './pantryEnums';
+import {
+  DonateWastedFood,
+  Allergen,
+  ManufacturerAttribute,
+} from './manufacturerEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -46,7 +50,7 @@ export interface Pantry {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryUser?: User;
-  status: PantryStatus;
+  status: Status;
   dateApplied: Date;
   activities: Activity[];
   activitiesComments?: string;
@@ -111,6 +115,12 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+}
+
+export enum DonationStatus {
+  AVAILABLE = 'available',
+  FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
 }
 
 export interface DonationItem {
@@ -219,6 +229,29 @@ export interface FoodManufacturer {
   foodManufacturerRepresentative?: User;
 }
 
+export interface ManufacturerApplicationDto {
+  foodManufacturerName: string;
+  foodManufacturerWebsite: string;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  unlistedProductAllergens: Allergen[];
+  facilityFreeAllergens: Allergen[];
+  productsGlutenFree: boolean;
+  productsContainSulfites: boolean;
+  productsSustainableExplanation: string;
+  inKindDonations: boolean;
+  donateWastedFood: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: string;
+}
+
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: string;
@@ -295,4 +328,10 @@ export interface OrderSummary {
       lastName: string;
     }[];
   };
+}
+
+export enum Status {
+  APPROVED = 'approved',
+  DENIED = 'denied',
+  PENDING = 'pending',
 }
