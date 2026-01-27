@@ -156,6 +156,26 @@ export class PantriesService {
     }));
   }
 
+  async updatePantryVolunteers(
+    pantryId: number,
+    volunteerIds: number[],
+  ): Promise<void> {
+    validateId(pantryId, 'Pantry');
+
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['volunteers'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
+    }
+
+    pantry.volunteers = volunteerIds.map((id) => ({ id } as User));
+
+    await this.repo.save(pantry);
+  }
+
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 

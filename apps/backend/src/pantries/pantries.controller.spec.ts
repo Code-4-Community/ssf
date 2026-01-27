@@ -111,4 +111,20 @@ describe('PantriesController', () => {
       ).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('updatePantryVolunteers', () => {
+    it('should overwrite the set of volunteers assigned to a pantry', async () => {
+      const pantryId = 1;
+      const volunteerIds = [10, 11, 12];
+
+      mockPantriesService.updatePantryVolunteers.mockResolvedValue(undefined);
+
+      await controller.updatePantryVolunteers(pantryId, volunteerIds);
+
+      expect(mockPantriesService.updatePantryVolunteers).toHaveBeenCalledWith(
+        pantryId,
+        volunteerIds,
+      );
+    });
+  });
 });
