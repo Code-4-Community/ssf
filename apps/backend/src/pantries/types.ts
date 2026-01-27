@@ -15,11 +15,19 @@ export interface ApprovedPantryResponse {
     email: string;
     phone: string;
   };
-  refrigeratedDonation: string;
+  refrigeratedDonation: RefrigeratedDonation;
   allergenClients: string;
-  status: string;
+  allergenRestrictions?: string[];
+  dedicatedAllergenFreeShelf: boolean;
   dateApplied: Date;
   assignedVolunteers: AssignedVolunteer[];
+  allergenClientsFrequency?: ClientVisitFrequency;
+  allergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  activities?: Activity[];
+  allergenFreeItemsInStock?: string;
+  needMoreAllergenFreeOptions?: string;
+  subscriptionToNewsletter: boolean;
 }
 
 export interface AssignedVolunteer {

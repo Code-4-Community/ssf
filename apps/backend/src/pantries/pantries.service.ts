@@ -145,6 +145,14 @@ export class PantriesService {
         phone: volunteer.phone,
         role: volunteer.role,
       })),
+      allergenClientsFrequency: pantry.clientVisitFrequency,
+      allergensConfidence: pantry.identifyAllergensConfidence,
+      serveAllergicChildren: pantry.serveAllergicChildren,
+      activities: pantry.activities,
+      allergenFreeItemsInStock: pantry.itemsInStock,
+      needMoreAllergenFreeOptions: pantry.needMoreOptions,
+      subscriptionToNewsletter: pantry.newsletterSubscription,
+      dedicatedAllergenFreeShelf: pantry.dedicatedAllergyFriendly,
     }));
   }
 
