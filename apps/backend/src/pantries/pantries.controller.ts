@@ -46,7 +46,7 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.PANTRY)
   @Get('/:pantryId/orders')
   async getOrders(
     @Param('pantryId', ParseIntPipe) pantryId: number,

@@ -32,7 +32,7 @@ export class RequestsController {
     private ordersService: OrdersService,
   ) {}
 
-  @Roles(Role.PANTRY)
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -120,7 +120,7 @@ export class RequestsController {
     );
   }
 
-  @Roles(Role.PANTRY)
+  @Roles(Role.PANTRY, Role.ADMIN)
   //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({

@@ -21,7 +21,6 @@ export class CurrentUserInterceptor implements NestInterceptor {
       const dbUser = await this.usersService.findUserByCognitoId(
         request.user.sub,
       );
-      console.log(dbUser);
       request.currentUser = dbUser;
     }
 
