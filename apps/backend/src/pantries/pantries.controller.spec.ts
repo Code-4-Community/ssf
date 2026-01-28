@@ -11,59 +11,76 @@ const mockPantriesService = mock<PantriesService>();
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 const mockOrdersService = mock<OrdersService>();
+import {
+  Activity,
+  AllergensConfidence,
+  ClientVisitFrequency,
+  PantryStatus,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
 
 describe('PantriesController', () => {
   let controller: PantriesController;
 
   const mockUser = {
     id: 1,
-    role: Role.STANDARD_VOLUNTEER,
+    role: Role.VOLUNTEER,
     firstName: 'John',
     lastName: 'Doe',
     email: '',
     phone: '123-456-7890',
   };
 
+  // Mock Pantry
   const mockPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
-    addressLine1: '123 Test St',
-    addressCity: 'Boston',
-    addressState: 'MA',
-    addressZip: '02115',
-    allergenClients: 'Yes',
-    refrigeratedDonation: 'Yes',
-    reserveFoodForAllergic: 'Yes',
-    dedicatedAllergyFriendly: 'Yes',
-    newsletterSubscription: true,
-    restrictions: ['Peanuts', 'Dairy'],
-    pantryRepresentative: mockUser,
-    status: 'pending',
-    dateApplied: new Date(),
-    activities: ['Food Distribution'],
-    itemsInStock: 'Canned goods',
-    needMoreOptions: 'More options needed',
+    status: PantryStatus.PENDING,
   } as Pantry;
 
+  // Mock Pantry Application
   const mockPantryApplication = {
-    contactFirstName: 'John',
-    contactLastName: 'Doe',
-    contactEmail: 'john.doe@example.com',
-    contactPhone: '(508) 111-1111',
-    pantryName: 'Community Food Pantry',
-    addressLine1: '123 Test Street',
-    addressCity: 'Boston',
-    addressState: 'MA',
-    addressZip: '02101',
-    allergenClients: '10',
-    restrictions: ['Egg allergy'],
-    refrigeratedDonation: 'Yes',
-    reserveFoodForAllergic: 'Some',
-    dedicatedAllergyFriendly: 'Yes',
-    activities: [],
-    itemsInStock: 'Rice, pasta',
-    needMoreOptions: 'More options needed',
-    newsletterSubscription: 'Yes',
+    contactFirstName: 'Jane',
+    contactLastName: 'Smith',
+    contactEmail: 'jane.smith@example.com',
+    contactPhone: '(508) 222-2222',
+    hasEmailContact: true,
+    emailContactOther: null,
+    secondaryContactFirstName: 'John',
+    secondaryContactLastName: 'Doe',
+    secondaryContactEmail: 'john.doe@example.com',
+    secondaryContactPhone: '(508) 333-3333',
+    shipmentAddressLine1: '456 New St',
+    shipmentAddressLine2: 'Suite 200',
+    shipmentAddressCity: 'Cambridge',
+    shipmentAddressState: 'MA',
+    shipmentAddressZip: '02139',
+    shipmentAddressCountry: 'USA',
+    acceptFoodDeliveries: true,
+    deliveryWindowInstructions: 'Please deliver between 9am-5pm',
+    mailingAddressLine1: '456 New St',
+    mailingAddressLine2: 'Suite 200',
+    mailingAddressCity: 'Cambridge',
+    mailingAddressState: 'MA',
+    mailingAddressZip: '02139',
+    mailingAddressCountry: 'USA',
+    pantryName: 'New Community Pantry',
+    allergenClients: '10 to 20',
+    restrictions: ['Peanut allergy', 'Gluten'],
+    refrigeratedDonation: RefrigeratedDonation.YES,
+    dedicatedAllergyFriendly: true,
+    reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
+    reservationExplanation: 'We have a dedicated allergen-free section',
+    clientVisitFrequency: ClientVisitFrequency.DAILY,
+    identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
+    serveAllergicChildren: ServeAllergicChildren.YES_MANY,
+    activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
+    activitiesComments: 'We provide nutritional counseling',
+    itemsInStock: 'Canned goods, pasta',
+    needMoreOptions: 'More fresh produce',
+    newsletterSubscription: true,
   } as PantryApplicationDto;
 
   beforeEach(async () => {
@@ -130,26 +147,6 @@ describe('PantriesController', () => {
     });
   });
 
-  describe('getSSFRep', () => {
-    it('should return the SSF representative for a pantry', async () => {
-      mockPantriesService.findSSFRep.mockResolvedValueOnce(mockUser as User);
-
-      const result = await controller.getSSFRep(1);
-
-      expect(result).toEqual(mockUser as User);
-      expect(mockPantriesService.findSSFRep).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw error if pantry does not exist', async () => {
-      mockPantriesService.findSSFRep.mockRejectedValueOnce(
-        new Error('Pantry 999 not found'),
-      );
-
-      await expect(controller.getSSFRep(999)).rejects.toThrow();
-      expect(mockPantriesService.findSSFRep).toHaveBeenCalledWith(999);
-    });
-  });
-
   describe('approvePantry', () => {
     it('should approve a pantry', async () => {
       mockPantriesService.approve.mockResolvedValueOnce(undefined);
@@ -210,6 +207,8 @@ describe('PantriesController', () => {
       expect(mockPantriesService.addPantry).toHaveBeenCalledWith(
         mockPantryApplication,
       );
+    });
+  });
   describe('getOrders', () => {
     it('should return orders for a pantry', async () => {
       const pantryId = 24;

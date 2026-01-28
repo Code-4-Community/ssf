@@ -3,10 +3,20 @@ import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, Res } from '@nestjs/common';
 import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
+import {
+  ClientVisitFrequency,
+  PantryStatus,
+  RefrigeratedDonation,
+  ServeAllergicChildren,
+} from './types';
+import { ReserveFoodForAllergic } from './types';
+import { Activity } from './types';
+import { AllergensConfidence } from './types';
+import { StatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 const mockRepository = mock<Repository<Pantry>>();
 
@@ -15,7 +25,7 @@ describe('PantriesService', () => {
 
   const mockUser = {
     id: 1,
-    role: Role.STANDARD_VOLUNTEER,
+    role: Role.VOLUNTEER,
     firstName: 'John',
     lastName: 'Doe',
     email: 'john.doe@example.com',
@@ -26,22 +36,7 @@ describe('PantriesService', () => {
   const mockPendingPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
-    addressLine1: '123 Test St',
-    addressCity: 'Boston',
-    addressState: 'MA',
-    addressZip: '02115',
-    allergenClients: 'Yes',
-    refrigeratedDonation: 'Yes',
-    reserveFoodForAllergic: 'Yes',
-    dedicatedAllergyFriendly: 'Yes',
-    newsletterSubscription: true,
-    restrictions: ['Peanuts', 'Dairy'],
-    pantryRepresentative: mockUser,
-    status: 'pending',
-    dateApplied: new Date(),
-    activities: ['Food Distribution'],
-    itemsInStock: 'Canned goods',
-    needMoreOptions: 'More options needed',
+    status: PantryStatus.PENDING,
   } as Pantry;
 
   // Mock Pantry Application
@@ -50,27 +45,41 @@ describe('PantriesService', () => {
     contactLastName: 'Smith',
     contactEmail: 'jane.smith@example.com',
     contactPhone: '(508) 222-2222',
+    hasEmailContact: true,
+    emailContactOther: null,
+    secondaryContactFirstName: 'John',
+    secondaryContactLastName: 'Doe',
+    secondaryContactEmail: 'john.doe@example.com',
+    secondaryContactPhone: '(508) 333-3333',
+    shipmentAddressLine1: '456 New St',
+    shipmentAddressLine2: 'Suite 200',
+    shipmentAddressCity: 'Cambridge',
+    shipmentAddressState: 'MA',
+    shipmentAddressZip: '02139',
+    shipmentAddressCountry: 'USA',
+    acceptFoodDeliveries: true,
+    deliveryWindowInstructions: 'Please deliver between 9am-5pm',
+    mailingAddressLine1: '456 New St',
+    mailingAddressLine2: 'Suite 200',
+    mailingAddressCity: 'Cambridge',
+    mailingAddressState: 'MA',
+    mailingAddressZip: '02139',
+    mailingAddressCountry: 'USA',
     pantryName: 'New Community Pantry',
-    addressLine1: '456 New St',
-    addressLine2: 'Suite 200',
-    addressCity: 'Cambridge',
-    addressState: 'MA',
-    addressZip: '02139',
-    addressCountry: 'USA',
-    allergenClients: '15',
+    allergenClients: '10 to 20',
     restrictions: ['Peanut allergy', 'Gluten'],
-    refrigeratedDonation: 'Yes',
-    reserveFoodForAllergic: 'Yes',
+    refrigeratedDonation: RefrigeratedDonation.YES,
+    dedicatedAllergyFriendly: true,
+    reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
     reservationExplanation: 'We have a dedicated allergen-free section',
-    dedicatedAllergyFriendly: 'No',
-    clientVisitFrequency: 'Few times a month',
-    identifyAllergensConfidence: 'Very confident',
-    serveAllergicChildren: 'Yes, a few',
-    activities: ['Food distribution', 'Counseling'],
+    clientVisitFrequency: ClientVisitFrequency.DAILY,
+    identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
+    serveAllergicChildren: ServeAllergicChildren.YES_MANY,
+    activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
     activitiesComments: 'We provide nutritional counseling',
     itemsInStock: 'Canned goods, pasta',
     needMoreOptions: 'More fresh produce',
-    newsletterSubscription: 'Yes',
+    newsletterSubscription: true,
   } as PantryApplicationDto;
 
   beforeEach(async () => {
@@ -211,58 +220,38 @@ describe('PantriesService', () => {
     });
   });
 
-  // Find SSF representative for a pantry (relations field)
-  describe('findSSFRep', () => {
-    it('should return the SSF representative for a pantry', async () => {
-      const pantryWithRep = {
-        ...mockPendingPantry,
-        ssfRepresentative: mockUser,
-      };
-      mockRepository.findOne.mockResolvedValueOnce(pantryWithRep);
-
-      const result = await service.findSSFRep(1);
-
-      expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { pantryId: 1 },
-        relations: ['ssfRepresentative'],
-      });
-    });
-
-    it('should throw NotFoundException if pantry not found', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(service.findSSFRep(999)).rejects.toThrow(NotFoundException);
-      await expect(service.findSSFRep(999)).rejects.toThrow(
-        'Pantry 999 not found',
-      );
-    });
-  });
-
   // Add pantry
   describe('addPantry', () => {
     it('should add a new pantry application', async () => {
       mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
-    
+
       await service.addPantry(mockPantryApplication);
-    
+
       expect(mockRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           pantryName: mockPantryApplication.pantryName,
-          addressLine1: mockPantryApplication.addressLine1,
-          addressLine2: mockPantryApplication.addressLine2,
-          addressCity: mockPantryApplication.addressCity,
-          addressState: mockPantryApplication.addressState,
-          addressZip: mockPantryApplication.addressZip,
-          addressCountry: mockPantryApplication.addressCountry,
+          shipmentAddressLine1: mockPantryApplication.shipmentAddressLine1,
+          shipmentAddressLine2: mockPantryApplication.shipmentAddressLine2,
+          shipmentAddressCity: mockPantryApplication.shipmentAddressCity,
+          shipmentAddressState: mockPantryApplication.shipmentAddressState,
+          shipmentAddressZip: mockPantryApplication.shipmentAddressZip,
+          shipmentAddressCountry: mockPantryApplication.shipmentAddressCountry,
+          mailingAddressLine1: mockPantryApplication.mailingAddressLine1,
+          mailingAddressLine2: mockPantryApplication.mailingAddressLine2,
+          mailingAddressCity: mockPantryApplication.mailingAddressCity,
+          mailingAddressState: mockPantryApplication.mailingAddressState,
+          mailingAddressZip: mockPantryApplication.mailingAddressZip,
+          mailingAddressCountry: mockPantryApplication.mailingAddressCountry,
           allergenClients: mockPantryApplication.allergenClients,
           restrictions: mockPantryApplication.restrictions,
           refrigeratedDonation: mockPantryApplication.refrigeratedDonation,
           reserveFoodForAllergic: mockPantryApplication.reserveFoodForAllergic,
           reservationExplanation: mockPantryApplication.reservationExplanation,
-          dedicatedAllergyFriendly: mockPantryApplication.dedicatedAllergyFriendly,
+          dedicatedAllergyFriendly:
+            mockPantryApplication.dedicatedAllergyFriendly,
           clientVisitFrequency: mockPantryApplication.clientVisitFrequency,
-          identifyAllergensConfidence: mockPantryApplication.identifyAllergensConfidence,
+          identifyAllergensConfidence:
+            mockPantryApplication.identifyAllergensConfidence,
           serveAllergicChildren: mockPantryApplication.serveAllergicChildren,
           activities: mockPantryApplication.activities,
           activitiesComments: mockPantryApplication.activitiesComments,
