@@ -120,39 +120,28 @@ export class PantriesService {
     return pantries.map((pantry) => ({
       pantryId: pantry.pantryId,
       pantryName: pantry.pantryName,
-      address: {
-        line1: pantry.shipmentAddressLine1,
-        line2: pantry.shipmentAddressLine2,
-        city: pantry.shipmentAddressCity,
-        state: pantry.shipmentAddressState,
-        zip: pantry.shipmentAddressZip,
-        country: pantry.shipmentAddressCountry,
-      },
-      contactInfo: {
-        firstName: pantry.pantryUser.firstName,
-        lastName: pantry.pantryUser.lastName,
-        email: pantry.pantryUser.email,
-        phone: pantry.pantryUser.phone,
-      },
-      refrigeratedDonation: pantry.refrigeratedDonation,
+      contactFirstName: pantry.pantryUser.firstName,
+      contactLastName: pantry.pantryUser.lastName,
+      contactEmail: pantry.pantryUser.email,
+      contactPhone: pantry.pantryUser.phone,
+      shipmentAddressLine1: pantry.shipmentAddressLine1,
+      shipmentAddressCity: pantry.shipmentAddressCity,
+      shipmentAddressZip: pantry.shipmentAddressZip,
+      shipmentAddressCountry: pantry.shipmentAddressCountry,
       allergenClients: pantry.allergenClients,
-      status: pantry.status,
-      dateApplied: pantry.dateApplied,
-      assignedVolunteers: (pantry.volunteers || []).map((volunteer) => ({
-        userId: volunteer.id,
-        name: `${volunteer.firstName} ${volunteer.lastName}`,
-        email: volunteer.email,
-        phone: volunteer.phone,
-        role: volunteer.role,
-      })),
-      allergenClientsFrequency: pantry.clientVisitFrequency,
-      allergensConfidence: pantry.identifyAllergensConfidence,
+      restrictions: pantry.restrictions,
+      refrigeratedDonation: pantry.refrigeratedDonation,
+      reserveFoodForAllergic: pantry.reserveFoodForAllergic,
+      reservationExplanation: pantry.reservationExplanation,
+      dedicatedAllergyFriendly: pantry.dedicatedAllergyFriendly,
+      clientVisitFrequency: pantry.clientVisitFrequency,
+      identifyAllergensConfidence: pantry.identifyAllergensConfidence,
       serveAllergicChildren: pantry.serveAllergicChildren,
       activities: pantry.activities,
-      allergenFreeItemsInStock: pantry.itemsInStock,
-      needMoreAllergenFreeOptions: pantry.needMoreOptions,
-      subscriptionToNewsletter: pantry.newsletterSubscription,
-      dedicatedAllergenFreeShelf: pantry.dedicatedAllergyFriendly,
+      activitiesComments: pantry.activitiesComments,
+      itemsInStock: pantry.itemsInStock,
+      needMoreOptions: pantry.needMoreOptions,
+      newsletterSubscription: pantry.newsletterSubscription ?? false,
     }));
   }
 
@@ -161,6 +150,7 @@ export class PantriesService {
     volunteerIds: number[],
   ): Promise<void> {
     validateId(pantryId, 'Pantry');
+    volunteerIds.forEach((id) => validateId(id, 'Volunteer'));
 
     const pantry = await this.repo.findOne({
       where: { pantryId },

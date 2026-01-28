@@ -1,33 +1,36 @@
 export interface ApprovedPantryResponse {
   pantryId: number;
   pantryName: string;
-  address: {
-    line1: string;
-    line2: string | null;
-    city: string;
-    state: string;
-    zip: string;
-    country: string | null;
-  };
-  contactInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-  };
-  refrigeratedDonation: RefrigeratedDonation;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  shipmentAddressLine1: string;
+  shipmentAddressCity: string;
+  shipmentAddressZip: string;
+  shipmentAddressCountry?: string;
   allergenClients: string;
-  allergenRestrictions?: string[];
-  dedicatedAllergenFreeShelf: boolean;
-  dateApplied: Date;
-  assignedVolunteers: AssignedVolunteer[];
-  allergenClientsFrequency?: ClientVisitFrequency;
-  allergensConfidence?: AllergensConfidence;
+  restrictions: string[];
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
-  activities?: Activity[];
-  allergenFreeItemsInStock?: string;
-  needMoreAllergenFreeOptions?: string;
-  subscriptionToNewsletter: boolean;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription: boolean;
+}
+
+export interface AssignedVolunteer {
+  userId: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
 }
 
 export interface AssignedVolunteer {
