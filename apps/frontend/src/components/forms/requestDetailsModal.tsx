@@ -89,6 +89,19 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     );
   }, [currentOrder]);
 
+  const sectionTitleStyles = {
+     textStyle: "p2",
+     fontWeight: "600",
+     color: "neutral.800",
+  }
+
+  const badgeStyles = {
+     py: "1",
+     px: "2",
+     textStyle: "p2",
+     fontWeight: "500",
+  }
+
   return (
     <Dialog.Root
       open={isOpen}
@@ -111,27 +124,37 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               {pantryName}
             </Text>
 
-            <Tabs.Root mt={5} defaultValue="requestDetails">
-              <Tabs.List>
+            <Tabs.Root unstyled mt={5} fitted defaultValue="requestDetails">
+              <Tabs.List maxW="60%">
                 <Tabs.Trigger
                   textStyle="p2"
+                  px={4}
+                  py={1}
                   color="neutral.800"
                   value="requestDetails"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{borderColor: "neutral.700"}}
                 >
                   Request Details
                 </Tabs.Trigger>
                 <Tabs.Trigger
                   textStyle="p2"
+                  px={4}
+                  py={1}
                   color="neutral.800"
                   value="associatedOrders"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{borderColor: "neutral.700"}}
                 >
                   Associated Orders
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content value="requestDetails">
-                <Field.Root mb={4} mt={3}>
+                <Field.Root mb={4} mt={6}>
                   <Field.Label>
-                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    <Text {...sectionTitleStyles}>
                       Size of Shipment
                     </Text>
                   </Field.Label>
@@ -145,9 +168,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                 <Field.Root mb={4} mt={3}>
                   <Field.Label>
                     <Text
-                      textStyle="p2"
-                      fontWeight={600}
-                      color="neutral.800"
+                      {...sectionTitleStyles}
                       mt={3}
                     >
                       Food Type(s)
@@ -179,9 +200,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                 <Field.Root mb={4}>
                   <Field.Label>
                     <Text
-                      textStyle="p2"
-                      fontWeight={600}
-                      color="neutral.800"
+                      {...sectionTitleStyles}
                       mt={3}
                     >
                       Additional Information
@@ -203,7 +222,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     mt={4}
                   >
                     <Flex justify="space-between" align="center" mb={3}>
-                      <Text color="neutral.800" textStyle="p2" fontWeight={600}>
+                      <Text {...sectionTitleStyles}>
                         Order {currentOrder.orderId} -
                         <Text as="span" color="neutral.800" textStyle="p2">
                           {' '}
@@ -212,23 +231,17 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       </Text>
                       {currentOrder.status === OrderStatus.DELIVERED ? (
                         <Badge
-                          py={1}
-                          px={2}
+                          {...badgeStyles}
                           bgColor="#EAEDEF"
                           color="#2B4E60"
-                          textStyle="p2"
-                          fontWeight={500}
                         >
                           Received
                         </Badge>
                       ) : (
                         <Badge
-                          py={1}
-                          px={2}
+                          {...badgeStyles}
                           bgColor="#FEECD1"
                           color="#9C5D00"
-                          textStyle="p2"
-                          fontWeight={500}
                         >
                           In Progress
                         </Badge>
@@ -242,9 +255,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     ).map(([foodType, items]) => (
                       <Box key={foodType} mb={4}>
                         <Text
-                          color="neutral.800"
-                          textStyle="p2"
-                          fontWeight={600}
+                          {...sectionTitleStyles}
                         >
                           {foodType}
                         </Text>
@@ -281,9 +292,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       </Box>
                     ))}
                     <Text
-                      color="neutral.800"
-                      textStyle="p2"
-                      fontWeight={600}
+                      {...sectionTitleStyles}
                       mt="3"
                     >
                       Tracking
