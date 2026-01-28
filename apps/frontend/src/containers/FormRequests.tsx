@@ -37,7 +37,7 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
-  const pageSize = 8;
+  const pageSize = 10;
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -73,10 +73,13 @@ const FormRequests: React.FC = () => {
       </Text>
       <HStack gap={3} my={5}>
         <Button
-          textStyle="p2"
+          fontFamily= "ibm"
+          fontWeight="semibold"
+          fontSize="14px"
           color="neutral.50"
           bgColor="#2B4E60"
           onClick={newRequestDisclosure.onOpen}
+          px={2}
         >
           New Request
         </Button>
@@ -90,10 +93,13 @@ const FormRequests: React.FC = () => {
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              textStyle="p2"
+              fontFamily= "ibm"
+              fontWeight="semibold"
+              fontSize="14px"
               color="neutral.600"
               bgColor={'white'}
               borderColor="neutral.300"
+              px={2}
             >
               Resubmit Latest
             </Button>
@@ -155,6 +161,8 @@ const FormRequests: React.FC = () => {
                     textStyle="p2"
                     fontWeight={500}
                     fontSize={12}
+                    py={1}
+                    px={2}
                   >
                     Closed
                   </Badge>
@@ -165,6 +173,8 @@ const FormRequests: React.FC = () => {
                     textStyle="p2"
                     fontWeight={500}
                     fontSize={12}
+                    py={1}
+                    px={2}
                   >
                     Active
                   </Badge>

@@ -111,25 +111,25 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               {pantryName}
             </Text>
 
-            <Tabs.Root mt={5} defaultValue="request details">
+            <Tabs.Root mt={5} defaultValue="requestDetails">
               <Tabs.List>
                 <Tabs.Trigger
                   textStyle="p2"
                   color="neutral.800"
-                  value="request details"
+                  value="requestDetails"
                 >
                   Request Details
                 </Tabs.Trigger>
                 <Tabs.Trigger
                   textStyle="p2"
                   color="neutral.800"
-                  value="associated orders"
+                  value="associatedOrders"
                 >
                   Associated Orders
                 </Tabs.Trigger>
               </Tabs.List>
-              <Tabs.Content value="request details">
-                <Field.Root required mb={4} mt={5}>
+              <Tabs.Content value="requestDetails">
+                <Field.Root mb={4} mt={3}>
                   <Field.Label>
                     <Text textStyle="p2" fontWeight={600} color="neutral.800">
                       Size of Shipment
@@ -193,13 +193,14 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                 </Field.Root>
               </Tabs.Content>
 
-              <Tabs.Content value="associated orders">
+              <Tabs.Content value="associatedOrders">
                 {currentOrder && (
                   <Box
                     borderWidth="1px"
                     borderColor="neutral.100"
                     borderRadius="5px"
                     p={3}
+                    mt={4}
                   >
                     <Flex justify="space-between" align="center" mb={3}>
                       <Text color="neutral.800" textStyle="p2" fontWeight={600}>
@@ -293,7 +294,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   </Box>
                 )}
 
-                <Flex justify="center" mt={12}>
+                <Flex justify="center" mt={7}>
                   <Pagination.Root
                     count={orderDetailsList.length}
                     pageSize={1}
