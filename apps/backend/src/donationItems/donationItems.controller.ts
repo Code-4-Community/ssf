@@ -16,7 +16,6 @@ import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto
 
 @Controller('donation-items')
 //@UseInterceptors()
-@UseGuards(AuthGuard('jwt'))
 export class DonationItemsController {
   constructor(private donationItemsService: DonationItemsService) {}
 
