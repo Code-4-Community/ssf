@@ -15,6 +15,15 @@ const ResetPasswordModal: React.FC = () => {
     const handleSendCode = async () => {
         try {
             await resetPassword({ username: email });
+            setStep('new');
+        } catch (error) {
+            alert(error || "Failed to send verification code");
+        }
+    };
+
+    const handleResendCode = async () => {
+        try {
+            await resetPassword({ username: email });
         } catch (error) {
             alert(error || "Failed to send verification code");
         }
@@ -31,7 +40,6 @@ const ResetPasswordModal: React.FC = () => {
             alert('Password reset successful!');
             navigate('/login');
         } catch (error) {
-            alert(code)
             alert(error || "Failed to set new password");
         }
     };
@@ -121,7 +129,7 @@ const ResetPasswordModal: React.FC = () => {
                     <Button
                         bgColor='white'
                         w="full"
-                        onClick={handleSendCode}
+                        onClick={handleResendCode}
                         border="1px solid"
                         color="neutral.800"
                         textStyle="p2"
@@ -135,12 +143,12 @@ const ResetPasswordModal: React.FC = () => {
                 <Button
                     bgColor='neutral.800'
                     w="full"
-                    onClick={step === 'new' ? handleResetPassword: () => { handleSendCode();  setStep('new');}}
+                    onClick={step === 'new' ? handleResetPassword: handleSendCode}
                     borderRadius={5}
                     color="white"
                     textStyle="p2"
                     fontWeight={600}
-                    mt={step === 'new' ? 0 : 8}
+                    mt={step === 'new' ? 0 : 16}
                     disabled={step === 'reset' ? !email : !password || !confirmPassword || !code}
                 >
                     {step === 'reset' ? 'Send Verification Code' : 'Reset Password'}

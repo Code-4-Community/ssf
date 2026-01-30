@@ -1,24 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Text, VStack, Input, Button, Link, Field, IconButton, Group } from '@chakra-ui/react';
+import { Box, Text, VStack, Button, Link } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
-import { Eye } from 'lucide-react';
 
 const SignupPage: React.FC = () => {
     const navigate = useNavigate();
-
-    const fieldHeaderStyles = {
-        color: 'neutral.800',
-        fontFamily: 'inter',
-        fontSize: 'sm',
-        fontWeight: '600',
-    };
-
-    const placeholderStyles = {
-        color: 'neutral.300',
-        fontFamily: 'inter',
-        fontSize: 'sm',
-        fontWeight: '400',
-    };
 
     return (
         <Box
@@ -68,7 +53,7 @@ const SignupPage: React.FC = () => {
                     color="white"
                     textStyle="p2"
                     fontWeight={600}
-                    onClick={() => navigate('/pantry-application')}
+                    onClick={() => navigate('/food-manufacturer-application')}
                 >
                     Food Manufacturer (Donor) Partner
                 </Button>
