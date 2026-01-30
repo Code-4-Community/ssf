@@ -33,7 +33,7 @@ const config = {
   namingStrategy: new PluralNamingStrategy(),
   // Glob patterns (e.g. ../migrations/**.ts) are deprecated, so we have to manually specify each migration
   // TODO: see if there's still a way to dynamically load all migrations
-  migrations: migrations
+  migrations: migrations,
 };
 
 export default registerAs('typeorm', () => config);

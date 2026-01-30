@@ -32,7 +32,7 @@ const testConfig: DataSourceOptions = {
     Allocation,
     Assignments,
   ],
-  migrations: migrations
+  migrations: migrations,
 };
 
 export const testDataSource = new DataSource(testConfig);
