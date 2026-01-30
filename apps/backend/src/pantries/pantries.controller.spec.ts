@@ -91,6 +91,10 @@ describe('PantriesController', () => {
           provide: PantriesService,
           useValue: mockPantriesService,
         },
+        {
+          provide: OrdersService,
+          useValue: mockOrdersService,
+        },
       ],
     }).compile();
 
