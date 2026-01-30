@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
+import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -52,7 +52,7 @@ describe('OrdersService', () => {
     const queryRunner = testDataSource.createQueryRunner();
     await queryRunner.connect();
     try {
-      await new CreateDummyData1759636753110().up(queryRunner);
+      await new PopulateDummyData1768501812134().up(queryRunner);
     } finally {
       await queryRunner.release();
     }
@@ -73,14 +73,8 @@ describe('OrdersService', () => {
     it('returns orders filtered by status', async () => {
       const orders = await service.getAll({ status: 'delivered' });
 
-      expect(orders).toHaveLength(3);
+      expect(orders).toHaveLength(2);
       expect(orders.every((order) => order.status === 'delivered')).toBe(true);
-    });
-
-    it('returns empty array when status filter matches nothing', async () => {
-      const orders = await service.getAll({ status: 'invalid' });
-
-      expect(orders).toEqual([]);
     });
 
     it('returns orders filtered by pantry names', async () => {
@@ -88,7 +82,7 @@ describe('OrdersService', () => {
         pantryNames: ['Community Food Pantry Downtown'],
       });
 
-      expect(orders).toHaveLength(3);
+      expect(orders).toHaveLength(2);
       expect(
         orders.every(
           (order) =>

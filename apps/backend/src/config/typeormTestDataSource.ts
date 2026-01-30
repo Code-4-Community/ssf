@@ -9,8 +9,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
-import { Assignments } from '../volunteerAssignments/volunteerAssignments.entity';
-import migrations from './migrations';
+import schemaMigrations from './migrations';
 
 const testConfig: DataSourceOptions = {
   type: 'postgres',
@@ -30,9 +29,8 @@ const testConfig: DataSourceOptions = {
     FoodRequest,
     DonationItem,
     Allocation,
-    Assignments,
   ],
-  migrations: migrations,
+  migrations: schemaMigrations,
 };
 
 export const testDataSource = new DataSource(testConfig);
