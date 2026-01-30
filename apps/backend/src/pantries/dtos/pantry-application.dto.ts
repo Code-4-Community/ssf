@@ -1,7 +1,8 @@
 import {
   ArrayNotEmpty,
+  IsBoolean,
   IsEmail,
-  IsIn,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -9,134 +10,214 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import {
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
+  AllergensConfidence,
+  ServeAllergicChildren,
+  Activity,
+} from '../types';
 
 export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
+  @Length(1, 255)
   contactFirstName: string;
 
   @IsString()
   @IsNotEmpty()
+  @Length(1, 255)
   contactLastName: string;
 
   @IsEmail()
+  @Length(1, 255)
   contactEmail: string;
 
   // This validation is very strict and won't accept phone numbers
   // that look right but aren't actually possible phone numbers
+  @IsString()
+  @IsNotEmpty()
   @IsPhoneNumber('US', {
     message:
       'contactPhone must be a valid phone number (make sure all the digits are correct)',
   })
   contactPhone: string;
 
+  @IsBoolean()
+  hasEmailContact: boolean;
+
+  @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  emailContactOther?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  secondaryContactFirstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  secondaryContactLastName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @IsNotEmpty()
+  @MaxLength(255)
+  secondaryContactEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsPhoneNumber('US', {
+    message:
+      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+  })
+  @IsNotEmpty()
+  secondaryContactPhone?: string;
+
+  @IsString()
+  @IsNotEmpty()
   @Length(1, 255)
   pantryName: string;
 
   @IsString()
+  @IsNotEmpty()
   @Length(1, 255)
-  addressLine1: string;
+  shipmentAddressLine1: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  addressLine2?: string;
+  @IsNotEmpty()
+  shipmentAddressLine2?: string;
 
   @IsString()
+  @IsNotEmpty()
   @Length(1, 255)
-  addressCity: string;
+  shipmentAddressCity: string;
 
   @IsString()
+  @IsNotEmpty()
   @Length(1, 255)
-  addressState: string;
+  shipmentAddressState: string;
 
   @IsString()
+  @IsNotEmpty()
   @Length(1, 255)
-  addressZip: string;
+  shipmentAddressZip: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  addressCountry?: string;
+  @IsNotEmpty()
+  shipmentAddressCountry?: string;
 
   @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  mailingAddressLine1: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @IsNotEmpty()
+  mailingAddressLine2?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  mailingAddressCity: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  mailingAddressState: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  mailingAddressZip: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @IsNotEmpty()
+  mailingAddressCountry?: string;
+
+  @IsString()
+  @IsNotEmpty()
   @Length(1, 25)
   allergenClients: string;
 
   @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
+  @MaxLength(255, { each: true })
   restrictions?: string[];
 
-  @IsIn(['Yes', 'Small quantities only', 'No'])
-  refrigeratedDonation: string;
+  @IsEnum(RefrigeratedDonation)
+  refrigeratedDonation: RefrigeratedDonation;
 
-  @IsIn(['Yes', 'Some', 'No'])
-  reserveFoodForAllergic: string;
+  @IsBoolean()
+  acceptFoodDeliveries: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  deliveryWindowInstructions?: string;
+
+  @IsEnum(ReserveFoodForAllergic)
+  reserveFoodForAllergic: ReserveFoodForAllergic;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   reservationExplanation?: string;
 
-  @IsIn([
-    'Yes, we have a dedicated shelf or box',
-    'Yes, we keep allergy-friendly items in a back room',
-    'No, we keep allergy-friendly items throughout the pantry, depending on the type of item',
-  ])
-  dedicatedAllergyFriendly: string;
+  @IsBoolean()
+  dedicatedAllergyFriendly: boolean;
 
   @IsOptional()
-  @IsIn([
-    'Daily',
-    'More than once a week',
-    'Once a week',
-    'A few times a month',
-    'Once a month',
-  ])
-  clientVisitFrequency?: string;
+  @IsEnum(ClientVisitFrequency)
+  clientVisitFrequency?: ClientVisitFrequency;
 
   @IsOptional()
-  @IsIn([
-    'Very confident',
-    'Somewhat confident',
-    'Not very confident (we need more education!)',
-  ])
-  identifyAllergensConfidence?: string;
+  @IsEnum(AllergensConfidence)
+  identifyAllergensConfidence?: AllergensConfidence;
 
   @IsOptional()
-  @IsIn(['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'])
-  serveAllergicChildren?: string;
+  @IsEnum(ServeAllergicChildren)
+  serveAllergicChildren?: ServeAllergicChildren;
 
   @ArrayNotEmpty()
-  @IsIn(
-    [
-      'Create a labeled, allergy-friendly shelf or shelves',
-      'Provide clients and staff/volunteers with educational pamphlets',
-      "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-      'Post allergen-free resource flyers throughout pantry',
-      'Survey your clients to determine their medical dietary needs',
-      'Collect feedback from allergen-avoidant clients on SSF foods',
-      'Something else',
-    ],
-    { each: true },
-  )
-  activities: string[];
+  @IsEnum(Activity, { each: true })
+  activities: Activity[];
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   activitiesComments?: string;
 
   @IsString()
   @IsNotEmpty()
+  @Length(1, 255)
   itemsInStock: string;
 
   @IsString()
   @IsNotEmpty()
+  @Length(1, 255)
   needMoreOptions: string;
 
   @IsOptional()
-  @IsIn(['Yes', 'No'])
-  newsletterSubscription?: string;
+  @IsBoolean()
+  newsletterSubscription?: boolean;
 }

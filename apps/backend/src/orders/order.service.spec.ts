@@ -5,7 +5,7 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDummyData1759636753110 } from '../migrations/1759636753110-createDummyData';
 
-describe('OrdersService (integration)', () => {
+describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeAll(async () => {

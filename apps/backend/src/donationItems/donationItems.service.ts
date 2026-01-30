@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
+import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
 
 @Injectable()
@@ -22,10 +23,9 @@ export class DonationItemsService {
     itemName: string,
     quantity: number,
     reservedQuantity: number,
-    status: string,
     ozPerItem: number,
     estimatedValue: number,
-    foodType: string,
+    foodType: FoodType,
   ) {
     validateId(donationId, 'Donation');
     const donation = await this.donationRepo.findOneBy({ donationId });
@@ -36,13 +36,43 @@ export class DonationItemsService {
       itemName,
       quantity,
       reservedQuantity,
-      status,
       ozPerItem,
       estimatedValue,
       foodType,
     });
 
     return this.repo.save(donationItem);
+  }
+
+  async createMultipleDonationItems(
+    donationId: number,
+    items: {
+      itemName: string;
+      quantity: number;
+      reservedQuantity: number;
+      ozPerItem: number;
+      estimatedValue: number;
+      foodType: FoodType;
+    }[],
+  ): Promise<DonationItem[]> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.donationRepo.findOneBy({ donationId });
+    if (!donation) throw new NotFoundException('Donation not found');
+
+    const donationItems = items.map((item) =>
+      this.repo.create({
+        donation,
+        itemName: item.itemName,
+        quantity: item.quantity,
+        reservedQuantity: item.reservedQuantity,
+        ozPerItem: item.ozPerItem,
+        estimatedValue: item.estimatedValue,
+        foodType: item.foodType,
+      }),
+    );
+
+    return this.repo.save(donationItems);
   }
 
   async updateDonationItemQuantity(itemId: number): Promise<DonationItem> {

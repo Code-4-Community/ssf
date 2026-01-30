@@ -1,17 +1,19 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
+import { RequestSize } from './types';
+import { Pantry } from '../pantries/pantries.entity';
+import { Order } from '../orders/order.entity';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
+    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(Order) private orderRepo: Repository<Order>,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -19,7 +21,7 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['order'],
+      relations: ['orders'],
     });
 
     if (!request) {
@@ -28,15 +30,65 @@ export class RequestsService {
     return request;
   }
 
+  async getOrderDetails(requestId: number): Promise<OrderDetailsDto[]> {
+    validateId(requestId, 'Request');
+
+    const requestExists = await this.repo.findOne({
+      where: { requestId },
+    });
+
+    if (!requestExists) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    const orders = await this.orderRepo.find({
+      where: { requestId },
+      relations: {
+        foodManufacturer: true,
+        allocations: {
+          item: true,
+        },
+      },
+    });
+
+    if (!orders) {
+      throw new NotFoundException(
+        'No associated orders found for this request',
+      );
+    }
+
+    if (!orders.length) {
+      return [];
+    }
+
+    return orders.map((order) => ({
+      orderId: order.orderId,
+      status: order.status,
+      foodManufacturerName: order.foodManufacturer.foodManufacturerName,
+      items: order.allocations.map((allocation) => ({
+        name: allocation.item.itemName,
+        quantity: allocation.allocatedQuantity,
+        foodType: allocation.item.foodType,
+      })),
+    }));
+  }
+
   async create(
     pantryId: number,
-    requestedSize: string,
+    requestedSize: RequestSize,
     requestedItems: string[],
     additionalInformation: string | undefined,
     dateReceived: Date | undefined,
     feedback: string | undefined,
     photos: string[] | undefined,
   ): Promise<FoodRequest> {
+    validateId(pantryId, 'Pantry');
+
+    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
@@ -55,7 +107,7 @@ export class RequestsService {
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['order'],
+      relations: ['orders'],
     });
   }
 
@@ -69,29 +121,32 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['order'],
+      relations: ['orders'],
     });
 
     if (!request) {
       throw new NotFoundException('Invalid request ID');
     }
 
-    if (!request.order) {
-      throw new ConflictException('No associated order found for this request');
+    if (!request.orders || request.orders.length == 0) {
+      throw new NotFoundException(
+        'No associated orders found for this request',
+      );
     }
 
-    const order = request.order;
+    const orders = request.orders;
 
-    if (!order.shippedBy) {
-      throw new ConflictException(
-        'No associated food manufacturer found for this order',
-      );
+    for (const order of orders) {
+      if (!order.shippedBy) {
+        throw new NotFoundException(
+          'No associated food manufacturer found for an associated order',
+        );
+      }
     }
 
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
-    request.order.status = 'fulfilled';
 
     return await this.repo.save(request);
   }

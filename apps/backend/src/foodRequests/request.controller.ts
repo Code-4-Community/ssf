@@ -7,6 +7,8 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -15,11 +17,13 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
-import { Order } from '../orders/order.entity';
+import { RequestSize } from './types';
+import { OrderStatus } from '../orders/types';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Controller('requests')
 // @UseInterceptors()
-export class FoodRequestsController {
+export class RequestsController {
   constructor(
     private requestsService: RequestsService,
     private awsS3Service: AWSS3Service,
@@ -40,12 +44,11 @@ export class FoodRequestsController {
     return this.requestsService.find(pantryId);
   }
 
-  @Get('get-order/:requestId')
-  async getOrderByRequestId(
+  @Get('/all-order-details/:requestId')
+  async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order> {
-    const request = await this.requestsService.findOne(requestId);
-    return request.order;
+  ): Promise<OrderDetailsDto[]> {
+    return this.requestsService.getOrderDetails(requestId);
   }
 
   @Post('/create')
@@ -55,7 +58,11 @@ export class FoodRequestsController {
       type: 'object',
       properties: {
         pantryId: { type: 'integer', example: 1 },
-        requestedSize: { type: 'string', example: 'Medium (5-10 boxes)' },
+        requestedSize: {
+          type: 'string',
+          enum: Object.values(RequestSize),
+          example: RequestSize.LARGE,
+        },
         requestedItems: {
           type: 'array',
           items: { type: 'string' },
@@ -66,8 +73,6 @@ export class FoodRequestsController {
           nullable: true,
           example: 'Urgent request',
         },
-        status: { type: 'string', example: 'pending' },
-        fulfilledBy: { type: 'integer', nullable: true, example: null },
         dateReceived: {
           type: 'string',
           format: 'date-time',
@@ -88,7 +93,7 @@ export class FoodRequestsController {
     @Body()
     body: {
       pantryId: number;
-      requestedSize: string;
+      requestedSize: RequestSize;
       requestedItems: string[];
       additionalInformation: string;
       dateReceived: Date;
@@ -96,6 +101,11 @@ export class FoodRequestsController {
       photos: string[];
     },
   ): Promise<FoodRequest> {
+    if (
+      !Object.values(RequestSize).includes(body.requestedSize as RequestSize)
+    ) {
+      throw new BadRequestException('Invalid request size');
+    }
     return this.requestsService.create(
       body.pantryId,
       body.requestedSize,
@@ -107,6 +117,7 @@ export class FoodRequestsController {
     );
   }
 
+  //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',
@@ -155,14 +166,29 @@ export class FoodRequestsController {
       photos?.length,
     );
 
-    const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(request.order.orderId, 'delivered');
-
-    return this.requestsService.updateDeliveryDetails(
+    const updatedRequest = await this.requestsService.updateDeliveryDetails(
       requestId,
       formattedDate,
       body.feedback,
       uploadedPhotoUrls,
     );
+
+    if (!updatedRequest) {
+      throw new NotFoundException('Invalid request ID');
+    }
+
+    if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
+      throw new NotFoundException(
+        'No associated orders found for this request',
+      );
+    }
+
+    await Promise.all(
+      updatedRequest.orders.map((order) =>
+        this.ordersService.updateStatus(order.orderId, OrderStatus.DELIVERED),
+      ),
+    );
+
+    return updatedRequest;
   }
 }

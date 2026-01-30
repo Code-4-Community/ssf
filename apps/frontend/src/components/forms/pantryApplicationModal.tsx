@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/types';
+import { Pantry } from 'types/types';
 
 interface PantryApplicationModalProps {
   pantry: Pantry;
@@ -14,26 +14,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  // TODO: Make sure clients of this modal actually include
-  // the pantry representative ID (or the representative User
-  // itself) in the provided data
-  /*useEffect(() => {
-    const fetchUser = async () => {
-      if (pantry.pantryRepresentativeId) {
-        const data = await ApiClient.getRepresentativeUser(
-          pantry.pantryRepresentativeId,
-        );
-        setUser(data);
-      }
-    };
-
-    if (isOpen) {
-      fetchUser();
-    }
-  }, [isOpen, pantry.pantryRepresentativeId]);*/
-
+  const pantryUser = pantry.pantryUser;
   return (
     <Dialog.Root
       open={isOpen}
@@ -48,30 +29,30 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
         <Dialog.Content>
           <Dialog.Header>Pantry Application Details</Dialog.Header>
           <Dialog.Body>
-            {user ? (
+            {pantryUser ? (
               <Grid templateColumns="2fr 1fr" gap={4}>
                 <GridItem>
-                  <Text fontWeight="bold">Representative Name</Text>
+                  <Text fontWeight="bold">Pantry User Name</Text>
                 </GridItem>
 
                 <GridItem>
-                  {user.firstName} {user.lastName}
+                  {pantryUser.firstName} {pantryUser.lastName}
                 </GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Email</Text>
                 </GridItem>
-                <GridItem>{user.email}</GridItem>
+                <GridItem>{pantryUser.email}</GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Phone</Text>
                 </GridItem>
-                <GridItem>{user.phone}</GridItem>
+                <GridItem>{pantryUser.phone}</GridItem>
 
                 <GridItem>
                   <Text fontWeight="bold">Role</Text>
                 </GridItem>
-                <GridItem>{user.role}</GridItem>
+                <GridItem>{pantryUser.role}</GridItem>
               </Grid>
             ) : (
               <Text>No user details available.</Text>
@@ -89,34 +70,34 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>{pantry.pantryName}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Line 1</Text>
+                <Text fontWeight="bold">Shipping Address Line 1</Text>
               </GridItem>
-              <GridItem>{pantry.addressLine1}</GridItem>
+              <GridItem>{pantry.shippingAddressLine1}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Line 2</Text>
+                <Text fontWeight="bold">Shipping Address Line 2</Text>
               </GridItem>
-              <GridItem>{pantry.addressLine2 ?? ''}</GridItem>
+              <GridItem>{pantry.shippingAddressLine2 ?? ''}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address City</Text>
+                <Text fontWeight="bold">Shipping Address City</Text>
               </GridItem>
-              <GridItem>{pantry.addressCity}</GridItem>
+              <GridItem>{pantry.shippingAddressCity}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address State</Text>
+                <Text fontWeight="bold">Shipping Address State</Text>
               </GridItem>
-              <GridItem>{pantry.addressState}</GridItem>
+              <GridItem>{pantry.shippingAddressState}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Zip</Text>
+                <Text fontWeight="bold">Shipping Address Zip</Text>
               </GridItem>
-              <GridItem>{pantry.addressZip}</GridItem>
+              <GridItem>{pantry.shippingAddressZip}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Address Country</Text>
+                <Text fontWeight="bold">Shipping Address Country</Text>
               </GridItem>
-              <GridItem>{pantry.addressCountry ?? ''}</GridItem>
+              <GridItem>{pantry.shippingAddressCountry ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Allergen Clients</Text>
