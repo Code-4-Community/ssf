@@ -14,8 +14,10 @@ import {
   ServeAllergicChildren,
 } from '../pantries/types';
 import { OrderStatus } from './types';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 const mockOrdersRepository = mock<Repository<Order>>();
+const mockPantryRepository = mock<Repository<Pantry>>();
 
 const mockPantry: Partial<Pantry> = {
   pantryId: 1,
@@ -54,6 +56,10 @@ describe('OrdersService', () => {
           provide: getRepositoryToken(Order),
           useValue: mockOrdersRepository,
         },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: mockPantryRepository,
+        },
       ],
     }).compile();
 
@@ -63,6 +69,7 @@ describe('OrdersService', () => {
   beforeEach(() => {
     qb = {
       leftJoinAndSelect: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
@@ -108,17 +115,14 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 3' },
         },
       ];
 
@@ -156,17 +160,14 @@ describe('OrdersService', () => {
         {
           orderId: 3,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 1' },
         },
         {
           orderId: 4,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
         {
           orderId: 5,
           status: OrderStatus.DELIVERED,
-          pantry: { ...(mockPantry as Pantry), pantryName: 'Test Pantry 2' },
         },
       ];
 
@@ -187,6 +188,107 @@ describe('OrdersService', () => {
         'pantry.pantryName IN (:...pantryNames)',
         { pantryNames: ['Test Pantry 2'] },
       );
+    });
+  });
+
+  describe('findOrderPantry', () => {
+    it('should return pantry for given order', async () => {
+      const mockFoodRequest: Partial<FoodRequest> = {
+        requestId: 1,
+        pantryId: 1,
+      };
+
+      const mockOrder: Partial<Order> = {
+        orderId: 1,
+        requestId: 1,
+        request: mockFoodRequest as FoodRequest,
+      };
+
+      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
+      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
+        mockPantry as Pantry,
+      );
+
+      const result = await service.findOrderPantry(1);
+
+      expect(result).toEqual(mockPantry);
+      expect(mockPantryRepository.findOneBy).toHaveBeenCalledWith({
+        pantryId: 1,
+      });
+    });
+
+    it('should throw NotFoundException if order not found', async () => {
+      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.findOrderPantry(999)).rejects.toThrow(
+        'Order 999 not found',
+      );
+    });
+
+    it('should throw NotFoundException if pantry not found', async () => {
+      const mockFoodRequest: Partial<FoodRequest> = {
+        requestId: 1,
+        pantryId: 999,
+      };
+
+      const mockOrder: Partial<Order> = {
+        orderId: 1,
+        requestId: 1,
+        request: mockFoodRequest as FoodRequest,
+      };
+
+      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
+      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.findOrderPantry(1)).rejects.toThrow(
+        'Pantry 999 not found',
+      );
+    });
+  });
+
+  describe('getOrdersByPantry', () => {
+    it('should return orders for given pantry', async () => {
+      const mockOrders: Partial<Order>[] = [
+        { orderId: 1, requestId: 1 },
+        { orderId: 2, requestId: 2 },
+      ];
+
+      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
+        mockPantry as Pantry,
+      );
+      (mockOrdersRepository.find as jest.Mock).mockResolvedValue(
+        mockOrders as Order[],
+      );
+
+      const result = await service.getOrdersByPantry(1);
+
+      expect(result).toEqual(mockOrders);
+      expect(mockPantryRepository.findOneBy).toHaveBeenCalledWith({
+        pantryId: 1,
+      });
+      expect(mockOrdersRepository.find).toHaveBeenCalledWith({
+        where: { request: { pantryId: 1 } },
+        relations: ['request'],
+      });
+    });
+
+    it('should throw NotFoundException if pantry does not exist', async () => {
+      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getOrdersByPantry(999)).rejects.toThrow(
+        'Pantry 999 not found',
+      );
+    });
+
+    it('should return empty array if pantry has no orders', async () => {
+      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
+        mockPantry as Pantry,
+      );
+      (mockOrdersRepository.find as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getOrdersByPantry(1);
+
+      expect(result).toEqual([]);
     });
   });
 });
