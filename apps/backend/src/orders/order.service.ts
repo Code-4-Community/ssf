@@ -28,7 +28,6 @@ export class OrdersService {
         'order.shippedAt',
         'order.deliveredAt',
         'request.pantryId',
-        'pantry.pantryId',
         'pantry.pantryName',
         'volunteers.id',
         'volunteers.firstName',

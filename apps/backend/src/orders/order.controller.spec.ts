@@ -6,6 +6,8 @@ import { Order } from './order.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
 import { OrderStatus } from './types';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Pantry } from '../pantries/pantries.entity';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -13,9 +15,19 @@ const mockAllocationsService = mock<AllocationsService>();
 describe('OrdersController', () => {
   let controller: OrdersController;
 
+  const mockPantries: Partial<Pantry>[] = [
+    { pantryId: 1, pantryName: 'Test Pantry' },
+    { pantryId: 2, pantryName: 'Test Pantry 2' },
+  ];
+
+  const mockRequests: Partial<FoodRequest>[] = [
+    { requestId: 1, pantry: mockPantries[0] as Pantry },
+    { requestId: 2, pantry: mockPantries[1] as Pantry },
+  ];
+
   const mockOrders: Partial<Order>[] = [
-    { orderId: 1, status: OrderStatus.PENDING },
-    { orderId: 2, status: OrderStatus.DELIVERED },
+    { orderId: 1, status: OrderStatus.PENDING, request: mockRequests[0] as FoodRequest },
+    { orderId: 2, status: OrderStatus.DELIVERED, request: mockRequests[1] as FoodRequest },
   ];
 
   const mockAllocations: Partial<Allocation>[] = [
