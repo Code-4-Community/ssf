@@ -26,8 +26,16 @@ describe('OrdersController', () => {
   ];
 
   const mockOrders: Partial<Order>[] = [
-    { orderId: 1, status: OrderStatus.PENDING, request: mockRequests[0] as FoodRequest },
-    { orderId: 2, status: OrderStatus.DELIVERED, request: mockRequests[1] as FoodRequest },
+    {
+      orderId: 1,
+      status: OrderStatus.PENDING,
+      request: mockRequests[0] as FoodRequest,
+    },
+    {
+      orderId: 2,
+      status: OrderStatus.DELIVERED,
+      request: mockRequests[1] as FoodRequest,
+    },
   ];
 
   const mockAllocations: Partial<Allocation>[] = [
