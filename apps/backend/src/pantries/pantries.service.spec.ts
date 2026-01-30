@@ -143,6 +143,7 @@ describe('PantriesService', () => {
       expect(result.every((pantry) => pantry.status === 'pending')).toBe(true);
       expect(mockRepository.find).toHaveBeenCalledWith({
         where: { status: 'pending' },
+        relations: ['pantryUser'],
       });
     });
 
@@ -156,6 +157,7 @@ describe('PantriesService', () => {
       );
       expect(mockRepository.find).toHaveBeenCalledWith({
         where: { status: 'pending' },
+        relations: ['pantryUser'],
       });
     });
 
@@ -269,7 +271,7 @@ describe('PantriesService', () => {
 
       expect(mockRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          pantryRepresentative: expect.objectContaining({
+          pantryUser: expect.objectContaining({
             firstName: mockPantryApplication.contactFirstName,
             lastName: mockPantryApplication.contactLastName,
             email: mockPantryApplication.contactEmail,
