@@ -7,6 +7,7 @@ import { validateId } from '../utils/validation.utils';
 import { PantryStatus } from './types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { ApprovedPantryResponse } from './types';
 
 @Injectable()
 export class PantriesService {
@@ -108,6 +109,61 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: PantryStatus.DENIED });
+  }
+
+  async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
+    const pantries = await this.repo.find({
+      where: { status: PantryStatus.APPROVED },
+      relations: ['pantryUser'],
+    });
+
+    return pantries.map((pantry) => ({
+      pantryId: pantry.pantryId,
+      pantryName: pantry.pantryName,
+      contactFirstName: pantry.pantryUser.firstName,
+      contactLastName: pantry.pantryUser.lastName,
+      contactEmail: pantry.pantryUser.email,
+      contactPhone: pantry.pantryUser.phone,
+      shipmentAddressLine1: pantry.shipmentAddressLine1,
+      shipmentAddressCity: pantry.shipmentAddressCity,
+      shipmentAddressZip: pantry.shipmentAddressZip,
+      shipmentAddressCountry: pantry.shipmentAddressCountry,
+      allergenClients: pantry.allergenClients,
+      restrictions: pantry.restrictions,
+      refrigeratedDonation: pantry.refrigeratedDonation,
+      reserveFoodForAllergic: pantry.reserveFoodForAllergic,
+      reservationExplanation: pantry.reservationExplanation,
+      dedicatedAllergyFriendly: pantry.dedicatedAllergyFriendly,
+      clientVisitFrequency: pantry.clientVisitFrequency,
+      identifyAllergensConfidence: pantry.identifyAllergensConfidence,
+      serveAllergicChildren: pantry.serveAllergicChildren,
+      activities: pantry.activities,
+      activitiesComments: pantry.activitiesComments,
+      itemsInStock: pantry.itemsInStock,
+      needMoreOptions: pantry.needMoreOptions,
+      newsletterSubscription: pantry.newsletterSubscription ?? false,
+    }));
+  }
+
+  async updatePantryVolunteers(
+    pantryId: number,
+    volunteerIds: number[],
+  ): Promise<void> {
+    validateId(pantryId, 'Pantry');
+    volunteerIds.forEach((id) => validateId(id, 'Volunteer'));
+
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['volunteers'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
+    }
+
+    pantry.volunteers = volunteerIds.map((id) => ({ id } as User));
+
+    await this.repo.save(pantry);
   }
 
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {
