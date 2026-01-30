@@ -8,6 +8,7 @@ import {
   UploadedFiles,
   UseInterceptors,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -18,6 +19,7 @@ import * as multer from 'multer';
 import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Controller('requests')
 // @UseInterceptors()
@@ -40,6 +42,13 @@ export class RequestsController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
+  }
+
+  @Get('/all-order-details/:requestId')
+  async getAllOrderDetailsFromRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<OrderDetailsDto[]> {
+    return this.requestsService.getOrderDetails(requestId);
   }
 
   @Post('/create')
@@ -108,6 +117,7 @@ export class RequestsController {
     );
   }
 
+  //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',
@@ -156,17 +166,29 @@ export class RequestsController {
       photos?.length,
     );
 
-    const request = await this.requestsService.findOne(requestId);
-    await this.ordersService.updateStatus(
-      request.order.orderId,
-      OrderStatus.DELIVERED,
-    );
-
-    return this.requestsService.updateDeliveryDetails(
+    const updatedRequest = await this.requestsService.updateDeliveryDetails(
       requestId,
       formattedDate,
       body.feedback,
       uploadedPhotoUrls,
     );
+
+    if (!updatedRequest) {
+      throw new NotFoundException('Invalid request ID');
+    }
+
+    if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
+      throw new NotFoundException(
+        'No associated orders found for this request',
+      );
+    }
+
+    await Promise.all(
+      updatedRequest.orders.map((order) =>
+        this.ordersService.updateStatus(order.orderId, OrderStatus.DELIVERED),
+      ),
+    );
+
+    return updatedRequest;
   }
 }

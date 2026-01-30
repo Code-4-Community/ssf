@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { OrderStatus } from './types';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Entity('orders')
 export class Order {
@@ -64,4 +66,7 @@ export class Order {
     nullable: true,
   })
   deliveredAt: Date | null;
+
+  @OneToMany(() => Allocation, (allocation) => allocation.order)
+  allocations: Allocation[];
 }

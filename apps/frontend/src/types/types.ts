@@ -97,6 +97,12 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
+export enum DonationStatus {
+  AVAILABLE = 'available',
+  FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -115,7 +121,7 @@ export interface DonationItem {
   reservedQuantity: number;
   ozPerItem: number;
   estimatedValue: number;
-  foodType: string;
+  foodType: FoodType;
 }
 
 export const FoodTypes = [
@@ -134,6 +140,23 @@ export const FoodTypes = [
   'Whole-Grain Cookies',
   'Quinoa',
 ] as const;
+
+export enum FoodType {
+  DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
+  DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
+  GLUTEN_FREE_BAKING_PANCAKE_MIXES = 'Gluten-Free Baking/Pancake Mixes',
+  GLUTEN_FREE_BREAD = 'Gluten-Free Bread',
+  GLUTEN_FREE_TORTILLAS = 'Gluten-Free Tortillas',
+  GRANOLA = 'Granola',
+  MASA_HARINA_FLOUR = 'Masa Harina Flour',
+  NUT_FREE_GRANOLA_BARS = 'Nut-Free Granola Bars',
+  OLIVE_OIL = 'Olive Oil',
+  REFRIGERATED_MEALS = 'Refrigerated Meals',
+  RICE_NOODLES = 'Rice Noodles',
+  SEED_BUTTERS = 'Seed Butters (Peanut Butter Alternative)',
+  WHOLE_GRAIN_COOKIES = 'Whole-Grain Cookies',
+  QUINOA = 'Quinoa',
+}
 
 export interface User {
   id: number;
@@ -164,7 +187,7 @@ export interface FoodRequest {
   dateReceived: Date | null;
   feedback: string | null;
   photos: string[] | null;
-  order?: Order;
+  orders?: Order[];
 }
 
 export interface Order {
@@ -177,6 +200,19 @@ export interface Order {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+}
+
+export interface OrderItemDetails {
+  name: string;
+  quantity: number;
+  foodType: FoodType;
+}
+
+export interface OrderDetails {
+  orderId: number;
+  status: OrderStatus;
+  foodManufacturerName: string;
+  items: OrderItemDetails[];
 }
 
 export interface FoodManufacturer {
@@ -195,6 +231,18 @@ export interface CreateFoodRequestBody {
   dateReceived: Date | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;
+}
+
+export interface CreateMultipleDonationItemsBody {
+  donationId: number;
+  items: {
+    itemName: string;
+    quantity: number;
+    reservedQuantity: number;
+    ozPerItem: number;
+    estimatedValue: number;
+    foodType: FoodType;
+  }[];
 }
 
 export interface Allocation {
