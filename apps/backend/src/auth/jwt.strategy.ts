@@ -15,7 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      audience: CognitoAuthConfig.userPoolClientId,
       issuer: cognitoAuthority,
       algorithms: ['RS256'],
       secretOrKeyProvider: passportJwtSecret({
