@@ -19,7 +19,8 @@ const ProtectedRoute = ({ children }: Props) => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
+  if (loading)
+    return (
       <Center h="100vh" flexDirection="column">
         <Spinner size="lg" />
         <Text mt={4}>Loading...</Text>
@@ -27,13 +28,7 @@ const ProtectedRoute = ({ children }: Props) => {
     );
 
   if (!authenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: location }}
-      />
-    );
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return children;

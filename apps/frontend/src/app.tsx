@@ -187,9 +187,7 @@ export const App: React.FC = () => {
     apiClient.getHello().then((res) => console.log(res));
   }, []);
 
-  return (
-      <RouterProvider router={router} />
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;
