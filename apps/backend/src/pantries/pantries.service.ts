@@ -114,7 +114,7 @@ export class PantriesService {
   async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
     const pantries = await this.repo.find({
       where: { status: PantryStatus.APPROVED },
-      relations: ['pantryUser', 'volunteers'],
+      relations: ['pantryUser'],
     });
 
     return pantries.map((pantry) => ({

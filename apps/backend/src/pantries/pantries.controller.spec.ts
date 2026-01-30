@@ -4,7 +4,14 @@ import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
-import { ApprovedPantryResponse } from './types';
+import {
+  Activity,
+  AllergensConfidence,
+  ApprovedPantryResponse,
+  ClientVisitFrequency,
+  ReserveFoodForAllergic,
+  ServeAllergicChildren,
+} from './types';
 import { RefrigeratedDonation } from './types';
 
 const mockPantriesService = mock<PantriesService>();
@@ -68,34 +75,41 @@ describe('PantriesController', () => {
         {
           pantryId: 1,
           pantryName: 'Community Food Pantry',
-          address: {
-            line1: '123 Main Street',
-            line2: null,
-            city: 'Boston',
-            state: 'MA',
-            zip: '02101',
-            country: 'United States',
-          },
-          contactInfo: {
-            firstName: 'John',
-            lastName: 'Smith',
-            email: 'john.smith@example.com',
-            phone: '(508) 508-6789',
-          },
-          refrigeratedDonation: RefrigeratedDonation.YES,
+
+          contactFirstName: 'John',
+          contactLastName: 'Smith',
+          contactEmail: 'john.smith@example.com',
+          contactPhone: '(508) 508-6789',
+
+          shipmentAddressLine1: '123 Main Street',
+          shipmentAddressCity: 'Boston',
+          shipmentAddressZip: '02101',
+          shipmentAddressCountry: 'United States',
+
           allergenClients: '10 to 20',
-          dedicatedAllergenFreeShelf: true,
-          dateApplied: new Date('2024-01-15'),
-          assignedVolunteers: [
-            {
-              userId: 10,
-              name: 'Jane Doe',
-              email: 'jane@example.com',
-              phone: '(555) 123-4567',
-              role: 'Volunteer',
-            },
+          restrictions: ['Peanuts', 'Dairy'],
+
+          refrigeratedDonation: RefrigeratedDonation.YES,
+          reserveFoodForAllergic: ReserveFoodForAllergic.YES,
+          reservationExplanation:
+            'We regularly serve clients with severe allergies.',
+
+          dedicatedAllergyFriendly: true,
+
+          clientVisitFrequency: ClientVisitFrequency.FEW_TIMES_A_MONTH,
+          identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
+          serveAllergicChildren: ServeAllergicChildren.YES_MANY,
+
+          activities: [
+            Activity.POST_RESOURCE_FLYERS,
+            Activity.CREATE_LABELED_SHELF,
           ],
-          subscriptionToNewsletter: true,
+          activitiesComments: 'Weekly food distribution events',
+
+          itemsInStock: 'Canned goods, rice, pasta',
+          needMoreOptions: 'Gluten-free and nut-free items',
+
+          newsletterSubscription: true,
         },
       ];
 
