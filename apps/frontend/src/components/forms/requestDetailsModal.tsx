@@ -47,6 +47,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
+      if (!isOpen) {
+        return;
+      }
+
       try {
         const orderDetailsList = await apiClient.getOrderDetailsListFromRequest(
           request.requestId,
@@ -74,7 +78,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     fetchPantryData();
   }, [pantryId]);
 
-  const currentOrder = orderDetailsList[currentPage - 1];
+  let currentOrder = null
+  if (orderDetailsList.length > 0) {
+    currentOrder = orderDetailsList[currentPage - 1];
+  }
 
   const groupedOrderItemsByType = useMemo(() => {
     if (!currentOrder) return {};
@@ -99,6 +106,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
      py: "1",
      px: "2",
      textStyle: "p2",
+     fontSize: "12px",
      fontWeight: "500",
   }
 
@@ -213,13 +221,16 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               </Tabs.Content>
 
               <Tabs.Content value="associatedOrders">
+                {!currentOrder && (
+                  <Text> No associated orders to display </Text>
+                )}
                 {currentOrder && (
                   <Box
                     borderWidth="1px"
                     borderColor="neutral.100"
                     borderRadius="5px"
                     p={3}
-                    mt={4}
+                    mt={6}
                   >
                     <Flex justify="space-between" align="center" mb={3}>
                       <Text {...sectionTitleStyles}>
@@ -314,6 +325,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       <Pagination.PrevTrigger asChild>
                         <IconButton
                           variant="ghost"
+                          disabled={orderDetailsList.length === 0}
                           onClick={() =>
                             setCurrentPage((prev) => Math.max(prev - 1, 1))
                           }
@@ -325,7 +337,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       <Pagination.Items
                         render={(page) => (
                           <IconButton
-                            variant={{ base: 'outline', _selected: 'outline' }}
+                            variant='outline'
+                            _selected={{ borderColor: "neutral.800" }}
                             onClick={() => setCurrentPage(page.value)}
                           >
                             {page.value}
@@ -336,11 +349,12 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       <Pagination.NextTrigger asChild>
                         <IconButton
                           variant="ghost"
+                          disabled={orderDetailsList.length === 0}
                           onClick={() =>
                             setCurrentPage((prev) =>
                               Math.min(
                                 prev + 1,
-                                Math.ceil(orderDetailsList.length),
+                                orderDetailsList.length,
                               ),
                             )
                           }

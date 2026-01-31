@@ -152,21 +152,8 @@ const FormRequests: React.FC = () => {
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {request.orders?.every(
-                  (order) => order.status === OrderStatus.DELIVERED,
+                {(!request.orders || request.orders.length === 0 || request.orders.every((order) => order.status === OrderStatus.PENDING || order.status === OrderStatus.SHIPPED)
                 ) ? (
-                  <Badge
-                    bgColor="neutral.300"
-                    color="#111111"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                    py={1}
-                    px={2}
-                  >
-                    Closed
-                  </Badge>
-                ) : (
                   <Badge
                     bgColor="#D4EAED"
                     color="#19717D"
@@ -177,6 +164,18 @@ const FormRequests: React.FC = () => {
                     px={2}
                   >
                     Active
+                  </Badge>
+                ) : (
+                  <Badge
+                    bgColor="neutral.300"
+                    color="#111111"
+                    textStyle="p2"
+                    fontWeight={500}
+                    fontSize={12}
+                    py={1}
+                    px={2}
+                  >
+                    Closed
                   </Badge>
                 )}
               </Table.Cell>
@@ -215,7 +214,8 @@ const FormRequests: React.FC = () => {
             <Pagination.Items
               render={(page) => (
                 <IconButton
-                  variant={{ base: 'outline', _selected: 'outline' }}
+                  variant='outline'
+                  _selected={{ borderColor: "neutral.800" }}
                   onClick={() => setCurrentPage(page.value)}
                 >
                   {page.value}

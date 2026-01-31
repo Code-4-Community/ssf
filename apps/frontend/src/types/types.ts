@@ -207,19 +207,6 @@ export interface OrderDetails {
   items: OrderItemDetails[];
 }
 
-export interface OrderItemDetails {
-  name: string;
-  quantity: number;
-  foodType: FoodType;
-}
-
-export interface OrderDetails {
-  orderId: number;
-  status: OrderStatus;
-  foodManufacturerName: string;
-  items: OrderItemDetails[];
-}
-
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
