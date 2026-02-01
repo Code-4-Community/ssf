@@ -36,7 +36,7 @@
     "@nestjs/typeorm": "^10.0.0",
     "@types/google-libphonenumber": "^7.4.30",
     "amazon-cognito-identity-js": "^6.3.5",
-    "aws-amplify": "^6.15.10",
+    "aws-amplify": "^6.16.0",
     "axios": "^1.8.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",

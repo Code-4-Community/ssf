@@ -7409,7 +7409,7 @@ available-typed-arrays@^1.0.7:
   dependencies:
     possible-typed-array-names "^1.0.0"
 
-aws-amplify@^6.15.10:
+aws-amplify@^6.16.0:
   version "6.16.0"
   resolved "https://registry.yarnpkg.com/aws-amplify/-/aws-amplify-6.16.0.tgz#2e36832932443ade27bf80bb9bb78e1469866984"
   integrity sha512-4DIUtlgLJ7PIZZI30rNdd8EIuvMLbvCrT2Td4WaidsCekgZhJbekR10onnDKFmbDSw4Q8O4yoy2bRP4Qb1hRnQ==
