@@ -20,6 +20,7 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -42,6 +43,13 @@ const FormRequests: React.FC = () => {
   const fetchRequests = useCallback(async () => {
     if (pantryId) {
       try {
+          // Ensure we have the auth token before making the API call
+          const session = await fetchAuthSession();
+          const idToken = session.tokens?.idToken?.toString();
+          if (idToken) {
+            ApiClient.setAccessToken(idToken);
+          }
+
         const data = await ApiClient.getPantryRequests(pantryId);
         const sortedData = data
           .slice()
