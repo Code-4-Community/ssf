@@ -16,7 +16,6 @@ import {
 import { ReserveFoodForAllergic } from './types';
 import { Activity } from './types';
 import { AllergensConfidence } from './types';
-import { StatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 const mockRepository = mock<Repository<Pantry>>();
 

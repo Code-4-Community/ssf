@@ -2,15 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { Pantry } from './pantries.entity';
-import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
-
-const mockPantriesService = mock<PantriesService>();
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
-const mockOrdersService = mock<OrdersService>();
 import {
   Activity,
   AllergensConfidence,
@@ -20,6 +16,9 @@ import {
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+
+const mockPantriesService = mock<PantriesService>();
+const mockOrdersService = mock<OrdersService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
