@@ -65,7 +65,7 @@ export class UsersController {
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserInfo: updateUserInfo,
-  ) {
+  ): Promise<User> {
     const { firstName, lastName, phone } = updateUserInfo;
 
     const updateData: Partial<User> = {};
