@@ -20,7 +20,6 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { fetchAuthSession } from 'aws-amplify/auth';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
