@@ -15,7 +15,6 @@ import OrderInformationModal from '@components/forms/orderInformationModal';
 import { FoodRequest } from 'types/types';
 import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { fetchAuthSession } from 'aws-amplify/auth';
 
 const FormRequests: React.FC = () => {
   const newRequestDisclosure = useDisclosure();
@@ -44,13 +43,6 @@ const FormRequests: React.FC = () => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
-          // Ensure we have the auth token before making the API call
-          const session = await fetchAuthSession();
-          const idToken = session.tokens?.idToken?.toString();
-          if (idToken) {
-            ApiClient.setAccessToken(idToken);
-          }
-
           const data = await ApiClient.getPantryRequests(pantryId);
           setRequests(data);
 
@@ -62,7 +54,7 @@ const FormRequests: React.FC = () => {
             );
           }
         } catch (error) {
-          alert('Error fetching requests: ' + error);
+          console.log(error);
         }
       }
     };
@@ -200,7 +192,6 @@ const FormRequests: React.FC = () => {
           {openReadOnlyRequest && (
             <FoodRequestFormModal
               previousRequest={openReadOnlyRequest}
-              readOnly={true}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
               pantryId={pantryId}

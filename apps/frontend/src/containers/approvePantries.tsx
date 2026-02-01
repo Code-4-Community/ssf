@@ -23,7 +23,7 @@ const ApprovePantries: React.FC = () => {
       const data = await ApiClient.getAllPendingPantries();
       setPendingPantries(data);
     } catch (err) {
-      console.log(err);
+      alert(err);
     }
   };
 
