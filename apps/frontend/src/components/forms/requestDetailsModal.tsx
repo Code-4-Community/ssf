@@ -76,7 +76,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     fetchPantryData();
   }, [pantryId]);
 
-  let currentOrder = null
+  let currentOrder = null;
   if (orderDetailsList.length > 0) {
     currentOrder = orderDetailsList[currentPage - 1];
   }
@@ -95,18 +95,18 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   }, [currentOrder]);
 
   const sectionTitleStyles = {
-     textStyle: "p2",
-     fontWeight: "600",
-     color: "neutral.800",
-  }
+    textStyle: 'p2',
+    fontWeight: '600',
+    color: 'neutral.800',
+  };
 
   const badgeStyles = {
-     py: "1",
-     px: "2",
-     textStyle: "p2",
-     fontSize: "12px",
-     fontWeight: "500",
-  }
+    py: '1',
+    px: '2',
+    textStyle: 'p2',
+    fontSize: '12px',
+    fontWeight: '500',
+  };
 
   return (
     <Dialog.Root
@@ -140,7 +140,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   value="requestDetails"
                   borderBottom="1.5px solid"
                   borderColor="neutral.100"
-                  _selected={{borderColor: "neutral.700"}}
+                  _selected={{ borderColor: 'neutral.700' }}
                 >
                   Request Details
                 </Tabs.Trigger>
@@ -152,7 +152,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   value="associatedOrders"
                   borderBottom="1.5px solid"
                   borderColor="neutral.100"
-                  _selected={{borderColor: "neutral.700"}}
+                  _selected={{ borderColor: 'neutral.700' }}
                 >
                   Associated Orders
                 </Tabs.Trigger>
@@ -160,9 +160,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               <Tabs.Content value="requestDetails">
                 <Field.Root mb={4} mt={6}>
                   <Field.Label>
-                    <Text {...sectionTitleStyles}>
-                      Size of Shipment
-                    </Text>
+                    <Text {...sectionTitleStyles}>Size of Shipment</Text>
                   </Field.Label>
                   <Menu.Root>
                     <Text textStyle="p2" color="neutral.800" mt={3}>
@@ -173,10 +171,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
                 <Field.Root mb={4} mt={3}>
                   <Field.Label>
-                    <Text
-                      {...sectionTitleStyles}
-                      mt={3}
-                    >
+                    <Text {...sectionTitleStyles} mt={3}>
                       Food Type(s)
                     </Text>
                   </Field.Label>
@@ -205,10 +200,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
                 <Field.Root mb={4}>
                   <Field.Label>
-                    <Text
-                      {...sectionTitleStyles}
-                      mt={3}
-                    >
+                    <Text {...sectionTitleStyles} mt={3}>
                       Additional Information
                     </Text>
                   </Field.Label>
@@ -220,7 +212,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
               <Tabs.Content value="associatedOrders">
                 {!currentOrder && (
-                  <Text mt={5} textStyle="p2"> No associated orders to display </Text>
+                  <Text mt={5} textStyle="p2">
+                    {' '}
+                    No associated orders to display{' '}
+                  </Text>
                 )}
                 {currentOrder && (
                   <Box
@@ -263,11 +258,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       >,
                     ).map(([foodType, items]) => (
                       <Box key={foodType} mb={4}>
-                        <Text
-                          {...sectionTitleStyles}
-                        >
-                          {foodType}
-                        </Text>
+                        <Text {...sectionTitleStyles}>{foodType}</Text>
                         {items.map((item) => (
                           <Flex
                             border="1px solid"
@@ -300,10 +291,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         ))}
                       </Box>
                     ))}
-                    <Text
-                      {...sectionTitleStyles}
-                      mt="3"
-                    >
+                    <Text {...sectionTitleStyles} mt="3">
                       Tracking
                     </Text>
                     <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
@@ -335,8 +323,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         <Pagination.Items
                           render={(page) => (
                             <IconButton
-                              variant='outline'
-                              _selected={{ borderColor: "neutral.800" }}
+                              variant="outline"
+                              _selected={{ borderColor: 'neutral.800' }}
                               onClick={() => setCurrentPage(page.value)}
                             >
                               {page.value}
@@ -349,10 +337,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                             variant="ghost"
                             onClick={() =>
                               setCurrentPage((prev) =>
-                                Math.min(
-                                  prev + 1,
-                                  orderDetailsList.length,
-                                ),
+                                Math.min(prev + 1, orderDetailsList.length),
                               )
                             }
                           >
@@ -363,7 +348,6 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Pagination.Root>
                   </Flex>
                 )}
-                
               </Tabs.Content>
             </Tabs.Root>
           </Dialog.Body>

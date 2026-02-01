@@ -73,7 +73,7 @@ const FormRequests: React.FC = () => {
       </Text>
       <HStack gap={3} my={5}>
         <Button
-          fontFamily= "ibm"
+          fontFamily="ibm"
           fontWeight="semibold"
           fontSize="14px"
           color="neutral.50"
@@ -93,7 +93,7 @@ const FormRequests: React.FC = () => {
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              fontFamily= "ibm"
+              fontFamily="ibm"
               fontWeight="semibold"
               fontSize="14px"
               color="neutral.600"
@@ -152,7 +152,12 @@ const FormRequests: React.FC = () => {
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {(!request.orders || request.orders.length === 0 || request.orders.every((order) => order.status === OrderStatus.PENDING || order.status === OrderStatus.SHIPPED)
+                {!request.orders ||
+                request.orders.length === 0 ||
+                request.orders.every(
+                  (order) =>
+                    order.status === OrderStatus.PENDING ||
+                    order.status === OrderStatus.SHIPPED,
                 ) ? (
                   <Badge
                     bgColor="#D4EAED"
@@ -214,8 +219,8 @@ const FormRequests: React.FC = () => {
             <Pagination.Items
               render={(page) => (
                 <IconButton
-                  variant='outline'
-                  _selected={{ borderColor: "neutral.800" }}
+                  variant="outline"
+                  _selected={{ borderColor: 'neutral.800' }}
                   onClick={() => setCurrentPage(page.value)}
                 >
                   {page.value}
