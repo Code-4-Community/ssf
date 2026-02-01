@@ -40,6 +40,7 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/get-all-requests/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
