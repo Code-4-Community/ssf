@@ -23,8 +23,9 @@ export class OrdersController {
     private readonly allocationsService: AllocationsService,
   ) {}
 
-  // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%2
+  // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
   // %20 is the URL encoded space character
+  // This gets all orders where the status is pending and the pantry name is either Test Pantry or Test Pantry 2
   @Get('/')
   async getAllOrders(
     @Query('status') status?: string,
@@ -46,21 +47,21 @@ export class OrdersController {
     return this.ordersService.getPastOrders();
   }
 
-  @Get(':orderId/pantry')
+  @Get('/:orderId/pantry')
   async getPantryFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Pantry> {
     return this.ordersService.findOrderPantry(orderId);
   }
 
-  @Get(':orderId/request')
+  @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequest> {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
-  @Get(':orderId/manufacturer')
+  @Get('/:orderId/manufacturer')
   async getManufacturerFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodManufacturer> {
@@ -81,7 +82,7 @@ export class OrdersController {
     return this.ordersService.findOrderByRequest(requestId);
   }
 
-  @Get(':orderId/allocations')
+  @Get('/:orderId/allocations')
   async getAllAllocationsByOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {
