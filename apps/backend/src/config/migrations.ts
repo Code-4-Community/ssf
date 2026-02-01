@@ -51,6 +51,7 @@ const schemaMigrations = [
   UpdatePantryUserFieldsFixed1764350314832,
   RemoveMultipleVolunteerTypes1764811878152,
   RemoveUnusedStatuses1764816885341,
+  PopulateDummyData1768501812134,
 ];
 
 export default schemaMigrations;

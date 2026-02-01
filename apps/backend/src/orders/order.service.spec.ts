@@ -4,15 +4,15 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
+import { OrderStatus } from './types';
 
 describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
-    // Create all tables and run migrations
+    // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
-      await testDataSource.runMigrations();
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -29,33 +29,17 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
-    const fkSafeOrder = [
-      'volunteer_assignments',
-      'allocations',
-      'orders',
-      'food_requests',
-      'donation_items',
-      'donations',
-      'pantries',
-      'food_manufacturers',
-      'users',
-    ];
+    // Run all migrations fresh for each test
+    await testDataSource.runMigrations();
+  });
 
-    // Delete all data, keep schema
-    for (const table of fkSafeOrder) {
-      await testDataSource.query(
-        `TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`,
-      );
-    }
-
-    // Seed dummy data
-    const queryRunner = testDataSource.createQueryRunner();
-    await queryRunner.connect();
-    try {
-      await new PopulateDummyData1768501812134().up(queryRunner);
-    } finally {
-      await queryRunner.release();
-    }
+  afterEach(async () => {
+    // Drop the schema completely (cascades all tables)
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+    
+    // Recreate the structure
+    await testDataSource.synchronize();
   });
 
   afterAll(async () => {
@@ -71,10 +55,25 @@ describe('OrdersService', () => {
 
   describe('getAll', () => {
     it('returns orders filtered by status', async () => {
-      const orders = await service.getAll({ status: 'delivered' });
+      const orders = await service.getAll({ status: OrderStatus.DELIVERED });
 
       expect(orders).toHaveLength(2);
-      expect(orders.every((order) => order.status === 'delivered')).toBe(true);
+      expect(orders.every((order) => order.status === OrderStatus.DELIVERED)).toBe(true);
+    });
+
+    it('returns empty array when status filter matches nothing', async () => {
+      // Delete allocations referencing pending orders, then delete orders themselves
+      await testDataSource.query(
+        `DELETE FROM "allocations" WHERE order_id IN (SELECT order_id FROM "orders" WHERE status = $1)`,
+        [OrderStatus.PENDING],
+      );
+      await testDataSource.query(
+        `DELETE FROM "orders" WHERE status = $1`,
+        [OrderStatus.PENDING],
+      );
+
+      const orders = await service.getAll({ status: OrderStatus.PENDING });
+      expect(orders).toEqual([]);
     });
 
     it('returns orders filtered by pantry names', async () => {
@@ -101,13 +100,13 @@ describe('OrdersService', () => {
 
     it('returns orders filtered by both pantry and status', async () => {
       const orders = await service.getAll({
-        status: 'delivered',
+        status: OrderStatus.DELIVERED,
         pantryNames: ['Westside Community Kitchen'],
       });
 
       expect(orders).toHaveLength(1);
       expect(orders[0].pantry.pantryName).toBe('Westside Community Kitchen');
-      expect(orders[0].status).toBe('delivered');
+      expect(orders[0].status).toBe(OrderStatus.DELIVERED);
     });
   });
 });
