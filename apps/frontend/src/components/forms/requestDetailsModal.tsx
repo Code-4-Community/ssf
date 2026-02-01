@@ -47,9 +47,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
-      if (!isOpen) {
-        return;
-      }
+      if (!isOpen) return;
 
       try {
         const orderDetailsList = await apiClient.getOrderDetailsListFromRequest(
@@ -222,7 +220,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
               <Tabs.Content value="associatedOrders">
                 {!currentOrder && (
-                  <Text> No associated orders to display </Text>
+                  <Text mt={5} textStyle="p2"> No associated orders to display </Text>
                 )}
                 {currentOrder && (
                   <Box
@@ -314,57 +312,58 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   </Box>
                 )}
 
-                <Flex justify="center" mt={7}>
-                  <Pagination.Root
-                    count={orderDetailsList.length}
-                    pageSize={1}
-                    page={currentPage}
-                    onChange={(page) => setCurrentPage(page)}
-                  >
-                    <ButtonGroup variant="outline" size="sm">
-                      <Pagination.PrevTrigger asChild>
-                        <IconButton
-                          variant="ghost"
-                          disabled={orderDetailsList.length === 0}
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(prev - 1, 1))
-                          }
-                        >
-                          <ChevronLeft />
-                        </IconButton>
-                      </Pagination.PrevTrigger>
-
-                      <Pagination.Items
-                        render={(page) => (
+                {orderDetailsList.length > 0 && (
+                  <Flex justify="center" mt={7}>
+                    <Pagination.Root
+                      count={orderDetailsList.length}
+                      pageSize={1}
+                      page={currentPage}
+                      onChange={(page) => setCurrentPage(page)}
+                    >
+                      <ButtonGroup variant="outline" size="sm">
+                        <Pagination.PrevTrigger asChild>
                           <IconButton
-                            variant='outline'
-                            _selected={{ borderColor: "neutral.800" }}
-                            onClick={() => setCurrentPage(page.value)}
+                            variant="ghost"
+                            onClick={() =>
+                              setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
                           >
-                            {page.value}
+                            <ChevronLeft />
                           </IconButton>
-                        )}
-                      />
+                        </Pagination.PrevTrigger>
 
-                      <Pagination.NextTrigger asChild>
-                        <IconButton
-                          variant="ghost"
-                          disabled={orderDetailsList.length === 0}
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(
-                                prev + 1,
-                                orderDetailsList.length,
-                              ),
-                            )
-                          }
-                        >
-                          <ChevronRight />
-                        </IconButton>
-                      </Pagination.NextTrigger>
-                    </ButtonGroup>
-                  </Pagination.Root>
-                </Flex>
+                        <Pagination.Items
+                          render={(page) => (
+                            <IconButton
+                              variant='outline'
+                              _selected={{ borderColor: "neutral.800" }}
+                              onClick={() => setCurrentPage(page.value)}
+                            >
+                              {page.value}
+                            </IconButton>
+                          )}
+                        />
+
+                        <Pagination.NextTrigger asChild>
+                          <IconButton
+                            variant="ghost"
+                            onClick={() =>
+                              setCurrentPage((prev) =>
+                                Math.min(
+                                  prev + 1,
+                                  orderDetailsList.length,
+                                ),
+                              )
+                            }
+                          >
+                            <ChevronRight />
+                          </IconButton>
+                        </Pagination.NextTrigger>
+                      </ButtonGroup>
+                    </Pagination.Root>
+                  </Flex>
+                )}
+                
               </Tabs.Content>
             </Tabs.Root>
           </Dialog.Body>
