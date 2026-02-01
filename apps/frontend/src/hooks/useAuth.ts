@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 import { fetchAuthSession } from 'aws-amplify/auth';
-import { Hub } from 'aws-amplify/utils';
+import { Hub, type HubCapsule } from 'aws-amplify/utils';
 import apiClient from '@api/apiClient';
+
+interface AuthPayload {
+  event: 'signIn' | 'signOut' | 'tokenRefresh' | string;
+}
 
 // Hook to manage authentication state and set the API client's access token
 export function useAuth() {
@@ -28,7 +32,7 @@ export function useAuth() {
     updateToken();
 
     // Listen for auth events so we can update token immediately after sign in
-    const listener = (data: any) => {
+    const listener = (data: HubCapsule<'auth', AuthPayload>) => {
       const { payload } = data;
       if (payload.event === 'signIn' || payload.event === 'tokenRefresh') {
         updateToken();
@@ -40,8 +44,10 @@ export function useAuth() {
       }
     };
 
+    const unsubscribe = Hub.listen('auth', listener);
+
     return () => {
-      Hub.listen('auth', listener);
+      unsubscribe();
     };
   }, []);
 }

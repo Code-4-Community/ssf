@@ -14,12 +14,12 @@ export async function pantryIdLoader({ params }: LoaderFunctionArgs) {
     // Fetch the auth session
     const session = await fetchAuthSession({ forceRefresh: false });
     const idToken = session.tokens?.idToken?.toString();
-    
+
     // If no token, the user isn't authenticated yet, so let the Authenticator handle this
     if (!idToken) {
       return { pantry: null };
     }
-    
+
     ApiClient.setAccessToken(idToken);
 
     const pantry = await ApiClient.getPantry(parseInt(pantryId, 10));
