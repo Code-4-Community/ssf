@@ -37,7 +37,7 @@ describe('OrdersService', () => {
     // Drop the schema completely (cascades all tables)
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
-    
+
     // Recreate the structure
     await testDataSource.synchronize();
   });
@@ -58,7 +58,9 @@ describe('OrdersService', () => {
       const orders = await service.getAll({ status: OrderStatus.DELIVERED });
 
       expect(orders).toHaveLength(2);
-      expect(orders.every((order) => order.status === OrderStatus.DELIVERED)).toBe(true);
+      expect(
+        orders.every((order) => order.status === OrderStatus.DELIVERED),
+      ).toBe(true);
     });
 
     it('returns empty array when status filter matches nothing', async () => {
@@ -67,10 +69,9 @@ describe('OrdersService', () => {
         `DELETE FROM "allocations" WHERE order_id IN (SELECT order_id FROM "orders" WHERE status = $1)`,
         [OrderStatus.PENDING],
       );
-      await testDataSource.query(
-        `DELETE FROM "orders" WHERE status = $1`,
-        [OrderStatus.PENDING],
-      );
+      await testDataSource.query(`DELETE FROM "orders" WHERE status = $1`, [
+        OrderStatus.PENDING,
+      ]);
 
       const orders = await service.getAll({ status: OrderStatus.PENDING });
       expect(orders).toEqual([]);
