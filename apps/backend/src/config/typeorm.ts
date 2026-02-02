@@ -2,7 +2,6 @@ import { registerAs } from '@nestjs/config';
 import { PluralNamingStrategy } from '../strategies/plural-naming.strategy';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import schemaMigrations from './migrations';
-import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 
 const config = {
   type: 'postgres',
@@ -16,7 +15,7 @@ const config = {
   namingStrategy: new PluralNamingStrategy(),
   // Glob patterns (e.g. ../migrations/**.ts) are deprecated, so we have to manually specify each migration
   // TODO: see if there's still a way to dynamically load all migrations
-  migrations: [...schemaMigrations, PopulateDummyData1768501812134],
+  migrations: [...schemaMigrations],
 };
 
 export default registerAs('typeorm', () => config);
