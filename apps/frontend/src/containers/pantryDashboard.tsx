@@ -12,34 +12,43 @@ import {
 } from '@chakra-ui/react';
 import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { User, Pantry } from 'types/types';
+import { Pantry } from 'types/types';
 import ApiClient from '@api/apiClient';
-import { useParams } from 'react-router-dom';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const PantryDashboard: React.FC = () => {
-  const [ssfRep, setSsfRep] = useState<User | null>(null);
+  const { user } = useAuthenticator((context) => [context.user]);
+  const [pantryId, setPantryId] = useState<number | null>(null);
   const [pantry, setPantry] = useState<Pantry | null>(null);
-  const { pantryId } = useParams<{ pantryId: string }>();
 
   useEffect(() => {
-    if (!pantryId) {
-      console.error('Error: pantryId is undefined');
-      return;
-    }
-    const fetchData = async () => {
+    const fetchPantryId = async () => {
+      if (user.userId) {
+        try {
+          const pantryId = await ApiClient.getCurrentUserPantryId();
+          setPantryId(pantryId);
+        } catch (error) {
+          console.error('Error fetching pantry ID', error);
+        }
+      }
+    };
+
+    fetchPantryId();
+  }, [user.userId]);
+
+  useEffect(() => {
+    const fetchPantryData = async () => {
+      if (!pantryId) return;
+
       try {
-        const [pantryData, ssfRepData] = await Promise.all([
-          ApiClient.getPantry(parseInt(pantryId, 10)),
-          ApiClient.getPantrySSFRep(parseInt(pantryId, 10)),
-        ]);
+        const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
-        setSsfRep(ssfRepData);
       } catch (error) {
         console.error('Error fetching pantry data/SSFRep data', error);
       }
     };
 
-    fetchData();
+    fetchPantryData();
   }, [pantryId]);
 
   return (
@@ -116,9 +125,9 @@ const PantryDashboard: React.FC = () => {
           >
             Need help? Contact your SSF representative
           </Text>
-          <Text>Name: {ssfRep?.firstName}</Text>
-          <Text>Email: {ssfRep?.email}</Text>
-          <Text>Phone: {ssfRep?.phone}</Text>
+          <Text>Name: {pantry?.pantryUser?.firstName} {pantry?.pantryUser?.lastName}</Text>
+          <Text>Email: {pantry?.pantryUser?.email}</Text>
+          <Text>Phone: {pantry?.pantryUser?.phone}</Text>
         </CardBody>
       </Card.Root>
 

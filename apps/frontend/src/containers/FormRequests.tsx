@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Box,
   Table,
@@ -20,20 +19,23 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const { user } = useAuthenticator((context) => [context.user]);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
+  const [pantryId, setPantryId] = useState<number | null>(null);
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
 
-  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
-  const pantryId = parseInt(pantryIdParam!, 10);
-
+  const [allConfirmed, setAllConfirmed] = useState(false);
+  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
+    number | null
+  >(null);
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
@@ -41,40 +43,30 @@ const FormRequests: React.FC = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
-      if (pantryId) {
-        const data = await ApiClient.getPantryRequests(parseInt(pantryId, 10));
-        setRequests(data);
+      if (user.userId) {
+        const pantryId = await ApiClient.getCurrentUserPantryId();
+        setPantryId(pantryId);
+        if (pantryId) {
+          try {
+            const data = await ApiClient.getPantryRequests(pantryId);
+            setRequests(data);
 
-        if (data.length > 0) {
-          const mostRecentRequest = data.reduce((prev, current) =>
-            prev.requestId > current.requestId ? prev : current,
-          );
-          setPreviousRequest(mostRecentRequest);
-        try {
-          // Ensure we have the auth token before making the API call
-          const session = await fetchAuthSession();
-          const idToken = session.tokens?.idToken?.toString();
-          if (idToken) {
-            ApiClient.setAccessToken(idToken);
+            if (data.length > 0) {
+              setPreviousRequest(
+                data.reduce((prev, current) =>
+                  prev.requestId > current.requestId ? prev : current,
+                ),
+              );
+            }
+          } catch (error) {
+            console.log(error);
           }
-
-          const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data
-            .slice()
-            .sort((a, b) => b.requestId - a.requestId);
-          setRequests(sortedData);
-
-          if (sortedData.length > 0) {
-            setPreviousRequest(sortedData[0]);
-          }
-        } catch (error) {
-          console.log(error);
         }
       }
     };
 
     fetchRequests();
-  }, [pantryId]);
+  }, [user.userId]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -102,7 +94,7 @@ const FormRequests: React.FC = () => {
           previousRequest={undefined}
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
-          pantryId={pantryId}
+          pantryId={pantryId!}
         />
         {previousRequest && (
           <>
@@ -122,7 +114,7 @@ const FormRequests: React.FC = () => {
               previousRequest={previousRequest}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
-              pantryId={pantryId}
+              pantryId={pantryId!}
             />
           </>
         )}
@@ -209,7 +201,22 @@ const FormRequests: React.FC = () => {
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId}
+              pantryId={pantryId!}
+            />
+          )}
+          {openOrderId && (
+            <OrderInformationModal
+              orderId={openOrderId}
+              isOpen={openOrderId !== null}
+              onClose={() => setOpenOrderId(null)}
+            />
+          )}
+          {openDeliveryRequestId && (
+            <DeliveryConfirmationModal
+              requestId={openDeliveryRequestId}
+              isOpen={openDeliveryRequestId !== null}
+              onClose={() => setOpenDeliveryRequestId(null)}
+              pantryId={pantryId!}
             />
           )}
         </Table.Body>
