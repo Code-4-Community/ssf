@@ -73,4 +73,24 @@ describe('OrdersController', () => {
       ).toHaveBeenCalledWith(orderId);
     });
   });
+
+  describe('updateTrackingAndCost', () => {
+    it('should call ordersService.updateTrackingAndCost with correct parameters', async () => {
+      const orderId = 1;
+      const trackingLink = 'www.samplelink/samplelink';
+      const shippingCost = '15.99';
+
+      await controller.updateTrackingAndCost(
+        orderId,
+        trackingLink,
+        shippingCost,
+      );
+
+      expect(mockOrdersService.updateTrackingAndCost).toHaveBeenCalledWith(
+        orderId,
+        trackingLink,
+        shippingCost,
+      );
+    });
+  });
 });

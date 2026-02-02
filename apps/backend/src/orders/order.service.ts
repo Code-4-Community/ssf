@@ -147,4 +147,22 @@ export class OrdersService {
 
     return orders;
   }
+
+  async updateTrackingAndCost(
+    orderId: number,
+    trackingLink: string,
+    shippingCost: string,
+  ) {
+    validateId(orderId, 'Order');
+
+    await this.repo
+      .createQueryBuilder()
+      .update(Order)
+      .set({
+        trackingLink: trackingLink,
+        shippingCost: shippingCost,
+      })
+      .where('order_id = :orderId', { orderId })
+      .execute();
+  }
 }

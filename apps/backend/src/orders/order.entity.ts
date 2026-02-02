@@ -77,4 +77,21 @@ export class Order {
 
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations: Allocation[];
+
+  @Column({
+    name: 'tracking_link',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  trackingLink?: string;
+
+  @Column({
+    name: 'shipping_cost',
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  shippingCost?: string;
 }

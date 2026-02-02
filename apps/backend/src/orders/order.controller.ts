@@ -99,4 +99,17 @@ export class OrdersController {
     }
     return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
+
+  @Patch('/:orderId/update-tracking-and-cost')
+  async updateTrackingAndCost(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body('trackingLink') trackingLink: string,
+    @Body('shippingCost') shippingCost: string,
+  ): Promise<void> {
+    return this.ordersService.updateTrackingAndCost(
+      orderId,
+      trackingLink,
+      shippingCost,
+    );
+  }
 }
