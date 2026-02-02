@@ -125,7 +125,9 @@ const PantryDashboard: React.FC = () => {
           >
             Need help? Contact your SSF representative
           </Text>
-          <Text>Name: {pantry?.pantryUser?.firstName} {pantry?.pantryUser?.lastName}</Text>
+          <Text>
+            Name: {pantry?.pantryUser?.firstName} {pantry?.pantryUser?.lastName}
+          </Text>
           <Text>Email: {pantry?.pantryUser?.email}</Text>
           <Text>Phone: {pantry?.pantryUser?.phone}</Text>
         </CardBody>

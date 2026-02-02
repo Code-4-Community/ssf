@@ -261,7 +261,7 @@ describe('PantriesController', () => {
 
     it('throws BadRequestException when unauthenticated', async () => {
       await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
-        new BadRequestException("Not authenticated")
+        new BadRequestException('Not authenticated'),
       );
     });
   });
