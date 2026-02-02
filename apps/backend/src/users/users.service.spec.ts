@@ -135,7 +135,9 @@ describe('UsersService', () => {
       const result = await service.findByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ email: 'test@example.com' });
+      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({
+        email: 'test@example.com',
+      });
     });
   });
 
