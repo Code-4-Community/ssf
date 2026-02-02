@@ -20,20 +20,23 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const { user } = useAuthenticator((context) => [context.user]);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
+  const [pantryId, setPantryId] = useState<number | null>(null);
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
 
-  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
-  const pantryId = parseInt(pantryIdParam!, 10);
-
+  const [allConfirmed, setAllConfirmed] = useState(false);
+  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
+    number | null
+  >(null);
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
@@ -115,7 +118,7 @@ const FormRequests: React.FC = () => {
               previousRequest={previousRequest}
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
-              pantryId={pantryId}
+              pantryId={pantryId!}
               onSuccess={fetchRequests}
             />
           </>
@@ -203,7 +206,22 @@ const FormRequests: React.FC = () => {
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId}
+              pantryId={pantryId!}
+            />
+          )}
+          {openOrderId && (
+            <OrderInformationModal
+              orderId={openOrderId}
+              isOpen={openOrderId !== null}
+              onClose={() => setOpenOrderId(null)}
+            />
+          )}
+          {openDeliveryRequestId && (
+            <DeliveryConfirmationModal
+              requestId={openDeliveryRequestId}
+              isOpen={openDeliveryRequestId !== null}
+              onClose={() => setOpenDeliveryRequestId(null)}
+              pantryId={pantryId!}
             />
           )}
         </Table.Body>

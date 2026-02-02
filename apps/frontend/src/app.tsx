@@ -18,7 +18,6 @@ import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
-import { pantryIdLoader } from '@loaders/pantryIdLoader';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import { Amplify } from 'aws-amplify';
@@ -82,14 +81,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-dashboard/:pantryId',
-        element: (
-          <ProtectedRoute>
-            <PantryDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/pantry-past-orders',
         element: (
           <ProtectedRoute>
@@ -114,13 +105,12 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-dashboard/:pantryId',
+        path: '/pantry-dashboard',
         element: (
           <ProtectedRoute>
             <PantryDashboard />
           </ProtectedRoute>
         ),
-        loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
@@ -155,13 +145,12 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/request-form/:pantryId',
+        path: '/request-form',
         element: (
           <ProtectedRoute>
             <FormRequests />
-          </ProtectedRoute>
+          </Authenticator>
         ),
-        loader: pantryIdLoader,
       },
       {
         path: '/donation-management',
