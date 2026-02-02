@@ -18,11 +18,13 @@ describe('OrdersController', () => {
   const mockPantries: Partial<Pantry>[] = [
     { pantryId: 1, pantryName: 'Test Pantry' },
     { pantryId: 2, pantryName: 'Test Pantry 2' },
+    { pantryId: 3, pantryName: 'Test Pantry 3' },
   ];
 
   const mockRequests: Partial<FoodRequest>[] = [
     { requestId: 1, pantry: mockPantries[0] as Pantry },
     { requestId: 2, pantry: mockPantries[1] as Pantry },
+    { requestId: 3, pantry: mockPantries[2] as Pantry },
   ];
 
   const mockOrders: Partial<Order>[] = [
@@ -35,6 +37,11 @@ describe('OrdersController', () => {
       orderId: 2,
       status: OrderStatus.DELIVERED,
       request: mockRequests[1] as FoodRequest,
+    },
+    {
+      orderId: 3,
+      status: OrderStatus.SHIPPED,
+      request: mockRequests[2] as FoodRequest,
     },
   ];
 
@@ -64,13 +71,13 @@ describe('OrdersController', () => {
     it('should call ordersService.getAll and return orders', async () => {
       const status = 'pending';
       const pantryNames = ['Test Pantry', 'Test Pantry 2'];
-      mockOrdersService.getAll.mockResolvedValueOnce([
-        mockOrders[0],
-      ] as Order[]);
+      mockOrdersService.getAll.mockResolvedValueOnce(
+        mockOrders.slice(0, 2) as Order[],
+      );
 
       const result = await controller.getAllOrders(status, pantryNames);
 
-      expect(result).toEqual([mockOrders[0]] as Order[]);
+      expect(result).toEqual(mockOrders.slice(0, 2) as Order[]);
       expect(mockOrdersService.getAll).toHaveBeenCalledWith({
         status,
         pantryNames,
