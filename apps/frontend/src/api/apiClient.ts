@@ -61,10 +61,6 @@ export class ApiClient {
     this.accessToken = token;
   }
 
-  public async getHello(): Promise<string> {
-    return this.get('/api') as Promise<string>;
-  }
-
   public async get(path: string): Promise<unknown> {
     return this.axiosInstance.get(path).then((response) => response.data);
   }
