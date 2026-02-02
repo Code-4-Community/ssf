@@ -15,34 +15,34 @@ export class CreateDonationItemDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  itemName: string;
+  itemName!: string;
 
   @IsNumber()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 
   @IsNumber()
   @Min(0)
-  reservedQuantity: number;
+  reservedQuantity!: number;
 
   @IsNumber()
   @Min(1)
-  ozPerItem: number;
+  ozPerItem!: number;
 
   @IsNumber()
   @Min(1)
-  estimatedValue: number;
+  estimatedValue!: number;
 
   @IsEnum(FoodType)
-  foodType: FoodType;
+  foodType!: FoodType;
 }
 
 export class CreateMultipleDonationItemsDto {
   @IsNumber()
-  donationId: number;
+  donationId!: number;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateDonationItemDto)
-  items: CreateDonationItemDto[];
+  items!: CreateDonationItemDto[];
 }

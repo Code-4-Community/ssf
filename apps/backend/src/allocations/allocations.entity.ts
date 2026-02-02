@@ -11,28 +11,28 @@ import { Order } from '../orders/order.entity';
 @Entity('allocations')
 export class Allocation {
   @PrimaryGeneratedColumn({ name: 'allocation_id' })
-  allocationId: number;
+  allocationId!: number;
 
   @Column({ name: 'order_id', type: 'int', nullable: false })
-  orderId: number;
+  orderId!: number;
 
   @ManyToOne(() => Order, (order) => order.allocations)
   @JoinColumn({ name: 'order_id' })
-  order: Order;
+  order!: Order;
 
   @Column({ name: 'item_id', type: 'int', nullable: false })
-  itemId: number;
+  itemId!: number;
 
   @ManyToOne(() => DonationItem, (item) => item.allocations)
   @JoinColumn({ name: 'item_id' })
-  item: DonationItem;
+  item!: DonationItem;
 
   @Column({ name: 'allocated_quantity', type: 'int' })
-  allocatedQuantity: number;
+  allocatedQuantity!: number;
 
   @Column({ name: 'reserved_at', type: 'timestamp' })
-  reservedAt: Date;
+  reservedAt!: Date;
 
-  @Column({ name: 'fulfilled_at', type: 'timestamp' })
-  fulfilledAt: Date;
+  @Column({ name: 'fulfilled_at', type: 'timestamp', nullable: true })
+  fulfilledAt?: Date;
 }
