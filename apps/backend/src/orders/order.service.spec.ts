@@ -3,7 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 import { OrderStatus } from './types';
 
 describe('OrdersService', () => {
