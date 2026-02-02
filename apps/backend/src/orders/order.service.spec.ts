@@ -15,6 +15,10 @@ describe('OrdersService', () => {
       await testDataSource.initialize();
     }
 
+    // Clean database at the start
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -37,9 +41,6 @@ describe('OrdersService', () => {
     // Drop the schema completely (cascades all tables)
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
-
-    // Recreate the structure
-    await testDataSource.synchronize();
   });
 
   afterAll(async () => {
