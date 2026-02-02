@@ -290,7 +290,7 @@ export class ApiClient {
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
     return data as number;
-}
+  }
 }
 
 export default new ApiClient();
