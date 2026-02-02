@@ -31,7 +31,7 @@ export class UpdateManufacturerEntity1768680807820
           'None of the above'
         );
 
-        CREATE TYPE "status_enum" AS ENUM (
+        CREATE TYPE "application_status_enum" AS ENUM (
           'approved',
           'denied',
           'pending'
@@ -39,10 +39,10 @@ export class UpdateManufacturerEntity1768680807820
 
         ALTER TABLE pantries
           ALTER COLUMN status DROP DEFAULT,
-          ALTER COLUMN status TYPE status_enum USING (status::text::status_enum),
+          ALTER COLUMN status TYPE application_status_enum USING (status::text::application_status_enum),
           ALTER COLUMN status SET DEFAULT 'pending';
 
-        DROP TYPE "pantries_status_enum";
+        DROP TYPE IF EXISTS "pantries_status_enum";
 
         ALTER TABLE food_manufacturers
           ADD COLUMN food_manufacturer_website VARCHAR(255) NOT NULL DEFAULT 'https://example.com',
@@ -54,13 +54,13 @@ export class UpdateManufacturerEntity1768680807820
           ADD COLUMN facility_free_allergens allergen_enum[] NOT NULL DEFAULT ARRAY['Gluten']::allergen_enum[],
           ADD COLUMN products_gluten_free BOOLEAN NOT NULL DEFAULT false,
           ADD COLUMN products_contain_sulfites BOOLEAN NOT NULL DEFAULT false,
-          ADD COLUMN products_sustainable_explanation VARCHAR(255) NOT NULL DEFAULT 'Not provided',
+          ADD COLUMN products_sustainable_explanation TEXT NOT NULL DEFAULT 'Not provided',
           ADD COLUMN in_kind_donations BOOLEAN NOT NULL DEFAULT false,
           ADD COLUMN donate_wasted_food donate_wasted_food_enum NOT NULL DEFAULT 'Never',
           ADD COLUMN manufacturer_attribute manufacturer_attribute_enum,
-          ADD COLUMN additional_comments VARCHAR(255),
+          ADD COLUMN additional_comments TEXT,
           ADD COLUMN newsletter_subscription BOOLEAN,
-          ADD COLUMN status status_enum NOT NULL DEFAULT 'pending',
+          ADD COLUMN status application_status_enum NOT NULL DEFAULT 'pending',
           ADD COLUMN date_applied TIMESTAMP NOT NULL DEFAULT NOW();
 
         ALTER TABLE food_manufacturers
@@ -109,7 +109,7 @@ export class UpdateManufacturerEntity1768680807820
             ALTER COLUMN status TYPE pantries_status_enum USING (status::text::pantries_status_enum),
             ALTER COLUMN status SET DEFAULT 'pending';
 
-          DROP TYPE IF EXISTS "status_enum";
+          DROP TYPE IF EXISTS "application_status_enum";
         `);
   }
 }

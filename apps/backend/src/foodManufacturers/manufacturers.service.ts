@@ -6,7 +6,7 @@ import { validateId } from '../utils/validation.utils';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
-import { Status } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -32,7 +32,7 @@ export class FoodManufacturersService {
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
     return await this.repo.find({
-      where: { status: Status.PENDING },
+      where: { status: ApplicationStatus.PENDING },
       relations: ['foodManufacturerRepresentative'],
     });
   }
@@ -97,7 +97,7 @@ export class FoodManufacturersService {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
-    await this.repo.update(id, { status: Status.APPROVED });
+    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
   }
 
   async deny(id: number) {
@@ -110,6 +110,6 @@ export class FoodManufacturersService {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
-    await this.repo.update(id, { status: Status.DENIED });
+    await this.repo.update(id, { status: ApplicationStatus.DENIED });
   }
 }

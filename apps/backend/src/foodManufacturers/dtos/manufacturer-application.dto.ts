@@ -89,7 +89,6 @@ export class FoodManufacturerApplicationDto {
 
   @IsString()
   @IsNotEmpty()
-  @Length(1, 255)
   productsSustainableExplanation: string;
 
   @IsBoolean()
@@ -105,7 +104,6 @@ export class FoodManufacturerApplicationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   additionalComments?: string;
 
   @IsOptional()

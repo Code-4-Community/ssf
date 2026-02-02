@@ -8,23 +8,19 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Donation } from '../donations/donations.entity';
-import {
-  Allergen,
-  DonateWastedFood,
-  ManufacturerAttribute,
-  Status,
-} from './types';
+import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 @Entity('food_manufacturers')
 export class FoodManufacturer {
   @PrimaryGeneratedColumn({ name: 'food_manufacturer_id' })
-  foodManufacturerId: number;
+  foodManufacturerId!: number;
 
   @Column({ name: 'food_manufacturer_name', type: 'varchar', length: 255 })
-  foodManufacturerName: string;
+  foodManufacturerName!: string;
 
   @Column({ name: 'food_manufacturer_website', type: 'varchar', length: 255 })
-  foodManufacturerWebsite: string;
+  foodManufacturerWebsite!: string;
 
   @OneToOne(() => User, {
     nullable: false,
@@ -35,7 +31,7 @@ export class FoodManufacturer {
     name: 'food_manufacturer_representative_id',
     referencedColumnName: 'id',
   })
-  foodManufacturerRepresentative: User;
+  foodManufacturerRepresentative!: User;
 
   @Column({
     name: 'secondary_contact_first_name',
@@ -73,35 +69,35 @@ export class FoodManufacturer {
     name: 'unlisted_product_allergens',
     type: 'enum',
     enum: Allergen,
-    enumName: 'unlisted_product_allergens_enum',
+    enumName: 'allergen_enum',
     array: true,
   })
-  unlistedProductAllergens: Allergen[];
+  unlistedProductAllergens!: Allergen[];
 
   @Column({
     name: 'facility_free_allergens',
     type: 'enum',
     enum: Allergen,
-    enumName: 'facility_free_allergens_enum',
+    enumName: 'allergen_enum',
     array: true,
   })
-  facilityFreeAllergens: Allergen[];
+  facilityFreeAllergens!: Allergen[];
 
   @Column({ name: 'products_gluten_free', type: 'boolean' })
-  productsGlutenFree: boolean;
+  productsGlutenFree!: boolean;
 
   @Column({ name: 'products_contain_sulfites', type: 'boolean' })
-  productsContainSulfites: boolean;
+  productsContainSulfites!: boolean;
 
   @Column({
     name: 'products_sustainable_explanation',
     type: 'varchar',
     length: 255,
   })
-  productsSustainableExplanation: string;
+  productsSustainableExplanation!: string;
 
   @Column({ name: 'in_kind_donations', type: 'boolean' })
-  inKindDonations: boolean;
+  inKindDonations!: boolean;
 
   @Column({
     name: 'donate_wasted_food',
@@ -109,7 +105,7 @@ export class FoodManufacturer {
     enum: DonateWastedFood,
     enumName: 'donate_wasted_food_enum',
   })
-  donateWastedFood: DonateWastedFood;
+  donateWastedFood!: DonateWastedFood;
 
   @Column({
     name: 'manufacturer_attribute',
@@ -137,15 +133,15 @@ export class FoodManufacturer {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: Status,
-    enumName: 'status_enum',
+    enum: ApplicationStatus,
+    enumName: 'application_status_enum',
   })
-  status: Status;
+  status!: ApplicationStatus;
 
   @Column({
     name: 'date_applied',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  dateApplied: Date;
+  dateApplied!: Date;
 }

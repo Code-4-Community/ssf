@@ -24,12 +24,6 @@ export enum ServeAllergicChildren {
   NO = 'No',
 }
 
-export enum Status {
-  APPROVED = 'approved',
-  DENIED = 'denied',
-  PENDING = 'pending',
-}
-
 export enum Activity {
   CREATE_LABELED_SHELF = 'Create labeled shelf',
   PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide educational pamphlets',

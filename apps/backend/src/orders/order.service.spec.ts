@@ -11,9 +11,9 @@ import {
   ClientVisitFrequency,
   RefrigeratedDonation,
   ServeAllergicChildren,
-  Status,
 } from '../pantries/types';
 import { OrderStatus } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 const mockOrdersRepository = mock<Repository<Order>>();
 
@@ -31,7 +31,7 @@ const mockPantry: Partial<Pantry> = {
   newsletterSubscription: false,
   restrictions: [],
   pantryUser: null as unknown as User,
-  status: Status.APPROVED,
+  status: ApplicationStatus.APPROVED,
   dateApplied: new Date(),
   activities: [],
   activitiesComments: '',

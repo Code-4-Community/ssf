@@ -3,7 +3,8 @@ import { FoodManufacturersService } from './manufacturers.service';
 import { FoodManufacturersController } from './manufacturers.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { FoodManufacturer } from './manufacturers.entity';
-import { Allergen, DonateWastedFood, Status } from './types';
+import { Allergen, DonateWastedFood } from './types';
+import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
@@ -11,13 +12,13 @@ const mockManufacturersService = mock<FoodManufacturersService>();
 const mockManufacturer1: Partial<FoodManufacturer> = {
   foodManufacturerId: 1,
   foodManufacturerName: 'Good Foods Inc',
-  status: Status.PENDING,
+  status: ApplicationStatus.PENDING,
 };
 
 const mockManufacturer2: Partial<FoodManufacturer> = {
   foodManufacturerId: 2,
   foodManufacturerName: 'Healthy Eats LLC',
-  status: Status.PENDING,
+  status: ApplicationStatus.PENDING,
 };
 
 describe('FoodManufacturersController', () => {

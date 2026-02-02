@@ -51,7 +51,6 @@ export class PantryApplicationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   emailContactOther?: string;
 
   @IsOptional()
@@ -170,7 +169,6 @@ export class PantryApplicationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   deliveryWindowInstructions?: string;
 
   @IsEnum(ReserveFoodForAllergic)
@@ -180,7 +178,6 @@ export class PantryApplicationDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   reservationExplanation?: string;
 
   @IsBoolean()

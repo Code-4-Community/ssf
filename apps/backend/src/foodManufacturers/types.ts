@@ -12,12 +12,6 @@ export enum DonateWastedFood {
   NEVER = 'Never',
 }
 
-export enum Status {
-  APPROVED = 'approved',
-  DENIED = 'denied',
-  PENDING = 'pending',
-}
-
 export enum Allergen {
   MILK = 'Milk',
   EGG = 'Egg',
