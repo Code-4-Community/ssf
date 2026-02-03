@@ -54,8 +54,8 @@ export class Donation {
   })
   recurrance: RecourranceEnum;
 
-  @Column({ name: 'recurrance_value', type: 'int', nullable: true })
-  recurranceValue: number;
+  @Column({ name: 'recurrance_freq', type: 'int', nullable: true })
+  recurranceFreq: number;
 
   @Column({
     name: 'next_donation_dates',

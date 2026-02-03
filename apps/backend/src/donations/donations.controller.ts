@@ -60,7 +60,7 @@ export class DonationsController {
           example: RecourranceEnum.ONCE,
           nullable: true,
         },
-        recurranceValue: { type: 'integer', example: 1, nullable: true },
+        recurranceFreq: { type: 'integer', example: 1, nullable: true },
         nextDonationDates: {
           type: 'array',
           items: { type: 'string', format: 'date-time' },
@@ -81,7 +81,7 @@ export class DonationsController {
       totalOz: number;
       totalEstimatedValue: number;
       recurrance: RecourranceEnum;
-      recurranceValue?: number;
+      recurranceFreq?: number;
       nextDonationDates?: Date[];
       occurances?: number;
     },
@@ -96,7 +96,7 @@ export class DonationsController {
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
       body.recurrance != RecourranceEnum.ONCE &&
-      (!body.recurranceValue || !body.nextDonationDates || !body.occurances)
+      (!body.recurranceFreq || !body.nextDonationDates || !body.occurances)
     ) {
       throw new BadRequestException('Recurrance details are incomplete');
     }
@@ -108,7 +108,7 @@ export class DonationsController {
       body.totalOz,
       body.totalEstimatedValue,
       body.recurrance ?? RecourranceEnum.ONCE,
-      body.recurranceValue ?? null,
+      body.recurranceFreq ?? null,
       body.nextDonationDates ?? null,
       body.occurances ?? null,
     );

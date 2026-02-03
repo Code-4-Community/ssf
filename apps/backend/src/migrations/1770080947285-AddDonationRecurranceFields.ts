@@ -16,7 +16,7 @@ export class AddDonationRecurranceFields1770080947285
     await queryRunner.query(`
             ALTER TABLE donations
             ADD COLUMN recurrance donation_recurrance_enum NOT NULL DEFAULT 'once',
-            ADD COLUMN recurrance_value INTEGER,
+            ADD COLUMN recurrance_freq INTEGER,
             ADD COLUMN next_donation_dates TIMESTAMP WITH TIME ZONE[],
             ADD COLUMN occurances INTEGER;
         `);
@@ -25,12 +25,12 @@ export class AddDonationRecurranceFields1770080947285
             ALTER TABLE donations
             ADD CONSTRAINT recurrance_fields_not_null CHECK (
             (recurrance = 'once'
-                AND recurrance_value IS NULL
+                AND recurrance_freq IS NULL
                 AND next_donation_dates IS NULL
                 AND occurances IS NULL)
             OR
             (recurrance != 'once'
-                AND recurrance_value IS NOT NULL
+                AND recurrance_freq IS NOT NULL
                 AND next_donation_dates IS NOT NULL
                 AND occurances IS NOT NULL)
             );
@@ -42,7 +42,7 @@ export class AddDonationRecurranceFields1770080947285
             ALTER TABLE donations
             DROP CONSTRAINT recurrance_fields_not_null,
             DROP COLUMN recurrance,
-            DROP COLUMN recurrance_value,
+            DROP COLUMN recurrance_freq,
             DROP COLUMN next_donation_dates,
             DROP COLUMN occurances;
 
