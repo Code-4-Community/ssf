@@ -11,6 +11,7 @@ import {
   ClientVisitFrequency,
   PantryStatus,
   RefrigeratedDonation,
+  ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from '../pantries/types';
 import { OrderStatus } from './types';
@@ -22,7 +23,7 @@ const mockPantry: Partial<Pantry> = {
   pantryName: 'Test Pantry',
   allergenClients: '',
   refrigeratedDonation: RefrigeratedDonation.NO,
-  reserveFoodForAllergic: 'Yes',
+  reserveFoodForAllergic: ReserveFoodForAllergic.YES,
   reservationExplanation: '',
   dedicatedAllergyFriendly: false,
   clientVisitFrequency: ClientVisitFrequency.DAILY,

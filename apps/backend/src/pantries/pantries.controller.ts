@@ -236,7 +236,7 @@ export class PantriesController {
   @Put('/:pantryId/volunteers')
   async updatePantryVolunteers(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-    @Body() volunteerIds: number[],
+    @Body('volunteerIds') volunteerIds: number[],
   ): Promise<void> {
     return this.pantriesService.updatePantryVolunteers(pantryId, volunteerIds);
   }
