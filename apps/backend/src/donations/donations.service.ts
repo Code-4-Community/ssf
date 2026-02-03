@@ -78,4 +78,9 @@ export class DonationService {
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
   }
+
+  async handleRecurringDonations(): Promise<void> {
+    console.log('Accessing donation service from cron job');
+    // TODO: Implement logic for sending reminder emails
+  }
 }
