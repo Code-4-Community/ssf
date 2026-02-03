@@ -33,14 +33,6 @@ export interface AssignedVolunteer {
   role: string;
 }
 
-export interface AssignedVolunteer {
-  userId: number;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-}
-
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',

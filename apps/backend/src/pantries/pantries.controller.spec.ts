@@ -11,8 +11,8 @@ import {
   ClientVisitFrequency,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  RefrigeratedDonation,
 } from './types';
-import { RefrigeratedDonation } from './types';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
