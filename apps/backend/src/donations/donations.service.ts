@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { DonationStatus } from './types';
+import { DonationStatus, RecourranceEnum } from './types';
 
 @Injectable()
 export class DonationService {
@@ -45,7 +45,11 @@ export class DonationService {
     totalItems: number,
     totalOz: number,
     totalEstimatedValue: number,
-  ) {
+    recurrance: RecourranceEnum,
+    recurranceValue: number,
+    nextDonationDates: Date[] | null,
+    occurances: number | null,
+  ): Promise<Donation> {
     validateId(foodManufacturerId, 'Food Manufacturer');
     const manufacturer = await this.manufacturerRepo.findOne({
       where: { foodManufacturerId },
@@ -63,6 +67,10 @@ export class DonationService {
       totalItems,
       totalOz,
       totalEstimatedValue,
+      recurrance,
+      recurranceValue,
+      nextDonationDates,
+      occurances,
     });
 
     return this.repo.save(donation);

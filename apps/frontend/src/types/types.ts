@@ -103,6 +103,13 @@ export enum DonationStatus {
   MATCHING = 'matching',
 }
 
+export enum RecourranceEnum {
+  ONCE = 'once',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;

@@ -3,3 +3,10 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
   MATCHING = 'matching',
 }
+
+export enum RecourranceEnum {
+  ONCE = 'once',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}

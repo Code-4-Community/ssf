@@ -12,7 +12,7 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationStatus } from './types';
+import { DonationStatus, RecourranceEnum } from './types';
 
 @Controller('donations')
 export class DonationsController {
@@ -54,6 +54,20 @@ export class DonationsController {
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
+        recurrance: {
+          type: 'string',
+          enum: Object.values(RecourranceEnum),
+          example: RecourranceEnum.ONCE,
+          nullable: true,
+        },
+        recurranceValue: { type: 'integer', example: 1, nullable: true },
+        nextDonationDates: {
+          type: 'array',
+          items: { type: 'string', format: 'date-time' },
+          example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
+          nullable: true,
+        },
+        occurances: { type: 'integer', example: 2, nullable: true},
       },
     },
   })
@@ -66,6 +80,10 @@ export class DonationsController {
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
+      recurrance: RecourranceEnum;
+      recurranceValue?: number;
+      nextDonationDates?: Date[];
+      occurances?: number;
     },
   ): Promise<Donation> {
     if (
@@ -74,6 +92,14 @@ export class DonationsController {
     ) {
       throw new BadRequestException('Invalid status');
     }
+    // If we got a recurrance, we should have all of these values
+    // The next donation dates should be a list of dates we will get from the frontend accordingly
+    if(
+      body.recurrance != RecourranceEnum.ONCE &&
+      (!body.recurranceValue || !body.nextDonationDates || !body.occurances)
+    ) {
+      throw new BadRequestException('Recurrance details are incomplete');
+    }
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
@@ -81,6 +107,10 @@ export class DonationsController {
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
+      body.recurrance ?? RecourranceEnum.ONCE,
+      body.recurranceValue ?? null,
+      body.nextDonationDates ?? null,
+      body.occurances ?? null,
     );
   }
 
