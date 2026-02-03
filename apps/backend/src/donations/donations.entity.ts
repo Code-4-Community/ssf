@@ -45,13 +45,24 @@ export class Donation {
   @Column({ name: 'total_estimated_value', type: 'int', nullable: true })
   totalEstimatedValue: number;
 
-  @Column({ name: 'recurrance', type: 'enum', enum: RecourranceEnum, enumName: 'donation_recurrance_enum', default: RecourranceEnum.ONCE })
+  @Column({
+    name: 'recurrance',
+    type: 'enum',
+    enum: RecourranceEnum,
+    enumName: 'donation_recurrance_enum',
+    default: RecourranceEnum.ONCE,
+  })
   recurrance: RecourranceEnum;
 
   @Column({ name: 'recurrance_value', type: 'int', nullable: true })
   recurranceValue: number;
 
-  @Column({ name: 'next_donation_dates', type: 'timestamptz', array: true, nullable: true })
+  @Column({
+    name: 'next_donation_dates',
+    type: 'timestamptz',
+    array: true,
+    nullable: true,
+  })
   nextDonationDates: Date[];
 
   @Column({ name: 'occurances', type: 'int', nullable: true })

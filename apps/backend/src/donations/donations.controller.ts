@@ -67,7 +67,7 @@ export class DonationsController {
           example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
           nullable: true,
         },
-        occurances: { type: 'integer', example: 2, nullable: true},
+        occurances: { type: 'integer', example: 2, nullable: true },
       },
     },
   })
@@ -94,7 +94,7 @@ export class DonationsController {
     }
     // If we got a recurrance, we should have all of these values
     // The next donation dates should be a list of dates we will get from the frontend accordingly
-    if(
+    if (
       body.recurrance != RecourranceEnum.ONCE &&
       (!body.recurranceValue || !body.nextDonationDates || !body.occurances)
     ) {

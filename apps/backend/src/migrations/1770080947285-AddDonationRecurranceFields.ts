@@ -1,8 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddDonationRecurranceFields1770080947285 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+export class AddDonationRecurranceFields1770080947285
+  implements MigrationInterface
+{
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             CREATE TYPE donation_recurrance_enum AS ENUM (
                 'once',
                 'weekly',
@@ -10,8 +12,8 @@ export class AddDonationRecurranceFields1770080947285 implements MigrationInterf
                 'yearly'
             );
         `);
-        
-        await queryRunner.query(`
+
+    await queryRunner.query(`
             ALTER TABLE donations
             ADD COLUMN recurrance donation_recurrance_enum NOT NULL DEFAULT 'once',
             ADD COLUMN recurrance_value INTEGER,
@@ -19,7 +21,7 @@ export class AddDonationRecurranceFields1770080947285 implements MigrationInterf
             ADD COLUMN occurances INTEGER;
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE donations
             ADD CONSTRAINT recurrance_fields_not_null CHECK (
             (recurrance = 'once'
@@ -33,11 +35,10 @@ export class AddDonationRecurranceFields1770080947285 implements MigrationInterf
                 AND occurances IS NOT NULL)
             );
         `);
-    }
+  }
 
-
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             ALTER TABLE donations
             DROP CONSTRAINT recurrance_fields_not_null,
             DROP COLUMN recurrance,
@@ -47,5 +48,5 @@ export class AddDonationRecurranceFields1770080947285 implements MigrationInterf
 
             DROP TYPE donation_recurrance_enum;
         `);
-    }
+  }
 }
