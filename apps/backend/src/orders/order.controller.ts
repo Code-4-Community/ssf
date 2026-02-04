@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   BadRequestException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
@@ -15,6 +16,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
+import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -103,13 +105,12 @@ export class OrdersController {
   @Patch('/:orderId/update-tracking-and-cost')
   async updateTrackingAndCost(
     @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('trackingLink') trackingLink: string,
-    @Body('shippingCost') shippingCost: string,
+    @Body(new ValidationPipe())
+    dto: TrackingCostDto,
   ): Promise<void> {
     return this.ordersService.updateTrackingAndCost(
       orderId,
-      trackingLink,
-      shippingCost,
+      dto,
     );
   }
 }

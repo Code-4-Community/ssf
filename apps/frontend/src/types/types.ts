@@ -198,6 +198,8 @@ export interface Order {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+  trackingLink: string | null;
+  shippingCost: number | null;
 }
 
 export interface OrderItemDetails {

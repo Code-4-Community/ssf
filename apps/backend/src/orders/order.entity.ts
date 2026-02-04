@@ -93,5 +93,5 @@ export class Order {
     scale: 2,
     nullable: true,
   })
-  shippingCost?: string;
+  shippingCost?: number;
 }

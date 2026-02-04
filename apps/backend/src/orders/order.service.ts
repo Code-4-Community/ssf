@@ -7,6 +7,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
+import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
 @Injectable()
 export class OrdersService {
@@ -150,8 +151,7 @@ export class OrdersService {
 
   async updateTrackingAndCost(
     orderId: number,
-    trackingLink: string,
-    shippingCost: string,
+    dto: TrackingCostDto,
   ) {
     validateId(orderId, 'Order');
 
@@ -159,8 +159,8 @@ export class OrdersService {
       .createQueryBuilder()
       .update(Order)
       .set({
-        trackingLink: trackingLink,
-        shippingCost: shippingCost,
+        trackingLink: dto.trackingLink,
+        shippingCost: dto.shippingCost,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
