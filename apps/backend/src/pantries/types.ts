@@ -23,6 +23,7 @@ export interface ApprovedPantryResponse {
   itemsInStock: string;
   needMoreOptions: string;
   newsletterSubscription: boolean;
+  volunteers: AssignedVolunteer[];
 }
 
 export interface AssignedVolunteer {

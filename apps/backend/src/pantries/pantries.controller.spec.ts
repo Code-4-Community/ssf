@@ -7,6 +7,7 @@ import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
+import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -22,15 +23,6 @@ const mockOrdersService = mock<OrdersService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
-
-  const mockUser = {
-    id: 1,
-    role: Role.VOLUNTEER,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: '',
-    phone: '123-456-7890',
-  };
 
   // Mock Pantry
   const mockPantry = {
@@ -284,6 +276,22 @@ describe('PantriesController', () => {
           needMoreOptions: 'Gluten-free and nut-free items',
 
           newsletterSubscription: true,
+          volunteers: [
+            {
+              userId: 10,
+              name: 'Alice Johnson',
+              email: 'alice.johnson@example.com',
+              phone: '(617) 555-0100',
+              role: 'Volunteer Coordinator',
+            },
+            {
+              userId: 11,
+              name: 'Bob Williams',
+              email: 'bob.williams@example.com',
+              phone: '(617) 555-0101',
+              role: 'Food Distributor',
+            },
+          ],
         },
       ];
 

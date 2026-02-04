@@ -142,6 +142,13 @@ export class PantriesService {
       itemsInStock: pantry.itemsInStock,
       needMoreOptions: pantry.needMoreOptions,
       newsletterSubscription: pantry.newsletterSubscription ?? false,
+      volunteers: pantry.volunteers.map((volunteer) => ({
+        userId: volunteer.id,
+        name: `${volunteer.firstName} ${volunteer.lastName}`,
+        email: volunteer.email,
+        phone: volunteer.phone,
+        role: volunteer.role,
+      })),
     }));
   }
 
