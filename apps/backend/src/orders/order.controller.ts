@@ -108,9 +108,6 @@ export class OrdersController {
     @Body(new ValidationPipe())
     dto: TrackingCostDto,
   ): Promise<void> {
-    return this.ordersService.updateTrackingAndCost(
-      orderId,
-      dto,
-    );
+    return this.ordersService.updateTrackingAndCost(orderId, dto);
   }
 }

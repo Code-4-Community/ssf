@@ -149,10 +149,7 @@ export class OrdersService {
     return orders;
   }
 
-  async updateTrackingAndCost(
-    orderId: number,
-    dto: TrackingCostDto,
-  ) {
+  async updateTrackingAndCost(orderId: number, dto: TrackingCostDto) {
     validateId(orderId, 'Order');
 
     await this.repo

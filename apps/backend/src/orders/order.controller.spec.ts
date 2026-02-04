@@ -82,10 +82,7 @@ describe('OrdersController', () => {
       const shippingCost = 15.99;
       const dto: TrackingCostDto = { trackingLink, shippingCost };
 
-      await controller.updateTrackingAndCost(
-        orderId,
-        dto,
-      );
+      await controller.updateTrackingAndCost(orderId, dto);
 
       expect(mockOrdersService.updateTrackingAndCost).toHaveBeenCalledWith(
         orderId,
