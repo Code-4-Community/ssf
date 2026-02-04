@@ -107,7 +107,7 @@ export class DonationsController {
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
-      body.recurrance ?? RecourranceEnum.ONCE,
+      body.recurrance,
       body.recurranceFreq ?? null,
       body.nextDonationDates ?? null,
       body.occurances ?? null,
