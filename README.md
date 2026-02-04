@@ -10,7 +10,8 @@ yarn install
 
 To set up your backend, follow the backend-specific instructions [here](apps/backend/README.md).
 
-*Note: you may need to prefix your `nx` commands with `npx`. For example, to serve the frontend, if:
+\*Note: you may need to prefix your `nx` commands with `npx`. For example, to serve the frontend, if:
+
 ```
 nx serve frontend
 ```
@@ -24,6 +25,7 @@ npx nx serve frontend
 ## Start the app
 
 To start the development server, run one of the following commands:
+
 - To run the frontend at http://localhost:4200/: `nx serve frontend`
 - To run the backend at http://localhost:3000/: `nx serve backend`
   - The homepage includes the Swagger API documentation.
