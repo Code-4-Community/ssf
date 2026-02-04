@@ -106,7 +106,7 @@ const LoginPage: React.FC = () => {
                 variant="outline"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
-                <Eye color="#CFCFCF"></Eye>
+                <Eye color="neutral.200"></Eye>
               </IconButton>
             </Group>
           </Field.Root>
@@ -115,7 +115,7 @@ const LoginPage: React.FC = () => {
             bgColor="neutral.800"
             w="full"
             onClick={handleLogin}
-            borderRadius={5}
+            borderRadius={4}
             color="white"
             textStyle="p2"
             fontWeight={600}
@@ -136,7 +136,7 @@ const LoginPage: React.FC = () => {
           </Link>
         </Text>
 
-        <Text fontSize="sm" textAlign="center" mt={12}>
+        <Text fontSize="sm" textAlign="center" mt={12} fontWeight={400}>
           <Link color="red" onClick={() => navigate('/forgot-password')}>
             Reset Password
           </Link>

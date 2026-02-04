@@ -32,6 +32,7 @@ const ResetPasswordModal: React.FC = () => {
   const handleResendCode = async () => {
     try {
       await resetPassword({ username: email });
+      alert('Successfully sent verification code')
     } catch (error) {
       alert(error || 'Failed to send verification code');
     }
@@ -70,6 +71,13 @@ const ResetPasswordModal: React.FC = () => {
     fontWeight: '400',
   };
 
+  const inputStyles = {
+    borderColor: 'neutral.100',
+    textStyle: 'p2',
+    color: 'neutral.700',
+    _placeholder: { ...placeholderStyles },
+  }
+
   return (
     <Box
       maxW="500px"
@@ -97,12 +105,9 @@ const ResetPasswordModal: React.FC = () => {
           </Field.Label>
           <Input
             key={step}
-            type={step === 'new' ? 'password' : 'text'}
-            borderColor="neutral.100"
+            type='text'
             placeholder={step === 'reset' ? 'Enter Email' : 'Enter Code'}
-            textStyle="p2"
-            color="neutral.700"
-            _placeholder={{ ...placeholderStyles }}
+            {...inputStyles}
             onChange={
               step === 'new'
                 ? (e) => setCode(e.target.value)
@@ -117,11 +122,8 @@ const ResetPasswordModal: React.FC = () => {
               <Field.Label {...fieldHeaderStyles}>New Password</Field.Label>
               <Input
                 type="password"
-                borderColor="neutral.100"
                 placeholder="Enter new password"
-                textStyle="p2"
-                color="neutral.700"
-                _placeholder={{ ...placeholderStyles }}
+                {...inputStyles}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Field.Root>
@@ -129,11 +131,8 @@ const ResetPasswordModal: React.FC = () => {
               <Field.Label {...fieldHeaderStyles}>Confirm Password</Field.Label>
               <Input
                 type="password"
-                borderColor="neutral.100"
                 placeholder="Confirm Password"
-                textStyle="p2"
-                color="neutral.700"
-                _placeholder={{ ...placeholderStyles }}
+                {...inputStyles}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </Field.Root>
@@ -184,6 +183,7 @@ const ResetPasswordModal: React.FC = () => {
           color="neutral.600"
           onClick={() => navigate('/login')}
           variant="underline"
+          textDecorationColor="neutral.600"
         >
           Login
         </Link>

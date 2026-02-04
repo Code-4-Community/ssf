@@ -34,7 +34,7 @@ const SignupPage: React.FC = () => {
           </Box>
 
           <Button
-            bgColor="#F89E19"
+            bgColor="yellow"
             w="full"
             borderRadius={5}
             color="white"
@@ -64,6 +64,7 @@ const SignupPage: React.FC = () => {
             color="neutral.600"
             onClick={() => navigate('/login')}
             variant="underline"
+            textDecorationColor="neutral.600"
           >
             Log in
           </Link>
