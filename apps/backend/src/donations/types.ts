@@ -5,7 +5,7 @@ export enum DonationStatus {
 }
 
 export enum RecurrenceEnum {
-  ONCE = 'once',
+  NONE = 'none',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   YEARLY = 'yearly',

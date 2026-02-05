@@ -6,7 +6,7 @@ export class AddDonationRecurrenceFields1770080947285
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TYPE donation_recurrence_enum AS ENUM (
-                'once',
+                'none',
                 'weekly',
                 'monthly',
                 'yearly'
@@ -15,7 +15,7 @@ export class AddDonationRecurrenceFields1770080947285
 
     await queryRunner.query(`
             ALTER TABLE donations
-            ADD COLUMN recurrence donation_recurrence_enum NOT NULL DEFAULT 'once',
+            ADD COLUMN recurrence donation_recurrence_enum NOT NULL DEFAULT 'none',
             ADD COLUMN recurrence_freq INTEGER,
             ADD COLUMN next_donation_dates TIMESTAMP WITH TIME ZONE[],
             ADD COLUMN occurences INTEGER;
@@ -24,12 +24,12 @@ export class AddDonationRecurrenceFields1770080947285
     await queryRunner.query(`
             ALTER TABLE donations
             ADD CONSTRAINT recurrence_fields_not_null CHECK (
-            (recurrence = 'once'
+            (recurrence = 'none'
                 AND recurrence_freq IS NULL
                 AND next_donation_dates IS NULL
                 AND occurences IS NULL)
             OR
-            (recurrence != 'once'
+            (recurrence != 'none'
                 AND recurrence_freq IS NOT NULL
                 AND next_donation_dates IS NOT NULL
                 AND occurences IS NOT NULL)

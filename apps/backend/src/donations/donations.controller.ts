@@ -57,8 +57,7 @@ export class DonationsController {
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),
-          example: RecurrenceEnum.ONCE,
-          nullable: true,
+          example: RecurrenceEnum.NONE,
         },
         recurrenceFreq: { type: 'integer', example: 1, nullable: true },
         nextDonationDates: {
@@ -95,7 +94,7 @@ export class DonationsController {
     // If we got a recurrence, we should have all of these values
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
-      body.recurrence != RecurrenceEnum.ONCE &&
+      body.recurrence != RecurrenceEnum.NONE &&
       (!body.recurrenceFreq || !body.nextDonationDates || !body.occurences)
     ) {
       throw new BadRequestException('recurrence details are incomplete');
@@ -108,7 +107,7 @@ export class DonationsController {
       body.totalOz,
       body.totalEstimatedValue,
       body.recurrence,
-      body.recurrenceFreq ?? null,
+      body.recurrenceFreq ?? 0,
       body.nextDonationDates ?? null,
       body.occurences ?? null,
     );
