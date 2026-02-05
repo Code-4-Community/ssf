@@ -116,7 +116,10 @@ export class OrdersService {
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
     validateId(orderId, 'Order');
 
-    const order = await this.findOne(orderId);
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['foodManufacturer'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
