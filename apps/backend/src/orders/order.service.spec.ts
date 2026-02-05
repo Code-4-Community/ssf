@@ -5,6 +5,9 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 
+// Set 1 minute timeout for async DB operations
+jest.setTimeout(60000);
+
 describe('OrdersService', () => {
   let service: OrdersService;
 
