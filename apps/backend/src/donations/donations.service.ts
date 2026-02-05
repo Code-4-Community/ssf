@@ -45,8 +45,8 @@ export class DonationService {
     totalItems: number,
     totalOz: number,
     totalEstimatedValue: number,
-    recurrance: RecourranceEnum,
-    recurranceFreq: number,
+    recurrence: RecourranceEnum,
+    recurrenceFreq: number,
     nextDonationDates: Date[] | null,
     occurances: number | null,
   ): Promise<Donation> {
@@ -67,8 +67,8 @@ export class DonationService {
       totalItems,
       totalOz,
       totalEstimatedValue,
-      recurrance,
-      recurranceFreq,
+      recurrence,
+      recurrenceFreq,
       nextDonationDates,
       occurances,
     });

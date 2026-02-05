@@ -54,13 +54,13 @@ export class DonationsController {
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
-        recurrance: {
+        recurrence: {
           type: 'string',
           enum: Object.values(RecourranceEnum),
           example: RecourranceEnum.ONCE,
           nullable: true,
         },
-        recurranceFreq: { type: 'integer', example: 1, nullable: true },
+        recurrenceFreq: { type: 'integer', example: 1, nullable: true },
         nextDonationDates: {
           type: 'array',
           items: { type: 'string', format: 'date-time' },
@@ -80,8 +80,8 @@ export class DonationsController {
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
-      recurrance: RecourranceEnum;
-      recurranceFreq?: number;
+      recurrence: RecourranceEnum;
+      recurrenceFreq?: number;
       nextDonationDates?: Date[];
       occurances?: number;
     },
@@ -92,13 +92,13 @@ export class DonationsController {
     ) {
       throw new BadRequestException('Invalid status');
     }
-    // If we got a recurrance, we should have all of these values
+    // If we got a recurrence, we should have all of these values
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
-      body.recurrance != RecourranceEnum.ONCE &&
-      (!body.recurranceFreq || !body.nextDonationDates || !body.occurances)
+      body.recurrence != RecourranceEnum.ONCE &&
+      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurances)
     ) {
-      throw new BadRequestException('Recurrance details are incomplete');
+      throw new BadRequestException('recurrence details are incomplete');
     }
     return this.donationService.create(
       body.foodManufacturerId,
@@ -107,8 +107,8 @@ export class DonationsController {
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
-      body.recurrance,
-      body.recurranceFreq ?? null,
+      body.recurrence,
+      body.recurrenceFreq ?? null,
       body.nextDonationDates ?? null,
       body.occurances ?? null,
     );

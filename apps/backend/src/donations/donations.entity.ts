@@ -46,16 +46,16 @@ export class Donation {
   totalEstimatedValue: number;
 
   @Column({
-    name: 'recurrance',
+    name: 'recurrence',
     type: 'enum',
     enum: RecourranceEnum,
-    enumName: 'donation_recurrance_enum',
+    enumName: 'donation_recurrence_enum',
     default: RecourranceEnum.ONCE,
   })
-  recurrance: RecourranceEnum;
+  recurrence: RecourranceEnum;
 
-  @Column({ name: 'recurrance_freq', type: 'int', nullable: true })
-  recurranceFreq: number;
+  @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
+  recurrenceFreq: number;
 
   @Column({
     name: 'next_donation_dates',
