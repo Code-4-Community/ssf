@@ -14,8 +14,8 @@
       "@public/*": ["../public/*"],
       "@shared/*": ["../../../shared/*"],
       "@utils/*": ["utils/*"],
-      "@loaders/*": ["loaders/*"],
-    },
+      "@loaders/*": ["loaders/*"]
+    }
   },
   "files": [],
   "include": [],
