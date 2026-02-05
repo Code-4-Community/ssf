@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { DonationStatus, RecourranceEnum } from './types';
+import { DonationStatus, RecurrenceEnum } from './types';
 
 @Injectable()
 export class DonationService {
@@ -45,10 +45,10 @@ export class DonationService {
     totalItems: number,
     totalOz: number,
     totalEstimatedValue: number,
-    recurrence: RecourranceEnum,
+    recurrence: RecurrenceEnum,
     recurrenceFreq: number,
     nextDonationDates: Date[] | null,
-    occurances: number | null,
+    occurences: number | null,
   ): Promise<Donation> {
     validateId(foodManufacturerId, 'Food Manufacturer');
     const manufacturer = await this.manufacturerRepo.findOne({
@@ -70,7 +70,7 @@ export class DonationService {
       recurrence,
       recurrenceFreq,
       nextDonationDates,
-      occurances,
+      occurences,
     });
 
     return this.repo.save(donation);

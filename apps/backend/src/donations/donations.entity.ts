@@ -7,7 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { DonationStatus, RecourranceEnum } from './types';
+import { DonationStatus, RecurrenceEnum } from './types';
 
 @Entity('donations')
 export class Donation {
@@ -48,11 +48,11 @@ export class Donation {
   @Column({
     name: 'recurrence',
     type: 'enum',
-    enum: RecourranceEnum,
+    enum: RecurrenceEnum,
     enumName: 'donation_recurrence_enum',
-    default: RecourranceEnum.ONCE,
+    default: RecurrenceEnum.ONCE,
   })
-  recurrence: RecourranceEnum;
+  recurrence: RecurrenceEnum;
 
   @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
   recurrenceFreq: number;
@@ -65,6 +65,6 @@ export class Donation {
   })
   nextDonationDates: Date[];
 
-  @Column({ name: 'occurances', type: 'int', nullable: true })
-  occurances: number;
+  @Column({ name: 'occurences', type: 'int', nullable: true })
+  occurences: number;
 }

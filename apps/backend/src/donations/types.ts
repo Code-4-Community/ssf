@@ -4,7 +4,7 @@ export enum DonationStatus {
   MATCHING = 'matching',
 }
 
-export enum RecourranceEnum {
+export enum RecurrenceEnum {
   ONCE = 'once',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',

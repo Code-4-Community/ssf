@@ -12,7 +12,7 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationStatus, RecourranceEnum } from './types';
+import { DonationStatus, RecurrenceEnum } from './types';
 
 @Controller('donations')
 export class DonationsController {
@@ -56,8 +56,8 @@ export class DonationsController {
         totalEstimatedValue: { type: 'integer', example: 1000 },
         recurrence: {
           type: 'string',
-          enum: Object.values(RecourranceEnum),
-          example: RecourranceEnum.ONCE,
+          enum: Object.values(RecurrenceEnum),
+          example: RecurrenceEnum.ONCE,
           nullable: true,
         },
         recurrenceFreq: { type: 'integer', example: 1, nullable: true },
@@ -67,7 +67,7 @@ export class DonationsController {
           example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
           nullable: true,
         },
-        occurances: { type: 'integer', example: 2, nullable: true },
+        occurences: { type: 'integer', example: 2, nullable: true },
       },
     },
   })
@@ -80,10 +80,10 @@ export class DonationsController {
       totalItems: number;
       totalOz: number;
       totalEstimatedValue: number;
-      recurrence: RecourranceEnum;
+      recurrence: RecurrenceEnum;
       recurrenceFreq?: number;
       nextDonationDates?: Date[];
-      occurances?: number;
+      occurences?: number;
     },
   ): Promise<Donation> {
     if (
@@ -95,8 +95,8 @@ export class DonationsController {
     // If we got a recurrence, we should have all of these values
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
-      body.recurrence != RecourranceEnum.ONCE &&
-      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurances)
+      body.recurrence != RecurrenceEnum.ONCE &&
+      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurences)
     ) {
       throw new BadRequestException('recurrence details are incomplete');
     }
@@ -110,7 +110,7 @@ export class DonationsController {
       body.recurrence,
       body.recurrenceFreq ?? null,
       body.nextDonationDates ?? null,
-      body.occurances ?? null,
+      body.occurences ?? null,
     );
   }
 
