@@ -8,7 +8,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { OrderStatus } from './types';
 import { Allocation } from '../allocations/allocations.entity';
@@ -17,13 +16,6 @@ import { Allocation } from '../allocations/allocations.entity';
 export class Order {
   @PrimaryGeneratedColumn({ name: 'order_id' })
   orderId: number;
-
-  @ManyToOne(() => Pantry, { nullable: false })
-  @JoinColumn({
-    name: 'pantry_id',
-    referencedColumnName: 'pantryId',
-  })
-  pantry: Pantry;
 
   @ManyToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
