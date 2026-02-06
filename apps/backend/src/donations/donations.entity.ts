@@ -52,7 +52,7 @@ export class Donation {
     enumName: 'donation_recurrence_enum',
     default: RecurrenceEnum.NONE,
   })
-  recurrence: RecurrenceEnum;
+  recurrence!: RecurrenceEnum;
 
   @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
   recurrenceFreq: number;
@@ -65,6 +65,6 @@ export class Donation {
   })
   nextDonationDates: Date[];
 
-  @Column({ name: 'occurences_remaining', type: 'int', nullable: true })
-  occurencesRemaining: number;
+  @Column({ name: 'occurrences_remaining', type: 'int', nullable: true })
+  occurrencesRemaining: number;
 }

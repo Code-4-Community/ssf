@@ -48,7 +48,7 @@ export class DonationService {
     recurrence: RecurrenceEnum,
     recurrenceFreq: number | undefined,
     nextDonationDates: Date[] | undefined,
-    occurencesRemaining: number | undefined,
+    occurrencesRemaining: number | undefined,
   ): Promise<Donation> {
     validateId(foodManufacturerId, 'Food Manufacturer');
     const manufacturer = await this.manufacturerRepo.findOne({
@@ -70,7 +70,7 @@ export class DonationService {
       recurrence,
       recurrenceFreq,
       nextDonationDates,
-      occurencesRemaining,
+      occurrencesRemaining,
     });
 
     return this.repo.save(donation);

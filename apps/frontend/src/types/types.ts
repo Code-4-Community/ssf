@@ -121,7 +121,7 @@ export interface Donation {
   recurrence: RecurrenceEnum;
   recurrenceFreq?: number;
   nextDonationDates?: string[];
-  occurencesRemaining?: number;
+  occurrencesRemaining?: number;
 }
 
 export interface DonationItem {
