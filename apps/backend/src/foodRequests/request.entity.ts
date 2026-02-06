@@ -4,9 +4,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 import { RequestSize } from './types';
+import { Pantry } from '../pantries/pantries.entity';
 
 @Entity('food_requests')
 export class FoodRequest {
@@ -15,6 +18,10 @@ export class FoodRequest {
 
   @Column({ name: 'pantry_id', type: 'int' })
   pantryId: number;
+
+  @ManyToOne(() => Pantry, { nullable: false })
+  @JoinColumn({ name: 'pantry_id', referencedColumnName: 'pantryId' })
+  pantry: Pantry;
 
   @Column({
     name: 'requested_size',
@@ -47,5 +54,5 @@ export class FoodRequest {
   photos: string[];
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
-  order: Order;
+  orders: Order[];
 }

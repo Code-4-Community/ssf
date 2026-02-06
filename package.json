@@ -17,11 +17,14 @@
   },
   "private": true,
   "dependencies": {
+    "@aws-amplify/ui-react": "^6.9.3",
     "@aws-sdk/client-cognito-identity-provider": "^3.410.0",
     "@aws-sdk/client-s3": "^3.735.0",
     "@aws-sdk/lib-storage": "^3.735.0",
+    "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.27.0",
     "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.13.0",
     "@nestjs/cli": "^10.1.17",
     "@nestjs/common": "^10.0.2",
     "@nestjs/config": "^3.2.3",
@@ -33,6 +36,7 @@
     "@types/google-libphonenumber": "^7.4.30",
     "amazon-cognito-identity-js": "^6.3.5",
     "aws-sdk": "^2.1693.0",
+    "aws-amplify": "^6.15.10",
     "axios": "^1.8.2",
     "bottleneck": "^2.19.5",
     "class-transformer": "^0.5.1",
@@ -113,6 +117,8 @@
     "semver": "^7.5.2",
     "tmp": "^0.2.4",
     "webpack-dev-server": "^5.2.1",
-    "vite": "^5.4.21"
+    "vite": "^5.4.21",
+    "strip-ansi": "6.0.1",
+    "string-width": "4.2.3"
   }
-}
+} 

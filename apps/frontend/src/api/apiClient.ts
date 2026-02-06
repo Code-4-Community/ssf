@@ -10,7 +10,10 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  CreateMultipleDonationItemsBody,
+  OrderSummary,
   UserDto,
+  OrderDetails,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -41,17 +44,18 @@ export class ApiClient {
     return this.post('/api/donations/create', body) as Promise<Donation>;
   }
 
-  public async postDonationItem(body: unknown): Promise<DonationItem> {
-    return this.post(
-      '/api/donation-items/create',
-      body,
-    ) as Promise<DonationItem>;
-  }
-
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
+  public async postMultipleDonationItems(
+    body: CreateMultipleDonationItemsBody,
+  ): Promise<DonationItem[]> {
+    return this.post('/api/donation-items/create-multiple', body) as Promise<
+      DonationItem[]
+    >;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
@@ -171,7 +175,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAllOrders(): Promise<Order[]> {
+  public async getAllOrders(): Promise<OrderSummary[]> {
     return this.axiosInstance
       .get('/api/orders/')
       .then((response) => response.data);
@@ -190,12 +194,20 @@ export class ApiClient {
   }
 
   public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
+  }
+
+  public async getOrderDetailsListFromRequest(
+    requestId: number,
+  ): Promise<OrderDetails[]> {
+    return this.axiosInstance
+      .get(`/api/requests/all-order-details/${requestId}`)
+      .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/orders/${orderId}/allocations`)
+      .get(`/api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 
