@@ -32,7 +32,7 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
-        }
+        },
       ],
     }).compile();
 
