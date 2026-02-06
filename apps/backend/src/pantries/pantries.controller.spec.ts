@@ -14,7 +14,7 @@ import {
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
-import { ApplicationStatus } from '../shared/types'
+import { ApplicationStatus } from '../shared/types';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
