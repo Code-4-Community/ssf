@@ -95,7 +95,9 @@ export class DonationsController {
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
       body.recurrence != RecurrenceEnum.NONE &&
-      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurencesRemaining)
+      (!body.recurrenceFreq ||
+        !body.nextDonationDates ||
+        !body.occurencesRemaining)
     ) {
       throw new BadRequestException('recurrence details are incomplete');
     }
