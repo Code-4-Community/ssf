@@ -45,7 +45,7 @@ export interface Pantry {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryUser?: User;
-  status: Status;
+  status: ApplicationStatus;
   dateApplied: Date;
   activities: Activity[];
   activitiesComments?: string;
@@ -298,7 +298,7 @@ export interface OrderSummary {
   };
 }
 
-export enum Status {
+export enum ApplicationStatus {
   APPROVED = 'approved',
   DENIED = 'denied',
   PENDING = 'pending',
