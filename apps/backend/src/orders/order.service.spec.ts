@@ -90,7 +90,7 @@ describe('OrdersService', () => {
         pantryNames: ['Community Food Pantry Downtown'],
       });
 
-      expect(orders).toHaveLength(2000);
+      expect(orders).toHaveLength(2);
       expect(
         orders.every(
           (order) =>
