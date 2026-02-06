@@ -284,7 +284,12 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                               mx={3}
                             />
 
-                            <Text minW={5} py={2} textStyle="p2" color="neutral.800">
+                            <Text
+                              minW={5}
+                              py={2}
+                              textStyle="p2"
+                              color="neutral.800"
+                            >
                               {item.quantity}
                             </Text>
                           </Flex>
