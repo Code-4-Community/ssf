@@ -99,7 +99,7 @@ describe('PantriesController', () => {
         {
           provide: EmailsService,
           useValue: mockEmailsService,
-        }
+        },
       ],
     }).compile();
 
