@@ -28,6 +28,7 @@ import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-R
 import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 import { AddDonationRecurrenceFields1770080947285 } from '../migrations/1770080947285-AddDonationRecurrenceFields';
+import { RemovePantryFromOrders1769316004958 } from '../migrations/1769316004958-RemovePantryFromOrders';
 
 const config = {
   type: 'postgres',
@@ -69,6 +70,7 @@ const config = {
     RemoveUnusedStatuses1764816885341,
     PopulateDummyData1768501812134,
     AddDonationRecurrenceFields1770080947285,
+    RemovePantryFromOrders1769316004958,
   ],
 };
 

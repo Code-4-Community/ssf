@@ -65,6 +65,6 @@ export class Donation {
   })
   nextDonationDates: Date[];
 
-  @Column({ name: 'occurences', type: 'int', nullable: true })
+  @Column({ name: 'occurences_remaining', type: 'int', nullable: true })
   occurencesRemaining: number;
 }

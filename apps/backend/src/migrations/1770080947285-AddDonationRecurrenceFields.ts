@@ -18,7 +18,7 @@ export class AddDonationRecurrenceFields1770080947285
             ADD COLUMN recurrence donation_recurrence_enum NOT NULL DEFAULT 'none',
             ADD COLUMN recurrence_freq INTEGER,
             ADD COLUMN next_donation_dates TIMESTAMP WITH TIME ZONE[],
-            ADD COLUMN occurences INTEGER;
+            ADD COLUMN occurences_remaining INTEGER;
         `);
 
     await queryRunner.query(`
@@ -27,12 +27,12 @@ export class AddDonationRecurrenceFields1770080947285
             (recurrence = 'none'
                 AND recurrence_freq IS NULL
                 AND next_donation_dates IS NULL
-                AND occurences IS NULL)
+                AND occurences_remaining IS NULL)
             OR
             (recurrence != 'none'
                 AND recurrence_freq IS NOT NULL
                 AND next_donation_dates IS NOT NULL
-                AND occurences IS NOT NULL)
+                AND occurences_remaining IS NOT NULL)
             );
         `);
   }
@@ -44,7 +44,7 @@ export class AddDonationRecurrenceFields1770080947285
             DROP COLUMN recurrence,
             DROP COLUMN recurrence_freq,
             DROP COLUMN next_donation_dates,
-            DROP COLUMN occurences;
+            DROP COLUMN occurences_remaining;
 
             DROP TYPE donation_recurrence_enum;
         `);

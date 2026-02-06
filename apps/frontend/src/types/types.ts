@@ -118,6 +118,10 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+  recurrence: RecurrenceEnum;
+  recurrenceFreq?: number;
+  nextDonationDates?: string[];
+  occurencesRemaining?: number;
 }
 
 export interface DonationItem {
@@ -185,18 +189,20 @@ export interface UserDto {
 
 export interface FoodRequest {
   requestId: number;
-  requestedAt: string;
-  dateReceived: string | null;
+  pantryId: number;
+  pantry: Pantry;
   requestedSize: string;
   requestedItems: string[];
-  additionalInformation: string;
-  orderId: number;
+  additionalInformation: string | null;
+  requestedAt: Date;
+  dateReceived: Date | null;
+  feedback: string | null;
+  photos: string[] | null;
   orders?: Order[];
 }
 
 export interface Order {
   orderId: number;
-  pantry?: Pantry;
   request: FoodRequest;
   requestId: number;
   foodManufacturer: FoodManufacturer | null;

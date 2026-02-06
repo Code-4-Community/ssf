@@ -66,7 +66,7 @@ export class DonationsController {
           example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
           nullable: true,
         },
-        occurences: { type: 'integer', example: 2, nullable: true },
+        occurencesRemaining: { type: 'integer', example: 2, nullable: true },
       },
     },
   })
@@ -82,7 +82,7 @@ export class DonationsController {
       recurrence: RecurrenceEnum;
       recurrenceFreq?: number;
       nextDonationDates?: Date[];
-      occurences?: number;
+      occurencesRemaining?: number;
     },
   ): Promise<Donation> {
     if (
@@ -95,7 +95,7 @@ export class DonationsController {
     // The next donation dates should be a list of dates we will get from the frontend accordingly
     if (
       body.recurrence != RecurrenceEnum.NONE &&
-      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurences)
+      (!body.recurrenceFreq || !body.nextDonationDates || !body.occurencesRemaining)
     ) {
       throw new BadRequestException('recurrence details are incomplete');
     }
@@ -109,7 +109,7 @@ export class DonationsController {
       body.recurrence,
       body.recurrenceFreq ?? 0,
       body.nextDonationDates ?? null,
-      body.occurences ?? null,
+      body.occurencesRemaining ?? null,
     );
   }
 
