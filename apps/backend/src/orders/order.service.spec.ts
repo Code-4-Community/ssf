@@ -4,6 +4,7 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
+import { Pantry } from '../pantries/pantries.entity';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -28,6 +29,10 @@ describe('OrdersService', () => {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
         },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
+        }
       ],
     }).compile();
 
