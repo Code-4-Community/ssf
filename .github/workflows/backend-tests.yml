@@ -25,6 +25,6 @@ jobs:
         with:
           node-version: 20
       - run: yarn install
-      - run: npx jest
+      - run: yarn test
 
 
