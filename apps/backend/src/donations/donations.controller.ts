@@ -109,9 +109,9 @@ export class DonationsController {
       body.totalOz,
       body.totalEstimatedValue,
       body.recurrence,
-      body.recurrenceFreq ?? 0,
-      body.nextDonationDates ?? null,
-      body.occurencesRemaining ?? null,
+      body.recurrenceFreq,
+      body.nextDonationDates,
+      body.occurencesRemaining,
     );
   }
 
