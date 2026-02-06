@@ -29,7 +29,6 @@ import { OrdersService } from '../orders/order.service';
 import { OwnershipGuard } from '../auth/ownership.guard';
 import { CheckOwnership } from '../auth/ownership.decorator';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('pantries')
 export class PantriesController {
   constructor(

@@ -14,6 +14,7 @@ import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { FoodType } from './types';
+import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
 
 @Controller('donation-items')
 //@UseInterceptors()
@@ -28,52 +29,43 @@ export class DonationItemsController {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
 
-  @Post('/create')
+  @Post('/create-multiple')
   @ApiBody({
-    description: 'Details for creating a donation item',
+    description: 'Bulk create donation items for a single donation',
     schema: {
       type: 'object',
       properties: {
-        donationId: { type: 'integer', example: 1 },
-        itemName: { type: 'string', example: 'Rice Noodles' },
-        quantity: { type: 'integer', example: 100 },
-        reservedQuantity: { type: 'integer', example: 0 },
-        ozPerItem: { type: 'integer', example: 5 },
-        estimatedValue: { type: 'integer', example: 100 },
-        foodType: {
-          type: 'string',
-          enum: Object.values(FoodType),
-          example: FoodType.DAIRY_FREE_ALTERNATIVES,
+        donationId: {
+          type: 'integer',
+          example: 1,
+        },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              itemName: { type: 'string', example: 'Rice Noodles' },
+              quantity: { type: 'integer', example: 100 },
+              reservedQuantity: { type: 'integer', example: 0 },
+              ozPerItem: { type: 'integer', example: 5 },
+              estimatedValue: { type: 'integer', example: 100 },
+              foodType: {
+                type: 'string',
+                enum: Object.values(FoodType),
+                example: FoodType.DAIRY_FREE_ALTERNATIVES,
+              },
+            },
+          },
         },
       },
     },
   })
-  async createDonationItem(
-    @Body()
-    body: {
-      donationId: number;
-      itemName: string;
-      quantity: number;
-      reservedQuantity: number;
-      ozPerItem: number;
-      estimatedValue: number;
-      foodType: FoodType;
-    },
-  ): Promise<DonationItem> {
-    if (
-      body.foodType &&
-      !Object.values(FoodType).includes(body.foodType as FoodType)
-    ) {
-      throw new BadRequestException('Invalid foodtype');
-    }
-    return this.donationItemsService.create(
+  async createMultipleDonationItems(
+    @Body() body: CreateMultipleDonationItemsDto,
+  ): Promise<DonationItem[]> {
+    return this.donationItemsService.createMultipleDonationItems(
       body.donationId,
-      body.itemName,
-      body.quantity,
-      body.reservedQuantity,
-      body.ozPerItem,
-      body.estimatedValue,
-      body.foodType,
+      body.items,
     );
   }
 
