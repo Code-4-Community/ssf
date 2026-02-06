@@ -89,7 +89,7 @@ describe('OrdersService', () => {
       expect(
         orders.every(
           (order) =>
-            order.pantry.pantryName === 'Community Food Pantry Downtown',
+            order.request.pantry.pantryName === 'Community Food Pantry Downtown',
         ),
       ).toBe(true);
     });
@@ -109,7 +109,7 @@ describe('OrdersService', () => {
       });
 
       expect(orders).toHaveLength(1);
-      expect(orders[0].pantry.pantryName).toBe('Westside Community Kitchen');
+      expect(orders[0].request.pantry.pantryName).toBe('Westside Community Kitchen');
       expect(orders[0].status).toBe(OrderStatus.DELIVERED);
     });
   });
