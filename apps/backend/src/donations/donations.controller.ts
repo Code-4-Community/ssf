@@ -13,6 +13,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { DonationStatus, RecurrenceEnum } from './types';
+import { CreateDonationDto } from './dtos/create-donation.dto';
 
 @Controller('donations')
 export class DonationsController {
@@ -72,18 +73,7 @@ export class DonationsController {
   })
   async createDonation(
     @Body()
-    body: {
-      foodManufacturerId: number;
-      dateDonated: Date;
-      status: DonationStatus;
-      totalItems: number;
-      totalOz: number;
-      totalEstimatedValue: number;
-      recurrence: RecurrenceEnum;
-      recurrenceFreq?: number;
-      nextDonationDates?: Date[];
-      occurrencesRemaining?: number;
-    },
+    body: CreateDonationDto,
   ): Promise<Donation> {
     if (
       body.status &&
@@ -104,7 +94,7 @@ export class DonationsController {
     return this.donationService.create(
       body.foodManufacturerId,
       body.dateDonated,
-      body.status ?? DonationStatus.AVAILABLE,
+      body.status,
       body.totalItems,
       body.totalOz,
       body.totalEstimatedValue,
