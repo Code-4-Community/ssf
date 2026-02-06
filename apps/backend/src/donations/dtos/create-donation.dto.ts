@@ -1,6 +1,15 @@
-import { ArrayNotEmpty, IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, Min } from "class-validator";
-import { DonationStatus, RecurrenceEnum } from "../types";
-import { Type } from "class-transformer";
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  Min,
+} from 'class-validator';
+import { DonationStatus, RecurrenceEnum } from '../types';
+import { Type } from 'class-transformer';
 
 export class CreateDonationDto {
   @IsNumber()
