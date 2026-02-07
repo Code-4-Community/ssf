@@ -106,7 +106,9 @@ const LoginPage: React.FC = () => {
                 variant="outline"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
-                <Eye color="neutral.200"></Eye>
+                <Box color="neutral.200">
+                  <Eye />
+                </Box>
               </IconButton>
             </Group>
           </Field.Root>
@@ -131,6 +133,7 @@ const LoginPage: React.FC = () => {
             color="neutral.600"
             onClick={() => navigate('/signup')}
             variant="underline"
+            textDecorationColor="neutral.300"
           >
             Sign up
           </Link>

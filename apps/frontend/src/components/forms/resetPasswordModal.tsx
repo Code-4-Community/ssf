@@ -144,9 +144,10 @@ const ResetPasswordModal: React.FC = () => {
             bgColor="white"
             w="full"
             onClick={handleResendCode}
-            border="1px solid"
+            border="1.5px solid"
             color="neutral.800"
             textStyle="p2"
+            borderRadius="0"
             fontWeight={600}
             mt={8}
           >
@@ -183,7 +184,7 @@ const ResetPasswordModal: React.FC = () => {
           color="neutral.600"
           onClick={() => navigate('/login')}
           variant="underline"
-          textDecorationColor="neutral.600"
+          textDecorationColor="neutral.300"
         >
           Login
         </Link>

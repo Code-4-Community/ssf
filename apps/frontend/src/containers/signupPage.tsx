@@ -64,7 +64,7 @@ const SignupPage: React.FC = () => {
             color="neutral.600"
             onClick={() => navigate('/login')}
             variant="underline"
-            textDecorationColor="neutral.600"
+            textDecorationColor="neutral.300"
           >
             Log in
           </Link>
