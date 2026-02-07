@@ -35,7 +35,6 @@
     "@nestjs/typeorm": "^10.0.0",
     "@types/google-libphonenumber": "^7.4.30",
     "amazon-cognito-identity-js": "^6.3.5",
-    "aws-sdk": "^2.1693.0",
     "aws-amplify": "^6.15.10",
     "axios": "^1.8.2",
     "bottleneck": "^2.19.5",
@@ -121,4 +120,4 @@
     "strip-ansi": "6.0.1",
     "string-width": "4.2.3"
   }
-} 
+}
