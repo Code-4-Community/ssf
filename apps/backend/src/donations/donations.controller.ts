@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   NotFoundException,
+  UseGuards,
   ParseIntPipe,
   BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
+import { AuthGuard } from '@nestjs/passport';
 import { DonationStatus } from './types';
 
 @Controller('donations')

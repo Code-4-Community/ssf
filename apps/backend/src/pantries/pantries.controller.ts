@@ -5,10 +5,15 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../users/types';
+import { Roles } from '../auth/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import {
@@ -21,6 +26,8 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { OwnershipGuard } from '../auth/ownership.guard';
+import { CheckOwnership } from '../auth/ownership.decorator';
 
 @Controller('pantries')
 export class PantriesController {
@@ -34,6 +41,14 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
+  @UseGuards(AuthGuard('jwt'), OwnershipGuard)
+  @CheckOwnership({
+    idParam: 'pantryId',
+    resolver: async ({ entityId, services }) => {
+      const pantry = await services.get(PantriesService).findOne(entityId);
+      return pantry?.pantryUser?.id ?? null;
+    },
+  })
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -219,6 +234,7 @@ export class PantriesController {
     return this.pantriesService.approve(pantryId);
   }
 
+  @Roles(Role.ADMIN)
   @Post('/deny/:pantryId')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
