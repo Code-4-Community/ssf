@@ -75,12 +75,6 @@ export class DonationsController {
     @Body()
     body: CreateDonationDto,
   ): Promise<Donation> {
-    if (
-      body.status &&
-      !Object.values(DonationStatus).includes(body.status as DonationStatus)
-    ) {
-      throw new BadRequestException('Invalid status');
-    }
     return this.donationService.create(body);
   }
 

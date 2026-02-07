@@ -15,16 +15,16 @@ import { Type } from 'class-transformer';
 export class CreateDonationDto {
   @IsNumber()
   @Min(1)
-  foodManufacturerId: number;
+  foodManufacturerId!: number;
 
   @Type(() => Date)
   @IsDate()
   @IsNotEmpty()
-  dateDonated: Date;
+  dateDonated!: Date;
 
   @IsNotEmpty()
   @IsEnum(DonationStatus)
-  status: DonationStatus;
+  status!: DonationStatus;
 
   @IsNumber()
   @Min(1)
@@ -40,7 +40,7 @@ export class CreateDonationDto {
 
   @IsNotEmpty()
   @IsEnum(RecurrenceEnum)
-  recurrence: RecurrenceEnum;
+  recurrence!: RecurrenceEnum;
 
   @IsNumber()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
