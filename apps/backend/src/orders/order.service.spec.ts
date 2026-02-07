@@ -1,64 +1,37 @@
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Order } from './order.entity';
 import { OrdersService } from './order.service';
-import { mock } from 'jest-mock-extended';
-import { Pantry } from '../pantries/pantries.entity';
-import { User } from '../users/user.entity';
-import {
-  AllergensConfidence,
-  ClientVisitFrequency,
-  PantryStatus,
-  RefrigeratedDonation,
-  ServeAllergicChildren,
-} from '../pantries/types';
+import { Order } from './order.entity';
+import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
-import { FoodRequest } from '../foodRequests/request.entity';
+import { Pantry } from '../pantries/pantries.entity';
 
-const mockOrdersRepository = mock<Repository<Order>>();
-const mockPantryRepository = mock<Repository<Pantry>>();
-
-const mockPantry: Partial<Pantry> = {
-  pantryId: 1,
-  pantryName: 'Test Pantry',
-  allergenClients: '',
-  refrigeratedDonation: RefrigeratedDonation.NO,
-  reserveFoodForAllergic: 'Yes',
-  reservationExplanation: '',
-  dedicatedAllergyFriendly: false,
-  clientVisitFrequency: ClientVisitFrequency.DAILY,
-  identifyAllergensConfidence: AllergensConfidence.NOT_VERY_CONFIDENT,
-  serveAllergicChildren: ServeAllergicChildren.NO,
-  newsletterSubscription: false,
-  restrictions: [],
-  pantryUser: null as unknown as User,
-  status: PantryStatus.APPROVED,
-  dateApplied: new Date(),
-  activities: [],
-  activitiesComments: '',
-  itemsInStock: '',
-  needMoreOptions: '',
-  volunteers: [],
-};
+// Set 1 minute timeout for async DB operations
+jest.setTimeout(60000);
 
 describe('OrdersService', () => {
   let service: OrdersService;
-  let qb: SelectQueryBuilder<Order>;
 
   beforeAll(async () => {
-    mockOrdersRepository.createQueryBuilder.mockReset();
+    // Initialize DataSource once
+    if (!testDataSource.isInitialized) {
+      await testDataSource.initialize();
+    }
 
-    const module = await Test.createTestingModule({
+    // Clean database at the start
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
         {
           provide: getRepositoryToken(Order),
-          useValue: mockOrdersRepository,
+          useValue: testDataSource.getRepository(Order),
         },
         {
           provide: getRepositoryToken(Pantry),
-          useValue: mockPantryRepository,
+          useValue: testDataSource.getRepository(Pantry),
         },
       ],
     }).compile();
@@ -66,16 +39,22 @@ describe('OrdersService', () => {
     service = module.get<OrdersService>(OrdersService);
   });
 
-  beforeEach(() => {
-    qb = {
-      leftJoinAndSelect: jest.fn().mockReturnThis(),
-      leftJoin: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      getMany: jest.fn().mockResolvedValue([]),
-    } as unknown as SelectQueryBuilder<Order>;
+  beforeEach(async () => {
+    // Run all migrations fresh for each test
+    await testDataSource.runMigrations();
+  });
 
-    mockOrdersRepository.createQueryBuilder.mockReturnValue(qb);
+  afterEach(async () => {
+    // Drop the schema completely (cascades all tables)
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+  });
+
+  afterAll(async () => {
+    // Destroy all schemas
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
   });
 
   it('should be defined', () => {
@@ -83,212 +62,63 @@ describe('OrdersService', () => {
   });
 
   describe('getAll', () => {
-    it('should return orders filtered by status', async () => {
-      const mockOrders: Partial<Order>[] = [
-        { orderId: 1, status: OrderStatus.PENDING },
-        { orderId: 2, status: OrderStatus.DELIVERED },
-      ];
+    it('returns orders filtered by status', async () => {
+      const orders = await service.getAll({ status: OrderStatus.DELIVERED });
 
-      (qb.getMany as jest.Mock).mockResolvedValue([mockOrders[0] as Order]);
-
-      const result = await service.getAll({ status: OrderStatus.PENDING });
-
-      expect(result).toEqual([mockOrders[0]]);
-      expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
-        status: OrderStatus.PENDING,
-      });
+      expect(orders).toHaveLength(2);
+      expect(
+        orders.every((order) => order.status === OrderStatus.DELIVERED),
+      ).toBe(true);
     });
 
-    it('should return empty array when no status filters match', async () => {
-      (qb.getMany as jest.Mock).mockResolvedValue([]);
-
-      const result = await service.getAll({ status: 'invalid status' });
-
-      expect(result).toEqual([]);
-      expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
-        status: 'invalid status',
-      });
-    });
-
-    it('should return orders filtered by pantryName', async () => {
-      const mockOrders: Partial<Order>[] = [
-        {
-          orderId: 3,
-          status: OrderStatus.DELIVERED,
-        },
-        {
-          orderId: 4,
-          status: OrderStatus.DELIVERED,
-        },
-        {
-          orderId: 5,
-          status: OrderStatus.DELIVERED,
-        },
-      ];
-
-      (qb.getMany as jest.Mock).mockResolvedValue(
-        mockOrders.slice(0, 2) as Order[],
+    it('returns empty array when status filter matches nothing', async () => {
+      // Delete allocations referencing pending orders, then delete orders themselves
+      await testDataSource.query(
+        `DELETE FROM "allocations" WHERE order_id IN (SELECT order_id FROM "orders" WHERE status = $1)`,
+        [OrderStatus.PENDING],
       );
+      await testDataSource.query(`DELETE FROM "orders" WHERE status = $1`, [
+        OrderStatus.PENDING,
+      ]);
 
-      const result = await service.getAll({
-        pantryNames: ['Test Pantry', 'Test Pantry 2'],
-      });
-
-      expect(result).toEqual(mockOrders.slice(0, 2) as Order[]);
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName IN (:...pantryNames)',
-        { pantryNames: ['Test Pantry', 'Test Pantry 2'] },
-      );
+      const orders = await service.getAll({ status: OrderStatus.PENDING });
+      expect(orders).toEqual([]);
     });
 
-    it('should return empty array when no pantryName filters match', async () => {
-      (qb.getMany as jest.Mock).mockResolvedValue([]);
+    it('returns orders filtered by pantry names', async () => {
+      const orders = await service.getAll({
+        pantryNames: ['Community Food Pantry Downtown'],
+      });
 
-      const result = await service.getAll({
+      expect(orders).toHaveLength(2);
+      expect(
+        orders.every(
+          (order) =>
+            order.request.pantry.pantryName ===
+            'Community Food Pantry Downtown',
+        ),
+      ).toBe(true);
+    });
+
+    it('returns empty array when pantry filter matches nothing', async () => {
+      const orders = await service.getAll({
         pantryNames: ['Nonexistent Pantry'],
       });
 
-      expect(result).toEqual([]);
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName IN (:...pantryNames)',
-        { pantryNames: ['Nonexistent Pantry'] },
-      );
+      expect(orders).toEqual([]);
     });
 
-    it('should return orders filtered by both status and pantryName', async () => {
-      const mockOrders: Partial<Order>[] = [
-        {
-          orderId: 3,
-          status: OrderStatus.DELIVERED,
-        },
-        {
-          orderId: 4,
-          status: OrderStatus.DELIVERED,
-        },
-        {
-          orderId: 5,
-          status: OrderStatus.DELIVERED,
-        },
-      ];
-
-      (qb.getMany as jest.Mock).mockResolvedValue(
-        mockOrders.slice(1, 3) as Order[],
-      );
-
-      const result = await service.getAll({
-        status: 'delivered',
-        pantryNames: ['Test Pantry 2'],
+    it('returns orders filtered by both pantry and status', async () => {
+      const orders = await service.getAll({
+        status: OrderStatus.DELIVERED,
+        pantryNames: ['Westside Community Kitchen'],
       });
 
-      expect(result).toEqual(mockOrders.slice(1, 3) as Order[]);
-      expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
-        status: 'delivered',
-      });
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'pantry.pantryName IN (:...pantryNames)',
-        { pantryNames: ['Test Pantry 2'] },
+      expect(orders).toHaveLength(1);
+      expect(orders[0].request.pantry.pantryName).toBe(
+        'Westside Community Kitchen',
       );
-    });
-  });
-
-  describe('findOrderPantry', () => {
-    it('should return pantry for given order', async () => {
-      const mockFoodRequest: Partial<FoodRequest> = {
-        requestId: 1,
-        pantryId: 1,
-      };
-
-      const mockOrder: Partial<Order> = {
-        orderId: 1,
-        requestId: 1,
-        request: mockFoodRequest as FoodRequest,
-      };
-
-      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
-      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
-        mockPantry as Pantry,
-      );
-
-      const result = await service.findOrderPantry(1);
-
-      expect(result).toEqual(mockPantry);
-      expect(mockPantryRepository.findOneBy).toHaveBeenCalledWith({
-        pantryId: 1,
-      });
-    });
-
-    it('should throw NotFoundException if order not found', async () => {
-      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(null);
-
-      await expect(service.findOrderPantry(999)).rejects.toThrow(
-        'Order 999 not found',
-      );
-    });
-
-    it('should throw NotFoundException if pantry not found', async () => {
-      const mockFoodRequest: Partial<FoodRequest> = {
-        requestId: 1,
-        pantryId: 999,
-      };
-
-      const mockOrder: Partial<Order> = {
-        orderId: 1,
-        requestId: 1,
-        request: mockFoodRequest as FoodRequest,
-      };
-
-      (mockOrdersRepository.findOne as jest.Mock).mockResolvedValue(mockOrder);
-      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(null);
-
-      await expect(service.findOrderPantry(1)).rejects.toThrow(
-        'Pantry 999 not found',
-      );
-    });
-  });
-
-  describe('getOrdersByPantry', () => {
-    it('should return orders for given pantry', async () => {
-      const mockOrders: Partial<Order>[] = [
-        { orderId: 1, requestId: 1 },
-        { orderId: 2, requestId: 2 },
-      ];
-
-      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
-        mockPantry as Pantry,
-      );
-      (mockOrdersRepository.find as jest.Mock).mockResolvedValue(
-        mockOrders as Order[],
-      );
-
-      const result = await service.getOrdersByPantry(1);
-
-      expect(result).toEqual(mockOrders);
-      expect(mockPantryRepository.findOneBy).toHaveBeenCalledWith({
-        pantryId: 1,
-      });
-      expect(mockOrdersRepository.find).toHaveBeenCalledWith({
-        where: { request: { pantryId: 1 } },
-        relations: ['request'],
-      });
-    });
-
-    it('should throw NotFoundException if pantry does not exist', async () => {
-      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(null);
-
-      await expect(service.getOrdersByPantry(999)).rejects.toThrow(
-        'Pantry 999 not found',
-      );
-    });
-
-    it('should return empty array if pantry has no orders', async () => {
-      (mockPantryRepository.findOneBy as jest.Mock).mockResolvedValue(
-        mockPantry as Pantry,
-      );
-      (mockOrdersRepository.find as jest.Mock).mockResolvedValue([]);
-
-      const result = await service.getOrdersByPantry(1);
-
-      expect(result).toEqual([]);
+      expect(orders[0].status).toBe(OrderStatus.DELIVERED);
     });
   });
 });

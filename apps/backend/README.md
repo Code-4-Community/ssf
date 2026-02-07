@@ -65,3 +65,10 @@ This is used to help authenticate you with AWS Cognito and allow you to properly
    - Load up the app, and go to the landing page
    - Verify you are able to login with these new credentials you created
       
+### Running backend tests
+
+1. Create a **separate** Postgres database (for example `securing-safe-food-test`).
+2. Add a `DATABASE_NAME_TEST` entry (and optionally `DATABASE_HOST/PORT/USERNAME/PASSWORD`) to your `.env` so the test data source can connect to that database.
+3. Run the backend test suite with `npx jest`.
+
+Each spec builds up the database and tables, tears it all down, and runs all the migrations on each tests. This ensures that we always have the most up to date data that we test with.
