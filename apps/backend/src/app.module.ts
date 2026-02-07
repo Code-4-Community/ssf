@@ -27,7 +27,7 @@ import { AllocationModule } from './allocations/allocations.module';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        configService.get('typeorm'),
+        configService.getOrThrow('typeorm'),
     }),
     UsersModule,
     AuthModule,

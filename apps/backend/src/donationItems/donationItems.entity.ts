@@ -32,10 +32,10 @@ export class DonationItem {
   reservedQuantity!: number;
 
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })
-  ozPerItem?: number;
+  ozPerItem?: number | null;
 
   @Column({ name: 'estimated_value', type: 'int', nullable: true })
-  estimatedValue?: number;
+  estimatedValue?: number | null;
 
   @Column({
     name: 'food_type',
@@ -44,7 +44,7 @@ export class DonationItem {
     enumName: 'food_type_enum',
     nullable: true,
   })
-  foodType?: FoodType;
+  foodType?: FoodType | null;
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
   allocations!: Allocation[];

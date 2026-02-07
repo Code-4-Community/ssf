@@ -43,7 +43,7 @@ export class Order {
   foodManufacturer!: FoodManufacturer;
 
   @Column({ name: 'shipped_by', nullable: true })
-  shippedBy?: number;
+  shippedBy?: number | null;
 
   @Column({
     name: 'status',
@@ -73,7 +73,7 @@ export class Order {
     type: 'timestamp',
     nullable: true,
   })
-  deliveredA?: Date | null;
+  deliveredAt?: Date | null;
 
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations!: Allocation[];

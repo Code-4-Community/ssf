@@ -34,7 +34,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  shipmentAddressLine2?: string;
+  shipmentAddressLine2?: string | null;
 
   @Column({ name: 'shipment_address_city', type: 'varchar', length: 255 })
   shipmentAddressCity!: string;
@@ -51,7 +51,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry?: string | null;
 
   @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
   mailingAddressLine1!: string;
@@ -62,7 +62,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  mailingAddressLine2?: string;
+  mailingAddressLine2?: string | null;
 
   @Column({ name: 'mailing_address_city', type: 'varchar', length: 255 })
   mailingAddressCity!: string;
@@ -79,7 +79,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  mailingAddressCountry?: string;
+  mailingAddressCountry?: string | null;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients!: string;
@@ -100,7 +100,7 @@ export class Pantry {
     type: 'text',
     nullable: true,
   })
-  deliveryWindowInstructions?: string;
+  deliveryWindowInstructions?: string | null;
 
   @Column({
     name: 'reserve_food_for_allergic',
@@ -111,7 +111,7 @@ export class Pantry {
   reserveFoodForAllergic!: string;
 
   @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
-  reservationExplanation?: string;
+  reservationExplanation?: string | null;
 
   @Column({
     name: 'dedicated_allergy_friendly',
@@ -126,7 +126,7 @@ export class Pantry {
     enumName: 'client_visit_frequency_enum',
     nullable: true,
   })
-  clientVisitFrequency?: ClientVisitFrequency;
+  clientVisitFrequency?: ClientVisitFrequency | null;
 
   @Column({
     name: 'identify_allergens_confidence',
@@ -135,7 +135,7 @@ export class Pantry {
     enumName: 'allergens_confidence_enum',
     nullable: true,
   })
-  identifyAllergensConfidence?: AllergensConfidence;
+  identifyAllergensConfidence?: AllergensConfidence | null;
 
   @Column({
     name: 'serve_allergic_children',
@@ -144,10 +144,10 @@ export class Pantry {
     enumName: 'serve_allergic_children_enum',
     nullable: true,
   })
-  serveAllergicChildren?: ServeAllergicChildren;
+  serveAllergicChildren?: ServeAllergicChildren | null;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription?: boolean;
+  newsletterSubscription?: boolean | null;
 
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions!: string[];
@@ -156,7 +156,7 @@ export class Pantry {
   hasEmailContact!: boolean;
 
   @Column({ name: 'email_contact_other', type: 'text', nullable: true })
-  emailContactOther?: string;
+  emailContactOther?: string | null;
 
   @Column({
     name: 'secondary_contact_first_name',
@@ -164,7 +164,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactFirstName?: string;
+  secondaryContactFirstName?: string | null;
 
   @Column({
     name: 'secondary_contact_last_name',
@@ -172,7 +172,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactLastName?: string;
+  secondaryContactLastName?: string | null;
 
   @Column({
     name: 'secondary_contact_email',
@@ -180,7 +180,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactEmail?: string;
+  secondaryContactEmail?: string | null;
 
   @Column({
     name: 'secondary_contact_phone',
@@ -188,7 +188,7 @@ export class Pantry {
     length: 20,
     nullable: true,
   })
-  secondaryContactPhone?: string;
+  secondaryContactPhone?: string | null;
 
   // cascade: ['insert'] means that when we create a new
   // pantry, the pantry user will automatically be added
@@ -229,7 +229,7 @@ export class Pantry {
   activities!: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
-  activitiesComments?: string;
+  activitiesComments?: string | null;
 
   @Column({ name: 'items_in_stock', type: 'text' })
   itemsInStock!: string;
@@ -238,5 +238,5 @@ export class Pantry {
   needMoreOptions!: string;
 
   @ManyToMany(() => User, (user) => user.pantries)
-  volunteers?: User[];
+  volunteers?: User[] | null;
 }

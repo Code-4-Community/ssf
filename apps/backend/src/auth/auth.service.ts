@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
+  AdminInitiateAuthCommandOutput,
   AttributeType,
   CognitoIdentityProviderClient,
   ConfirmForgotPasswordCommand,
@@ -29,12 +30,22 @@ export class AuthService {
     this.providerClient = new CognitoIdentityProviderClient({
       region: CognitoAuthConfig.region,
       credentials: {
-        accessKeyId: process.env.NX_AWS_ACCESS_KEY,
-        secretAccessKey: process.env.NX_AWS_SECRET_ACCESS_KEY,
+        accessKeyId: this.validateEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: this.validateEnv('AWS_SECRET_ACCESS_KEY'),
       },
     });
 
-    this.clientSecret = process.env.COGNITO_CLIENT_SECRET;
+    this.clientSecret = this.validateEnv('COGNITO_CLIENT_SECRET');
+  }
+
+  validateEnv(name: string): string {
+    const v = process.env[name];
+
+    if (!v) {
+      throw new InternalServerErrorException(`Missing env var: ${name}`);
+    }
+
+    return v;
   }
 
   // Computes secret hash to authenticate this backend to Cognito
@@ -55,7 +66,18 @@ export class AuthService {
 
     // TODO need error handling
     const { Users } = await this.providerClient.send(listUsersCommand);
-    return Users[0].Attributes;
+
+    const user = Users?.[0];
+    if (!user) {
+      throw new NotFoundException(`Cognito user with sub ${userSub} not found`);
+    }
+
+    const userAttributes = Users[0].Attributes
+    if (!userAttributes) {
+      throw new NotFoundException(`Cognito user attributes not found`)
+    }
+
+    return userAttributes;
   }
 
   async signup(
@@ -82,8 +104,17 @@ export class AuthService {
       ],
     });
 
-    const response = await this.providerClient.send(signUpCommand);
-    return response.UserConfirmed;
+    try {
+      const response = await this.providerClient.send(signUpCommand);
+
+      if (response.UserConfirmed == null) {
+        throw new InternalServerErrorException('Missing UserConfirmed from Cognito');
+      }
+
+      return response.UserConfirmed;
+    } catch (err: unknown) {
+      throw new BadRequestException('Failed to sign up user');
+    }
   }
 
   async verifyUser(email: string, verificationCode: string): Promise<void> {
@@ -111,10 +142,14 @@ export class AuthService {
 
     const response = await this.providerClient.send(signInCommand);
 
+    this.validateAuthenticationResultTokens(response)
+
+    const authResult = response.AuthenticationResult!;
+
     return {
-      accessToken: response.AuthenticationResult.AccessToken,
-      refreshToken: response.AuthenticationResult.RefreshToken,
-      idToken: response.AuthenticationResult.IdToken,
+      accessToken: authResult.AccessToken!,
+      refreshToken: authResult.RefreshToken!,
+      idToken: authResult.IdToken!,
     };
   }
 
@@ -135,10 +170,14 @@ export class AuthService {
 
     const response = await this.providerClient.send(refreshCommand);
 
+    this.validateAuthenticationResultTokens(response)
+
+    const authResult = response.AuthenticationResult!;
+
     return {
-      accessToken: response.AuthenticationResult.AccessToken,
+      accessToken: authResult.AccessToken!,
       refreshToken: refreshToken,
-      idToken: response.AuthenticationResult.IdToken,
+      idToken: authResult.IdToken!,
     };
   }
 
@@ -175,5 +214,15 @@ export class AuthService {
     });
 
     await this.providerClient.send(adminDeleteUserCommand);
+  }
+
+  validateAuthenticationResultTokens(commandOutput: AdminInitiateAuthCommandOutput): void {
+    if (commandOutput.AuthenticationResult == null) {
+      throw new NotFoundException("No associated authentication result for sign in")
+    }
+
+    if (commandOutput.AuthenticationResult.AccessToken == null || commandOutput.AuthenticationResult.RefreshToken == null || commandOutput.AuthenticationResult.IdToken == null) {
+      throw new NotFoundException("Necessary Authentication Result tokens not found for sign in")
+    }
   }
 }

@@ -4,7 +4,7 @@ import { OrderStatus } from '../../orders/types';
 export class OrderItemDetailsDto {
   name!: string;
   quantity!: number;
-  foodType!: FoodType;
+  foodType?: FoodType;
 }
 
 export class OrderDetailsDto {

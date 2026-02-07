@@ -80,7 +80,7 @@ export interface PantryApplicationDto {
   mailingAddressZip: string;
   mailingAddressCountry?: string;
   allergenClients: string;
-  restrictions?: string[];
+  restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
   deliveryWindowInstructions?: string;

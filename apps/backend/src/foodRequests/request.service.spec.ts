@@ -22,7 +22,7 @@ const mockRequest: Partial<FoodRequest> = {
   pantryId: 1,
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
-  requestedAt: null,
+  requestedAt: undefined,
   dateReceived: null,
   feedback: null,
   photos: null,

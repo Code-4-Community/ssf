@@ -37,11 +37,11 @@ export class Donation {
   status!: DonationStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
-  totalItems?: number;
+  totalItems?: number | null;
 
   @Column({ name: 'total_oz', type: 'int', nullable: true })
-  totalOz?: number;
+  totalOz?: number | null;
 
   @Column({ name: 'total_estimated_value', type: 'int', nullable: true })
-  totalEstimatedValue?: number;
+  totalEstimatedValue?: number | null;
 }

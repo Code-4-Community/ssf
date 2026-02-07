@@ -154,11 +154,10 @@ export class PantryApplicationDto {
   @Length(1, 25)
   allergenClients!: string;
 
-  @IsOptional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @MaxLength(255, { each: true })
-  restrictions?: string[];
+  restrictions!: string[];
 
   @IsEnum(RefrigeratedDonation)
   refrigeratedDonation!: RefrigeratedDonation;
