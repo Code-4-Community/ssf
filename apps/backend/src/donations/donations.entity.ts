@@ -12,20 +12,20 @@ import { DonationStatus, RecurrenceEnum } from './types';
 @Entity('donations')
 export class Donation {
   @PrimaryGeneratedColumn({ name: 'donation_id' })
-  donationId: number;
+  donationId!: number;
 
   @ManyToOne(() => FoodManufacturer, (manufacturer) => manufacturer.donations, {
     nullable: false,
   })
   @JoinColumn({ name: 'food_manufacturer_id' })
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer!: FoodManufacturer;
 
   @CreateDateColumn({
     name: 'date_donated',
     type: 'timestamp',
     default: () => 'NOW()',
   })
-  dateDonated: Date;
+  dateDonated!: Date;
 
   @Column({
     name: 'status',
@@ -34,7 +34,7 @@ export class Donation {
     enumName: 'donations_status_enum',
     default: DonationStatus.AVAILABLE,
   })
-  status: DonationStatus;
+  status!: DonationStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
   totalItems: number;

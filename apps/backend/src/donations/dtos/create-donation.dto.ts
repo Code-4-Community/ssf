@@ -7,6 +7,7 @@ import {
   IsNumber,
   IsOptional,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { DonationStatus, RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
@@ -37,11 +38,12 @@ export class CreateDonationDto {
   @Min(0.01)
   totalEstimatedValue: number;
 
+  @IsNotEmpty()
   @IsEnum(RecurrenceEnum)
   recurrence: RecurrenceEnum;
 
   @IsNumber()
-  @IsOptional()
+  @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   recurrenceFreq?: number;
 
@@ -49,11 +51,11 @@ export class CreateDonationDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsDate({ each: true })
-  @IsOptional()
+  @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   nextDonationDates?: Date[];
 
   @IsNumber()
-  @IsOptional()
+  @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   occurrencesRemaining?: number;
 }

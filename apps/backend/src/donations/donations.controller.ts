@@ -81,28 +81,7 @@ export class DonationsController {
     ) {
       throw new BadRequestException('Invalid status');
     }
-    // If we got a recurrence, we should have all of these values
-    // The next donation dates should be a list of dates we will get from the frontend accordingly
-    if (
-      body.recurrence != RecurrenceEnum.NONE &&
-      (!body.recurrenceFreq ||
-        !body.nextDonationDates ||
-        !body.occurrencesRemaining)
-    ) {
-      throw new BadRequestException('recurrence details are incomplete');
-    }
-    return this.donationService.create(
-      body.foodManufacturerId,
-      body.dateDonated,
-      body.status,
-      body.totalItems,
-      body.totalOz,
-      body.totalEstimatedValue,
-      body.recurrence,
-      body.recurrenceFreq,
-      body.nextDonationDates,
-      body.occurrencesRemaining,
-    );
+    return this.donationService.create(body);
   }
 
   @Patch('/:donationId/fulfill')
