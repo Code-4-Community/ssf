@@ -28,15 +28,18 @@ export class CreateDonationDto {
 
   @IsNumber()
   @Min(1)
-  totalItems: number;
+  @IsOptional()
+  totalItems?: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
-  totalOz: number;
+  @IsOptional()
+  totalOz?: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
-  totalEstimatedValue: number;
+  @IsOptional()
+  totalEstimatedValue?: number;
 
   @IsNotEmpty()
   @IsEnum(RecurrenceEnum)
