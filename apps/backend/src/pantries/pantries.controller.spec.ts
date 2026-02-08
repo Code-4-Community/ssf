@@ -46,7 +46,7 @@ describe('PantriesController', () => {
     contactEmail: 'jane.smith@example.com',
     contactPhone: '(508) 222-2222',
     hasEmailContact: true,
-    emailContactOther: null,
+    emailContactOther: undefined,
     secondaryContactFirstName: 'John',
     secondaryContactLastName: 'Doe',
     secondaryContactEmail: 'john.doe@example.com',
