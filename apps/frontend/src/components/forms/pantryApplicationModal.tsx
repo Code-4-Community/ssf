@@ -48,11 +48,6 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
                   <Text fontWeight="bold">Phone</Text>
                 </GridItem>
                 <GridItem>{pantryUser.phone}</GridItem>
-
-                <GridItem>
-                  <Text fontWeight="bold">Role</Text>
-                </GridItem>
-                <GridItem>{pantryUser.role}</GridItem>
               </Grid>
             ) : (
               <Text>No user details available.</Text>
