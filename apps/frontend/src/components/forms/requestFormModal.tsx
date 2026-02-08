@@ -10,6 +10,7 @@ import {
   Box,
   Field,
   CloseButton,
+  Alert,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
@@ -31,6 +32,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -54,6 +57,26 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+              <Alert.Root
+                color='red'
+                status="info"
+                bg="white"
+                variant="subtle"
+                boxShadow="lg"
+                position="absolute"
+                zIndex="toast"
+                top="12px"
+                right="12px"
+                w="fit-content"
+                maxW="400px"
+              >
+                <Alert.Indicator />
+                <Alert.Title textStyle="p2" fontWeight={500}>
+                  {alertMessage}
+                </Alert.Title>
+              </Alert.Root>
+            )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>
@@ -81,11 +104,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               onSubmit={(e) => {
                 if (selectedItems.length === 0) {
                   e.preventDefault();
-                  alert('Please select at least one food type');
+                  setAlertMessage('Please select at least one food type');
                 }
                 if (requestedSize === '') {
                   e.preventDefault();
-                  alert('Please select a requested size.');
+                  setAlertMessage('Please select a requested size.');
                 }
               }}
             >
@@ -279,7 +302,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      alert('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit');
                     }
                   }}
                 />

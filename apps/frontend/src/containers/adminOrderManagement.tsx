@@ -10,6 +10,7 @@ import {
   ButtonGroup,
   Checkbox,
   Input,
+  Alert,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
@@ -49,6 +50,8 @@ const AdminOrderManagement: React.FC = () => {
       [OrderStatus.DELIVERED]: 1,
     },
   );
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   // State to hold filter state per status
   type FilterState = {
@@ -139,7 +142,7 @@ const AdminOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch (error) {
-        alert('Error fetching orders: ' + error);
+        setAlertMessage('Error fetching orders: ' + error);
       }
     };
 
@@ -163,6 +166,27 @@ const AdminOrderManagement: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Order Management
       </Heading>
+
+      {alertMessage && (
+                    <Alert.Root
+                      color='red'
+                      status="info"
+                      bg="white"
+                      variant="subtle"
+                      boxShadow="lg"
+                      position="absolute"
+                      zIndex="toast"
+                      top="12px"
+                      right="12px"
+                      w="fit-content"
+                      maxW="400px"
+                    >
+                      <Alert.Indicator />
+                      <Alert.Title textStyle="p2" fontWeight={500}>
+                        {alertMessage}
+                      </Alert.Title>
+                    </Alert.Root>
+                  )}
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];

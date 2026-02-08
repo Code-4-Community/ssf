@@ -10,6 +10,7 @@ import {
   Checkbox,
   VStack,
   ButtonGroup,
+  Alert,
 } from '@chakra-ui/react';
 import { Donation } from 'types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
@@ -28,13 +29,15 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  
   useEffect(() => {
     const fetchDonations = async () => {
       try {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch (error) {
-        alert('Error fetching donations: ' + error);
+        setAlertMessage('Error fetching donations: ' + error);
       }
     };
     fetchDonations();
@@ -99,6 +102,26 @@ const AdminDonation: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
+      {alertMessage && (
+                    <Alert.Root
+                      color='red'
+                      status="info"
+                      bg="white"
+                      variant="subtle"
+                      boxShadow="lg"
+                      position="absolute"
+                      zIndex="toast"
+                      top="12px"
+                      right="12px"
+                      w="fit-content"
+                      maxW="400px"
+                    >
+                      <Alert.Indicator />
+                      <Alert.Title textStyle="p2" fontWeight={500}>
+                        {alertMessage}
+                      </Alert.Title>
+                    </Alert.Root>
+                  )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button

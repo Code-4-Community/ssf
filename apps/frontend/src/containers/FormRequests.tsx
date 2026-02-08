@@ -13,6 +13,7 @@ import {
   ButtonGroup,
   IconButton,
   Flex,
+  Alert,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
@@ -37,6 +38,8 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -53,7 +56,7 @@ const FormRequests: React.FC = () => {
             setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
-          alert('Error fetching requests: ' + error);
+          setAlertMessage('Error fetching requests: ' + error);
         }
       }
     };
@@ -71,6 +74,26 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
+      {alertMessage && (
+                          <Alert.Root
+                            color='red'
+                            status="info"
+                            bg="white"
+                            variant="subtle"
+                            boxShadow="lg"
+                            position="absolute"
+                            zIndex="toast"
+                            top="12px"
+                            right="12px"
+                            w="fit-content"
+                            maxW="400px"
+                          >
+                            <Alert.Indicator />
+                            <Alert.Title textStyle="p2" fontWeight={500}>
+                              {alertMessage}
+                            </Alert.Title>
+                          </Alert.Root>
+                        )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"

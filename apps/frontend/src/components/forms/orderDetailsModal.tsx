@@ -7,6 +7,7 @@ import {
   Textarea,
   Field,
   Tag,
+  Alert,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, OrderSummary } from 'types/types';
@@ -25,6 +26,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 }) => {
   const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
@@ -34,7 +37,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
-          alert('Error fetching food request details:' + error);
+          setAlertMessage('Error fetching food request details:' + error);
         }
       };
 
@@ -51,6 +54,26 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+              <Alert.Root
+                color='red'
+                status="info"
+                bg="white"
+                variant="subtle"
+                boxShadow="lg"
+                position="absolute"
+                zIndex="toast"
+                top="12px"
+                right="12px"
+                w="fit-content"
+                maxW="400px"
+              >
+                <Alert.Indicator />
+                <Alert.Title textStyle="p2" fontWeight={500}>
+                  {alertMessage}
+                </Alert.Title>
+              </Alert.Root>
+            )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>

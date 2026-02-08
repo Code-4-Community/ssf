@@ -6,6 +6,7 @@ import {
   Dialog,
   Portal,
   CloseButton,
+  Alert,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Donation, DonationItem, FoodType } from 'types/types';
@@ -25,6 +26,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [loadedDonation, setLoadedDonation] = useState<Donation>();
   const [items, setItems] = useState<DonationItem[]>([]);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const donationId = donation?.donationId; // adjust if your ID field is different
 
   useEffect(() => {
@@ -39,8 +42,9 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
         setLoadedDonation(donationData);
         setItems(itemsData);
+        setAlertMessage('Error fetching donation details: ' + err);
       } catch (err) {
-        alert('Error fetching donation details: ' + err);
+        setAlertMessage('Error fetching donation details: ' + err);
       }
     };
 
@@ -63,7 +67,28 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
+      
       <Portal>
+        {alertMessage && (
+              <Alert.Root
+                color='red'
+                status="info"
+                bg="white"
+                variant="subtle"
+                boxShadow="lg"
+                position="absolute"
+                zIndex="toast"
+                top="12px"
+                right="12px"
+                w="fit-content"
+                maxW="400px"
+              >
+                <Alert.Indicator />
+                <Alert.Title textStyle="p2" fontWeight={500}>
+                  {alertMessage}
+                </Alert.Title>
+              </Alert.Root>
+            )}
         <Dialog.Backdrop bg="blackAlpha.300" />
 
         <Dialog.Positioner>
