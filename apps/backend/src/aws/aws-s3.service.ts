@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
 @Injectable()
 export class AWSS3Service {
   private client: S3Client;
@@ -22,7 +31,7 @@ export class AWSS3Service {
     });
   }
 
-  async upload(files: Express.Multer.File[]): Promise<string[]> {
+  async upload(files: MulterFile[]): Promise<string[]> {
     const uploadedFileUrls: string[] = [];
     try {
       for (const file of files) {
