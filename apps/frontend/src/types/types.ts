@@ -194,7 +194,7 @@ export interface Order {
   orderId: number;
   request: FoodRequest;
   requestId: number;
-  foodManufacturer: FoodManufacturer | null;
+  foodManufacturer?: FoodManufacturer;
   shippedBy?: number;
   status: OrderStatus;
   createdAt: string;

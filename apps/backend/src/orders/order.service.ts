@@ -148,7 +148,8 @@ export class OrdersService {
         status: newStatus as OrderStatus,
         shippedBy: 1,
         shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
-        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
+        deliveredAt:
+          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
