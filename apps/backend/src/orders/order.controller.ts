@@ -1,13 +1,17 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   ParseIntPipe,
   Body,
   Query,
   BadRequestException,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
@@ -15,12 +19,16 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
+import { AWSS3Service } from '../aws/aws-s3.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly allocationsService: AllocationsService,
+    private readonly awsS3Service: AWSS3Service,
   ) {}
 
   // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
@@ -98,5 +106,55 @@ export class OrdersController {
       throw new BadRequestException('Invalid status');
     }
     return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
+  }
+
+  @Post('/:orderId/confirm-delivery')
+  @ApiBody({
+    description: 'Details for a confirmation form',
+    schema: {
+      type: 'object',
+      properties: {
+        dateReceived: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          example: new Date().toISOString(),
+        },
+        feedback: {
+          type: 'string',
+          nullable: true,
+          example: 'Wonderful shipment!',
+        },
+        photos: {
+          type: 'array',
+          items: { type: 'string' },
+          nullable: true,
+          example: [],
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FilesInterceptor('photos', 10, { storage: multer.memoryStorage() }),
+  )
+  async confirmDelivery(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: { dateReceived: string; feedback: string },
+    @UploadedFiles() photos?: Express.Multer.File[],
+  ): Promise<Order> {
+    const formattedDate = new Date(body.dateReceived);
+    if (isNaN(formattedDate.getTime())) {
+      throw new BadRequestException('Invalid date format for dateReceived');
+    }
+
+    const uploadedPhotoUrls =
+      photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
+
+    return this.ordersService.confirmDelivery(
+      orderId,
+      formattedDate,
+      body.feedback,
+      uploadedPhotoUrls,
+    );
   }
 }

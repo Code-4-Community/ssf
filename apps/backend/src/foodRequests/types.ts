@@ -4,3 +4,8 @@ export enum RequestSize {
   MEDIUM = 'Medium (5-10 boxes)',
   LARGE = 'Large (10+ boxes)',
 }
+
+export enum FoodRequestStatus {
+  ACTIVE = 'Active',
+  CLOSED = 'Closed',
+}
