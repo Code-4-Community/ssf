@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
@@ -161,17 +165,27 @@ export class OrdersService {
     return orders;
   }
 
-  async updateTrackingAndCost(orderId: number, dto: TrackingCostDto) {
+  async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
     validateId(orderId, 'Order');
+    if (!dto.trackingLink && !dto.shippingCost) {
+      throw new BadRequestException(
+        'At least one of tracking link or shipping cost must be provided',
+      );
+    }
 
-    await this.repo
-      .createQueryBuilder()
-      .update(Order)
-      .set({
-        trackingLink: dto.trackingLink,
-        shippingCost: dto.shippingCost,
-      })
-      .where('order_id = :orderId', { orderId })
-      .execute();
+    const order = await this.repo.findOneBy({ orderId });
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        'Can only update tracking info for shipped orders',
+      );
+    }
+
+    if (dto.trackingLink) order.trackingLink = dto.trackingLink;
+    if (dto.shippingCost) order.shippingCost = dto.shippingCost;
+
+    await this.repo.save(order);
   }
 }

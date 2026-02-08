@@ -102,16 +102,16 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('updateTrackingAndCost', () => {
-    it('should call ordersService.updateTrackingAndCost with correct parameters', async () => {
+  describe('updateTrackingCostInfo', () => {
+    it('should call ordersService.updateTrackingCostInfo with correct parameters', async () => {
       const orderId = 1;
       const trackingLink = 'www.samplelink/samplelink';
       const shippingCost = 15.99;
       const dto: TrackingCostDto = { trackingLink, shippingCost };
 
-      await controller.updateTrackingAndCost(orderId, dto);
+      await controller.updateTrackingCostInfo(orderId, dto);
 
-      expect(mockOrdersService.updateTrackingAndCost).toHaveBeenCalledWith(
+      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
         orderId,
         dto,
       );

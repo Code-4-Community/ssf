@@ -102,12 +102,12 @@ export class OrdersController {
     return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
-  @Patch('/:orderId/update-tracking-and-cost')
-  async updateTrackingAndCost(
+  @Patch('/:orderId/update-tracking-cost-info')
+  async updateTrackingCostInfo(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body(new ValidationPipe())
     dto: TrackingCostDto,
   ): Promise<void> {
-    return this.ordersService.updateTrackingAndCost(orderId, dto);
+    return this.ordersService.updateTrackingCostInfo(orderId, dto);
   }
 }
