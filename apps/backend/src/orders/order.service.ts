@@ -129,6 +129,11 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
+    if (!order.foodManufacturer) {
+      throw new NotFoundException(
+        `Order ${orderId} does not have a food manufacturer assigned`,
+      );
+    }
     return order.foodManufacturer;
   }
 
@@ -142,8 +147,8 @@ export class OrdersService {
       .set({
         status: newStatus as OrderStatus,
         shippedBy: 1,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : null,
-        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : null,
+        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
+        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
       })
       .where('order_id = :orderId', { orderId })
       .execute();

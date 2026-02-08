@@ -195,13 +195,14 @@ export interface Order {
   request: FoodRequest;
   requestId: number;
   foodManufacturer: FoodManufacturer | null;
-  shippedBy: number | null;
+  shippedBy?: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string | null;
-  deliveredAt: string | null;
-  trackingLink: string | null;
-  shippingCost: number | null;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  allocations: Allocation[];
+  trackingLink?: string;
+  shippingCost?: number;
 }
 
 export interface OrderItemDetails {
