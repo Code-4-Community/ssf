@@ -10,12 +10,16 @@ import { OrderStatus } from './types';
 
 @Injectable()
 export class OrdersService {
-  constructor(@InjectRepository(Order) private repo: Repository<Order>) {}
+  constructor(
+    @InjectRepository(Order) private repo: Repository<Order>,
+    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+  ) {}
 
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.pantry', 'pantry')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
       .leftJoinAndSelect('pantry.volunteers', 'volunteers')
       .select([
         'order.orderId',
@@ -23,6 +27,7 @@ export class OrdersService {
         'order.createdAt',
         'order.shippedAt',
         'order.deliveredAt',
+        'request.pantryId',
         'pantry.pantryName',
         'volunteers.id',
         'volunteers.firstName',
@@ -82,17 +87,16 @@ export class OrdersService {
   }
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['pantry'],
+    const request = await this.findOrderFoodRequest(orderId);
+    const pantry = await this.pantryRepo.findOneBy({
+      pantryId: request.pantryId,
     });
 
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
     }
-    return order.pantry;
+
+    return pantry;
   }
 
   async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
@@ -112,7 +116,10 @@ export class OrdersService {
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
     validateId(orderId, 'Order');
 
-    const order = await this.findOne(orderId);
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['foodManufacturer'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -140,8 +147,13 @@ export class OrdersService {
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {
     validateId(pantryId, 'Pantry');
 
+    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
     const orders = await this.repo.find({
-      where: { pantry: { pantryId } },
+      where: { request: { pantryId } },
       relations: ['request'],
     });
 

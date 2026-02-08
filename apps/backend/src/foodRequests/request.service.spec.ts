@@ -8,9 +8,14 @@ import { Pantry } from '../pantries/pantries.entity';
 import { RequestSize } from './types';
 import { Order } from '../orders/order.entity';
 import { OrderStatus } from '../orders/types';
+import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodType } from '../donationItems/types';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
+const mockOrdersRepository = mock<Repository<Order>>();
 
 const mockRequest: Partial<FoodRequest> = {
   requestId: 1,
@@ -21,7 +26,7 @@ const mockRequest: Partial<FoodRequest> = {
   dateReceived: null,
   feedback: null,
   photos: null,
-  order: null,
+  orders: null,
 };
 
 describe('RequestsService', () => {
@@ -45,6 +50,10 @@ describe('RequestsService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: mockPantryRepository,
+        },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: mockOrdersRepository,
         },
       ],
     }).compile();
@@ -74,7 +83,7 @@ describe('RequestsService', () => {
       expect(result).toEqual(mockRequest);
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
@@ -89,7 +98,134 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
+      });
+    });
+  });
+
+  describe('getOrderDetails', () => {
+    it('should return mapped order details for a valid requestId', async () => {
+      const requestId = 1;
+
+      const mockOrders: Partial<Order>[] = [
+        {
+          orderId: 10,
+          status: OrderStatus.DELIVERED,
+          foodManufacturer: {
+            foodManufacturerName: 'Test Manufacturer',
+          } as FoodManufacturer,
+          allocations: [
+            {
+              allocatedQuantity: 5,
+              item: {
+                itemName: 'Rice',
+                foodType: FoodType.GRANOLA,
+              } as DonationItem,
+            } as Allocation,
+            {
+              allocatedQuantity: 3,
+              item: {
+                itemName: 'Beans',
+                foodType: FoodType.DRIED_BEANS,
+              } as DonationItem,
+            } as Allocation,
+          ],
+        },
+        {
+          orderId: 11,
+          status: OrderStatus.SHIPPED,
+          foodManufacturer: {
+            foodManufacturerName: 'Another Manufacturer',
+          } as FoodManufacturer,
+          allocations: [
+            {
+              allocatedQuantity: 2,
+              item: {
+                itemName: 'Milk',
+                foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+              } as DonationItem,
+            } as Allocation,
+          ],
+        },
+      ];
+
+      mockOrdersRepository.find.mockResolvedValueOnce(mockOrders as Order[]);
+
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest as FoodRequest,
+      );
+
+      const result = await service.getOrderDetails(requestId);
+
+      expect(result).toEqual([
+        {
+          orderId: 10,
+          status: OrderStatus.DELIVERED,
+          foodManufacturerName: 'Test Manufacturer',
+          items: [
+            {
+              name: 'Rice',
+              quantity: 5,
+              foodType: FoodType.GRANOLA,
+            },
+            {
+              name: 'Beans',
+              quantity: 3,
+              foodType: FoodType.DRIED_BEANS,
+            },
+          ],
+        },
+        {
+          orderId: 11,
+          status: OrderStatus.SHIPPED,
+          foodManufacturerName: 'Another Manufacturer',
+          items: [
+            {
+              name: 'Milk',
+              quantity: 2,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+            },
+          ],
+        },
+      ]);
+
+      expect(mockOrdersRepository.find).toHaveBeenCalledWith({
+        where: { requestId },
+        relations: {
+          foodManufacturer: true,
+          allocations: {
+            item: true,
+          },
+        },
+      });
+    });
+
+    it('should throw an error if the request id is not found', async () => {
+      const requestId = 999;
+
+      await expect(service.getOrderDetails(requestId)).rejects.toThrow(
+        `Request ${requestId} not found`,
+      );
+    });
+
+    it('should return empty list if no associated orders', async () => {
+      const requestId = 1;
+
+      mockRequestsRepository.findOne.mockResolvedValueOnce(
+        mockRequest as FoodRequest,
+      );
+      mockOrdersRepository.find.mockResolvedValueOnce([]);
+
+      const result = await service.getOrderDetails(requestId);
+      expect(result).toEqual([]);
+      expect(mockOrdersRepository.find).toHaveBeenCalledWith({
+        where: { requestId },
+        relations: {
+          foodManufacturer: true,
+          allocations: {
+            item: true,
+          },
+        },
       });
     });
   });
@@ -166,7 +302,7 @@ describe('RequestsService', () => {
           dateReceived: null,
           feedback: null,
           photos: null,
-          order: null,
+          orders: null,
         },
         {
           requestId: 3,
@@ -178,7 +314,7 @@ describe('RequestsService', () => {
           dateReceived: null,
           feedback: null,
           photos: null,
-          order: null,
+          orders: null,
         },
       ];
       const pantryId = 1;
@@ -191,7 +327,7 @@ describe('RequestsService', () => {
       expect(result).toEqual(mockRequests.slice(0, 2));
       expect(mockRequestsRepository.find).toHaveBeenCalledWith({
         where: { pantryId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
   });
@@ -200,7 +336,6 @@ describe('RequestsService', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: null,
         request: null,
         requestId: 1,
         foodManufacturer: null,
@@ -213,7 +348,7 @@ describe('RequestsService', () => {
 
       const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder as Order,
+        orders: [mockOrder] as Order[],
       };
 
       const requestId = 1;
@@ -224,15 +359,15 @@ describe('RequestsService', () => {
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest2 as FoodRequest,
       );
+
+      const updatedOrder = { ...mockOrder, status: OrderStatus.DELIVERED };
+
       mockRequestsRepository.save.mockResolvedValueOnce({
         ...mockRequest,
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: {
-          ...(mockOrder as Order),
-          status: OrderStatus.DELIVERED,
-        } as Order,
+        orders: [updatedOrder],
       } as FoodRequest);
 
       const result = await service.updateDeliveryDetails(
@@ -247,12 +382,12 @@ describe('RequestsService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'delivered' },
+        orders: [updatedOrder],
       });
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
 
       expect(mockRequestsRepository.save).toHaveBeenCalledWith({
@@ -260,7 +395,7 @@ describe('RequestsService', () => {
         dateReceived: deliveryDate,
         feedback,
         photos,
-        order: { ...mockOrder, status: 'delivered' },
+        orders: [mockOrder],
       });
     });
 
@@ -283,7 +418,7 @@ describe('RequestsService', () => {
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
@@ -304,18 +439,17 @@ describe('RequestsService', () => {
           feedback,
           photos,
         ),
-      ).rejects.toThrow('No associated order found for this request');
+      ).rejects.toThrow('No associated orders found for this request');
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
 
     it('should throw an error if the order does not have a food manufacturer', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: null,
         request: null,
         requestId: 1,
         foodManufacturer: null,
@@ -327,7 +461,7 @@ describe('RequestsService', () => {
       };
       const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
-        order: mockOrder as Order,
+        orders: [mockOrder] as Order[],
       };
 
       const requestId = 1;
@@ -346,11 +480,13 @@ describe('RequestsService', () => {
           feedback,
           photos,
         ),
-      ).rejects.toThrow('No associated food manufacturer found for this order');
+      ).rejects.toThrow(
+        'No associated food manufacturer found for an associated order',
+      );
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
-        relations: ['order'],
+        relations: ['orders'],
       });
     });
   });
