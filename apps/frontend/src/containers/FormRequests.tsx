@@ -37,7 +37,7 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
-  const pageSize = 8;
+  const pageSize = 10;
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -73,10 +73,13 @@ const FormRequests: React.FC = () => {
       </Text>
       <HStack gap={3} my={5}>
         <Button
-          textStyle="p2"
+          fontFamily="ibm"
+          fontWeight="semibold"
+          fontSize="14px"
           color="neutral.50"
           bgColor="#2B4E60"
           onClick={newRequestDisclosure.onOpen}
+          px={2}
         >
           New Request
         </Button>
@@ -90,10 +93,13 @@ const FormRequests: React.FC = () => {
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              textStyle="p2"
+              fontFamily="ibm"
+              fontWeight="semibold"
+              fontSize="14px"
               color="neutral.600"
               bgColor={'white'}
               borderColor="neutral.300"
+              px={2}
             >
               Resubmit Latest
             </Button>
@@ -146,27 +152,35 @@ const FormRequests: React.FC = () => {
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {request.orders?.every(
-                  (order) => order.status === OrderStatus.DELIVERED,
+                {!request.orders ||
+                request.orders.length === 0 ||
+                request.orders.every(
+                  (order) =>
+                    order.status === OrderStatus.PENDING ||
+                    order.status === OrderStatus.SHIPPED,
                 ) ? (
-                  <Badge
-                    bgColor="neutral.300"
-                    color="#111111"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                  >
-                    Closed
-                  </Badge>
-                ) : (
                   <Badge
                     bgColor="#D4EAED"
                     color="#19717D"
                     textStyle="p2"
                     fontWeight={500}
                     fontSize={12}
+                    py={1}
+                    px={2}
                   >
                     Active
+                  </Badge>
+                ) : (
+                  <Badge
+                    bgColor="neutral.300"
+                    color="#111111"
+                    textStyle="p2"
+                    fontWeight={500}
+                    fontSize={12}
+                    py={1}
+                    px={2}
+                  >
+                    Closed
                   </Badge>
                 )}
               </Table.Cell>
@@ -205,7 +219,8 @@ const FormRequests: React.FC = () => {
             <Pagination.Items
               render={(page) => (
                 <IconButton
-                  variant={{ base: 'outline', _selected: 'outline' }}
+                  variant="outline"
+                  _selected={{ borderColor: 'neutral.800' }}
                   onClick={() => setCurrentPage(page.value)}
                 >
                   {page.value}

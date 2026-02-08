@@ -47,6 +47,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
+      if (!isOpen) return;
+
       try {
         const orderDetailsList = await apiClient.getOrderDetailsListFromRequest(
           request.requestId,
@@ -74,7 +76,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     fetchPantryData();
   }, [pantryId]);
 
-  const currentOrder = orderDetailsList[currentPage - 1];
+  let currentOrder = null;
+  if (orderDetailsList.length > 0) {
+    currentOrder = orderDetailsList[currentPage - 1];
+  }
 
   const groupedOrderItemsByType = useMemo(() => {
     if (!currentOrder) return {};
@@ -88,6 +93,20 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
       {} as Record<(typeof FoodTypes)[number], OrderItemDetails[]>,
     );
   }, [currentOrder]);
+
+  const sectionTitleStyles = {
+    textStyle: 'p2',
+    fontWeight: '600',
+    color: 'neutral.800',
+  };
+
+  const badgeStyles = {
+    py: '1',
+    px: '2',
+    textStyle: 'p2',
+    fontSize: '12px',
+    fontWeight: '500',
+  };
 
   return (
     <Dialog.Root
@@ -111,29 +130,37 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               {pantryName}
             </Text>
 
-            <Tabs.Root mt={5} defaultValue="request details">
-              <Tabs.List>
+            <Tabs.Root unstyled mt={5} fitted defaultValue="requestDetails">
+              <Tabs.List maxW="60%">
                 <Tabs.Trigger
                   textStyle="p2"
+                  px={4}
+                  py={1}
                   color="neutral.800"
-                  value="request details"
+                  value="requestDetails"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{ borderColor: 'neutral.700' }}
                 >
                   Request Details
                 </Tabs.Trigger>
                 <Tabs.Trigger
                   textStyle="p2"
+                  px={4}
+                  py={1}
                   color="neutral.800"
-                  value="associated orders"
+                  value="associatedOrders"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{ borderColor: 'neutral.700' }}
                 >
                   Associated Orders
                 </Tabs.Trigger>
               </Tabs.List>
-              <Tabs.Content value="request details">
-                <Field.Root required mb={4} mt={5}>
+              <Tabs.Content value="requestDetails">
+                <Field.Root mb={4} mt={6}>
                   <Field.Label>
-                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
-                      Size of Shipment
-                    </Text>
+                    <Text {...sectionTitleStyles}>Size of Shipment</Text>
                   </Field.Label>
                   <Menu.Root>
                     <Text textStyle="p2" color="neutral.800" mt={3}>
@@ -144,12 +171,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
                 <Field.Root mb={4} mt={3}>
                   <Field.Label>
-                    <Text
-                      textStyle="p2"
-                      fontWeight={600}
-                      color="neutral.800"
-                      mt={3}
-                    >
+                    <Text {...sectionTitleStyles} mt={3}>
                       Food Type(s)
                     </Text>
                   </Field.Label>
@@ -178,12 +200,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
                 <Field.Root mb={4}>
                   <Field.Label>
-                    <Text
-                      textStyle="p2"
-                      fontWeight={600}
-                      color="neutral.800"
-                      mt={3}
-                    >
+                    <Text {...sectionTitleStyles} mt={3}>
                       Additional Information
                     </Text>
                   </Field.Label>
@@ -193,16 +210,23 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                 </Field.Root>
               </Tabs.Content>
 
-              <Tabs.Content value="associated orders">
+              <Tabs.Content value="associatedOrders">
+                {!currentOrder && (
+                  <Text mt={5} textStyle="p2">
+                    {' '}
+                    No associated orders to display{' '}
+                  </Text>
+                )}
                 {currentOrder && (
                   <Box
                     borderWidth="1px"
                     borderColor="neutral.100"
                     borderRadius="5px"
                     p={3}
+                    mt={6}
                   >
                     <Flex justify="space-between" align="center" mb={3}>
-                      <Text color="neutral.800" textStyle="p2" fontWeight={600}>
+                      <Text {...sectionTitleStyles}>
                         Order {currentOrder.orderId} -
                         <Text as="span" color="neutral.800" textStyle="p2">
                           {' '}
@@ -211,23 +235,17 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       </Text>
                       {currentOrder.status === OrderStatus.DELIVERED ? (
                         <Badge
-                          py={1}
-                          px={2}
+                          {...badgeStyles}
                           bgColor="#EAEDEF"
                           color="#2B4E60"
-                          textStyle="p2"
-                          fontWeight={500}
                         >
                           Received
                         </Badge>
                       ) : (
                         <Badge
-                          py={1}
-                          px={2}
+                          {...badgeStyles}
                           bgColor="#FEECD1"
                           color="#9C5D00"
-                          textStyle="p2"
-                          fontWeight={500}
                         >
                           In Progress
                         </Badge>
@@ -240,13 +258,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       >,
                     ).map(([foodType, items]) => (
                       <Box key={foodType} mb={4}>
-                        <Text
-                          color="neutral.800"
-                          textStyle="p2"
-                          fontWeight={600}
-                        >
-                          {foodType}
-                        </Text>
+                        <Text {...sectionTitleStyles}>{foodType}</Text>
                         {items.map((item) => (
                           <Flex
                             border="1px solid"
@@ -272,19 +284,19 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                               mx={3}
                             />
 
-                            <Text py={2} textStyle="p2" color="neutral.800">
+                            <Text
+                              minW={5}
+                              py={2}
+                              textStyle="p2"
+                              color="neutral.800"
+                            >
                               {item.quantity}
                             </Text>
                           </Flex>
                         ))}
                       </Box>
                     ))}
-                    <Text
-                      color="neutral.800"
-                      textStyle="p2"
-                      fontWeight={600}
-                      mt="3"
-                    >
+                    <Text {...sectionTitleStyles} mt="3">
                       Tracking
                     </Text>
                     <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
@@ -293,54 +305,54 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   </Box>
                 )}
 
-                <Flex justify="center" mt={12}>
-                  <Pagination.Root
-                    count={orderDetailsList.length}
-                    pageSize={1}
-                    page={currentPage}
-                    onChange={(page) => setCurrentPage(page)}
-                  >
-                    <ButtonGroup variant="outline" size="sm">
-                      <Pagination.PrevTrigger asChild>
-                        <IconButton
-                          variant="ghost"
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(prev - 1, 1))
-                          }
-                        >
-                          <ChevronLeft />
-                        </IconButton>
-                      </Pagination.PrevTrigger>
-
-                      <Pagination.Items
-                        render={(page) => (
+                {orderDetailsList.length > 0 && (
+                  <Flex justify="center" mt={7}>
+                    <Pagination.Root
+                      count={orderDetailsList.length}
+                      pageSize={1}
+                      page={currentPage}
+                      onChange={(page) => setCurrentPage(page)}
+                    >
+                      <ButtonGroup variant="outline" size="sm">
+                        <Pagination.PrevTrigger asChild>
                           <IconButton
-                            variant={{ base: 'outline', _selected: 'outline' }}
-                            onClick={() => setCurrentPage(page.value)}
+                            variant="ghost"
+                            onClick={() =>
+                              setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
                           >
-                            {page.value}
+                            <ChevronLeft />
                           </IconButton>
-                        )}
-                      />
+                        </Pagination.PrevTrigger>
 
-                      <Pagination.NextTrigger asChild>
-                        <IconButton
-                          variant="ghost"
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(
-                                prev + 1,
-                                Math.ceil(orderDetailsList.length),
-                              ),
-                            )
-                          }
-                        >
-                          <ChevronRight />
-                        </IconButton>
-                      </Pagination.NextTrigger>
-                    </ButtonGroup>
-                  </Pagination.Root>
-                </Flex>
+                        <Pagination.Items
+                          render={(page) => (
+                            <IconButton
+                              variant="outline"
+                              _selected={{ borderColor: 'neutral.800' }}
+                              onClick={() => setCurrentPage(page.value)}
+                            >
+                              {page.value}
+                            </IconButton>
+                          )}
+                        />
+
+                        <Pagination.NextTrigger asChild>
+                          <IconButton
+                            variant="ghost"
+                            onClick={() =>
+                              setCurrentPage((prev) =>
+                                Math.min(prev + 1, orderDetailsList.length),
+                              )
+                            }
+                          >
+                            <ChevronRight />
+                          </IconButton>
+                        </Pagination.NextTrigger>
+                      </ButtonGroup>
+                    </Pagination.Root>
+                  </Flex>
+                )}
               </Tabs.Content>
             </Tabs.Root>
           </Dialog.Body>

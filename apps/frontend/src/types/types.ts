@@ -97,6 +97,12 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
+export enum DonationStatus {
+  AVAILABLE = 'available',
+  FULFILLED = 'fulfilled',
+  MATCHING = 'matching',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -115,7 +121,7 @@ export interface DonationItem {
   reservedQuantity: number;
   ozPerItem: number;
   estimatedValue: number;
-  foodType: string;
+  foodType: FoodType;
 }
 
 export const FoodTypes = [
@@ -172,18 +178,20 @@ export interface UserDto {
 
 export interface FoodRequest {
   requestId: number;
-  requestedAt: string;
-  dateReceived: string | null;
+  pantryId: number;
+  pantry: Pantry;
   requestedSize: string;
   requestedItems: string[];
-  additionalInformation: string;
-  orderId: number;
+  additionalInformation: string | null;
+  requestedAt: Date;
+  dateReceived: Date | null;
+  feedback: string | null;
+  photos: string[] | null;
   orders?: Order[];
 }
 
 export interface Order {
   orderId: number;
-  pantry?: Pantry;
   request: FoodRequest;
   requestId: number;
   foodManufacturer: FoodManufacturer | null;
@@ -223,6 +231,18 @@ export interface CreateFoodRequestBody {
   dateReceived: Date | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;
+}
+
+export interface CreateMultipleDonationItemsBody {
+  donationId: number;
+  items: {
+    itemName: string;
+    quantity: number;
+    reservedQuantity: number;
+    ozPerItem: number;
+    estimatedValue: number;
+    foodType: FoodType;
+  }[];
 }
 
 export interface Allocation {
