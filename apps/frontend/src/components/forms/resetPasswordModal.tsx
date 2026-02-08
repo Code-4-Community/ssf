@@ -97,6 +97,16 @@ const ResetPasswordModal: React.FC = () => {
               ? 'To reset your password please enter the email associated with your account.'
               : 'Please confirm your verification code and set a new password.'}
           </Text>
+          {step !== 'reset' && (
+            <VStack align="start" gap={1} mt={3}>
+              <Text textStyle="p2" color="#52525B">
+                Your password must:
+              </Text>
+              <Text textStyle="p2" color="#52525B">• Be at least 8 characters</Text>
+              <Text textStyle="p2" color="#52525B">• Include at least 1 number and special character</Text>
+              <Text textStyle="p2" color="#52525B">• Include at least 1 uppercase and lowercase letter</Text>
+            </VStack>
+          )}
         </Box>
 
         <Field.Root required>

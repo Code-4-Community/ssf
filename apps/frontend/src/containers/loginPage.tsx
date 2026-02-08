@@ -13,7 +13,7 @@ import {
   Group,
 } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
-import { Eye } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -107,7 +107,12 @@ const LoginPage: React.FC = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 <Box color="neutral.200">
-                  <Eye />
+                  {showPassword && (
+                    <EyeOff />
+                  )}
+                  {!showPassword && (
+                    <Eye />
+                  )}
                 </Box>
               </IconButton>
             </Group>
