@@ -149,7 +149,7 @@ export class AuthService {
 
     const response = await this.providerClient.send(signInCommand);
 
-    this.validateAuthenticationResultTokens(response);
+    this.validateAuthenticationResultTokensForSignIn(response);
 
     const authResult = response.AuthenticationResult!;
 
@@ -177,7 +177,7 @@ export class AuthService {
 
     const response = await this.providerClient.send(refreshCommand);
 
-    this.validateAuthenticationResultTokens(response);
+    this.validateAuthenticationResultTokensForRefresh(response);
 
     const authResult = response.AuthenticationResult!;
 
@@ -223,7 +223,7 @@ export class AuthService {
     await this.providerClient.send(adminDeleteUserCommand);
   }
 
-  validateAuthenticationResultTokens(
+  validateAuthenticationResultTokensForSignIn(
     commandOutput: AdminInitiateAuthCommandOutput,
   ): void {
     if (commandOutput.AuthenticationResult == null) {
@@ -238,7 +238,26 @@ export class AuthService {
       commandOutput.AuthenticationResult.IdToken == null
     ) {
       throw new NotFoundException(
-        'Necessary Authentication Result tokens not found for sign in',
+        'Necessary Authentication Result tokens not found for sign in ',
+      );
+    }
+  }
+
+  validateAuthenticationResultTokensForRefresh(
+    commandOutput: AdminInitiateAuthCommandOutput,
+  ): void {
+    if (commandOutput.AuthenticationResult == null) {
+      throw new NotFoundException(
+        'No associated authentication result for refresh',
+      );
+    }
+
+    if (
+      commandOutput.AuthenticationResult.AccessToken == null ||
+      commandOutput.AuthenticationResult.IdToken == null
+    ) {
+      throw new NotFoundException(
+        'Necessary Authentication Result tokens not found for refresh',
       );
     }
   }

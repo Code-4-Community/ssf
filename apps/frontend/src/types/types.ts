@@ -97,6 +97,16 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
+export interface CreateRequestDto {
+  pantryId: number;
+  requestedSize: RequestSize;
+  requestedItems: string[];
+  additionalInformation?: string;
+  dateReceived?: Date;
+  feedback?: string;
+  photos?: string[];
+}
+
 export enum DonationStatus {
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',

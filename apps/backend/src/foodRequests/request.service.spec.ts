@@ -278,9 +278,9 @@ describe('RequestsService', () => {
           RequestSize.MEDIUM,
           ['Canned Goods', 'Vegetables'],
           'Additional info',
-          undefined,
-          undefined,
-          undefined,
+          null,
+          null,
+          null,
         ),
       ).rejects.toThrow(`Pantry ${invalidPantryId} not found`);
 
@@ -299,7 +299,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
-          requestedAt: undefined,
+          requestedAt: null,
           dateReceived: null,
           feedback: null,
           photos: null,

@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { Pantry } from './pantries.entity';
-import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
@@ -22,15 +21,6 @@ const mockOrdersService = mock<OrdersService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
-
-  const mockUser = {
-    id: 1,
-    role: Role.VOLUNTEER,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: '',
-    phone: '123-456-7890',
-  };
 
   // Mock Pantry
   const mockPantry = {
