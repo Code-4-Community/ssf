@@ -162,14 +162,14 @@ export class FoodManufacturersController {
     );
   }
 
-  @Patch('/approve/:manufacturerId')
+  @Patch('/:manufacturerId/approve')
   async approveManufacturer(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
   ): Promise<void> {
     return this.foodManufacturersService.approve(manufacturerId);
   }
 
-  @Patch('/deny/:manufacturerId')
+  @Patch('/:manufacturerId/deny')
   async denyManufacturer(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
   ): Promise<void> {

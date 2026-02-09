@@ -79,7 +79,6 @@ export class PantriesController {
         },
         emailContactOther: {
           type: 'string',
-          maxLength: 255,
           example: 'No we do not use email',
         },
         secondaryContactFirstName: {
@@ -197,7 +196,6 @@ export class PantriesController {
         },
         deliveryWindowInstructions: {
           type: 'string',
-          maxLength: 255,
           example: 'Deliveries can be made between 9 AM and 5 PM on weekdays.',
         },
         reserveFoodForAllergic: {
@@ -207,7 +205,6 @@ export class PantriesController {
         },
         reservationExplanation: {
           type: 'string',
-          maxLength: 255,
           example:
             'We keep a dedicated section for clients with severe allergies',
         },
@@ -295,14 +292,14 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
-  @Patch('/approve/:pantryId')
+  @Patch('/:pantryId/approve')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.approve(pantryId);
   }
 
-  @Patch('/deny/:pantryId')
+  @Patch('/:pantryId/deny')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {

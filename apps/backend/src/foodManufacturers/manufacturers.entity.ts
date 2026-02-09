@@ -92,7 +92,6 @@ export class FoodManufacturer {
   @Column({
     name: 'products_sustainable_explanation',
     type: 'varchar',
-    length: 255,
   })
   productsSustainableExplanation!: string;
 
@@ -119,7 +118,6 @@ export class FoodManufacturer {
   @Column({
     name: 'additional_comments',
     type: 'varchar',
-    length: 255,
     nullable: true,
   })
   additionalComments?: string;
@@ -128,7 +126,7 @@ export class FoodManufacturer {
   newsletterSubscription?: boolean;
 
   @OneToMany(() => Donation, (donation) => donation.foodManufacturer)
-  donations: Donation[];
+  donations!: Donation[];
 
   @Column({
     name: 'status',
