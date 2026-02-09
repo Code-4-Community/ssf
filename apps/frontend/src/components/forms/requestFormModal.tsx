@@ -58,11 +58,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       closeOnInteractOutside
     >
       {alertMessage && (
-        <FloatingAlert
-          message={alertMessage}
-          status="error"
-          timeout={6000}
-        />
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>

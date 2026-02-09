@@ -75,12 +75,8 @@ const FormRequests: React.FC = () => {
         Food Request Management
       </Text>
       {alertMessage && (
-                    <FloatingAlert
-                      message={alertMessage}
-                      status="error"
-                      timeout={6000}
-                    />
-                  )}
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"

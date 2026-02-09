@@ -103,12 +103,8 @@ const AdminDonation: React.FC = () => {
         Donation Management
       </Heading>
       {alertMessage && (
-                    <FloatingAlert
-                      message={alertMessage}
-                      status="error"
-                      timeout={6000}
-                    />
-                  )}
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button

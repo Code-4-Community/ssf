@@ -35,7 +35,7 @@ export function FloatingAlert({
 
   return (
     <Alert.Root
-      color={status === "info" ? "neutral.800" : "red"}
+      color={status === 'info' ? 'neutral.800' : 'red'}
       status="info"
       bg="white"
       variant="subtle"

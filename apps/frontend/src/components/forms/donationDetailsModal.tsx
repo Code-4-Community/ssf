@@ -68,12 +68,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     >
       <Portal>
         {alertMessage && (
-                      <FloatingAlert
-                        message={alertMessage}
-                        status="error"
-                        timeout={6000}
-                      />
-                    )}
+          <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+        )}
         <Dialog.Backdrop bg="blackAlpha.300" />
 
         <Dialog.Positioner>

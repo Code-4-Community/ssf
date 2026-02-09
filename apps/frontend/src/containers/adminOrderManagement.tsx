@@ -168,12 +168,8 @@ const AdminOrderManagement: React.FC = () => {
       </Heading>
 
       {alertMessage && (
-                    <FloatingAlert
-                      message={alertMessage}
-                      status="error"
-                      timeout={6000}
-                    />
-                  )}
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];
