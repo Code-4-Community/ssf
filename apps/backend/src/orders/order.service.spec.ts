@@ -389,33 +389,33 @@ describe('OrdersService', () => {
       expect(order.trackingLink).toEqual('testtracking.com');
       expect(order.shippingCost).toEqual('7.50');
     });
-  });
 
-  it('throws BadRequestException for non-shipped order', async () => {
-    const trackingCostDto: TrackingCostDto = {
-      trackingLink: 'testtracking.com',
-      shippingCost: 7.5,
-    };
+    it('throws BadRequestException for non-shipped order', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 7.5,
+      };
 
-    const order1 = await service.findOne(2);
-    const order2 = await service.findOne(4);
+      const order1 = await service.findOne(2);
+      const order2 = await service.findOne(4);
 
-    expect(order1.status).toEqual(OrderStatus.DELIVERED);
-    expect(order2.status).toEqual(OrderStatus.PENDING);
+      expect(order1.status).toEqual(OrderStatus.DELIVERED);
+      expect(order2.status).toEqual(OrderStatus.PENDING);
 
-    await expect(
-      service.updateTrackingCostInfo(2, trackingCostDto),
-    ).rejects.toThrow(
-      new BadRequestException(
-        'Can only update tracking info for shipped orders',
-      ),
-    );
-    await expect(
-      service.updateTrackingCostInfo(4, trackingCostDto),
-    ).rejects.toThrow(
-      new BadRequestException(
-        'Can only update tracking info for shipped orders',
-      ),
-    );
+      await expect(
+        service.updateTrackingCostInfo(2, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Can only update tracking info for shipped orders',
+        ),
+      );
+      await expect(
+        service.updateTrackingCostInfo(4, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Can only update tracking info for shipped orders',
+        ),
+      );
+    });
   });
 });
