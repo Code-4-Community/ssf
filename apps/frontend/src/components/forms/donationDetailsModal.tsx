@@ -42,7 +42,6 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
         setLoadedDonation(donationData);
         setItems(itemsData);
-        setAlertMessage('Error fetching donation details: ' + err);
       } catch (err) {
         setAlertMessage('Error fetching donation details: ' + err);
       }
@@ -76,7 +75,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 bg="white"
                 variant="subtle"
                 boxShadow="lg"
-                position="absolute"
+                position="fixed"
                 zIndex="toast"
                 top="12px"
                 right="12px"

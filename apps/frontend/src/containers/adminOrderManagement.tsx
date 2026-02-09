@@ -174,7 +174,7 @@ const AdminOrderManagement: React.FC = () => {
                       bg="white"
                       variant="subtle"
                       boxShadow="lg"
-                      position="absolute"
+                      position="fixed"
                       zIndex="toast"
                       top="12px"
                       right="12px"
