@@ -96,7 +96,9 @@ export class RequestsController {
     requestData: CreateRequestDto,
   ): Promise<FoodRequest> {
     if (
-      !Object.values(RequestSize).includes(requestData.requestedSize as RequestSize)
+      !Object.values(RequestSize).includes(
+        requestData.requestedSize as RequestSize,
+      )
     ) {
       throw new BadRequestException('Invalid request size');
     }

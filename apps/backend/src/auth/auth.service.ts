@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
@@ -72,9 +77,9 @@ export class AuthService {
       throw new NotFoundException(`Cognito user with sub ${userSub} not found`);
     }
 
-    const userAttributes = Users[0].Attributes
+    const userAttributes = Users[0].Attributes;
     if (!userAttributes) {
-      throw new NotFoundException(`Cognito user attributes not found`)
+      throw new NotFoundException(`Cognito user attributes not found`);
     }
 
     return userAttributes;
@@ -108,7 +113,9 @@ export class AuthService {
       const response = await this.providerClient.send(signUpCommand);
 
       if (response.UserConfirmed == null) {
-        throw new InternalServerErrorException('Missing UserConfirmed from Cognito');
+        throw new InternalServerErrorException(
+          'Missing UserConfirmed from Cognito',
+        );
       }
 
       return response.UserConfirmed;
@@ -142,7 +149,7 @@ export class AuthService {
 
     const response = await this.providerClient.send(signInCommand);
 
-    this.validateAuthenticationResultTokens(response)
+    this.validateAuthenticationResultTokens(response);
 
     const authResult = response.AuthenticationResult!;
 
@@ -170,7 +177,7 @@ export class AuthService {
 
     const response = await this.providerClient.send(refreshCommand);
 
-    this.validateAuthenticationResultTokens(response)
+    this.validateAuthenticationResultTokens(response);
 
     const authResult = response.AuthenticationResult!;
 
@@ -216,13 +223,23 @@ export class AuthService {
     await this.providerClient.send(adminDeleteUserCommand);
   }
 
-  validateAuthenticationResultTokens(commandOutput: AdminInitiateAuthCommandOutput): void {
+  validateAuthenticationResultTokens(
+    commandOutput: AdminInitiateAuthCommandOutput,
+  ): void {
     if (commandOutput.AuthenticationResult == null) {
-      throw new NotFoundException("No associated authentication result for sign in")
+      throw new NotFoundException(
+        'No associated authentication result for sign in',
+      );
     }
 
-    if (commandOutput.AuthenticationResult.AccessToken == null || commandOutput.AuthenticationResult.RefreshToken == null || commandOutput.AuthenticationResult.IdToken == null) {
-      throw new NotFoundException("Necessary Authentication Result tokens not found for sign in")
+    if (
+      commandOutput.AuthenticationResult.AccessToken == null ||
+      commandOutput.AuthenticationResult.RefreshToken == null ||
+      commandOutput.AuthenticationResult.IdToken == null
+    ) {
+      throw new NotFoundException(
+        'Necessary Authentication Result tokens not found for sign in',
+      );
     }
   }
 }

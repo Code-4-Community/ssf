@@ -26,7 +26,10 @@ export class AuthController {
     try {
       await this.authService.signup(signUpDto);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Unexpected error occurred when signing up user';
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when signing up user';
       throw new BadRequestException(message);
     }
 
@@ -47,7 +50,10 @@ export class AuthController {
     try {
       this.authService.verifyUser(body.email, body.verificationCode);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Unexpected error occurred when verifying user';
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when verifying user';
       throw new BadRequestException(message);
     }
   }
@@ -79,7 +85,10 @@ export class AuthController {
     try {
       await this.authService.deleteUser(user.email);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Unexpected error occurred when deleting user';
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when deleting user';
       throw new BadRequestException(message);
     }
 

@@ -1,37 +1,44 @@
-import { ArrayNotEmpty, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
-import { RequestSize } from "../types";
-
+import {
+  ArrayNotEmpty,
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { RequestSize } from '../types';
 
 export class CreateRequestDto {
-    @IsNotEmpty()
-    @IsNumber()
-    pantryId!: number;
+  @IsNotEmpty()
+  @IsNumber()
+  pantryId!: number;
 
-    @IsEnum(RequestSize)
-    requestedSize!: RequestSize;
+  @IsEnum(RequestSize)
+  requestedSize!: RequestSize;
 
-    @ArrayNotEmpty()
-    requestedItems!: string[];
+  @ArrayNotEmpty()
+  requestedItems!: string[];
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(255)
-    additionalInformation?: string;
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  additionalInformation?: string;
 
-    @IsDate()
-    @IsOptional()
-    @IsNotEmpty()
-    dateReceived?: Date;
+  @IsDate()
+  @IsOptional()
+  @IsNotEmpty()
+  dateReceived?: Date;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(255)
-    feedback?: string;
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  feedback?: string;
 
-    @ArrayNotEmpty()
-    @IsOptional()
-    photos?: string[];
-
+  @ArrayNotEmpty()
+  @IsOptional()
+  photos?: string[];
 }

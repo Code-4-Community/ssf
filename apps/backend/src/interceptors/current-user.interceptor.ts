@@ -26,7 +26,7 @@ export class CurrentUserInterceptor implements NestInterceptor {
     )?.Value;
 
     if (!userEmail) {
-      throw new NotFoundException("Missing user email")
+      throw new NotFoundException('Missing user email');
     }
     const users = await this.usersService.find(userEmail);
 

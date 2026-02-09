@@ -24,11 +24,11 @@ export class AWSS3Service {
 
   validateEnv(name: string): string {
     const v = process.env[name];
-  
+
     if (!v) {
       throw new InternalServerErrorException(`Missing env var: ${name}`);
     }
-  
+
     return v;
   }
 
