@@ -107,8 +107,6 @@ export class FoodManufacturersController {
         },
         productsSustainableExplanation: {
           type: 'string',
-          minLength: 1,
-          maxLength: 255,
           example: 'Our products are environmentally conscious.',
         },
         inKindDonations: {
@@ -127,7 +125,6 @@ export class FoodManufacturersController {
         },
         additionalComments: {
           type: 'string',
-          maxLength: 255,
           example: 'Nope!',
         },
         newsletterSubscription: {
