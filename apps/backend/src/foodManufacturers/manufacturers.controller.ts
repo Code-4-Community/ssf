@@ -149,7 +149,7 @@ export class FoodManufacturersController {
       ],
     },
   })
-  @Post('/submit-application')
+  @Post('/application')
   async submitFoodManufacturerApplication(
     @Body(new ValidationPipe())
     foodManufacturerData: FoodManufacturerApplicationDto,

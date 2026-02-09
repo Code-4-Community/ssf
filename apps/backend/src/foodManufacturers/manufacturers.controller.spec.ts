@@ -82,7 +82,7 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('POST /submit-application', () => {
+  describe('POST /application', () => {
     it('should submit a food manufacturer application', async () => {
       const mockApplicationData: FoodManufacturerApplicationDto = {
         foodManufacturerName: 'Good Foods Inc',
