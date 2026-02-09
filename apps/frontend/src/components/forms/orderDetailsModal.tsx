@@ -7,11 +7,11 @@ import {
   Textarea,
   Field,
   Tag,
-  Alert,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, OrderSummary } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface OrderDetailsModalProps {
   order: OrderSummary;
@@ -55,25 +55,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       closeOnInteractOutside
     >
       {alertMessage && (
-        <Alert.Root
-          color="red"
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="fixed"
-          zIndex="toast"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
-      )}
+              <FloatingAlert
+                message={alertMessage}
+                status="error"
+                timeout={6000}
+              />
+            )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>

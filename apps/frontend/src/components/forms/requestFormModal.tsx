@@ -10,11 +10,11 @@ import {
   Box,
   Field,
   CloseButton,
-  Alert,
 } from '@chakra-ui/react';
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -58,24 +58,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       closeOnInteractOutside
     >
       {alertMessage && (
-        <Alert.Root
-          color="red"
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="fixed"
-          zIndex="toast"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
+        <FloatingAlert
+          message={alertMessage}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>

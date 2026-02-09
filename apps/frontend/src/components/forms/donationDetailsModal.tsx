@@ -6,11 +6,11 @@ import {
   Dialog,
   Portal,
   CloseButton,
-  Alert,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface DonationDetailsModalProps {
   donation?: Donation;
@@ -68,25 +68,12 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     >
       <Portal>
         {alertMessage && (
-          <Alert.Root
-            color="red"
-            status="info"
-            bg="white"
-            variant="subtle"
-            boxShadow="lg"
-            position="fixed"
-            zIndex="toast"
-            top="12px"
-            right="12px"
-            w="fit-content"
-            maxW="400px"
-          >
-            <Alert.Indicator />
-            <Alert.Title textStyle="p2" fontWeight={500}>
-              {alertMessage}
-            </Alert.Title>
-          </Alert.Root>
-        )}
+                      <FloatingAlert
+                        message={alertMessage}
+                        status="error"
+                        timeout={6000}
+                      />
+                    )}
         <Dialog.Backdrop bg="blackAlpha.300" />
 
         <Dialog.Positioner>

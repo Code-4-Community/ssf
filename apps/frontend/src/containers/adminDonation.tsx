@@ -10,12 +10,12 @@ import {
   Checkbox,
   VStack,
   ButtonGroup,
-  Alert,
 } from '@chakra-ui/react';
 import { Donation } from 'types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -103,25 +103,12 @@ const AdminDonation: React.FC = () => {
         Donation Management
       </Heading>
       {alertMessage && (
-        <Alert.Root
-          color="red"
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="fixed"
-          zIndex="toast"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
-      )}
+                    <FloatingAlert
+                      message={alertMessage}
+                      status="error"
+                      timeout={6000}
+                    />
+                  )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button

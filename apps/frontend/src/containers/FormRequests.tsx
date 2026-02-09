@@ -13,7 +13,6 @@ import {
   ButtonGroup,
   IconButton,
   Flex,
-  Alert,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
@@ -21,6 +20,7 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -75,25 +75,12 @@ const FormRequests: React.FC = () => {
         Food Request Management
       </Text>
       {alertMessage && (
-        <Alert.Root
-          color="red"
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="fixed"
-          zIndex="toast"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
-      )}
+                    <FloatingAlert
+                      message={alertMessage}
+                      status="error"
+                      timeout={6000}
+                    />
+                  )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"

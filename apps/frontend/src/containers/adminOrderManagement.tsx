@@ -10,7 +10,6 @@ import {
   ButtonGroup,
   Checkbox,
   Input,
-  Alert,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
@@ -25,6 +24,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
+import { FloatingAlert } from '@components/floatingAlert';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -168,25 +168,12 @@ const AdminOrderManagement: React.FC = () => {
       </Heading>
 
       {alertMessage && (
-        <Alert.Root
-          color="red"
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="fixed"
-          zIndex="toast"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
-      )}
+                    <FloatingAlert
+                      message={alertMessage}
+                      status="error"
+                      timeout={6000}
+                    />
+                  )}
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];
