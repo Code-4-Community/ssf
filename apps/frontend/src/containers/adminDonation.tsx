@@ -30,7 +30,7 @@ const AdminDonation: React.FC = () => {
   );
 
   const [alertMessage, setAlertMessage] = useState<string>('');
-  
+
   useEffect(() => {
     const fetchDonations = async () => {
       try {
@@ -103,25 +103,25 @@ const AdminDonation: React.FC = () => {
         Donation Management
       </Heading>
       {alertMessage && (
-                    <Alert.Root
-                      color='red'
-                      status="info"
-                      bg="white"
-                      variant="subtle"
-                      boxShadow="lg"
-                      position="fixed"
-                      zIndex="toast"
-                      top="12px"
-                      right="12px"
-                      w="fit-content"
-                      maxW="400px"
-                    >
-                      <Alert.Indicator />
-                      <Alert.Title textStyle="p2" fontWeight={500}>
-                        {alertMessage}
-                      </Alert.Title>
-                    </Alert.Root>
-                  )}
+        <Alert.Root
+          color="red"
+          status="info"
+          bg="white"
+          variant="subtle"
+          boxShadow="lg"
+          position="fixed"
+          zIndex="toast"
+          top="12px"
+          right="12px"
+          w="fit-content"
+          maxW="400px"
+        >
+          <Alert.Indicator />
+          <Alert.Title textStyle="p2" fontWeight={500}>
+            {alertMessage}
+          </Alert.Title>
+        </Alert.Root>
+      )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button

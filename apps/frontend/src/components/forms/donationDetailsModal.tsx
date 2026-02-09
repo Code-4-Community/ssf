@@ -66,28 +66,27 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
-      
       <Portal>
         {alertMessage && (
-              <Alert.Root
-                color='red'
-                status="info"
-                bg="white"
-                variant="subtle"
-                boxShadow="lg"
-                position="fixed"
-                zIndex="toast"
-                top="12px"
-                right="12px"
-                w="fit-content"
-                maxW="400px"
-              >
-                <Alert.Indicator />
-                <Alert.Title textStyle="p2" fontWeight={500}>
-                  {alertMessage}
-                </Alert.Title>
-              </Alert.Root>
-            )}
+          <Alert.Root
+            color="red"
+            status="info"
+            bg="white"
+            variant="subtle"
+            boxShadow="lg"
+            position="fixed"
+            zIndex="toast"
+            top="12px"
+            right="12px"
+            w="fit-content"
+            maxW="400px"
+          >
+            <Alert.Indicator />
+            <Alert.Title textStyle="p2" fontWeight={500}>
+              {alertMessage}
+            </Alert.Title>
+          </Alert.Root>
+        )}
         <Dialog.Backdrop bg="blackAlpha.300" />
 
         <Dialog.Positioner>

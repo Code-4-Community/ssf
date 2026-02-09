@@ -168,25 +168,25 @@ const AdminOrderManagement: React.FC = () => {
       </Heading>
 
       {alertMessage && (
-                    <Alert.Root
-                      color='red'
-                      status="info"
-                      bg="white"
-                      variant="subtle"
-                      boxShadow="lg"
-                      position="fixed"
-                      zIndex="toast"
-                      top="12px"
-                      right="12px"
-                      w="fit-content"
-                      maxW="400px"
-                    >
-                      <Alert.Indicator />
-                      <Alert.Title textStyle="p2" fontWeight={500}>
-                        {alertMessage}
-                      </Alert.Title>
-                    </Alert.Root>
-                  )}
+        <Alert.Root
+          color="red"
+          status="info"
+          bg="white"
+          variant="subtle"
+          boxShadow="lg"
+          position="fixed"
+          zIndex="toast"
+          top="12px"
+          right="12px"
+          w="fit-content"
+          maxW="400px"
+        >
+          <Alert.Indicator />
+          <Alert.Title textStyle="p2" fontWeight={500}>
+            {alertMessage}
+          </Alert.Title>
+        </Alert.Root>
+      )}
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];
