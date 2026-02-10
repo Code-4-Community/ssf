@@ -186,7 +186,7 @@ export class OrdersService {
 
     const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
 
-    if (isFirstTimeSetting && (!dto.shippingCost || !dto.shippingCost)) {
+    if (isFirstTimeSetting && (!dto.trackingLink || !dto.shippingCost)) {
       throw new BadRequestException(
         'Must provide both tracking link and shipping cost on initial assignment',
       );
@@ -209,7 +209,7 @@ export class OrdersService {
       order.trackingLink &&
       order.shippingCost
     ) {
-      this.updateStatus(orderId, OrderStatus.SHIPPED);
+      await this.updateStatus(orderId, OrderStatus.SHIPPED);
     }
 
     await this.repo.save(order);
