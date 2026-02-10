@@ -565,9 +565,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="25%"
+                  width="15%"
                 >
-                  Pantry
+                  Status
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
@@ -581,16 +581,16 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="15%"
+                  width="25%"
                 >
-                  Status
+                  Pantry
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
                   textAlign="right"
                   width="25%"
                 >
-                  Date Started
+                  Dates
                 </Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
@@ -630,7 +630,18 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {pantry.pantryName}
+                      <Box
+                        borderRadius="md"
+                        bg={colors[0]}
+                        color={colors[1]}
+                        display="inline-block"
+                        fontWeight="500"
+                        my={2}
+                        py={1}
+                        px={3}
+                      >
+                        {capitalize(order.status)}
+                      </Box>
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -670,25 +681,15 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      <Box
-                        borderRadius="md"
-                        bg={colors[0]}
-                        color={colors[1]}
-                        display="inline-block"
-                        fontWeight="500"
-                        my={2}
-                        py={1}
-                        px={3}
-                      >
-                        {capitalize(order.status)}
-                      </Box>
+                      {pantry.pantryName}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
-                      textAlign="right"
+                      textAlign="left"
                       color="neutral.700"
                     >
-                      {formatDate(order.createdAt)}
+                      {formatDate(order.createdAt)}-
+                      {order.deliveredAt && formatDate(order.deliveredAt)}
                     </Table.Cell>
                   </Table.Row>
                 );
