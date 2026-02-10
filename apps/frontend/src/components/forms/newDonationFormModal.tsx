@@ -32,10 +32,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onClose,
 }) => {
   const RECURRENCE_MAP: Record<string, RecurrenceEnum> = {
-    "Week": RecurrenceEnum.WEEKLY,
-    "Month": RecurrenceEnum.MONTHLY,
-    "Year": RecurrenceEnum.YEARLY,
-  }
+    Week: RecurrenceEnum.WEEKLY,
+    Month: RecurrenceEnum.MONTHLY,
+    Year: RecurrenceEnum.YEARLY,
+  };
 
   const [rows, setRows] = useState([
     {
@@ -142,42 +142,65 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     if (repeatInterval === 'Week') {
       const selectedDays = Object.keys(repeatOn).filter((day) => repeatOn[day]);
       if (selectedDays.length === 0) return [];
-      
+
       const dayOfWeek = today.getDay();
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      
+      const daysOfWeek = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+
       // Calculate the start of the next occurrence window
       const baseWeeksToAdd = repeatCount;
       const baseDaysToAdd = baseWeeksToAdd * 7;
-      
+
       // If repeat is more than 1 week OR no days found this week, start from next interval
       const startDay = repeatCount > 1 ? baseDaysToAdd : 1;
-      
+
       // Collect all matching days in the next occurrence window
       for (let i = startDay; i <= startDay + 6; i++) {
         const nextDayIndex = (dayOfWeek + i) % 7;
         const nextDay = daysOfWeek[nextDayIndex];
-        
+
         if (selectedDays.includes(nextDay)) {
           const nextDate = new Date(today);
           nextDate.setDate(today.getDate() + i);
           // Default the time to now
-          nextDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds(), today.getMilliseconds());
+          nextDate.setHours(
+            today.getHours(),
+            today.getMinutes(),
+            today.getSeconds(),
+            today.getMilliseconds(),
+          );
           dates.push(nextDate.toISOString());
         }
       }
     } else if (repeatInterval === 'Month') {
       const nextDate = new Date(today);
       nextDate.setMonth(today.getMonth() + repeatCount);
-      nextDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds(), today.getMilliseconds());
+      nextDate.setHours(
+        today.getHours(),
+        today.getMinutes(),
+        today.getSeconds(),
+        today.getMilliseconds(),
+      );
       dates.push(nextDate.toISOString());
     } else if (repeatInterval === 'Year') {
       const nextDate = new Date(today);
       nextDate.setFullYear(today.getFullYear() + repeatCount);
-      nextDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds(), today.getMilliseconds());
+      nextDate.setHours(
+        today.getHours(),
+        today.getMinutes(),
+        today.getSeconds(),
+        today.getMilliseconds(),
+      );
       dates.push(nextDate.toISOString());
     }
-    
+
     return dates;
   };
 
@@ -187,11 +210,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     if (dates.length === 0) return '';
 
     const firstDate = new Date(dates[0]);
-    return firstDate.toLocaleDateString('en-US', { 
+    return firstDate.toLocaleDateString('en-US', {
       weekday: 'long', // Full name
       year: 'numeric', // Year
       month: 'long', // Full month name
-      day: 'numeric' // Day of the month
+      day: 'numeric', // Day of the month
     });
   };
 
@@ -299,13 +322,19 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
             <Dialog.Body>
               <Text mb={8} color="neutral.700">
-                Please fill out the following information to record donation details.
+                Please fill out the following information to record donation
+                details.
               </Text>
 
               <Box display="block" overflowX="auto" whiteSpace="nowrap">
                 <Table.Root variant="line" size="md">
                   <TableCaption textAlign="left">
-                    <Stack direction="column" align="flex-start" gap={14} mt={4}>
+                    <Stack
+                      direction="column"
+                      align="flex-start"
+                      gap={14}
+                      mt={4}
+                    >
                       <Button
                         display="inline-flex"
                         alignItems="center"
@@ -327,21 +356,29 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Checkbox.Control>
                           <Checkbox.Indicator />
                         </Checkbox.Control>
-                        <Checkbox.Label color="neutral.700">Make Donation Recurring</Checkbox.Label>
+                        <Checkbox.Label color="neutral.700">
+                          Make Donation Recurring
+                        </Checkbox.Label>
                       </Checkbox.Root>
                     </Stack>
 
                     {isRecurring && (
                       <Box mt={8} color="neutral.800" fontSize="sm">
-                        <Stack direction="row" align="flex-start" gap={4} mb={4} flexWrap="wrap">
+                        <Stack
+                          direction="row"
+                          align="flex-start"
+                          gap={4}
+                          mb={4}
+                          flexWrap="wrap"
+                        >
                           <Box flex="1" minW="200px">
                             <Text fontWeight={600} mb={3}>
                               Repeat every
                             </Text>
                             <Flex gap={2} align="center">
-                              <NumberInput.Root 
-                                width="98px" 
-                                value={repeatEvery} 
+                              <NumberInput.Root
+                                width="98px"
+                                value={repeatEvery}
                                 onValueChange={(e) => setRepeatEvery(e.value)}
                                 min={1}
                               >
@@ -351,7 +388,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               <NativeSelect.Root flex="1" size="md">
                                 <NativeSelect.Field
                                   value={repeatInterval}
-                                  onChange={(e) => setRepeatInterval(e.target.value)}
+                                  onChange={(e) =>
+                                    setRepeatInterval(e.target.value)
+                                  }
                                 >
                                   <option value="Week">Week</option>
                                   <option value="Month">Month</option>
@@ -368,7 +407,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             </Text>
                             <Menu.Root closeOnSelect={false}>
                               <Menu.Trigger asChild>
-                                <Box cursor={isRepeatOnDisabled ? 'not-allowed' : 'pointer'}>
+                                <Box
+                                  cursor={
+                                    isRepeatOnDisabled
+                                      ? 'not-allowed'
+                                      : 'pointer'
+                                  }
+                                >
                                   <NativeSelect.Root size="md">
                                     <NativeSelect.Field
                                       value={getSelectedDaysText()}
@@ -376,9 +421,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                       disabled={isRepeatOnDisabled}
                                       opacity={isRepeatOnDisabled ? 0.5 : 1}
                                       readOnly
-                                      pointerEvents={isRepeatOnDisabled ? 'none' : 'auto'}
+                                      pointerEvents={
+                                        isRepeatOnDisabled ? 'none' : 'auto'
+                                      }
                                     >
-                                      <option color="neutral.800">{getSelectedDaysText()}</option>
+                                      <option color="neutral.800">
+                                        {getSelectedDaysText()}
+                                      </option>
                                     </NativeSelect.Field>
                                     <NativeSelectIndicator />
                                   </NativeSelect.Root>
@@ -387,7 +436,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               {!isRepeatOnDisabled && (
                                 <Portal>
                                   <Menu.Positioner>
-                                    <Menu.Content minW="200px" maxH="300px" color="neutral.800">
+                                    <Menu.Content
+                                      minW="200px"
+                                      maxH="300px"
+                                      color="neutral.800"
+                                    >
                                       {Object.keys(repeatOn).map((day) => (
                                         <Menu.Item
                                           key={day}
@@ -421,15 +474,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               Ends after
                             </Text>
                             <Box position="relative" color="neutral.800">
-                              <NumberInput.Root 
-                                width="50%" 
-                                value={endsAfter} 
+                              <NumberInput.Root
+                                width="50%"
+                                value={endsAfter}
                                 onValueChange={(e) => setEndsAfter(e.value)}
                                 min={1}
                               >
-                                <NumberInput.Input 
-                                  pr="110px"
-                                />
+                                <NumberInput.Input pr="110px" />
                                 <NumberInput.Control />
                               </NumberInput.Root>
                               <Text
@@ -439,15 +490,19 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 transform="translateY(-50%)"
                                 pointerEvents="none"
                               >
-                                {parseInt(endsAfter) > 1 ? 'Occurrences' : 'Occurrence'}
+                                {parseInt(endsAfter) > 1
+                                  ? 'Occurrences'
+                                  : 'Occurrence'}
                               </Text>
                             </Box>
                           </Box>
-                          
                         </Stack>
-                        {(repeatInterval === 'Week' ? Object.values(repeatOn).some(Boolean) : true) && (
+                        {(repeatInterval === 'Week'
+                          ? Object.values(repeatOn).some(Boolean)
+                          : true) && (
                           <Text color="neutral.700" fontStyle="italic" mt={2}>
-                            Next Donation scheduled for {getNextDonationDateDisplay()}
+                            Next Donation scheduled for{' '}
+                            {getNextDonationDateDisplay()}
                           </Text>
                         )}
                       </Box>
@@ -456,21 +511,34 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                   <Table.Header>
                     <Table.Row fontWeight={600}>
-                      <Table.ColumnHeader width="35px" p={0}></Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        width="35px"
+                        p={0}
+                      ></Table.ColumnHeader>
                       <Table.ColumnHeader width="22%">
                         Food Item
-                        <Text as="span" color="red">*</Text>
+                        <Text as="span" color="red">
+                          *
+                        </Text>
                       </Table.ColumnHeader>
                       <Table.ColumnHeader width="22%">
                         Food Type
-                        <Text as="span" color="red">*</Text>
+                        <Text as="span" color="red">
+                          *
+                        </Text>
                       </Table.ColumnHeader>
                       <Table.ColumnHeader width="14%">
                         Quantity
-                        <Text as="span" color="red">*</Text>
+                        <Text as="span" color="red">
+                          *
+                        </Text>
                       </Table.ColumnHeader>
-                      <Table.ColumnHeader width="14%">Oz. per item</Table.ColumnHeader>
-                      <Table.ColumnHeader width="14%">Donation Value</Table.ColumnHeader>
+                      <Table.ColumnHeader width="14%">
+                        Oz. per item
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader width="14%">
+                        Donation Value
+                      </Table.ColumnHeader>
                       <Table.ColumnHeader width="5%" textAlign="center" px={0}>
                         Food Rescue
                       </Table.ColumnHeader>
@@ -502,8 +570,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         </Table.Cell>
                         <Table.Cell pl={1}>
                           <Input
-                            color={row.foodItem ? "neutral.800" : "neutral.300"}
-                            placeholder='Enter Food'
+                            color={row.foodItem ? 'neutral.800' : 'neutral.300'}
+                            placeholder="Enter Food"
                             value={row.foodItem}
                             size="md"
                             onChange={(e) =>
@@ -515,8 +583,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <NativeSelect.Root size="md">
                             <NativeSelect.Field
-                              color={row.foodType ? "neutral.800" : "neutral.300"}
-                              placeholder='Select Type'
+                              color={
+                                row.foodType ? 'neutral.800' : 'neutral.300'
+                              }
+                              placeholder="Select Type"
                               value={row.foodType}
                               onChange={(e) =>
                                 handleChange(row.id, 'foodType', e.target.value)
@@ -534,7 +604,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={row.numItems ? "neutral.800" : "neutral.300"}
+                            color={row.numItems ? 'neutral.800' : 'neutral.300'}
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -548,7 +618,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={row.ozPerItem ? "neutral.800" : "neutral.300"}
+                            color={
+                              row.ozPerItem ? 'neutral.800' : 'neutral.300'
+                            }
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -562,7 +634,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={row.valuePerItem ? "neutral.800" : "neutral.300"}
+                            color={
+                              row.valuePerItem ? 'neutral.800' : 'neutral.300'
+                            }
                             placeholder="Enter $"
                             type="number"
                             min={1}
@@ -597,7 +671,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 </Table.Root>
               </Box>
 
-              <Flex justifyContent="flex-end" gap={3} mt={6} pt={4} borderTop="1px solid" borderColor="gray.200">
+              <Flex
+                justifyContent="flex-end"
+                gap={3}
+                mt={6}
+                pt={4}
+                borderTop="1px solid"
+                borderColor="gray.200"
+              >
                 <Button
                   variant="outline"
                   color="gray.700"
@@ -607,7 +688,12 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 >
                   Cancel
                 </Button>
-                <Button backgroundColor="blue.ssf" onClick={handleSubmit} size="md" fontWeight={600}>
+                <Button
+                  backgroundColor="blue.ssf"
+                  onClick={handleSubmit}
+                  size="md"
+                  fontWeight={600}
+                >
                   Submit Donation
                 </Button>
               </Flex>

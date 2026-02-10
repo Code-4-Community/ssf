@@ -8,12 +8,7 @@ import {
   IconButton,
   ButtonGroup,
 } from '@chakra-ui/react';
-import {
-  ChevronRight,
-  ChevronLeft,
-  Mail,
-  CircleCheck,
-} from 'lucide-react';
+import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { Donation, DonationStatus } from '../types/types';
@@ -21,7 +16,7 @@ import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 
 const FoodManufacturerDonationManagement: React.FC = () => {
-  const[isLogDonationOpen, setIsLogDonationOpen] = useState(false);
+  const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: Donation[];
@@ -32,16 +27,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   });
 
   // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(null);
+  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+    null,
+  );
 
   // State to hold current page per status
-  const [currentPages, setCurrentPages] = useState<Record<DonationStatus, number>>(
-    {
-      [DonationStatus.MATCHING]: 1,
-      [DonationStatus.AVAILABLE]: 1,
-      [DonationStatus.FULFILLED]: 1,
-    },
-  );
+  const [currentPages, setCurrentPages] = useState<
+    Record<DonationStatus, number>
+  >({
+    [DonationStatus.MATCHING]: 1,
+    [DonationStatus.AVAILABLE]: 1,
+    [DonationStatus.FULFILLED]: 1,
+  });
 
   const STATUS_DONATIONS = [
     DonationStatus.MATCHING,
