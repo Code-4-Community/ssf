@@ -183,14 +183,34 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-    if (order.status !== OrderStatus.SHIPPED) {
+
+    const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
+
+    if (isFirstTimeSetting && (!dto.shippingCost || !dto.shippingCost)) {
       throw new BadRequestException(
-        'Can only update tracking info for shipped orders',
+        'Must provide both tracking link and shipping cost on initial assignment',
+      );
+    }
+
+    if (
+      order.status !== OrderStatus.SHIPPED &&
+      order.status !== OrderStatus.PENDING
+    ) {
+      throw new BadRequestException(
+        'Can only update tracking info for pending or shipped orders',
       );
     }
 
     if (dto.trackingLink) order.trackingLink = dto.trackingLink;
     if (dto.shippingCost) order.shippingCost = dto.shippingCost;
+
+    if (
+      order.status === OrderStatus.PENDING &&
+      order.trackingLink &&
+      order.shippingCost
+    ) {
+      this.updateStatus(orderId, OrderStatus.SHIPPED);
+    }
 
     await this.repo.save(order);
   }
