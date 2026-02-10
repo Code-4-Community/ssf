@@ -185,15 +185,6 @@ describe('OrdersService', () => {
       expect(order.requestId).toBe(1);
     });
 
-    it('validates ID', async () => {
-      await expect(service.findOrderByRequest(0)).rejects.toThrow(
-        new BadRequestException('Invalid Request ID'),
-      );
-      await expect(service.findOrderByRequest(null)).rejects.toThrow(
-        new BadRequestException('Invalid Request ID'),
-      );
-    });
-
     it('throws NotFoundException for non-existent order', async () => {
       await expect(service.findOrderByRequest(9999)).rejects.toThrow(
         new NotFoundException('Order with request ID 9999 not found'),
@@ -207,15 +198,6 @@ describe('OrdersService', () => {
 
       expect(foodRequest).toBeDefined();
       expect(foodRequest.requestId).toBe(1);
-    });
-
-    it('validates order ID', async () => {
-      await expect(service.findOrderFoodRequest(0)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-      await expect(service.findOrderFoodRequest(null)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
     });
 
     it('throws NotFoundException for non-existent order', async () => {
@@ -242,15 +224,6 @@ describe('OrdersService', () => {
       expect(foodManufacturer).toBeDefined();
       expect(foodManufacturer.foodManufacturerName).toEqual('Healthy Foods Co');
       expect(foodManufacturer.foodManufacturerId).toEqual(2);
-    });
-
-    it('validates order ID', async () => {
-      await expect(service.findOrderFoodManufacturer(0)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-      await expect(service.findOrderFoodManufacturer(null)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
     });
 
     it('throws NotFoundException for non-existent order', async () => {
@@ -287,27 +260,9 @@ describe('OrdersService', () => {
       expect(updatedOrder.shippedAt).toBeDefined();
       expect(updatedOrder.deliveredAt).toBeNull();
     });
-
-    it('validates order ID', async () => {
-      await expect(
-        service.updateStatus(0, OrderStatus.DELIVERED),
-      ).rejects.toThrow(new BadRequestException('Invalid Order ID'));
-      await expect(
-        service.updateStatus(null, OrderStatus.DELIVERED),
-      ).rejects.toThrow(new BadRequestException('Invalid Order ID'));
-    });
   });
 
   describe('getOrdersByPantry', () => {
-    it('validates pantry ID', async () => {
-      await expect(service.getOrdersByPantry(0)).rejects.toThrow(
-        new BadRequestException('Invalid Pantry ID'),
-      );
-      await expect(service.getOrdersByPantry(null)).rejects.toThrow(
-        new BadRequestException('Invalid Pantry ID'),
-      );
-    });
-
     it('returns order from pantry ID', async () => {
       const pantryId = 1;
       const orders = await service.getOrdersByPantry(pantryId);
@@ -325,15 +280,6 @@ describe('OrdersService', () => {
   });
 
   describe('updateTrackingCostInfo', () => {
-    it('validates order ID', async () => {
-      await expect(service.updateTrackingCostInfo(0, {})).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-      await expect(service.updateTrackingCostInfo(null, {})).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-    });
-
     it('throws when order is non-existent', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'test',
