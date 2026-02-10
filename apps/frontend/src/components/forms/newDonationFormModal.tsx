@@ -222,7 +222,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     const selected = Object.keys(repeatOn).filter((day) => repeatOn[day]);
     if (selected.length === 0) return 'Select days';
     if (selected.length === 1) return selected[0];
-    if (selected.length <= 3) return selected.join(', ');
+    if (selected.length <= 4) return selected.join(', ');
+    if (selected.length > 4) return `${selected.slice(0, 4).join(', ')} + ${selected.length - 4}`;
     return `${selected.length} days selected`;
   };
 
