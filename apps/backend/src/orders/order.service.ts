@@ -209,7 +209,8 @@ export class OrdersService {
       order.trackingLink &&
       order.shippingCost
     ) {
-      await this.updateStatus(orderId, OrderStatus.SHIPPED);
+      order.status = OrderStatus.SHIPPED;
+      order.shippedAt = new Date();
     }
 
     await this.repo.save(order);
