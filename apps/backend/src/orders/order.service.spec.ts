@@ -390,32 +390,77 @@ describe('OrdersService', () => {
       expect(order.shippingCost).toEqual('7.50');
     });
 
-    it('throws BadRequestException for non-shipped order', async () => {
+    it('throws BadRequestException for delivered order', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'testtracking.com',
         shippingCost: 7.5,
       };
+      const orderId = 2;
 
-      const order1 = await service.findOne(2);
-      const order2 = await service.findOne(4);
+      const order = await service.findOne(orderId);
 
-      expect(order1.status).toEqual(OrderStatus.DELIVERED);
-      expect(order2.status).toEqual(OrderStatus.PENDING);
+      expect(order.status).toEqual(OrderStatus.DELIVERED);
 
       await expect(
-        service.updateTrackingCostInfo(2, trackingCostDto),
+        service.updateTrackingCostInfo(orderId, trackingCostDto),
       ).rejects.toThrow(
         new BadRequestException(
-          'Can only update tracking info for shipped orders',
+          'Can only update tracking info for pending or shipped orders',
         ),
       );
+    });
+
+    it('throws when both fields are not provided for first time setting', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+      };
+      const orderId = 4;
+
+      const order = await service.findOne(orderId);
+
+      expect(order.shippedAt).toBeNull();
+      expect(order.trackingLink).toBeNull();
+
       await expect(
         service.updateTrackingCostInfo(4, trackingCostDto),
       ).rejects.toThrow(
         new BadRequestException(
-          'Can only update tracking info for shipped orders',
+          'Must provide both tracking link and shipping cost on initial assignment',
         ),
       );
+    });
+
+    it('sets status to shipped when both fields provided and previous status pending', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.75,
+      };
+      const orderId = 4;
+
+      const order = await service.findOne(orderId);
+      console.log('BEFORE UPDATE:', {
+        orderId: order.orderId,
+        status: order.status,
+        trackingLink: order.trackingLink,
+        shippingCost: order.shippingCost,
+        shippedAt: order.shippedAt,
+      });
+
+      expect(order.status).toEqual(OrderStatus.PENDING);
+      expect(order.shippedAt).toBeNull();
+
+      await service.updateTrackingCostInfo(orderId, trackingCostDto);
+
+      const updatedOrder = await service.findOne(orderId);
+      console.log('AFTER UPDATE:', {
+        orderId: updatedOrder.orderId,
+        status: updatedOrder.status,
+        trackingLink: updatedOrder.trackingLink,
+        shippingCost: updatedOrder.shippingCost,
+        shippedAt: updatedOrder.shippedAt,
+      });
+      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
+      expect(updatedOrder.shippedAt).toBeDefined();
     });
   });
 });
