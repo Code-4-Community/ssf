@@ -133,6 +133,7 @@ export interface DonationItem {
   ozPerItem: number;
   estimatedValue: number;
   foodType: FoodType;
+  foodRescue: boolean;
 }
 
 export const FoodTypes = [
@@ -253,6 +254,7 @@ export interface CreateMultipleDonationItemsBody {
     ozPerItem: number;
     estimatedValue: number;
     foodType: FoodType;
+    foodRescue: boolean;
   }[];
 }
 

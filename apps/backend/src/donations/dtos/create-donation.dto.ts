@@ -17,15 +17,6 @@ export class CreateDonationDto {
   @Min(1)
   foodManufacturerId!: number;
 
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  dateDonated!: Date;
-
-  @IsNotEmpty()
-  @IsEnum(DonationStatus)
-  status!: DonationStatus;
-
   @IsNumber()
   @Min(1)
   @IsOptional()

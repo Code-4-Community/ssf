@@ -29,6 +29,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
+import FoodManufacturerDonationManagement from '@containers/foodManufacturerDonationManagement';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -149,7 +150,7 @@ const router = createBrowserRouter([
         path: '/donation-management',
         element: (
           <Authenticator components={components}>
-            <DonationManagement />
+            <FoodManufacturerDonationManagement />
           </Authenticator>
         ),
       },

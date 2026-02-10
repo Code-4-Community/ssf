@@ -7,12 +7,11 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationStatus, RecurrenceEnum } from './types';
+import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 
 @Controller('donations')
@@ -29,6 +28,13 @@ export class DonationsController {
     return this.donationService.getNumberOfDonations();
   }
 
+  @Get('/donations/:foodManufacturerId')
+  async getDonationsByFoodManufacturer(
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.donationService.getByFoodManufacturer(foodManufacturerId);
+  }
+
   @Get('/:donationId')
   async getDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
@@ -43,15 +49,6 @@ export class DonationsController {
       type: 'object',
       properties: {
         foodManufacturerId: { type: 'integer', example: 1 },
-        dateDonated: {
-          type: 'string',
-          format: 'date-time',
-        },
-        status: {
-          type: 'string',
-          enum: Object.values(DonationStatus),
-          example: DonationStatus.AVAILABLE,
-        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
