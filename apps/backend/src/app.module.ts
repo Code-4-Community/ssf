@@ -14,6 +14,7 @@ import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
 import { DonationModule } from './donations/donations.module';
 import { DonationItemsModule } from './donationItems/donationItems.module';
 import { AllocationModule } from './allocations/allocations.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AllocationModule } from './allocations/allocations.module';
       useFactory: async (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
     PantriesModule,
