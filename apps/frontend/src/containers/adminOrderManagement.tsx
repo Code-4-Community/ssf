@@ -565,7 +565,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="15%"
+                  width="18%"
                 >
                   Status
                 </Table.ColumnHeader>
@@ -573,7 +573,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="15%"
+                  width="7%"
+                  textAlign="center"
                 >
                   Assignee
                 </Table.ColumnHeader>
@@ -581,16 +582,24 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="25%"
+                  width="30%"
                 >
                   Pantry
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="15%"
                 >
                   Dates
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  textAlign="right"
+                  width="20%"
+                >
+                  Action Required
                 </Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
@@ -687,9 +696,18 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       {...tableCellStyles}
                       textAlign="left"
                       color="neutral.700"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
                     >
                       {formatDate(order.createdAt)}-
                       {order.deliveredAt && formatDate(order.deliveredAt)}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      textAlign="left"
+                      color="neutral.700"
+                    >
+                      {/* TODO: IMPLEMENT WHAT GOES HERE */}
                     </Table.Cell>
                   </Table.Row>
                 );
