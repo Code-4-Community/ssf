@@ -110,7 +110,7 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('POST /:id/approve', () => {
+  describe('PATCH /:id/approve', () => {
     it('should approve a food manufacturer', async () => {
       mockManufacturersService.approve.mockResolvedValue();
 
@@ -120,7 +120,7 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('POST /:id/deny', () => {
+  describe('PATCH /:id/deny', () => {
     it('should deny a food manufacturer', async () => {
       mockManufacturersService.deny.mockResolvedValue();
 

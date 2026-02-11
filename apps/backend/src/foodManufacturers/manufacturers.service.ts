@@ -79,6 +79,8 @@ export class FoodManufacturersService {
       foodManufacturerData.productsSustainableExplanation;
     foodManufacturer.inKindDonations = foodManufacturerData.inKindDonations;
     foodManufacturer.donateWastedFood = foodManufacturerData.donateWastedFood;
+    foodManufacturer.manufacturerAttribute =
+      foodManufacturerData.manufacturerAttribute;
     foodManufacturer.additionalComments =
       foodManufacturerData.additionalComments;
     foodManufacturer.newsletterSubscription =

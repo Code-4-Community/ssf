@@ -91,7 +91,7 @@ export class FoodManufacturer {
 
   @Column({
     name: 'products_sustainable_explanation',
-    type: 'varchar',
+    type: 'text',
   })
   productsSustainableExplanation!: string;
 
@@ -117,7 +117,7 @@ export class FoodManufacturer {
 
   @Column({
     name: 'additional_comments',
-    type: 'varchar',
+    type: 'text',
     nullable: true,
   })
   additionalComments?: string;
