@@ -103,8 +103,6 @@ const ResetPasswordModal: React.FC = () => {
                 Your password must:
               </Text>
               <Text textStyle="p2" color="#52525B">• Be at least 8 characters</Text>
-              <Text textStyle="p2" color="#52525B">• Include at least 1 number and special character</Text>
-              <Text textStyle="p2" color="#52525B">• Include at least 1 uppercase and lowercase letter</Text>
             </VStack>
           )}
         </Box>
