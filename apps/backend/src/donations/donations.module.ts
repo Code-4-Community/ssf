@@ -15,9 +15,6 @@ import { DonationsSchedulerService } from './donations.scheduler';
     AuthModule,
   ],
   controllers: [DonationsController],
-  providers: [
-    DonationService,
-    DonationsSchedulerService,
-  ],
+  providers: [DonationService, DonationsSchedulerService],
 })
 export class DonationModule {}
