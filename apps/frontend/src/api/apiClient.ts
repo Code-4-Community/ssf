@@ -180,7 +180,7 @@ export class ApiClient {
     data: ManufacturerApplicationDto,
   ): Promise<AxiosResponse<void>> {
     return this.axiosInstance.post(
-      `/api/manufacturers/submit-application`,
+      `/api/manufacturers/application`,
       data,
     );
   }
