@@ -25,6 +25,7 @@ import { RemoveUnusedStatuses1764816885341 } from '../migrations/1764816885341-R
 import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-UpdatePantryFields';
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 import { RemovePantryFromOrders1769316004958 } from '../migrations/1769316004958-RemovePantryFromOrders';
+import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
 import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
 
 const schemaMigrations = [
@@ -55,6 +56,7 @@ const schemaMigrations = [
   RemoveUnusedStatuses1764816885341,
   PopulateDummyData1768501812134,
   RemovePantryFromOrders1769316004958,
+  UpdateManufacturerEntity1768680807820,
   UpdateOrderEntity1769990652833,
 ];
 

@@ -8,7 +8,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { OrderStatus } from './types';
 import { Allocation } from '../allocations/allocations.entity';
 

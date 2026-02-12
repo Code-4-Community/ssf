@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
-import { PantryStatus } from './types';
+import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
 
@@ -25,7 +25,7 @@ export class PantriesService {
 
   async getPendingPantries(): Promise<Pantry[]> {
     return await this.repo.find({
-      where: { status: PantryStatus.PENDING },
+      where: { status: ApplicationStatus.PENDING },
       relations: ['pantryUser'],
     });
   }
@@ -96,7 +96,7 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: PantryStatus.APPROVED });
+    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
   }
 
   async deny(id: number) {
@@ -107,7 +107,7 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: PantryStatus.DENIED });
+    await this.repo.update(id, { status: ApplicationStatus.DENIED });
   }
 
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {
