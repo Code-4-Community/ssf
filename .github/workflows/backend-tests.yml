@@ -24,7 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: yarn install
+          cache: 'yarn'
+          
+      - run: yarn install --frozen-lockfile --prefer-offline
       - run: yarn test
 
 
