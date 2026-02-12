@@ -5,7 +5,8 @@ import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
 import { ManufacturerModule } from '../foodManufacturers/manufacturer.module';
 import { AuthModule } from '../auth/auth.module';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationsSchedulerService } from './donations.scheduler';
 
 @Module({
   imports: [
@@ -14,6 +15,9 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
     AuthModule,
   ],
   controllers: [DonationsController],
-  providers: [DonationService],
+  providers: [
+    DonationService,
+    DonationsSchedulerService,
+  ],
 })
 export class DonationModule {}

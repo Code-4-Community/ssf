@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FoodManufacturer } from './manufacturer.entity';
+import { FoodManufacturer } from './manufacturers.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
