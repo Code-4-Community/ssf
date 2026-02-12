@@ -67,6 +67,15 @@ export class Order {
   })
   deliveredAt: Date | null;
 
+  @Column({ name: 'date_received', type: 'timestamp', nullable: true })
+  dateReceived: Date | null;
+
+  @Column({ name: 'feedback', type: 'text', nullable: true })
+  feedback: string | null;
+
+  @Column({ name: 'photos', type: 'text', array: true, nullable: true })
+  photos: string[] | null;
+
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations: Allocation[];
 }

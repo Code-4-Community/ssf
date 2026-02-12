@@ -78,9 +78,6 @@ export class RequestsService {
     requestedSize: RequestSize,
     requestedItems: string[],
     additionalInformation: string | undefined,
-    dateReceived: Date | undefined,
-    feedback: string | undefined,
-    photos: string[] | undefined,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -94,9 +91,6 @@ export class RequestsService {
       requestedSize,
       requestedItems,
       additionalInformation,
-      dateReceived,
-      feedback,
-      photos,
     });
 
     return await this.repo.save(foodRequest);
@@ -109,45 +103,5 @@ export class RequestsService {
       where: { pantryId },
       relations: ['orders'],
     });
-  }
-
-  async updateDeliveryDetails(
-    requestId: number,
-    deliveryDate: Date,
-    feedback: string,
-    photos: string[],
-  ): Promise<FoodRequest> {
-    validateId(requestId, 'Request');
-
-    const request = await this.repo.findOne({
-      where: { requestId },
-      relations: ['orders'],
-    });
-
-    if (!request) {
-      throw new NotFoundException('Invalid request ID');
-    }
-
-    if (!request.orders || request.orders.length == 0) {
-      throw new NotFoundException(
-        'No associated orders found for this request',
-      );
-    }
-
-    const orders = request.orders;
-
-    for (const order of orders) {
-      if (!order.shippedBy) {
-        throw new NotFoundException(
-          'No associated food manufacturer found for an associated order',
-        );
-      }
-    }
-
-    request.feedback = feedback;
-    request.dateReceived = deliveryDate;
-    request.photos = photos;
-
-    return await this.repo.save(request);
   }
 }

@@ -23,9 +23,9 @@ const mockRequest: Partial<FoodRequest> = {
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
   requestedAt: null,
-  dateReceived: null,
-  feedback: null,
-  photos: null,
+  // dateReceived: null, // Removed - no longer on FoodRequest
+  // feedback: null, // Removed - no longer on FoodRequest
+  // photos: null, // Removed - no longer on FoodRequest
   orders: null,
 };
 
@@ -250,9 +250,6 @@ describe('RequestsService', () => {
         mockRequest.requestedSize,
         mockRequest.requestedItems,
         mockRequest.additionalInformation,
-        mockRequest.dateReceived,
-        mockRequest.feedback,
-        mockRequest.photos,
       );
 
       expect(result).toEqual(mockRequest);
@@ -261,9 +258,6 @@ describe('RequestsService', () => {
         requestedSize: mockRequest.requestedSize,
         requestedItems: mockRequest.requestedItems,
         additionalInformation: mockRequest.additionalInformation,
-        dateReceived: mockRequest.dateReceived,
-        feedback: mockRequest.feedback,
-        photos: mockRequest.photos,
       });
       expect(mockRequestsRepository.save).toHaveBeenCalledWith(mockRequest);
     });
@@ -277,9 +271,6 @@ describe('RequestsService', () => {
           RequestSize.MEDIUM,
           ['Canned Goods', 'Vegetables'],
           'Additional info',
-          null,
-          null,
-          null,
         ),
       ).rejects.toThrow(`Pantry ${invalidPantryId} not found`);
 
@@ -299,9 +290,9 @@ describe('RequestsService', () => {
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
           requestedAt: null,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
+          // dateReceived: null, // Removed
+          // feedback: null, // Removed
+          // photos: null, // Removed
           orders: null,
         },
         {
@@ -311,9 +302,9 @@ describe('RequestsService', () => {
           requestedItems: ['Fruits', 'Snacks'],
           additionalInformation: 'No nuts, please.',
           requestedAt: null,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
+          // dateReceived: null, // Removed
+          // feedback: null, // Removed
+          // photos: null, // Removed
           orders: null,
         },
       ];
@@ -332,7 +323,8 @@ describe('RequestsService', () => {
     });
   });
 
-  describe('updateDeliveryDetails', () => {
+  // COMMENTED OUT: updateDeliveryDetails method was removed, functionality moved to orders
+  /* describe('updateDeliveryDetails', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
@@ -489,5 +481,5 @@ describe('RequestsService', () => {
         relations: ['orders'],
       });
     });
-  });
+  }); */
 });

@@ -28,7 +28,7 @@ describe('RequestsController', () => {
     mockRequestsService.findOne.mockReset();
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
-    mockRequestsService.updateDeliveryDetails?.mockReset();
+    // mockRequestsService.updateDeliveryDetails?.mockReset(); // Removed - method no longer exists
     mockRequestsService.getOrderDetails.mockReset();
     mockAWSS3Service.upload.mockReset();
     mockOrdersService.updateStatus.mockReset();
@@ -151,9 +151,9 @@ describe('RequestsController', () => {
         requestedSize: RequestSize.MEDIUM,
         requestedItems: ['Test item 1', 'Test item 2'],
         additionalInformation: 'Test information.',
-        dateReceived: null,
-        feedback: null,
-        photos: null,
+        // dateReceived: null, // Removed - no longer on FoodRequest
+        // feedback: null, // Removed - no longer on FoodRequest
+        // photos: null, // Removed - no longer on FoodRequest
       };
 
       const createdRequest: Partial<FoodRequest> = {
@@ -175,14 +175,12 @@ describe('RequestsController', () => {
         createBody.requestedSize,
         createBody.requestedItems,
         createBody.additionalInformation,
-        createBody.dateReceived,
-        createBody.feedback,
-        createBody.photos,
       );
     });
   });
 
-  describe('POST /:requestId/confirm-delivery', () => {
+  // COMMENTED OUT: This endpoint was moved to orders controller
+  /* describe('POST /:requestId/confirm-delivery', () => {
     it('should upload photos, update the order, then update the request', async () => {
       const requestId = 1;
 
@@ -379,5 +377,5 @@ describe('RequestsController', () => {
         ),
       ).rejects.toThrow('Invalid date format for deliveryDate');
     });
-  });
+  }); */
 });

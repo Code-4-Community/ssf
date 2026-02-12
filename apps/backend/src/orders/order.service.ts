@@ -5,6 +5,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { FoodRequestStatus } from '../foodRequests/types';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 
@@ -13,6 +14,8 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(FoodRequest)
+    private requestRepo: Repository<FoodRequest>,
   ) {}
 
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
@@ -142,6 +145,57 @@ export class OrdersService {
       })
       .where('order_id = :orderId', { orderId })
       .execute();
+  }
+
+  async confirmDelivery(
+    orderId: number,
+    dateReceived: Date,
+    feedback: string,
+    photos: string[],
+  ): Promise<Order> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    order.dateReceived = dateReceived;
+    order.feedback = feedback;
+    order.photos = photos;
+    order.status = OrderStatus.DELIVERED;
+    order.deliveredAt = dateReceived;
+
+    const updatedOrder = await this.repo.save(order);
+
+    await this.updateRequestStatus(order.requestId);
+
+    return updatedOrder;
+  }
+
+  private async updateRequestStatus(requestId: number): Promise<void> {
+    const request = await this.requestRepo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    const orders = request.orders || [];
+    const allDelivered =
+      orders.length > 0 &&
+      orders.every((order) => order.status === OrderStatus.DELIVERED);
+
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
+
+    await this.requestRepo.save(request);
   }
 
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {
