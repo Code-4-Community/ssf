@@ -21,7 +21,7 @@ export class FoodRequest {
 
   @ManyToOne(() => Pantry, { nullable: false })
   @JoinColumn({ name: 'pantry_id', referencedColumnName: 'pantryId' })
-  pantry: Pantry;
+  pantry!: Pantry;
 
   @Column({
     name: 'requested_size',

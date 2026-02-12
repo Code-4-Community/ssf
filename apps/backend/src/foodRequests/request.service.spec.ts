@@ -24,6 +24,7 @@ const mockRequest: FoodRequest = {
   additionalInformation: 'No onions, please.',
   requestedAt: new Date(),
   requestedSize: RequestSize.LARGE,
+  pantry: new Pantry(),
   dateReceived: null,
   feedback: null,
   photos: null,
