@@ -32,4 +32,5 @@ jobs:
           node-version: 20
 
       - run: yarn install --frozen-lockfile
+      - run: yarn list strip-ansi string-width string-length
       - run: yarn test
