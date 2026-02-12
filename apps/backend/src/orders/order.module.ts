@@ -5,10 +5,11 @@ import { Order } from './order.entity';
 import { OrdersService } from './order.service';
 import { JwtStrategy } from '../auth/jwt.strategy';
 import { AuthService } from '../auth/auth.service';
+import { Pantry } from '../pantries/pantries.entity';
 import { AllocationModule } from '../allocations/allocations.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order]), AllocationModule],
+  imports: [TypeOrmModule.forFeature([Order, Pantry]), AllocationModule],
   controllers: [OrdersController],
   providers: [OrdersService, AuthService, JwtStrategy],
   exports: [OrdersService],

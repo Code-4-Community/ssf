@@ -3,19 +3,18 @@ import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
 import { Repository, UpdateResult } from 'typeorm';
-import { NotFoundException, Res } from '@nestjs/common';
-import { Role } from '../users/types';
+import { NotFoundException } from '@nestjs/common';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ServeAllergicChildren,
+  ReserveFoodForAllergic,
+  Activity,
+  AllergensConfidence,
 } from './types';
-import { ReserveFoodForAllergic } from './types';
-import { Activity } from './types';
-import { AllergensConfidence } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 const mockRepository = mock<Repository<Pantry>>();
 
@@ -26,7 +25,7 @@ describe('PantriesService', () => {
   const mockPendingPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
-    status: PantryStatus.PENDING,
+    status: ApplicationStatus.PENDING,
   } as Pantry;
 
   // Mock Pantry Application

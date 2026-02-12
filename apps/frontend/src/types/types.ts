@@ -4,7 +4,6 @@ import {
   ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
-  PantryStatus,
   Activity,
 } from './pantryEnums';
 
@@ -46,7 +45,7 @@ export interface Pantry {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryUser?: User;
-  status: PantryStatus;
+  status: ApplicationStatus;
   dateApplied: Date;
   activities: Activity[];
   activitiesComments?: string;
@@ -188,18 +187,20 @@ export interface UserDto {
 
 export interface FoodRequest {
   requestId: number;
-  requestedAt: string;
-  dateReceived: string | null;
+  pantryId: number;
+  pantry: Pantry;
   requestedSize: string;
   requestedItems: string[];
-  additionalInformation: string;
-  orderId: number;
+  additionalInformation: string | null;
+  requestedAt: Date;
+  dateReceived: Date | null;
+  feedback: string | null;
+  photos: string[] | null;
   orders?: Order[];
 }
 
 export interface Order {
   orderId: number;
-  pantry?: Pantry;
   request: FoodRequest;
   requestId: number;
   foodManufacturer: FoodManufacturer | null;
@@ -305,4 +306,10 @@ export interface OrderSummary {
       lastName: string;
     }[];
   };
+}
+
+export enum ApplicationStatus {
+  APPROVED = 'approved',
+  DENIED = 'denied',
+  PENDING = 'pending',
 }

@@ -8,7 +8,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { RequestSize } from './types';
 import { Order } from '../orders/order.entity';
 import { OrderStatus } from '../orders/types';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
@@ -337,7 +337,6 @@ describe('RequestsService', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: undefined,
         request: undefined,
         requestId: 1,
         foodManufacturer: undefined,
@@ -452,7 +451,6 @@ describe('RequestsService', () => {
     it('should throw an error if the order does not have a food manufacturer', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        pantry: undefined,
         request: undefined,
         requestId: 1,
         foodManufacturer: undefined,

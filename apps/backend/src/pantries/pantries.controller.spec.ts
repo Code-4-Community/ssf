@@ -10,11 +10,11 @@ import {
   Activity,
   AllergensConfidence,
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -26,7 +26,7 @@ describe('PantriesController', () => {
   const mockPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
-    status: PantryStatus.PENDING,
+    status: ApplicationStatus.PENDING,
   } as Pantry;
 
   // Mock Pantry Application
