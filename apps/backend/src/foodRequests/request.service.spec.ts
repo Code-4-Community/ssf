@@ -299,7 +299,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
-          requestedAt: null,
+          requestedAt: undefined,
           dateReceived: null,
           feedback: null,
           photos: null,

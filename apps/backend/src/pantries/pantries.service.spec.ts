@@ -22,15 +22,6 @@ const mockRepository = mock<Repository<Pantry>>();
 describe('PantriesService', () => {
   let service: PantriesService;
 
-  const mockUser = {
-    id: 1,
-    role: Role.VOLUNTEER,
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '123-456-7890',
-  };
-
   // Mock Pantry
   const mockPendingPantry = {
     pantryId: 1,
