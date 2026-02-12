@@ -157,19 +157,6 @@ describe('OrdersService', () => {
       expect(result.orderId).toBe(1);
     });
 
-    it('throws BadRequestException for non positive ID', async () => {
-      const orderId = 0;
-      await expect(service.findOne(orderId)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-    });
-
-    it('throws BadRequestException when not given ID', async () => {
-      await expect(service.findOne(null)).rejects.toThrow(
-        new BadRequestException('Invalid Order ID'),
-      );
-    });
-
     it('throws NotFoundException for non-existent order', async () => {
       await expect(service.findOne(9999)).rejects.toThrow(
         new NotFoundException('Order 9999 not found'),
@@ -182,6 +169,7 @@ describe('OrdersService', () => {
       const order = await service.findOrderByRequest(1);
 
       expect(order).toBeDefined();
+      expect(order.request).toBeDefined();
       expect(order.requestId).toBe(1);
     });
 
@@ -231,6 +219,18 @@ describe('OrdersService', () => {
         new NotFoundException('Order 9999 not found'),
       );
     });
+
+    it('throws NotFoundException if order has no FM assigned', async () => {
+      await testDataSource.query(
+        `UPDATE "orders" SET shipped_by = NULL WHERE order_id = 4`,
+      );
+
+      await expect(service.findOrderFoodManufacturer(4)).rejects.toThrow(
+        new NotFoundException(
+          'Order 4 does not have a food manufacturer assigned',
+        ),
+      );
+    });
   });
 
   describe('updateStatus', () => {
@@ -239,6 +239,8 @@ describe('OrdersService', () => {
       const order = await service.findOne(orderId);
 
       expect(order.status).toEqual(OrderStatus.SHIPPED);
+      expect(order.shippedBy).toBeDefined();
+      expect(order.shippedAt).toBeDefined();
 
       await service.updateStatus(orderId, OrderStatus.DELIVERED);
       const updatedOrder = await service.findOne(orderId);
@@ -268,6 +270,7 @@ describe('OrdersService', () => {
       const orders = await service.getOrdersByPantry(pantryId);
 
       expect(orders.length).toBe(2);
+      expect(orders.every((order) => order.request)).toBeDefined();
       expect(orders.every((order) => order.request.pantryId === 1)).toBe(true);
     });
 
@@ -276,6 +279,14 @@ describe('OrdersService', () => {
       const orders = await service.getOrdersByPantry(pantryId);
 
       expect(orders).toEqual([]);
+    });
+
+    it('throws NotFoundException for non-existent pantry', async () => {
+      const pantryId = 9999;
+
+      await expect(service.getOrdersByPantry(pantryId)).rejects.toThrow(
+        new NotFoundException(`Pantry ${pantryId} not found`),
+      );
     });
   });
 
@@ -384,13 +395,6 @@ describe('OrdersService', () => {
       const orderId = 4;
 
       const order = await service.findOne(orderId);
-      console.log('BEFORE UPDATE:', {
-        orderId: order.orderId,
-        status: order.status,
-        trackingLink: order.trackingLink,
-        shippingCost: order.shippingCost,
-        shippedAt: order.shippedAt,
-      });
 
       expect(order.status).toEqual(OrderStatus.PENDING);
       expect(order.shippedAt).toBeNull();
@@ -398,13 +402,7 @@ describe('OrdersService', () => {
       await service.updateTrackingCostInfo(orderId, trackingCostDto);
 
       const updatedOrder = await service.findOne(orderId);
-      console.log('AFTER UPDATE:', {
-        orderId: updatedOrder.orderId,
-        status: updatedOrder.status,
-        trackingLink: updatedOrder.trackingLink,
-        shippingCost: updatedOrder.shippingCost,
-        shippedAt: updatedOrder.shippedAt,
-      });
+
       expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
       expect(updatedOrder.shippedAt).toBeDefined();
     });

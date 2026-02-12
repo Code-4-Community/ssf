@@ -11,6 +11,9 @@ export class UpdateOrderEntity1769990652833 implements MigrationInterface {
             SET tracking_link = 'www.samplelink/samplelink',
                 shipping_cost = 20.00
                 WHERE status = 'delivered' OR status = 'shipped' AND shipped_at IS NOT NULL;
+            
+            ALTER TABLE orders
+            ALTER COLUMN shipped_by DROP NOT NULL;
         `);
   }
 
@@ -19,6 +22,9 @@ export class UpdateOrderEntity1769990652833 implements MigrationInterface {
             ALTER TABLE orders
             DROP COLUMN IF EXISTS tracking_link,
             DROP COLUMN IF EXISTS shipping_cost;
+
+            ALTER TABLE orders
+            ALTER COLUMN shipped_by SET NOT NULL;
         `);
   }
 }

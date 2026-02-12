@@ -93,6 +93,10 @@ export class OrdersService {
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
+    if (!request) {
+      throw new NotFoundException(`Request for order ${orderId} not found`);
+    }
+
     const pantry = await this.pantryRepo.findOneBy({
       pantryId: request.pantryId,
     });
