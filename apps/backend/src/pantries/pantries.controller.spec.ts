@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesController } from './pantries.controller';
 import { PantriesService } from './pantries.service';
 import { Pantry } from './pantries.entity';
-import { Role } from '../users/types';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
@@ -12,11 +11,11 @@ import {
   Activity,
   AllergensConfidence,
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+import { ApplicationStatus } from '../shared/types';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -28,7 +27,7 @@ describe('PantriesController', () => {
   const mockPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
-    status: PantryStatus.PENDING,
+    status: ApplicationStatus.PENDING,
   } as Pantry;
 
   // Mock Pantry Application
