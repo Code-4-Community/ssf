@@ -170,7 +170,7 @@ describe('OrdersService', () => {
 
       expect(order).toBeDefined();
       expect(order.request).toBeDefined();
-      expect(order.requestId).toBe(1);
+      expect(order.request.requestId).toBe(1);
     });
 
     it('throws NotFoundException for non-existent order', async () => {
@@ -219,18 +219,6 @@ describe('OrdersService', () => {
         new NotFoundException('Order 9999 not found'),
       );
     });
-
-    it('throws NotFoundException if order has no FM assigned', async () => {
-      await testDataSource.query(
-        `UPDATE "orders" SET shipped_by = NULL WHERE order_id = 4`,
-      );
-
-      await expect(service.findOrderFoodManufacturer(4)).rejects.toThrow(
-        new NotFoundException(
-          'Order 4 does not have a food manufacturer assigned',
-        ),
-      );
-    });
   });
 
   describe('updateStatus', () => {
@@ -239,7 +227,6 @@ describe('OrdersService', () => {
       const order = await service.findOne(orderId);
 
       expect(order.status).toEqual(OrderStatus.SHIPPED);
-      expect(order.shippedBy).toBeDefined();
       expect(order.shippedAt).toBeDefined();
 
       await service.updateStatus(orderId, OrderStatus.DELIVERED);

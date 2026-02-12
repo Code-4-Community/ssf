@@ -13,7 +13,7 @@ export class UpdateOrderEntity1769990652833 implements MigrationInterface {
                 WHERE status = 'delivered' OR status = 'shipped' AND shipped_at IS NOT NULL;
             
             ALTER TABLE orders
-            ALTER COLUMN shipped_by DROP NOT NULL;
+            RENAME COLUMN shipped_by TO food_manufacturer_id;
         `);
   }
 
@@ -24,7 +24,7 @@ export class UpdateOrderEntity1769990652833 implements MigrationInterface {
             DROP COLUMN IF EXISTS shipping_cost;
 
             ALTER TABLE orders
-            ALTER COLUMN shipped_by SET NOT NULL;
+            RENAME COLUMN food_manufacturer_id TO shipped_by;
         `);
   }
 }

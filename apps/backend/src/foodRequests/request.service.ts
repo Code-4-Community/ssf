@@ -42,7 +42,7 @@ export class RequestsService {
     }
 
     const orders = await this.orderRepo.find({
-      where: { requestId },
+      where: { request: { requestId } },
       relations: {
         foodManufacturer: true,
         allocations: {
@@ -132,16 +132,6 @@ export class RequestsService {
       throw new NotFoundException(
         'No associated orders found for this request',
       );
-    }
-
-    const orders = request.orders;
-
-    for (const order of orders) {
-      if (!order.shippedBy) {
-        throw new NotFoundException(
-          'No associated food manufacturer found for an associated order',
-        );
-      }
     }
 
     request.feedback = feedback;

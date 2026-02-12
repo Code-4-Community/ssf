@@ -192,9 +192,7 @@ export interface FoodRequest {
 export interface Order {
   orderId: number;
   request: FoodRequest;
-  requestId: number;
-  foodManufacturer?: FoodManufacturer;
-  shippedBy?: number;
+  foodManufacturer: FoodManufacturer;
   status: OrderStatus;
   createdAt: string;
   shippedAt?: Date;

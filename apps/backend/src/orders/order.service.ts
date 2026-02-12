@@ -20,6 +20,8 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
   ) {}
 
+  // TODO: when order is created, set FM
+
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
@@ -79,7 +81,7 @@ export class OrdersService {
     validateId(requestId, 'Request');
 
     const order = await this.repo.findOne({
-      where: { requestId },
+      where: { request: { requestId } },
       relations: ['request'],
     });
 
@@ -140,13 +142,11 @@ export class OrdersService {
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
-    // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
         status: newStatus as OrderStatus,
-        shippedBy: 1,
         shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
         deliveredAt:
           newStatus === OrderStatus.DELIVERED ? new Date() : undefined,

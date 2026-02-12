@@ -209,13 +209,9 @@ describe('PantriesController', () => {
       const mockOrders: Partial<Order>[] = [
         {
           orderId: 26,
-          requestId: 26,
-          shippedBy: 32,
         },
         {
           orderId: 27,
-          requestId: 27,
-          shippedBy: 33,
         },
       ];
 
