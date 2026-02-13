@@ -26,5 +26,5 @@ jobs:
         with:
           node-version: 20
           cache: 'yarn'
-      - run: yarn install --frozen-lockfile --ignore-scripts
+      - run: yarn install --frozen-lockfile
       - run: yarn test
