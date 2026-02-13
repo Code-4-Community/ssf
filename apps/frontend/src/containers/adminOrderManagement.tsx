@@ -24,6 +24,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
+import { FloatingAlert } from '@components/floatingAlert';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -49,6 +50,8 @@ const AdminOrderManagement: React.FC = () => {
       [OrderStatus.DELIVERED]: 1,
     },
   );
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   // State to hold filter state per status
   type FilterState = {
@@ -139,7 +142,7 @@ const AdminOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch (error) {
-        alert('Error fetching orders: ' + error);
+        setAlertMessage('Error fetching orders: ' + error);
       }
     };
 
@@ -163,6 +166,10 @@ const AdminOrderManagement: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Order Management
       </Heading>
+
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
 
       {STATUS_ORDER.map((status) => {
         const allOrders = statusOrders[status] || [];

@@ -14,6 +14,7 @@ import {
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -31,6 +32,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -54,6 +57,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>
@@ -81,11 +87,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
               onSubmit={(e) => {
                 if (selectedItems.length === 0) {
                   e.preventDefault();
-                  alert('Please select at least one food type');
+                  setAlertMessage('Please select at least one food type');
                 }
                 if (requestedSize === '') {
                   e.preventDefault();
-                  alert('Please select a requested size.');
+                  setAlertMessage('Please select a requested size.');
                 }
               }}
             >
@@ -279,7 +285,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      alert('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit');
                     }
                   }}
                 />

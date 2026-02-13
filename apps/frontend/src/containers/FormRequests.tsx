@@ -20,6 +20,7 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -37,6 +38,8 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -53,7 +56,7 @@ const FormRequests: React.FC = () => {
             setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
-          alert('Error fetching requests: ' + error);
+          setAlertMessage('Error fetching requests: ' + error);
         }
       }
     };
@@ -71,6 +74,9 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"
