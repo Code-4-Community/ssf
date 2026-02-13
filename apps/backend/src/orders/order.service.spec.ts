@@ -6,10 +6,10 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { User } from '../users/user.entity';
+import { ApplicationStatus } from '../shared/types';
 import {
   AllergensConfidence,
   ClientVisitFrequency,
-  PantryStatus,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
@@ -31,7 +31,7 @@ const mockPantry: Partial<Pantry> = {
   newsletterSubscription: false,
   restrictions: [],
   pantryUser: null as unknown as User,
-  status: PantryStatus.APPROVED,
+  status: ApplicationStatus.APPROVED,
   dateApplied: new Date(),
   activities: [],
   activitiesComments: '',
