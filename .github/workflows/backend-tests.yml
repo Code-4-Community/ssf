@@ -19,12 +19,12 @@ jobs:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       NX_DAEMON: 'false'
+      CYPRESS_INSTALL_BINARY: '0'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: yarn install
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile --ignore-scripts
       - run: yarn test
-
-
