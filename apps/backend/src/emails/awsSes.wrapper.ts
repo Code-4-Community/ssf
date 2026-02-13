@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import * as dotenv from 'dotenv';
 import Mail from 'nodemailer/lib/mailer';
@@ -13,13 +13,13 @@ export interface EmailAttachment {
 
 @Injectable()
 export class AmazonSESWrapper {
-  private client: SESClient;
+  private client: SESv2Client;
 
   /**
    * @param client injected from `amazon-ses-client.factory.ts`
    * builds our Amazon SES client with credentials from environment variables
    */
-  constructor(@Inject(AMAZON_SES_CLIENT) client: SESClient) {
+  constructor(@Inject(AMAZON_SES_CLIENT) client: SESv2Client) {
     this.client = client;
   }
 
@@ -56,10 +56,12 @@ export class AmazonSESWrapper {
 
     const messageData = await new MailComposer(mailOptions).compile().build();
 
-    const command = new SendRawEmailCommand({
-      Destinations: recipientEmails,
-      Source: process.env.AWS_SES_SENDER_EMAIL,
-      RawMessage: { Data: messageData },
+    const command = new SendEmailCommand({
+      Content: {
+        Raw: {
+          Data: messageData,
+        },
+      },
     });
 
     return await this.client.send(command);
