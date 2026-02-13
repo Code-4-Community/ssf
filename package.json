@@ -120,8 +120,13 @@
     "tmp": "^0.2.4",
     "webpack-dev-server": "^5.2.1",
     "vite": "^5.4.21",
-    "strip-ansi": "^6.0.1",
-    "string-length": "^4.0.2",
-    "ansi-regex": "^5.0.1"
+    "string-width": "4.2.3",
+    "strip-ansi": "6.0.1",
+    "ansi-regex": "5.0.1",
+    "emoji-regex": "8.0.0",
+    "is-fullwidth-code-point": "3.0.0",
+    "wrap-ansi": "7.0.0",
+    "ansi-styles": "4.3.0",
+    "cli-truncate": "2.1.0"
   }
 }
