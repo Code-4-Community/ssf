@@ -131,7 +131,6 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-
     return order.foodManufacturer;
   }
 
