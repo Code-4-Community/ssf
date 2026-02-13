@@ -4,7 +4,6 @@ import {
   ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
-  PantryStatus,
   Activity,
 } from './pantryEnums';
 
@@ -46,7 +45,7 @@ export interface Pantry {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryUser?: User;
-  status: PantryStatus;
+  status: ApplicationStatus;
   dateApplied: Date;
   activities: Activity[];
   activitiesComments?: string;
@@ -310,4 +309,10 @@ export interface OrderSummary {
       lastName: string;
     }[];
   };
+}
+
+export enum ApplicationStatus {
+  APPROVED = 'approved',
+  DENIED = 'denied',
+  PENDING = 'pending',
 }

@@ -8,7 +8,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { RequestSize } from './types';
 import { Order } from '../orders/order.entity';
 import { OrderStatus } from '../orders/types';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';

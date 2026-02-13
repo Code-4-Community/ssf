@@ -233,7 +233,7 @@ export class ApiClient {
     pantryId: number,
     decision: 'approve' | 'deny',
   ): Promise<void> {
-    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+    await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
   }
