@@ -6,8 +6,8 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { DonationStatus, RecurrenceEnum } from './types';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Entity('donations')
 export class Donation {
