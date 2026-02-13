@@ -16,8 +16,8 @@ export class AmazonSESWrapper {
   private client: SESv2Client;
 
   /**
-   * @param client injected from `amazon-ses-client.factory.ts`
-   * builds our Amazon SES client with credentials from environment variables
+   * @param client injected from `awsSesClient.factory.ts`
+   * builds our Amazon SES v2 client with credentials from environment variables
    */
   constructor(@Inject(AMAZON_SES_CLIENT) client: SESv2Client) {
     this.client = client;
@@ -29,7 +29,7 @@ export class AmazonSESWrapper {
    * @param recipientEmails the email addresses of the recipients
    * @param subject the subject of the email
    * @param bodyHtml the HTML body of the email
-   * @param attachments any base64 encoded attachments to include in the email
+   * @param attachments any attachments to include in the email
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */

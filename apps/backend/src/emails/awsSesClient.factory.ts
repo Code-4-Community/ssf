@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import { SESClient } from '@aws-sdk/client-ses';
+import { SESv2Client } from '@aws-sdk/client-sesv2';
 import { assert } from 'console';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -7,10 +7,10 @@ dotenv.config();
 export const AMAZON_SES_CLIENT = 'AMAZON_SES_CLIENT';
 
 /**
- * Factory that produces a new instance of the Amazon SES client.
+ * Factory that produces a new instance of the Amazon SES v2 client.
  * Used to send emails via Amazon SES and actually set it up with credentials.
  */
-export const AmazonSESClientFactory: Provider<SESClient> = {
+export const AmazonSESClientFactory: Provider<SESv2Client> = {
   provide: AMAZON_SES_CLIENT,
   useFactory: () => {
     assert(
@@ -23,12 +23,6 @@ export const AmazonSESClientFactory: Provider<SESClient> = {
     );
     assert(process.env.AWS_REGION !== undefined, 'AWS_REGION is not defined');
 
-    return new SESClient({
-      region: process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    });
+    return new SESv2Client({ region: process.env.AWS_REGION });
   },
 };
