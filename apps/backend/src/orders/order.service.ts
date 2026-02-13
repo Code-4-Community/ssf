@@ -81,7 +81,7 @@ export class OrdersService {
     validateId(requestId, 'Request');
 
     const order = await this.repo.findOne({
-      where: { request: { requestId } },
+      where: { requestId },
       relations: ['request'],
     });
 

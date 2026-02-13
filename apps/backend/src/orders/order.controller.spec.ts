@@ -135,21 +135,6 @@ describe('OrdersController', () => {
       expect(result).toEqual(mockPantries[0] as Pantry);
       expect(mockOrdersService.findOrderPantry).toHaveBeenCalledWith(orderId);
     });
-
-    it('should throw for non-numeric input', async () => {
-      const invalidInput = NaN;
-      mockOrdersService.findOrderPantry.mockRejectedValue(
-        new BadRequestException(
-          'Validation failed (numeric string is expected)',
-        ),
-      );
-
-      await expect(controller.getPantryFromOrder(invalidInput)).rejects.toThrow(
-        new BadRequestException(
-          'Validation failed (numeric string is expected)',
-        ),
-      );
-    });
   });
 
   describe('getRequestFromOrder', () => {

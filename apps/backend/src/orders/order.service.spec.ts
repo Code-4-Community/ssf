@@ -170,7 +170,7 @@ describe('OrdersService', () => {
 
       expect(order).toBeDefined();
       expect(order.request).toBeDefined();
-      expect(order.request.requestId).toBe(1);
+      expect(order.requestId).toBe(1);
     });
 
     it('throws NotFoundException for non-existent order', async () => {

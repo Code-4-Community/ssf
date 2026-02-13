@@ -42,7 +42,7 @@ export class RequestsService {
     }
 
     const orders = await this.orderRepo.find({
-      where: { request: { requestId } },
+      where: { requestId },
       relations: {
         foodManufacturer: true,
         allocations: {

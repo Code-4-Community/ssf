@@ -105,6 +105,8 @@ describe('RequestsService', () => {
 
   describe('getOrderDetails', () => {
     it('should return mapped order details for a valid requestId', async () => {
+      const requestId = 1;
+
       const mockOrders: Partial<Order>[] = [
         {
           orderId: 10,
@@ -153,7 +155,7 @@ describe('RequestsService', () => {
         mockRequest as FoodRequest,
       );
 
-      const result = await service.getOrderDetails(mockRequest.requestId);
+      const result = await service.getOrderDetails(requestId);
 
       expect(result).toEqual([
         {
@@ -188,7 +190,7 @@ describe('RequestsService', () => {
       ]);
 
       expect(mockOrdersRepository.find).toHaveBeenCalledWith({
-        where: { request: { requestId: mockRequest.requestId } },
+        where: { requestId },
         relations: {
           foodManufacturer: true,
           allocations: {
@@ -217,7 +219,7 @@ describe('RequestsService', () => {
       const result = await service.getOrderDetails(requestId);
       expect(result).toEqual([]);
       expect(mockOrdersRepository.find).toHaveBeenCalledWith({
-        where: { request: { requestId } },
+        where: { requestId },
         relations: {
           foodManufacturer: true,
           allocations: {

@@ -24,12 +24,18 @@ export class Order {
   })
   request!: FoodRequest;
 
+  @Column({ name: 'request_id' })
+  requestId!: number;
+
   @ManyToOne(() => FoodManufacturer, { nullable: false })
   @JoinColumn({
     name: 'food_manufacturer_id',
     referencedColumnName: 'foodManufacturerId',
   })
   foodManufacturer!: FoodManufacturer;
+
+  @Column({ name: 'food_manufacturer_id' })
+  foodManufacturerId!: number;
 
   @Column({
     name: 'status',
