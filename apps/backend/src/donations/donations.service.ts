@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationStatus } from './types';
+import { CreateDonationDto } from './dtos/create-donation.dto';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Injectable()
 export class DonationService {
@@ -38,15 +39,9 @@ export class DonationService {
     return this.repo.count();
   }
 
-  async create(
-    foodManufacturerId: number,
-    dateDonated: Date,
-    status: DonationStatus,
-    totalItems: number,
-    totalOz: number,
-    totalEstimatedValue: number,
-  ) {
+  async getByFoodManufacturer(foodManufacturerId: number): Promise<Donation[]> {
     validateId(foodManufacturerId, 'Food Manufacturer');
+
     const manufacturer = await this.manufacturerRepo.findOne({
       where: { foodManufacturerId },
     });
@@ -56,13 +51,35 @@ export class DonationService {
         `Food Manufacturer ${foodManufacturerId} not found`,
       );
     }
+
+    return this.repo.find({
+      where: { foodManufacturer: { foodManufacturerId } },
+      relations: ['foodManufacturer'],
+    });
+  }
+
+  async create(donationData: CreateDonationDto): Promise<Donation> {
+    validateId(donationData.foodManufacturerId, 'Food Manufacturer');
+    const manufacturer = await this.manufacturerRepo.findOne({
+      where: { foodManufacturerId: donationData.foodManufacturerId },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${donationData.foodManufacturerId} not found`,
+      );
+    }
     const donation = this.repo.create({
       foodManufacturer: manufacturer,
-      dateDonated,
-      status,
-      totalItems,
-      totalOz,
-      totalEstimatedValue,
+      dateDonated: new Date(),
+      status: DonationStatus.AVAILABLE,
+      totalItems: donationData.totalItems,
+      totalOz: donationData.totalOz,
+      totalEstimatedValue: donationData.totalEstimatedValue,
+      recurrence: donationData.recurrence,
+      recurrenceFreq: donationData.recurrenceFreq,
+      nextDonationDates: donationData.nextDonationDates,
+      occurrencesRemaining: donationData.occurrencesRemaining,
     });
 
     return this.repo.save(donation);

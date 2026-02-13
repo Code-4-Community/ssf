@@ -22,6 +22,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  // TODO: We are passing in the donation, so we should not be using loadedDonation anywhere here.
   const [loadedDonation, setLoadedDonation] = useState<Donation>();
   const [items, setItems] = useState<DonationItem[]>([]);
 

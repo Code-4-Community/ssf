@@ -7,12 +7,12 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationStatus } from './types';
+import { RecurrenceEnum } from './types';
+import { CreateDonationDto } from './dtos/create-donation.dto';
 
 @Controller('donations')
 export class DonationsController {
@@ -26,6 +26,13 @@ export class DonationsController {
   @Get('/count')
   async getNumberOfDonations(): Promise<number> {
     return this.donationService.getNumberOfDonations();
+  }
+
+  @Get('/donations/:foodManufacturerId')
+  async getDonationsByFoodManufacturer(
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.donationService.getByFoodManufacturer(foodManufacturerId);
   }
 
   @Get('/:donationId')
@@ -42,46 +49,30 @@ export class DonationsController {
       type: 'object',
       properties: {
         foodManufacturerId: { type: 'integer', example: 1 },
-        dateDonated: {
-          type: 'string',
-          format: 'date-time',
-        },
-        status: {
-          type: 'string',
-          enum: Object.values(DonationStatus),
-          example: DonationStatus.AVAILABLE,
-        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'integer', example: 500 },
         totalEstimatedValue: { type: 'integer', example: 1000 },
+        recurrence: {
+          type: 'string',
+          enum: Object.values(RecurrenceEnum),
+          example: RecurrenceEnum.NONE,
+        },
+        recurrenceFreq: { type: 'integer', example: 1, nullable: true },
+        nextDonationDates: {
+          type: 'array',
+          items: { type: 'string', format: 'date-time' },
+          example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
+          nullable: true,
+        },
+        occurrencesRemaining: { type: 'integer', example: 2, nullable: true },
       },
     },
   })
   async createDonation(
     @Body()
-    body: {
-      foodManufacturerId: number;
-      dateDonated: Date;
-      status: DonationStatus;
-      totalItems: number;
-      totalOz: number;
-      totalEstimatedValue: number;
-    },
+    body: CreateDonationDto,
   ): Promise<Donation> {
-    if (
-      body.status &&
-      !Object.values(DonationStatus).includes(body.status as DonationStatus)
-    ) {
-      throw new BadRequestException('Invalid status');
-    }
-    return this.donationService.create(
-      body.foodManufacturerId,
-      body.dateDonated,
-      body.status ?? DonationStatus.AVAILABLE,
-      body.totalItems,
-      body.totalOz,
-      body.totalEstimatedValue,
-    );
+    return this.donationService.create(body);
   }
 
   @Patch('/:donationId/fulfill')

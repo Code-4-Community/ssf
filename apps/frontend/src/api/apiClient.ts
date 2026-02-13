@@ -70,6 +70,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllDonationsByFoodManufacturer(
+    foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.axiosInstance
+      .get(`/api/donations/donations/${foodManufacturerId}`)
+      .then((response) => response.data);
+  }
+
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
