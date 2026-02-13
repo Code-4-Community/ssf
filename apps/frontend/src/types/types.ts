@@ -79,7 +79,7 @@ export interface PantryApplicationDto {
   mailingAddressZip: string;
   mailingAddressCountry?: string;
   allergenClients: string;
-  restrictions?: string[];
+  restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
   deliveryWindowInstructions?: string;
@@ -94,6 +94,16 @@ export interface PantryApplicationDto {
   itemsInStock: string;
   needMoreOptions: string;
   newsletterSubscription?: string;
+}
+
+export interface CreateRequestDto {
+  pantryId: number;
+  requestedSize: RequestSize;
+  requestedItems: string[];
+  additionalInformation?: string;
+  dateReceived?: Date;
+  feedback?: string;
+  photos?: string[];
 }
 
 export enum DonationStatus {

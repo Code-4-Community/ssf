@@ -17,12 +17,14 @@ const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
 const mockOrdersRepository = mock<Repository<Order>>();
 
-const mockRequest: Partial<FoodRequest> = {
+const mockRequest: FoodRequest = {
   requestId: 1,
   pantryId: 1,
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
-  requestedAt: null,
+  requestedAt: new Date(),
+  requestedSize: RequestSize.LARGE,
+  pantry: new Pantry(),
   dateReceived: null,
   feedback: null,
   photos: null,
@@ -298,7 +300,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
-          requestedAt: null,
+          requestedAt: undefined,
           dateReceived: null,
           feedback: null,
           photos: null,
@@ -310,7 +312,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.SMALL,
           requestedItems: ['Fruits', 'Snacks'],
           additionalInformation: 'No nuts, please.',
-          requestedAt: null,
+          requestedAt: undefined,
           dateReceived: null,
           feedback: null,
           photos: null,
@@ -336,9 +338,9 @@ describe('RequestsService', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        request: null,
+        request: undefined,
         requestId: 1,
-        foodManufacturer: null,
+        foodManufacturer: undefined,
         shippedBy: 1,
         status: OrderStatus.SHIPPED,
         createdAt: new Date(),
@@ -450,9 +452,9 @@ describe('RequestsService', () => {
     it('should throw an error if the order does not have a food manufacturer', async () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
-        request: null,
+        request: undefined,
         requestId: 1,
-        foodManufacturer: null,
+        foodManufacturer: undefined,
         shippedBy: null,
         status: OrderStatus.SHIPPED,
         createdAt: new Date(),

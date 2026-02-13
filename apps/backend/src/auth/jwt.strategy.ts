@@ -5,6 +5,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import CognitoAuthConfig from './aws-exports';
 
+type JwtPayload = {
+  sub: string;
+  email: string;
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
@@ -25,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload) {
+  async validate(payload: JwtPayload) {
     return { idUser: payload.sub, email: payload.email };
   }
 }

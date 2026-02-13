@@ -68,7 +68,7 @@ export class RequestsService {
       items: order.allocations.map((allocation) => ({
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
-        foodType: allocation.item.foodType,
+        foodType: allocation.item.foodType ?? undefined,
       })),
     }));
   }
@@ -77,10 +77,10 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedItems: string[],
-    additionalInformation: string | undefined,
-    dateReceived: Date | undefined,
-    feedback: string | undefined,
-    photos: string[] | undefined,
+    additionalInformation: string | undefined | null,
+    dateReceived: Date | undefined | null,
+    feedback: string | undefined | null,
+    photos: string[] | undefined | null,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 

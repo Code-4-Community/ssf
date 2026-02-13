@@ -14,14 +14,14 @@ import { Pantry } from '../pantries/pantries.entity';
 @Entity('food_requests')
 export class FoodRequest {
   @PrimaryGeneratedColumn({ name: 'request_id' })
-  requestId: number;
+  requestId!: number;
 
   @Column({ name: 'pantry_id', type: 'int' })
-  pantryId: number;
+  pantryId!: number;
 
   @ManyToOne(() => Pantry, { nullable: false })
   @JoinColumn({ name: 'pantry_id', referencedColumnName: 'pantryId' })
-  pantry: Pantry;
+  pantry!: Pantry;
 
   @Column({
     name: 'requested_size',
@@ -29,30 +29,30 @@ export class FoodRequest {
     enum: RequestSize,
     enumName: 'request_size_enum',
   })
-  requestedSize: RequestSize;
+  requestedSize!: RequestSize;
 
   @Column({ name: 'requested_items', type: 'text', array: true })
-  requestedItems: string[];
+  requestedItems!: string[];
 
   @Column({ name: 'additional_information', type: 'text', nullable: true })
-  additionalInformation: string;
+  additionalInformation?: string | null;
 
   @CreateDateColumn({
     name: 'requested_at',
     type: 'timestamp',
     default: () => 'NOW()',
   })
-  requestedAt: Date;
+  requestedAt!: Date;
 
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
-  dateReceived: Date;
+  dateReceived?: Date | null;
 
   @Column({ name: 'feedback', type: 'text', nullable: true })
-  feedback: string;
+  feedback?: string | null;
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
-  photos: string[];
+  photos?: string[] | null;
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
-  orders: Order[];
+  orders?: Order[] | null;
 }

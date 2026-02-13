@@ -112,14 +112,14 @@ export class UsersService {
       const { pantries, ...volunteerWithoutPantries } = v;
       return {
         ...volunteerWithoutPantries,
-        pantryIds: pantries.map((p) => p.pantryId),
+        pantryIds: (pantries ?? []).map((p) => p.pantryId),
       };
     });
   }
 
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
     const volunteer = await this.findVolunteer(volunteerId);
-    return volunteer.pantries;
+    return volunteer.pantries ?? [];
   }
 
   async assignPantriesToVolunteer(
@@ -131,12 +131,12 @@ export class UsersService {
     const volunteer = await this.findVolunteer(volunteerId);
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
-    const existingPantryIds = volunteer.pantries.map((p) => p.pantryId);
+    const existingPantryIds = (volunteer.pantries ?? []).map((p) => p.pantryId);
     const newPantries = pantries.filter(
       (p) => !existingPantryIds.includes(p.pantryId),
     );
 
-    volunteer.pantries = [...volunteer.pantries, ...newPantries];
+    volunteer.pantries = [...(volunteer.pantries ?? []), ...newPantries];
     return this.repo.save(volunteer);
   }
 }
