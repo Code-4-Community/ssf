@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtStrategy } from '../auth/jwt.strategy';
-import { AuthService } from '../auth/auth.service';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
-import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
+import { ManufacturerModule } from '../foodManufacturers/manufacturer.module';
+import { AuthModule } from '../auth/auth.module';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationsSchedulerService } from './donations.scheduler';
 
@@ -13,13 +12,9 @@ import { DonationsSchedulerService } from './donations.scheduler';
   imports: [
     TypeOrmModule.forFeature([Donation, FoodManufacturer]),
     ManufacturerModule,
+    AuthModule,
   ],
   controllers: [DonationsController],
-  providers: [
-    DonationService,
-    AuthService,
-    JwtStrategy,
-    DonationsSchedulerService,
-  ],
+  providers: [DonationService, DonationsSchedulerService],
 })
 export class DonationModule {}
