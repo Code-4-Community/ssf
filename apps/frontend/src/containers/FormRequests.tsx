@@ -53,7 +53,7 @@ const FormRequests: React.FC = () => {
             setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
-          alert('Error fetching requests: ' + error);
+          console.log(error);
         }
       }
     };

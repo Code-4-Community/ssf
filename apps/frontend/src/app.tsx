@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import LandingPage from '@containers/landingPage';
@@ -30,6 +27,8 @@ import LoginPage from '@containers/loginPage';
 import SignupPage from '@containers/signupPage';
 import ForgotPasswordPage from '@containers/forgotPasswordPage';
 import ProtectedRoute from '@components/protectedRoute';
+import { Button } from '@chakra-ui/react';
+import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -69,6 +68,10 @@ const router = createBrowserRouter([
         path: '/pantry-application/submitted',
         element: <PantryApplicationSubmitted />,
       },
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />,
+      },
       // Private routes (protected by auth)
       {
         path: '/pantry-overview',
@@ -84,6 +87,38 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <PantryDashboard />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <Authenticator components={components}>
+            <PantryPastOrders />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <Authenticator components={components}>
+            <Pantries />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-overview',
+        element: (
+          <Authenticator components={components}>
+            <PantryOverview />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <Authenticator components={components}>
+            <PantryDashboard />
+          </Authenticator>
         ),
         loader: pantryIdLoader,
       },
@@ -129,7 +164,7 @@ const router = createBrowserRouter([
         loader: pantryIdLoader,
       },
       {
-        path: '/donation-management',
+        path: '/donation-mangement',
         element: (
           <ProtectedRoute>
             <DonationManagement />
