@@ -57,6 +57,7 @@ const FormRequests: React.FC = () => {
           }
         } catch (error) {
           setAlertMessage('Error fetching requests: ' + error);
+          console.log(error);
         }
       }
     };

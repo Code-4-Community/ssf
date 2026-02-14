@@ -13,7 +13,7 @@ import { PantriesService } from '../pantries/pantries.service';
 const mockUserRepository = mock<Repository<User>>();
 const mockPantriesService = mock<PantriesService>();
 
-const mockUser: User = {
+const mockUser: Partial<User> = {
   id: 1,
   email: 'test@example.com',
   firstName: 'John',
@@ -103,7 +103,7 @@ describe('UsersService', () => {
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
 
       const result = await service.findOne(1);
 
@@ -128,16 +128,15 @@ describe('UsersService', () => {
     });
   });
 
-  describe('find', () => {
-    it('should return users by email', async () => {
-      const users = [mockUser];
-      mockUserRepository.find.mockResolvedValue(users);
+  describe('findByEmail', () => {
+    it('should return user by email', async () => {
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
 
-      const result = await service.find('test@example.com');
+      const result = await service.findByEmail('test@example.com');
 
-      expect(result).toEqual(users);
-      expect(mockUserRepository.find).toHaveBeenCalledWith({
-        where: { email: 'test@example.com' },
+      expect(result).toEqual(mockUser);
+      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({
+        email: 'test@example.com',
       });
     });
   });
@@ -147,8 +146,8 @@ describe('UsersService', () => {
       const updateData = { firstName: 'Updated', role: Role.ADMIN };
       const updatedUser = { ...mockUser, ...updateData };
 
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      mockUserRepository.save.mockResolvedValue(updatedUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
 
       const result = await service.update(1, updateData);
 
@@ -175,8 +174,8 @@ describe('UsersService', () => {
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      mockUserRepository.remove.mockResolvedValue(mockUser);
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.remove.mockResolvedValue(mockUser as User);
 
       const result = await service.remove(1);
 
@@ -205,7 +204,7 @@ describe('UsersService', () => {
     it('should return users by roles', async () => {
       const roles = [Role.ADMIN, Role.VOLUNTEER];
       const users = [mockUser];
-      mockUserRepository.find.mockResolvedValue(users);
+      mockUserRepository.find.mockResolvedValue(users as User[]);
 
       const result = await service.findUsersByRoles(roles);
 
