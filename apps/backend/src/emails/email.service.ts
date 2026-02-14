@@ -16,28 +16,6 @@ export class EmailsService {
   }
 
   /**
-   * Queues the email to be sent. Emails are rate limit and sent at a rate of approximately 14 per second.
-   * Emails are never guaranteed to be delivered. Failures are logged.
-   *
-   * @param recipientEmail the email address of the recipient
-   * @param subject the subject of the email
-   * @param bodyHTML the HTML body of the email
-   * @param attachments any base64 encoded attachments to inlude in the email
-   */
-  public async queueEmail(
-    recipientEmail: string,
-    subject: string,
-    bodyHTML: string,
-    attachments?: EmailAttachment[],
-  ): Promise<void> {
-    await this.limiter
-      .schedule(() =>
-        this.sendEmail(recipientEmail, subject, bodyHTML, attachments),
-      )
-      .catch((err) => this.logger.error(err));
-  }
-
-  /**
    * Sends an email.
    *
    * @param recipientEmail the email address of the recipients
@@ -47,14 +25,14 @@ export class EmailsService {
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
-  public async sendEmail(
-    recipientEmail: string,
+  public async sendEmails(
+    recipientEmails: string[],
     subject: string,
     bodyHTML: string,
     attachments?: EmailAttachment[],
   ): Promise<unknown> {
     return this.amazonSESWrapper.sendEmails(
-      [recipientEmail],
+      recipientEmails,
       subject,
       bodyHTML,
       attachments,
