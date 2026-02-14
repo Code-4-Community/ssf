@@ -149,7 +149,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <FormRequests />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
