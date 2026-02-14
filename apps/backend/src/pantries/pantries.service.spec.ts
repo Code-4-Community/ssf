@@ -103,6 +103,7 @@ describe('PantriesService', () => {
       expect(result).toBe(mockPendingPantry);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
+        relations: ['pantryUser'],
       });
     });
 
