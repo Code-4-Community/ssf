@@ -1248,7 +1248,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   );
 
   return submissionSuccessful
-    ? redirect('/pantry-application/submitted')
+    ? redirect('/application/submitted')
     : null;
 };
 

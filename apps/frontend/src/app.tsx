@@ -11,7 +11,7 @@ import { submitFoodRequestFormModal } from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/FormRequests';
 import PantryApplication from '@containers/pantryApplication';
-import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
+import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
@@ -27,6 +27,8 @@ import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
 import { Button } from '@chakra-ui/react';
 import Unauthorized from '@containers/unauthorized';
+import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
+import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -81,8 +83,13 @@ const router = createBrowserRouter([
         action: submitPantryApplicationForm,
       },
       {
-        path: '/pantry-application/submitted',
-        element: <PantryApplicationSubmitted />,
+        path: '/food-manufacturer-application',
+        element: <FoodManufacturerApplication />,
+        action: submitManufacturerApplicationForm,
+      },
+      {
+        path: '/application/submitted',
+        element: <ApplicationSubmitted />,
       },
       {
         path: '/unauthorized',
