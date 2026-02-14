@@ -14,6 +14,7 @@ import {
 import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import ApiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -323,45 +324,25 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   const form = await request.formData();
-
-  const foodRequestData = new Map();
-
   const pantryId = form.get('pantryId');
-  foodRequestData.set('requestedSize', form.get('size'));
-  form.delete('size');
-  foodRequestData.set('additionalInformation', form.get('notes'));
-  form.delete('notes');
-  foodRequestData.set('requestedItems', form.getAll('restrictions'));
-  form.delete('restrictions');
-  foodRequestData.set('pantryId', form.get('pantryId'));
-
-  const data = Object.fromEntries(foodRequestData);
-  console.log(data);
+  const foodRequestData = {
+    pantryId: Number(pantryId),
+    requestedSize: form.get('size') as string,
+    additionalInformation: form.get('notes') as string,
+    requestedItems: form.getAll('restrictions') as string[],
+    dateReceived: null,
+    feedback: null,
+    photos: [],
+  };
 
   try {
-    const response = await fetch('/api/requests/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      console.log('Food request submitted successfully');
-
-      window.location.href = `/request-form/${pantryId}`;
-      return null;
-    } else {
-      console.error('Failed to submit food request', await response.text());
-      window.location.href = `/request-form/${pantryId}`;
-      return null;
-    }
+    await ApiClient.createFoodRequest(foodRequestData);
+    console.log('Food request submitted successfully');
   } catch (error) {
-    console.error('Error submitting food request', error);
-    window.location.href = `/request-form/${pantryId}`;
-    return null;
+    console.error('Failed to submit food request', error);
   }
+  window.location.href = `/request-form`;
+  return null
 };
 
 export default FoodRequestFormModal;

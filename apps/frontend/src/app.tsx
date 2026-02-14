@@ -18,7 +18,6 @@ import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
-import { pantryIdLoader } from '@loaders/pantryIdLoader';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import '@aws-amplify/ui-react/styles.css';
@@ -98,14 +97,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-dashboard/:pantryId',
-        element: (
-          <Authenticator components={components}>
-            <PantryDashboard />
-          </Authenticator>
-        ),
-      },
-      {
         path: '/pantry-past-orders',
         element: (
           <Authenticator components={components}>
@@ -130,13 +121,12 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-dashboard/:pantryId',
+        path: '/pantry-dashboard',
         element: (
           <Authenticator components={components}>
             <PantryDashboard />
           </Authenticator>
         ),
-        loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
@@ -171,13 +161,12 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/request-form/:pantryId',
+        path: '/request-form',
         element: (
           <Authenticator components={components}>
             <FormRequests />
           </Authenticator>
         ),
-        loader: pantryIdLoader,
       },
       {
         path: '/approve-pantries',
