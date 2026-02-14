@@ -26,6 +26,7 @@ import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-Upd
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 import { RemovePantryFromOrders1769316004958 } from '../migrations/1769316004958-RemovePantryFromOrders';
 import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
+import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 
 const schemaMigrations = [
   User1725726359198,
@@ -56,6 +57,7 @@ const schemaMigrations = [
   PopulateDummyData1768501812134,
   RemovePantryFromOrders1769316004958,
   UpdateManufacturerEntity1768680807820,
+  AddUserPoolId1769189327767,
 ];
 
 export default schemaMigrations;
