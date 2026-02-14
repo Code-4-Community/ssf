@@ -1,24 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Box,
+  Center,
   Table,
   Text,
   Button,
   HStack,
   useDisclosure,
-  Link,
-  Badge,
-  Pagination,
-  ButtonGroup,
-  IconButton,
-  Flex,
+  NativeSelect,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import { OrderStatus, FoodRequest } from '../types/types';
-import RequestDetailsModal from '@components/forms/requestDetailsModal';
-import { formatDate } from '@utils/utils';
+import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
+import OrderInformationModal from '@components/forms/orderInformationModal';
+import { FoodRequest } from 'types/types';
+import { formatDate, formatReceivedDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
@@ -32,6 +27,9 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
+  const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
+    'mostRecent',
+  );
 
   const [allConfirmed, setAllConfirmed] = useState(false);
   const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
@@ -39,8 +37,7 @@ const FormRequests: React.FC = () => {
   >(null);
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
-
-  const pageSize = 10;
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   const fetchRequests = useCallback(async () => {
     if (pantryId) {
@@ -71,27 +68,33 @@ const FormRequests: React.FC = () => {
     fetchRequests();
   }, [pantryId, fetchRequests]);
 
-  const paginatedRequests = requests.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  useEffect(() => {
+    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
+  }, [requests]);
+
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (sortBy === 'mostRecent')
+      return (
+        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+      );
+    if (sortBy === 'oldest')
+      return (
+        new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
+      );
+    if (sortBy === 'confirmed')
+      return (
+        new Date(b.dateReceived || 0).getTime() -
+        new Date(a.dateReceived || 0).getTime()
+      );
+
+    return 0;
+  });
 
   return (
-    <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">
-        Food Request Management
-      </Text>
-      <HStack gap={3} my={5}>
-        <Button
-          fontFamily="ibm"
-          fontWeight="semibold"
-          fontSize="14px"
-          color="neutral.50"
-          bgColor="#2B4E60"
-          onClick={newRequestDisclosure.onOpen}
-          px={2}
-        >
-          New Request
+    <Center flexDirection="column" p={4}>
+      <HStack gap={200}>
+        <Button onClick={newRequestDisclosure.onOpen} disabled={!allConfirmed}>
+          Submit New Request
         </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
@@ -104,15 +107,9 @@ const FormRequests: React.FC = () => {
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              fontFamily="ibm"
-              fontWeight="semibold"
-              fontSize="14px"
-              color="neutral.600"
-              bgColor={'white'}
-              borderColor="neutral.300"
-              px={2}
+              disabled={!allConfirmed}
             >
-              Resubmit Latest
+              Submit Previous Request
             </Button>
             <FoodRequestFormModal
               previousRequest={previousRequest}
@@ -124,86 +121,85 @@ const FormRequests: React.FC = () => {
           </>
         )}
       </HStack>
-      <Table.Root mt={6} variant="line" showColumnBorder>
+
+      <NativeSelect.Root mt={4} width="50%">
+        <NativeSelect.Field
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
+          }
+        >
+          <option value="mostRecent">Date Requested (Recent)</option>
+          <option value="oldest">Date Requested (Oldest)</option>
+          <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator />
+      </NativeSelect.Root>
+
+      <Table.Root mt={6} width="80%">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-            >
-              Request #
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-            >
-              Status
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-              textAlign="right"
-            >
-              Date Requested
-            </Table.ColumnHeader>
+            <Table.ColumnHeader>Request ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Order ID</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
+            <Table.ColumnHeader>Status</Table.ColumnHeader>
+            <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
+            <Table.ColumnHeader>Date Fulfilled</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {paginatedRequests.map((request) => (
+          {sortedRequests.map((request) => (
             <Table.Row key={request.requestId}>
-              <Table.Cell color="#111111" textStyle="p2">
-                <Link
-                  textDecorationColor="#111111"
-                  variant="underline"
-                  onClick={() => setOpenReadOnlyRequest(request)}
-                >
+              <Table.Cell>
+                <Button onClick={() => setOpenReadOnlyRequest(request)}>
                   {request.requestId}
-                </Link>
+                </Button>
               </Table.Cell>
               <Table.Cell>
-                {!request.orders ||
-                request.orders.length === 0 ||
-                request.orders.every(
-                  (order) =>
-                    order.status === OrderStatus.PENDING ||
-                    order.status === OrderStatus.SHIPPED,
-                ) ? (
-                  <Badge
-                    bgColor="#D4EAED"
-                    color="#19717D"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                    py={1}
-                    px={2}
+                {request.orders?.[0]?.orderId ? (
+                  <Button
+                    onClick={() =>
+                      setOpenOrderId(request.orders?.[0]?.orderId ?? null)
+                    }
                   >
-                    Active
-                  </Badge>
+                    {request.orders?.[0]?.orderId}
+                  </Button>
                 ) : (
-                  <Badge
-                    bgColor="neutral.300"
-                    color="#111111"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                    py={1}
-                    px={2}
-                  >
-                    Closed
-                  </Badge>
+                  'N/A'
                 )}
               </Table.Cell>
-              <Table.Cell color="neutral.700" textStyle="p2" textAlign="right">
-                {formatDate(request.requestedAt)}
+              <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
+              <Table.Cell>
+                {request.orders?.[0]?.status ?? 'pending'}
+              </Table.Cell>
+              <Table.Cell>
+                {request.orders?.[0]?.status === 'pending'
+                  ? 'N/A'
+                  : request.orders?.[0]?.shippedBy ?? 'N/A'}
+              </Table.Cell>
+              <Table.Cell>
+                {formatReceivedDate(request.dateReceived)}
+              </Table.Cell>
+              <Table.Cell>
+                {!request.orders?.[0] ||
+                request.orders?.[0]?.status === 'pending' ? (
+                  <Text>Awaiting Order Assignment</Text>
+                ) : request.orders?.[0]?.status === 'delivered' ? (
+                  <Text>Food Request is Already Delivered</Text>
+                ) : (
+                  <Button
+                    onClick={() => setOpenDeliveryRequestId(request.requestId)}
+                  >
+                    Confirm Delivery
+                  </Button>
+                )}
               </Table.Cell>
             </Table.Row>
           ))}
           {openReadOnlyRequest && (
-            <RequestDetailsModal
-              request={openReadOnlyRequest}
+            <FoodRequestFormModal
+              previousRequest={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
               pantryId={pantryId!}
@@ -226,51 +222,7 @@ const FormRequests: React.FC = () => {
           )}
         </Table.Body>
       </Table.Root>
-      <Flex justify="center" mt={12}>
-        <Pagination.Root
-          count={Math.ceil(requests.length / pageSize)}
-          pageSize={1}
-          page={currentPage}
-          onChange={(page) => setCurrentPage(page)}
-        >
-          <ButtonGroup variant="outline" size="sm">
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  variant="outline"
-                  _selected={{ borderColor: 'neutral.800' }}
-                  onClick={() => setCurrentPage(page.value)}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, Math.ceil(requests.length / pageSize)),
-                  )
-                }
-              >
-                <ChevronRight />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      </Flex>
-    </Box>
+    </Center>
   );
 };
 
