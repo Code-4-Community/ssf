@@ -83,6 +83,11 @@ const router = createBrowserRouter([
         action: submitPantryApplicationForm,
       },
       {
+        path: '/food-manufacturer-application',
+        element: <FoodManufacturerApplication />,
+        action: submitManufacturerApplicationForm,
+      },
+      {
         path: '/application/submitted',
         element: <ApplicationSubmitted />,
       },
@@ -163,11 +168,6 @@ const router = createBrowserRouter([
             <FoodManufacturerOrderDashboard />
           </Authenticator>
         ),
-      },
-      {
-        path: '/food-manufacturer-application',
-        element: <FoodManufacturerApplication />,
-        action: submitManufacturerApplicationForm,
       },
       {
         path: '/orders',
