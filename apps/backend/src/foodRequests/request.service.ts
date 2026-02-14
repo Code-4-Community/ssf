@@ -134,16 +134,6 @@ export class RequestsService {
       );
     }
 
-    const orders = request.orders;
-
-    for (const order of orders) {
-      if (!order.shippedBy) {
-        throw new NotFoundException(
-          'No associated food manufacturer found for an associated order',
-        );
-      }
-    }
-
     request.feedback = feedback;
     request.dateReceived = deliveryDate;
     request.photos = photos;
