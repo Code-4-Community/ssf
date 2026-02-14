@@ -140,7 +140,7 @@ const PantryDashboard: React.FC = () => {
         _focus={{ textDecoration: 'none' }}
         textDecoration="none"
       >
-        <Link href={`/request-form/${pantryId}`}>
+        <Link href={`/request-form`}>
           Request new shipment or check shipment status
         </Link>
       </Button>

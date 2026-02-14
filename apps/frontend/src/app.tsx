@@ -29,7 +29,6 @@ import Unauthorized from '@containers/unauthorized';
 
 Amplify.configure(CognitoAuthConfig);
 
-
 const components = {
   SignUp: {
     Footer() {
