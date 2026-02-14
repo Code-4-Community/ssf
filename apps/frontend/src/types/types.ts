@@ -46,7 +46,7 @@ export interface Pantry {
   secondaryContactPhone?: string;
   pantryUser?: User;
   status: ApplicationStatus;
-  dateApplied: Date;
+  dateApplied: string;
   activities: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
@@ -182,8 +182,8 @@ export interface FoodRequest {
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string | null;
-  requestedAt: Date;
-  dateReceived: Date | null;
+  requestedAt: string;
+  dateReceived: string | null;
   feedback: string | null;
   photos: string[] | null;
   orders?: Order[];

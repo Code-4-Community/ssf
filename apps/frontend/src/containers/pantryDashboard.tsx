@@ -61,7 +61,7 @@ const PantryDashboard: React.FC = () => {
           transform="translateY(-50%)"
         >
           <Menu.Root>
-            <Menu.Trigger asChild>
+            <Menu.Trigger>
               <Button
                 bg="transparent"
                 size="lg"
@@ -123,7 +123,6 @@ const PantryDashboard: React.FC = () => {
       </Card.Root>
 
       <Button
-        asChild
         mt="6"
         _hover={{ textDecoration: 'none' }}
         _focus={{ textDecoration: 'none' }}
