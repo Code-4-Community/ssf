@@ -313,6 +313,11 @@ export class PantriesController {
   async sendEmail(@Body() sendEmailDTO: SendEmailDTO): Promise<void> {
     const { toEmails, subject, bodyHtml, attachments } = sendEmailDTO;
 
-    await this.emailsService.sendEmails(toEmails, subject, bodyHtml, attachments);
+    await this.emailsService.sendEmails(
+      toEmails,
+      subject,
+      bodyHtml,
+      attachments,
+    );
   }
 }
