@@ -22,12 +22,15 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { EmailsService } from '../emails/email.service';
+import { SendEmailDTO } from '../emails/types';
 
 @Controller('pantries')
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
     private ordersService: OrdersService,
+    private emailsService: EmailsService,
   ) {}
 
   @Get('/pending')
@@ -304,5 +307,17 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.deny(pantryId);
+  }
+
+  @Post('/email')
+  async sendEmail(@Body() sendEmailDTO: SendEmailDTO): Promise<void> {
+    const { toEmails, subject, bodyHtml, attachments } = sendEmailDTO;
+
+    await this.emailsService.sendEmails(
+      toEmails,
+      subject,
+      bodyHtml,
+      attachments,
+    );
   }
 }
