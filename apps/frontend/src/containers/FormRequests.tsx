@@ -204,7 +204,7 @@ const FormRequests: React.FC = () => {
           count={Math.ceil(requests.length / pageSize)}
           pageSize={1}
           page={currentPage}
-          onChange={(page) => setCurrentPage(page)}
+          onChange={(page: number) => setCurrentPage(page)}
         >
           <ButtonGroup variant="outline" size="sm">
             <Pagination.PrevTrigger asChild>

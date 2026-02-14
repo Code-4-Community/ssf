@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
-import { FoodTypes } from '../../types/types';
+import { FoodTypes, FoodType } from '../../types/types';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -22,12 +22,21 @@ interface NewDonationFormModalProps {
   onClose: () => void;
 }
 
+interface DonationRow {
+  id: number;
+  foodItem: string;
+  foodType: FoodType | '';
+  numItems: string;
+  ozPerItem: string;
+  valuePerItem: string;
+}
+
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
   isOpen,
   onClose,
 }) => {
-  const [rows, setRows] = useState([
+  const [rows, setRows] = useState<DonationRow[]>([
     {
       id: 1,
       foodItem: '',
@@ -51,7 +60,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     calculateTotals(updatedRows);
   };
 
-  const calculateTotals = (updatedRows: typeof rows) => {
+  const calculateTotals = (updatedRows: DonationRow[]) => {
     let totalItems = 0,
       totalOz = 0,
       totalValue = 0;
@@ -123,7 +132,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           reservedQuantity: 0,
           ozPerItem: parseFloat(row.ozPerItem),
           estimatedValue: parseFloat(row.valuePerItem),
-          foodType: row.foodType,
+          foodType: row.foodType as FoodType,
         }));
 
         await ApiClient.postMultipleDonationItems({ donationId, items });

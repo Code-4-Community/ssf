@@ -14,11 +14,11 @@
       "@public/*": ["../public/*"],
       "@shared/*": ["../../../shared/*"],
       "@utils/*": ["utils/*"],
-      "@loaders/*": ["loaders/*"],
-    },
+      "@loaders/*": ["loaders/*"]
+    }
   },
   "files": [],
-  "include": [],
+  "include": ["src/chakra-ui.d.ts"],
   "references": [
     {
       "path": "./tsconfig.app.json"
