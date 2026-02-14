@@ -1,4 +1,9 @@
-import axios, { type AxiosInstance, AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosResponse,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import {
   User,
   Order,
@@ -22,13 +27,39 @@ const defaultBaseUrl =
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
+  private accessToken: string | undefined;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
+
+    // Attach the access token to each request if available
+    // All API requests will go through this interceptor, making the user required to login
+    this.axiosInstance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = this.accessToken || localStorage.getItem('accessToken');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 403) {
+          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
+          window.location.replace('/unauthorized');
+        }
+        return Promise.reject(error);
+      },
+    );
   }
 
-  public async getHello(): Promise<string> {
-    return this.get('/api') as Promise<string>;
+  public setAccessToken(token: string | undefined) {
+    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -239,7 +270,6 @@ export class ApiClient {
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
     const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
-    console.log('Raw response from API:', data);
     return data as FoodRequest[];
   }
 
@@ -247,10 +277,21 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    await this.axiosInstance.post(
-      `/api/requests/${requestId}/confirm-delivery`,
-      data,
-    );
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/requests/${requestId}/confirm-delivery`,
+        data,
+      );
+
+      if (response.status === 200) {
+        alert('Delivery confirmation submitted successfully');
+        window.location.href = '/request-form/1';
+      } else {
+        alert(`Failed to submit: ${response.statusText}`);
+      }
+    } catch (error) {
+      alert(`Error submitting delivery confirmation: ${error}`);
+    }
   }
 }
 
