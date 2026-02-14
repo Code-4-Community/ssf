@@ -46,6 +46,7 @@ export function FloatingAlert({
       right="12px"
       w="fit-content"
       maxW="400px"
+      p={2}
     >
       <Alert.Indicator />
       <Alert.Title textStyle="p2" fontWeight={500}>

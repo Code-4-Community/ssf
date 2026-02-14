@@ -66,10 +66,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Portal>
-        {alertMessage && (
-          <FloatingAlert message={alertMessage} status="error" timeout={6000} />
-        )}
         <Dialog.Backdrop bg="blackAlpha.300" />
 
         <Dialog.Positioner>
