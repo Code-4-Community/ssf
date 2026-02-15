@@ -193,12 +193,15 @@ export interface Order {
   orderId: number;
   request: FoodRequest;
   requestId: number;
-  foodManufacturer: FoodManufacturer | null;
-  shippedBy: number | null;
+  foodManufacturer?: FoodManufacturer;
+  shippedBy?: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string | null;
-  deliveredAt: string | null;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  allocations: Allocation[];
+  trackingLink?: string;
+  shippingCost?: number;
 }
 
 export interface OrderItemDetails {
@@ -227,7 +230,7 @@ export interface CreateFoodRequestBody {
   additionalInformation: string | null | undefined;
   status: string;
   fulfilledBy: number | null | undefined;
-  dateReceived: Date | null | undefined;
+  dateReceived: string | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;
 }
@@ -286,15 +289,18 @@ export interface OrderSummary {
   orderId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string | null;
-  deliveredAt: string | null;
-  pantry: {
-    pantryName: string;
-    volunteers?: {
-      id: number;
-      firstName: string;
-      lastName: string;
-    }[];
+  shippedAt?: string;
+  deliveredAt?: string;
+  request: {
+    pantryId: number;
+    pantry: {
+      pantryName: string;
+      volunteers?: {
+        id: number;
+        firstName: string;
+        lastName: string;
+      }[];
+    };
   };
 }
 
