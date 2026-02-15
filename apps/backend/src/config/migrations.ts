@@ -28,6 +28,8 @@ import { RemovePantryFromOrders1769316004958 } from '../migrations/1769316004958
 import { AddDonationRecurrenceFields1770080947285 } from '../migrations/1770080947285-AddDonationRecurrenceFields';
 import { AddFoodRescueToDonationItems1770679339809 } from '../migrations/1770679339809-AddFoodRescueToDonationItems';
 import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
+import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
+import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
 
 const schemaMigrations = [
   User1725726359198,
@@ -60,6 +62,8 @@ const schemaMigrations = [
   AddDonationRecurrenceFields1770080947285,
   AddFoodRescueToDonationItems1770679339809,
   UpdateManufacturerEntity1768680807820,
+  AddUserPoolId1769189327767,
+  UpdateOrderEntity1769990652833,
 ];
 
 export default schemaMigrations;
