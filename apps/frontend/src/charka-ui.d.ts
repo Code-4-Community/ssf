@@ -5,7 +5,7 @@ import '@chakra-ui/react';
 declare module '@chakra-ui/react' {
   export interface ComponentProps {
     asChild?: boolean; // Enables composition pattern
-    children?: React.ReactNode; // Allows child elements
+    children?: JSX.Element | JSX.Element[]; // Allows child elements
     as?: any; // Polymorphic component prop
     [key: string]: any; // Catch-all for any other props
   }

@@ -80,7 +80,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    Profile
+                    <Text>Profile</Text>
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
@@ -88,7 +88,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    Request Form
+                    <Text>Request Form</Text>
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
@@ -96,7 +96,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    Sign out
+                    <Text>Sign out</Text>
                   </Menu.Item>
                 </Menu.Content>
               </Menu.Positioner>

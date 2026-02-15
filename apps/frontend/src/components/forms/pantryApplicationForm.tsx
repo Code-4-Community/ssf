@@ -152,7 +152,7 @@ const PantryApplicationForm: React.FC = () => {
           <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="2.5em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                First Name
+                <Text>First Name</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -163,7 +163,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Last Name
+                <Text>Last Name</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -174,7 +174,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Phone Number
+                <Text>Phone Number</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <USPhoneInput
@@ -188,7 +188,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Email Address
+                <Text>Email Address</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -200,8 +200,10 @@ const PantryApplicationForm: React.FC = () => {
           </SimpleGrid>
           <Field.Root required mb=".75em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
-              Is there someone at your pantry who can regularly check and
-              respond to emails from SSF as needed?{' '}
+              <Text>
+                Is there someone at your pantry who can regularly check and
+                respond to emails from SSF as needed?{' '}
+              </Text>
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root
@@ -222,7 +224,7 @@ const PantryApplicationForm: React.FC = () => {
                       />
                     </RadioGroup.ItemControl>
                     <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
+                      <Text>{value}</Text>
                     </RadioGroup.ItemText>
                   </RadioGroup.Item>
                 ))}
@@ -245,7 +247,9 @@ const PantryApplicationForm: React.FC = () => {
           <Text {...sectionTitleStyles}>Secondary Contact Information</Text>
           <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>First Name</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>First Name</Text>
+              </Field.Label>
               <Input
                 name="secondaryContactFirstName"
                 type="text"
@@ -253,7 +257,9 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Last Name</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>Last Name</Text>
+              </Field.Label>
               <Input
                 name="secondaryContactLastName"
                 type="text"
@@ -261,7 +267,9 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Phone Number</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>Phone Number</Text>
+              </Field.Label>
               <USPhoneInput
                 value={secondaryContactPhone}
                 onChange={setSecondaryContactPhone}
@@ -273,7 +281,9 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Email Address</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>Email Address</Text>
+              </Field.Label>
               <Input
                 name="secondaryContactEmail"
                 type="email"
@@ -293,7 +303,7 @@ const PantryApplicationForm: React.FC = () => {
           <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="2em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Address Line 1
+                <Text>Address Line 1</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -303,7 +313,9 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Address Line 2</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>Address Line 2</Text>
+              </Field.Label>
               <Input
                 name="shipmentAddressLine2"
                 type="text"
@@ -312,7 +324,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                City/Town
+                <Text>City/Town</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -323,7 +335,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                State/Region/Province
+                <Text>State/Region/Province</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -334,7 +346,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Zip/Post Code
+                <Text>Zip/Post Code</Text>
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -344,7 +356,7 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Country</Field.Label>
+              <Field.Label {...fieldHeaderStyles}><Text>Country</Text></Field.Label>
               <Input
                 name="shipmentAddressCountry"
                 type="text"
@@ -354,8 +366,9 @@ const PantryApplicationForm: React.FC = () => {
           </SimpleGrid>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
-              Does this address differ from your pantry's mailing address for
-              documents? <Field.RequiredIndicator color="red" />
+              <Text>Does this address differ from your pantry's mailing address for
+              documents?</Text>
+               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root
               variant="solid"
@@ -384,8 +397,9 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
-              Would your pantry be able to accept food deliveries during
+              <Text>Would your pantry be able to accept food deliveries during
               standard business hours Mon-Fri?{' '}
+              </Text>
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root name="acceptFoodDeliveries" variant="solid">
@@ -400,7 +414,7 @@ const PantryApplicationForm: React.FC = () => {
                       />
                     </RadioGroup.ItemControl>
                     <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
+                      <Text>{value}</Text>
                     </RadioGroup.ItemText>
                   </RadioGroup.Item>
                 ))}
@@ -409,7 +423,7 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root mb="4em">
             <Field.Label {...fieldHeaderStyles}>
-              Please note any delivery window restrictions.
+              <Text>Please note any delivery window restrictions.</Text>
             </Field.Label>
             <Textarea
               name="deliveryWindowInstructions"
@@ -430,7 +444,7 @@ const PantryApplicationForm: React.FC = () => {
               <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
                 <Field.Root required={differentMailingAddress}>
                   <Field.Label {...fieldHeaderStyles}>
-                    Address Line 1
+                    <Text>Address Line 1</Text>
                     <Field.RequiredIndicator color="red" />
                   </Field.Label>
                   <Input
@@ -441,7 +455,7 @@ const PantryApplicationForm: React.FC = () => {
                 </Field.Root>
                 <Field.Root>
                   <Field.Label {...fieldHeaderStyles}>
-                    Address Line 2
+                    <Text>Address Line 2</Text>
                   </Field.Label>
                   <Input
                     name="mailingAddressLine2"
