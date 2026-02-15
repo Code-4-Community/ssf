@@ -5,40 +5,7 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
-import { User } from '../users/user.entity';
-import { ApplicationStatus } from '../shared/types';
-import {
-  AllergensConfidence,
-  ClientVisitFrequency,
-  RefrigeratedDonation,
-  ReserveFoodForAllergic,
-  ServeAllergicChildren,
-} from '../pantries/types';
 
-const mockOrdersRepository = mock<Repository<Order>>();
-
-const mockPantry: Partial<Pantry> = {
-  pantryId: 1,
-  pantryName: 'Test Pantry',
-  allergenClients: '',
-  refrigeratedDonation: RefrigeratedDonation.NO,
-  reserveFoodForAllergic: ReserveFoodForAllergic.YES,
-  reservationExplanation: '',
-  dedicatedAllergyFriendly: false,
-  clientVisitFrequency: ClientVisitFrequency.DAILY,
-  identifyAllergensConfidence: AllergensConfidence.NOT_VERY_CONFIDENT,
-  serveAllergicChildren: ServeAllergicChildren.NO,
-  newsletterSubscription: false,
-  restrictions: [],
-  pantryUser: null as unknown as User,
-  status: ApplicationStatus.APPROVED,
-  dateApplied: new Date(),
-  activities: [],
-  activitiesComments: '',
-  itemsInStock: '',
-  needMoreOptions: '',
-  volunteers: [],
-};
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
 

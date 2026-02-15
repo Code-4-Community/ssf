@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
@@ -11,7 +15,10 @@ import { ApprovedPantryResponse } from './types';
 
 @Injectable()
 export class PantriesService {
-  constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
+  constructor(
+    @InjectRepository(Pantry) private repo: Repository<Pantry>,
+    @InjectRepository(User) private userRepo: Repository<User>,
+  ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
@@ -114,7 +121,7 @@ export class PantriesService {
   async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
     const pantries = await this.repo.find({
       where: { status: ApplicationStatus.APPROVED },
-      relations: ['pantryUser'],
+      relations: ['volunteers', 'pantryUser'],
     });
 
     return pantries.map((pantry) => ({
@@ -168,8 +175,23 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    pantry.volunteers = volunteerIds.map((id) => ({ id } as User));
+    const users = await this.userRepo.findBy({ id: In(volunteerIds) });
 
+    if (users.length !== volunteerIds.length) {
+      throw new NotFoundException('One or more users not found');
+    }
+
+    const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
+
+    if (nonVolunteers.length > 0) {
+      throw new BadRequestException(
+        `Users ${nonVolunteers
+          .map((user) => user.id)
+          .join(', ')} are not volunteers`,
+      );
+    }
+
+    pantry.volunteers = users;
     await this.repo.save(pantry);
   }
 
