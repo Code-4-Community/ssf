@@ -6,10 +6,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
+import { Role } from '../users/types';
+import { Roles } from '../auth/roles.decorator';
+import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import {
@@ -24,6 +26,7 @@ import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { EmailsService } from '../emails/email.service';
 import { SendEmailDTO } from '../emails/types';
+import { Public } from '../auth/public.decorator';
 
 @Controller('pantries')
 export class PantriesController {
@@ -33,11 +36,13 @@ export class PantriesController {
     private emailsService: EmailsService,
   ) {}
 
+  @Roles(Role.ADMIN)
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -45,6 +50,7 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
+  @Roles(Role.ADMIN, Role.PANTRY)
   @Get('/:pantryId/orders')
   async getOrders(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -287,6 +293,7 @@ export class PantriesController {
       ],
     },
   })
+  @Public()
   @Post()
   async submitPantryApplication(
     @Body(new ValidationPipe())
@@ -295,6 +302,7 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
+  @Roles(Role.ADMIN)
   @Patch('/:pantryId/approve')
   async approvePantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -302,6 +310,7 @@ export class PantriesController {
     return this.pantriesService.approve(pantryId);
   }
 
+  @Roles(Role.ADMIN)
   @Patch('/:pantryId/deny')
   async denyPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,

@@ -63,7 +63,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             {foodRequest && (
               <>
                 <Text textStyle="p2" color="#111111">
-                  {order.pantry.pantryName}
+                  {order.request.pantry.pantryName}
                 </Text>
                 <Text mb={8} color="#52525B" textStyle="p2" pt={0} mt={0}>
                   Requested {formatDate(foodRequest.requestedAt)}
