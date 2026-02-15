@@ -1,64 +1,81 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import '@chakra-ui/react';
+import React from 'react';
 
+// This file serves as an extension onto some select chakra-ui components that we use
+// It essentially allows us to give permissions for these components to have children
+// Which, while the DOM renders just fine, TypeScript throws errors for unless these are specified
 declare module '@chakra-ui/react' {
-  export interface ComponentProps {
+  export interface ComponentPropsStrictChildren {
     asChild?: boolean; // Enables composition pattern
-    children?: React.ReactNode; // Allows child elements
-    as?: any; // Polymorphic component prop
+    children?: JSX.Element | JSX.Element[]; // Allows child elements only
+    as?: React.ElementType; // Polymorphic component prop
+    [key: string]: any; // Catch-all for any other props
+  }
+
+  export interface ComponentPropsLenientChildren {
+    asChild?: boolean; // Enables composition pattern
+    children?: React.ReactNode; // Allows child elements (any combination of components/strings)
+    as?: React.ElementType; // Polymorphic component prop
     [key: string]: any; // Catch-all for any other props
   }
 
   // Menu components
-  export interface MenuTriggerProps extends ComponentProps {}
-  export interface MenuContentProps extends ComponentProps {}
-  export interface MenuItemProps extends ComponentProps {}
-  export interface MenuPositionerProps extends ComponentProps {}
-  export interface MenuRootProps extends ComponentProps {}
-  export interface MenuCheckboxItemProps extends ComponentProps {}
-  export interface MenuRadioItemGroupProps extends ComponentProps {}
-  export interface MenuRadioItemProps extends ComponentProps {}
+  export interface MenuTriggerProps extends ComponentPropsStrictChildren {}
+  export interface MenuContentProps extends ComponentPropsStrictChildren {}
+  export interface MenuItemProps extends ComponentPropsLenientChildren {}
+  export interface MenuPositionerProps extends ComponentPropsStrictChildren {}
+  export interface MenuRootProps extends ComponentPropsStrictChildren {}
+  export interface MenuCheckboxItemProps extends ComponentPropsStrictChildren {}
+  export interface MenuRadioItemGroupProps
+    extends ComponentPropsStrictChildren {}
+  export interface MenuRadioItemProps extends ComponentPropsLenientChildren {}
 
   // Dialog components
-  export interface DialogCloseTriggerProps extends ComponentProps {}
-  export interface DialogContentProps extends ComponentProps {}
-  export interface DialogBackdropProps extends ComponentProps {}
-  export interface DialogPositionerProps extends ComponentProps {}
-  export interface DialogTitleProps extends ComponentProps {}
-  export interface DialogTriggerProps extends ComponentProps {}
+  export interface DialogCloseTriggerProps
+    extends ComponentPropsStrictChildren {}
+  export interface DialogContentProps extends ComponentPropsStrictChildren {}
+  export interface DialogBackdropProps extends ComponentPropsStrictChildren {}
+  export interface DialogPositionerProps extends ComponentPropsStrictChildren {}
+  export interface DialogTitleProps extends ComponentPropsLenientChildren {}
+  export interface DialogTriggerProps extends ComponentPropsStrictChildren {}
 
   // Checkbox components
-  export interface CheckboxLabelProps extends ComponentProps {}
-  export interface CheckboxControlProps extends ComponentProps {}
+  export interface CheckboxLabelProps extends ComponentPropsLenientChildren {}
+  export interface CheckboxControlProps extends ComponentPropsStrictChildren {}
 
   // Radio components
-  export interface RadioGroupItemProps extends ComponentProps {}
-  export interface RadioGroupItemControlProps extends ComponentProps {}
-  export interface RadioGroupItemTextProps extends ComponentProps {}
+  export interface RadioGroupItemProps extends ComponentPropsStrictChildren {}
+  export interface RadioGroupItemControlProps
+    extends ComponentPropsStrictChildren {}
+  export interface RadioGroupItemTextProps
+    extends ComponentPropsLenientChildren {}
 
   // Pagination components
-  export interface PaginationPrevTriggerProps extends ComponentProps {}
-  export interface PaginationNextTriggerProps extends ComponentProps {}
-  export interface PaginationItemsProps extends ComponentProps {}
+  export interface PaginationPrevTriggerProps
+    extends ComponentPropsStrictChildren {}
+  export interface PaginationNextTriggerProps
+    extends ComponentPropsStrictChildren {}
+  export interface PaginationItemsProps extends ComponentPropsStrictChildren {}
 
   // Tabs components
-  export interface TabsTriggerProps extends ComponentProps {}
-  export interface TabsContentProps extends ComponentProps {}
-  export interface TabsListProps extends ComponentProps {}
+  export interface TabsTriggerProps extends ComponentPropsLenientChildren {}
+  export interface TabsContentProps extends ComponentPropsLenientChildren {}
+  export interface TabsListProps extends ComponentPropsStrictChildren {}
 
   // Field components
-  export interface FieldLabelProps extends ComponentProps {}
-  export interface FieldRootProps extends ComponentProps {}
-  export interface FieldHelperTextProps extends ComponentProps {}
+  export interface FieldLabelProps extends ComponentPropsLenientChildren {}
+  export interface FieldRootProps extends ComponentPropsLenientChildren {}
+  export interface FieldHelperTextProps extends ComponentPropsLenientChildren {}
 
   // Common components
-  export interface ButtonProps extends ComponentProps {}
-  export interface IconButtonProps extends ComponentProps {}
-  export interface BoxProps extends ComponentProps {}
-  export interface LinkProps extends ComponentProps {}
-  export interface TextProps extends ComponentProps {}
-  export interface CardProps extends ComponentProps {}
-  export interface CardBodyProps extends ComponentProps {}
-  export interface TextareaProps extends ComponentProps {}
+  export interface ButtonProps extends ComponentPropsStrictChildren {}
+  export interface IconButtonProps extends ComponentPropsStrictChildren {}
+  export interface BoxProps extends ComponentPropsStrictChildren {}
+  export interface LinkProps extends ComponentPropsStrictChildren {}
+  export interface TextProps extends ComponentPropsStrictChildren {}
+  export interface CardProps extends ComponentPropsStrictChildren {}
+  export interface CardBodyProps extends ComponentPropsStrictChildren {}
+  export interface TextareaProps extends ComponentPropsStrictChildren {}
 }
