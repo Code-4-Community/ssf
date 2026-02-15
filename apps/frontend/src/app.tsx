@@ -27,8 +27,8 @@ import LoginPage from '@containers/loginPage';
 import SignupPage from '@containers/signupPage';
 import ForgotPasswordPage from '@containers/forgotPasswordPage';
 import ProtectedRoute from '@components/protectedRoute';
-import { Button } from '@chakra-ui/react';
 import Unauthorized from '@containers/unauthorized';
+import { Authenticator } from '@aws-amplify/ui-react';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -92,33 +92,33 @@ const router = createBrowserRouter([
       {
         path: '/pantry-past-orders',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryPastOrders />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/pantries',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <Pantries />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/pantry-overview',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryOverview />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/pantry-dashboard/:pantryId',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryDashboard />
-          </Authenticator>
+          </ProtectedRoute>
         ),
         loader: pantryIdLoader,
       },
@@ -217,12 +217,11 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  useEffect(() => {
-    document.title = 'SSF';
-    apiClient.getHello().then((res) => console.log(res));
-  }, []);
-
-  return <RouterProvider router={router} />;
+  return (
+    <Authenticator.Provider>
+      <RouterProvider router={router} />
+    </Authenticator.Provider>
+  );
 };
 
 export default App;

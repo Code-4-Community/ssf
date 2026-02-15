@@ -32,7 +32,7 @@ const ResetPasswordModal: React.FC = () => {
   const handleResendCode = async () => {
     try {
       await resetPassword({ username: email });
-      alert('Successfully sent verification code')
+      alert('Successfully sent verification code');
     } catch (error) {
       alert(error || 'Failed to send verification code');
     }
@@ -76,7 +76,7 @@ const ResetPasswordModal: React.FC = () => {
     textStyle: 'p2',
     color: 'neutral.700',
     _placeholder: { ...placeholderStyles },
-  }
+  };
 
   return (
     <Box
@@ -100,9 +100,8 @@ const ResetPasswordModal: React.FC = () => {
           {step !== 'reset' && (
             <VStack align="start" gap={1} mt={3}>
               <Text textStyle="p2" color="#52525B">
-                Your password must:
+                Your password must be at least 8 characters.
               </Text>
-              <Text textStyle="p2" color="#52525B">• Be at least 8 characters</Text>
             </VStack>
           )}
         </Box>
@@ -113,7 +112,7 @@ const ResetPasswordModal: React.FC = () => {
           </Field.Label>
           <Input
             key={step}
-            type='text'
+            type="text"
             placeholder={step === 'reset' ? 'Enter Email' : 'Enter Code'}
             {...inputStyles}
             onChange={

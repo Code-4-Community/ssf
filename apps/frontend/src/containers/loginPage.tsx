@@ -107,12 +107,8 @@ const LoginPage: React.FC = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 <Box color="neutral.200">
-                  {showPassword && (
-                    <EyeOff />
-                  )}
-                  {!showPassword && (
-                    <Eye />
-                  )}
+                  {showPassword && <EyeOff />}
+                  {!showPassword && <Eye />}
                 </Box>
               </IconButton>
             </Group>
