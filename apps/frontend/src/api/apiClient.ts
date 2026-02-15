@@ -36,7 +36,6 @@ export class ApiClient {
     this.axiosInstance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = this.accessToken || localStorage.getItem('accessToken');
-        //console.log('Attaching token to request:', token);
         if (token) {
           config.headers = config.headers || {};
           config.headers['Authorization'] = `Bearer ${token}`;
@@ -60,10 +59,6 @@ export class ApiClient {
 
   public setAccessToken(token: string | undefined) {
     this.accessToken = token;
-  }
-
-  public async getHello(): Promise<string> {
-    return this.get('/api') as Promise<string>;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -261,14 +256,13 @@ export class ApiClient {
     pantryId: number,
     decision: 'approve' | 'deny',
   ): Promise<void> {
-    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+    await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
     const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
-    console.log('Raw response from API:', data);
     return data as FoodRequest[];
   }
 

@@ -5,7 +5,7 @@ import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { User } from '../users/user.entity';
 import { Donation } from '../donations/donations.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';

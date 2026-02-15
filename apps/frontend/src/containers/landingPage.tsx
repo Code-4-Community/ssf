@@ -1,16 +1,12 @@
-import { Button } from '@chakra-ui/react';
 import SignOutButton from '@components/signOutButton';
-import { signOut } from 'aws-amplify/auth';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const LandingPage: React.FC = () => {
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
+  const { user } = useAuthenticator((context) => [context.user]);
   return (
     <>
       Landing page
-      <SignOutButton />
+      {user && <SignOutButton />}
     </>
   );
 };

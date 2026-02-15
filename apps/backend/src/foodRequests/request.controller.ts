@@ -36,6 +36,7 @@ export class RequestsController {
     private ordersService: OrdersService,
   ) {}
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -43,6 +44,7 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/get-all-requests/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -123,7 +125,8 @@ export class RequestsController {
     );
   }
 
-  @Roles(Role.PANTRY)
+  @Roles(Role.PANTRY, Role.ADMIN)
+  //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',

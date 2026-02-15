@@ -132,7 +132,43 @@ const router = createBrowserRouter([
         path: '/pantry-application/submitted',
         element: <PantryApplicationSubmitted />,
       },
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />,
+      },
       // Private routes (protected by auth)
+      {
+        path: '/pantry-overview',
+        element: (
+          <Authenticator components={components}>
+            <PantryOverview />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <Authenticator components={components}>
+            <PantryDashboard />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <Authenticator components={components}>
+            <PantryPastOrders />
+          </Authenticator>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <Authenticator components={components}>
+            <Pantries />
+          </Authenticator>
+        ),
+      },
       {
         path: '/pantry-overview',
         element: (
@@ -189,6 +225,7 @@ const router = createBrowserRouter([
             <FormRequests />
           </Authenticator>
         ),
+        loader: pantryIdLoader,
       },
       {
         path: '/approve-pantries',
@@ -244,11 +281,6 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  // useEffect(() => {
-  //   document.title = 'SSF';
-  //   apiClient.getHello().then((res) => console.log(res));
-  // }, []);
-
   return (
     <Authenticator.Provider>
       <RouterProvider router={router} />

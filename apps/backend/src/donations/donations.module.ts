@@ -5,7 +5,12 @@ import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
 import { ManufacturerModule } from '../foodManufacturers/manufacturer.module';
 import { AuthModule } from '../auth/auth.module';
+<<<<<<< HEAD
 import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+=======
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationsSchedulerService } from './donations.scheduler';
+>>>>>>> main
 
 @Module({
   imports: [
@@ -14,6 +19,10 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
     AuthModule,
   ],
   controllers: [DonationsController],
+<<<<<<< HEAD
   providers: [DonationService],
+=======
+  providers: [DonationService, DonationsSchedulerService],
+>>>>>>> main
 })
 export class DonationModule {}

@@ -65,8 +65,12 @@ export class UsersService {
     return volunteer;
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.repo.findOneBy({ email });
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.repo.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
   }
 
   async update(id: number, attrs: Partial<User>) {
