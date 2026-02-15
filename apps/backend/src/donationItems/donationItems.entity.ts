@@ -16,7 +16,7 @@ export class DonationItem {
   itemId: number;
 
   @Column({ name: 'donation_id', type: 'int' })
-  donation_id: number;
+  donationId: number;
 
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
@@ -30,9 +30,6 @@ export class DonationItem {
 
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
   reservedQuantity: number;
-
-  @Column({ name: 'status', type: 'varchar', length: 25, default: 'avaliable' })
-  status: string;
 
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })
   ozPerItem: number;

@@ -5,43 +5,37 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { OrderStatus } from './types';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn({ name: 'order_id' })
-  orderId: number;
-
-  @ManyToOne(() => Pantry, { nullable: false })
-  @JoinColumn({
-    name: 'pantry_id',
-    referencedColumnName: 'pantryId',
-  })
-  pantry: Pantry;
+  orderId!: number;
 
   @ManyToOne(() => FoodRequest, { nullable: false })
   @JoinColumn({
     name: 'request_id',
     referencedColumnName: 'requestId',
   })
-  request: FoodRequest;
+  request!: FoodRequest;
 
   @Column({ name: 'request_id' })
-  requestId: number;
+  requestId!: number;
 
-  @ManyToOne(() => FoodManufacturer, { nullable: false })
+  @ManyToOne(() => FoodManufacturer, { nullable: true })
   @JoinColumn({
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
   })
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer?: FoodManufacturer;
 
   @Column({ name: 'shipped_by', nullable: true })
-  shippedBy: number;
+  shippedBy?: number;
 
   @Column({
     name: 'status',
@@ -50,26 +44,46 @@ export class Order {
     enum: OrderStatus,
     default: OrderStatus.PENDING,
   })
-  status: OrderStatus;
+  status!: OrderStatus;
 
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',
     default: () => 'NOW()',
   })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column({
     name: 'shipped_at',
     type: 'timestamp',
     nullable: true,
   })
-  shippedAt: Date | null;
+  shippedAt?: Date;
 
   @Column({
     name: 'delivered_at',
     type: 'timestamp',
     nullable: true,
   })
-  deliveredAt: Date | null;
+  deliveredAt?: Date;
+
+  @OneToMany(() => Allocation, (allocation) => allocation.order)
+  allocations!: Allocation[];
+
+  @Column({
+    name: 'tracking_link',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  trackingLink?: string;
+
+  @Column({
+    name: 'shipping_cost',
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  shippingCost?: number;
 }

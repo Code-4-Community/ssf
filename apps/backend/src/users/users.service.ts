@@ -5,9 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-
 import { User } from './user.entity';
-import { Role, VOLUNTEER_ROLES } from './types';
+import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
@@ -60,14 +59,18 @@ export class UsersService {
 
     if (!volunteer)
       throw new NotFoundException(`User ${volunteerId} not found`);
-    if (!VOLUNTEER_ROLES.includes(volunteer.role)) {
+    if (volunteer.role !== Role.VOLUNTEER) {
       throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
     }
     return volunteer;
   }
 
-  find(email: string) {
-    return this.repo.find({ where: { email } });
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.repo.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
   }
 
   async update(id: number, attrs: Partial<User>) {
@@ -106,7 +109,7 @@ export class UsersService {
   async getVolunteersAndPantryAssignments(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
   > {
-    const volunteers = await this.findUsersByRoles(VOLUNTEER_ROLES);
+    const volunteers = await this.findUsersByRoles([Role.VOLUNTEER]);
 
     return volunteers.map((v) => {
       const { pantries, ...volunteerWithoutPantries } = v;
@@ -138,5 +141,13 @@ export class UsersService {
 
     volunteer.pantries = [...volunteer.pantries, ...newPantries];
     return this.repo.save(volunteer);
+  }
+
+  async findUserByCognitoId(cognitoId: string): Promise<User> {
+    const user = await this.repo.findOneBy({ userCognitoSub: cognitoId });
+    if (!user) {
+      throw new NotFoundException(`User with cognitoId ${cognitoId} not found`);
+    }
+    return user;
   }
 }

@@ -1,28 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
+import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(@InjectRepository(Order) private repo: Repository<Order>) {}
+  constructor(
+    @InjectRepository(Order) private repo: Repository<Order>,
+    @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+  ) {}
 
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.pantry', 'pantry')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('pantry.volunteers', 'volunteers')
       .select([
         'order.orderId',
         'order.status',
         'order.createdAt',
         'order.shippedAt',
         'order.deliveredAt',
+        'request.pantryId',
         'pantry.pantryName',
+        'volunteers.id',
+        'volunteers.firstName',
+        'volunteers.lastName',
       ]);
 
     if (filters?.status) {
@@ -78,17 +92,16 @@ export class OrdersService {
   }
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['pantry'],
+    const request = await this.findOrderFoodRequest(orderId);
+    const pantry = await this.pantryRepo.findOneBy({
+      pantryId: request.pantryId,
     });
 
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
     }
-    return order.pantry;
+
+    return pantry;
   }
 
   async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
@@ -108,10 +121,18 @@ export class OrdersService {
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
     validateId(orderId, 'Order');
 
-    const order = await this.findOne(orderId);
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['foodManufacturer'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
+    }
+    if (!order.foodManufacturer) {
+      throw new NotFoundException(
+        `Order ${orderId} does not have a food manufacturer assigned`,
+      );
     }
     return order.foodManufacturer;
   }
@@ -126,8 +147,9 @@ export class OrdersService {
       .set({
         status: newStatus as OrderStatus,
         shippedBy: 1,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : null,
-        deliveredAt: newStatus === OrderStatus.DELIVERED ? new Date() : null,
+        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
+        deliveredAt:
+          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
@@ -136,11 +158,61 @@ export class OrdersService {
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {
     validateId(pantryId, 'Pantry');
 
+    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
     const orders = await this.repo.find({
-      where: { pantry: { pantryId } },
+      where: { request: { pantryId } },
       relations: ['request'],
     });
 
     return orders;
+  }
+
+  async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
+    validateId(orderId, 'Order');
+    if (!dto.trackingLink && !dto.shippingCost) {
+      throw new BadRequestException(
+        'At least one of tracking link or shipping cost must be provided',
+      );
+    }
+
+    const order = await this.repo.findOneBy({ orderId });
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
+
+    if (isFirstTimeSetting && (!dto.trackingLink || !dto.shippingCost)) {
+      throw new BadRequestException(
+        'Must provide both tracking link and shipping cost on initial assignment',
+      );
+    }
+
+    if (
+      order.status !== OrderStatus.SHIPPED &&
+      order.status !== OrderStatus.PENDING
+    ) {
+      throw new BadRequestException(
+        'Can only update tracking info for pending or shipped orders',
+      );
+    }
+
+    if (dto.trackingLink) order.trackingLink = dto.trackingLink;
+    if (dto.shippingCost) order.shippingCost = dto.shippingCost;
+
+    if (
+      order.status === OrderStatus.PENDING &&
+      order.trackingLink &&
+      order.shippingCost
+    ) {
+      order.status = OrderStatus.SHIPPED;
+      order.shippedAt = new Date();
+    }
+
+    await this.repo.save(order);
   }
 }

@@ -1,4 +1,9 @@
-import axios, { type AxiosInstance, AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosResponse,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import {
   User,
   Order,
@@ -10,6 +15,10 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
+  CreateMultipleDonationItemsBody,
+  OrderSummary,
+  UserDto,
+  OrderDetails,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -17,13 +26,39 @@ const defaultBaseUrl =
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
+  private accessToken: string | undefined;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
+
+    // Attach the access token to each request if available
+    // All API requests will go through this interceptor, making the user required to login
+    this.axiosInstance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = this.accessToken || localStorage.getItem('accessToken');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 403) {
+          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
+          window.location.replace('/unauthorized');
+        }
+        return Promise.reject(error);
+      },
+    );
   }
 
-  public async getHello(): Promise<string> {
-    return this.get('/api') as Promise<string>;
+  public setAccessToken(token: string | undefined) {
+    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -40,17 +75,18 @@ export class ApiClient {
     return this.post('/api/donations/create', body) as Promise<Donation>;
   }
 
-  public async postDonationItem(body: unknown): Promise<DonationItem> {
-    return this.post(
-      '/api/donation-items/create',
-      body,
-    ) as Promise<DonationItem>;
-  }
-
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+  }
+
+  public async postMultipleDonationItems(
+    body: CreateMultipleDonationItemsBody,
+  ): Promise<DonationItem[]> {
+    return this.post('/api/donation-items/create-multiple', body) as Promise<
+      DonationItem[]
+    >;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
@@ -93,6 +129,10 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/users/${userId}`)
       .then((response) => response.data);
+  }
+
+  public async postUser(data: UserDto): Promise<User> {
+    return this.axiosInstance.post(`/api/users`, data);
   }
 
   public async getPantrySSFRep(pantryId: number): Promise<User> {
@@ -166,7 +206,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAllOrders(): Promise<Order[]> {
+  public async getAllOrders(): Promise<OrderSummary[]> {
     return this.axiosInstance
       .get('/api/orders/')
       .then((response) => response.data);
@@ -185,18 +225,20 @@ export class ApiClient {
   }
 
   public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`api/orders/${orderId}`) as Promise<Order>;
+    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
   }
 
-  public async getOrderByRequestId(requestId: number): Promise<Order> {
-    return this.axiosInstance.get(
-      `api/requests/get-order/${requestId}`,
-    ) as Promise<Order>;
+  public async getOrderDetailsListFromRequest(
+    requestId: number,
+  ): Promise<OrderDetails[]> {
+    return this.axiosInstance
+      .get(`/api/requests/all-order-details/${requestId}`)
+      .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {
     return this.axiosInstance
-      .get(`api/orders/${orderId}/allocations`)
+      .get(`/api/orders/${orderId}/allocations`)
       .then((response) => response.data);
   }
 
@@ -214,14 +256,13 @@ export class ApiClient {
     pantryId: number,
     decision: 'approve' | 'deny',
   ): Promise<void> {
-    await this.axiosInstance.post(`/api/pantries/${decision}/${pantryId}`, {
+    await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
     const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
-    console.log('Raw response from API:', data);
     return data as FoodRequest[];
   }
 
@@ -229,10 +270,21 @@ export class ApiClient {
     requestId: number,
     data: FormData,
   ): Promise<void> {
-    await this.axiosInstance.post(
-      `/api/requests/${requestId}/confirm-delivery`,
-      data,
-    );
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/requests/${requestId}/confirm-delivery`,
+        data,
+      );
+
+      if (response.status === 200) {
+        alert('Delivery confirmation submitted successfully');
+        window.location.href = '/request-form/1';
+      } else {
+        alert(`Failed to submit: ${response.statusText}`);
+      }
+    } catch (error) {
+      alert(`Error submitting delivery confirmation: ${error}`);
+    }
   }
 }
 

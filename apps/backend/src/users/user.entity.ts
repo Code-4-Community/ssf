@@ -19,7 +19,7 @@ export class User {
     name: 'role',
     enum: Role,
     enumName: 'users_role_enum',
-    default: Role.STANDARD_VOLUNTEER,
+    default: Role.VOLUNTEER,
   })
   role: Role;
 
@@ -37,6 +37,14 @@ export class User {
     length: 20,
   })
   phone: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    name: 'user_cognito_sub',
+    default: '',
+  })
+  userCognitoSub: string;
 
   @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
   @JoinTable({
