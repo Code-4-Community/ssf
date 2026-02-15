@@ -122,7 +122,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={600} fontFamily="inter">
-              Food Request #{request.requestId}
+              <Text>Food Request #{request.requestId}</Text>
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
@@ -142,7 +142,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   borderColor="neutral.100"
                   _selected={{ borderColor: 'neutral.700' }}
                 >
-                  Request Details
+                  <Text>Request Details</Text>
                 </Tabs.Trigger>
                 <Tabs.Trigger
                   textStyle="p2"
@@ -154,7 +154,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   borderColor="neutral.100"
                   _selected={{ borderColor: 'neutral.700' }}
                 >
-                  Associated Orders
+                  <Text>Associated Orders</Text>
                 </Tabs.Trigger>
               </Tabs.List>
               <Tabs.Content value="requestDetails">
@@ -175,27 +175,28 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       Food Type(s)
                     </Text>
                   </Field.Label>
-
-                  {selectedItems.length > 0 && (
-                    <Flex wrap="wrap" mt={3} gap={2}>
-                      {selectedItems.map((item) => (
-                        <Tag.Root
-                          key={item}
-                          size="xl"
-                          variant="solid"
-                          bg={'neutral.100'}
-                          color="neutral.800"
-                          borderRadius="4px"
-                          borderColor={'neutral.300'}
-                          borderWidth="1px"
-                          fontFamily="Inter"
-                          fontWeight={500}
-                        >
-                          <Tag.Label>{item}</Tag.Label>
-                        </Tag.Root>
-                      ))}
-                    </Flex>
-                  )}
+                  <Text>
+                    {selectedItems.length > 0 && (
+                      <Flex wrap="wrap" mt={3} gap={2}>
+                        {selectedItems.map((item) => (
+                          <Tag.Root
+                            key={item}
+                            size="xl"
+                            variant="solid"
+                            bg={'neutral.100'}
+                            color="neutral.800"
+                            borderRadius="4px"
+                            borderColor={'neutral.300'}
+                            borderWidth="1px"
+                            fontFamily="Inter"
+                            fontWeight={500}
+                          >
+                            <Tag.Label>{item}</Tag.Label>
+                          </Tag.Root>
+                        ))}
+                      </Flex>
+                    )}
+                  </Text>
                 </Field.Root>
 
                 <Field.Root mb={4}>
@@ -211,148 +212,149 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               </Tabs.Content>
 
               <Tabs.Content value="associatedOrders">
-                {!currentOrder && (
-                  <Text mt={5} textStyle="p2">
-                    {' '}
-                    No associated orders to display{' '}
-                  </Text>
-                )}
-                {currentOrder && (
-                  <Box
-                    borderWidth="1px"
-                    borderColor="neutral.100"
-                    borderRadius="5px"
-                    p={3}
-                    mt={6}
-                  >
-                    <Flex justify="space-between" align="center" mb={3}>
-                      <Text {...sectionTitleStyles}>
-                        Order {currentOrder.orderId} -
-                        <Text as="span" color="neutral.800" textStyle="p2">
-                          {' '}
-                          Fulfilled by {currentOrder.foodManufacturerName}
-                        </Text>
-                      </Text>
-                      {currentOrder.status === OrderStatus.DELIVERED ? (
-                        <Badge
-                          {...badgeStyles}
-                          bgColor="#EAEDEF"
-                          color="#2B4E60"
-                        >
-                          Received
-                        </Badge>
-                      ) : (
-                        <Badge
-                          {...badgeStyles}
-                          bgColor="#FEECD1"
-                          color="#9C5D00"
-                        >
-                          In Progress
-                        </Badge>
-                      )}
-                    </Flex>
-                    {Object.entries(
-                      groupedOrderItemsByType as Record<
-                        string,
-                        OrderItemDetails[]
-                      >,
-                    ).map(([foodType, items]) => (
-                      <Box key={foodType} mb={4}>
-                        <Text {...sectionTitleStyles}>{foodType}</Text>
-                        {items.map((item) => (
-                          <Flex
-                            border="1px solid"
-                            borderColor="neutral.100"
-                            borderRadius="md"
-                            px={4}
-                            align="center"
-                            mt="2"
-                          >
-                            <Text
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
-                              flex={1}
-                            >
-                              {item.name}
-                            </Text>
-
-                            <Box
-                              alignSelf="stretch"
-                              borderLeft="1px solid"
-                              borderColor="neutral.100"
-                              mx={3}
-                            />
-
-                            <Text
-                              minW={5}
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
-                            >
-                              {item.quantity}
-                            </Text>
-                          </Flex>
-                        ))}
-                      </Box>
-                    ))}
-                    <Text {...sectionTitleStyles} mt="3">
-                      Tracking
+                <Text>
+                  {!currentOrder && (
+                    <Text mt={5} textStyle="p2">
+                      {' '}
+                      No associated orders to display{' '}
                     </Text>
-                    <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
-                      No tracking link available at this time
-                    </Text>
-                  </Box>
-                )}
-
-                {orderDetailsList.length > 0 && (
-                  <Flex justify="center" mt={7}>
-                    <Pagination.Root
-                      count={orderDetailsList.length}
-                      pageSize={1}
-                      page={currentPage}
-                      onChange={(page: number) => setCurrentPage(page)}
+                  )}
+                  {currentOrder && (
+                    <Box
+                      borderWidth="1px"
+                      borderColor="neutral.100"
+                      borderRadius="5px"
+                      p={3}
+                      mt={6}
                     >
-                      <ButtonGroup variant="outline" size="sm">
-                        <Pagination.PrevTrigger asChild>
-                          <IconButton
-                            variant="ghost"
-                            onClick={() =>
-                              setCurrentPage((prev) => Math.max(prev - 1, 1))
-                            }
+                      <Flex justify="space-between" align="center" mb={3}>
+                        <Text {...sectionTitleStyles}>
+                          Order {currentOrder.orderId} -
+                          <Text as="span" color="neutral.800" textStyle="p2">
+                            {' '}
+                            Fulfilled by {currentOrder.foodManufacturerName}
+                          </Text>
+                        </Text>
+                        {currentOrder.status === OrderStatus.DELIVERED ? (
+                          <Badge
+                            {...badgeStyles}
+                            bgColor="#EAEDEF"
+                            color="#2B4E60"
                           >
-                            <ChevronLeft />
-                          </IconButton>
-                        </Pagination.PrevTrigger>
-
-                        <Pagination.Items
-                          render={(page) => (
-                            <IconButton
-                              variant="outline"
-                              _selected={{ borderColor: 'neutral.800' }}
-                              onClick={() => setCurrentPage(page.value)}
+                            Received
+                          </Badge>
+                        ) : (
+                          <Badge
+                            {...badgeStyles}
+                            bgColor="#FEECD1"
+                            color="#9C5D00"
+                          >
+                            In Progress
+                          </Badge>
+                        )}
+                      </Flex>
+                      {Object.entries(
+                        groupedOrderItemsByType as Record<
+                          string,
+                          OrderItemDetails[]
+                        >,
+                      ).map(([foodType, items]) => (
+                        <Box key={foodType} mb={4}>
+                          <Text {...sectionTitleStyles}>{foodType}</Text>
+                          {items.map((item) => (
+                            <Flex
+                              border="1px solid"
+                              borderColor="neutral.100"
+                              borderRadius="md"
+                              px={4}
+                              align="center"
+                              mt="2"
                             >
-                              {page.value}
-                            </IconButton>
-                          )}
-                        />
+                              <Text
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                                flex={1}
+                              >
+                                {item.name}
+                              </Text>
 
-                        <Pagination.NextTrigger asChild>
-                          <IconButton
-                            variant="ghost"
-                            onClick={() =>
-                              setCurrentPage((prev) =>
-                                Math.min(prev + 1, orderDetailsList.length),
-                              )
-                            }
-                          >
-                            <ChevronRight />
-                          </IconButton>
-                        </Pagination.NextTrigger>
-                      </ButtonGroup>
-                    </Pagination.Root>
-                  </Flex>
-                )}
+                              <Box
+                                alignSelf="stretch"
+                                borderLeft="1px solid"
+                                borderColor="neutral.100"
+                                mx={3}
+                              />
+
+                              <Text
+                                minW={5}
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                              >
+                                {item.quantity}
+                              </Text>
+                            </Flex>
+                          ))}
+                        </Box>
+                      ))}
+                      <Text {...sectionTitleStyles} mt="3">
+                        Tracking
+                      </Text>
+                      <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
+                        No tracking link available at this time
+                      </Text>
+                    </Box>
+                  )}
+                  {orderDetailsList.length > 0 && (
+                    <Flex justify="center" mt={7}>
+                      <Pagination.Root
+                        count={orderDetailsList.length}
+                        pageSize={1}
+                        page={currentPage}
+                        onChange={(page: number) => setCurrentPage(page)}
+                      >
+                        <ButtonGroup variant="outline" size="sm">
+                          <Pagination.PrevTrigger asChild>
+                            <IconButton
+                              variant="ghost"
+                              onClick={() =>
+                                setCurrentPage((prev) => Math.max(prev - 1, 1))
+                              }
+                            >
+                              <ChevronLeft />
+                            </IconButton>
+                          </Pagination.PrevTrigger>
+
+                          <Pagination.Items
+                            render={(page) => (
+                              <IconButton
+                                variant="outline"
+                                _selected={{ borderColor: 'neutral.800' }}
+                                onClick={() => setCurrentPage(page.value)}
+                              >
+                                {page.value}
+                              </IconButton>
+                            )}
+                          />
+
+                          <Pagination.NextTrigger asChild>
+                            <IconButton
+                              variant="ghost"
+                              onClick={() =>
+                                setCurrentPage((prev) =>
+                                  Math.min(prev + 1, orderDetailsList.length),
+                                )
+                              }
+                            >
+                              <ChevronRight />
+                            </IconButton>
+                          </Pagination.NextTrigger>
+                        </ButtonGroup>
+                      </Pagination.Root>
+                    </Flex>
+                  )}
+                </Text>
               </Tabs.Content>
             </Tabs.Root>
           </Dialog.Body>

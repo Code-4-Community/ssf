@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import '@chakra-ui/react';
+// This file serves as an extension onto some select chakra-ui components that we use
+// It essentially allows us to give permissions for these components to have children
+// Which, while the DOM renders just fine, TypeScript throws errors for unless these are specified
 
 declare module '@chakra-ui/react' {
   export interface ComponentProps {
