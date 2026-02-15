@@ -7,11 +7,8 @@ import {
   Body,
   Query,
   BadRequestException,
-<<<<<<< HEAD
   UseGuards,
-=======
   ValidationPipe,
->>>>>>> main
 } from '@nestjs/common';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
@@ -20,14 +17,11 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
-<<<<<<< HEAD
 import { AuthGuard } from '@nestjs/passport';
 import { OwnershipGuard } from '../auth/ownership.guard';
 import { CheckOwnership } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
-=======
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
->>>>>>> main
 
 @Controller('orders')
 export class OrdersController {
