@@ -2,35 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { passportJwtSecret } from 'jwks-rsa';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-
+import { UsersService } from '../users/users.service';
 import CognitoAuthConfig from './aws-exports';
-
-type JwtPayload = {
-  sub: string;
-  email: string;
-};
+import { CognitoJwtPayload } from './jwt-payload.interface';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private usersService: UsersService) {
     const cognitoAuthority = `https://cognito-idp.${CognitoAuthConfig.region}.amazonaws.com/${CognitoAuthConfig.userPoolId}`;
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      _audience: CognitoAuthConfig.clientId,
       issuer: cognitoAuthority,
       algorithms: ['RS256'],
       secretOrKeyProvider: passportJwtSecret({
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
-        jwksUri: cognitoAuthority + '/.well-known/jwks.json',
+        jwksUri: `${cognitoAuthority}/.well-known/jwks.json`,
       }),
     });
   }
 
-  async validate(payload: JwtPayload) {
-    return { idUser: payload.sub, email: payload.email };
+  // This function is natively called when we validate a JWT token
+  // Afer confirming that our jwt is valid and our payload is signed,
+  // we use the sub field in the payload to find the user in our database
+  async validate(payload: CognitoJwtPayload): Promise<User> {
+    const dbUser = await this.usersService.findUserByCognitoId(payload.sub);
+    return dbUser;
   }
 }

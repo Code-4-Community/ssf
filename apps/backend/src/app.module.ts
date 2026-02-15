@@ -14,6 +14,9 @@ import { ManufacturerModule } from './foodManufacturers/manufacturers.module';
 import { DonationModule } from './donations/donations.module';
 import { DonationItemsModule } from './donationItems/donationItems.module';
 import { AllocationModule } from './allocations/allocations.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/roles.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -42,6 +45,16 @@ import { ScheduleModule } from '@nestjs/schedule';
     AllocationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

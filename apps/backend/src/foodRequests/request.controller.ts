@@ -17,6 +17,8 @@ import { FoodRequest } from './request.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
@@ -32,6 +34,7 @@ export class RequestsController {
     private ordersService: OrdersService,
   ) {}
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -39,6 +42,7 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/get-all-requests/:pantryId')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
@@ -113,6 +117,7 @@ export class RequestsController {
     );
   }
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
   @Post('/:requestId/confirm-delivery')
   @ApiBody({

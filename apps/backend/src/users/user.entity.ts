@@ -38,6 +38,14 @@ export class User {
   })
   phone!: string;
 
+  @Column({
+    type: 'varchar',
+    length: 255,
+    name: 'user_cognito_sub',
+    default: '',
+  })
+  userCognitoSub: string;
+
   @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
   @JoinTable({
     name: 'volunteer_assignments',

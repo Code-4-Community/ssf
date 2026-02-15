@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
-import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 
 interface PantryApplicationModalProps {
@@ -48,11 +47,6 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
                   <Text fontWeight="bold">Phone</Text>
                 </GridItem>
                 <GridItem>{pantryUser.phone}</GridItem>
-
-                <GridItem>
-                  <Text fontWeight="bold">Role</Text>
-                </GridItem>
-                <GridItem>{pantryUser.role}</GridItem>
               </Grid>
             ) : (
               <Text>No user details available.</Text>

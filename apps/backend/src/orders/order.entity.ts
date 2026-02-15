@@ -27,12 +27,12 @@ export class Order {
   @Column({ name: 'request_id' })
   requestId!: number;
 
-  @ManyToOne(() => FoodManufacturer, { nullable: false })
+  @ManyToOne(() => FoodManufacturer, { nullable: true })
   @JoinColumn({
     name: 'shipped_by',
     referencedColumnName: 'foodManufacturerId',
   })
-  foodManufacturer!: FoodManufacturer;
+  foodManufacturer?: FoodManufacturer | null;
 
   @Column({ name: 'shipped_by', nullable: true })
   shippedBy?: number | null;
@@ -69,4 +69,21 @@ export class Order {
 
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations!: Allocation[];
+
+  @Column({
+    name: 'tracking_link',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  trackingLink?: string;
+
+  @Column({
+    name: 'shipping_cost',
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  shippingCost?: number;
 }
