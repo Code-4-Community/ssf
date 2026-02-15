@@ -14,8 +14,8 @@
     "typeorm:migrate": "ts-node --project apps/backend/tsconfig.app.json -r dotenv/config ./node_modules/typeorm/cli.js migration:run -d apps/backend/src/config/typeorm.ts",
     "typeorm:revert": "ts-node --project apps/backend/tsconfig.app.json -r dotenv/config ./node_modules/typeorm/cli.js migration:revert -d apps/backend/src/config/typeorm.ts",
     "typeorm:create": "ts-node --project apps/backend/tsconfig.app.json -r dotenv/config ./node_modules/typeorm/cli.js migration:create",
-    "prettier:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prettier:write": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "prettier:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prettier:write": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "private": true,
   "dependencies": {
