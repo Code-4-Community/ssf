@@ -457,7 +457,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           >
                             <Checkbox.HiddenInput />
                             <Checkbox.Control borderRadius="sm" />
-                            <Checkbox.Label>{pantry}</Checkbox.Label>
+                            <Checkbox.Label>
+                              <span>{pantry}</span>
+                            </Checkbox.Label>
                           </Checkbox.Root>
                         ))}
                     </VStack>

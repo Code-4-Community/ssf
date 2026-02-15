@@ -177,7 +177,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
             <Dialog.Header asChild>
               <Dialog.Title fontSize={25} fontWeight={700}>
-                SSF Log New Donation Form
+                <Text>SSF Log New Donation Form</Text>
               </Dialog.Title>
             </Dialog.Header>
 

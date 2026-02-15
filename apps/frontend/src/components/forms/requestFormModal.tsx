@@ -59,7 +59,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              {previousRequest ? 'Resubmit Latest Request' : 'New Food Request'}
+              <Text>
+                {previousRequest
+                  ? 'Resubmit Latest Request'
+                  : 'New Food Request'}
+              </Text>
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
@@ -131,7 +135,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                             pl={1}
                             mt={idx === 0 ? 0 : 2}
                           >
-                            {option}
+                            <Text>{option}</Text>
                           </Menu.RadioItem>
                         ))}
                       </Menu.RadioItemGroup>
@@ -146,16 +150,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     Food Type(s)
                   </Text>
                 </Field.Label>
-
-                {selectedItems.map((item) => (
-                  <input
-                    key={item}
-                    type="hidden"
-                    name="restrictions"
-                    value={item}
-                  />
-                ))}
-
+                <Text>
+                  {selectedItems.map((item) => (
+                    <input
+                      key={item}
+                      type="hidden"
+                      name="restrictions"
+                      value={item}
+                    />
+                  ))}
+                </Text>
                 <Menu.Root closeOnSelect={false}>
                   <Menu.Trigger asChild>
                     <Button
@@ -219,38 +223,39 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     </Menu.Content>
                   </Menu.Positioner>
                 </Menu.Root>
+                <Text>
+                  {selectedItems.length > 0 && (
+                    <Flex wrap="wrap" mt={1} gap={2}>
+                      {selectedItems.map((item) => (
+                        <Tag.Root
+                          key={item}
+                          size="xl"
+                          variant="solid"
+                          bg={'neutral.100'}
+                          color="neutral.800"
+                          borderRadius="4px"
+                          borderColor={'neutral.300'}
+                          borderWidth="1px"
+                          fontFamily="Inter"
+                          fontWeight={500}
+                        >
+                          <Tag.Label>{item}</Tag.Label>
 
-                {selectedItems.length > 0 && (
-                  <Flex wrap="wrap" mt={1} gap={2}>
-                    {selectedItems.map((item) => (
-                      <Tag.Root
-                        key={item}
-                        size="xl"
-                        variant="solid"
-                        bg={'neutral.100'}
-                        color="neutral.800"
-                        borderRadius="4px"
-                        borderColor={'neutral.300'}
-                        borderWidth="1px"
-                        fontFamily="Inter"
-                        fontWeight={500}
-                      >
-                        <Tag.Label>{item}</Tag.Label>
-
-                        <Tag.EndElement>
-                          <Tag.CloseTrigger
-                            cursor="pointer"
-                            onClick={() =>
-                              setSelectedItems((prev) =>
-                                prev.filter((i) => i !== item),
-                              )
-                            }
-                          />
-                        </Tag.EndElement>
-                      </Tag.Root>
-                    ))}
-                  </Flex>
-                )}
+                          <Tag.EndElement>
+                            <Tag.CloseTrigger
+                              cursor="pointer"
+                              onClick={() =>
+                                setSelectedItems((prev) =>
+                                  prev.filter((i) => i !== item),
+                                )
+                              }
+                            />
+                          </Tag.EndElement>
+                        </Tag.Root>
+                      ))}
+                    </Flex>
+                  )}
+                </Text>
               </Field.Root>
 
               <Field.Root mb={4}>
@@ -285,7 +290,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 />
 
                 <Field.HelperText color="neutral.600">
-                  Max 250 words
+                  <Text>Max 250 words</Text>
                 </Field.HelperText>
               </Field.Root>
 
