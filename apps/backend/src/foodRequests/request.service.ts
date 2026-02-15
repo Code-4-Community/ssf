@@ -64,7 +64,7 @@ export class RequestsService {
     return orders.map((order) => ({
       orderId: order.orderId,
       status: order.status,
-      foodManufacturerName: order.foodManufacturer.foodManufacturerName,
+      foodManufacturerName: order.foodManufacturer?.foodManufacturerName ?? undefined,
       items: order.allocations.map((allocation) => ({
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,

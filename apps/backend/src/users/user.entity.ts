@@ -44,7 +44,7 @@ export class User {
     name: 'user_cognito_sub',
     default: '',
   })
-  userCognitoSub: string;
+  userCognitoSub!: string;
 
   @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
   @JoinTable({

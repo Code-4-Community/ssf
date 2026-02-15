@@ -10,6 +10,6 @@ export class OrderItemDetailsDto {
 export class OrderDetailsDto {
   orderId!: number;
   status!: OrderStatus;
-  foodManufacturerName!: string;
+  foodManufacturerName?: string;
   items!: OrderItemDetailsDto[];
 }
