@@ -4,6 +4,10 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
+import { Pantry } from '../pantries/pantries.entity';
+
+// Set 1 minute timeout for async DB operations
+jest.setTimeout(60000);
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -24,6 +28,10 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
+        },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
         },
       ],
     }).compile();
@@ -86,7 +94,8 @@ describe('OrdersService', () => {
       expect(
         orders.every(
           (order) =>
-            order.pantry.pantryName === 'Community Food Pantry Downtown',
+            order.request.pantry.pantryName ===
+            'Community Food Pantry Downtown',
         ),
       ).toBe(true);
     });
@@ -106,7 +115,9 @@ describe('OrdersService', () => {
       });
 
       expect(orders).toHaveLength(1);
-      expect(orders[0].pantry.pantryName).toBe('Westside Community Kitchen');
+      expect(orders[0].request.pantry.pantryName).toBe(
+        'Westside Community Kitchen',
+      );
       expect(orders[0].status).toBe(OrderStatus.DELIVERED);
     });
   });
