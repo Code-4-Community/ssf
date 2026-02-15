@@ -356,7 +356,9 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}><Text>Country</Text></Field.Label>
+              <Field.Label {...fieldHeaderStyles}>
+                <Text>Country</Text>
+              </Field.Label>
               <Input
                 name="shipmentAddressCountry"
                 type="text"
@@ -366,9 +368,11 @@ const PantryApplicationForm: React.FC = () => {
           </SimpleGrid>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
-              <Text>Does this address differ from your pantry's mailing address for
-              documents?</Text>
-               <Field.RequiredIndicator color="red" />
+              <Text>
+                Does this address differ from your pantry's mailing address for
+                documents?
+              </Text>
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root
               variant="solid"
@@ -397,8 +401,9 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
-              <Text>Would your pantry be able to accept food deliveries during
-              standard business hours Mon-Fri?{' '}
+              <Text>
+                Would your pantry be able to accept food deliveries during
+                standard business hours Mon-Fri?{' '}
               </Text>
               <Field.RequiredIndicator color="red" />
             </Field.Label>
