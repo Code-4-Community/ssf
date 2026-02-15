@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Put,
   Post,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
