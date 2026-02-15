@@ -24,24 +24,9 @@ import { Pantry } from '../pantries/pantries.entity';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Get('/volunteers')
-  async getAllVolunteers(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
-    return this.usersService.getVolunteersAndPantryAssignments();
-  }
-
-  // @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);
-  }
-
-  @Get('/:id/pantries')
-  async getVolunteerPantries(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Pantry[]> {
-    return this.usersService.getVolunteerPantries(id);
   }
 
   @Delete('/:id')
@@ -64,13 +49,5 @@ export class UsersController {
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
     const { email, firstName, lastName, phone, role } = createUserDto;
     return this.usersService.create(email, firstName, lastName, phone, role);
-  }
-
-  @Post('/:id/pantries')
-  async assignPantries(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('pantryIds') pantryIds: number[],
-  ): Promise<User> {
-    return this.usersService.assignPantriesToVolunteer(id, pantryIds);
   }
 }
