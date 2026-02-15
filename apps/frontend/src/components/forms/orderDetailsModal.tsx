@@ -56,7 +56,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
             <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              <Text>Order {order.orderId}</Text>
+              Order {order.orderId}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>

@@ -75,7 +75,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
             <Dialog.Header>
               <VStack align="stretch" gap={0}>
                 <Dialog.Title fontSize="lg" mb={2} fontWeight="600">
-                  <Text>Donation #{donationId} Details</Text>
+                  Donation #{donationId} Details
                 </Dialog.Title>
 
                 {loadedDonation && (

@@ -61,7 +61,7 @@ const PantryDashboard: React.FC = () => {
           transform="translateY(-50%)"
         >
           <Menu.Root>
-            <Menu.Trigger>
+            <Menu.Trigger asChild>
               <Button
                 bg="transparent"
                 size="lg"
@@ -80,7 +80,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    <Text>Profile</Text>
+                    Profile
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
@@ -88,7 +88,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    <Text>Request Form</Text>
+                    Request Form
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
@@ -96,7 +96,7 @@ const PantryDashboard: React.FC = () => {
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
-                    <Text>Sign out</Text>
+                    Sign out
                   </Menu.Item>
                 </Menu.Content>
               </Menu.Positioner>
@@ -123,6 +123,7 @@ const PantryDashboard: React.FC = () => {
       </Card.Root>
 
       <Button
+        asChild
         mt="6"
         _hover={{ textDecoration: 'none' }}
         _focus={{ textDecoration: 'none' }}

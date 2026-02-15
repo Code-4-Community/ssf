@@ -70,7 +70,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
         <Dialog.Content maxW="49em">
           <Dialog.Header>
             <Dialog.Title fontSize={25} fontWeight={700}>
-              <Text>Delivery Confirmation Form</Text>
+              Delivery Confirmation Form
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
@@ -97,9 +97,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   name="deliveryDate"
                   max={new Date().toISOString().split('T')[0]}
                 />
-                <Field.HelperText>
-                  <Text>Select the delivery date.</Text>
-                </Field.HelperText>
+                <Field.HelperText>Select the delivery date.</Field.HelperText>
               </Field.Root>
               <Field.Root mb="2em">
                 <Field.Label asChild>
@@ -127,7 +125,7 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
                   onChange={handlePhotoChange}
                 />
                 <Field.HelperText>
-                  <Text>Select up to 3 photos to upload.</Text>
+                  Select up to 3 photos to upload.
                 </Field.HelperText>
                 <Box mt={3}>{renderPhotoNames()}</Box>
               </Field.Root>

@@ -125,7 +125,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
               fontFamily="Inter"
               color="#000"
             >
-              <Text>Add New Volunteer</Text>
+              Add New Volunteer
             </Dialog.Title>
             <CloseButton
               onClick={() => setIsOpen(false)}
@@ -146,7 +146,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                   color="neutral.800"
                   fontWeight={600}
                 >
-                  <Text>First Name</Text>
+                  First Name
                 </Field.Label>
                 <Input
                   color="neutral.700"
@@ -162,7 +162,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                   color="neutral.800"
                   fontWeight={600}
                 >
-                  <Text>Last Name</Text>
+                  Last Name
                 </Field.Label>
                 <Input
                   color="neutral.700"
@@ -175,7 +175,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
             </Flex>
             <Field.Root>
               <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>
-                <Text>Email</Text>
+                Email
               </Field.Label>
               <Input
                 color="neutral.700"
@@ -187,7 +187,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
             </Field.Root>
             <Field.Root my={4}>
               <Field.Label textStyle="p2" color="neutral.800" fontWeight={600}>
-                <Text>Phone Number</Text>
+                Phone Number
               </Field.Label>
               <USPhoneInput
                 value={phone}

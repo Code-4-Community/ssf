@@ -156,9 +156,7 @@ const AdminDonation: React.FC = () => {
                     >
                       <Checkbox.HiddenInput />
                       <Checkbox.Control borderRadius="sm" />
-                      <Checkbox.Label>
-                        <span>{manufacturer}</span>
-                      </Checkbox.Label>
+                      <Checkbox.Label>{manufacturer}</Checkbox.Label>
                     </Checkbox.Root>
                   ))}
                 </VStack>
