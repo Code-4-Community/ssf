@@ -170,7 +170,7 @@ export class ApiClient {
   }
 
   public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/users/volunteers') as Promise<User[]>;
+    return this.get('/api/volunteers/') as Promise<User[]>;
   }
 
   public async updateUserVolunteerRole(

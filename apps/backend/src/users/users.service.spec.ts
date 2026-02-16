@@ -128,19 +128,6 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findByEmail', () => {
-    it('should return user by email', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-
-      const result = await service.findByEmail('test@example.com');
-
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({
-        email: 'test@example.com',
-      });
-    });
-  });
-
   describe('update', () => {
     it('should update user attributes', async () => {
       const updateData = { firstName: 'Updated', role: Role.ADMIN };

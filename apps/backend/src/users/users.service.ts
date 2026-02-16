@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,16 +7,12 @@ import { In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
-import { Pantry } from '../pantries/pantries.entity';
-import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
-
-    private pantriesService: PantriesService,
   ) {}
 
   async create(
@@ -47,10 +42,6 @@ export class UsersService {
       throw new NotFoundException(`User ${id} not found`);
     }
     return user;
-  }
-
-  find(email: string) {
-    return this.repo.find({ where: { email } });
   }
 
   async update(id: number, attrs: Partial<User>) {
@@ -84,5 +75,13 @@ export class UsersService {
       where: { role: In(roles) },
       relations: ['pantries'],
     });
+  }
+
+  async findUserByCognitoId(cognitoId: string): Promise<User> {
+    const user = await this.repo.findOneBy({ userCognitoSub: cognitoId });
+    if (!user) {
+      throw new NotFoundException(`User with cognitoId ${cognitoId} not found`);
+    }
+    return user;
   }
 }
