@@ -53,15 +53,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   }, [isOpen, previousRequest]);
 
   const handleSubmit = async () => {
-    if (selectedItems.length === 0) {
-      alert('Please select at least one food type');
-      return;
-    }
-    if (requestedSize === '') {
-      alert('Please select a requested size.');
-      return;
-    }
-
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
