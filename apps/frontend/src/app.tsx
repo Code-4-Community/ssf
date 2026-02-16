@@ -162,7 +162,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/donation-management',
+        path: '/approve-pantries',
         element: (
           <ProtectedRoute>
             <ApprovePantries />
