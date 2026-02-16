@@ -22,7 +22,7 @@ export class VolunteersController {
   }
 
   @Get('/:id')
-  async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.volunteersService.findOne(userId);
   }
 

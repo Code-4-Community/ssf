@@ -5,64 +5,40 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class VolunteersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
-
+    private usersService: UsersService,
     private pantriesService: PantriesService,
   ) {}
 
   async findOne(id: number): Promise<User> {
-    validateId(id, 'User');
-
-    const user = await this.repo.findOneBy({ id });
-
-    if (!user) {
-      throw new NotFoundException(`User ${id} not found`);
-    }
-    return user;
-  }
-
-  async findVolunteer(volunteerId: number): Promise<User> {
-    validateId(volunteerId, 'Volunteer');
+    validateId(id, 'Volunteer');
 
     const volunteer = await this.repo.findOne({
-      where: { id: volunteerId },
+      where: { id: id },
       relations: ['pantries'],
     });
 
-    if (!volunteer)
-      throw new NotFoundException(`User ${volunteerId} not found`);
-    if (volunteer.role !== Role.VOLUNTEER) {
-      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
+    if (!volunteer) {
+      throw new NotFoundException(`Volunteer ${id} not found`);
     }
     return volunteer;
-  }
-
-  find(email: string) {
-    return this.repo.find({ where: { email } });
-  }
-
-  async findUsersByRoles(roles: Role[]): Promise<User[]> {
-    return this.repo.find({
-      where: { role: In(roles) },
-      relations: ['pantries'],
-    });
   }
 
   async getVolunteersAndPantryAssignments(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
   > {
-    const volunteers = await this.findUsersByRoles([Role.VOLUNTEER]);
+    const volunteers = await this.usersService.findUsersByRoles([Role.VOLUNTEER]);
 
     return volunteers.map((v) => {
       const { pantries, ...volunteerWithoutPantries } = v;
@@ -74,7 +50,8 @@ export class VolunteersService {
   }
 
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
-    const volunteer = await this.findVolunteer(volunteerId);
+    validateId(volunteerId, 'Volunteer')
+    const volunteer = await this.findOne(volunteerId);
     return volunteer.pantries;
   }
 
@@ -84,7 +61,7 @@ export class VolunteersService {
   ): Promise<User> {
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
-    const volunteer = await this.findVolunteer(volunteerId);
+    const volunteer = await this.findOne(volunteerId);
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
     const existingPantryIds = volunteer.pantries.map((p) => p.pantryId);
