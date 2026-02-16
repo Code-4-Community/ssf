@@ -22,7 +22,6 @@ export class DonationService {
       where: { donationId },
       relations: ['foodManufacturer'],
     });
-
     if (!donation) {
       throw new NotFoundException(`Donation ${donationId} not found`);
     }

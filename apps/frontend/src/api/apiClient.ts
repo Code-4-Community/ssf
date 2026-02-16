@@ -105,7 +105,7 @@ export class ApiClient {
     foodManufacturerId: number,
   ): Promise<Donation[]> {
     return this.axiosInstance
-      .get(`/api/donations/${foodManufacturerId}`)
+      .get(`/api/donations/by-fm-id/${foodManufacturerId}`)
       .then((response) => response.data);
   }
 
@@ -195,7 +195,7 @@ export class ApiClient {
   }
 
   public async getOrderDonation(donationId: number): Promise<Donation> {
-    return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
+    return this.get(`/api/donations/by-donation-id/${donationId}`) as Promise<Donation>;
   }
 
   public async getDonationItemsByDonationId(
