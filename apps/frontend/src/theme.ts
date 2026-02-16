@@ -85,6 +85,7 @@ const customConfig = defineConfig({
         },
         teal: {
           100: { value: '#E9F4F6' },
+          200: { value: '#D4EAED' },
           400: { value: '#A9D5DB' },
         },
       },

@@ -93,7 +93,7 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    return ({
+    return {
       orderId: order.orderId,
       status: order.status,
       foodManufacturerName: order.foodManufacturer?.foodManufacturerName,
@@ -103,7 +103,7 @@ export class OrdersService {
         quantity: allocation.allocatedQuantity,
         foodType: allocation.item.foodType,
       })),
-    })
+    };
   }
 
   async findOrderByRequest(requestId: number): Promise<Order> {
