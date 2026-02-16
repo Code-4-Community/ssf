@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { VolunteersController } from './volunteers.controller';
 import { UsersController } from '../users/users.controller';
 import { UsersService } from '../users/users.service';
@@ -134,9 +134,7 @@ describe('VolunteersController', () => {
 
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockPantries.slice(0, 2));
-      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(
-        1,
-      );
+      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(1);
     });
   });
 
