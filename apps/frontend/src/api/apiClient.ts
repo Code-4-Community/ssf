@@ -27,7 +27,7 @@ const defaultBaseUrl =
 export class ApiClient {
   private axiosInstance: AxiosInstance;
   private accessToken: string | undefined;
-  
+
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
 
@@ -50,14 +50,14 @@ export class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 403) {
           // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
-          
+
           window.location.replace('/unauthorized');
         }
         return Promise.reject(error);
       },
     );
   }
-  
+
   public setAccessToken(token: string | undefined) {
     this.accessToken = token;
   }

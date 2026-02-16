@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
-import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
