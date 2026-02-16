@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { VolunteersController } from './volunteers.controller'
+import { VolunteersController } from './volunteers.controller';
 import { UsersController } from '../users/users.controller';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -97,7 +97,9 @@ describe('VolunteersController', () => {
       const expectedVolunteers = volunteers.slice(0, 2);
 
       mockVolunteersService.getVolunteersAndPantryAssignments.mockResolvedValue(
-        expectedVolunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
+        expectedVolunteers as (Omit<User, 'pantries'> & {
+          pantryIds: number[];
+        })[],
       );
 
       const result = await controller.getAllVolunteers();
@@ -132,7 +134,9 @@ describe('VolunteersController', () => {
 
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockPantries.slice(0, 2));
-      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(1);
+      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(
+        1,
+      );
     });
   });
 
@@ -144,7 +148,9 @@ describe('VolunteersController', () => {
         pantries: [mockPantries[0] as Pantry, mockPantries[2] as Pantry],
       } as User;
 
-      mockVolunteersService.assignPantriesToVolunteer.mockResolvedValue(updatedUser);
+      mockVolunteersService.assignPantriesToVolunteer.mockResolvedValue(
+        updatedUser,
+      );
 
       const result = await controller.assignPantries(3, pantryIds);
 
@@ -152,10 +158,9 @@ describe('VolunteersController', () => {
       expect(result.pantries).toHaveLength(2);
       expect(result.pantries[0].pantryId).toBe(1);
       expect(result.pantries[1].pantryId).toBe(3);
-      expect(mockVolunteersService.assignPantriesToVolunteer).toHaveBeenCalledWith(
-        3,
-        pantryIds,
-      );
+      expect(
+        mockVolunteersService.assignPantriesToVolunteer,
+      ).toHaveBeenCalledWith(3, pantryIds);
     });
   });
 });

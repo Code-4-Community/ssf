@@ -117,7 +117,10 @@ describe('VolunteersService', () => {
 
   describe('getVolunteersAndPantryAssignments', () => {
     it('should return volunteers with pantry IDs', async () => {
-      const mockPantry: Partial<Pantry> = { pantryId: 1, pantryName: 'Test Pantry' };
+      const mockPantry: Partial<Pantry> = {
+        pantryId: 1,
+        pantryName: 'Test Pantry',
+      };
       const volunteerWithPantries = {
         ...mockVolunteer,
         pantries: [mockPantry as Pantry],
@@ -148,7 +151,10 @@ describe('VolunteersService', () => {
 
   describe('getVolunteerPantries', () => {
     it('should return pantries for a volunteer', async () => {
-      const mockPantry: Partial<Pantry> = { pantryId: 1, pantryName: 'Test Pantry' };
+      const mockPantry: Partial<Pantry> = {
+        pantryId: 1,
+        pantryName: 'Test Pantry',
+      };
       const volunteerWithPantries = {
         ...mockVolunteer,
         pantries: [mockPantry as Pantry],
@@ -193,9 +199,7 @@ describe('VolunteersService', () => {
       mockUserRepository.findOne.mockResolvedValue(
         volunteerWithPantries as User,
       );
-      mockPantriesService.findByIds.mockResolvedValue([
-        mockPantry2 as Pantry,
-      ]);
+      mockPantriesService.findByIds.mockResolvedValue([mockPantry2 as Pantry]);
       mockUserRepository.save.mockResolvedValue({
         ...volunteerWithPantries,
         pantries: [mockPantry1 as Pantry, mockPantry2 as Pantry],
@@ -232,17 +236,17 @@ describe('VolunteersService', () => {
     });
 
     it('should throw error for invalid volunteer id', async () => {
-      await expect(
-        service.assignPantriesToVolunteer(-1, [1]),
-      ).rejects.toThrow(new BadRequestException('Invalid Volunteer ID'));
+      await expect(service.assignPantriesToVolunteer(-1, [1])).rejects.toThrow(
+        new BadRequestException('Invalid Volunteer ID'),
+      );
     });
 
     it('should throw error for invalid pantry id', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockVolunteer as User);
 
-      await expect(
-        service.assignPantriesToVolunteer(1, [-1]),
-      ).rejects.toThrow(new BadRequestException('Invalid Pantry ID'));
+      await expect(service.assignPantriesToVolunteer(1, [-1])).rejects.toThrow(
+        new BadRequestException('Invalid Pantry ID'),
+      );
     });
   });
 });

@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
@@ -32,7 +29,7 @@ export class VolunteersService {
       throw new NotFoundException(`Volunteer ${id} not found`);
     }
     if (volunteer.role !== Role.VOLUNTEER) {
-      throw new NotFoundException(`User ${id} is not a volunteer`)
+      throw new NotFoundException(`User ${id} is not a volunteer`);
     }
     return volunteer;
   }
