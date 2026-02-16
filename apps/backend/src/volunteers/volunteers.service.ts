@@ -38,7 +38,9 @@ export class VolunteersService {
   async getVolunteersAndPantryAssignments(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
   > {
-    const volunteers = await this.usersService.findUsersByRoles([Role.VOLUNTEER]);
+    const volunteers = await this.usersService.findUsersByRoles([
+      Role.VOLUNTEER,
+    ]);
 
     return volunteers.map((v) => {
       const { pantries, ...volunteerWithoutPantries } = v;
@@ -50,7 +52,7 @@ export class VolunteersService {
   }
 
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
-    validateId(volunteerId, 'Volunteer')
+    validateId(volunteerId, 'Volunteer');
     const volunteer = await this.findOne(volunteerId);
     return volunteer.pantries;
   }
