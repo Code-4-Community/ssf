@@ -20,6 +20,10 @@ describe('OrdersService', () => {
       await testDataSource.initialize();
     }
 
+    // Clean database at the start
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -38,16 +42,18 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
-    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
-    await testDataSource.query(`CREATE SCHEMA public`);
+    // Run all migrations fresh for each test
     await testDataSource.runMigrations();
   });
 
   afterEach(async () => {
+    // Drop the schema completely (cascades all tables)
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
   });
 
   afterAll(async () => {
+    // Destroy all schemas
     if (testDataSource.isInitialized) {
       await testDataSource.destroy();
     }
