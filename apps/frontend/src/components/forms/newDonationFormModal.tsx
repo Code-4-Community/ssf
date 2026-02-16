@@ -31,10 +31,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const RECURRENCE_MAP: Record<string, RecurrenceEnum> = {
-    Week: RecurrenceEnum.WEEKLY,
-    Month: RecurrenceEnum.MONTHLY,
-    Year: RecurrenceEnum.YEARLY,
+  enum RepeatEnum {
+    WEEK = "Week",
+    MONTH = "Month",
+    YEAR = "Year"
+  }
+
+  const RECURRENCE_MAP: Record<RepeatEnum, RecurrenceEnum> = {
+    "Week": RecurrenceEnum.WEEKLY,
+    "Month": RecurrenceEnum.MONTHLY,
+    "Year": RecurrenceEnum.YEARLY,
   };
 
   const [rows, setRows] = useState([
@@ -52,7 +58,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   const [isRecurring, setIsRecurring] = useState(false);
   // Defaults for the recurring section
   const [repeatEvery, setRepeatEvery] = useState('1');
-  const [repeatInterval, setRepeatInterval] = useState('Week');
+  const [repeatInterval, setRepeatInterval] = useState(RepeatEnum.WEEK);
   const [repeatOn, setRepeatOn] = useState({
     Monday: false,
     Tuesday: false,
@@ -363,152 +369,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         </Checkbox.Label>
                       </Checkbox.Root>
                     </Stack>
-
-                    {isRecurring && (
-                      <Box mt={8} color="neutral.800" fontSize="sm">
-                        <Stack
-                          direction="row"
-                          align="flex-start"
-                          gap={4}
-                          mb={4}
-                          flexWrap="wrap"
-                        >
-                          <Box flex="1" minW="200px">
-                            <Text fontWeight={600} mb={3}>
-                              Repeat every
-                            </Text>
-                            <Flex gap={2} align="center">
-                              <NumberInput.Root
-                                width="98px"
-                                value={repeatEvery}
-                                onValueChange={(e) => setRepeatEvery(e.value)}
-                                min={1}
-                              >
-                                <NumberInput.Input />
-                                <NumberInput.Control />
-                              </NumberInput.Root>
-                              <NativeSelect.Root flex="1" size="md">
-                                <NativeSelect.Field
-                                  value={repeatInterval}
-                                  onChange={(e) =>
-                                    setRepeatInterval(e.target.value)
-                                  }
-                                >
-                                  <option value="Week">Week</option>
-                                  <option value="Month">Month</option>
-                                  <option value="Year">Year</option>
-                                </NativeSelect.Field>
-                                <NativeSelectIndicator />
-                              </NativeSelect.Root>
-                            </Flex>
-                          </Box>
-
-                          <Box flex="1" minW="236px">
-                            <Text fontWeight={600} mb={3}>
-                              Repeat on
-                            </Text>
-                            <Menu.Root closeOnSelect={false}>
-                              <Menu.Trigger asChild>
-                                <Box
-                                  cursor={
-                                    isRepeatOnDisabled
-                                      ? 'not-allowed'
-                                      : 'pointer'
-                                  }
-                                >
-                                  <NativeSelect.Root size="md">
-                                    <NativeSelect.Field
-                                      value={getSelectedDaysText()}
-                                      bg="white"
-                                      disabled={isRepeatOnDisabled}
-                                      opacity={isRepeatOnDisabled ? 0.5 : 1}
-                                      readOnly
-                                      pointerEvents={
-                                        isRepeatOnDisabled ? 'none' : 'auto'
-                                      }
-                                    >
-                                      <option color="neutral.800">
-                                        {getSelectedDaysText()}
-                                      </option>
-                                    </NativeSelect.Field>
-                                    <NativeSelectIndicator />
-                                  </NativeSelect.Root>
-                                </Box>
-                              </Menu.Trigger>
-                              {!isRepeatOnDisabled && (
-                                <Portal>
-                                  <Menu.Positioner>
-                                    <Menu.Content
-                                      minW="200px"
-                                      maxH="300px"
-                                      color="neutral.800"
-                                    >
-                                      {Object.keys(repeatOn).map((day) => (
-                                        <Menu.Item
-                                          key={day}
-                                          value={day}
-                                          onClick={() => handleDayToggle(day)}
-                                          p={2}
-                                        >
-                                          <Flex align="center" gap={2}>
-                                            <Checkbox.Root
-                                              checked={repeatOn[day]}
-                                              pointerEvents="none"
-                                            >
-                                              <Checkbox.HiddenInput />
-                                              <Checkbox.Control>
-                                                <Checkbox.Indicator />
-                                              </Checkbox.Control>
-                                            </Checkbox.Root>
-                                            <Text>{day}</Text>
-                                          </Flex>
-                                        </Menu.Item>
-                                      ))}
-                                    </Menu.Content>
-                                  </Menu.Positioner>
-                                </Portal>
-                              )}
-                            </Menu.Root>
-                          </Box>
-
-                          <Box flex="1" minW="200px">
-                            <Text fontWeight={600} mb={3} fontSize="sm">
-                              Ends after
-                            </Text>
-                            <Box position="relative" color="neutral.800">
-                              <NumberInput.Root
-                                width="50%"
-                                value={endsAfter}
-                                onValueChange={(e) => setEndsAfter(e.value)}
-                                min={1}
-                              >
-                                <NumberInput.Input pr="110px" />
-                                <NumberInput.Control />
-                              </NumberInput.Root>
-                              <Text
-                                position="absolute"
-                                right="240px"
-                                top="50%"
-                                transform="translateY(-50%)"
-                                pointerEvents="none"
-                              >
-                                {parseInt(endsAfter) > 1
-                                  ? 'Occurrences'
-                                  : 'Occurrence'}
-                              </Text>
-                            </Box>
-                          </Box>
-                        </Stack>
-                        {(repeatInterval === 'Week'
-                          ? Object.values(repeatOn).some(Boolean)
-                          : true) && (
-                          <Text color="neutral.700" fontStyle="italic" mt={2}>
-                            Next Donation scheduled for{' '}
-                            {getNextDonationDateDisplay()}
-                          </Text>
-                        )}
-                      </Box>
-                    )}
                   </TableCaption>
 
                   <Table.Header>
@@ -672,6 +532,162 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                   </Table.Body>
                 </Table.Root>
               </Box>
+
+              {isRecurring && (
+                <Box mt={6} color="neutral.800" fontSize="sm">
+                  <Stack
+                    direction="row"
+                    align="flex-start"
+                    gap={4}
+                    mb={4}
+                    flexWrap="wrap"
+                  >
+                    <Box flex="1" minW="200px">
+                      <Text fontWeight={600} mb={3}>
+                        Repeat every
+                      </Text>
+                      <Flex gap={2} align="center">
+                        <NumberInput.Root
+                          width="98px"
+                          value={repeatEvery}
+                          onValueChange={(e) => setRepeatEvery(e.value)}
+                          min={1}
+                        >
+                          <NumberInput.Input />
+                          <NumberInput.Control />
+                        </NumberInput.Root>
+                        <NativeSelect.Root flex="1" size="md">
+                          <NativeSelect.Field
+                            value={repeatInterval}
+                            onChange={(e) =>
+                              setRepeatInterval(e.target.value as RepeatEnum)
+                            }
+                          >
+                            {Object.values(RepeatEnum).map((interval) => (
+                              <option key={interval} value={interval}>
+                                {interval}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelectIndicator />
+                        </NativeSelect.Root>
+                      </Flex>
+                    </Box>
+
+                    <Box flex="1" minW="236px">
+                      <Text fontWeight={600} mb={3}>
+                        Repeat on
+                      </Text>
+                      <Menu.Root closeOnSelect={false}>
+                        {!isRepeatOnDisabled && (
+                          <Menu.Trigger asChild>
+                            <Box cursor="pointer">
+                              <NativeSelect.Root size="md">
+                                <NativeSelect.Field
+                                  value={getSelectedDaysText()}
+                                  bg="white"
+                                  readOnly
+                                >
+                                  <option color="neutral.800">
+                                    {getSelectedDaysText()}
+                                  </option>
+                                </NativeSelect.Field>
+                                <NativeSelectIndicator />
+                              </NativeSelect.Root>
+                            </Box>
+                          </Menu.Trigger>
+                        )}
+                        {isRepeatOnDisabled && (
+                          <Box cursor="not-allowed">
+                            <NativeSelect.Root size="md">
+                              <NativeSelect.Field
+                                value={getSelectedDaysText()}
+                                bg="white"
+                                disabled
+                                opacity={0.5}
+                                readOnly
+                                pointerEvents="none"
+                              >
+                                <option color="neutral.800">
+                                  {getSelectedDaysText()}
+                                </option>
+                              </NativeSelect.Field>
+                              <NativeSelectIndicator />
+                            </NativeSelect.Root>
+                          </Box>
+                        )}
+                        {!isRepeatOnDisabled && (
+                          <Portal>
+                            <Menu.Positioner>
+                              <Menu.Content
+                                minW="200px"
+                                maxH="300px"
+                                color="neutral.800"
+                              >
+                                {Object.keys(repeatOn).map((day) => (
+                                  <Menu.Item
+                                    key={day}
+                                    value={day}
+                                    onClick={() => handleDayToggle(day)}
+                                    p={2}
+                                  >
+                                    <Flex align="center" gap={2}>
+                                      <Checkbox.Root
+                                        checked={repeatOn[day]}
+                                        pointerEvents="none"
+                                      >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control>
+                                          <Checkbox.Indicator />
+                                        </Checkbox.Control>
+                                      </Checkbox.Root>
+                                      <Text>{day}</Text>
+                                    </Flex>
+                                  </Menu.Item>
+                                ))}
+                              </Menu.Content>
+                            </Menu.Positioner>
+                          </Portal>
+                        )}
+                      </Menu.Root>
+                    </Box>
+
+                    <Box flex="1" minW="200px">
+                      <Text fontWeight={600} mb={3} fontSize="sm">
+                        Ends after
+                      </Text>
+                      <NumberInput.Root
+                        width="100%"
+                        value={endsAfter}
+                        onValueChange={(e) => setEndsAfter(e.value)}
+                        min={1}
+                      >
+                        <Flex position="relative" align="center">
+                          <NumberInput.Input pl={4} pr="140px" />
+                          <Text
+                            position="absolute"
+                            left={`calc(16px + ${endsAfter.length * 0.6}em + 8px)`}
+                            color="neutral.800"
+                            fontSize="md"
+                            pointerEvents="none"
+                          >
+                            {parseInt(endsAfter) > 1 ? 'Occurrences' : 'Occurrence'}
+                          </Text>
+                          <NumberInput.Control />
+                        </Flex>
+                      </NumberInput.Root>
+                    </Box>
+                  </Stack>
+                  {(repeatInterval === 'Week'
+                    ? Object.values(repeatOn).some(Boolean)
+                    : true) && (
+                    <Text color="neutral.700" fontStyle="italic" mt={2}>
+                      Next Donation scheduled for{' '}
+                      {getNextDonationDateDisplay()}
+                    </Text>
+                  )}
+                </Box>
+              )}
 
               <Flex
                 justifyContent="flex-end"

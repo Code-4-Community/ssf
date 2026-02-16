@@ -30,6 +30,7 @@ import { AddFoodRescueToDonationItems1770679339809 } from '../migrations/1770679
 import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
 import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
+import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
 
 const schemaMigrations = [
   User1725726359198,
@@ -64,6 +65,7 @@ const schemaMigrations = [
   UpdateManufacturerEntity1768680807820,
   AddUserPoolId1769189327767,
   UpdateOrderEntity1769990652833,
+  RenameDonationMatchingStatus1771260403657
 ];
 
 export default schemaMigrations;

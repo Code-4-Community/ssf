@@ -105,7 +105,7 @@ export class ApiClient {
     foodManufacturerId: number,
   ): Promise<Donation[]> {
     return this.axiosInstance
-      .get(`/api/donations/donations/${foodManufacturerId}`)
+      .get(`/api/donations/${foodManufacturerId}`)
       .then((response) => response.data);
   }
 

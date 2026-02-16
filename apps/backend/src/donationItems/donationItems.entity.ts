@@ -13,29 +13,29 @@ import { FoodType } from './types';
 @Entity('donation_items')
 export class DonationItem {
   @PrimaryGeneratedColumn({ name: 'item_id' })
-  itemId: number;
+  itemId!: number;
 
   @Column({ name: 'donation_id', type: 'int' })
-  donationId: number;
+  donationId!: number;
 
   @ManyToOne(() => Donation, { nullable: false })
   @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
-  donation: Donation;
+  donation!: Donation;
 
   @Column({ name: 'item_name', type: 'varchar', length: 255 })
-  itemName: string;
+  itemName!: string;
 
   @Column({ name: 'quantity', type: 'int' })
-  quantity: number;
+  quantity!: number;
 
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
-  reservedQuantity: number;
+  reservedQuantity!: number;
 
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })
-  ozPerItem: number;
+  ozPerItem!: number;
 
   @Column({ name: 'estimated_value', type: 'int', nullable: true })
-  estimatedValue: number;
+  estimatedValue?: number;
 
   @Column({
     name: 'food_type',
@@ -44,11 +44,11 @@ export class DonationItem {
     enumName: 'food_type_enum',
     nullable: true,
   })
-  foodType: FoodType;
+  foodType?: FoodType;
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
-  allocations: Allocation[];
+  allocations!: Allocation[];
 
   @Column({ name: 'food_rescue', type: 'boolean', default: false })
-  foodRescue: boolean;
+  foodRescue!: boolean;
 }

@@ -1,7 +1,7 @@
 export enum DonationStatus {
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
+  MATCHED = 'matched',
 }
 
 export enum RecurrenceEnum {

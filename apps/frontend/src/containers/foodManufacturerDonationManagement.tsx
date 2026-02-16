@@ -21,7 +21,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: Donation[];
   }>({
-    [DonationStatus.MATCHING]: [],
+    [DonationStatus.MATCHED]: [],
     [DonationStatus.AVAILABLE]: [],
     [DonationStatus.FULFILLED]: [],
   });
@@ -35,20 +35,20 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [currentPages, setCurrentPages] = useState<
     Record<DonationStatus, number>
   >({
-    [DonationStatus.MATCHING]: 1,
+    [DonationStatus.MATCHED]: 1,
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
 
   const STATUS_DONATIONS = [
-    DonationStatus.MATCHING,
+    DonationStatus.MATCHED,
     DonationStatus.AVAILABLE,
     DonationStatus.FULFILLED,
   ];
 
   // Color mapping for statuses
   const STATUS_COLORS = new Map<DonationStatus, [string, string]>([
-    [DonationStatus.MATCHING, ['#FEECD1', '#9C5D00']],
+    [DonationStatus.MATCHED, ['#FEECD1', '#9C5D00']],
     [DonationStatus.AVAILABLE, ['#D5DCDF', '#2B4E60']],
     [DonationStatus.FULFILLED, ['#D4EAED', '#19717D']],
   ]);
@@ -63,7 +63,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       const grouped: Record<DonationStatus, Donation[]> = {
         [DonationStatus.AVAILABLE]: [],
         [DonationStatus.FULFILLED]: [],
-        [DonationStatus.MATCHING]: [],
+        [DonationStatus.MATCHED]: [],
       };
 
       data.forEach((donation: Donation) => {
@@ -78,7 +78,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       const initialPages: Record<DonationStatus, number> = {
         [DonationStatus.AVAILABLE]: 1,
         [DonationStatus.FULFILLED]: 1,
-        [DonationStatus.MATCHING]: 1,
+        [DonationStatus.MATCHED]: 1,
       };
       setCurrentPages(initialPages);
     } catch (error) {
@@ -108,6 +108,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         alignItems="center"
         justifyContent="space-between"
         backgroundColor="blue.ssf"
+        fontFamily="ibm"
+        fontWeight="semibold"
         p={3}
         mb={16}
         borderRadius="md"
