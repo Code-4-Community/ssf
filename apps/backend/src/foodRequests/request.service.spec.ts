@@ -12,9 +12,11 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+
 const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
 const mockOrdersRepository = mock<Repository<Order>>();
+
 const mockRequest: Partial<FoodRequest> = {
   requestId: 1,
   pantryId: 1,
@@ -26,8 +28,10 @@ const mockRequest: Partial<FoodRequest> = {
   photos: null,
   orders: null,
 };
+
 describe('RequestsService', () => {
   let service: RequestsService;
+
   beforeAll(async () => {
     // Reset the mock repository before compiling module
     mockRequestsRepository.findOne.mockReset();
@@ -35,6 +39,7 @@ describe('RequestsService', () => {
     mockRequestsRepository.save.mockReset();
     mockRequestsRepository.find.mockReset();
     mockPantryRepository.findOneBy.mockReset();
+
     const module = await Test.createTestingModule({
       providers: [
         RequestsService,
@@ -52,8 +57,10 @@ describe('RequestsService', () => {
         },
       ],
     }).compile();
+
     service = module.get<RequestsService>(RequestsService);
   });
+
   beforeEach(() => {
     mockRequestsRepository.findOne.mockReset();
     mockRequestsRepository.create.mockReset();
@@ -61,9 +68,11 @@ describe('RequestsService', () => {
     mockRequestsRepository.find.mockReset();
     mockPantryRepository.findOneBy.mockReset();
   });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
   describe('findOne', () => {
     it('should return a food request with the corresponding id', async () => {
       const requestId = 1;
@@ -77,21 +86,27 @@ describe('RequestsService', () => {
         relations: ['orders'],
       });
     });
+
     it('should throw an error if the request id is not found', async () => {
       const requestId = 999;
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(null);
+
       await expect(service.findOne(requestId)).rejects.toThrow(
         `Request ${requestId} not found`,
       );
+
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
         relations: ['orders'],
       });
     });
   });
+
   describe('getOrderDetails', () => {
     it('should return mapped order details for a valid requestId', async () => {
       const requestId = 1;
+
       const mockOrders: Partial<Order>[] = [
         {
           orderId: 10,
@@ -133,11 +148,15 @@ describe('RequestsService', () => {
           ],
         },
       ];
+
       mockOrdersRepository.find.mockResolvedValueOnce(mockOrders as Order[]);
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest as FoodRequest,
       );
+
       const result = await service.getOrderDetails(requestId);
+
       expect(result).toEqual([
         {
           orderId: 10,
@@ -169,6 +188,7 @@ describe('RequestsService', () => {
           ],
         },
       ]);
+
       expect(mockOrdersRepository.find).toHaveBeenCalledWith({
         where: { requestId },
         relations: {
@@ -179,18 +199,23 @@ describe('RequestsService', () => {
         },
       });
     });
+
     it('should throw an error if the request id is not found', async () => {
       const requestId = 999;
+
       await expect(service.getOrderDetails(requestId)).rejects.toThrow(
         `Request ${requestId} not found`,
       );
     });
+
     it('should return empty list if no associated orders', async () => {
       const requestId = 1;
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest as FoodRequest,
       );
       mockOrdersRepository.find.mockResolvedValueOnce([]);
+
       const result = await service.getOrderDetails(requestId);
       expect(result).toEqual([]);
       expect(mockOrdersRepository.find).toHaveBeenCalledWith({
@@ -204,6 +229,7 @@ describe('RequestsService', () => {
       });
     });
   });
+
   describe('create', () => {
     it('should successfully create and return a new food request', async () => {
       mockPantryRepository.findOneBy.mockResolvedValueOnce({
@@ -218,6 +244,7 @@ describe('RequestsService', () => {
       mockRequestsRepository.find.mockResolvedValueOnce([
         mockRequest as FoodRequest,
       ]);
+
       const result = await service.create(
         mockRequest.pantryId,
         mockRequest.requestedSize,
@@ -227,6 +254,7 @@ describe('RequestsService', () => {
         mockRequest.feedback,
         mockRequest.photos,
       );
+
       expect(result).toEqual(mockRequest);
       expect(mockRequestsRepository.create).toHaveBeenCalledWith({
         pantryId: mockRequest.pantryId,
@@ -239,8 +267,10 @@ describe('RequestsService', () => {
       });
       expect(mockRequestsRepository.save).toHaveBeenCalledWith(mockRequest);
     });
+
     it('should throw an error if the pantry ID does not exist', async () => {
       const invalidPantryId = 999;
+
       await expect(
         service.create(
           invalidPantryId,
@@ -252,10 +282,12 @@ describe('RequestsService', () => {
           null,
         ),
       ).rejects.toThrow(`Pantry ${invalidPantryId} not found`);
+
       expect(mockRequestsRepository.create).not.toHaveBeenCalled();
       expect(mockRequestsRepository.save).not.toHaveBeenCalled();
     });
   });
+
   describe('find', () => {
     it('should return all food requests for a specific pantry', async () => {
       const mockRequests: Partial<FoodRequest>[] = [
@@ -289,7 +321,9 @@ describe('RequestsService', () => {
       mockRequestsRepository.find.mockResolvedValueOnce(
         mockRequests.slice(0, 2) as FoodRequest[],
       );
+
       const result = await service.find(pantryId);
+
       expect(result).toEqual(mockRequests.slice(0, 2));
       expect(mockRequestsRepository.find).toHaveBeenCalledWith({
         where: { pantryId },
@@ -297,6 +331,7 @@ describe('RequestsService', () => {
       });
     });
   });
+
   describe('updateDeliveryDetails', () => {
     it('should update and return the food request with new delivery details', async () => {
       const mockOrder: Partial<Order> = {
@@ -307,18 +342,23 @@ describe('RequestsService', () => {
         shippedAt: new Date(),
         deliveredAt: null,
       };
+
       const mockRequest2: Partial<FoodRequest> = {
         ...mockRequest,
         orders: [mockOrder] as Order[],
       };
+
       const requestId = 1;
       const deliveryDate = new Date();
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest2 as FoodRequest,
       );
+
       const updatedOrder = { ...mockOrder, status: OrderStatus.DELIVERED };
+
       mockRequestsRepository.save.mockResolvedValueOnce({
         ...mockRequest,
         dateReceived: deliveryDate,
@@ -326,12 +366,14 @@ describe('RequestsService', () => {
         photos,
         orders: [updatedOrder],
       } as FoodRequest);
+
       const result = await service.updateDeliveryDetails(
         requestId,
         deliveryDate,
         feedback,
         photos,
       );
+
       expect(result).toEqual({
         ...mockRequest,
         dateReceived: deliveryDate,
@@ -339,10 +381,12 @@ describe('RequestsService', () => {
         photos,
         orders: [updatedOrder],
       });
+
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
         relations: ['orders'],
       });
+
       expect(mockRequestsRepository.save).toHaveBeenCalledWith({
         ...mockRequest,
         dateReceived: deliveryDate,
@@ -351,12 +395,15 @@ describe('RequestsService', () => {
         orders: [mockOrder],
       });
     });
+
     it('should throw an error if the request ID is invalid', async () => {
       const requestId = 999;
       const deliveryDate = new Date();
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(null);
+
       await expect(
         service.updateDeliveryDetails(
           requestId,
@@ -365,19 +412,23 @@ describe('RequestsService', () => {
           photos,
         ),
       ).rejects.toThrow('Invalid request ID');
+
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
         relations: ['orders'],
       });
     });
+
     it('should throw an error if there is no associated order', async () => {
       const requestId = 1;
       const deliveryDate = new Date();
       const feedback = 'Good delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
+
       mockRequestsRepository.findOne.mockResolvedValueOnce(
         mockRequest as FoodRequest,
       );
+
       await expect(
         service.updateDeliveryDetails(
           requestId,
@@ -386,6 +437,7 @@ describe('RequestsService', () => {
           photos,
         ),
       ).rejects.toThrow('No associated orders found for this request');
+
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },
         relations: ['orders'],

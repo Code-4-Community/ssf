@@ -15,15 +15,19 @@ import {
   AllergensConfidence,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
+
 const mockRepository = mock<Repository<Pantry>>();
+
 describe('PantriesService', () => {
   let service: PantriesService;
+
   // Mock Pantry
   const mockPendingPantry = {
     pantryId: 1,
     pantryName: 'Test Pantry',
     status: ApplicationStatus.PENDING,
   } as Pantry;
+
   // Mock Pantry Application
   const mockPantryApplication = {
     contactFirstName: 'Jane',
@@ -66,6 +70,7 @@ describe('PantriesService', () => {
     needMoreOptions: 'More fresh produce',
     newsletterSubscription: true,
   } as PantryApplicationDto;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -76,32 +81,41 @@ describe('PantriesService', () => {
         },
       ],
     }).compile();
+
     service = module.get<PantriesService>(PantriesService);
   });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
   // Find pantry by ID
   describe('findOne', () => {
     it('should return a pantry by id', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
+
       const result = await service.findOne(1);
+
       expect(result).toBe(mockPendingPantry);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
       });
     });
+
     it('should throw NotFoundException if pantry not found', async () => {
       mockRepository.findOne.mockResolvedValueOnce(null);
+
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
       await expect(service.findOne(999)).rejects.toThrow(
         'Pantry 999 not found',
       );
     });
   });
+
   // Get pantries with pending status
   describe('getPendingPantries', () => {
     it('should return only pending pantries', async () => {
@@ -110,7 +124,9 @@ describe('PantriesService', () => {
         { ...mockPendingPantry, pantryId: 3 },
       ];
       mockRepository.find.mockResolvedValueOnce(pendingPantries);
+
       const result = await service.getPendingPantries();
+
       expect(result).toEqual(pendingPantries);
       expect(result).toHaveLength(2);
       expect(result.every((pantry) => pantry.status === 'pending')).toBe(true);
@@ -119,9 +135,12 @@ describe('PantriesService', () => {
         relations: ['pantryUser'],
       });
     });
+
     it('should not return approved pantries', async () => {
       mockRepository.find.mockResolvedValueOnce([mockPendingPantry]);
+
       const result = await service.getPendingPantries();
+
       expect(result).not.toContainEqual(
         expect.objectContaining({ status: 'approved' }),
       );
@@ -130,18 +149,24 @@ describe('PantriesService', () => {
         relations: ['pantryUser'],
       });
     });
+
     it('should return an empty array if no pending pantries', async () => {
       mockRepository.find.mockResolvedValueOnce([]);
+
       const result = await service.getPendingPantries();
+
       expect(result).toEqual([]);
     });
   });
+
   // Approve pantry by ID (status = approved)
   describe('approve', () => {
     it('should approve a pantry', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
       mockRepository.update.mockResolvedValueOnce(undefined);
+
       await service.approve(1);
+
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
       });
@@ -149,8 +174,10 @@ describe('PantriesService', () => {
         status: 'approved',
       });
     });
+
     it('should throw NotFoundException if pantry not found', async () => {
       mockRepository.findOne.mockResolvedValueOnce(null);
+
       await expect(service.approve(999)).rejects.toThrow(NotFoundException);
       await expect(service.approve(999)).rejects.toThrow(
         'Pantry 999 not found',
@@ -158,12 +185,15 @@ describe('PantriesService', () => {
       expect(mockRepository.update).not.toHaveBeenCalled();
     });
   });
+
   // Deny pantry by ID (status = denied)
   describe('deny', () => {
     it('should deny a pantry', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
       mockRepository.update.mockResolvedValueOnce(undefined);
+
       await service.deny(1);
+
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
       });
@@ -171,18 +201,23 @@ describe('PantriesService', () => {
         status: 'denied',
       });
     });
+
     it('should throw NotFoundException if pantry not found', async () => {
       mockRepository.findOne.mockResolvedValueOnce(null);
+
       await expect(service.deny(999)).rejects.toThrow(NotFoundException);
       await expect(service.deny(999)).rejects.toThrow('Pantry 999 not found');
       expect(mockRepository.update).not.toHaveBeenCalled();
     });
   });
+
   // Add pantry
   describe('addPantry', () => {
     it('should add a new pantry application', async () => {
       mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
+
       await service.addPantry(mockPantryApplication);
+
       expect(mockRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           pantryName: mockPantryApplication.pantryName,
@@ -217,9 +252,12 @@ describe('PantriesService', () => {
         }),
       );
     });
+
     it('should create pantry representative from contact info', async () => {
       mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
+
       await service.addPantry(mockPantryApplication);
+
       expect(mockRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           pantryUser: expect.objectContaining({
@@ -232,8 +270,10 @@ describe('PantriesService', () => {
         }),
       );
     });
+
     it('should throw error if save fails', async () => {
       mockRepository.save.mockRejectedValueOnce(new Error('Database error'));
+
       await expect(service.addPantry(mockPantryApplication)).rejects.toThrow(
         'Database error',
       );
