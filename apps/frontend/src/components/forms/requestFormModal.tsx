@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useActionData } from 'react-router-dom';
 import {
   Flex,
   Button,
@@ -39,6 +40,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
+  const [alertMessage, setAlertMessage] = useState<string>(''); 
+  
+  const actionData = useActionData() as { error?: string; success?: boolean } | undefined;
+
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -52,6 +57,15 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     }
   }, [isOpen, previousRequest]);
 
+  useEffect(() => {
+    if (actionData?.error) {
+      setAlertMessage(actionData.error);
+    } else if (actionData?.success) {
+      onClose();
+      onSuccess();
+    }
+  }, [actionData, onClose]);
+
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
@@ -63,12 +77,14 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       photos: [],
     };
 
-    try {
+     try {
       await apiClient.createFoodRequest(foodRequestData);
-      onClose();
-      onSuccess();
-    } catch (error) {
-      alert('Failed to submit request. Please try again.');
+      return { success: true };
+    } catch {
+      return {
+        error: 'Failed to submit food request',
+        success: false,
+      };
     }
   };
 
@@ -81,6 +97,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        // TODO: add Justin's alert component/uncomment below out and remove text component
+        // <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+        <Text>{alertMessage}</Text>
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>

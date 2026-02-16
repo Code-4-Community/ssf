@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
@@ -40,7 +40,7 @@ export class PantriesController {
   async getCurrentUserPantryId(@Req() req): Promise<number> {
     const currentUser = req.user;
     if (!currentUser) {
-      throw new BadRequestException('Not authenticated');
+      throw new UnauthorizedException('Not authenticated');
     }
 
     const pantry = await this.pantriesService.findByUserId(currentUser.id);

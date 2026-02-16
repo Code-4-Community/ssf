@@ -151,12 +151,21 @@ const router = createBrowserRouter([
             <FormRequests />
           </ProtectedRoute>
         ),
+        action: submitFoodRequestFormModal,
       },
       {
         path: '/donation-management',
         element: (
           <ProtectedRoute>
             <DonationManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/donation-management',
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
           </ProtectedRoute>
         ),
       },
@@ -191,11 +200,6 @@ const router = createBrowserRouter([
             <AdminOrderManagement />
           </ProtectedRoute>
         ),
-      },
-      // Actions
-      {
-        path: '/food-request',
-        action: submitFoodRequestFormModal,
       },
       {
         path: '/confirm-delivery',

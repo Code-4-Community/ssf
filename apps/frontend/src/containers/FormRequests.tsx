@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Center,
   Table,
@@ -40,33 +39,31 @@ const FormRequests: React.FC = () => {
   const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   const fetchRequests = useCallback(async () => {
-    if (pantryId) {
-      try {
-          // Ensure we have the auth token before making the API call
-          const session = await fetchAuthSession();
-          const idToken = session.tokens?.idToken?.toString();
-          if (idToken) {
-            ApiClient.setAccessToken(idToken);
+    if (user.userId) {
+      const pantryId = await ApiClient.getCurrentUserPantryId();
+      setPantryId(pantryId);
+      if (pantryId) {
+        try {
+          const data = await ApiClient.getPantryRequests(pantryId);
+          setRequests(data);
+
+          if (data.length > 0) {
+            setPreviousRequest(
+              data.reduce((prev, current) =>
+                prev.requestId > current.requestId ? prev : current,
+              ),
+            );
           }
-
-        const data = await ApiClient.getPantryRequests(pantryId);
-        const sortedData = data
-          .slice()
-          .sort((a, b) => b.requestId - a.requestId);
-        setRequests(sortedData);
-
-        if (sortedData.length > 0) {
-          setPreviousRequest(sortedData[0]);
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
     }
-  }, [pantryId]);
+  }, [user.userId]);
 
   useEffect(() => {
     fetchRequests();
-  }, [pantryId, fetchRequests]);
+  }, [user.userId, fetchRequests]);
 
   useEffect(() => {
     setAllConfirmed(requests.every((request) => request.dateReceived !== null));
@@ -96,13 +93,15 @@ const FormRequests: React.FC = () => {
         <Button onClick={newRequestDisclosure.onOpen} disabled={!allConfirmed}>
           Submit New Request
         </Button>
-        <FoodRequestFormModal
-          previousRequest={undefined}
-          isOpen={newRequestDisclosure.open}
-          onClose={newRequestDisclosure.onClose}
-          pantryId={pantryId}
-          onSuccess={fetchRequests}
-        />
+        {pantryId && (
+          <FoodRequestFormModal
+            previousRequest={undefined}
+            isOpen={newRequestDisclosure.open}
+            onClose={newRequestDisclosure.onClose}
+            pantryId={pantryId}
+            onSuccess={fetchRequests}
+          />
+        )}
         {previousRequest && (
           <>
             <Button
@@ -111,13 +110,15 @@ const FormRequests: React.FC = () => {
             >
               Submit Previous Request
             </Button>
-            <FoodRequestFormModal
-              previousRequest={previousRequest}
-              isOpen={previousRequestDisclosure.open}
-              onClose={previousRequestDisclosure.onClose}
-              pantryId={pantryId!}
-              onSuccess={fetchRequests}
+            {pantryId && (
+              <FoodRequestFormModal
+                previousRequest={previousRequest}
+                isOpen={previousRequestDisclosure.open}
+                onClose={previousRequestDisclosure.onClose}
+                pantryId={pantryId}
+                onSuccess={fetchRequests}
             />
+            )}
           </>
         )}
       </HStack>
@@ -143,7 +144,6 @@ const FormRequests: React.FC = () => {
             <Table.ColumnHeader>Order ID</Table.ColumnHeader>
             <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
             <Table.ColumnHeader>Status</Table.ColumnHeader>
-            <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
             <Table.ColumnHeader>Date Fulfilled</Table.ColumnHeader>
             <Table.ColumnHeader>Actions</Table.ColumnHeader>
           </Table.Row>
@@ -174,11 +174,6 @@ const FormRequests: React.FC = () => {
                 {request.orders?.[0]?.status ?? 'pending'}
               </Table.Cell>
               <Table.Cell>
-                {request.orders?.[0]?.status === 'pending'
-                  ? 'N/A'
-                  : request.orders?.[0]?.shippedBy ?? 'N/A'}
-              </Table.Cell>
-              <Table.Cell>
                 {formatReceivedDate(request.dateReceived)}
               </Table.Cell>
               <Table.Cell>
@@ -197,12 +192,12 @@ const FormRequests: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openReadOnlyRequest && (
+          {openReadOnlyRequest && pantryId && (
             <FoodRequestFormModal
               previousRequest={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId!}
+              pantryId={pantryId}
             />
           )}
           {openOrderId && (
@@ -212,12 +207,12 @@ const FormRequests: React.FC = () => {
               onClose={() => setOpenOrderId(null)}
             />
           )}
-          {openDeliveryRequestId && (
+          {openDeliveryRequestId && pantryId && (
             <DeliveryConfirmationModal
               requestId={openDeliveryRequestId}
               isOpen={openDeliveryRequestId !== null}
               onClose={() => setOpenDeliveryRequestId(null)}
-              pantryId={pantryId!}
+              pantryId={pantryId}
             />
           )}
         </Table.Body>
