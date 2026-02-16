@@ -4,6 +4,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { useNavigate } from 'react-router-dom';
 import {
   User,
   Order,
@@ -21,13 +22,15 @@ import {
   OrderDetails,
 } from 'types/types';
 
+const navigate = useNavigate();
+
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
   private accessToken: string | undefined;
-
+  
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
 
@@ -49,8 +52,8 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
-          window.location.replace('/unauthorized');
+          // TODO: For a future ticket, figure out a better method than renavigation on failure
+          navigate('/unauthorized')
         }
         return Promise.reject(error);
       },
@@ -278,7 +281,7 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
+        navigate('/request-form/1')
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }

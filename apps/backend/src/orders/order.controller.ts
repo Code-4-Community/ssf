@@ -71,7 +71,6 @@ export class OrdersController {
         .findOrderFoodRequest(entityId);
 
       if (!request) {
-        console.log('Request not found on order');
         return null;
       }
 
@@ -80,10 +79,8 @@ export class OrdersController {
         .findOne(request.pantryId);
 
       if (!pantry) {
-        console.log('Pantry not found');
         return null;
       }
-      console.log('Found pantry:', pantry);
       return pantry?.pantryUser?.id ?? null;
     },
   })

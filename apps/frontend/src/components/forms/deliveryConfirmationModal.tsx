@@ -8,7 +8,7 @@ import {
   Text,
   Dialog,
 } from '@chakra-ui/react';
-import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs, useNavigate } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 
 interface DeliveryConfirmationModalProps {
@@ -144,6 +144,8 @@ const DeliveryConfirmationModal: React.FC<DeliveryConfirmationModalProps> = ({
   );
 };
 
+const navigate = useNavigate();
+
 // Action function to handle form submission
 export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   request,
@@ -177,10 +179,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       confirmDeliveryData,
     );
     alert('Delivery confirmation submitted successfully');
-    window.location.href = `/request-form/${pantryId}`;
+    navigate(`/request-form/${pantryId}`);
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = `/request-form/${pantryId}`;
+    navigate(`/request-form/${pantryId}`);
   }
 };
 
