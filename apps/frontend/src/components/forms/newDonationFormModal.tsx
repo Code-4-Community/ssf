@@ -32,15 +32,15 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onClose,
 }) => {
   enum RepeatEnum {
-    WEEK = "Week",
-    MONTH = "Month",
-    YEAR = "Year"
+    WEEK = 'Week',
+    MONTH = 'Month',
+    YEAR = 'Year',
   }
 
   const RECURRENCE_MAP: Record<RepeatEnum, RecurrenceEnum> = {
-    "Week": RecurrenceEnum.WEEKLY,
-    "Month": RecurrenceEnum.MONTHLY,
-    "Year": RecurrenceEnum.YEARLY,
+    Week: RecurrenceEnum.WEEKLY,
+    Month: RecurrenceEnum.MONTHLY,
+    Year: RecurrenceEnum.YEARLY,
   };
 
   const [rows, setRows] = useState([
@@ -666,12 +666,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           <NumberInput.Input pl={4} pr="140px" />
                           <Text
                             position="absolute"
-                            left={`calc(16px + ${endsAfter.length * 0.6}em + 8px)`}
+                            left={`calc(16px + ${
+                              endsAfter.length * 0.6
+                            }em + 8px)`}
                             color="neutral.800"
                             fontSize="md"
                             pointerEvents="none"
                           >
-                            {parseInt(endsAfter) > 1 ? 'Occurrences' : 'Occurrence'}
+                            {parseInt(endsAfter) > 1
+                              ? 'Occurrences'
+                              : 'Occurrence'}
                           </Text>
                           <NumberInput.Control />
                         </Flex>
@@ -682,8 +686,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                     ? Object.values(repeatOn).some(Boolean)
                     : true) && (
                     <Text color="neutral.700" fontStyle="italic" mt={2}>
-                      Next Donation scheduled for{' '}
-                      {getNextDonationDateDisplay()}
+                      Next Donation scheduled for {getNextDonationDateDisplay()}
                     </Text>
                   )}
                 </Box>

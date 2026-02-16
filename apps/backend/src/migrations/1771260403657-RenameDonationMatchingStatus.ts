@@ -1,9 +1,10 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RenameDonationMatchingStatus1771260403657 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+export class RenameDonationMatchingStatus1771260403657
+  implements MigrationInterface
+{
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             ALTER TABLE donations
               ALTER COLUMN status DROP DEFAULT;
 
@@ -33,10 +34,10 @@ export class RenameDonationMatchingStatus1771260403657 implements MigrationInter
               ALTER COLUMN status
               SET DEFAULT 'available';
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
             ALTER TABLE donations
               ALTER COLUMN status DROP DEFAULT;
 
@@ -66,6 +67,5 @@ export class RenameDonationMatchingStatus1771260403657 implements MigrationInter
               ALTER COLUMN status
               SET DEFAULT 'available';
         `);
-    }
-
+  }
 }

@@ -65,7 +65,7 @@ const schemaMigrations = [
   UpdateManufacturerEntity1768680807820,
   AddUserPoolId1769189327767,
   UpdateOrderEntity1769990652833,
-  RenameDonationMatchingStatus1771260403657
+  RenameDonationMatchingStatus1771260403657,
 ];
 
 export default schemaMigrations;
