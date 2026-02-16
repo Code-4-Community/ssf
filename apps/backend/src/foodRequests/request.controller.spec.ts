@@ -102,6 +102,7 @@ describe('RequestsController', () => {
           orderId: 10,
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
               name: 'Rice',
@@ -119,6 +120,7 @@ describe('RequestsController', () => {
           orderId: 11,
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
               name: 'Milk',
