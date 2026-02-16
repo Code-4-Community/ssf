@@ -68,7 +68,6 @@ export class OwnershipGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      console.error('Error in ownership resolver:', error);
       throw new ForbiddenException('Error verifying resource ownership');
     }
   }
