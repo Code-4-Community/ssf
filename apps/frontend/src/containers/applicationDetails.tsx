@@ -105,7 +105,9 @@ const ApplicationDetails: React.FC = () => {
         <Text color="red" fontSize="lg" mb={4}>
           {error}
         </Text>
-        <Button onClick={() => navigate('/approve-pantries')}>Back to Applications</Button>
+        <Button onClick={() => navigate('/approve-pantries')}>
+          Back to Applications
+        </Button>
       </Center>
     );
   }
@@ -116,7 +118,9 @@ const ApplicationDetails: React.FC = () => {
         <Text fontSize="lg" mb={4}>
           Application not found
         </Text>
-        <Button onClick={() => navigate('/approve-pantries')}>Back to Applications</Button>
+        <Button onClick={() => navigate('/approve-pantries')}>
+          Back to Applications
+        </Button>
       </Center>
     );
   }
@@ -143,7 +147,12 @@ const ApplicationDetails: React.FC = () => {
                 {application.pantryName}
               </Text>
               <Text textStyle="p2" color="neutral.600">
-                Applied {new Date(application.dateApplied).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+                Applied{' '}
+                {new Date(application.dateApplied).toLocaleDateString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: 'numeric',
+                })}
               </Text>
             </Box>
 
@@ -223,7 +232,8 @@ const ApplicationDetails: React.FC = () => {
                 Food Allergies and Restrictions
               </Heading>
               <Flex wrap="wrap" gap={2} mb={6}>
-                {application.restrictions && application.restrictions.length > 0 ? (
+                {application.restrictions &&
+                application.restrictions.length > 0 ? (
                   application.restrictions.map((restriction, index) => (
                     <Badge
                       key={index}
@@ -252,9 +262,12 @@ const ApplicationDetails: React.FC = () => {
                 </GridItem>
                 <GridItem>
                   <Text textStyle="p2" fontWeight="600" mb={1}>
-                    Willing to Reserve Donations for Allergen-Avoidant Individuals
+                    Willing to Reserve Donations for Allergen-Avoidant
+                    Individuals
                   </Text>
-                  <Text textStyle="p">{application.reserveFoodForAllergic}</Text>
+                  <Text textStyle="p">
+                    {application.reserveFoodForAllergic}
+                  </Text>
                 </GridItem>
               </Grid>
 
@@ -263,7 +276,9 @@ const ApplicationDetails: React.FC = () => {
                   <Text textStyle="p2" fontWeight="600" mb={1}>
                     Justification
                   </Text>
-                  <Text textStyle="p">{application.reservationExplanation}</Text>
+                  <Text textStyle="p">
+                    {application.reservationExplanation}
+                  </Text>
                 </Box>
               )}
 
@@ -272,13 +287,19 @@ const ApplicationDetails: React.FC = () => {
                   <Text textStyle="p2" fontWeight="600" mb={1}>
                     Dedicated section for allergy-friendly items?
                   </Text>
-                  <Text textStyle="p">{application.dedicatedAllergyFriendly ? 'Yes, we have a dedicated shelf or box' : 'No'}</Text>
+                  <Text textStyle="p">
+                    {application.dedicatedAllergyFriendly
+                      ? 'Yes, we have a dedicated shelf or box'
+                      : 'No'}
+                  </Text>
                 </GridItem>
                 <GridItem>
                   <Text textStyle="p2" fontWeight="600" mb={1}>
                     How Often Allergen-Avoidant Clients Visit
                   </Text>
-                  <Text textStyle="p">{application.clientVisitFrequency ?? 'Not specified'}</Text>
+                  <Text textStyle="p">
+                    {application.clientVisitFrequency ?? 'Not specified'}
+                  </Text>
                 </GridItem>
               </Grid>
 
@@ -287,13 +308,17 @@ const ApplicationDetails: React.FC = () => {
                   <Text textStyle="p2" fontWeight="600" mb={1}>
                     Confident in Identifying the Top 9 Allergens
                   </Text>
-                  <Text textStyle="p">{application.identifyAllergensConfidence ?? 'Not specified'}</Text>
+                  <Text textStyle="p">
+                    {application.identifyAllergensConfidence ?? 'Not specified'}
+                  </Text>
                 </GridItem>
                 <GridItem>
                   <Text textStyle="p2" fontWeight="600" mb={1}>
                     Serves Allergen-Avoidant Children
                   </Text>
-                  <Text textStyle="p">{application.serveAllergicChildren ?? 'Not specified'}</Text>
+                  <Text textStyle="p">
+                    {application.serveAllergicChildren ?? 'Not specified'}
+                  </Text>
                 </GridItem>
               </Grid>
             </Box>
@@ -354,7 +379,9 @@ const ApplicationDetails: React.FC = () => {
               <Heading as="h3" textStyle="h4" mb={3}>
                 Subscribed to Newsletter
               </Heading>
-              <Text textStyle="p">{application.newsletterSubscription ? 'Yes' : 'No'}</Text>
+              <Text textStyle="p">
+                {application.newsletterSubscription ? 'Yes' : 'No'}
+              </Text>
             </Box>
 
             {/* Action Buttons */}
