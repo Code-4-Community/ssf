@@ -12,6 +12,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 
 @Injectable()
 export class OrdersService {
@@ -75,6 +76,36 @@ export class OrdersService {
     return order;
   }
 
+  async findOrderDetails(orderId: number): Promise<OrderDetailsDto> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: {
+        allocations: {
+          item: true,
+        },
+        foodManufacturer: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    return ({
+      orderId: order.orderId,
+      status: order.status,
+      foodManufacturerName: order.foodManufacturer?.foodManufacturerName,
+      trackingLink: order.trackingLink,
+      items: order.allocations.map((allocation) => ({
+        name: allocation.item.itemName,
+        quantity: allocation.allocatedQuantity,
+        foodType: allocation.item.foodType,
+      })),
+    })
+  }
+
   async findOrderByRequest(requestId: number): Promise<Order> {
     validateId(requestId, 'Request');
 
@@ -109,7 +140,11 @@ export class OrdersService {
 
     const order = await this.repo.findOne({
       where: { orderId },
-      relations: ['request'],
+      relations: {
+        request: {
+          pantry: true,
+        },
+      },
     });
 
     if (!order) {
