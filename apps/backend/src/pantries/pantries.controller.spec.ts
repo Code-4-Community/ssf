@@ -15,7 +15,7 @@ import {
   ServeAllergicChildren,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 
 const mockPantriesService = mock<PantriesService>();
@@ -263,6 +263,18 @@ describe('PantriesController', () => {
       await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
         new BadRequestException('Not authenticated'),
       );
+    });
+
+    it('propagates NotFoundException from service', async () => {
+      const req = { user: { id: 999 } };
+      mockPantriesService.findByUserId.mockRejectedValueOnce(
+        new NotFoundException('Pantry for User 999 not found'),
+      );
+
+      const promise = controller.getCurrentUserPantryId(req);
+      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
+      await expect(promise).rejects.toThrow('Pantry for User 999 not found');
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(999);
     });
   });
 });
