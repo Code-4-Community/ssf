@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import apiClient from '@api/apiClient';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import LandingPage from '@containers/landingPage';
@@ -24,43 +21,16 @@ import AdminDonation from '@containers/adminDonation';
 import { pantryIdLoader } from '@loaders/pantryIdLoader';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
-import '@aws-amplify/ui-react/styles.css';
-import { Authenticator } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
-import { Button } from '@chakra-ui/react';
+import LoginPage from '@containers/loginPage';
+import SignupPage from '@containers/signupPage';
+import ForgotPasswordPage from '@containers/forgotPasswordPage';
+import ProtectedRoute from '@components/protectedRoute';
+import Unauthorized from '@containers/unauthorized';
+import { Authenticator } from '@aws-amplify/ui-react';
 
 Amplify.configure(CognitoAuthConfig);
-
-const components = {
-  SignUp: {
-    Footer() {
-      return (
-        <>
-          <Button as="a" href="/pantry-application">
-            {' '}
-            Sign up to be pantry partner{' '}
-          </Button>
-          <Button> Log donation for one-time donors </Button>
-        </>
-      );
-    },
-  },
-
-  SignIn: {
-    Footer() {
-      return (
-        <>
-          <Button as="a" href="/pantry-application">
-            {' '}
-            Sign up to be pantry partner{' '}
-          </Button>
-          <Button> Log donation for one-time donors </Button>
-        </>
-      );
-    },
-  },
-};
 
 const router = createBrowserRouter([
   {
@@ -78,6 +48,18 @@ const router = createBrowserRouter([
         element: <LandingPage />,
       },
       {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/signup',
+        element: <SignupPage />,
+      },
+      {
+        path: '/forgot-password',
+        element: <ForgotPasswordPage />,
+      },
+      {
         path: '/pantry-application',
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
@@ -86,103 +68,139 @@ const router = createBrowserRouter([
         path: '/pantry-application/submitted',
         element: <PantryApplicationSubmitted />,
       },
+      {
+        path: '/unauthorized',
+        element: <Unauthorized />,
+      },
       // Private routes (protected by auth)
       {
         path: '/pantry-overview',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryOverview />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/pantry-dashboard/:pantryId',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryDashboard />
-          </Authenticator>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-past-orders',
+        element: (
+          <ProtectedRoute>
+            <PantryPastOrders />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantries',
+        element: (
+          <ProtectedRoute>
+            <Pantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-overview',
+        element: (
+          <ProtectedRoute>
+            <PantryOverview />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-dashboard/:pantryId',
+        element: (
+          <ProtectedRoute>
+            <PantryDashboard />
+          </ProtectedRoute>
         ),
         loader: pantryIdLoader,
       },
       {
         path: '/pantry-past-orders',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <PantryPastOrders />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/pantries',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <Pantries />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/food-manufacturer-order-dashboard',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <FoodManufacturerOrderDashboard />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/orders',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <Orders />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/request-form/:pantryId',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <FormRequests />
-          </Authenticator>
+          </ProtectedRoute>
         ),
         loader: pantryIdLoader,
       },
       {
-        path: '/donation-management',
+        path: '/donation-mangement',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <DonationManagement />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/approve-pantries',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <ApprovePantries />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/admin-donation',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <AdminDonation />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/volunteer-management',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <VolunteerManagement />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
         path: '/admin-order-management',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <AdminOrderManagement />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       // Actions
@@ -199,11 +217,6 @@ const router = createBrowserRouter([
 ]);
 
 export const App: React.FC = () => {
-  useEffect(() => {
-    document.title = 'SSF';
-    apiClient.getHello().then((res) => console.log(res));
-  }, []);
-
   return (
     <Authenticator.Provider>
       <RouterProvider router={router} />

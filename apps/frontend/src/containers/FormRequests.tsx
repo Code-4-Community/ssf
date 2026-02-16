@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Center,
+  Box,
   Table,
   Text,
   Button,
   HStack,
   useDisclosure,
-  NativeSelect,
+  Link,
+  Badge,
+  Pagination,
+  ButtonGroup,
+  IconButton,
+  Flex,
 } from '@chakra-ui/react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import DeliveryConfirmationModal from '@components/forms/deliveryConfirmationModal';
-import OrderInformationModal from '@components/forms/orderInformationModal';
-import { FoodRequest } from 'types/types';
-import { formatDate, formatReceivedDate } from '@utils/utils';
+import { OrderStatus, FoodRequest } from '../types/types';
+import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
 const FormRequests: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
@@ -24,37 +30,30 @@ const FormRequests: React.FC = () => {
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
-  const [sortBy, setSortBy] = useState<'mostRecent' | 'oldest' | 'confirmed'>(
-    'mostRecent',
-  );
 
   const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
   const pantryId = parseInt(pantryIdParam!, 10);
 
-  const [allConfirmed, setAllConfirmed] = useState(false);
-  const [openDeliveryRequestId, setOpenDeliveryRequestId] = useState<
-    number | null
-  >(null);
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
-  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
+
+  const pageSize = 10;
 
   useEffect(() => {
     const fetchRequests = async () => {
       if (pantryId) {
         try {
           const data = await ApiClient.getPantryRequests(pantryId);
-          setRequests(data);
+          const sortedData = data
+            .slice()
+            .sort((a, b) => b.requestId - a.requestId);
+          setRequests(sortedData);
 
-          if (data.length > 0) {
-            setPreviousRequest(
-              data.reduce((prev, current) =>
-                prev.requestId > current.requestId ? prev : current,
-              ),
-            );
+          if (sortedData.length > 0) {
+            setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
-          alert('Error fetching requests: ' + error);
+          console.log(error);
         }
       }
     };
@@ -62,33 +61,27 @@ const FormRequests: React.FC = () => {
     fetchRequests();
   }, [pantryId]);
 
-  useEffect(() => {
-    setAllConfirmed(requests.every((request) => request.dateReceived !== null));
-  }, [requests]);
-
-  const sortedRequests = [...requests].sort((a, b) => {
-    if (sortBy === 'mostRecent')
-      return (
-        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
-      );
-    if (sortBy === 'oldest')
-      return (
-        new Date(a.requestedAt).getTime() - new Date(b.requestedAt).getTime()
-      );
-    if (sortBy === 'confirmed')
-      return (
-        new Date(b.dateReceived || 0).getTime() -
-        new Date(a.dateReceived || 0).getTime()
-      );
-
-    return 0;
-  });
+  const paginatedRequests = requests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   return (
-    <Center flexDirection="column" p={4}>
-      <HStack gap={200}>
-        <Button onClick={newRequestDisclosure.onOpen} disabled={!allConfirmed}>
-          Submit New Request
+    <Box flexDirection="column" p={12}>
+      <Text textStyle="h1" color="#515151">
+        Food Request Management
+      </Text>
+      <HStack gap={3} my={5}>
+        <Button
+          fontFamily="ibm"
+          fontWeight="semibold"
+          fontSize="14px"
+          color="neutral.50"
+          bgColor="#2B4E60"
+          onClick={newRequestDisclosure.onOpen}
+          px={2}
+        >
+          New Request
         </Button>
         <FoodRequestFormModal
           previousRequest={undefined}
@@ -100,9 +93,15 @@ const FormRequests: React.FC = () => {
           <>
             <Button
               onClick={previousRequestDisclosure.onOpen}
-              disabled={!allConfirmed}
+              fontFamily="ibm"
+              fontWeight="semibold"
+              fontSize="14px"
+              color="neutral.600"
+              bgColor={'white'}
+              borderColor="neutral.300"
+              px={2}
             >
-              Submit Previous Request
+              Resubmit Latest
             </Button>
             <FoodRequestFormModal
               previousRequest={previousRequest}
@@ -113,109 +112,138 @@ const FormRequests: React.FC = () => {
           </>
         )}
       </HStack>
-
-      <NativeSelect.Root mt={4} width="50%">
-        <NativeSelect.Field
-          value={sortBy}
-          onChange={(e) =>
-            setSortBy(e.target.value as 'mostRecent' | 'oldest' | 'confirmed')
-          }
-        >
-          <option value="mostRecent">Date Requested (Recent)</option>
-          <option value="oldest">Date Requested (Oldest)</option>
-          <option value="confirmed">Order Confirmation (Date Fulfilled)</option>
-        </NativeSelect.Field>
-        <NativeSelect.Indicator />
-      </NativeSelect.Root>
-
-      <Table.Root mt={6} width="80%">
+      <Table.Root mt={6} variant="line" showColumnBorder>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Request ID</Table.ColumnHeader>
-            <Table.ColumnHeader>Order ID</Table.ColumnHeader>
-            <Table.ColumnHeader>Date Requested</Table.ColumnHeader>
-            <Table.ColumnHeader>Status</Table.ColumnHeader>
-            <Table.ColumnHeader>Shipped By</Table.ColumnHeader>
-            <Table.ColumnHeader>Date Fulfilled</Table.ColumnHeader>
-            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+            >
+              Request #
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+            >
+              Status
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              color="neutral.800"
+              textStyle="p2"
+              fontWeight={600}
+              textAlign="right"
+            >
+              Date Requested
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {sortedRequests.map((request) => (
+          {paginatedRequests.map((request) => (
             <Table.Row key={request.requestId}>
-              <Table.Cell>
-                <Button onClick={() => setOpenReadOnlyRequest(request)}>
+              <Table.Cell color="#111111" textStyle="p2">
+                <Link
+                  textDecorationColor="#111111"
+                  variant="underline"
+                  onClick={() => setOpenReadOnlyRequest(request)}
+                >
                   {request.requestId}
-                </Button>
+                </Link>
               </Table.Cell>
               <Table.Cell>
-                {request.orders?.[0]?.orderId ? (
-                  <Button
-                    onClick={() =>
-                      setOpenOrderId(request.orders?.[0]?.orderId ?? null)
-                    }
+                {!request.orders ||
+                request.orders.length === 0 ||
+                request.orders.every(
+                  (order) =>
+                    order.status === OrderStatus.PENDING ||
+                    order.status === OrderStatus.SHIPPED,
+                ) ? (
+                  <Badge
+                    bgColor="#D4EAED"
+                    color="#19717D"
+                    textStyle="p2"
+                    fontWeight={500}
+                    fontSize={12}
+                    py={1}
+                    px={2}
                   >
-                    {request.orders?.[0]?.orderId}
-                  </Button>
+                    Active
+                  </Badge>
                 ) : (
-                  'N/A'
+                  <Badge
+                    bgColor="neutral.300"
+                    color="#111111"
+                    textStyle="p2"
+                    fontWeight={500}
+                    fontSize={12}
+                    py={1}
+                    px={2}
+                  >
+                    Closed
+                  </Badge>
                 )}
               </Table.Cell>
-              <Table.Cell>{formatDate(request.requestedAt)}</Table.Cell>
-              <Table.Cell>
-                {request.orders?.[0]?.status ?? 'pending'}
-              </Table.Cell>
-              <Table.Cell>
-                {request.orders?.[0]?.status === 'pending'
-                  ? 'N/A'
-                  : request.orders?.[0]?.shippedBy ?? 'N/A'}
-              </Table.Cell>
-              <Table.Cell>
-                {formatReceivedDate(request.dateReceived)}
-              </Table.Cell>
-              <Table.Cell>
-                {!request.orders?.[0] ||
-                request.orders?.[0]?.status === 'pending' ? (
-                  <Text>Awaiting Order Assignment</Text>
-                ) : request.orders?.[0]?.status === 'delivered' ? (
-                  <Text>Food Request is Already Delivered</Text>
-                ) : (
-                  <Button
-                    onClick={() => setOpenDeliveryRequestId(request.requestId)}
-                  >
-                    Confirm Delivery
-                  </Button>
-                )}
+              <Table.Cell color="neutral.700" textStyle="p2" textAlign="right">
+                {formatDate(request.requestedAt)}
               </Table.Cell>
             </Table.Row>
           ))}
           {openReadOnlyRequest && (
-            <FoodRequestFormModal
-              previousRequest={openReadOnlyRequest}
-              readOnly={true}
+            <RequestDetailsModal
+              request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
               pantryId={pantryId}
             />
           )}
-          {openOrderId && (
-            <OrderInformationModal
-              orderId={openOrderId}
-              isOpen={openOrderId !== null}
-              onClose={() => setOpenOrderId(null)}
-            />
-          )}
-          {openDeliveryRequestId && (
-            <DeliveryConfirmationModal
-              requestId={openDeliveryRequestId}
-              isOpen={openDeliveryRequestId !== null}
-              onClose={() => setOpenDeliveryRequestId(null)}
-              pantryId={pantryId}
-            />
-          )}
         </Table.Body>
       </Table.Root>
-    </Center>
+      <Flex justify="center" mt={12}>
+        <Pagination.Root
+          count={Math.ceil(requests.length / pageSize)}
+          pageSize={1}
+          page={currentPage}
+          onChange={(page) => setCurrentPage(page)}
+        >
+          <ButtonGroup variant="outline" size="sm">
+            <Pagination.PrevTrigger asChild>
+              <IconButton
+                variant="ghost"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              >
+                <ChevronLeft />
+              </IconButton>
+            </Pagination.PrevTrigger>
+
+            <Pagination.Items
+              render={(page) => (
+                <IconButton
+                  variant="outline"
+                  _selected={{ borderColor: 'neutral.800' }}
+                  onClick={() => setCurrentPage(page.value)}
+                >
+                  {page.value}
+                </IconButton>
+              )}
+            />
+
+            <Pagination.NextTrigger asChild>
+              <IconButton
+                variant="ghost"
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, Math.ceil(requests.length / pageSize)),
+                  )
+                }
+              >
+                <ChevronRight />
+              </IconButton>
+            </Pagination.NextTrigger>
+          </ButtonGroup>
+        </Pagination.Root>
+      </Flex>
+    </Box>
   );
 };
 

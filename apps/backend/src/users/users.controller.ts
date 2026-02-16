@@ -8,20 +8,15 @@ import {
   Post,
   BadRequestException,
   Body,
-  //UseGuards,
-  //UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-//import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { updateUserInfo } from './dtos/updateUserInfo.dto';
 import { Pantry } from '../pantries/pantries.entity';
-//import { CurrentUserInterceptor } from '../interceptors/current-user.interceptor';
 
 @Controller('users')
-//@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -32,7 +27,6 @@ export class UsersController {
     return this.usersService.getVolunteersAndPantryAssignments();
   }
 
-  // @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);
