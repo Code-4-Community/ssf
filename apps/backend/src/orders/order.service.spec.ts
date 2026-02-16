@@ -6,7 +6,6 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
-import { NotFoundException } from '@nestjs/common';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
@@ -442,4 +441,4 @@ describe('OrdersService', () => {
       expect(updatedOrder.shippedAt).toBeDefined();
     });
   });
-});
+})});
