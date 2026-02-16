@@ -83,7 +83,9 @@ describe('VolunteersService', () => {
   describe('getVolunteersAndPantryAssignments', () => {
     it('returns an empty array when there are no volunteers', async () => {
       // Delete all users with role 'volunteer' (CASCADE will handle related data)
-      await testDataSource.query(`DELETE FROM "users" WHERE role = 'volunteer'`);
+      await testDataSource.query(
+        `DELETE FROM "users" WHERE role = 'volunteer'`,
+      );
 
       const result = await service.getVolunteersAndPantryAssignments();
 
@@ -93,7 +95,7 @@ describe('VolunteersService', () => {
     it('returns all volunteers with their pantry assignments', async () => {
       const result = await service.getVolunteersAndPantryAssignments();
 
-      expect(result.length).toEqual(4)
+      expect(result.length).toEqual(4);
       expect(result).toEqual([
         {
           id: 6,
@@ -113,7 +115,7 @@ describe('VolunteersService', () => {
           phone: '555-040-0402',
           role: 'volunteer',
           userCognitoSub: '',
-          pantryIds: [2,3],
+          pantryIds: [2, 3],
         },
         {
           id: 8,
@@ -142,7 +144,7 @@ describe('VolunteersService', () => {
   describe('getVolunteerPantries', () => {
     it('returns an empty array when volunteer has no pantry assignments', async () => {
       await testDataSource.query(
-        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 6`
+        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 6`,
       );
 
       const result = await service.getVolunteerPantries(6);
@@ -154,8 +156,8 @@ describe('VolunteersService', () => {
       const result = await service.getVolunteerPantries(7);
 
       expect(result).toHaveLength(2);
-      
-      const pantryIds = result.map(p => p.pantryId);
+
+      const pantryIds = result.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
   });
@@ -164,18 +166,18 @@ describe('VolunteersService', () => {
     it('assigns new pantries to a volunteer with existing assignments', async () => {
       const beforeAssignment = await service.getVolunteerPantries(7);
       expect(beforeAssignment).toHaveLength(2);
-      const beforePantryIds = beforeAssignment.map(p => p.pantryId);
+      const beforePantryIds = beforeAssignment.map((p) => p.pantryId);
       expect(beforePantryIds).toEqual([2, 3]);
 
       const result = await service.assignPantriesToVolunteer(7, [1, 4]);
       expect(result.pantries).toHaveLength(4);
-      const afterPantryIds = result.pantries.map(p => p.pantryId);
-      expect(afterPantryIds).toEqual([2,3,1,4]);
+      const afterPantryIds = result.pantries.map((p) => p.pantryId);
+      expect(afterPantryIds).toEqual([2, 3, 1, 4]);
     });
 
     it('assigns pantries to a volunteer with no existing assignments', async () => {
       await testDataSource.query(
-        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 6`
+        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 6`,
       );
 
       const beforeAssignment = await service.getVolunteerPantries(6);
@@ -183,7 +185,7 @@ describe('VolunteersService', () => {
 
       const result = await service.assignPantriesToVolunteer(6, [2, 3]);
       expect(result.pantries).toHaveLength(2);
-      const pantryIds = result.pantries.map(p => p.pantryId);
+      const pantryIds = result.pantries.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
   });
