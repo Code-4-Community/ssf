@@ -4,13 +4,10 @@ import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
-
 const mockUserService = mock<UsersService>();
-
 const mockUser1: Partial<User> = {
   id: 1,
   email: 'john@example.com',
@@ -19,7 +16,6 @@ const mockUser1: Partial<User> = {
   phone: '1234567890',
   role: Role.VOLUNTEER,
 };
-
 const mockUser2: Partial<User> = {
   id: 2543210,
   email: 'bobsmith@example.com',
@@ -28,12 +24,10 @@ const mockUser2: Partial<User> = {
   phone: '9876',
   role: Role.VOLUNTEER,
 };
-
 const mockUser3: Partial<User> = {
   id: 3,
   role: Role.VOLUNTEER,
 };
-
 const mockPantries: Partial<Pantry>[] = [
   {
     pantryId: 1,
@@ -48,17 +42,14 @@ const mockPantries: Partial<Pantry>[] = [
     pantryUser: mockUser2 as User,
   },
 ];
-
 describe('UsersController', () => {
   let controller: UsersController;
-
   beforeEach(async () => {
     mockUserService.findUsersByRoles.mockReset();
     mockUserService.findOne.mockReset();
     mockUserService.remove.mockReset();
     mockUserService.update.mockReset();
     mockUserService.create.mockReset();
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
@@ -68,14 +59,11 @@ describe('UsersController', () => {
         },
       ],
     }).compile();
-
     controller = module.get<UsersController>(UsersController);
   });
-
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
-
   describe('GET /volunteers', () => {
     it('should return all volunteers', async () => {
       const users: (Omit<Partial<User>, 'pantries'> & {
@@ -97,15 +85,13 @@ describe('UsersController', () => {
           pantryIds: [3],
         },
       ];
-
       const volunteers = users.slice(0, 2);
-
       mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
-        volunteers as (Omit<User, 'pantries'> & { pantryIds: number[] })[],
+        volunteers as (Omit<User, 'pantries'> & {
+          pantryIds: number[];
+        })[],
       );
-
       const result = await controller.getAllVolunteers();
-
       expect(result).toEqual(volunteers);
       expect(result.length).toBe(2);
       expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
@@ -114,42 +100,32 @@ describe('UsersController', () => {
       ).toHaveBeenCalled();
     });
   });
-
   describe('GET /:id', () => {
     it('should return a user by id', async () => {
       mockUserService.findOne.mockResolvedValue(mockUser1 as User);
-
       const result = await controller.getUser(1);
-
       expect(result).toEqual(mockUser1);
       expect(mockUserService.findOne).toHaveBeenCalledWith(1);
     });
   });
-
   describe('DELETE /:id', () => {
     it('should remove a user by id', async () => {
       mockUserService.remove.mockResolvedValue(mockUser1 as User);
-
       const result = await controller.removeUser(1);
-
       expect(result).toEqual(mockUser1);
       expect(mockUserService.remove).toHaveBeenCalledWith(1);
     });
   });
-
   describe('PUT /:id/role', () => {
     it('should update user role with valid role', async () => {
       const updatedUser = { ...mockUser1, role: Role.ADMIN };
       mockUserService.update.mockResolvedValue(updatedUser as User);
-
       const result = await controller.updateRole(1, Role.ADMIN);
-
       expect(result).toEqual(updatedUser);
       expect(mockUserService.update).toHaveBeenCalledWith(1, {
         role: Role.ADMIN,
       });
     });
-
     it('should throw BadRequestException for invalid role', async () => {
       await expect(controller.updateRole(1, 'invalid_role')).rejects.toThrow(
         BadRequestException,
@@ -157,7 +133,6 @@ describe('UsersController', () => {
       expect(mockUserService.update).not.toHaveBeenCalled();
     });
   });
-
   describe('POST /api/users', () => {
     it('should create a new user with all required fields', async () => {
       const createUserSchema: userSchemaDto = {
@@ -167,12 +142,9 @@ describe('UsersController', () => {
         phone: '9876543210',
         role: Role.ADMIN,
       };
-
       const createdUser = { ...createUserSchema, id: 2 } as User;
       mockUserService.create.mockResolvedValue(createdUser);
-
       const result = await controller.createUser(createUserSchema);
-
       expect(result).toEqual(createdUser);
       expect(mockUserService.create).toHaveBeenCalledWith(
         createUserSchema.email,
@@ -182,7 +154,6 @@ describe('UsersController', () => {
         createUserSchema.role,
       );
     });
-
     it('should handle service errors', async () => {
       const createUserSchema: userSchemaDto = {
         email: 'newuser@example.com',
@@ -191,30 +162,26 @@ describe('UsersController', () => {
         phone: '9876543210',
         role: Role.VOLUNTEER,
       };
-
       const error = new Error('Database error');
       mockUserService.create.mockRejectedValue(error);
-
       await expect(controller.createUser(createUserSchema)).rejects.toThrow(
         error,
       );
     });
   });
-
   describe('GET /volunteers', () => {
     it('should return all volunteers with their pantry assignments', async () => {
-      const assignments: (User & { pantryIds: number[] })[] = [
+      const assignments: (User & {
+        pantryIds: number[];
+      })[] = [
         { ...(mockUser1 as User), pantryIds: [1, 2] },
         { ...(mockUser2 as User), pantryIds: [1] },
         { ...(mockUser3 as User), pantryIds: [] },
       ];
-
       mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
         assignments,
       );
-
       const result = await controller.getAllVolunteers();
-
       expect(result).toEqual(assignments);
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe(1);
@@ -228,21 +195,17 @@ describe('UsersController', () => {
       ).toHaveBeenCalled();
     });
   });
-
   describe('GET /:id/pantries', () => {
     it('should return pantries assigned to a user', async () => {
       mockUserService.getVolunteerPantries.mockResolvedValue(
         mockPantries.slice(0, 2) as Pantry[],
       );
-
       const result = await controller.getVolunteerPantries(1);
-
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockPantries.slice(0, 2));
       expect(mockUserService.getVolunteerPantries).toHaveBeenCalledWith(1);
     });
   });
-
   describe('POST /:id/pantries', () => {
     it('should assign pantries to a volunteer and return result', async () => {
       const pantryIds = [1, 3];
@@ -250,11 +213,8 @@ describe('UsersController', () => {
         ...mockUser3,
         pantries: [mockPantries[0] as Pantry, mockPantries[2] as Pantry],
       } as User;
-
       mockUserService.assignPantriesToVolunteer.mockResolvedValue(updatedUser);
-
       const result = await controller.assignPantries(3, pantryIds);
-
       expect(result).toEqual(updatedUser);
       expect(result.pantries).toHaveLength(2);
       expect(result.pantries[0].pantryId).toBe(1);

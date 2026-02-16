@@ -5,12 +5,9 @@ import { DonationItem } from './donationItems.entity';
 import { mock } from 'jest-mock-extended';
 import { FoodType } from './types';
 import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
-
 const mockDonationItemsService = mock<DonationItemsService>();
-
 describe('DonationItemsController', () => {
   let controller: DonationItemsController;
-
   const mockDonationItemsCreateData: Partial<DonationItem>[] = [
     {
       itemId: 1,
@@ -33,7 +30,6 @@ describe('DonationItemsController', () => {
       foodType: FoodType.GLUTEN_FREE_BAKING_PANCAKE_MIXES,
     },
   ];
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DonationItemsController],
@@ -41,14 +37,11 @@ describe('DonationItemsController', () => {
         { provide: DonationItemsService, useValue: mockDonationItemsService },
       ],
     }).compile();
-
     controller = module.get<DonationItemsController>(DonationItemsController);
   });
-
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
-
   describe('createMultipleDonationItems', () => {
     it('should call donationItemsService.createMultipleDonationItems with donationId and items, and return the created donation items', async () => {
       const mockBody: CreateMultipleDonationItemsDto = {
@@ -72,18 +65,14 @@ describe('DonationItemsController', () => {
           },
         ],
       };
-
       const mockCreatedItems: Partial<DonationItem>[] = [
         { itemId: 1, donationId: 1, ...mockBody.items[0] },
         { itemId: 2, donationId: 1, ...mockBody.items[1] },
       ];
-
       mockDonationItemsService.createMultipleDonationItems.mockResolvedValue(
         mockCreatedItems as DonationItem[],
       );
-
       const result = await controller.createMultipleDonationItems(mockBody);
-
       expect(
         mockDonationItemsService.createMultipleDonationItems,
       ).toHaveBeenCalledWith(mockBody.donationId, mockBody.items);
