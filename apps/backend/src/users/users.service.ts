@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-
 import { User } from './user.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
