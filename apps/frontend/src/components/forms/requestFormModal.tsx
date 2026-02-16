@@ -11,7 +11,7 @@ import {
   Field,
   CloseButton,
 } from '@chakra-ui/react';
-import { Form, ActionFunction, ActionFunctionArgs, useNavigate } from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
 import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
 
@@ -319,8 +319,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   );
 };
 
-const navigate = useNavigate();
-
 export const submitFoodRequestFormModal: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
@@ -351,16 +349,17 @@ export const submitFoodRequestFormModal: ActionFunction = async ({
 
     if (response.ok) {
       console.log('Food request submitted successfully');
-      navigate(`/request-form/${pantryId}`);
+
+      window.location.href = `/request-form/${pantryId}`;
       return null;
     } else {
       console.error('Failed to submit food request', await response.text());
-      navigate(`/request-form/${pantryId}`);
+      window.location.href = `/request-form/${pantryId}`;
       return null;
     }
   } catch (error) {
     console.error('Error submitting food request', error);
-    navigate(`/request-form/${pantryId}`);
+    window.location.href = `/request-form/${pantryId}`;
     return null;
   }
 };
