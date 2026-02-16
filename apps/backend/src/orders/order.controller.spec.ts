@@ -8,6 +8,7 @@ import { mock } from 'jest-mock-extended';
 import { OrderStatus } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -98,6 +99,22 @@ describe('OrdersController', () => {
       expect(
         mockAllocationsService.getAllAllocationsByOrder,
       ).toHaveBeenCalledWith(orderId);
+    });
+  });
+
+  describe('updateTrackingCostInfo', () => {
+    it('should call ordersService.updateTrackingCostInfo with correct parameters', async () => {
+      const orderId = 1;
+      const trackingLink = 'www.samplelink/samplelink';
+      const shippingCost = 15.99;
+      const dto: TrackingCostDto = { trackingLink, shippingCost };
+
+      await controller.updateTrackingCostInfo(orderId, dto);
+
+      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
+        orderId,
+        dto,
+      );
     });
   });
 });
