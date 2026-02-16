@@ -623,6 +623,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 minW="200px"
                                 maxH="300px"
                                 color="neutral.800"
+                                zIndex={9999}
                               >
                                 {Object.keys(repeatOn).map((day) => (
                                   <Menu.Item
