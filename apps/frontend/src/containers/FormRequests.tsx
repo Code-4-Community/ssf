@@ -39,25 +39,25 @@ const FormRequests: React.FC = () => {
 
   const pageSize = 10;
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      if (pantryId) {
-        try {
-          const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data
-            .slice()
-            .sort((a, b) => b.requestId - a.requestId);
-          setRequests(sortedData);
+  const fetchRequests = async () => {
+    if (pantryId) {
+      try {
+        const data = await ApiClient.getPantryRequests(pantryId);
+        const sortedData = data
+          .slice()
+          .sort((a, b) => b.requestId - a.requestId);
+        setRequests(sortedData);
 
-          if (sortedData.length > 0) {
-            setPreviousRequest(sortedData[0]);
-          }
-        } catch (error) {
-          console.log(error);
+        if (sortedData.length > 0) {
+          setPreviousRequest(sortedData[0]);
         }
+      } catch (error) {
+        console.log(error);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchRequests();
   }, [pantryId]);
 
@@ -88,6 +88,7 @@ const FormRequests: React.FC = () => {
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
           pantryId={pantryId}
+          onSuccess={fetchRequests}
         />
         {previousRequest && (
           <>
@@ -108,6 +109,7 @@ const FormRequests: React.FC = () => {
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
               pantryId={pantryId}
+              onSuccess={fetchRequests}
             />
           </>
         )}

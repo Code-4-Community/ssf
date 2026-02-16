@@ -8,7 +8,7 @@ import {
   Text,
   Dialog,
 } from '@chakra-ui/react';
-import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
+import { Form, ActionFunction, ActionFunctionArgs, redirect } from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 
 interface DeliveryConfirmationModalProps {
@@ -151,7 +151,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
-  const pantryId = form.get('pantryId');
+  const pantryId = form.get('pantryId') as string;
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 
@@ -161,6 +161,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
     confirmDeliveryData.append('dateReceived', formattedDate);
   } else {
     alert('Delivery date is missing or invalid.');
+    return redirect(`/request-form/${pantryId}`);
   }
 
   confirmDeliveryData.append('feedback', form.get('feedback') as string);
@@ -172,15 +173,12 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   }
 
   try {
-    await ApiClient.confirmDelivery(
-      parseInt(requestId, 10),
-      confirmDeliveryData,
-    );
+    await ApiClient.confirmDelivery(parseInt(requestId, 10), confirmDeliveryData);
     alert('Delivery confirmation submitted successfully');
-    window.location.href = `/request-form/${pantryId}`;
+    return redirect(`/request-form/${pantryId}`);
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = `/request-form/${pantryId}`;
+    return redirect(`/request-form/${pantryId}`);
   }
 };
 

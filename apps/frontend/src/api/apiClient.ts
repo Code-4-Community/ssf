@@ -4,6 +4,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { NavigateFunction } from 'react-router-dom';
 import {
   User,
   Order,
@@ -27,6 +28,7 @@ const defaultBaseUrl =
 export class ApiClient {
   private axiosInstance: AxiosInstance;
   private accessToken: string | undefined;
+  private navigate: NavigateFunction | null = null;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
@@ -48,13 +50,22 @@ export class ApiClient {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
-          window.location.replace('/unauthorized');
+        if (error.response?.status === 403 && this.navigate) {
+          const errorData = error.response?.data as { message?: string };
+          this.navigate('/unauthorized', { 
+            replace: true,
+            state: { 
+              errorMessage: errorData?.message || 'Access forbidden' 
+            }
+          });
         }
         return Promise.reject(error);
       },
     );
+  }
+
+  public setNavigate(navigate: NavigateFunction) {
+    this.navigate = navigate;
   }
 
   public setAccessToken(token: string | undefined) {
@@ -276,11 +287,8 @@ export class ApiClient {
         data,
       );
 
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
+      if (response.status !== 200) {
+        throw new Error(`Failed to submit: ${response.statusText}`);
       }
     } catch (error) {
       alert(`Error submitting delivery confirmation: ${error}`);

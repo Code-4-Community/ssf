@@ -269,10 +269,6 @@ const router = createBrowserRouter([
       },
       // Actions
       {
-        path: '/food-request',
-        action: submitFoodRequestFormModal,
-      },
-      {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
       },
