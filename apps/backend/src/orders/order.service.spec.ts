@@ -7,6 +7,8 @@ import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -168,6 +170,276 @@ describe('OrdersService', () => {
       await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
         `Order ${missingOrderId} not found`,
       );
+    });
+    
+  describe('getCurrentOrders', () => {
+    it(`returns only orders with status 'pending' or 'shipped'`, async () => {
+      const orders = await service.getCurrentOrders();
+      expect(orders).toHaveLength(2);
+      expect(
+        orders.every(
+          (order) =>
+            order.status === OrderStatus.PENDING ||
+            order.status === OrderStatus.SHIPPED,
+        ),
+      ).toBe(true);
+    });
+  });
+
+  describe('getPastOrders', () => {
+    it(`returns only orders with status 'delivered'`, async () => {
+      const orders = await service.getPastOrders();
+      expect(orders).toHaveLength(2);
+      expect(
+        orders.every((order) => order.status === OrderStatus.DELIVERED),
+      ).toBe(true);
+    });
+  });
+
+  describe('findOne', () => {
+    it('returns order by ID', async () => {
+      const orderId = 1;
+      const result = await service.findOne(orderId);
+
+      expect(result).toBeDefined();
+      expect(result.orderId).toBe(1);
+    });
+
+    it('throws NotFoundException for non-existent order', async () => {
+      await expect(service.findOne(9999)).rejects.toThrow(
+        new NotFoundException('Order 9999 not found'),
+      );
+    });
+  });
+
+  describe('findOrderByRequest', () => {
+    it('returns order by request ID', async () => {
+      const order = await service.findOrderByRequest(1);
+
+      expect(order).toBeDefined();
+      expect(order.request).toBeDefined();
+      expect(order.requestId).toBe(1);
+    });
+
+    it('throws NotFoundException for non-existent order', async () => {
+      await expect(service.findOrderByRequest(9999)).rejects.toThrow(
+        new NotFoundException('Order with request ID 9999 not found'),
+      );
+    });
+  });
+
+  describe('findOrderFoodRequest', () => {
+    it('returns food request of order', async () => {
+      const foodRequest = await service.findOrderFoodRequest(1);
+
+      expect(foodRequest).toBeDefined();
+      expect(foodRequest.requestId).toBe(1);
+    });
+
+    it('throws NotFoundException for non-existent order', async () => {
+      await expect(service.findOrderFoodRequest(9999)).rejects.toThrow(
+        new NotFoundException('Order 9999 not found'),
+      );
+    });
+  });
+
+  describe('findOrderPantry', () => {
+    it('returns pantry of order', async () => {
+      const pantry = await service.findOrderPantry(1);
+
+      expect(pantry).toBeDefined();
+      expect(pantry.pantryName).toEqual('Community Food Pantry Downtown');
+      expect(pantry.pantryId).toEqual(1);
+    });
+  });
+
+  describe('findOrderFoodManufacturer', () => {
+    it('returns FM of order', async () => {
+      const foodManufacturer = await service.findOrderFoodManufacturer(2);
+
+      expect(foodManufacturer).toBeDefined();
+      expect(foodManufacturer.foodManufacturerName).toEqual('Healthy Foods Co');
+      expect(foodManufacturer.foodManufacturerId).toEqual(2);
+    });
+
+    it('throws NotFoundException for non-existent order', async () => {
+      await expect(service.findOrderFoodManufacturer(9999)).rejects.toThrow(
+        new NotFoundException('Order 9999 not found'),
+      );
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('updates order status to delivered', async () => {
+      const orderId = 3;
+      const order = await service.findOne(orderId);
+
+      expect(order.status).toEqual(OrderStatus.SHIPPED);
+      expect(order.shippedAt).toBeDefined();
+
+      await service.updateStatus(orderId, OrderStatus.DELIVERED);
+      const updatedOrder = await service.findOne(orderId);
+
+      expect(updatedOrder.status).toEqual(OrderStatus.DELIVERED);
+      expect(updatedOrder.deliveredAt).toBeDefined();
+    });
+
+    it('updates order status to shipped', async () => {
+      const orderId = 4;
+      const order = await service.findOne(orderId);
+
+      expect(order.status).toEqual(OrderStatus.PENDING);
+
+      await service.updateStatus(orderId, OrderStatus.SHIPPED);
+      const updatedOrder = await service.findOne(orderId);
+
+      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
+      expect(updatedOrder.shippedAt).toBeDefined();
+      expect(updatedOrder.deliveredAt).toBeNull();
+    });
+  });
+
+  describe('getOrdersByPantry', () => {
+    it('returns order from pantry ID', async () => {
+      const pantryId = 1;
+      const orders = await service.getOrdersByPantry(pantryId);
+
+      expect(orders.length).toBe(2);
+      expect(orders.every((order) => order.request)).toBeDefined();
+      expect(orders.every((order) => order.request.pantryId === 1)).toBe(true);
+    });
+
+    it('returns empty list for pantry with no orderes', async () => {
+      const pantryId = 5;
+      const orders = await service.getOrdersByPantry(pantryId);
+
+      expect(orders).toEqual([]);
+    });
+
+    it('throws NotFoundException for non-existent pantry', async () => {
+      const pantryId = 9999;
+
+      await expect(service.getOrdersByPantry(pantryId)).rejects.toThrow(
+        new NotFoundException(`Pantry ${pantryId} not found`),
+      );
+    });
+  });
+
+  describe('updateTrackingCostInfo', () => {
+    it('throws when order is non-existent', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'test',
+        shippingCost: 5.99,
+      };
+
+      await expect(
+        service.updateTrackingCostInfo(9999, trackingCostDto),
+      ).rejects.toThrow(new NotFoundException('Order 9999 not found'));
+    });
+
+    it('throws when tracking link and shipping cost not given', async () => {
+      await expect(service.updateTrackingCostInfo(3, {})).rejects.toThrow(
+        new BadRequestException(
+          'At least one of tracking link or shipping cost must be provided',
+        ),
+      );
+    });
+
+    it('updates tracking link for shipped order', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'samplelink.com',
+      };
+
+      await service.updateTrackingCostInfo(3, trackingCostDto);
+
+      const order = await service.findOne(3);
+      expect(order.trackingLink).toBeDefined();
+      expect(order.trackingLink).toEqual('samplelink.com');
+    });
+
+    it('updates shipping cost for shipped order', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        shippingCost: 12.99,
+      };
+
+      await service.updateTrackingCostInfo(3, trackingCostDto);
+
+      const order = await service.findOne(3);
+      expect(order.shippingCost).toBeDefined();
+      expect(order.shippingCost).toEqual('12.99');
+    });
+
+    it('updates both shipping cost and tracking link', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 7.5,
+      };
+
+      await service.updateTrackingCostInfo(3, trackingCostDto);
+
+      const order = await service.findOne(3);
+      expect(order.trackingLink).toEqual('testtracking.com');
+      expect(order.shippingCost).toEqual('7.50');
+    });
+
+    it('throws BadRequestException for delivered order', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 7.5,
+      };
+      const orderId = 2;
+
+      const order = await service.findOne(orderId);
+
+      expect(order.status).toEqual(OrderStatus.DELIVERED);
+
+      await expect(
+        service.updateTrackingCostInfo(orderId, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Can only update tracking info for pending or shipped orders',
+        ),
+      );
+    });
+
+    it('throws when both fields are not provided for first time setting', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+      };
+      const orderId = 4;
+
+      const order = await service.findOne(orderId);
+
+      expect(order.shippedAt).toBeNull();
+      expect(order.trackingLink).toBeNull();
+
+      await expect(
+        service.updateTrackingCostInfo(4, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Must provide both tracking link and shipping cost on initial assignment',
+        ),
+      );
+    });
+
+    it('sets status to shipped when both fields provided and previous status pending', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.75,
+      };
+      const orderId = 4;
+
+      const order = await service.findOne(orderId);
+
+      expect(order.status).toEqual(OrderStatus.PENDING);
+      expect(order.shippedAt).toBeNull();
+
+      await service.updateTrackingCostInfo(orderId, trackingCostDto);
+
+      const updatedOrder = await service.findOne(orderId);
+
+      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
+      expect(updatedOrder.shippedAt).toBeDefined();
     });
   });
 });

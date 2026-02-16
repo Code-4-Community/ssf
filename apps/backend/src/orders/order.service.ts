@@ -21,6 +21,8 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
   ) {}
 
+  // TODO: when order is created, set FM
+
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
@@ -124,13 +126,13 @@ export class OrdersService {
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
+    if (!request) {
+      throw new NotFoundException(`Request for order ${orderId} not found`);
+    }
+
     const pantry = await this.pantryRepo.findOneBy({
       pantryId: request.pantryId,
     });
-
-    if (!pantry) {
-      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
-    }
 
     return pantry;
   }
@@ -164,24 +166,17 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-    if (!order.foodManufacturer) {
-      throw new NotFoundException(
-        `Order ${orderId} does not have a food manufacturer assigned`,
-      );
-    }
     return order.foodManufacturer;
   }
 
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
-    // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
         status: newStatus as OrderStatus,
-        shippedBy: 1,
         shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
         deliveredAt:
           newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
