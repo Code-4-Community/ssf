@@ -65,11 +65,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      console.log('Food request submitted successfully');
       onClose();
       onSuccess();
     } catch (error) {
-      console.error('Error submitting food request', error);
       alert('Failed to submit request. Please try again.');
     }
   };
