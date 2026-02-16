@@ -79,6 +79,6 @@ describe('VolunteersService', () => {
       await expect(service.findOne(1)).rejects.toThrow(
         new NotFoundException('User 1 is not a volunteer'),
       );
-    })
+    });
   });
 });

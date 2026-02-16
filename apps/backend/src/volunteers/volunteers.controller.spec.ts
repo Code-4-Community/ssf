@@ -134,7 +134,9 @@ describe('VolunteersController', () => {
 
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockPantries.slice(0, 2));
-      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(1);
+      expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(
+        1,
+      );
     });
   });
 
