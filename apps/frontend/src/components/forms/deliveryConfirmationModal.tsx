@@ -8,7 +8,12 @@ import {
   Text,
   Dialog,
 } from '@chakra-ui/react';
-import { Form, ActionFunction, ActionFunctionArgs, redirect } from 'react-router-dom';
+import {
+  Form,
+  ActionFunction,
+  ActionFunctionArgs,
+  redirect,
+} from 'react-router-dom';
 import ApiClient from '@api/apiClient';
 
 interface DeliveryConfirmationModalProps {
@@ -173,7 +178,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   }
 
   try {
-    await ApiClient.confirmDelivery(parseInt(requestId, 10), confirmDeliveryData);
+    await ApiClient.confirmDelivery(
+      parseInt(requestId, 10),
+      confirmDeliveryData,
+    );
     alert('Delivery confirmation submitted successfully');
     return redirect(`/request-form/${pantryId}`);
   } catch (error) {

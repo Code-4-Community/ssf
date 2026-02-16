@@ -11,7 +11,12 @@ import {
   Field,
   CloseButton,
 } from '@chakra-ui/react';
-import { CreateFoodRequestBody, FoodRequest, FoodTypes, RequestSize } from '../../types/types';
+import {
+  CreateFoodRequestBody,
+  FoodRequest,
+  FoodTypes,
+  RequestSize,
+} from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
 import apiClient from '@api/apiClient';
 

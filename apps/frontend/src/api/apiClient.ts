@@ -52,11 +52,11 @@ export class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 403 && this.navigate) {
           const errorData = error.response?.data as { message?: string };
-          this.navigate('/unauthorized', { 
+          this.navigate('/unauthorized', {
             replace: true,
-            state: { 
-              errorMessage: errorData?.message || 'Access forbidden' 
-            }
+            state: {
+              errorMessage: errorData?.message || 'Access forbidden',
+            },
           });
         }
         return Promise.reject(error);

@@ -6,7 +6,7 @@ import apiClient from '@api/apiClient';
 
 const Root: React.FC = () => {
   const navigate = useNavigate();
-  
+
   useAuth();
 
   useEffect(() => {
