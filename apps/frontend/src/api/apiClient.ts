@@ -50,7 +50,6 @@ export class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 403) {
           // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
-
           window.location.replace('/unauthorized');
         }
         return Promise.reject(error);

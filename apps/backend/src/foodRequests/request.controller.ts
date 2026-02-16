@@ -27,7 +27,6 @@ import { OrderStatus } from '../orders/types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Controller('requests')
-// @UseInterceptors()
 @UseGuards(RolesGuard)
 export class RequestsController {
   constructor(
