@@ -44,6 +44,11 @@ const ResetPasswordModal: React.FC = () => {
       return;
     }
 
+    if (password.length < 8) {
+      alert('Password needs to be at least 8 characters');
+      return;
+    }
+
     try {
       await confirmResetPassword({
         username: email,
