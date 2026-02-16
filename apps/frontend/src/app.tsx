@@ -59,6 +59,7 @@ const components = {
     },
   },
 };
+import AssignedPantries from '@containers/volunteerAssignedPantries'
 
 const router = createBrowserRouter([
   {
@@ -227,6 +228,22 @@ const router = createBrowserRouter([
       {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
+      },
+      {
+        path: '/approve-pantries',
+        element: <ApprovePantries />,
+      },
+      {
+        path: '/admin-donation',
+        element: <AdminDonation />,
+      },
+      {
+        path: '/volunteer-management',
+        element: <VolunteerManagement />,
+      },
+      {
+        path: '/volunteer-assigned-pantries',
+        element: <AssignedPantries />,
       },
     ],
   },
