@@ -6,6 +6,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
@@ -35,6 +37,18 @@ export class PantriesController {
     private ordersService: OrdersService,
     private emailsService: EmailsService,
   ) {}
+
+  @Roles(Role.PANTRY)
+  @Get('/my-id')
+  async getCurrentUserPantryId(@Req() req): Promise<number> {
+    const currentUser = req.user;
+    if (!currentUser) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    const pantry = await this.pantriesService.findByUserId(currentUser.id);
+    return pantry.pantryId;
+  }
 
   @Roles(Role.ADMIN)
   @Get('/pending')
