@@ -60,7 +60,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   const [isRecurring, setIsRecurring] = useState(false);
   // Defaults for the recurring section
   const [repeatEvery, setRepeatEvery] = useState('1');
-  const [repeatInterval, setRepeatInterval] = useState<RepeatEnum>(RepeatEnum.NONE);
+  const [repeatInterval, setRepeatInterval] = useState<RepeatEnum>(
+    RepeatEnum.NONE,
+  );
   const [repeatOn, setRepeatOn] = useState({
     Monday: false,
     Tuesday: false,
@@ -452,7 +454,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell pl={1}>
                           <Input
                             _placeholder={{ color: 'neutral.300' }}
-                            color='neutral.800'
+                            color="neutral.800"
                             placeholder="Enter Food"
                             value={row.foodItem}
                             size="md"
@@ -487,7 +489,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <Input
                             _placeholder={{ color: 'neutral.300' }}
-                            color='neutral.800'
+                            color="neutral.800"
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -504,7 +506,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={{
                               color: 'neutral.300',
                             }}
-                            color = 'neutral.800'
+                            color="neutral.800"
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -519,7 +521,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Table.Cell>
                           <Input
                             _placeholder={{ color: 'neutral.300' }}
-                            color='neutral.800'
+                            color="neutral.800"
                             placeholder="Enter $"
                             type="number"
                             min={1}
@@ -584,11 +586,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               setRepeatInterval(e.target.value as RepeatEnum)
                             }
                           >
-                            {Object.values(RepeatEnum). filter((interval) => interval !== 'None'). map((interval) => (
-                              <option key={interval} value={interval}>
-                                {interval}
-                              </option>
-                            ))}
+                            {Object.values(RepeatEnum)
+                              .filter((interval) => interval !== 'None')
+                              .map((interval) => (
+                                <option key={interval} value={interval}>
+                                  {interval}
+                                </option>
+                              ))}
                           </NativeSelect.Field>
                           <NativeSelectIndicator />
                         </NativeSelect.Root>
@@ -714,12 +718,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 </Box>
               )}
 
-              <Flex
-                justifyContent="flex-end"
-                gap={3}
-                mt={6}
-                pt={4}
-              >
+              <Flex justifyContent="flex-end" gap={3} mt={6} pt={4}>
                 <Button
                   variant="outline"
                   color="gray.700"

@@ -42,9 +42,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   // Color mapping for statuses
   const STATUS_COLORS = new Map<DonationStatus, [string, string]>([
-    [DonationStatus.MATCHED, ['dashboardStatuses.firstHeader', 'dashboardStatuses.firstText']],
-    [DonationStatus.AVAILABLE, ['dashboardStatuses.secondHeader', 'dashboardStatuses.secondText']],
-    [DonationStatus.FULFILLED, ['dashboardStatuses.thirdHeader', 'dashboardStatuses.thirdText']],
+    [
+      DonationStatus.MATCHED,
+      ['dashboardStatuses.firstHeader', 'dashboardStatuses.firstText'],
+    ],
+    [
+      DonationStatus.AVAILABLE,
+      ['dashboardStatuses.secondHeader', 'dashboardStatuses.secondText'],
+    ],
+    [
+      DonationStatus.FULFILLED,
+      ['dashboardStatuses.thirdHeader', 'dashboardStatuses.thirdText'],
+    ],
   ]);
 
   const MAX_PER_STATUS = 5;

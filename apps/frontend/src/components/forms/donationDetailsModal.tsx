@@ -74,12 +74,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 <Dialog.Title fontSize="lg" mb={2} fontWeight="600">
                   Donation #{donationId} Details
                 </Dialog.Title>
-                  <Text fontSize="sm">
-                    {donation.foodManufacturer?.foodManufacturerName}
-                  </Text>
-                  <Text fontSize="sm">
-                    {formatDate(donation.dateDonated)}
-                  </Text>
+                <Text fontSize="sm">
+                  {donation.foodManufacturer?.foodManufacturerName}
+                </Text>
+                <Text fontSize="sm">{formatDate(donation.dateDonated)}</Text>
               </VStack>
             </Dialog.Header>
 
@@ -116,7 +114,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                             justifyContent="center"
                             bg="white"
                           >
-                            <Text fontSize="sm">{item.quantity - item.reservedQuantity} of {item.quantity} remaining</Text>
+                            <Text fontSize="sm">
+                              {item.quantity - item.reservedQuantity} of{' '}
+                              {item.quantity} remaining
+                            </Text>
                           </Box>
                         </Box>
                       ))}
