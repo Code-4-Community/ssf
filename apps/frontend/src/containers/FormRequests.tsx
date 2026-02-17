@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -39,7 +39,7 @@ const FormRequests: React.FC = () => {
 
   const pageSize = 10;
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (pantryId) {
       try {
         const data = await ApiClient.getPantryRequests(pantryId);
@@ -55,11 +55,11 @@ const FormRequests: React.FC = () => {
         console.log(error);
       }
     }
-  };
+  }, [pantryId]);
 
   useEffect(() => {
     fetchRequests();
-  }, [pantryId]);
+  }, [pantryId, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
