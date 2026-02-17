@@ -82,17 +82,11 @@ const AdminOrderManagement: React.FC = () => {
     },
   });
 
-  const STATUS_ORDER = [
-    OrderStatus.PENDING,
-    OrderStatus.SHIPPED,
-    OrderStatus.DELIVERED,
-  ];
-
   // Color mapping for statuses
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.PENDING, ['#FEECD1', '#9C5D00']],
-    [OrderStatus.SHIPPED, ['#D5DCDF', '#2B4E60']],
-    [OrderStatus.DELIVERED, ['#D4EAED', '#19717D']],
+    [OrderStatus.PENDING, ['dashboardStatuses.firstHeader', 'dashboardStatuses.firstText']],
+    [OrderStatus.SHIPPED, ['dashboardStatuses.secondHeader', 'dashboardStatuses.secondText']],
+    [OrderStatus.DELIVERED, ['dashboardStatuses.thirdHeader', 'dashboardStatuses.thirdText']],
   ]);
 
   const MAX_PER_STATUS = 5;
@@ -168,7 +162,7 @@ const AdminOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {STATUS_ORDER.map((status) => {
+      {Object.values(OrderStatus).map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 

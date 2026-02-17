@@ -15,7 +15,7 @@ import {
   Menu,
   NumberInput,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodType, FoodTypes, RecurrenceEnum } from '../../types/types';
 import { Minus } from 'lucide-react';
@@ -32,15 +32,17 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onClose,
 }) => {
   enum RepeatEnum {
+    NONE = 'None',
     WEEK = 'Week',
     MONTH = 'Month',
     YEAR = 'Year',
   }
 
   const RECURRENCE_MAP: Record<RepeatEnum, RecurrenceEnum> = {
-    Week: RecurrenceEnum.WEEKLY,
-    Month: RecurrenceEnum.MONTHLY,
-    Year: RecurrenceEnum.YEARLY,
+    [RepeatEnum.NONE]: RecurrenceEnum.NONE,
+    [RepeatEnum.WEEK]: RecurrenceEnum.WEEKLY,
+    [RepeatEnum.MONTH]: RecurrenceEnum.MONTHLY,
+    [RepeatEnum.YEAR]: RecurrenceEnum.YEARLY,
   };
 
   const [rows, setRows] = useState([
@@ -58,7 +60,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   const [isRecurring, setIsRecurring] = useState(false);
   // Defaults for the recurring section
   const [repeatEvery, setRepeatEvery] = useState('1');
-  const [repeatInterval, setRepeatInterval] = useState(RepeatEnum.WEEK);
+  const [repeatInterval, setRepeatInterval] = useState<RepeatEnum>(RepeatEnum.NONE);
   const [repeatOn, setRepeatOn] = useState({
     Monday: false,
     Tuesday: false,
@@ -145,7 +147,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     const dates: string[] = [];
 
     // For weeks, use the repeatCount and selected days to calculate the next dates
-    if (repeatInterval === 'Week') {
+    if (repeatInterval === RepeatEnum.WEEK) {
       const selectedDays = Object.keys(repeatOn).filter((day) => repeatOn[day]);
       if (selectedDays.length === 0) return [];
 
@@ -185,7 +187,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           dates.push(nextDate.toISOString());
         }
       }
-    } else if (repeatInterval === 'Month') {
+    } else if (repeatInterval === RepeatEnum.MONTH) {
       const nextDate = new Date(today);
       nextDate.setMonth(today.getMonth() + repeatCount);
       nextDate.setHours(
@@ -195,7 +197,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         today.getMilliseconds(),
       );
       dates.push(nextDate.toISOString());
-    } else if (repeatInterval === 'Year') {
+    } else if (repeatInterval === RepeatEnum.YEAR) {
       const nextDate = new Date(today);
       nextDate.setFullYear(today.getFullYear() + repeatCount);
       nextDate.setHours(
@@ -251,8 +253,15 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
     // Create the donation first
     const nextDonationDates = isRecurring ? generateNextDonationDates() : null;
+
+    // Alert the user for recurring donations that do not have another donation date scheduled
+    if (nextDonationDates && nextDonationDates.length === 0) {
+      alert('Please select at least one day for weekly recurrence.');
+      return;
+    }
+
     const donation_body = {
-      foodManufacturerId: 1,
+      foodManufacturerId: 1, // TODO: Change this to the proper id of the logged in user's food manufacturer
       totalItems,
       totalOz,
       totalEstimatedValue: totalValue,
@@ -296,6 +305,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         setTotalOz(0);
         setTotalValue(0);
         setIsRecurring(false);
+        setRepeatInterval(RepeatEnum.NONE);
         onClose();
       } else {
         alert('Failed to submit donation');
@@ -305,7 +315,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
-  const isRepeatOnDisabled = repeatInterval !== 'Week';
+  const isRepeatOnDisabled = repeatInterval !== RepeatEnum.WEEK;
 
   return (
     <Dialog.Root
@@ -358,7 +368,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       </Button>
                       <Checkbox.Root
                         checked={isRecurring}
-                        onCheckedChange={(e) => setIsRecurring(e.checked)}
+                        onCheckedChange={(e) => {
+                          // Handles the case of we make edits to make donation recurring, but uncheck it afterwards
+                          // in which case it should go back to none rather than keeping the last selected interval
+                          if (e.checked) {
+                            setRepeatInterval(RepeatEnum.WEEK);
+                          } else {
+                            setRepeatInterval(RepeatEnum.NONE);
+                          }
+                          setIsRecurring(e.checked);
+                        }}
                       >
                         <Checkbox.HiddenInput />
                         <Checkbox.Control>
@@ -432,7 +451,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         </Table.Cell>
                         <Table.Cell pl={1}>
                           <Input
-                            color={row.foodItem ? 'neutral.800' : 'neutral.300'}
+                            _placeholder={{ color: 'neutral.300' }}
+                            color='neutral.800'
                             placeholder="Enter Food"
                             value={row.foodItem}
                             size="md"
@@ -466,7 +486,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={row.numItems ? 'neutral.800' : 'neutral.300'}
+                            _placeholder={{ color: 'neutral.300' }}
+                            color='neutral.800'
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -480,9 +501,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={
-                              row.ozPerItem ? 'neutral.800' : 'neutral.300'
-                            }
+                            _placeholder={{
+                              color: 'neutral.300',
+                            }}
+                            color = 'neutral.800'
                             placeholder="Enter #"
                             type="number"
                             min={1}
@@ -496,9 +518,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            color={
-                              row.valuePerItem ? 'neutral.800' : 'neutral.300'
-                            }
+                            _placeholder={{ color: 'neutral.300' }}
+                            color='neutral.800'
                             placeholder="Enter $"
                             type="number"
                             min={1}
@@ -563,7 +584,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               setRepeatInterval(e.target.value as RepeatEnum)
                             }
                           >
-                            {Object.values(RepeatEnum).map((interval) => (
+                            {Object.values(RepeatEnum). filter((interval) => interval !== 'None'). map((interval) => (
                               <option key={interval} value={interval}>
                                 {interval}
                               </option>
@@ -574,7 +595,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       </Flex>
                     </Box>
 
-                    <Box flex="1" minW="236px">
+                    <Box flex="1" minW="236px" width="100%">
                       <Text fontWeight={600} mb={3}>
                         Repeat on
                       </Text>
@@ -620,7 +641,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           <Portal>
                             <Menu.Positioner>
                               <Menu.Content
-                                minW="200px"
+                                minW="236px"
                                 maxH="300px"
                                 color="neutral.800"
                                 zIndex={9999}
@@ -664,7 +685,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         min={1}
                       >
                         <Flex position="relative" align="center">
-                          <NumberInput.Input pl={4} pr="140px" />
+                          <NumberInput.Input pl={4} pr="140px" fontSize="md" />
                           <Text
                             position="absolute"
                             left={`calc(16px + ${
@@ -683,7 +704,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       </NumberInput.Root>
                     </Box>
                   </Stack>
-                  {(repeatInterval === 'Week'
+                  {(repeatInterval === RepeatEnum.WEEK
                     ? Object.values(repeatOn).some(Boolean)
                     : true) && (
                     <Text color="neutral.700" fontStyle="italic" mt={2}>
@@ -698,8 +719,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 gap={3}
                 mt={6}
                 pt={4}
-                borderTop="1px solid"
-                borderColor="gray.200"
               >
                 <Button
                   variant="outline"

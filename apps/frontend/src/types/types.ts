@@ -97,9 +97,9 @@ export interface PantryApplicationDto {
 }
 
 export enum DonationStatus {
+  MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHED = 'matched',
 }
 
 export enum RecurrenceEnum {
@@ -278,9 +278,9 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  DELIVERED = 'delivered',
   PENDING = 'pending',
   SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
 }
 
 export enum RequestSize {

@@ -32,7 +32,7 @@ export class DonationItem {
   reservedQuantity!: number;
 
   @Column({ name: 'oz_per_item', type: 'int', nullable: true })
-  ozPerItem!: number;
+  ozPerItem?: number;
 
   @Column({ name: 'estimated_value', type: 'int', nullable: true })
   estimatedValue?: number;

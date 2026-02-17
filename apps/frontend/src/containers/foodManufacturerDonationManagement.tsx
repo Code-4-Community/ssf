@@ -40,17 +40,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.FULFILLED]: 1,
   });
 
-  const STATUS_DONATIONS = [
-    DonationStatus.MATCHED,
-    DonationStatus.AVAILABLE,
-    DonationStatus.FULFILLED,
-  ];
-
   // Color mapping for statuses
   const STATUS_COLORS = new Map<DonationStatus, [string, string]>([
-    [DonationStatus.MATCHED, ['#FEECD1', '#9C5D00']],
-    [DonationStatus.AVAILABLE, ['#D5DCDF', '#2B4E60']],
-    [DonationStatus.FULFILLED, ['#D4EAED', '#19717D']],
+    [DonationStatus.MATCHED, ['dashboardStatuses.firstHeader', 'dashboardStatuses.firstText']],
+    [DonationStatus.AVAILABLE, ['dashboardStatuses.secondHeader', 'dashboardStatuses.secondText']],
+    [DonationStatus.FULFILLED, ['dashboardStatuses.thirdHeader', 'dashboardStatuses.thirdText']],
   ]);
 
   const MAX_PER_STATUS = 5;
@@ -67,9 +61,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
 
       data.forEach((donation: Donation) => {
-        if (donation.status in grouped) {
-          grouped[donation.status].push(donation);
-        }
+        grouped[donation.status].push(donation);
       });
 
       setStatusDonations(grouped);
@@ -128,7 +120,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         />
       )}
 
-      {STATUS_DONATIONS.map((status) => {
+      {Object.values(DonationStatus).map((status) => {
         const allDonationsByStatus = statusDonations[status] || [];
 
         const currentPage = currentPages[status] || 1;

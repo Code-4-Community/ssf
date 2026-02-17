@@ -60,6 +60,14 @@ const customConfig = defineConfig({
     textStyles,
     tokens: {
       colors: {
+        dashboardStatuses: {
+          firstHeader: { value: '#FEECD1' },
+          firstText: { value: '#9C5D00' },
+          secondHeader: { value: '#D5DCDF' },
+          secondText: { value: '#2B4E60' },
+          thirdHeader: { value: '#D4EAED' },
+          thirdText: { value: '#19717D' },
+        },
         white: { value: '#fff' },
         black: { value: '#000' },
         blue: {

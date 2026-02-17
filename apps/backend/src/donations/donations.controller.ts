@@ -28,14 +28,14 @@ export class DonationsController {
     return this.donationService.getNumberOfDonations();
   }
 
-  @Get('by-fm-id/:foodManufacturerId')
+  @Get('/by-fm-id/:foodManufacturerId')
   async getDonationsByFoodManufacturer(
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<Donation[]> {
     return this.donationService.getByFoodManufacturer(foodManufacturerId);
   }
 
-  @Get('by-donation-id/:donationId')
+  @Get('/by-donation-id/:donationId')
   async getDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {

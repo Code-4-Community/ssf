@@ -190,11 +190,11 @@ export class ApiClient {
       .then(() => {});
   }
 
-  public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
+  public async getFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
   }
 
-  public async getOrderDonation(donationId: number): Promise<Donation> {
+  public async getDonation(donationId: number): Promise<Donation> {
     return this.get(
       `/api/donations/by-donation-id/${donationId}`,
     ) as Promise<Donation>;
