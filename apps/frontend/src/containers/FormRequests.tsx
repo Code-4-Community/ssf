@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -42,27 +42,35 @@ const FormRequests: React.FC = () => {
 
   const pageSize = 10;
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      if (pantryId) {
-        try {
-          const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data
-            .slice()
-            .sort((a, b) => b.requestId - a.requestId);
-          setRequests(sortedData);
+  const fetchRequests = useCallback(async () => {
+    if (pantryId) {
+      try {
+        const data = await ApiClient.getPantryRequests(pantryId);
+        const sortedData = data
+          .slice()
+          .sort((a, b) => b.requestId - a.requestId);
+        setRequests(sortedData);
 
+<<<<<<< jw/SSF-124-replacing-native-alerts
           if (sortedData.length > 0) {
             setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
           setAlertMessage('Error fetching requests: ' + error);
+=======
+        if (sortedData.length > 0) {
+          setPreviousRequest(sortedData[0]);
+>>>>>>> main
         }
+      } catch (error) {
+        console.log(error);
       }
-    };
-
-    fetchRequests();
+    }
   }, [pantryId]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [pantryId, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -94,6 +102,7 @@ const FormRequests: React.FC = () => {
           isOpen={newRequestDisclosure.open}
           onClose={newRequestDisclosure.onClose}
           pantryId={pantryId}
+          onSuccess={fetchRequests}
         />
         {previousRequest && (
           <>
@@ -114,6 +123,7 @@ const FormRequests: React.FC = () => {
               isOpen={previousRequestDisclosure.open}
               onClose={previousRequestDisclosure.onClose}
               pantryId={pantryId}
+              onSuccess={fetchRequests}
             />
           </>
         )}
