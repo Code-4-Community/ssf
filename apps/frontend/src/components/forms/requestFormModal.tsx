@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useActionData } from 'react-router-dom';
+import { ActionFunction, ActionFunctionArgs, useActionData } from 'react-router-dom';
 import {
   Flex,
   Button,
@@ -65,28 +65,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       onSuccess();
     }
   }, [actionData, onClose]);
-
-  const handleSubmit = async () => {
-    const foodRequestData: CreateFoodRequestBody = {
-      pantryId,
-      requestedSize: requestedSize as RequestSize,
-      requestedItems: selectedItems,
-      additionalInformation: additionalNotes || '',
-      dateReceived: null,
-      feedback: null,
-      photos: [],
-    };
-
-     try {
-      await apiClient.createFoodRequest(foodRequestData);
-      return { success: true };
-    } catch {
-      return {
-        error: 'Failed to submit food request',
-        success: false,
-      };
-    }
-  };
 
   return (
     <Dialog.Root
@@ -323,7 +301,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Button>
 
                 <Button
-                  onClick={handleSubmit}
+                  type="submit"
                   bg={isFormValid ? '#213C4A' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
@@ -340,6 +318,33 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       </Dialog.Positioner>
     </Dialog.Root>
   );
+};
+
+export const submitFoodRequestFormModal: ActionFunction = async ({
+  request,
+}: ActionFunctionArgs) => {
+  const form = await request.formData();
+  const pantryId = form.get('pantryId');
+
+  const foodRequestData: CreateFoodRequestBody = {
+    pantryId: Number(pantryId),
+    requestedSize: form.get('size') as string,
+    additionalInformation: form.get('notes') as string,
+    requestedItems: form.getAll('restrictions') as string[],
+    dateReceived: null,
+    feedback: null,
+    photos: [],
+  };
+
+  try {
+    await apiClient.createFoodRequest(foodRequestData);
+    return { success: true };
+  } catch {
+    return {
+      error: 'Failed to submit food request',
+      success: false,
+    };
+  }
 };
 
 export default FoodRequestFormModal;

@@ -70,7 +70,7 @@ const PantryApplicationForm: React.FC = () => {
   const [secondaryContactPhone, setSecondaryContactPhone] =
     useState<string>('');
   const [activities, setActivities] = useState<string[]>([]);
-  const allergenClientsExactOption: string = 'I have an exact number';
+  const allergenClientsExactOption = 'I have an exact number';
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
@@ -1226,7 +1226,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const data = Object.fromEntries(pantryApplicationData);
 
-  let submissionSuccessful: boolean = false;
+  let submissionSuccessful = false;
 
   await ApiClient.postPantry(data as PantryApplicationDto).then(
     () => (submissionSuccessful = true),

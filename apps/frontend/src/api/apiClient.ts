@@ -178,8 +178,7 @@ export class ApiClient {
     body: { role: string },
   ): Promise<void> {
     return this.axiosInstance
-      .put(`/api/users/${userId}/role`, body)
-      .then(() => {});
+      .put(`/api/users/${userId}/role`, body);
   }
 
   public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {

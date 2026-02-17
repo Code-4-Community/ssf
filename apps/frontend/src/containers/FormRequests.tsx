@@ -117,7 +117,7 @@ const FormRequests: React.FC = () => {
                 onClose={previousRequestDisclosure.onClose}
                 pantryId={pantryId}
                 onSuccess={fetchRequests}
-            />
+              />
             )}
           </>
         )}
