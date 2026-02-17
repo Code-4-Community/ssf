@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ActionFunction, ActionFunctionArgs, useActionData } from 'react-router-dom';
 import {
   Flex,
   Button,
@@ -40,8 +41,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
-
+  const [alertMessage, setAlertMessage] = useState<string>(''); 
+  
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -54,13 +55,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
-
+  
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
-      requestedItems: selectedItems,
       additionalInformation: additionalNotes || '',
+      requestedItems: selectedItems,
       dateReceived: null,
       feedback: null,
       photos: [],
@@ -70,10 +71,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       await apiClient.createFoodRequest(foodRequestData);
       onClose();
       onSuccess();
-    } catch (error) {
-      setAlertMessage('Error submitting request: ' + error);
+    } catch {
+      setAlertMessage('Failed to submit food request');
     }
-  };
+  }
 
   return (
     <Dialog.Root
