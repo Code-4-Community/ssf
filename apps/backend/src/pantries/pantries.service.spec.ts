@@ -287,7 +287,6 @@ describe('PantriesService', () => {
   //   it('should return a pantry by user id', async () => {
   //     const userId = 10;
   //     const pantry = await service.findByUserId(userId);
-  //     console.log('Pantry found:', pantry);
 
   //     expect(pantry.pantryId).toBe(1);
   //     expect(pantry.pantryName).toBe('Community Food Pantry Downtown');

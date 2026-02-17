@@ -15,7 +15,7 @@ import {
   ServeAllergicChildren,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 
 const mockPantriesService = mock<PantriesService>();
@@ -259,9 +259,9 @@ describe('PantriesController', () => {
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(1);
     });
 
-    it('throws BadRequestException when unauthenticated', async () => {
+    it('throws UnauthorizedException when unauthenticated', async () => {
       await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
-        new BadRequestException('Not authenticated'),
+        new UnauthorizedException('Not authenticated'),
       );
     });
 

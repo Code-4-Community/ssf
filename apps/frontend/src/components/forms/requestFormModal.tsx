@@ -42,8 +42,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   const [alertMessage, setAlertMessage] = useState<string>(''); 
   
-  const actionData = useActionData() as { error?: string; success?: boolean } | undefined;
-
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -56,15 +54,26 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
+  
+  const handleSubmit = async () => {
+    const foodRequestData: CreateFoodRequestBody = {
+      pantryId: pantryId,
+      requestedSize: requestedSize as RequestSize,
+      additionalInformation: additionalNotes || '',
+      requestedItems: selectedItems,
+      dateReceived: null,
+      feedback: null,
+      photos: [],
+    };
 
-  useEffect(() => {
-    if (actionData?.error) {
-      setAlertMessage(actionData.error);
-    } else if (actionData?.success) {
+    try {
+      await apiClient.createFoodRequest(foodRequestData);
       onClose();
       onSuccess();
+    } catch {
+      setAlertMessage('Failed to submit food request');
     }
-  }, [actionData, onClose]);
+  }
 
   return (
     <Dialog.Root
@@ -301,7 +310,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Button>
 
                 <Button
-                  type="submit"
+                  onClick={handleSubmit}
                   bg={isFormValid ? '#213C4A' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
@@ -318,33 +327,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       </Dialog.Positioner>
     </Dialog.Root>
   );
-};
-
-export const submitFoodRequestFormModal: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
-  const form = await request.formData();
-  const pantryId = form.get('pantryId');
-
-  const foodRequestData: CreateFoodRequestBody = {
-    pantryId: Number(pantryId),
-    requestedSize: form.get('size') as string,
-    additionalInformation: form.get('notes') as string,
-    requestedItems: form.getAll('restrictions') as string[],
-    dateReceived: null,
-    feedback: null,
-    photos: [],
-  };
-
-  try {
-    await apiClient.createFoodRequest(foodRequestData);
-    return { success: true };
-  } catch {
-    return {
-      error: 'Failed to submit food request',
-      success: false,
-    };
-  }
 };
 
 export default FoodRequestFormModal;
