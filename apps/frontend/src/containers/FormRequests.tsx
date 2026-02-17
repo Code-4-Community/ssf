@@ -20,19 +20,19 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
+  const { user } = useAuthenticator((context) => [context.user]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
+  const [pantryId, setPantryId] = useState<number | null>(null);
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
-
-  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
-  const pantryId = parseInt(pantryIdParam!, 10);
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
@@ -40,26 +40,30 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
-    if (pantryId) {
-      try {
-        const data = await ApiClient.getPantryRequests(pantryId);
-        const sortedData = data
-          .slice()
-          .sort((a, b) => b.requestId - a.requestId);
-        setRequests(sortedData);
+    if (user.userId) {
+      const pantryId = await ApiClient.getCurrentUserPantryId();
+      setPantryId(pantryId);
+      if (pantryId) {
+        try {
+          const data = await ApiClient.getPantryRequests(pantryId);
+          const sortedData = data
+            .slice()
+            .sort((a, b) => b.requestId - a.requestId);
+          setRequests(sortedData);
 
-        if (sortedData.length > 0) {
-          setPreviousRequest(sortedData[0]);
+          if (sortedData.length > 0) {
+            setPreviousRequest(sortedData[0]);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
     }
-  }, [pantryId]);
+  }, [user.userId]);
 
   useEffect(() => {
     fetchRequests();
-  }, [pantryId, fetchRequests]);
+  }, [user.userId, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -104,13 +108,15 @@ const FormRequests: React.FC = () => {
             >
               Resubmit Latest
             </Button>
-            <FoodRequestFormModal
-              previousRequest={previousRequest}
-              isOpen={previousRequestDisclosure.open}
-              onClose={previousRequestDisclosure.onClose}
-              pantryId={pantryId}
-              onSuccess={fetchRequests}
-            />
+            {pantryId && (
+              <FoodRequestFormModal
+                previousRequest={previousRequest}
+                isOpen={previousRequestDisclosure.open}
+                onClose={previousRequestDisclosure.onClose}
+                pantryId={pantryId}
+                onSuccess={fetchRequests}
+              />
+            )}
           </>
         )}
       </HStack>
@@ -191,7 +197,7 @@ const FormRequests: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openReadOnlyRequest && (
+          {openReadOnlyRequest && pantryId && (
             <RequestDetailsModal
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
