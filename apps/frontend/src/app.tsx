@@ -164,7 +164,7 @@ const router = createBrowserRouter([
         loader: pantryIdLoader,
       },
       {
-        path: '/donation-mangement',
+        path: '/donation-management',
         element: (
           <ProtectedRoute>
             <DonationManagement />
