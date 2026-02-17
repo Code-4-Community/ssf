@@ -128,4 +128,17 @@ export class PantriesService {
 
     return pantries;
   }
+
+  async findByUserId(userId: number): Promise<Pantry> {
+    validateId(userId, 'User');
+
+    const pantry = await this.repo.findOne({
+      where: { pantryUser: { id: userId } },
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry for User ${userId} not found`);
+    }
+    return pantry;
+  }
 }
