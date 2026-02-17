@@ -117,12 +117,6 @@ export interface Donation {
   foodManufacturer?: FoodManufacturer;
 }
 
-export enum DonationStatus {
-  AVAILABLE = 'available',
-  FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
-}
-
 export interface DonationItem {
   itemId: number;
   donationId: number;
@@ -254,7 +248,7 @@ export interface ManufacturerApplicationDto {
   donateWastedFood: DonateWastedFood;
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription?: string;
+  newsletterSubscription?: boolean;
 }
 
 export interface CreateFoodRequestBody {

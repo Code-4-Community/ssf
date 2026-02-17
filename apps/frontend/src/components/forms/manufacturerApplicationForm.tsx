@@ -11,11 +11,9 @@ import {
   SimpleGrid,
   NativeSelect,
   NativeSelectIndicator,
-  Tag,
   Separator,
   Checkbox,
   Menu,
-  Flex,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -25,30 +23,19 @@ import {
 } from 'react-router-dom';
 import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
+import { TagGroup } from '@components/forms/tagGroup';
 import { ManufacturerApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
-
-const allergenOptions = [
-  'Milk',
-  'Egg',
-  'Peanut',
-  'Tree nuts',
-  'Wheat',
-  'Soy',
-  'Fish',
-  'Shellfish',
-  'Sesame',
-  'Gluten',
-];
+import { Allergen, DonateWastedFood, ManufacturerAttribute } from '../../types/manufacturerEnums';
 
 const ManufacturerApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
   const [secondaryContactPhone, setSecondaryContactPhone] =
     useState<string>('');
-  const [unlistedProductAllergens, setUnlistedProductAllergens] = useState<string[]>([]);
-  const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<string[]>([]);
+  const [unlistedProductAllergens, setUnlistedProductAllergens] = useState<Allergen[]>([]);
+  const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<Allergen[]>([]);
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -289,7 +276,7 @@ const ManufacturerApplicationForm: React.FC = () => {
 
               <Menu.Positioner w="full">
                 <Menu.Content maxH="500px" overflowY="auto">
-                  {allergenOptions.map((value) => {
+                  {Object.values(Allergen).map((value) => {
                     const isChecked = unlistedProductAllergens.includes(value);
                     return (
                       <Menu.CheckboxItem
@@ -331,31 +318,15 @@ const ManufacturerApplicationForm: React.FC = () => {
               </Menu.Positioner>
             </Menu.Root>
 
-            {unlistedProductAllergens.length > 0 && (
-              <Flex wrap="wrap" mt={1} gap={2}>
-                {unlistedProductAllergens.map((value) => (
-                  <Tag.Root
-                    key={value}
-                    bg="teal.100"
-                    p={2}
-                    border="1px solid"
-                    borderColor="teal.400"
-                  >
-                    <Tag.Label>{value}</Tag.Label>
-                    <Tag.EndElement ml={4}>
-                      <Tag.CloseTrigger
-                        onClick={() =>
-                          setUnlistedProductAllergens((prev) =>
-                            prev.filter((item) => item !== value),
-                          )
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </Tag.EndElement>
-                  </Tag.Root>
-                ))}
-              </Flex>
-            )}
+            <TagGroup
+              values={unlistedProductAllergens}
+              onRemove={(value) =>
+                setUnlistedProductAllergens((prev) =>
+                  prev.filter((item) => item !== value),
+                )
+              }
+              blueVariant={true}
+            />
           </Field.Root>
 
           <Field.Root required mb="3em">
@@ -407,7 +378,7 @@ const ManufacturerApplicationForm: React.FC = () => {
 
               <Menu.Positioner w="full">
                 <Menu.Content maxH="500px" overflowY="auto">
-                  {allergenOptions.map((value) => {
+                  {Object.values(Allergen).map((value) => {
                     const isChecked = facilityFreeAllergens.includes(value);
                     return (
                       <Menu.CheckboxItem
@@ -416,8 +387,8 @@ const ManufacturerApplicationForm: React.FC = () => {
                         onCheckedChange={(checked: boolean) => {
                           setFacilityFreeAllergens((prev) =>
                             checked
-                              ? [...prev, value]
-                              : prev.filter((i) => i !== value),
+                              ? [...prev, value as Allergen]
+                              : prev.filter((i) => i !== value as Allergen),
                           );
                         }}
                         display="flex"
@@ -449,31 +420,15 @@ const ManufacturerApplicationForm: React.FC = () => {
               </Menu.Positioner>
             </Menu.Root>
 
-            {facilityFreeAllergens.length > 0 && (
-              <Flex wrap="wrap" mt={1} gap={2}>
-                {facilityFreeAllergens.map((value) => (
-                  <Tag.Root
-                    key={value}
-                    bg="teal.100"
-                    p={2}
-                    border="1px solid"
-                    borderColor="teal.400"
-                  >
-                    <Tag.Label>{value}</Tag.Label>
-                    <Tag.EndElement ml={4}>
-                      <Tag.CloseTrigger
-                        onClick={() =>
-                          setFacilityFreeAllergens((prev) =>
-                            prev.filter((item) => item !== value),
-                          )
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </Tag.EndElement>
-                  </Tag.Root>
-                ))}
-              </Flex>
-            )}
+            <TagGroup
+              values={facilityFreeAllergens}
+              onRemove={(value) =>
+                setFacilityFreeAllergens((prev) =>
+                  prev.filter((item) => item !== value),
+                )
+              }
+              blueVariant={true}
+            />
           </Field.Root>
 
           <Field.Root required mb="2em">
@@ -576,11 +531,7 @@ const ManufacturerApplicationForm: React.FC = () => {
             </Field.Label>
             <RadioGroup.Root name="donateWastedFood" variant="solid">
               <Stack>
-                {[
-                  'Always',
-                  'Sometimes',
-                  'Never',
-                ].map((value) => (
+                {Object.values(DonateWastedFood).map((value) => (
                   <RadioGroup.Item key={value} value={value}>
                     <RadioGroup.ItemHiddenInput required />
                     <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
@@ -610,12 +561,7 @@ const ManufacturerApplicationForm: React.FC = () => {
                 color="neutral.800"
                 textStyle="p2"
               >
-                {[
-                  'Female-founded or women-led',
-                  'Non-GMO Project Verified',
-                  'USDA Certified Organic',
-                  'None of the above',
-                ].map((value) => (
+                {Object.values(ManufacturerAttribute).map((value) => (
                   <option key={value} value={value}>
                     {value}
                   </option>
@@ -764,7 +710,7 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
   );
 
   return submissionSuccessful
-    ? redirect('/application/submitted')
+    ? redirect('/application-submitted')
     : null;
 };
 

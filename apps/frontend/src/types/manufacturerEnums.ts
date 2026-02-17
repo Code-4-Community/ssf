@@ -1,5 +1,5 @@
 export enum DonateWastedFood {
-  YES = 'Always',
+  ALWAYS = 'Always',
   SOMETIMES = 'Sometimes',
   NEVER = 'Never',
 }

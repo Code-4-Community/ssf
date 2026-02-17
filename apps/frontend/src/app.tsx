@@ -71,7 +71,7 @@ const router = createBrowserRouter([
         action: submitManufacturerApplicationForm,
       },
       {
-        path: '/application/submitted',
+        path: '/application-submitted',
         element: <ApplicationSubmitted />,
       },
       {

@@ -3,14 +3,13 @@ import {
   Text,
   Dialog,
   CloseButton,
-  Flex,
   Textarea,
   Field,
-  Tag,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, OrderSummary } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { TagGroup } from './tagGroup';
 
 interface OrderDetailsModalProps {
   order: OrderSummary;
@@ -92,24 +91,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Food Type(s)
                     </Text>
                   </Field.Label>
-                  <Flex wrap="wrap" mt={1} gap={2}>
-                    {foodRequest.requestedItems.map((item, index) => (
-                      <Tag.Root
-                        key={index}
-                        size="xl"
-                        variant="solid"
-                        bg="neutral.100"
-                        color="neutral.800"
-                        borderRadius="4px"
-                        borderColor="neutral.300"
-                        borderWidth="1px"
-                        fontFamily="Inter"
-                        fontWeight={500}
-                      >
-                        <Tag.Label>{item}</Tag.Label>
-                      </Tag.Root>
-                    ))}
-                  </Flex>
+                  <TagGroup
+                    values={foodRequest.requestedItems}
+                    blueVariant={false}
+                  />
                 </Field.Root>
 
                 <Field.Root mb={4}>
