@@ -93,7 +93,7 @@ const PantryDashboard: React.FC = () => {
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
-                    href={`/request-form/${pantryId}`}
+                    href="/request-form"
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >

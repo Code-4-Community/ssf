@@ -278,7 +278,7 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
+        window.location.href = '/request-form';
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }
