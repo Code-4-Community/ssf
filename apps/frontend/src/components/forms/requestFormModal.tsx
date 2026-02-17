@@ -11,15 +11,21 @@ import {
   Field,
   CloseButton,
 } from '@chakra-ui/react';
-import { Form, ActionFunction, ActionFunctionArgs } from 'react-router-dom';
-import { FoodRequest, FoodTypes, RequestSize } from '../../types/types';
+import {
+  CreateFoodRequestBody,
+  FoodRequest,
+  FoodTypes,
+  RequestSize,
+} from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import apiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;
+  onSuccess: () => void;
 }
 
 const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
@@ -27,6 +33,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   isOpen,
   onClose,
   pantryId,
+  onSuccess,
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
@@ -44,6 +51,26 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
+
+  const handleSubmit = async () => {
+    const foodRequestData: CreateFoodRequestBody = {
+      pantryId,
+      requestedSize: requestedSize as RequestSize,
+      requestedItems: selectedItems,
+      additionalInformation: additionalNotes || '',
+      dateReceived: null,
+      feedback: null,
+      photos: [],
+    };
+
+    try {
+      await apiClient.createFoodRequest(foodRequestData);
+      onClose();
+      onSuccess();
+    } catch (error) {
+      alert('Failed to submit request. Please try again.');
+    }
+  };
 
   return (
     <Dialog.Root
@@ -75,28 +102,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
-            <Form
-              method="post"
-              action="/food-request"
-              onSubmit={(e) => {
-                if (selectedItems.length === 0) {
-                  e.preventDefault();
-                  alert('Please select at least one food type');
-                }
-                if (requestedSize === '') {
-                  e.preventDefault();
-                  alert('Please select a requested size.');
-                }
-              }}
-            >
-              <input type="hidden" name="pantryId" value={pantryId} />
+            <Box>
               <Field.Root required mb={4}>
                 <Field.Label>
                   <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Size of Shipment
                   </Text>
                 </Field.Label>
-                <input type="hidden" name="size" value={requestedSize} />
                 <Menu.Root>
                   <Menu.Trigger asChild>
                     <Button
@@ -146,15 +158,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     Food Type(s)
                   </Text>
                 </Field.Label>
-
-                {selectedItems.map((item) => (
-                  <input
-                    key={item}
-                    type="hidden"
-                    name="restrictions"
-                    value={item}
-                  />
-                ))}
 
                 <Menu.Root closeOnSelect={false}>
                   <Menu.Trigger asChild>
@@ -261,7 +264,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Field.Label>
                 <Textarea
                   pl={2.5}
-                  name="notes"
                   placeholder="Anything else we should know about"
                   _placeholder={{
                     color: 'neutral.300',
@@ -300,7 +302,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Button>
 
                 <Button
-                  type="submit"
+                  onClick={handleSubmit}
                   bg={isFormValid ? '#213C4A' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
@@ -308,7 +310,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   Continue
                 </Button>
               </Flex>
-            </Form>
+            </Box>
           </Dialog.Body>
           <Dialog.CloseTrigger asChild>
             <CloseButton size="lg" />
@@ -317,51 +319,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       </Dialog.Positioner>
     </Dialog.Root>
   );
-};
-
-export const submitFoodRequestFormModal: ActionFunction = async ({
-  request,
-}: ActionFunctionArgs) => {
-  const form = await request.formData();
-
-  const foodRequestData = new Map();
-
-  const pantryId = form.get('pantryId');
-  foodRequestData.set('requestedSize', form.get('size'));
-  form.delete('size');
-  foodRequestData.set('additionalInformation', form.get('notes'));
-  form.delete('notes');
-  foodRequestData.set('requestedItems', form.getAll('restrictions'));
-  form.delete('restrictions');
-  foodRequestData.set('pantryId', form.get('pantryId'));
-
-  const data = Object.fromEntries(foodRequestData);
-  console.log(data);
-
-  try {
-    const response = await fetch('/api/requests/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      console.log('Food request submitted successfully');
-
-      window.location.href = `/request-form/${pantryId}`;
-      return null;
-    } else {
-      console.error('Failed to submit food request', await response.text());
-      window.location.href = `/request-form/${pantryId}`;
-      return null;
-    }
-  } catch (error) {
-    console.error('Error submitting food request', error);
-    window.location.href = `/request-form/${pantryId}`;
-    return null;
-  }
 };
 
 export default FoodRequestFormModal;
