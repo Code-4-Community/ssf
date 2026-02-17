@@ -69,9 +69,13 @@ const VolunteerManagement: React.FC = () => {
         Volunteer Management
       </Text>
       {alertMessage && (
-              <FloatingAlert message={alertMessage} status={submitSuccess ? "info" : "error"} timeout={6000} />
-            )}
-      
+        <FloatingAlert
+          message={alertMessage}
+          status={submitSuccess ? 'info' : 'error'}
+          timeout={6000}
+        />
+      )}
+
       <Box
         mt={3}
         display="block"
