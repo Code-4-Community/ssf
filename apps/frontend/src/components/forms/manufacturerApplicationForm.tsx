@@ -688,7 +688,7 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
   });
 
   const data = Object.fromEntries(manufacturerApplicationData);
-  let submissionSuccessful: boolean = false;
+  let submissionSuccessful = false;
 
   await ApiClient.postManufacturer(data as ManufacturerApplicationDto).then(
     () => (submissionSuccessful = true),
