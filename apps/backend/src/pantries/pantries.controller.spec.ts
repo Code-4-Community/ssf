@@ -211,12 +211,12 @@ describe('PantriesController', () => {
         {
           orderId: 26,
           requestId: 26,
-          shippedBy: 32,
+          foodManufacturerId: 32,
         },
         {
           orderId: 27,
           requestId: 27,
-          shippedBy: 33,
+          foodManufacturerId: 33,
         },
       ];
 
