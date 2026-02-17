@@ -32,9 +32,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-dashboard/1">
-                  Pantry Dashboard (ID: 1)
-                </RouterLink>
+                <RouterLink to="/pantry-dashboard">Pantry Dashboard</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -44,9 +42,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/request-form/1">
-                  Request Form (Pantry ID: 1)
-                </RouterLink>
+                <RouterLink to="/request-form">Request Form</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">

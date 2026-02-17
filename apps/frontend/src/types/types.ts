@@ -262,8 +262,6 @@ export interface CreateFoodRequestBody {
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string | null | undefined;
-  status: string;
-  fulfilledBy: number | null | undefined;
   dateReceived: string | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;
