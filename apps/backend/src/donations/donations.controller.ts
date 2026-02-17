@@ -53,8 +53,8 @@ export class DonationsController {
           example: DonationStatus.AVAILABLE,
         },
         totalItems: { type: 'integer', example: 100 },
-        totalOz: { type: 'integer', example: 500 },
-        totalEstimatedValue: { type: 'integer', example: 1000 },
+        totalOz: { type: 'number', example: 100.5 },
+        totalEstimatedValue: { type: 'number', example: 100.5 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),

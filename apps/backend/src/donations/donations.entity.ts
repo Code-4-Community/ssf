@@ -39,10 +39,10 @@ export class Donation {
   @Column({ name: 'total_items', type: 'int', nullable: true })
   totalItems?: number;
 
-  @Column({ name: 'total_oz', type: 'int', nullable: true })
+  @Column({ name: 'total_oz', type: 'numeric', nullable: true })
   totalOz?: number;
 
-  @Column({ name: 'total_estimated_value', type: 'int', nullable: true })
+  @Column({ name: 'total_estimated_value', type: 'numeric', nullable: true })
   totalEstimatedValue?: number;
 
   @Column({
