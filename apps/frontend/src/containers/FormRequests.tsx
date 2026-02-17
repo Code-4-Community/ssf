@@ -51,19 +51,11 @@ const FormRequests: React.FC = () => {
           .sort((a, b) => b.requestId - a.requestId);
         setRequests(sortedData);
 
-<<<<<<< jw/SSF-124-replacing-native-alerts
-          if (sortedData.length > 0) {
-            setPreviousRequest(sortedData[0]);
-          }
-        } catch (error) {
-          setAlertMessage('Error fetching requests: ' + error);
-=======
         if (sortedData.length > 0) {
           setPreviousRequest(sortedData[0]);
->>>>>>> main
         }
       } catch (error) {
-        console.log(error);
+        setAlertMessage('Error fetching requests: ' + error);
       }
     }
   }, [pantryId]);

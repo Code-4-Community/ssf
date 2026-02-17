@@ -18,11 +18,8 @@ import {
   RequestSize,
 } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
-<<<<<<< jw/SSF-124-replacing-native-alerts
 import { FloatingAlert } from '@components/floatingAlert';
-=======
 import apiClient from '@api/apiClient';
->>>>>>> main
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -74,7 +71,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       onClose();
       onSuccess();
     } catch (error) {
-      alert('Failed to submit request. Please try again.');
+      setAlertMessage('Error submitting request: ' + error);
     }
   };
 
@@ -111,25 +108,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 : `Please keep in mind that we may not be able to accommodate specific
               food requests at all times, but we will do our best to match your preferences.`}
             </Text>
-<<<<<<< jw/SSF-124-replacing-native-alerts
-            <Form
-              method="post"
-              action="/food-request"
-              onSubmit={(e) => {
-                if (selectedItems.length === 0) {
-                  e.preventDefault();
-                  setAlertMessage('Please select at least one food type');
-                }
-                if (requestedSize === '') {
-                  e.preventDefault();
-                  setAlertMessage('Please select a requested size.');
-                }
-              }}
-            >
-              <input type="hidden" name="pantryId" value={pantryId} />
-=======
             <Box>
->>>>>>> main
               <Field.Root required mb={4}>
                 <Field.Label>
                   <Text textStyle="p2" fontWeight={600} color="neutral.800">
