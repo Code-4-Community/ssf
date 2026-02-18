@@ -8,7 +8,7 @@ import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
-import FormRequests from '@containers/FormRequests';
+import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
