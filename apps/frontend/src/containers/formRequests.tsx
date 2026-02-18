@@ -22,7 +22,7 @@ import ApiClient from '@api/apiClient';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-const { authStatus } = useAuthenticator((context) => [context.authStatus]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
@@ -54,6 +54,8 @@ const { authStatus } = useAuthenticator((context) => [context.authStatus]);
       } catch (error) {
         console.log(error);
       }
+    } else {
+      alert('No pantry associated with this account.');
     }
   }, []);
 
@@ -84,13 +86,15 @@ const { authStatus } = useAuthenticator((context) => [context.authStatus]);
         >
           New Request
         </Button>
-        <FoodRequestFormModal
-          previousRequest={undefined}
-          isOpen={newRequestDisclosure.open}
-          onClose={newRequestDisclosure.onClose}
-          pantryId={pantryId}
-          onSuccess={fetchRequests}
-        />
+        {pantryId && (
+          <FoodRequestFormModal
+            previousRequest={undefined}
+            isOpen={newRequestDisclosure.open}
+            onClose={newRequestDisclosure.onClose}
+            pantryId={pantryId}
+            onSuccess={fetchRequests}
+          />
+        )}
         {previousRequest && (
           <>
             <Button
