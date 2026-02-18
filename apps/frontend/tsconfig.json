@@ -18,7 +18,7 @@
     }
   },
   "files": [],
-  "include": [],
+  "include": ["src/chakra-ui.d.ts"],
   "references": [
     {
       "path": "./tsconfig.app.json"
