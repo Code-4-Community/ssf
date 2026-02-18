@@ -27,7 +27,7 @@ const FormRequests: React.FC = () => {
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
-  const [pantryId, setPantryId] = useState<number | null>(null);
+  const [pantryId, setPantryId] = useState<number>();
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
@@ -213,7 +213,7 @@ const FormRequests: React.FC = () => {
           count={Math.ceil(requests.length / pageSize)}
           pageSize={1}
           page={currentPage}
-          onChange={(page) => setCurrentPage(page)}
+          onChange={(page: number) => setCurrentPage(page)}
         >
           <ButtonGroup variant="outline" size="sm">
             <Pagination.PrevTrigger asChild>
