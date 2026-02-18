@@ -151,7 +151,6 @@ const router = createBrowserRouter([
             <FormRequests />
           </ProtectedRoute>
         ),
-        action: submitFoodRequestFormModal,
       },
       {
         path: '/donation-management',
