@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Box,
   Table,
@@ -23,7 +22,7 @@ import ApiClient from '@api/apiClient';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
+const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
@@ -40,30 +39,28 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
-    if (user.userId) {
-      const pantryId = await ApiClient.getCurrentUserPantryId();
-      setPantryId(pantryId);
-      if (pantryId) {
-        try {
-          const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data
-            .slice()
-            .sort((a, b) => b.requestId - a.requestId);
-          setRequests(sortedData);
-
-          if (sortedData.length > 0) {
-            setPreviousRequest(sortedData[0]);
-          }
-        } catch (error) {
-          console.log(error);
+    const pantryId = await ApiClient.getCurrentUserPantryId();
+    setPantryId(pantryId);
+    if (pantryId) {
+      try {
+        const data = await ApiClient.getPantryRequests(pantryId);
+        const sortedData = data
+          .slice()
+          .sort((a, b) => b.requestId - a.requestId);
+        setRequests(sortedData);
+        if (sortedData.length > 0) {
+          setPreviousRequest(sortedData[0]);
         }
+      } catch (error) {
+        console.log(error);
       }
     }
-  }, [user.userId]);
+  }, []);
 
   useEffect(() => {
+    if (authStatus !== 'authenticated') return;
     fetchRequests();
-  }, [user.userId, fetchRequests]);
+  }, [authStatus, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
