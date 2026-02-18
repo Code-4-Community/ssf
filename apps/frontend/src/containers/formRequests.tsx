@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Box,
   Table,
@@ -20,19 +19,19 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
+  const [pantryId, setPantryId] = useState<number>();
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
   >(undefined);
-
-  const { pantryId: pantryIdParam } = useParams<{ pantryId: string }>();
-  const pantryId = parseInt(pantryIdParam!, 10);
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
@@ -40,6 +39,8 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
+    const pantryId = await ApiClient.getCurrentUserPantryId();
+    setPantryId(pantryId);
     if (pantryId) {
       try {
         const data = await ApiClient.getPantryRequests(pantryId);
@@ -47,19 +48,21 @@ const FormRequests: React.FC = () => {
           .slice()
           .sort((a, b) => b.requestId - a.requestId);
         setRequests(sortedData);
-
         if (sortedData.length > 0) {
           setPreviousRequest(sortedData[0]);
         }
       } catch (error) {
         console.log(error);
       }
+    } else {
+      alert('No pantry associated with this account.');
     }
-  }, [pantryId]);
+  }, []);
 
   useEffect(() => {
+    if (authStatus !== 'authenticated') return;
     fetchRequests();
-  }, [pantryId, fetchRequests]);
+  }, [authStatus, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -83,13 +86,15 @@ const FormRequests: React.FC = () => {
         >
           New Request
         </Button>
-        <FoodRequestFormModal
-          previousRequest={undefined}
-          isOpen={newRequestDisclosure.open}
-          onClose={newRequestDisclosure.onClose}
-          pantryId={pantryId}
-          onSuccess={fetchRequests}
-        />
+        {pantryId && (
+          <FoodRequestFormModal
+            previousRequest={undefined}
+            isOpen={newRequestDisclosure.open}
+            onClose={newRequestDisclosure.onClose}
+            pantryId={pantryId}
+            onSuccess={fetchRequests}
+          />
+        )}
         {previousRequest && (
           <>
             <Button
@@ -104,13 +109,15 @@ const FormRequests: React.FC = () => {
             >
               Resubmit Latest
             </Button>
-            <FoodRequestFormModal
-              previousRequest={previousRequest}
-              isOpen={previousRequestDisclosure.open}
-              onClose={previousRequestDisclosure.onClose}
-              pantryId={pantryId}
-              onSuccess={fetchRequests}
-            />
+            {pantryId && (
+              <FoodRequestFormModal
+                previousRequest={previousRequest}
+                isOpen={previousRequestDisclosure.open}
+                onClose={previousRequestDisclosure.onClose}
+                pantryId={pantryId}
+                onSuccess={fetchRequests}
+              />
+            )}
           </>
         )}
       </HStack>
@@ -191,7 +198,7 @@ const FormRequests: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openReadOnlyRequest && (
+          {openReadOnlyRequest && pantryId && (
             <RequestDetailsModal
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
@@ -206,7 +213,7 @@ const FormRequests: React.FC = () => {
           count={Math.ceil(requests.length / pageSize)}
           pageSize={1}
           page={currentPage}
-          onChange={(page) => setCurrentPage(page)}
+          onChange={(page: number) => setCurrentPage(page)}
         >
           <ButtonGroup variant="outline" size="sm">
             <Pagination.PrevTrigger asChild>

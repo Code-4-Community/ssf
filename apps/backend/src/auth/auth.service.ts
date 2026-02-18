@@ -6,7 +6,6 @@ import {
   ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
-  ListUsersCommand,
   SignUpCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 

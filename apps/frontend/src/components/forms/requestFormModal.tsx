@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
+  ActionFunction,
+  ActionFunctionArgs,
+  useActionData,
+} from 'react-router-dom';
+import {
   Flex,
   Button,
   Textarea,
@@ -39,6 +44,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -56,8 +63,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
-      requestedItems: selectedItems,
       additionalInformation: additionalNotes || '',
+      requestedItems: selectedItems,
       dateReceived: null,
       feedback: null,
       photos: [],
@@ -67,8 +74,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       await apiClient.createFoodRequest(foodRequestData);
       onClose();
       onSuccess();
-    } catch (error) {
-      alert('Failed to submit request. Please try again.');
+    } catch {
+      setAlertMessage('Failed to submit food request');
     }
   };
 
@@ -81,6 +88,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        // TODO: add Justin's alert component/uncomment below out and remove text component
+        // <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+        <Text>{alertMessage}</Text>
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>
