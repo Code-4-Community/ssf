@@ -15,7 +15,7 @@ import {
   Menu,
   NumberInput,
 } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodType, FoodTypes, RecurrenceEnum } from '../../types/types';
 import { Minus } from 'lucide-react';
@@ -25,6 +25,27 @@ interface NewDonationFormModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+interface DonationRow {
+  id: number;
+  foodItem: string;
+  foodType: FoodType | '';
+  numItems: string;
+  ozPerItem: string;
+  valuePerItem: string;
+  foodRescue: boolean;
+}
+
+type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+type RepeatOnState = Record<DayOfWeek, boolean>;
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
@@ -45,7 +66,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     [RepeatEnum.YEAR]: RecurrenceEnum.YEARLY,
   };
 
-  const [rows, setRows] = useState([
+  const [rows, setRows] = useState<DonationRow[]>([
     {
       id: 1,
       foodItem: '',
@@ -58,12 +79,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   ]);
 
   const [isRecurring, setIsRecurring] = useState(false);
-  // Defaults for the recurring section
   const [repeatEvery, setRepeatEvery] = useState('1');
   const [repeatInterval, setRepeatInterval] = useState<RepeatEnum>(
     RepeatEnum.NONE,
   );
-  const [repeatOn, setRepeatOn] = useState({
+  const [repeatOn, setRepeatOn] = useState<RepeatOnState>({
     Monday: false,
     Tuesday: false,
     Wednesday: true,
@@ -74,23 +94,19 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   });
   const [endsAfter, setEndsAfter] = useState('1');
 
-  // Totals accumulated from the item rows
   const [totalItems, setTotalItems] = useState(0);
   const [totalOz, setTotalOz] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
 
-  // Adjust the appropriate field in a row and recalculate totals if needed
   const handleChange = (id: number, field: string, value: string | boolean) => {
     const updatedRows = rows.map((row) =>
       row.id === id ? { ...row, [field]: value } : row,
     );
-
     setRows(updatedRows);
     calculateTotals(updatedRows);
   };
 
-  // Calculate totals based on the current rows
-  const calculateTotals = (updatedRows: typeof rows) => {
+  const calculateTotals = (updatedRows: DonationRow[]) => {
     let totalItems = 0,
       totalOz = 0,
       totalValue = 0;
@@ -109,20 +125,17 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     setTotalValue(parseFloat(totalValue.toFixed(2)));
   };
 
-  // Adjust the repeatOn state for weekly recurrence when a day is toggled
-  const handleDayToggle = (day: string) => {
+  const handleDayToggle = (day: DayOfWeek) => {
     setRepeatOn((prev) => ({
       ...prev,
       [day]: !prev[day],
     }));
   };
 
-  // Create a new row with all null values
   const addRow = () => {
     setRows([
       ...rows,
       {
-        // Unique id for the row to keep track of them throughout changes
         id: Date.now(),
         foodItem: '',
         foodType: '',
@@ -134,7 +147,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     ]);
   };
 
-  // Filter out the row with the matching id and recalculate totals
   const deleteRow = (id: number) => {
     if (rows.length > 1) {
       const newRows = rows.filter((r) => r.id !== id);
@@ -148,13 +160,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     const repeatCount = parseInt(repeatEvery);
     const dates: string[] = [];
 
-    // For weeks, use the repeatCount and selected days to calculate the next dates
     if (repeatInterval === RepeatEnum.WEEK) {
-      const selectedDays = Object.keys(repeatOn).filter((day) => repeatOn[day]);
+      const selectedDays = (Object.keys(repeatOn) as DayOfWeek[]).filter(
+        (day) => repeatOn[day],
+      );
       if (selectedDays.length === 0) return [];
 
       const dayOfWeek = today.getDay();
-      const daysOfWeek = [
+      const daysOfWeek: DayOfWeek[] = [
         'Sunday',
         'Monday',
         'Tuesday',
@@ -164,14 +177,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         'Saturday',
       ];
 
-      // Calculate the start of the next occurrence window
       const baseWeeksToAdd = repeatCount;
       const baseDaysToAdd = baseWeeksToAdd * 7;
-
-      // If repeat is more than 1 week OR no days found this week, start from next interval
       const startDay = repeatCount > 1 ? baseDaysToAdd : 1;
 
-      // Collect all matching days in the next occurrence window
       for (let i = startDay; i <= startDay + 6; i++) {
         const nextDayIndex = (dayOfWeek + i) % 7;
         const nextDay = daysOfWeek[nextDayIndex];
@@ -179,7 +188,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         if (selectedDays.includes(nextDay)) {
           const nextDate = new Date(today);
           nextDate.setDate(today.getDate() + i);
-          // Default the time to now
           nextDate.setHours(
             today.getHours(),
             today.getMinutes(),
@@ -214,22 +222,23 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     return dates;
   };
 
-  // Get the specific text display for the next donation date based on the selected recurrence pattern
   const getNextDonationDateDisplay = (): string => {
     const dates = generateNextDonationDates();
     if (dates.length === 0) return '';
 
     const firstDate = new Date(dates[0]);
     return firstDate.toLocaleDateString('en-US', {
-      weekday: 'long', // Full name
-      year: 'numeric', // Year
-      month: 'long', // Full month name
-      day: 'numeric', // Day of the month
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
   const getSelectedDaysText = () => {
-    const selected = Object.keys(repeatOn).filter((day) => repeatOn[day]);
+    const selected = (Object.keys(repeatOn) as DayOfWeek[]).filter(
+      (day) => repeatOn[day],
+    );
     if (selected.length === 0) return 'Select days';
     if (selected.length === 1) return selected[0];
     if (selected.length <= 4) return selected.join(', ');
@@ -239,7 +248,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    // Ensure all fields are filled in
     const hasEmpty = rows.some(
       (row) =>
         !row.foodItem ||
@@ -253,27 +261,24 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    // Create the donation first
     const nextDonationDates = isRecurring ? generateNextDonationDates() : null;
 
-    // Alert the user for recurring donations that do not have another donation date scheduled
     if (nextDonationDates && nextDonationDates.length === 0) {
       alert('Please select at least one day for weekly recurrence.');
       return;
     }
 
     const donation_body = {
-      foodManufacturerId: 1, // TODO: Change this to the proper id of the logged in user's food manufacturer
+      foodManufacturerId: 1,
       totalItems,
       totalOz,
       totalEstimatedValue: totalValue,
       recurrence: RECURRENCE_MAP[repeatInterval],
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : null,
-      nextDonationDates: nextDonationDates,
+      nextDonationDates,
       occurrencesRemaining: isRecurring ? parseInt(endsAfter) : null,
     };
 
-    // Submit all donation items at once
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
       const donationId = donationResponse?.donationId;
@@ -370,15 +375,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       </Button>
                       <Checkbox.Root
                         checked={isRecurring}
-                        onCheckedChange={(e) => {
-                          // Handles the case of we make edits to make donation recurring, but uncheck it afterwards
-                          // in which case it should go back to none rather than keeping the last selected interval
+                        onCheckedChange={(e: { checked: boolean }) => {
                           if (e.checked) {
                             setRepeatInterval(RepeatEnum.WEEK);
                           } else {
                             setRepeatInterval(RepeatEnum.NONE);
                           }
-                          setIsRecurring(e.checked);
+                          setIsRecurring(!!e.checked);
                         }}
                       >
                         <Checkbox.HiddenInput />
@@ -394,10 +397,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                   <Table.Header>
                     <Table.Row fontWeight={600}>
-                      <Table.ColumnHeader
-                        width="35px"
-                        p={0}
-                      ></Table.ColumnHeader>
+                      <Table.ColumnHeader width="35px" p={0} />
                       <Table.ColumnHeader width="22%">
                         Food Item
                         <Text as="span" color="red">
@@ -503,9 +503,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            _placeholder={{
-                              color: 'neutral.300',
-                            }}
+                            _placeholder={{ color: 'neutral.300' }}
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
@@ -540,8 +538,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           <Checkbox.Root
                             checked={row.foodRescue}
                             size="lg"
-                            onCheckedChange={(e) =>
-                              handleChange(row.id, 'foodRescue', e.checked)
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleChange(row.id, 'foodRescue', !!e.checked)
                             }
                           >
                             <Checkbox.HiddenInput />
@@ -573,7 +571,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <NumberInput.Root
                           width="98px"
                           value={repeatEvery}
-                          onValueChange={(e) => setRepeatEvery(e.value)}
+                          onValueChange={(e: { value: string }) =>
+                            setRepeatEvery(e.value)
+                          }
                           min={1}
                         >
                           <NumberInput.Input />
@@ -650,27 +650,29 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 color="neutral.800"
                                 zIndex={9999}
                               >
-                                {Object.keys(repeatOn).map((day) => (
-                                  <Menu.Item
-                                    key={day}
-                                    value={day}
-                                    onClick={() => handleDayToggle(day)}
-                                    p={2}
-                                  >
-                                    <Flex align="center" gap={2}>
-                                      <Checkbox.Root
-                                        checked={repeatOn[day]}
-                                        pointerEvents="none"
-                                      >
-                                        <Checkbox.HiddenInput />
-                                        <Checkbox.Control>
-                                          <Checkbox.Indicator />
-                                        </Checkbox.Control>
-                                      </Checkbox.Root>
-                                      <Text>{day}</Text>
-                                    </Flex>
-                                  </Menu.Item>
-                                ))}
+                                {(Object.keys(repeatOn) as DayOfWeek[]).map(
+                                  (day) => (
+                                    <Menu.Item
+                                      key={day}
+                                      value={day}
+                                      onClick={() => handleDayToggle(day)}
+                                      p={2}
+                                    >
+                                      <Flex align="center" gap={2}>
+                                        <Checkbox.Root
+                                          checked={repeatOn[day]}
+                                          pointerEvents="none"
+                                        >
+                                          <Checkbox.HiddenInput />
+                                          <Checkbox.Control>
+                                            <Checkbox.Indicator />
+                                          </Checkbox.Control>
+                                        </Checkbox.Root>
+                                        <Text>{day}</Text>
+                                      </Flex>
+                                    </Menu.Item>
+                                  ),
+                                )}
                               </Menu.Content>
                             </Menu.Positioner>
                           </Portal>
@@ -685,7 +687,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       <NumberInput.Root
                         width="100%"
                         value={endsAfter}
-                        onValueChange={(e) => setEndsAfter(e.value)}
+                        onValueChange={(e: { value: string }) =>
+                          setEndsAfter(e.value)
+                        }
                         min={1}
                       >
                         <Flex position="relative" align="center">

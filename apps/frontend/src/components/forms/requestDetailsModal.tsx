@@ -311,7 +311,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       count={orderDetailsList.length}
                       pageSize={1}
                       page={currentPage}
-                      onChange={(page) => setCurrentPage(page)}
+                      onChange={(page: number) => setCurrentPage(page)}
                     >
                       <ButtonGroup variant="outline" size="sm">
                         <Pagination.PrevTrigger asChild>
