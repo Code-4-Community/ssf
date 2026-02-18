@@ -465,7 +465,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         </Table.Cell>
 
                         <Table.Cell>
-                          <NativeSelect.Root size="md">
+                          <NativeSelect.Root size="md" width="100%">
                             <NativeSelect.Field
                               color={
                                 row.foodType ? 'neutral.800' : 'neutral.300'
@@ -603,11 +603,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       <Text fontWeight={600} mb={3}>
                         Repeat on
                       </Text>
-                      <Menu.Root closeOnSelect={false}>
+                      <Menu.Root
+                        closeOnSelect={false}
+                        positioning={{ sameWidth: true }}
+                      >
                         {!isRepeatOnDisabled && (
                           <Menu.Trigger asChild>
-                            <Box cursor="pointer">
-                              <NativeSelect.Root size="md">
+                            <Box cursor="pointer" width="100%">
+                              <NativeSelect.Root size="md" width="100%">
                                 <NativeSelect.Field
                                   value={getSelectedDaysText()}
                                   bg="white"
@@ -645,7 +648,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           <Portal>
                             <Menu.Positioner>
                               <Menu.Content
-                                minW="236px"
                                 maxH="300px"
                                 color="neutral.800"
                                 zIndex={9999}
