@@ -230,7 +230,7 @@ export class ApiClient {
     requestId: number,
   ): Promise<OrderDetails[]> {
     return this.axiosInstance
-      .get(`/api/requests/all-order-details/${requestId}`)
+      .get(`/api/requests/${requestId}/order-details`)
       .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
@@ -260,7 +260,7 @@ export class ApiClient {
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
-    const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
+    const data = await this.get(`/api/requests/${pantryId}/all`);
     return data as FoodRequest[];
   }
 
@@ -276,13 +276,18 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
+        window.location.href = '/request-form';
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }
     } catch (error) {
       alert(`Error submitting delivery confirmation: ${error}`);
     }
+  }
+
+  public async getCurrentUserPantryId(): Promise<number> {
+    const data = await this.get('/api/pantries/my-id');
+    return data as number;
   }
 }
 
