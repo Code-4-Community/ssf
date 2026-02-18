@@ -17,6 +17,7 @@ import {
 import { ApplicationStatus } from '../shared/types';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '../users/user.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -253,16 +254,18 @@ describe('PantriesController', () => {
       const pantry: Partial<Pantry> = { pantryId: 10 };
       mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
 
-      const result = await controller.getCurrentUserPantryId(req);
+      const result = await controller.getCurrentUserPantryId(
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(10);
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(1);
     });
 
     it('throws UnauthorizedException when unauthenticated', async () => {
-      await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
-        new UnauthorizedException('Not authenticated'),
-      );
+      await expect(
+        controller.getCurrentUserPantryId({} as AuthenticatedRequest),
+      ).rejects.toThrow(new UnauthorizedException('Not authenticated'));
     });
 
     it('propagates NotFoundException from service', async () => {
@@ -271,7 +274,9 @@ describe('PantriesController', () => {
         new NotFoundException('Pantry for User 999 not found'),
       );
 
-      const promise = controller.getCurrentUserPantryId(req);
+      const promise = controller.getCurrentUserPantryId(
+        req as AuthenticatedRequest,
+      );
       await expect(promise).rejects.toBeInstanceOf(NotFoundException);
       await expect(promise).rejects.toThrow('Pantry for User 999 not found');
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(999);

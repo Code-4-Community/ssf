@@ -101,9 +101,6 @@ export interface CreateRequestDto {
   requestedSize: RequestSize;
   requestedItems: string[];
   additionalInformation?: string;
-  dateReceived?: Date;
-  feedback?: string;
-  photos?: string[];
 }
 
 export enum DonationStatus {

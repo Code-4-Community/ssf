@@ -26,19 +26,4 @@ export class CreateRequestDto {
   @IsNotEmpty()
   @MaxLength(255)
   additionalInformation?: string;
-
-  @IsDate()
-  @IsOptional()
-  @IsNotEmpty()
-  dateReceived?: Date;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  feedback?: string;
-
-  @ArrayNotEmpty()
-  @IsOptional()
-  photos?: string[];
 }

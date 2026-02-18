@@ -252,9 +252,6 @@ describe('RequestsService', () => {
         mockRequest.requestedSize,
         mockRequest.requestedItems,
         mockRequest.additionalInformation,
-        mockRequest.dateReceived,
-        mockRequest.feedback,
-        mockRequest.photos,
       );
 
       expect(result).toEqual(mockRequest);
@@ -263,9 +260,6 @@ describe('RequestsService', () => {
         requestedSize: mockRequest.requestedSize,
         requestedItems: mockRequest.requestedItems,
         additionalInformation: mockRequest.additionalInformation,
-        dateReceived: mockRequest.dateReceived,
-        feedback: mockRequest.feedback,
-        photos: mockRequest.photos,
       });
       expect(mockRequestsRepository.save).toHaveBeenCalledWith(mockRequest);
     });
@@ -279,9 +273,6 @@ describe('RequestsService', () => {
           RequestSize.MEDIUM,
           ['Canned Goods', 'Vegetables'],
           'Additional info',
-          null,
-          null,
-          null,
         ),
       ).rejects.toThrow(`Pantry ${invalidPantryId} not found`);
 

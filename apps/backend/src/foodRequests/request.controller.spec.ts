@@ -152,9 +152,6 @@ describe('RequestsController', () => {
         requestedSize: RequestSize.MEDIUM,
         requestedItems: ['Test item 1', 'Test item 2'],
         additionalInformation: 'Test information.',
-        dateReceived: undefined,
-        feedback: undefined,
-        photos: undefined,
       } as CreateRequestDto;
 
       const createdRequest: Partial<FoodRequest> = {
@@ -176,9 +173,6 @@ describe('RequestsController', () => {
         createBody.requestedSize,
         createBody.requestedItems,
         createBody.additionalInformation,
-        createBody.dateReceived,
-        createBody.feedback,
-        createBody.photos,
       );
     });
   });

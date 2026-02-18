@@ -1,5 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
 export class AWSS3Service {
@@ -9,27 +10,17 @@ export class AWSS3Service {
 
   constructor() {
     this.region = process.env.AWS_REGION || 'us-east-2';
-    this.bucket = this.validateEnv('AWS_BUCKET_NAME');
+    this.bucket = validateEnv('AWS_BUCKET_NAME');
     if (!this.bucket) {
       throw new Error('AWS_BUCKET_NAME is not defined');
     }
     this.client = new S3Client({
       region: this.region,
       credentials: {
-        accessKeyId: this.validateEnv('AWS_ACCESS_KEY_ID'),
-        secretAccessKey: this.validateEnv('AWS_SECRET_ACCESS_KEY'),
+        accessKeyId: validateEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: validateEnv('AWS_SECRET_ACCESS_KEY'),
       },
     });
-  }
-
-  validateEnv(name: string): string {
-    const v = process.env[name];
-
-    if (!v) {
-      throw new InternalServerErrorException(`Missing env var: ${name}`);
-    }
-
-    return v;
   }
 
   async upload(files: Express.Multer.File[]): Promise<string[]> {

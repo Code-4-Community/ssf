@@ -24,6 +24,7 @@ import { createHmac } from 'crypto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { Role } from '../users/types';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
+import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
 export class AuthService {
@@ -34,22 +35,12 @@ export class AuthService {
     this.providerClient = new CognitoIdentityProviderClient({
       region: CognitoAuthConfig.region,
       credentials: {
-        accessKeyId: this.validateEnv('AWS_ACCESS_KEY_ID'),
-        secretAccessKey: this.validateEnv('AWS_SECRET_ACCESS_KEY'),
+        accessKeyId: validateEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: validateEnv('AWS_SECRET_ACCESS_KEY'),
       },
     });
 
-    this.clientSecret = this.validateEnv('COGNITO_CLIENT_SECRET');
-  }
-
-  validateEnv(name: string): string {
-    const v = process.env[name];
-
-    if (!v) {
-      throw new InternalServerErrorException(`Missing env var: ${name}`);
-    }
-
-    return v;
+    this.clientSecret = validateEnv('COGNITO_CLIENT_SECRET');
   }
 
   // Computes secret hash to authenticate this backend to Cognito

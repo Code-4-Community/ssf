@@ -110,9 +110,6 @@ export class RequestsController {
       requestData.requestedSize,
       requestData.requestedItems,
       requestData.additionalInformation,
-      requestData.dateReceived,
-      requestData.feedback,
-      requestData.photos,
     );
   }
 

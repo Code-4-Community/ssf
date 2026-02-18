@@ -64,7 +64,8 @@ export class RequestsService {
     return orders.map((order) => ({
       orderId: order.orderId,
       status: order.status,
-      foodManufacturerName: order.foodManufacturer?.foodManufacturerName ?? undefined,
+      foodManufacturerName:
+        order.foodManufacturer?.foodManufacturerName ?? undefined,
       items: order.allocations.map((allocation) => ({
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
@@ -78,9 +79,6 @@ export class RequestsService {
     requestedSize: RequestSize,
     requestedItems: string[],
     additionalInformation: string | undefined | null,
-    dateReceived: Date | undefined | null,
-    feedback: string | undefined | null,
-    photos: string[] | undefined | null,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -94,9 +92,6 @@ export class RequestsService {
       requestedSize,
       requestedItems,
       additionalInformation,
-      dateReceived,
-      feedback,
-      photos,
     });
 
     return await this.repo.save(foodRequest);
