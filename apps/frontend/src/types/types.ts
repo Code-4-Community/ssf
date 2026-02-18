@@ -112,6 +112,13 @@ export enum DonationStatus {
   MATCHING = 'matching',
 }
 
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -120,6 +127,10 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+  recurrence: RecurrenceEnum;
+  recurrenceFreq?: number;
+  nextDonationDates?: string[];
+  occurrencesRemaining?: number;
 }
 
 export interface DonationItem {
@@ -203,8 +214,8 @@ export interface Order {
   orderId: number;
   request: FoodRequest;
   requestId: number;
-  foodManufacturer?: FoodManufacturer;
-  shippedBy?: number;
+  foodManufacturer: FoodManufacturer;
+  foodManufacturerId: number;
   status: OrderStatus;
   createdAt: string;
   shippedAt?: Date;
@@ -238,8 +249,6 @@ export interface CreateFoodRequestBody {
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string | null | undefined;
-  status: string;
-  fulfilledBy: number | null | undefined;
   dateReceived: string | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;

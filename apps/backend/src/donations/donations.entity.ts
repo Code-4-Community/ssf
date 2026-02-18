@@ -6,8 +6,8 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
+import { DonationStatus, RecurrenceEnum } from './types';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { DonationStatus } from './types';
 
 @Entity('donations')
 export class Donation {
@@ -39,9 +39,32 @@ export class Donation {
   @Column({ name: 'total_items', type: 'int', nullable: true })
   totalItems?: number | null;
 
-  @Column({ name: 'total_oz', type: 'int', nullable: true })
+  @Column({ name: 'total_oz', type: 'numeric', nullable: true })
   totalOz?: number | null;
 
-  @Column({ name: 'total_estimated_value', type: 'int', nullable: true })
+  @Column({ name: 'total_estimated_value', type: 'numeric', nullable: true })
   totalEstimatedValue?: number | null;
+
+  @Column({
+    name: 'recurrence',
+    type: 'enum',
+    enum: RecurrenceEnum,
+    enumName: 'donation_recurrence_enum',
+    default: RecurrenceEnum.NONE,
+  })
+  recurrence!: RecurrenceEnum;
+
+  @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
+  recurrenceFreq?: number | null;
+
+  @Column({
+    name: 'next_donation_dates',
+    type: 'timestamptz',
+    array: true,
+    nullable: true,
+  })
+  nextDonationDates?: Date[] | null;
+
+  @Column({ name: 'occurrences_remaining', type: 'int', nullable: true })
+  occurrencesRemaining?: number | null;
 }

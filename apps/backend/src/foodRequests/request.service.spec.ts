@@ -339,9 +339,6 @@ describe('RequestsService', () => {
       const mockOrder: Partial<Order> = {
         orderId: 1,
         request: undefined,
-        requestId: 1,
-        foodManufacturer: undefined,
-        shippedBy: 1,
         status: OrderStatus.SHIPPED,
         createdAt: new Date(),
         shippedAt: new Date(),
@@ -442,49 +439,6 @@ describe('RequestsService', () => {
           photos,
         ),
       ).rejects.toThrow('No associated orders found for this request');
-
-      expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
-        where: { requestId },
-        relations: ['orders'],
-      });
-    });
-
-    it('should throw an error if the order does not have a food manufacturer', async () => {
-      const mockOrder: Partial<Order> = {
-        orderId: 1,
-        request: undefined,
-        requestId: 1,
-        foodManufacturer: undefined,
-        shippedBy: null,
-        status: OrderStatus.SHIPPED,
-        createdAt: new Date(),
-        shippedAt: new Date(),
-        deliveredAt: null,
-      };
-      const mockRequest2: Partial<FoodRequest> = {
-        ...mockRequest,
-        orders: [mockOrder] as Order[],
-      };
-
-      const requestId = 1;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
-
-      mockRequestsRepository.findOne.mockResolvedValueOnce(
-        mockRequest2 as FoodRequest,
-      );
-
-      await expect(
-        service.updateDeliveryDetails(
-          requestId,
-          deliveryDate,
-          feedback,
-          photos,
-        ),
-      ).rejects.toThrow(
-        'No associated food manufacturer found for an associated order',
-      );
 
       expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
         where: { requestId },

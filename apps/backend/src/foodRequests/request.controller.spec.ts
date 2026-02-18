@@ -193,8 +193,7 @@ describe('RequestsController', () => {
       };
 
       // Mock Photos
-      const mockStream = new Readable();
-      mockStream._read = () => {};
+      const mockStream = {} as Readable;
 
       const photos: Express.Multer.File[] = [
         {

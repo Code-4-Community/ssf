@@ -26,7 +26,6 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 
 @Controller('requests')
-// @UseInterceptors()
 export class RequestsController {
   constructor(
     private requestsService: RequestsService,
@@ -43,14 +42,14 @@ export class RequestsController {
   }
 
   @Roles(Role.PANTRY, Role.ADMIN)
-  @Get('/get-all-requests/:pantryId')
+  @Get('/:pantryId/all')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
   }
 
-  @Get('/all-order-details/:requestId')
+  @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<OrderDetailsDto[]> {
