@@ -13,7 +13,7 @@ import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 
 interface DonationDetailsModalProps {
-  donation?: Donation;
+  donation: Donation;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -28,7 +28,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
   const [alertMessage, setAlertMessage] = useState<string>('');
 
-  const donationId = donation?.donationId; // adjust if your ID field is different
+  const donationId = donation.donationId;
 
   useEffect(() => {
     if (!isOpen || !donationId) return;

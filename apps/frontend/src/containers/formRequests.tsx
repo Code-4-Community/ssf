@@ -23,12 +23,12 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
 
-  const [pantryId, setPantryId] = useState<number | null>(null);
+  const [pantryId, setPantryId] = useState<number>();
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
     FoodRequest | undefined
@@ -42,30 +42,30 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
-    if (user.userId) {
-      const pantryId = await ApiClient.getCurrentUserPantryId();
-      setPantryId(pantryId);
-      if (pantryId) {
-        try {
-          const data = await ApiClient.getPantryRequests(pantryId);
-          const sortedData = data
-            .slice()
-            .sort((a, b) => b.requestId - a.requestId);
-          setRequests(sortedData);
-
-          if (sortedData.length > 0) {
-            setPreviousRequest(sortedData[0]);
-          }
-        } catch (error) {
-          setAlertMessage('Error fetching requests: ' + error);
+    const pantryId = await ApiClient.getCurrentUserPantryId();
+    setPantryId(pantryId);
+    if (pantryId) {
+      try {
+        const data = await ApiClient.getPantryRequests(pantryId);
+        const sortedData = data
+          .slice()
+          .sort((a, b) => b.requestId - a.requestId);
+        setRequests(sortedData);
+        if (sortedData.length > 0) {
+          setPreviousRequest(sortedData[0]);
         }
+      } catch (error) {
+        setAlertMessage('Error fetching requests: ' + error);
       }
+    } else {
+      setAlertMessage('No pantry associated with this account.');
     }
-  }, [user.userId]);
+  }, []);
 
   useEffect(() => {
+    if (authStatus !== 'authenticated') return;
     fetchRequests();
-  }, [user.userId, fetchRequests]);
+  }, [authStatus, fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -92,13 +92,15 @@ const FormRequests: React.FC = () => {
         >
           New Request
         </Button>
-        <FoodRequestFormModal
-          previousRequest={undefined}
-          isOpen={newRequestDisclosure.open}
-          onClose={newRequestDisclosure.onClose}
-          pantryId={pantryId}
-          onSuccess={fetchRequests}
-        />
+        {pantryId && (
+          <FoodRequestFormModal
+            previousRequest={undefined}
+            isOpen={newRequestDisclosure.open}
+            onClose={newRequestDisclosure.onClose}
+            pantryId={pantryId}
+            onSuccess={fetchRequests}
+          />
+        )}
         {previousRequest && (
           <>
             <Button
@@ -217,7 +219,7 @@ const FormRequests: React.FC = () => {
           count={Math.ceil(requests.length / pageSize)}
           pageSize={1}
           page={currentPage}
-          onChange={(page) => setCurrentPage(page)}
+          onChange={(page: number) => setCurrentPage(page)}
         >
           <ButtonGroup variant="outline" size="sm">
             <Pagination.PrevTrigger asChild>
