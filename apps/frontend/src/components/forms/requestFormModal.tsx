@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ActionFunction, ActionFunctionArgs, useActionData } from 'react-router-dom';
+import {
+  ActionFunction,
+  ActionFunctionArgs,
+  useActionData,
+} from 'react-router-dom';
 import {
   Flex,
   Button,
@@ -40,8 +44,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
-  const [alertMessage, setAlertMessage] = useState<string>(''); 
-  
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -54,7 +58,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
-  
+
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
@@ -73,7 +77,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     } catch {
       setAlertMessage('Failed to submit food request');
     }
-  }
+  };
 
   return (
     <Dialog.Root
