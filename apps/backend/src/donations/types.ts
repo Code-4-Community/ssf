@@ -10,3 +10,10 @@ export enum RecurrenceEnum {
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
 }
+
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}

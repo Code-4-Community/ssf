@@ -50,8 +50,8 @@ export class DonationsController {
       properties: {
         foodManufacturerId: { type: 'integer', example: 1 },
         totalItems: { type: 'integer', example: 100 },
-        totalOz: { type: 'integer', example: 500 },
-        totalEstimatedValue: { type: 'integer', example: 1000 },
+        totalOz: { type: 'number', example: 100.5 },
+        totalEstimatedValue: { type: 'number', example: 100.5 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),

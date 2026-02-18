@@ -109,6 +109,13 @@ export enum RecurrenceEnum {
   YEARLY = 'yearly',
 }
 
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -240,8 +247,6 @@ export interface CreateFoodRequestBody {
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string | null | undefined;
-  status: string;
-  fulfilledBy: number | null | undefined;
   dateReceived: string | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;

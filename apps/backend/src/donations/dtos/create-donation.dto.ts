@@ -9,7 +9,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { DonationStatus, RecurrenceEnum } from '../types';
+import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
 
 export class CreateDonationDto {
