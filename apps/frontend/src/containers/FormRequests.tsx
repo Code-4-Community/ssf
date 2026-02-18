@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Box,
   Table,
@@ -58,7 +57,7 @@ const FormRequests: React.FC = () => {
             setPreviousRequest(sortedData[0]);
           }
         } catch (error) {
-          console.log(error);
+          setAlertMessage('Error fetching requests: ' + error);
         }
       }
     }
