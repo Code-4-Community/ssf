@@ -17,6 +17,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -75,6 +76,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<Order> {
     return this.ordersService.findOne(orderId);
+  }
+
+  @Get('/:orderId/order-details')
+  async getOrderDetails(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<OrderDetailsDto> {
+    return this.ordersService.findOrderDetails(orderId);
   }
 
   @Get('/order/:requestId')

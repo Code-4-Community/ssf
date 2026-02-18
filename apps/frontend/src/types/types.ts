@@ -225,6 +225,7 @@ export interface OrderDetails {
   orderId: number;
   status: OrderStatus;
   foodManufacturerName: string;
+  trackingLink: string;
   items: OrderItemDetails[];
 }
 
