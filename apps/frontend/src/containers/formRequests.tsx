@@ -22,10 +22,7 @@ import ApiClient from '@api/apiClient';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const { authStatus } = useAuthenticator((context) => [
-    context.user,
-    context.authStatus,
-  ]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
@@ -43,10 +40,6 @@ const FormRequests: React.FC = () => {
 
   const fetchRequests = useCallback(async () => {
     const pantryId = await ApiClient.getCurrentUserPantryId();
-    if (!pantryId) {
-      alert('Could not find your pantry. Please try refreshing the page.');
-      return;
-    }
     setPantryId(pantryId);
     if (pantryId) {
       try {
@@ -61,6 +54,8 @@ const FormRequests: React.FC = () => {
       } catch (error) {
         console.log(error);
       }
+    } else {
+      alert('No pantry associated with this account.');
     }
   }, []);
 
