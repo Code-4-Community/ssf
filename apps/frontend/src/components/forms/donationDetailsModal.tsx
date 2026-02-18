@@ -10,6 +10,7 @@ import {
 import ApiClient from '@api/apiClient';
 import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -24,6 +25,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 }) => {
   const [loadedDonation, setLoadedDonation] = useState<Donation>();
   const [items, setItems] = useState<DonationItem[]>([]);
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const donationId = donation.donationId;
 
@@ -40,7 +43,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         setLoadedDonation(donationData);
         setItems(itemsData);
       } catch (err) {
-        alert('Error fetching donation details: ' + err);
+        setAlertMessage('Error fetching donation details: ' + err);
       }
     };
 
@@ -63,6 +66,9 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.300" />
 

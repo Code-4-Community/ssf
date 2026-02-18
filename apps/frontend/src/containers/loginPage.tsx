@@ -14,11 +14,13 @@ import {
 } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
 import { Eye, EyeOff } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,7 +31,7 @@ const LoginPage: React.FC = () => {
       await signIn({ username: email, password });
       navigate(from, { replace: true });
     } catch (error) {
-      alert(error || 'Login failed');
+      setAlertMessage('Login failed: ' + error);
     }
   };
 
@@ -58,6 +60,9 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Box
         maxW="500px"
         w="full"

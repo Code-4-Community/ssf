@@ -23,6 +23,7 @@ import {
   RequestSize,
 } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 import apiClient from '@api/apiClient';
 
 interface FoodRequestFormModalProps {
@@ -89,9 +90,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       closeOnInteractOutside
     >
       {alertMessage && (
-        // TODO: add Justin's alert component/uncomment below out and remove text component
-        // <FloatingAlert message={alertMessage} status="error" timeout={6000} />
-        <Text>{alertMessage}</Text>
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -293,7 +292,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      alert('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit');
                     }
                   }}
                 />
