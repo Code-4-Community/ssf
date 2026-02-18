@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
 import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -26,6 +28,8 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { OwnershipGuard } from '../auth/ownership.guard';
+import { CheckOwnership } from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 
 @Controller('pantries')
@@ -53,6 +57,14 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
+  @UseGuards(AuthGuard('jwt'), OwnershipGuard)
+  @CheckOwnership({
+    idParam: 'pantryId',
+    resolver: async ({ entityId, services }) => {
+      const pantry = await services.get(PantriesService).findOne(entityId);
+      return pantry?.pantryUser?.id ?? null;
+    },
+  })
   @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:pantryId')
   async getPantry(

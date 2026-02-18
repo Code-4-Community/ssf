@@ -6,12 +6,14 @@ import { Pantry } from './pantries.entity';
 import { AuthModule } from '../auth/auth.module';
 import { OrdersModule } from '../orders/order.module';
 import { User } from '../users/user.entity';
+import { SharedAuthModule } from '../auth/sharedAuth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Pantry, User]),
     OrdersModule,
     forwardRef(() => AuthModule),
+    SharedAuthModule,
   ],
   controllers: [PantriesController],
   providers: [PantriesService],
