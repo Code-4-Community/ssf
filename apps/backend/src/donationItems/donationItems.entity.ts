@@ -42,9 +42,8 @@ export class DonationItem {
     type: 'enum',
     enum: FoodType,
     enumName: 'food_type_enum',
-    nullable: true,
   })
-  foodType?: FoodType | null;
+  foodType!: FoodType;
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
   allocations!: Allocation[];

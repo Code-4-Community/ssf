@@ -69,7 +69,7 @@ export class RequestsService {
       items: order.allocations.map((allocation) => ({
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
-        foodType: allocation.item.foodType ?? undefined,
+        foodType: allocation.item.foodType,
       })),
     }));
   }
