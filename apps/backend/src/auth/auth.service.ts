@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -8,7 +7,6 @@ import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
   AdminInitiateAuthCommandOutput,
-  AttributeType,
   CognitoIdentityProviderClient,
   ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
@@ -88,7 +86,7 @@ export class AuthService {
 
       return response.UserConfirmed;
     } catch (err: unknown) {
-      throw new BadRequestException('Failed to sign up user');
+      throw new InternalServerErrorException('Failed to sign up user');
     }
   }
 
@@ -191,7 +189,7 @@ export class AuthService {
     await this.providerClient.send(adminDeleteUserCommand);
   }
 
-  validateAuthenticationResultTokensForSignIn(
+  private validateAuthenticationResultTokensForSignIn(
     commandOutput: AdminInitiateAuthCommandOutput,
   ): void {
     if (commandOutput.AuthenticationResult == null) {
@@ -211,7 +209,7 @@ export class AuthService {
     }
   }
 
-  validateAuthenticationResultTokensForRefresh(
+  private validateAuthenticationResultTokensForRefresh(
     commandOutput: AdminInitiateAuthCommandOutput,
   ): void {
     if (commandOutput.AuthenticationResult == null) {

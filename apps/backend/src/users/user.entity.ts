@@ -58,5 +58,5 @@ export class User {
       referencedColumnName: 'pantryId',
     },
   })
-  pantries?: Pantry[] | null;
+  pantries!: Pantry[] | null;
 }

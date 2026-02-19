@@ -58,14 +58,14 @@ export class Order {
     type: 'timestamp',
     nullable: true,
   })
-  shippedAt?: Date | null;
+  shippedAt!: Date | null;
 
   @Column({
     name: 'delivered_at',
     type: 'timestamp',
     nullable: true,
   })
-  deliveredAt?: Date | null;
+  deliveredAt!: Date | null;
 
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations!: Allocation[];
@@ -76,7 +76,7 @@ export class Order {
     length: 255,
     nullable: true,
   })
-  trackingLink?: string;
+  trackingLink!: string;
 
   @Column({
     name: 'shipping_cost',
@@ -85,5 +85,5 @@ export class Order {
     scale: 2,
     nullable: true,
   })
-  shippingCost?: number;
+  shippingCost!: number;
 }

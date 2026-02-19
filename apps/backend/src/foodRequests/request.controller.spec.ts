@@ -150,9 +150,12 @@ describe('RequestsController', () => {
       const createBody = {
         pantryId: 1,
         requestedSize: RequestSize.MEDIUM,
-        requestedItems: ['Test item 1', 'Test item 2'],
+        requestedItems: [
+          FoodType.DAIRY_FREE_ALTERNATIVES,
+          FoodType.DRIED_BEANS,
+        ],
         additionalInformation: 'Test information.',
-      } as CreateRequestDto;
+      };
 
       const createdRequest: Partial<FoodRequest> = {
         requestId: 1,

@@ -7,7 +7,6 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
-  BadRequestException,
   NotFoundException,
   ValidationPipe,
 } from '@nestjs/common';
@@ -98,13 +97,6 @@ export class RequestsController {
     @Body(new ValidationPipe())
     requestData: CreateRequestDto,
   ): Promise<FoodRequest> {
-    if (
-      !Object.values(RequestSize).includes(
-        requestData.requestedSize as RequestSize,
-      )
-    ) {
-      throw new BadRequestException('Invalid request size');
-    }
     return this.requestsService.create(
       requestData.pantryId,
       requestData.requestedSize,

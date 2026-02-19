@@ -35,7 +35,7 @@ export class FoodRequest {
   requestedItems!: string[];
 
   @Column({ name: 'additional_information', type: 'text', nullable: true })
-  additionalInformation?: string | null;
+  additionalInformation!: string | null;
 
   @CreateDateColumn({
     name: 'requested_at',
@@ -45,14 +45,14 @@ export class FoodRequest {
   requestedAt!: Date;
 
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
-  dateReceived?: Date | null;
+  dateReceived!: Date | null;
 
   @Column({ name: 'feedback', type: 'text', nullable: true })
-  feedback?: string | null;
+  feedback!: string | null;
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
-  photos?: string[] | null;
+  photos!: string[] | null;
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
-  orders?: Order[] | null;
+  orders!: Order[] | null;
 }

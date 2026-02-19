@@ -54,13 +54,13 @@ export class FoodManufacturersService {
 
     // secondary contact information
     foodManufacturer.secondaryContactFirstName =
-      foodManufacturerData.secondaryContactFirstName;
+      foodManufacturerData.secondaryContactFirstName ?? null;
     foodManufacturer.secondaryContactLastName =
-      foodManufacturerData.secondaryContactLastName;
+      foodManufacturerData.secondaryContactLastName ?? null;
     foodManufacturer.secondaryContactEmail =
-      foodManufacturerData.secondaryContactEmail;
+      foodManufacturerData.secondaryContactEmail ?? null;
     foodManufacturer.secondaryContactPhone =
-      foodManufacturerData.secondaryContactPhone;
+      foodManufacturerData.secondaryContactPhone ?? null;
 
     // food manufacturer details information
     foodManufacturer.foodManufacturerName =
@@ -80,11 +80,11 @@ export class FoodManufacturersService {
     foodManufacturer.inKindDonations = foodManufacturerData.inKindDonations;
     foodManufacturer.donateWastedFood = foodManufacturerData.donateWastedFood;
     foodManufacturer.manufacturerAttribute =
-      foodManufacturerData.manufacturerAttribute;
+      foodManufacturerData.manufacturerAttribute ?? null;
     foodManufacturer.additionalComments =
-      foodManufacturerData.additionalComments;
+      foodManufacturerData.additionalComments ?? null;
     foodManufacturer.newsletterSubscription =
-      foodManufacturerData.newsletterSubscription;
+      foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
   }

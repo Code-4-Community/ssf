@@ -34,5 +34,5 @@ export class Allocation {
   reservedAt!: Date;
 
   @Column({ name: 'fulfilled_at', type: 'timestamp', nullable: true })
-  fulfilledAt?: Date | null;
+  fulfilledAt!: Date | null;
 }

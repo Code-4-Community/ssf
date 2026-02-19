@@ -1,6 +1,5 @@
 import {
   ArrayNotEmpty,
-  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -9,9 +8,9 @@ import {
   MaxLength,
 } from 'class-validator';
 import { RequestSize } from '../types';
+import { FoodType } from '../../donationItems/types';
 
 export class CreateRequestDto {
-  @IsNotEmpty()
   @IsNumber()
   pantryId!: number;
 
@@ -19,11 +18,11 @@ export class CreateRequestDto {
   requestedSize!: RequestSize;
 
   @ArrayNotEmpty()
-  requestedItems!: string[];
+  @IsEnum(FoodType, { each: true })
+  requestedItems!: FoodType[];
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   additionalInformation?: string;
 }

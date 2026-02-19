@@ -37,13 +37,13 @@ export class Donation {
   status!: DonationStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
-  totalItems?: number | null;
+  totalItems!: number | null;
 
   @Column({ name: 'total_oz', type: 'numeric', nullable: true })
-  totalOz?: number | null;
+  totalOz!: number | null;
 
   @Column({ name: 'total_estimated_value', type: 'numeric', nullable: true })
-  totalEstimatedValue?: number | null;
+  totalEstimatedValue!: number | null;
 
   @Column({
     name: 'recurrence',
@@ -55,7 +55,7 @@ export class Donation {
   recurrence!: RecurrenceEnum;
 
   @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
-  recurrenceFreq?: number | null;
+  recurrenceFreq!: number | null;
 
   @Column({
     name: 'next_donation_dates',
@@ -63,8 +63,8 @@ export class Donation {
     array: true,
     nullable: true,
   })
-  nextDonationDates?: Date[] | null;
+  nextDonationDates!: Date[] | null;
 
   @Column({ name: 'occurrences_remaining', type: 'int', nullable: true })
-  occurrencesRemaining?: number | null;
+  occurrencesRemaining!: number | null;
 }
