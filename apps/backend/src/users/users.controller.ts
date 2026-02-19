@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { updateUserInfo } from './dtos/updateUserInfo.dto';
 import { Pantry } from '../pantries/pantries.entity';
@@ -44,30 +43,12 @@ export class UsersController {
     return this.usersService.remove(userId);
   }
 
-  @Put('/:id/role')
-  async updateRole(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string,
-  ): Promise<User> {
-    if (!Object.values(Role).includes(role as Role)) {
-      throw new BadRequestException('Invalid role');
-    }
-    return this.usersService.update(id, { role: role as Role });
-  }
-
   @Put(':id/info')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserInfo: updateUserInfo,
+    @Body() dto: updateUserInfo, 
   ): Promise<User> {
-    const { firstName, lastName, phone } = updateUserInfo;
-
-    const updateData: Partial<User> = {};
-    if (firstName !== undefined) updateData.firstName = firstName;
-    if (lastName !== undefined) updateData.lastName = lastName;
-    if (phone !== undefined) updateData.phone = phone;
-
-    return this.usersService.update(id, updateData);
+    return this.usersService.update(id, dto);
   }
 
   @Post('/')
