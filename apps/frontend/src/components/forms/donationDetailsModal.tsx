@@ -72,7 +72,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
             <Dialog.Header>
               <VStack align="stretch" gap={0}>
                 <Dialog.Title fontSize="lg" mb={2} fontWeight="600">
-                  Donation #{donationId} Details
+                  Donation #{donationId} Stock
                 </Dialog.Title>
                 <Text fontSize="sm">
                   {donation.foodManufacturer?.foodManufacturerName}
@@ -85,7 +85,12 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
               <VStack align="stretch" gap={4} my={2}>
                 {Object.entries(groupedItems).map(([foodType, typeItems]) => (
                   <Box key={foodType}>
-                    <Text fontSize="md" fontWeight="600" mb={2}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="600"
+                      color="neutral.800"
+                      mb={2}
+                    >
                       {foodType}
                     </Text>
 
@@ -99,9 +104,11 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                           borderColor="neutral.100"
                           borderRadius="md"
                           overflow="hidden"
+                          color="neutral.800"
+                          fontSize="sm"
                         >
                           <Box flex={1} p={3} bg="white">
-                            <Text fontSize="sm">{item.itemName}</Text>
+                            <Text>{item.itemName}</Text>
                           </Box>
 
                           <Box
@@ -114,7 +121,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                             justifyContent="center"
                             bg="white"
                           >
-                            <Text fontSize="sm">
+                            <Text>
                               {item.quantity - item.reservedQuantity} of{' '}
                               {item.quantity} remaining
                             </Text>

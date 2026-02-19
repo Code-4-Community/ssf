@@ -324,6 +324,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
   const isRepeatOnDisabled = repeatInterval !== RepeatEnum.WEEK;
 
+  const placeholderStyles = {
+    color: 'neutral.300',
+    fontFamily: 'inter',
+    fontSize: 'sm',
+    fontWeight: '400',
+  };
+
   return (
     <Dialog.Root
       open={isOpen}
@@ -346,7 +353,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
             </Dialog.Header>
 
             <Dialog.Body>
-              <Text mb={8} color="neutral.700">
+              <Text mb={8} mt={-4} color="neutral.700">
                 Please fill out the following information to record donation
                 details.
               </Text>
@@ -388,7 +395,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Checkbox.Control>
                           <Checkbox.Indicator />
                         </Checkbox.Control>
-                        <Checkbox.Label color="neutral.700">
+                        <Checkbox.Label color="neutral.700" fontWeight={400}>
                           Make Donation Recurring
                         </Checkbox.Label>
                       </Checkbox.Root>
@@ -453,11 +460,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         </Table.Cell>
                         <Table.Cell pl={1}>
                           <Input
-                            _placeholder={{ color: 'neutral.300' }}
+                            _placeholder={{ ...placeholderStyles }}
                             color="neutral.800"
                             placeholder="Enter Food"
                             value={row.foodItem}
-                            size="md"
                             onChange={(e) =>
                               handleChange(row.id, 'foodItem', e.target.value)
                             }
@@ -488,12 +494,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            _placeholder={{ color: 'neutral.300' }}
+                            _placeholder={{ ...placeholderStyles }}
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
                             min={1}
-                            size="md"
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -503,12 +508,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            _placeholder={{ color: 'neutral.300' }}
+                            _placeholder={{ ...placeholderStyles }}
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
                             min={1}
-                            size="md"
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -518,12 +522,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                         <Table.Cell>
                           <Input
-                            _placeholder={{ color: 'neutral.300' }}
+                            _placeholder={{ ...placeholderStyles }}
                             color="neutral.800"
                             placeholder="Enter $"
                             type="number"
                             min={1}
-                            size="md"
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
@@ -695,14 +698,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         min={1}
                       >
                         <Flex position="relative" align="center">
-                          <NumberInput.Input pl={4} pr="140px" fontSize="md" />
+                          <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
                           <Text
                             position="absolute"
                             left={`calc(16px + ${
                               endsAfter.length * 0.6
                             }em + 8px)`}
                             color="neutral.800"
-                            fontSize="md"
+                            fontSize="sm"
                             pointerEvents="none"
                           >
                             {parseInt(endsAfter) > 1

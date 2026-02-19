@@ -60,22 +60,20 @@ const customConfig = defineConfig({
     textStyles,
     tokens: {
       colors: {
-        dashboardStatuses: {
-          firstHeader: { value: '#FEECD1' },
-          firstText: { value: '#9C5D00' },
-          secondHeader: { value: '#D5DCDF' },
-          secondText: { value: '#2B4E60' },
-          thirdHeader: { value: '#D4EAED' },
-          thirdText: { value: '#19717D' },
-        },
         white: { value: '#fff' },
         black: { value: '#000' },
         blue: {
           ssf: { value: '#2B5061' },
+          core: { value: '#2B4E60' },
           100: { value: '#bee3f8' },
+          200: { value: '#D5DCDF' },
         },
         red: { value: '#CC3538' },
-        yellow: { value: '#F89E19' },
+        yellow: {
+          ssf: { value: '#F89E19' },
+          hover: { value: '#9C5D00' },
+          200: { value: '#FEECD1' },
+        },
         cyan: { value: '#2795A5' },
         neutral: {
           50: { value: '#FAFAFA' },
@@ -93,7 +91,9 @@ const customConfig = defineConfig({
         },
         teal: {
           100: { value: '#E9F4F6' },
+          200: { value: '#D4EAED' },
           400: { value: '#A9D5DB' },
+          hover: { value: '#19717D' },
         },
       },
       fonts: {

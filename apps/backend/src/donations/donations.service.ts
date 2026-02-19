@@ -42,7 +42,7 @@ export class DonationService {
     validateId(foodManufacturerId, 'Food Manufacturer');
 
     const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId: foodManufacturerId },
+      where: { foodManufacturerId },
     });
 
     if (!manufacturer) {
