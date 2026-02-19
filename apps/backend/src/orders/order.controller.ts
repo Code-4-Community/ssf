@@ -22,6 +22,7 @@ import { OrderStatus } from './types';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -139,9 +140,11 @@ export class OrdersController {
   )
   async confirmDelivery(
     @Param('orderId', ParseIntPipe) orderId: number,
-    @Body() body: { dateReceived: string; feedback: string },
+    @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<Order> {
+    body.photos = photos;
+
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
       throw new BadRequestException('Invalid date format for dateReceived');

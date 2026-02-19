@@ -158,7 +158,7 @@ describe('OrdersService', () => {
       expect(result.dateReceived).toEqual(dateReceived);
       expect(result.feedback).toBe(feedback);
       expect(result.photos).toEqual(photos);
-      expect(result.deliveredAt).toBeDefined();
+      expect(result.deliveredAt).toBeNull();
 
       // Verify request status was updated
       const updatedRequest = await requestRepo.findOne({

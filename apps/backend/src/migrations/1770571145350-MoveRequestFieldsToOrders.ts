@@ -4,12 +4,12 @@ export class MoveRequestFieldsToOrders1770571145350 implements MigrationInterfac
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-        CREATE TYPE food_requests_status_enum AS ENUM ('Active', 'Closed');
+        CREATE TYPE food_requests_status_enum AS ENUM ('active', 'closed');
     `);
 
     await queryRunner.query(`
         ALTER TABLE food_requests
-            ADD COLUMN status food_requests_status_enum NOT NULL DEFAULT 'Active',
+          ADD COLUMN status food_requests_status_enum NOT NULL DEFAULT 'active',
             DROP COLUMN date_received,
             DROP COLUMN feedback,
             DROP COLUMN photos;
@@ -17,9 +17,9 @@ export class MoveRequestFieldsToOrders1770571145350 implements MigrationInterfac
 
     await queryRunner.query(`
         ALTER TABLE orders
-            ADD COLUMN date_received TIMESTAMP NULL,
-            ADD COLUMN feedback TEXT NULL,
-            ADD COLUMN photos TEXT[] NULL;
+          ADD COLUMN date_received TIMESTAMP,
+          ADD COLUMN feedback TEXT,
+          ADD COLUMN photos TEXT[];
     `);
   }
 
@@ -33,9 +33,9 @@ export class MoveRequestFieldsToOrders1770571145350 implements MigrationInterfac
 
     await queryRunner.query(`
         ALTER TABLE food_requests
-            ADD COLUMN date_received TIMESTAMP NULL,
-            ADD COLUMN feedback TEXT NULL,
-            ADD COLUMN photos TEXT[] NULL,
+        ADD COLUMN date_received TIMESTAMP,
+        ADD COLUMN feedback TEXT,
+        ADD COLUMN photos TEXT[],
             DROP COLUMN status;
     `);
 

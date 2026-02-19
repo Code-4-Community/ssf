@@ -6,6 +6,6 @@ export enum RequestSize {
 }
 
 export enum FoodRequestStatus {
-  ACTIVE = 'Active',
-  CLOSED = 'Closed',
+  ACTIVE = 'active',
+  CLOSED = 'closed',
 }

@@ -167,7 +167,6 @@ export class OrdersService {
     order.feedback = feedback;
     order.photos = photos;
     order.status = OrderStatus.DELIVERED;
-    order.deliveredAt = dateReceived;
 
     const updatedOrder = await this.repo.save(order);
 
@@ -177,6 +176,8 @@ export class OrdersService {
   }
 
   private async updateRequestStatus(requestId: number): Promise<void> {
+    validateId(requestId, 'Request');
+
     const request = await this.requestRepo.findOne({
       where: { requestId },
       relations: ['orders'],
@@ -187,9 +188,13 @@ export class OrdersService {
     }
 
     const orders = request.orders || [];
-    const allDelivered =
-      orders.length > 0 &&
-      orders.every((order) => order.status === OrderStatus.DELIVERED);
+    if (!orders.length) {
+      throw new NotFoundException(`No orders found for request ${requestId}`);
+    }
+
+    const allDelivered = orders.every(
+      (order) => order.status === OrderStatus.DELIVERED,
+    );
 
     request.status = allDelivered
       ? FoodRequestStatus.CLOSED
