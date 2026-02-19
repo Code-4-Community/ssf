@@ -13,7 +13,13 @@ import {
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
-import { ArrowDownUp, ChevronLeft, ChevronRight, Funnel } from 'lucide-react';
+import {
+  ArrowDownUp,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  Funnel,
+} from 'lucide-react';
 
 const ApprovePantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
@@ -89,216 +95,248 @@ const ApprovePantries: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Application Review
       </Heading>
-      <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
-        <Box position="relative">
-          <Button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            variant="outline"
-            color="neutral.600"
-            border="1px solid"
-            borderColor="neutral.200"
-            size="sm"
-            p={3}
-            fontFamily="ibm"
-            fontWeight="semibold"
-          >
-            <Funnel />
-            Filter
-          </Button>
-
-          {isFilterOpen && (
-            <>
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                onClick={() => setIsFilterOpen(false)}
-                zIndex={10}
-              />
-              <Box
-                position="absolute"
-                top="100%"
-                left={0}
-                mt={2}
-                bg="white"
+      {filteredPantries.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          py={10}
+          gap={2}
+          minH="40vh"
+        >
+          <Box mb={2}>
+            <CircleCheck size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            No Applications
+          </Box>
+          <Box color="neutral.700" fontWeight="400">
+            There are no applications to review at this time
+          </Box>
+        </Box>
+      ) : (
+        <Box>
+          <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
+            <Box position="relative">
+              <Button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                variant="outline"
+                color="neutral.600"
                 border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-                boxShadow="lg"
-                p={4}
-                minW="275px"
-                maxH="150px"
-                overflowY="auto"
-                zIndex={20}
+                borderColor="neutral.200"
+                size="sm"
+                p={3}
+                fontFamily="ibm"
+                fontWeight="semibold"
               >
-                <VStack align="stretch" gap={2}>
-                  {pantryOptions.map((pantry) => (
-                    <Checkbox.Root
-                      key={pantry}
-                      checked={selectedPantries.includes(pantry)}
-                      onCheckedChange={(e: { checked: boolean }) =>
-                        handleFilterChange(pantry, e.checked)
-                      }
-                      color="black"
-                      size="sm"
+                <Funnel />
+                Filter
+              </Button>
+
+              {isFilterOpen && (
+                <>
+                  <Box
+                    position="fixed"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    onClick={() => setIsFilterOpen(false)}
+                    zIndex={10}
+                  />
+                  <Box
+                    position="absolute"
+                    top="100%"
+                    left={0}
+                    mt={2}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p={4}
+                    minW="275px"
+                    maxH="150px"
+                    overflowY="auto"
+                    zIndex={20}
+                  >
+                    <VStack align="stretch" gap={2}>
+                      {pantryOptions.map((pantry) => (
+                        <Checkbox.Root
+                          key={pantry}
+                          checked={selectedPantries.includes(pantry)}
+                          onCheckedChange={(e: { checked: boolean }) =>
+                            handleFilterChange(pantry, e.checked)
+                          }
+                          color="black"
+                          size="sm"
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control borderRadius="sm" />
+                          <Checkbox.Label>{pantry}</Checkbox.Label>
+                        </Checkbox.Root>
+                      ))}
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </Box>
+            <Button
+              onClick={() => setSortAsc((s) => !s)}
+              variant="outline"
+              color="neutral.600"
+              border="1px solid"
+              borderColor="neutral.200"
+              p={3}
+              size="sm"
+              fontFamily="ibm"
+              fontWeight="semibold"
+            >
+              <ArrowDownUp />
+              Sort
+            </Button>
+          </Box>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="10%"
+                >
+                  Application #
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="45%"
+                >
+                  Pantry
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="15%"
+                >
+                  Date Applied
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  textAlign="right"
+                  width="25%"
+                >
+                  Actions
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {paginatedPantries.map((pantry, index) => (
+                <Table.Row
+                  key={`${pantry.pantryId}-${index}`}
+                  _hover={{ bg: 'gray.50' }}
+                >
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
+                  >
+                    {pantry.pantryId}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {pantry.pantryName}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {new Date(pantry.dateApplied).toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    textAlign="right"
+                    color="neutral.700"
+                  >
+                    <Link
+                      color="neutral.700"
+                      fontWeight={400}
+                      textStyle="p2"
+                      variant="underline"
+                      textDecorationColor="neutral.700"
+                      href={`/application-details/${pantry.pantryId}`}
                     >
-                      <Checkbox.HiddenInput />
-                      <Checkbox.Control borderRadius="sm" />
-                      <Checkbox.Label>{pantry}</Checkbox.Label>
-                    </Checkbox.Root>
-                  ))}
-                </VStack>
-              </Box>
-            </>
+                      View Details
+                    </Link>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+
+          {totalPages > 1 && (
+            <Pagination.Root
+              count={filteredPantries.length}
+              pageSize={itemsPerPage}
+              page={currentPage}
+              onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
+            >
+              <ButtonGroup
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                mt={12}
+                variant="outline"
+                size="sm"
+              >
+                <Pagination.PrevTrigger
+                  color="neutral.800"
+                  variant="outline"
+                  _hover={{ color: 'black', cursor: 'pointer' }}
+                >
+                  <ChevronLeft size={16} />
+                </Pagination.PrevTrigger>
+
+                <Pagination.Items
+                  render={(page) => (
+                    <IconButton
+                      borderColor={{
+                        base: 'neutral.100',
+                        _selected: 'neutral.600',
+                      }}
+                    >
+                      {page.value}
+                    </IconButton>
+                  )}
+                />
+
+                <Pagination.NextTrigger
+                  color="neutral.800"
+                  variant="ghost"
+                  _hover={{ color: 'black', cursor: 'pointer' }}
+                >
+                  <ChevronRight size={16} />
+                </Pagination.NextTrigger>
+              </ButtonGroup>
+            </Pagination.Root>
           )}
         </Box>
-        <Button
-          onClick={() => setSortAsc((s) => !s)}
-          variant="outline"
-          color="neutral.600"
-          border="1px solid"
-          borderColor="neutral.200"
-          p={3}
-          size="sm"
-          fontFamily="ibm"
-          fontWeight="semibold"
-        >
-          <ArrowDownUp />
-          Sort
-        </Button>
-      </Box>
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="10%"
-            >
-              Application #
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="45%"
-            >
-              Pantry
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="15%"
-            >
-              Date Applied
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              textAlign="right"
-              width="25%"
-            >
-              Actions
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {paginatedPantries.map((pantry, index) => (
-            <Table.Row
-              key={`${pantry.pantryId}-${index}`}
-              _hover={{ bg: 'gray.50' }}
-            >
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
-              >
-                {pantry.pantryId}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {pantry.pantryName}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {new Date(pantry.dateApplied).toLocaleDateString('en-US', {
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: 'numeric',
-                })}
-              </Table.Cell>
-              <Table.Cell textStyle="p2" textAlign="right" color="neutral.700">
-                <Link
-                  color="neutral.700"
-                  fontWeight={400}
-                  textStyle="p2"
-                  variant="underline"
-                  textDecorationColor="neutral.700"
-                  href={`/application-details/${pantry.pantryId}`}
-                >
-                  View Details
-                </Link>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-
-      {totalPages > 1 && (
-        <Pagination.Root
-          count={filteredPantries.length}
-          pageSize={itemsPerPage}
-          page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-          >
-            <Pagination.PrevTrigger
-              color="neutral.800"
-              variant="outline"
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronLeft size={16} />
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger
-              color="neutral.800"
-              variant="ghost"
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronRight size={16} />
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
       )}
     </Box>
   );

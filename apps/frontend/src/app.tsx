@@ -7,7 +7,6 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import submitFoodRequestFormModal from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
@@ -172,9 +171,9 @@ const router = createBrowserRouter([
       {
         path: '/application-details/:applicationId',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <ApplicationDetails />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
