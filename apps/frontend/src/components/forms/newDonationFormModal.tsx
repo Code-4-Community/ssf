@@ -19,6 +19,7 @@ import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import { FoodType, FoodTypes, RecurrenceEnum } from '../../types/types';
 import { Minus } from 'lucide-react';
+import { generateNextDonationDates } from '@utils/utils';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -36,7 +37,7 @@ interface DonationRow {
   foodRescue: boolean;
 }
 
-type DayOfWeek =
+export type DayOfWeek =
   | 'Monday'
   | 'Tuesday'
   | 'Wednesday'
@@ -45,27 +46,27 @@ type DayOfWeek =
   | 'Saturday'
   | 'Sunday';
 
-type RepeatOnState = Record<DayOfWeek, boolean>;
+export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export enum RepeatEnum {
+  NONE = 'None',
+  WEEK = 'Week',
+  MONTH = 'Month',
+  YEAR = 'Year',
+}
+
+const RECURRENCE_MAP: Record<RepeatEnum, RecurrenceEnum> = {
+  [RepeatEnum.NONE]: RecurrenceEnum.NONE,
+  [RepeatEnum.WEEK]: RecurrenceEnum.WEEKLY,
+  [RepeatEnum.MONTH]: RecurrenceEnum.MONTHLY,
+  [RepeatEnum.YEAR]: RecurrenceEnum.YEARLY,
+};
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
   isOpen,
   onClose,
 }) => {
-  enum RepeatEnum {
-    NONE = 'None',
-    WEEK = 'Week',
-    MONTH = 'Month',
-    YEAR = 'Year',
-  }
-
-  const RECURRENCE_MAP: Record<RepeatEnum, RecurrenceEnum> = {
-    [RepeatEnum.NONE]: RecurrenceEnum.NONE,
-    [RepeatEnum.WEEK]: RecurrenceEnum.WEEKLY,
-    [RepeatEnum.MONTH]: RecurrenceEnum.MONTHLY,
-    [RepeatEnum.YEAR]: RecurrenceEnum.YEARLY,
-  };
-
   const [rows, setRows] = useState<DonationRow[]>([
     {
       id: 1,
@@ -155,75 +156,12 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
-  const generateNextDonationDates = (): string[] => {
-    const today = new Date();
-    const repeatCount = parseInt(repeatEvery);
-    const dates: string[] = [];
-
-    if (repeatInterval === RepeatEnum.WEEK) {
-      const selectedDays = (Object.keys(repeatOn) as DayOfWeek[]).filter(
-        (day) => repeatOn[day],
-      );
-      if (selectedDays.length === 0) return [];
-
-      const dayOfWeek = today.getDay();
-      const daysOfWeek: DayOfWeek[] = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-      ];
-
-      const baseWeeksToAdd = repeatCount;
-      const baseDaysToAdd = baseWeeksToAdd * 7;
-      const startDay = repeatCount > 1 ? baseDaysToAdd : 1;
-
-      for (let i = startDay; i <= startDay + 6; i++) {
-        const nextDayIndex = (dayOfWeek + i) % 7;
-        const nextDay = daysOfWeek[nextDayIndex];
-
-        if (selectedDays.includes(nextDay)) {
-          const nextDate = new Date(today);
-          nextDate.setDate(today.getDate() + i);
-          nextDate.setHours(
-            today.getHours(),
-            today.getMinutes(),
-            today.getSeconds(),
-            today.getMilliseconds(),
-          );
-          dates.push(nextDate.toISOString());
-        }
-      }
-    } else if (repeatInterval === RepeatEnum.MONTH) {
-      const nextDate = new Date(today);
-      nextDate.setMonth(today.getMonth() + repeatCount);
-      nextDate.setHours(
-        today.getHours(),
-        today.getMinutes(),
-        today.getSeconds(),
-        today.getMilliseconds(),
-      );
-      dates.push(nextDate.toISOString());
-    } else if (repeatInterval === RepeatEnum.YEAR) {
-      const nextDate = new Date(today);
-      nextDate.setFullYear(today.getFullYear() + repeatCount);
-      nextDate.setHours(
-        today.getHours(),
-        today.getMinutes(),
-        today.getSeconds(),
-        today.getMilliseconds(),
-      );
-      dates.push(nextDate.toISOString());
-    }
-
-    return dates;
-  };
-
   const getNextDonationDateDisplay = (): string => {
-    const dates = generateNextDonationDates();
+    const dates = generateNextDonationDates(
+      repeatEvery,
+      repeatInterval,
+      repeatOn,
+    );
     if (dates.length === 0) return '';
 
     const firstDate = new Date(dates[0]);
@@ -261,7 +199,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    const nextDonationDates = isRecurring ? generateNextDonationDates() : null;
+    const nextDonationDates = isRecurring
+      ? generateNextDonationDates(repeatEvery, repeatInterval, repeatOn)
+      : null;
 
     if (nextDonationDates && nextDonationDates.length === 0) {
       alert('Please select at least one day for weekly recurrence.');
@@ -452,6 +392,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             height="32px"
                             minW="32px"
                             padding={0}
+                            mr={-4}
                           >
                             <Box color="neutral.300">
                               <Minus size={16} />

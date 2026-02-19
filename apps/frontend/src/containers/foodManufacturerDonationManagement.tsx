@@ -130,7 +130,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         );
 
         return (
-          <Box key={status} mb={12}>
+          <Box key={status} mb={14}>
             <DonationStatusSection
               donations={displayedDonations}
               status={status}
