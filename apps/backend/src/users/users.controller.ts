@@ -6,7 +6,6 @@ import {
   ParseIntPipe,
   Put,
   Post,
-  BadRequestException,
   Body,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -46,7 +45,7 @@ export class UsersController {
   @Put(':id/info')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: updateUserInfo, 
+    @Body() dto: updateUserInfo,
   ): Promise<User> {
     return this.usersService.update(id, dto);
   }

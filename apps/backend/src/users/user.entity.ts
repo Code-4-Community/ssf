@@ -23,13 +23,25 @@ export class User {
   })
   role: Role;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    name: 'first_name',
+    length: 255,
+  })
   firstName: string;
-
-  @Column()
+  
+  @Column({
+    type: 'varchar',
+    name: 'last_name',
+    length: 255,
+  })
   lastName: string;
-
-  @Column()
+  
+  @Column({
+    type: 'varchar',
+    name: 'email',
+    length: 255,
+  })
   email: string;
 
   @Column({
