@@ -5,7 +5,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  MaxLength,
 } from 'class-validator';
 import { RequestSize } from '../types';
 import { FoodType } from '../../donationItems/types';

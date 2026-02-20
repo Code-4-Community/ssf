@@ -12,6 +12,7 @@ import {
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
   SignUpCommand,
+  AuthenticationResultType,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
@@ -23,6 +24,17 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { Role } from '../users/types';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
 import { validateEnv } from '../utils/validation.utils';
+
+type SignInAuthResult = AuthenticationResultType & {
+  AccessToken: string;
+  RefreshToken: string;
+  IdToken: string;
+};
+
+type RefreshAuthResult = AuthenticationResultType & {
+  AccessToken: string;
+  IdToken: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -115,14 +127,13 @@ export class AuthService {
 
     const response = await this.providerClient.send(signInCommand);
 
-    this.validateAuthenticationResultTokensForSignIn(response);
-
-    const authResult = response.AuthenticationResult!;
+    const authResult =
+      this.validateAuthenticationResultTokensForSignIn(response);
 
     return {
-      accessToken: authResult.AccessToken!,
-      refreshToken: authResult.RefreshToken!,
-      idToken: authResult.IdToken!,
+      accessToken: authResult.AccessToken,
+      refreshToken: authResult.RefreshToken,
+      idToken: authResult.IdToken,
     };
   }
 
@@ -143,14 +154,13 @@ export class AuthService {
 
     const response = await this.providerClient.send(refreshCommand);
 
-    this.validateAuthenticationResultTokensForRefresh(response);
-
-    const authResult = response.AuthenticationResult!;
+    const authResult =
+      this.validateAuthenticationResultTokensForRefresh(response);
 
     return {
-      accessToken: authResult.AccessToken!,
+      accessToken: authResult.AccessToken,
       refreshToken: refreshToken,
-      idToken: authResult.IdToken!,
+      idToken: authResult.IdToken,
     };
   }
 
@@ -191,40 +201,45 @@ export class AuthService {
 
   private validateAuthenticationResultTokensForSignIn(
     commandOutput: AdminInitiateAuthCommandOutput,
-  ): void {
-    if (commandOutput.AuthenticationResult == null) {
+  ): SignInAuthResult {
+    const result = commandOutput.AuthenticationResult;
+
+    if (result == null) {
       throw new NotFoundException(
         'No associated authentication result for sign in',
       );
     }
 
     if (
-      commandOutput.AuthenticationResult.AccessToken == null ||
-      commandOutput.AuthenticationResult.RefreshToken == null ||
-      commandOutput.AuthenticationResult.IdToken == null
+      result.AccessToken == null ||
+      result.RefreshToken == null ||
+      result.IdToken == null
     ) {
       throw new NotFoundException(
         'Necessary Authentication Result tokens not found for sign in ',
       );
     }
+
+    return result as SignInAuthResult;
   }
 
   private validateAuthenticationResultTokensForRefresh(
     commandOutput: AdminInitiateAuthCommandOutput,
-  ): void {
-    if (commandOutput.AuthenticationResult == null) {
+  ): RefreshAuthResult {
+    const result = commandOutput.AuthenticationResult;
+
+    if (result == null) {
       throw new NotFoundException(
         'No associated authentication result for refresh',
       );
     }
 
-    if (
-      commandOutput.AuthenticationResult.AccessToken == null ||
-      commandOutput.AuthenticationResult.IdToken == null
-    ) {
+    if (result.AccessToken == null || result.IdToken == null) {
       throw new NotFoundException(
         'Necessary Authentication Result tokens not found for refresh',
       );
     }
+
+    return result as RefreshAuthResult;
   }
 }

@@ -99,7 +99,7 @@ export interface PantryApplicationDto {
 export interface CreateRequestDto {
   pantryId: number;
   requestedSize: RequestSize;
-  requestedItems: string[];
+  requestedItems: FoodType[];
   additionalInformation?: string;
 }
 
