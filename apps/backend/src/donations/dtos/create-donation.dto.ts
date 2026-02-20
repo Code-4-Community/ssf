@@ -1,16 +1,49 @@
 import {
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
+
+export class RepeatOnDaysDto {
+  @IsBoolean()
+  @IsOptional()
+  Monday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Tuesday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Wednesday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Thursday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Friday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Saturday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Sunday?: boolean;
+}
 
 export class CreateDonationDto {
   @IsNumber()
@@ -41,12 +74,11 @@ export class CreateDonationDto {
   @Min(1)
   recurrenceFreq?: number;
 
-  @Type(() => Date)
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsDate({ each: true })
-  @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
-  nextDonationDates?: Date[];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RepeatOnDaysDto)
+  @ValidateIf((o) => o.recurrence === RecurrenceEnum.WEEKLY)
+  repeatOnDays?: RepeatOnDaysDto;
 
   @IsNumber()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)

@@ -64,7 +64,7 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('GET /by-donation-id/:donationId', () => {
+  describe('GET /:donationId', () => {
     it('should return a donation for a given donation ID', async () => {
       const mockDonations: Partial<Donation>[] = [
         { donationId: 1 },

@@ -193,9 +193,7 @@ export class ApiClient {
   }
 
   public async getDonation(donationId: number): Promise<Donation> {
-    return this.get(
-      `/api/donations/by-donation-id/${donationId}`,
-    ) as Promise<Donation>;
+    return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
   }
 
   public async getDonationItemsByDonationId(

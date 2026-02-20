@@ -1,6 +1,6 @@
+import { RecurrenceEnum } from '../types/types';
 import {
   DayOfWeek,
-  RepeatEnum,
   RepeatOnState,
 } from '../components/forms/newDonationFormModal';
 
@@ -22,22 +22,20 @@ export const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export const generateNextDonationDates = (
+export const generateNextDonationDate = (
   repeatEvery: string,
-  repeatInterval: RepeatEnum,
+  repeatInterval: RecurrenceEnum,
   repeatOn: RepeatOnState,
-): string[] => {
+): string | null => {
   const today = new Date();
   const repeatCount = parseInt(repeatEvery);
-  const dates: string[] = [];
 
-  if (repeatInterval === RepeatEnum.WEEK) {
+  if (repeatInterval === RecurrenceEnum.WEEKLY) {
     const selectedDays = (Object.keys(repeatOn) as DayOfWeek[]).filter(
       (day) => repeatOn[day],
     );
-    if (selectedDays.length === 0) return [];
+    if (selectedDays.length === 0) return null;
 
-    const dayOfWeek = today.getDay();
     const daysOfWeek: DayOfWeek[] = [
       'Sunday',
       'Monday',
@@ -48,47 +46,28 @@ export const generateNextDonationDates = (
       'Saturday',
     ];
 
-    const baseWeeksToAdd = repeatCount;
-    const baseDaysToAdd = baseWeeksToAdd * 7;
-    const startDay = repeatCount > 1 ? baseDaysToAdd : 1;
+    const startOffset = repeatCount > 1 ? repeatCount * 7 : 1;
 
-    for (let i = startDay; i <= startDay + 6; i++) {
-      const nextDayIndex = (dayOfWeek + i) % 7;
-      const nextDay = daysOfWeek[nextDayIndex];
-
+    for (let i = startOffset; i <= startOffset + 6; i++) {
+      const nextDay = daysOfWeek[(today.getDay() + i) % 7];
       if (selectedDays.includes(nextDay)) {
-        const nextDate = new Date(today);
-        nextDate.setDate(today.getDate() + i);
-        nextDate.setHours(
-          today.getHours(),
-          today.getMinutes(),
-          today.getSeconds(),
-          today.getMilliseconds(),
-        );
-        dates.push(nextDate.toISOString());
+        const next = new Date(today);
+        next.setDate(today.getDate() + i);
+        return next.toISOString();
       }
     }
-  } else if (repeatInterval === RepeatEnum.MONTH) {
-    const nextDate = new Date(today);
-    nextDate.setMonth(today.getMonth() + repeatCount);
-    nextDate.setHours(
-      today.getHours(),
-      today.getMinutes(),
-      today.getSeconds(),
-      today.getMilliseconds(),
-    );
-    dates.push(nextDate.toISOString());
-  } else if (repeatInterval === RepeatEnum.YEAR) {
-    const nextDate = new Date(today);
-    nextDate.setFullYear(today.getFullYear() + repeatCount);
-    nextDate.setHours(
-      today.getHours(),
-      today.getMinutes(),
-      today.getSeconds(),
-      today.getMilliseconds(),
-    );
-    dates.push(nextDate.toISOString());
+    return null;
   }
 
-  return dates;
+  const next = new Date(today);
+  // Date clamp back to 28 for monthly and yearly
+  if (next.getDate() > 28) next.setDate(28);
+  if (repeatInterval === RecurrenceEnum.MONTHLY) {
+    next.setMonth(today.getMonth() + repeatCount);
+  } else if (repeatInterval === RecurrenceEnum.YEARLY) {
+    next.setFullYear(today.getFullYear() + repeatCount);
+  } else {
+    return null;
+  }
+  return next.toISOString();
 };

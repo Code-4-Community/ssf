@@ -35,7 +35,7 @@ export class DonationsController {
     return this.donationService.getByFoodManufacturer(foodManufacturerId);
   }
 
-  @Get('/by-donation-id/:donationId')
+  @Get('/:donationId')
   async getDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
@@ -58,11 +58,18 @@ export class DonationsController {
           example: RecurrenceEnum.NONE,
         },
         recurrenceFreq: { type: 'integer', example: 1, nullable: true },
-        nextDonationDates: {
-          type: 'array',
-          items: { type: 'string', format: 'date-time' },
-          example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
+        repeatOnDays: {
+          type: 'object',
           nullable: true,
+          properties: {
+            Sunday: { type: 'boolean', example: false },
+            Monday: { type: 'boolean', example: true },
+            Tuesday: { type: 'boolean', example: false },
+            Wednesday: { type: 'boolean', example: false },
+            Thursday: { type: 'boolean', example: false },
+            Friday: { type: 'boolean', example: false },
+            Saturday: { type: 'boolean', example: false },
+          },
         },
         occurrencesRemaining: { type: 'integer', example: 2, nullable: true },
       },

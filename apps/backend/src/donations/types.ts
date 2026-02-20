@@ -10,3 +10,14 @@ export enum RecurrenceEnum {
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
 }
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export type RepeatOnState = Record<DayOfWeek, boolean>;
