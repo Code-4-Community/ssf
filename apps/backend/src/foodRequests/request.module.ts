@@ -8,10 +8,7 @@ import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([FoodRequest, Order, Pantry]),
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([FoodRequest, Order, Pantry]), AuthModule],
   controllers: [RequestsController],
   providers: [RequestsService],
 })
