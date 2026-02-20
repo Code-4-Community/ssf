@@ -163,7 +163,7 @@ describe('OrdersController', () => {
 
       const result = await controller.getRequestFromOrder(orderId);
 
-      expect(result).toEqual(mockRequests[0] as Pantry);
+      expect(result).toEqual(mockRequests[0] as FoodRequest);
       expect(mockOrdersService.findOrderFoodRequest).toHaveBeenCalledWith(
         orderId,
       );
