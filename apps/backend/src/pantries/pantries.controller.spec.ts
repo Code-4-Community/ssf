@@ -334,6 +334,8 @@ describe('PantriesController', () => {
         pantryId,
         volunteerIds,
       );
+    });
+  });
   describe('getCurrentUserPantryId', () => {
     it('returns pantryId when req.currentUser is present', async () => {
       const req = { user: { id: 1 } };
