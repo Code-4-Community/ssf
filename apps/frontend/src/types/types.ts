@@ -194,6 +194,7 @@ export interface FoodRequest {
   requestedItems: string[];
   additionalInformation: string | null;
   requestedAt: string;
+  status: FoodRequestStatus;
   orders?: Order[];
 }
 
