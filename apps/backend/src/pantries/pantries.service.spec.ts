@@ -15,8 +15,10 @@ import {
   AllergensConfidence,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
+import { User } from '../users/user.entity';
 
 const mockRepository = mock<Repository<Pantry>>();
+const mockUserRepository = mock<Repository<User>>();
 
 describe('PantriesService', () => {
   let service: PantriesService;
@@ -79,9 +81,13 @@ describe('PantriesService', () => {
           provide: getRepositoryToken(Pantry),
           useValue: mockRepository,
         },
+        {
+          provide: getRepositoryToken(User),
+          useValue: mockUserRepository,
+        },
       ],
     }).compile();
-
+  
     service = module.get<PantriesService>(PantriesService);
   });
 
