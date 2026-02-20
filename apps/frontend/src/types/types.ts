@@ -107,6 +107,13 @@ export enum DonationStatus {
   MATCHING = 'matching',
 }
 
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -115,6 +122,10 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+  recurrence: RecurrenceEnum;
+  recurrenceFreq?: number;
+  nextDonationDates?: string[];
+  occurrencesRemaining?: number;
 }
 
 export interface DonationItem {

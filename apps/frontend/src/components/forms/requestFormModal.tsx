@@ -39,8 +39,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
 
-  const [alertMessage, setAlertMessage] = useState<string>(''); 
-  
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
   useEffect(() => {
@@ -53,7 +53,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       );
     }
   }, [isOpen, previousRequest]);
-  
+
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
@@ -72,7 +72,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     } catch {
       setAlertMessage('Failed to submit food request');
     }
-  }
+  };
 
   return (
     <Dialog.Root
@@ -233,9 +233,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 <TagGroup
                   values={selectedItems}
                   onRemove={(value) =>
-                    setSelectedItems((prev) =>
-                      prev.filter((i) => i !== value),
-                    )
+                    setSelectedItems((prev) => prev.filter((i) => i !== value))
                   }
                   blueVariant={false}
                 />

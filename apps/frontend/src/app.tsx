@@ -9,7 +9,7 @@ import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
 import submitFoodRequestFormModal from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
-import FormRequests from '@containers/FormRequests';
+import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
@@ -158,7 +158,6 @@ const router = createBrowserRouter([
             <FormRequests />
           </ProtectedRoute>
         ),
-        action: submitFoodRequestFormModal,
       },
       {
         path: '/donation-management',

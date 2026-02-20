@@ -176,10 +176,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
 
-                  <TagGroup
-                    values={selectedItems}
-                    blueVariant={false}
-                  />
+                  <TagGroup values={selectedItems} blueVariant={false} />
                 </Field.Root>
 
                 <Field.Root mb={4}>
@@ -295,7 +292,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       count={orderDetailsList.length}
                       pageSize={1}
                       page={currentPage}
-                      onChange={(page) => setCurrentPage(page)}
+                      onChange={(page: number) => setCurrentPage(page)}
                     >
                       <ButtonGroup variant="outline" size="sm">
                         <Pagination.PrevTrigger asChild>
