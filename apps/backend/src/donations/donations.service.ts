@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
 import { DonationStatus } from './types';
+import { CreateDonationDto } from './dtos/create-donation.dto';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Injectable()
 export class DonationService {
@@ -38,31 +39,28 @@ export class DonationService {
     return this.repo.count();
   }
 
-  async create(
-    foodManufacturerId: number,
-    dateDonated: Date,
-    status: DonationStatus,
-    totalItems: number,
-    totalOz: number,
-    totalEstimatedValue: number,
-  ) {
-    validateId(foodManufacturerId, 'Food Manufacturer');
+  async create(donationData: CreateDonationDto): Promise<Donation> {
+    validateId(donationData.foodManufacturerId, 'Food Manufacturer');
     const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId },
+      where: { foodManufacturerId: donationData.foodManufacturerId },
     });
 
     if (!manufacturer) {
       throw new NotFoundException(
-        `Food Manufacturer ${foodManufacturerId} not found`,
+        `Food Manufacturer ${donationData.foodManufacturerId} not found`,
       );
     }
     const donation = this.repo.create({
       foodManufacturer: manufacturer,
-      dateDonated,
-      status,
-      totalItems,
-      totalOz,
-      totalEstimatedValue,
+      dateDonated: donationData.dateDonated,
+      status: donationData.status,
+      totalItems: donationData.totalItems,
+      totalOz: donationData.totalOz,
+      totalEstimatedValue: donationData.totalEstimatedValue,
+      recurrence: donationData.recurrence,
+      recurrenceFreq: donationData.recurrenceFreq,
+      nextDonationDates: donationData.nextDonationDates,
+      occurrencesRemaining: donationData.occurrencesRemaining,
     });
 
     return this.repo.save(donation);
@@ -77,5 +75,10 @@ export class DonationService {
     }
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
+  }
+
+  async handleRecurringDonations(): Promise<void> {
+    console.log('Accessing donation service from cron job');
+    // TODO: Implement logic for sending reminder emails
   }
 }

@@ -4,7 +4,6 @@ import {
   ClientVisitFrequency,
   ServeAllergicChildren,
   AllergensConfidence,
-  PantryStatus,
   Activity,
 } from './pantryEnums';
 
@@ -46,8 +45,8 @@ export interface Pantry {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryUser?: User;
-  status: PantryStatus;
-  dateApplied: Date;
+  status: ApplicationStatus;
+  dateApplied: string;
   activities: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
@@ -103,6 +102,13 @@ export enum DonationStatus {
   MATCHING = 'matching',
 }
 
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
 export interface Donation {
   donationId: number;
   dateDonated: string;
@@ -111,6 +117,10 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+  recurrence: RecurrenceEnum;
+  recurrenceFreq?: number;
+  nextDonationDates?: string[];
+  occurrencesRemaining?: number;
 }
 
 export interface DonationItem {
@@ -183,8 +193,7 @@ export interface FoodRequest {
   requestedSize: RequestSize;
   requestedItems: string[];
   additionalInformation: string | null;
-  requestedAt: Date;
-  status: FoodRequestStatus;
+  requestedAt: string;
   orders?: Order[];
 }
 
@@ -192,15 +201,18 @@ export interface Order {
   orderId: number;
   request: FoodRequest;
   requestId: number;
-  foodManufacturer: FoodManufacturer | null;
-  shippedBy: number | null;
+  foodManufacturer: FoodManufacturer;
+  foodManufacturerId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string | null;
-  deliveredAt: string | null;
-  dateReceived?: string | null;
-  feedback?: string | null;
-  photos?: string[] | null;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  allocations: Allocation[];
+  trackingLink?: string;
+  shippingCost?: number;
+  dateReceived?: string;
+  feedback?: string;
+  photos?: string[];
 }
 
 export interface OrderItemDetails {
@@ -288,14 +300,23 @@ export interface OrderSummary {
   orderId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt: string | null;
-  deliveredAt: string | null;
-  pantry: {
-    pantryName: string;
-    volunteers?: {
-      id: number;
-      firstName: string;
-      lastName: string;
-    }[];
+  shippedAt?: string;
+  deliveredAt?: string;
+  request: {
+    pantryId: number;
+    pantry: {
+      pantryName: string;
+      volunteers?: {
+        id: number;
+        firstName: string;
+        lastName: string;
+      }[];
+    };
   };
+}
+
+export enum ApplicationStatus {
+  APPROVED = 'approved',
+  DENIED = 'denied',
+  PENDING = 'pending',
 }

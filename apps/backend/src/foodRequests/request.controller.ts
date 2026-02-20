@@ -10,14 +10,16 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 import { RequestSize } from './types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 
 @Controller('requests')
-// @UseInterceptors()
 export class RequestsController {
   constructor(private requestsService: RequestsService) {}
 
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -25,14 +27,15 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
-  @Get('/get-all-requests/:pantryId')
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @Get('/:pantryId/all')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<FoodRequest[]> {
     return this.requestsService.find(pantryId);
   }
 
-  @Get('/all-order-details/:requestId')
+  @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<OrderDetailsDto[]> {

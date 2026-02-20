@@ -6,26 +6,26 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { FoodManufacturer } from '../foodManufacturers/manufacturer.entity';
-import { DonationStatus } from './types';
+import { DonationStatus, RecurrenceEnum } from './types';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Entity('donations')
 export class Donation {
   @PrimaryGeneratedColumn({ name: 'donation_id' })
-  donationId: number;
+  donationId!: number;
 
   @ManyToOne(() => FoodManufacturer, (manufacturer) => manufacturer.donations, {
     nullable: false,
   })
   @JoinColumn({ name: 'food_manufacturer_id' })
-  foodManufacturer: FoodManufacturer;
+  foodManufacturer!: FoodManufacturer;
 
   @CreateDateColumn({
     name: 'date_donated',
     type: 'timestamp',
     default: () => 'NOW()',
   })
-  dateDonated: Date;
+  dateDonated!: Date;
 
   @Column({
     name: 'status',
@@ -34,14 +34,37 @@ export class Donation {
     enumName: 'donations_status_enum',
     default: DonationStatus.AVAILABLE,
   })
-  status: DonationStatus;
+  status!: DonationStatus;
 
   @Column({ name: 'total_items', type: 'int', nullable: true })
-  totalItems: number;
+  totalItems?: number;
 
-  @Column({ name: 'total_oz', type: 'int', nullable: true })
-  totalOz: number;
+  @Column({ name: 'total_oz', type: 'numeric', nullable: true })
+  totalOz?: number;
 
-  @Column({ name: 'total_estimated_value', type: 'int', nullable: true })
-  totalEstimatedValue: number;
+  @Column({ name: 'total_estimated_value', type: 'numeric', nullable: true })
+  totalEstimatedValue?: number;
+
+  @Column({
+    name: 'recurrence',
+    type: 'enum',
+    enum: RecurrenceEnum,
+    enumName: 'donation_recurrence_enum',
+    default: RecurrenceEnum.NONE,
+  })
+  recurrence!: RecurrenceEnum;
+
+  @Column({ name: 'recurrence_freq', type: 'int', nullable: true })
+  recurrenceFreq?: number;
+
+  @Column({
+    name: 'next_donation_dates',
+    type: 'timestamptz',
+    array: true,
+    nullable: true,
+  })
+  nextDonationDates?: Date[];
+
+  @Column({ name: 'occurrences_remaining', type: 'int', nullable: true })
+  occurrencesRemaining?: number;
 }

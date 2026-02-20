@@ -23,7 +23,7 @@ import {
   Form,
   redirect,
 } from 'react-router-dom';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
@@ -70,7 +70,7 @@ const PantryApplicationForm: React.FC = () => {
   const [secondaryContactPhone, setSecondaryContactPhone] =
     useState<string>('');
   const [activities, setActivities] = useState<string[]>([]);
-  const allergenClientsExactOption: string = 'I have an exact number';
+  const allergenClientsExactOption = 'I have an exact number';
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
@@ -1226,7 +1226,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const data = Object.fromEntries(pantryApplicationData);
 
-  let submissionSuccessful: boolean = false;
+  let submissionSuccessful = false;
 
   await ApiClient.postPantry(data as PantryApplicationDto).then(
     () => (submissionSuccessful = true),
@@ -1242,7 +1242,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
         );
       } else {
         alert('Form submission failed; please try again');
-        console.log(error);
       }
     },
   );
