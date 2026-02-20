@@ -7,8 +7,8 @@ import {
   Body,
   UploadedFiles,
   UseInterceptors,
-  BadRequestException,
   NotFoundException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -22,6 +22,7 @@ import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { CreateRequestDto } from './dtos/create-request.dto';
 
 @Controller('requests')
 export class RequestsController {
@@ -93,30 +94,14 @@ export class RequestsController {
     },
   })
   async createRequest(
-    @Body()
-    body: {
-      pantryId: number;
-      requestedSize: RequestSize;
-      requestedItems: string[];
-      additionalInformation: string;
-      dateReceived: Date;
-      feedback: string;
-      photos: string[];
-    },
+    @Body(new ValidationPipe())
+    requestData: CreateRequestDto,
   ): Promise<FoodRequest> {
-    if (
-      !Object.values(RequestSize).includes(body.requestedSize as RequestSize)
-    ) {
-      throw new BadRequestException('Invalid request size');
-    }
     return this.requestsService.create(
-      body.pantryId,
-      body.requestedSize,
-      body.requestedItems,
-      body.additionalInformation,
-      body.dateReceived,
-      body.feedback,
-      body.photos,
+      requestData.pantryId,
+      requestData.requestedSize,
+      requestData.requestedItems,
+      requestData.additionalInformation,
     );
   }
 

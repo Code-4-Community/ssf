@@ -103,6 +103,10 @@ export class OrdersService {
       pantryId: request.pantryId,
     });
 
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
+    }
+
     return pantry;
   }
 

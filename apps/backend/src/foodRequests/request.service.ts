@@ -77,10 +77,7 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedItems: string[],
-    additionalInformation: string | undefined,
-    dateReceived: Date | undefined,
-    feedback: string | undefined,
-    photos: string[] | undefined,
+    additionalInformation: string | undefined | null,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -94,9 +91,6 @@ export class RequestsService {
       requestedSize,
       requestedItems,
       additionalInformation,
-      dateReceived,
-      feedback,
-      photos,
     });
 
     return await this.repo.save(foodRequest);

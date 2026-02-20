@@ -27,6 +27,7 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { Public } from '../auth/public.decorator';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('pantries')
 export class PantriesController {
@@ -37,11 +38,14 @@ export class PantriesController {
 
   @Roles(Role.PANTRY)
   @Get('/my-id')
-  async getCurrentUserPantryId(@Req() req): Promise<number> {
-    const currentUser = req.user;
-    if (!currentUser) {
+  async getCurrentUserPantryId(
+    @Req() req: AuthenticatedRequest | Request,
+  ): Promise<number> {
+    if (!('user' in req)) {
       throw new UnauthorizedException('Not authenticated');
     }
+
+    const currentUser = req.user;
 
     const pantry = await this.pantriesService.findByUserId(currentUser.id);
     return pantry.pantryId;
