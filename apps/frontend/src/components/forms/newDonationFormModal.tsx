@@ -287,7 +287,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
               </Text>
 
               <Box display="block" overflowX="auto" whiteSpace="nowrap">
-                <Table.Root variant="line" size="md">
+                <Table.Root
+                  variant="line"
+                  size="md"
+                  style={{ borderCollapse: 'collapse' }}
+                >
                   <TableCaption textAlign="left">
                     <Stack
                       direction="column"
@@ -332,8 +336,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
                   <Table.Header>
                     <Table.Row fontWeight={600}>
-                      <Table.ColumnHeader width="35px" p={0} />
-                      <Table.ColumnHeader width="22%">
+                      <Table.ColumnHeader width="32px" p={1} />
+                      <Table.ColumnHeader width="23%" p={0}>
                         Food Item
                         <Text as="span" color="red">
                           *
@@ -357,7 +361,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       <Table.ColumnHeader width="14%">
                         Donation Value
                       </Table.ColumnHeader>
-                      <Table.ColumnHeader width="5%" textAlign="center" px={0}>
+                      <Table.ColumnHeader
+                        width="20px"
+                        textAlign="left"
+                        px={0}
+                        pl={4}
+                        whiteSpace="normal"
+                        lineHeight="tight"
+                      >
                         Food Rescue
                       </Table.ColumnHeader>
                     </Table.Row>
@@ -366,7 +377,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                   <Table.Body>
                     {rows.map((row) => (
                       <Table.Row key={row.id}>
-                        <Table.Cell width="35px" px={0} pr={1}>
+                        <Table.Cell width="32px" p={0} pr={2}>
                           <Button
                             size="sm"
                             variant="outline"
@@ -381,7 +392,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             height="32px"
                             minW="32px"
                             padding={0}
-                            mr={-4}
                           >
                             <Box color="neutral.300">
                               <Minus size={16} />
@@ -389,7 +399,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           </Button>
                         </Table.Cell>
 
-                        <Table.Cell pl={1}>
+                        <Table.Cell p={0} pr={4}>
                           <Input
                             _placeholder={placeholderStyles}
                             color="neutral.800"
@@ -469,16 +479,20 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           />
                         </Table.Cell>
 
-                        <Table.Cell textAlign="center" px={0}>
+                        <Table.Cell px={0} pl={6} width="32px">
                           <Checkbox.Root
                             checked={row.foodRescue}
                             size="lg"
+                            borderRadius="2px"
                             onCheckedChange={(e: { checked: boolean }) =>
                               handleChange(row.id, 'foodRescue', !!e.checked)
                             }
                           >
                             <Checkbox.HiddenInput />
-                            <Checkbox.Control>
+                            <Checkbox.Control
+                              borderRadius="2px"
+                              borderColor="#E4E4E7"
+                            >
                               <Checkbox.Indicator />
                             </Checkbox.Control>
                           </Checkbox.Root>
@@ -524,10 +538,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             }
                           >
                             {(Object.values(RecurrenceEnum) as RecurrenceEnum[])
-                              .filter((r) => r !== RecurrenceEnum.NONE)
-                              .map((r) => (
-                                <option key={r} value={r}>
-                                  {RECURRENCE_LABELS[r]}
+                              .filter((v) => v !== RecurrenceEnum.NONE)
+                              .map((v) => (
+                                <option key={v} value={v}>
+                                  {RECURRENCE_LABELS[v]}
                                 </option>
                               ))}
                           </NativeSelect.Field>
