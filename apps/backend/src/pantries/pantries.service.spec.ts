@@ -87,7 +87,7 @@ describe('PantriesService', () => {
         },
       ],
     }).compile();
-  
+
     service = module.get<PantriesService>(PantriesService);
   });
 
