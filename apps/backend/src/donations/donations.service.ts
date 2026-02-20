@@ -3,12 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import {
-  DayOfWeek,
-  DonationStatus,
-  RecurrenceEnum,
-  RepeatOnState,
-} from './types';
+import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
@@ -41,25 +36,6 @@ export class DonationService {
 
   async getNumberOfDonations(): Promise<number> {
     return this.repo.count();
-  }
-
-  async getByFoodManufacturer(foodManufacturerId: number): Promise<Donation[]> {
-    validateId(foodManufacturerId, 'Food Manufacturer');
-
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId },
-    });
-
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${foodManufacturerId} not found`,
-      );
-    }
-
-    return this.repo.find({
-      where: { foodManufacturer: { foodManufacturerId } },
-      relations: ['foodManufacturer'],
-    });
   }
 
   async create(donationData: CreateDonationDto): Promise<Donation> {

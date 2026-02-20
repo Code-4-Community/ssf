@@ -189,7 +189,7 @@ describe('DonationService', () => {
 
       // 2025-01-06 + 1 month = 2025-02-06
       expect(resultDate.getUTCFullYear()).toBe(2025);
-      expect(resultDate.getUTCMonth()).toBe(1);
+      expect(resultDate.getUTCMonth()).toBe(1); // February
       expect(resultDate.getUTCDate()).toBe(6);
     });
 
@@ -202,13 +202,13 @@ describe('DonationService', () => {
       const resultDate = new Date(result[0]);
 
       // 2025-01-06 + 3 months = 2025-04-06
-      expect(resultDate.getUTCMonth()).toBe(3);
+      expect(resultDate.getUTCMonth()).toBe(3); // April
       expect(resultDate.getUTCDate()).toBe(6);
     });
 
     it('MONTHLY - rolls over the year correctly', async () => {
       const result = await service.generateNextDonationDates(
-        13,
+        12,
         RecurrenceEnum.MONTHLY,
         null,
       );
@@ -216,7 +216,7 @@ describe('DonationService', () => {
 
       // 2025-01-06 + 12 months = 2026-01-06
       expect(resultDate.getUTCFullYear()).toBe(2026);
-      expect(resultDate.getUTCMonth()).toBe(1);
+      expect(resultDate.getUTCMonth()).toBe(0); // January
     });
 
     it('MONTHLY - ignores repeatOnDays', async () => {
@@ -248,7 +248,7 @@ describe('DonationService', () => {
       );
 
       expect(new Date(result[0]).getUTCDate()).toBe(28);
-      expect(new Date(result[0]).getUTCMonth()).toBe(1);
+      expect(new Date(result[0]).getUTCMonth()).toBe(1); // February
     });
 
     it('YEARLY - returns exactly one date', async () => {
@@ -270,7 +270,7 @@ describe('DonationService', () => {
 
       // 2025-01-06 + 1 year = 2026-01-06
       expect(resultDate.getUTCFullYear()).toBe(2026);
-      expect(resultDate.getUTCMonth()).toBe(0);
+      expect(resultDate.getUTCMonth()).toBe(0); // January
       expect(resultDate.getUTCDate()).toBe(6);
     });
 
@@ -310,7 +310,7 @@ describe('DonationService', () => {
 
       expect(new Date(result[0]).getUTCFullYear()).toBe(2026);
       expect(new Date(result[0]).getUTCDate()).toBe(28);
-      expect(new Date(result[0]).getUTCMonth()).toBe(0);
+      expect(new Date(result[0]).getUTCMonth()).toBe(0); // January
     });
 
     it('NONE - returns empty array', async () => {

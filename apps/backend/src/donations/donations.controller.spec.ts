@@ -41,29 +41,6 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('GET /by-fm-id/:foodManufacturerId', () => {
-    it('should return donations for a given food manufacturer', async () => {
-      const mockDonations: Partial<Donation>[] = [
-        {
-          donationId: 1,
-          foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
-        },
-        {
-          donationId: 2,
-          foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
-        },
-      ];
-      mockDonationService.getByFoodManufacturer.mockResolvedValue(
-        mockDonations as Donation[],
-      );
-
-      const result = await controller.getDonationsByFoodManufacturer(1);
-
-      expect(result).toBe(mockDonations);
-      expect(mockDonationService.getByFoodManufacturer).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('GET /:donationId', () => {
     it('should return a donation for a given donation ID', async () => {
       const mockDonations: Partial<Donation>[] = [
