@@ -109,6 +109,7 @@ describe('PantriesService', () => {
       expect(result).toBe(mockPendingPantry);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
+        relations: ['pantryUser'],
       });
     });
 
@@ -286,4 +287,24 @@ describe('PantriesService', () => {
       expect(mockRepository.save).toHaveBeenCalled();
     });
   });
+
+  // TODO: once pantry service tests are fixed, uncomment this out
+  // describe('findByUserId', () => {
+  //   it('should return a pantry by user id', async () => {
+  //     const userId = 10;
+  //     const pantry = await service.findByUserId(userId);
+
+  //     expect(pantry.pantryId).toBe(1);
+  //     expect(pantry.pantryName).toBe('Community Food Pantry Downtown');
+  //     expect(mockRepository.findOne).toHaveBeenCalledWith({
+  //       where: { pantryUser: { id: userId } },
+  //     });
+  //   });
+
+  //   it('should throw NotFoundException if pantry not found', async () => {
+  //     await expect(service.findByUserId(999)).rejects.toThrow(
+  //       new NotFoundException('Pantry for User 999 not found'),
+  //     );
+  //   });
+  // });
 });

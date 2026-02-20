@@ -177,11 +177,10 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
       confirmDeliveryData,
     );
     alert('Delivery confirmation submitted successfully');
-    window.location.href = `/request-form/${pantryId}`;
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
-    window.location.href = `/request-form/${pantryId}`;
   }
+  window.location.href = '/request-form';
 };
 
 export default DeliveryConfirmationModal;
