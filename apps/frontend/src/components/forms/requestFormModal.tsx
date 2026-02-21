@@ -235,7 +235,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   onRemove={(value) =>
                     setSelectedItems((prev) => prev.filter((i) => i !== value))
                   }
-                  blueVariant={false}
                 />
               </Field.Root>
 

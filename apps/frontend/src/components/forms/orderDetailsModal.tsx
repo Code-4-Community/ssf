@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Text,
-  Dialog,
-  CloseButton,
-  Textarea,
-  Field,
-} from '@chakra-ui/react';
+import { Text, Dialog, CloseButton, Textarea, Field } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, OrderSummary } from 'types/types';
 import { formatDate } from '@utils/utils';
@@ -91,10 +85,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Food Type(s)
                     </Text>
                   </Field.Label>
-                  <TagGroup
-                    values={foodRequest.requestedItems}
-                    blueVariant={false}
-                  />
+                  <TagGroup values={foodRequest.requestedItems} />
                 </Field.Root>
 
                 <Field.Root mb={4}>

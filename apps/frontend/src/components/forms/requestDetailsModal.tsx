@@ -176,7 +176,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
 
-                  <TagGroup values={selectedItems} blueVariant={false} />
+                  <TagGroup values={selectedItems} />
                 </Field.Root>
 
                 <Field.Root mb={4}>

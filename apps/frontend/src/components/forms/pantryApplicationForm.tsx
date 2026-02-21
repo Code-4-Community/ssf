@@ -648,9 +648,7 @@ const PantryApplicationForm: React.FC = () => {
             <TagGroup
               values={restrictions}
               onRemove={(value) =>
-                setRestrictions((prev) =>
-                  prev.filter((item) => item !== value),
-                )
+                setRestrictions((prev) => prev.filter((item) => item !== value))
               }
               blueVariant={true}
             />
@@ -969,9 +967,7 @@ const PantryApplicationForm: React.FC = () => {
             <TagGroup
               values={activities}
               onRemove={(value) =>
-                setActivities((prev) =>
-                  prev.filter((item) => item !== value),
-                )
+                setActivities((prev) => prev.filter((item) => item !== value))
               }
               blueVariant={true}
             />
@@ -1076,7 +1072,7 @@ const PantryApplicationForm: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" bg="blue.ssf" fontWeight={600} px={8}>
+            <Button type="submit" bg="blue.hover" fontWeight={600} px={8}>
               Submit Application
             </Button>
           </Box>
@@ -1213,9 +1209,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
     },
   );
 
-  return submissionSuccessful
-    ? redirect('/application-submitted')
-    : null;
+  return submissionSuccessful ? redirect('/application-submitted') : null;
 };
 
 export default PantryApplicationForm;
