@@ -7,12 +7,16 @@ import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { ApplicationStatus } from '../shared/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class FoodManufacturersService {
   constructor(
     @InjectRepository(FoodManufacturer)
     private repo: Repository<FoodManufacturer>,
+
+    private usersService: UsersService,
   ) {}
 
   async findOne(foodManufacturerId: number): Promise<FoodManufacturer> {
@@ -99,7 +103,20 @@ export class FoodManufacturersService {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
-    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
+    const createUserDto: userSchemaDto = {
+      email: foodManufacturer.foodManufacturerRepresentative.email,
+      firstName: foodManufacturer.foodManufacturerRepresentative.firstName,
+      lastName: foodManufacturer.foodManufacturerRepresentative.lastName,
+      phone: foodManufacturer.foodManufacturerRepresentative.phone,
+      role: Role.FOODMANUFACTURER,
+    };
+
+    const newFoodManufacturer = await this.usersService.create(createUserDto);
+
+    await this.repo.update(id, {
+      status: ApplicationStatus.APPROVED,
+      foodManufacturerRepresentative: newFoodManufacturer,
+    });
   }
 
   async deny(id: number) {

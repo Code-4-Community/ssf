@@ -174,13 +174,7 @@ describe('UsersController', () => {
       const result = await controller.createUser(createUserSchema);
 
       expect(result).toEqual(createdUser);
-      expect(mockUserService.create).toHaveBeenCalledWith(
-        createUserSchema.email,
-        createUserSchema.firstName,
-        createUserSchema.lastName,
-        createUserSchema.phone,
-        createUserSchema.role,
-      );
+      expect(mockUserService.create).toHaveBeenCalledWith(createUserSchema);
     });
 
     it('should handle service errors', async () => {
