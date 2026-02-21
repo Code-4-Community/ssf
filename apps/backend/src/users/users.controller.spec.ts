@@ -136,7 +136,7 @@ describe('UsersController', () => {
     });
   });
 
-  describe('PUT :id/info', () => {
+  describe('PATCH :id/info', () => {
     it('should update user info with valid information', async () => {
       const updatedUser = {
         ...mockUser1,

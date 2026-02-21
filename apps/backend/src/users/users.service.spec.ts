@@ -146,12 +146,12 @@ describe('UsersService', () => {
     it('should update user attributes', async () => {
       const dto: updateUserInfo = { firstName: 'Updated' };
       const updatedUser = { ...mockUser, firstName: 'Updated' };
-    
+
       mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
       mockUserRepository.save.mockResolvedValue(updatedUser as User);
-    
+
       const result = await service.update(1, dto);
-    
+
       expect(result).toEqual(updatedUser);
       expect(mockUserRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({ firstName: 'Updated' }),
@@ -270,7 +270,11 @@ describe('UsersService', () => {
 
     it('should update multiple fields at once', async () => {
       const dto: updateUserInfo = { firstName: 'Updated', lastName: 'Smith' };
-      const updatedUser = { ...mockUser, firstName: 'Updated', lastName: 'Smith' };
+      const updatedUser = {
+        ...mockUser,
+        firstName: 'Updated',
+        lastName: 'Smith',
+      };
 
       mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
       mockUserRepository.save.mockResolvedValue(updatedUser as User);
@@ -290,6 +294,7 @@ describe('UsersService', () => {
 
       const result = await service.update(1, dto);
 
+      expect(result.firstName).toBe('OnlyFirst');
       expect(result.lastName).toBe(mockUser.lastName);
       expect(result.email).toBe(mockUser.email);
       expect(result.phone).toBe(mockUser.phone);
@@ -300,7 +305,9 @@ describe('UsersService', () => {
       const dto: updateUserInfo = {};
 
       await expect(service.update(1, dto)).rejects.toThrow(
-        new BadRequestException('At least one field must be provided to update'),
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
       );
 
       expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
@@ -310,15 +317,15 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user is not found', async () => {
       mockUserRepository.findOneBy.mockResolvedValue(null);
 
-      await expect(service.update(999, { firstName: 'Updated' })).rejects.toThrow(
-        new NotFoundException('User 999 not found'),
-      );
+      await expect(
+        service.update(999, { firstName: 'Updated' }),
+      ).rejects.toThrow(new NotFoundException('User 999 not found'));
     });
 
     it('should throw BadRequestException for invalid id', async () => {
-      await expect(service.update(-1, { firstName: 'Updated' })).rejects.toThrow(
-        new BadRequestException('Invalid User ID'),
-      );
+      await expect(
+        service.update(-1, { firstName: 'Updated' }),
+      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
 
       expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
