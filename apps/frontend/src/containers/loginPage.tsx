@@ -162,7 +162,8 @@ const LoginPage: React.FC = () => {
             <Box>
               <Text textStyle="h1">Set New Password</Text>
               <Text color="#52525B" textStyle="p2" mt={2}>
-                Your account requires a new password before continuing.
+                Your account requires a new password before continuing. Your
+                password should be at least 8 characters.
               </Text>
             </Box>
 
