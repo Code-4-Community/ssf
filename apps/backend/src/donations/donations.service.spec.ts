@@ -159,7 +159,7 @@ describe('DonationService', () => {
       expect(timestamps).toEqual([...timestamps].sort((a, b) => a - b));
     });
 
-    it('WEEKLY - does not include today even if today is selected', async () => {
+    it("WEEKLY - does not include today's DOW if selected", async () => {
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Monday: true };
       const result = await service.generateNextDonationDates(
         1,

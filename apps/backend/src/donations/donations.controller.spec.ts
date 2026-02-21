@@ -3,7 +3,6 @@ import { DonationsController } from './donations.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Donation } from './donations.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 const mockDonationService = mock<DonationService>();
 
@@ -43,17 +42,13 @@ describe('DonationsController', () => {
 
   describe('GET /:donationId', () => {
     it('should return a donation for a given donation ID', async () => {
-      const mockDonations: Partial<Donation>[] = [
-        { donationId: 1 },
-        { donationId: 2 },
-      ];
-      mockDonationService.findOne.mockResolvedValue(
-        mockDonations[0] as Donation,
-      );
+      const mockDonation: Partial<Donation> = { donationId: 1 };
+
+      mockDonationService.findOne.mockResolvedValue(mockDonation as Donation);
 
       const result = await controller.getDonation(1);
 
-      expect(result).toBe(mockDonations[0]);
+      expect(result).toBe(mockDonation);
       expect(mockDonationService.findOne).toHaveBeenCalledWith(1);
     });
   });

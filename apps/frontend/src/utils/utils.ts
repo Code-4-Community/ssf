@@ -1,8 +1,4 @@
-import { RecurrenceEnum } from '../types/types';
-import {
-  DayOfWeek,
-  RepeatOnState,
-} from '../components/forms/newDonationFormModal';
+import { DayOfWeek, RecurrenceEnum, RepeatOnState } from '../types/types';
 
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);

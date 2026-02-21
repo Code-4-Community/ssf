@@ -17,7 +17,13 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
-import { FoodType, FoodTypes, RecurrenceEnum } from '../../types/types';
+import {
+  DayOfWeek,
+  FoodType,
+  FoodTypes,
+  RecurrenceEnum,
+  RepeatOnState,
+} from '../../types/types';
 import { Minus } from 'lucide-react';
 import { generateNextDonationDate } from '@utils/utils';
 
@@ -36,17 +42,6 @@ interface DonationRow {
   valuePerItem: string;
   foodRescue: boolean;
 }
-
-export type DayOfWeek =
-  | 'Monday'
-  | 'Tuesday'
-  | 'Wednesday'
-  | 'Thursday'
-  | 'Friday'
-  | 'Saturday'
-  | 'Sunday';
-
-export type RepeatOnState = Record<DayOfWeek, boolean>;
 
 // Display labels for RecurrenceEnum values in the UI
 const RECURRENCE_LABELS: Record<RecurrenceEnum, string> = {
@@ -281,7 +276,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
             </Dialog.Header>
 
             <Dialog.Body>
-              <Text mb={8} mt={-4} color="neutral.700">
+              <Text mb={4} mt={-4} color="neutral.700">
                 Please fill out the following information to record donation
                 details.
               </Text>
@@ -388,13 +383,15 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             bg="white"
                             _hover={{ bg: 'gray.50' }}
                             _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                            width="32px"
-                            height="32px"
-                            minW="32px"
+                            width="28px"
+                            height="28px"
+                            minW="28px"
                             padding={0}
                           >
                             <Box color="neutral.300">
-                              <Minus size={16} />
+                              <Minus
+                                style={{ width: '24px', height: '24px' }}
+                              />
                             </Box>
                           </Button>
                         </Table.Cell>

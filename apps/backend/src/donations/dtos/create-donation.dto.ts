@@ -1,8 +1,5 @@
 import {
-  ArrayNotEmpty,
-  IsArray,
   IsBoolean,
-  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -11,9 +8,25 @@ import {
   Min,
   ValidateIf,
   ValidateNested,
+  registerDecorator,
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
+
+function AtLeastOneDaySelected() {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'atLeastOneDaySelected',
+      target: object.constructor,
+      propertyName,
+      validator: {
+        validate(value: Record<string, any>) {
+          return !!value && Object.values(value).some((v) => v === true);
+        },
+      },
+    });
+  };
+}
 
 export class RepeatOnDaysDto {
   @IsBoolean()
@@ -77,6 +90,7 @@ export class CreateDonationDto {
   @IsObject()
   @ValidateNested()
   @Type(() => RepeatOnDaysDto)
+  @AtLeastOneDaySelected()
   @ValidateIf((o) => o.recurrence === RecurrenceEnum.WEEKLY)
   repeatOnDays?: RepeatOnDaysDto;
 
