@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
@@ -7,6 +11,8 @@ import {
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
   SignUpCommand,
+  AdminCreateUserCommand,
+  AdminGetUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
@@ -71,6 +77,54 @@ export class AuthService {
 
     const response = await this.providerClient.send(signUpCommand);
     return response.UserConfirmed;
+  }
+
+  async adminCreateUser({
+    firstName,
+    lastName,
+    email,
+  }: Omit<SignUpDto, 'password'>): Promise<string> {
+    const createUserCommand = new AdminCreateUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+      UserAttributes: [
+        { Name: 'name', Value: `${firstName} ${lastName}` },
+        { Name: 'email', Value: email },
+        { Name: 'email_verified', Value: 'true' },
+      ],
+      DesiredDeliveryMediums: ['EMAIL'],
+    });
+
+    try {
+      const response = await this.providerClient.send(createUserCommand);
+      const sub = response.User?.Attributes?.find(
+        (attr) => attr.Name === 'sub',
+      )?.Value;
+      return sub;
+    } catch (error) {
+      if (error.name == 'UsernameExistsException') {
+        throw new ConflictException('A user with this email already exists');
+      } else {
+        throw new InternalServerErrorException('Failed to create user');
+      }
+    }
+  }
+
+  async userExists(email: string): Promise<boolean> {
+    try {
+      await this.providerClient.send(
+        new AdminGetUserCommand({
+          UserPoolId: CognitoAuthConfig.userPoolId,
+          Username: email,
+        }),
+      );
+      return true;
+    } catch (error) {
+      if (error.name === 'UserNotFoundException') {
+        return false;
+      }
+      throw new InternalServerErrorException('Failed to check user existence');
+    }
   }
 
   async verifyUser(email: string, verificationCode: string): Promise<void> {
