@@ -70,6 +70,10 @@ declare module '@chakra-ui/react' {
   export interface FieldRootProps extends ComponentPropsLenientChildren {}
   export interface FieldHelperTextProps extends ComponentPropsLenientChildren {}
 
+  // Native Select components
+  export interface NativeSelectFieldProps
+    extends ComponentPropsLenientChildren {}
+
   // Common components
   export interface ButtonProps extends ComponentPropsStrictChildren {}
   export interface IconButtonProps extends ComponentPropsStrictChildren {}
@@ -79,4 +83,6 @@ declare module '@chakra-ui/react' {
   export interface CardProps extends ComponentPropsStrictChildren {}
   export interface CardBodyProps extends ComponentPropsStrictChildren {}
   export interface TextareaProps extends ComponentPropsStrictChildren {}
+  export interface NumberInputInputProps
+    extends ComponentPropsLenientChildren {}
 }

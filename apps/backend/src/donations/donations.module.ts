@@ -3,17 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
-import { ManufacturerModule } from '../foodManufacturers/manufacturer.module';
 import { AuthModule } from '../auth/auth.module';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationsSchedulerService } from './donations.scheduler';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Donation, FoodManufacturer]),
-    ManufacturerModule,
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Donation, FoodManufacturer]), AuthModule],
   controllers: [DonationsController],
   providers: [DonationService, DonationsSchedulerService],
 })

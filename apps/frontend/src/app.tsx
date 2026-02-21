@@ -7,7 +7,6 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import submitFoodRequestFormModal from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
@@ -16,12 +15,12 @@ import { submitPantryApplicationForm } from '@components/forms/pantryApplication
 import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
-import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
+import FoodManufacturerDonationManagement from '@containers/foodManufacturerDonationManagement';
 import LoginPage from '@containers/loginPage';
 import SignupPage from '@containers/signupPage';
 import ForgotPasswordPage from '@containers/forgotPasswordPage';
@@ -160,10 +159,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/donation-management',
+        path: '/fm-donation-management',
         element: (
           <ProtectedRoute>
-            <DonationManagement />
+            <FoodManufacturerDonationManagement />
           </ProtectedRoute>
         ),
       },
