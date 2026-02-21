@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Put,
   Post,
   Req,
   UnauthorizedException,
@@ -16,6 +17,7 @@ import { Roles } from '../auth/roles.decorator';
 import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -51,6 +53,11 @@ export class PantriesController {
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
+  }
+
+  @Get('/approved')
+  async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
 
   @Roles(Role.PANTRY, Role.ADMIN)
@@ -327,5 +334,13 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.deny(pantryId);
+  }
+
+  @Put('/:pantryId/volunteers')
+  async updatePantryVolunteers(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Body('volunteerIds') volunteerIds: number[],
+  ): Promise<void> {
+    return this.pantriesService.updatePantryVolunteers(pantryId, volunteerIds);
   }
 }
