@@ -65,6 +65,7 @@ const customConfig = defineConfig({
         blue: {
           ssf: { value: '#2B5061' },
           core: { value: '#2B4E60' },
+          hover: { value: '#213C4A' },
           100: { value: '#bee3f8' },
           200: { value: '#D5DCDF' },
         },

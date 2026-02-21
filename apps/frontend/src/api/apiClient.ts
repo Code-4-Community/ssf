@@ -16,6 +16,7 @@ import {
   Pantry,
   PantryApplicationDto,
   CreateMultipleDonationItemsBody,
+  ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
   OrderDetails,
@@ -210,6 +211,12 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async postManufacturer(
+    data: ManufacturerApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/manufacturers/application`, data);
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {
