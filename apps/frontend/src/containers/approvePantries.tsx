@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Center,
   Table,
@@ -7,16 +8,15 @@ import {
   NativeSelect,
   NativeSelectIndicator,
 } from '@chakra-ui/react';
-import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
 
 const ApprovePantries: React.FC = () => {
+  const navigate = useNavigate();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
-  const [openPantry, setOpenPantry] = useState<Pantry | null>(null);
 
   const fetchPantries = async () => {
     try {
@@ -91,7 +91,7 @@ const ApprovePantries: React.FC = () => {
                   bg="transparent"
                   color="cyan"
                   fontWeight="600"
-                  onClick={() => setOpenPantry(pantry)}
+                  onClick={() => navigate(`/application-details/${pantry.pantryId}`)}
                 >
                   <Link>{pantry.pantryName}</Link>
                 </Button>
@@ -117,13 +117,6 @@ const ApprovePantries: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openPantry && (
-            <PantryApplicationModal
-              pantry={openPantry}
-              isOpen={openPantry !== null}
-              onClose={() => setOpenPantry(null)}
-            />
-          )}
         </Table.Body>
       </Table.Root>
     </Center>
