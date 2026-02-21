@@ -28,14 +28,22 @@ import { ManufacturerApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
-import { Allergen, DonateWastedFood, ManufacturerAttribute } from '../../types/manufacturerEnums';
+import {
+  Allergen,
+  DonateWastedFood,
+  ManufacturerAttribute,
+} from '../../types/manufacturerEnums';
 
 const ManufacturerApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
   const [secondaryContactPhone, setSecondaryContactPhone] =
     useState<string>('');
-  const [unlistedProductAllergens, setUnlistedProductAllergens] = useState<Allergen[]>([]);
-  const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<Allergen[]>([]);
+  const [unlistedProductAllergens, setUnlistedProductAllergens] = useState<
+    Allergen[]
+  >([]);
+  const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<
+    Allergen[]
+  >([]);
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -92,9 +100,9 @@ const ManufacturerApplicationForm: React.FC = () => {
             fontWeight="400"
           >
             <Text>
-              This form helps us learn about your company’s allergen-friendly products,
-              facility standards, and sustainability practices so we can connect you
-              with the right partner pantries.
+              This form helps us learn about your company’s allergen-friendly
+              products, facility standards, and sustainability practices so we
+              can connect you with the right partner pantries.
             </Text>
             <Text mb=".5em">
               Please answer as accurately as possible. If you have any questions
@@ -263,7 +271,9 @@ const ManufacturerApplicationForm: React.FC = () => {
                   <input
                     type="text"
                     name="unlistedProductAllergens-required"
-                    value={unlistedProductAllergens.length > 0 ? 'selected' : ''}
+                    value={
+                      unlistedProductAllergens.length > 0 ? 'selected' : ''
+                    }
                     required
                     style={{
                       position: 'absolute',
@@ -388,7 +398,7 @@ const ManufacturerApplicationForm: React.FC = () => {
                           setFacilityFreeAllergens((prev) =>
                             checked
                               ? [...prev, value as Allergen]
-                              : prev.filter((i) => i !== value as Allergen),
+                              : prev.filter((i) => i !== (value as Allergen)),
                           );
                         }}
                         display="flex"
@@ -485,11 +495,13 @@ const ManufacturerApplicationForm: React.FC = () => {
 
           <Text {...sectionTitleStyles}>Additional Details</Text>
           <Text {...sectionSubtitleStyles} mb="0.5em">
-            We focus on partnering with eco-friendly businesses and appreciate your support in responding to the next question:
+            We focus on partnering with eco-friendly businesses and appreciate
+            your support in responding to the next question:
           </Text>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Are your products sustainable or environmentally conscious? Please describe.
+              Are your products sustainable or environmentally conscious? Please
+              describe.
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <Textarea
@@ -526,7 +538,8 @@ const ManufacturerApplicationForm: React.FC = () => {
 
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Would you be donating food that would otherwise go to waste (i.e., food rescue)?
+              Would you be donating food that would otherwise go to waste (i.e.,
+              food rescue)?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root name="donateWastedFood" variant="solid">
@@ -550,9 +563,7 @@ const ManufacturerApplicationForm: React.FC = () => {
           </Field.Root>
 
           <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Are you:
-            </Field.Label>
+            <Field.Label {...fieldHeaderStyles}>Are you:</Field.Label>
             <NativeSelect.Root>
               <NativeSelect.Field
                 placeholder="Select an option"
@@ -658,7 +669,7 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
   manufacturerApplicationData.set(
     'productsGlutenFree',
     form.get('productsGlutenFree') === 'Yes, always',
-  )
+  );
   manufacturerApplicationData.set(
     'productsContainSulfites',
     form.get('productsContainSulfites') === 'Yes',
@@ -709,9 +720,7 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
     },
   );
 
-  return submissionSuccessful
-    ? redirect('/application-submitted')
-    : null;
+  return submissionSuccessful ? redirect('/application-submitted') : null;
 };
 
 export default ManufacturerApplicationForm;
