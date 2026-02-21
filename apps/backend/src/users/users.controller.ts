@@ -4,9 +4,9 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Put,
   Post,
   Body,
+  Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
@@ -42,7 +42,7 @@ export class UsersController {
     return this.usersService.remove(userId);
   }
 
-  @Put(':id/info')
+  @Patch(':id/info')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: updateUserInfo,
