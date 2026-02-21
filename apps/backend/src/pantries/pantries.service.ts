@@ -123,19 +123,7 @@ export class PantriesService {
       role: Role.PANTRY,
     };
 
-    let newPantryUser: User;
-    try {
-      newPantryUser = await this.usersService.create(createUserDto);
-    } catch (error) {
-      // Try to fetch directly from database
-      if (error instanceof ConflictException) {
-        newPantryUser = await this.usersService.findByEmail(
-          createUserDto.email,
-        );
-      } else {
-        throw error;
-      }
-    }
+    const newPantryUser = await this.usersService.create(createUserDto);
 
     await this.repo.update(id, {
       status: ApplicationStatus.APPROVED,

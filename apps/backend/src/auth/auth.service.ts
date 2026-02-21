@@ -110,23 +110,6 @@ export class AuthService {
     }
   }
 
-  async userExists(email: string): Promise<boolean> {
-    try {
-      await this.providerClient.send(
-        new AdminGetUserCommand({
-          UserPoolId: CognitoAuthConfig.userPoolId,
-          Username: email,
-        }),
-      );
-      return true;
-    } catch (error) {
-      if (error.name === 'UserNotFoundException') {
-        return false;
-      }
-      throw new InternalServerErrorException('Failed to check user existence');
-    }
-  }
-
   async verifyUser(email: string, verificationCode: string): Promise<void> {
     const confirmCommand = new ConfirmSignUpCommand({
       ClientId: CognitoAuthConfig.userPoolClientId,
