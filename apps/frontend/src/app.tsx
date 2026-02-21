@@ -7,13 +7,13 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import submitFoodRequestFormModal from '@components/forms/requestFormModal';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import ApplicationDetails from '@containers/applicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import DonationManagement from '@containers/donationManagement';
@@ -172,6 +172,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/application-details/:applicationId',
+        element: (
+          <ProtectedRoute>
+            <ApplicationDetails />
           </ProtectedRoute>
         ),
       },
