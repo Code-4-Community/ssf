@@ -9,6 +9,7 @@ import { mock } from 'jest-mock-extended';
 import { In } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { PantriesService } from '../pantries/pantries.service';
+import { updateUserInfo } from './dtos/updateUserInfo.dto';
 
 const mockUserRepository = mock<Repository<User>>();
 const mockPantriesService = mock<PantriesService>();
@@ -143,16 +144,18 @@ describe('UsersService', () => {
 
   describe('update', () => {
     it('should update user attributes', async () => {
-      const updateData = { firstName: 'Updated', role: Role.ADMIN };
-      const updatedUser = { ...mockUser, ...updateData };
-
+      const dto: updateUserInfo = { firstName: 'Updated' };
+      const updatedUser = { ...mockUser, firstName: 'Updated' };
+    
       mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
       mockUserRepository.save.mockResolvedValue(updatedUser as User);
-
-      const result = await service.update(1, updateData);
-
+    
+      const result = await service.update(1, dto);
+    
       expect(result).toEqual(updatedUser);
-      expect(mockUserRepository.save).toHaveBeenCalledWith(updatedUser);
+      expect(mockUserRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ firstName: 'Updated' }),
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
@@ -222,6 +225,102 @@ describe('UsersService', () => {
       const result = await service.findUsersByRoles(roles);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('update', () => {
+    it('should update firstName', async () => {
+      const dto: updateUserInfo = { firstName: 'Updated' };
+      const updatedUser = { ...mockUser, firstName: 'Updated' };
+
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+
+      const result = await service.update(1, dto);
+
+      expect(result.firstName).toBe('Updated');
+      expect(mockUserRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ firstName: 'Updated' }),
+      );
+    });
+
+    it('should update lastName', async () => {
+      const dto: updateUserInfo = { lastName: 'Smith' };
+      const updatedUser = { ...mockUser, lastName: 'Smith' };
+
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+
+      const result = await service.update(1, dto);
+
+      expect(result.lastName).toBe('Smith');
+    });
+
+    it('should update phone', async () => {
+      const dto: updateUserInfo = { phone: '0987654321' };
+      const updatedUser = { ...mockUser, phone: '0987654321' };
+
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+
+      const result = await service.update(1, dto);
+
+      expect(result.phone).toBe('0987654321');
+    });
+
+    it('should update multiple fields at once', async () => {
+      const dto: updateUserInfo = { firstName: 'Updated', lastName: 'Smith' };
+      const updatedUser = { ...mockUser, firstName: 'Updated', lastName: 'Smith' };
+
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+
+      const result = await service.update(1, dto);
+
+      expect(result.firstName).toBe('Updated');
+      expect(result.lastName).toBe('Smith');
+    });
+
+    it('should not overwrite fields absent from the DTO', async () => {
+      const dto: updateUserInfo = { firstName: 'OnlyFirst' };
+      const updatedUser = { ...mockUser, firstName: 'OnlyFirst' };
+
+      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+
+      const result = await service.update(1, dto);
+
+      expect(result.lastName).toBe(mockUser.lastName);
+      expect(result.email).toBe(mockUser.email);
+      expect(result.phone).toBe(mockUser.phone);
+      expect(result.role).toBe(mockUser.role);
+    });
+
+    it('should throw BadRequestException when DTO is empty', async () => {
+      const dto: updateUserInfo = {};
+
+      await expect(service.update(1, dto)).rejects.toThrow(
+        new BadRequestException('At least one field must be provided to update'),
+      );
+
+      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
+      expect(mockUserRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when user is not found', async () => {
+      mockUserRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.update(999, { firstName: 'Updated' })).rejects.toThrow(
+        new NotFoundException('User 999 not found'),
+      );
+    });
+
+    it('should throw BadRequestException for invalid id', async () => {
+      await expect(service.update(-1, { firstName: 'Updated' })).rejects.toThrow(
+        new BadRequestException('Invalid User ID'),
+      );
+
+      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
 });
