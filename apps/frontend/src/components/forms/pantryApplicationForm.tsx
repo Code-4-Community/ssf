@@ -11,11 +11,9 @@ import {
   SimpleGrid,
   NativeSelect,
   NativeSelectIndicator,
-  Tag,
   Separator,
   Checkbox,
   Menu,
-  Flex,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -30,6 +28,7 @@ import ApiClient from '@api/apiClient';
 import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
+import { TagGroup } from './tagGroup';
 
 const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
@@ -646,31 +645,13 @@ const PantryApplicationForm: React.FC = () => {
               </Menu.Positioner>
             </Menu.Root>
 
-            {restrictions.length > 0 && (
-              <Flex wrap="wrap" mt={1} gap={2}>
-                {restrictions.map((value) => (
-                  <Tag.Root
-                    key={value}
-                    bg="teal.100"
-                    p={2}
-                    border="1px solid"
-                    borderColor="teal.400"
-                  >
-                    <Tag.Label>{value}</Tag.Label>
-                    <Tag.EndElement ml={4}>
-                      <Tag.CloseTrigger
-                        onClick={() =>
-                          setRestrictions((prev) =>
-                            prev.filter((item) => item !== value),
-                          )
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </Tag.EndElement>
-                  </Tag.Root>
-                ))}
-              </Flex>
-            )}
+            <TagGroup
+              values={restrictions}
+              onRemove={(value) =>
+                setRestrictions((prev) => prev.filter((item) => item !== value))
+              }
+              blueVariant={true}
+            />
           </Field.Root>
 
           {restrictions.find((option) =>
@@ -983,31 +964,13 @@ const PantryApplicationForm: React.FC = () => {
               </Menu.Positioner>
             </Menu.Root>
 
-            {activities.length > 0 && (
-              <Flex wrap="wrap" mt={1} gap={2}>
-                {activities.map((value) => (
-                  <Tag.Root
-                    key={value}
-                    bg="teal.100"
-                    p={2}
-                    border="1px solid"
-                    borderColor="teal.400"
-                  >
-                    <Tag.Label>{value}</Tag.Label>
-                    <Tag.EndElement ml={4}>
-                      <Tag.CloseTrigger
-                        onClick={() =>
-                          setActivities((prev) =>
-                            prev.filter((item) => item !== value),
-                          )
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </Tag.EndElement>
-                  </Tag.Root>
-                ))}
-              </Flex>
-            )}
+            <TagGroup
+              values={activities}
+              onRemove={(value) =>
+                setActivities((prev) => prev.filter((item) => item !== value))
+              }
+              blueVariant={true}
+            />
             <Field.HelperText color="neutral.600">
               Food donations are one part of being a partner pantry. The
               following are additional ways to help us better support you!
@@ -1109,7 +1072,7 @@ const PantryApplicationForm: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" bg="blue.ssf" fontWeight={600} px={8}>
+            <Button type="submit" bg="blue.hover" fontWeight={600} px={8}>
               Submit Application
             </Button>
           </Box>
@@ -1246,9 +1209,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
     },
   );
 
-  return submissionSuccessful
-    ? redirect('/pantry-application/submitted')
-    : null;
+  return submissionSuccessful ? redirect('/application-submitted') : null;
 };
 
 export default PantryApplicationForm;
