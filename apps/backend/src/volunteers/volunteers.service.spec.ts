@@ -19,9 +19,6 @@ describe('VolunteersService', () => {
       await testDataSource.initialize();
     }
 
-    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
-    await testDataSource.query(`CREATE SCHEMA public`);
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         VolunteersService,
