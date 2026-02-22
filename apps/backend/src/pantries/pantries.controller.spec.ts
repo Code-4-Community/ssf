@@ -15,12 +15,14 @@ import {
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
+const mockEmailsService = mock<EmailsService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
@@ -86,6 +88,10 @@ describe('PantriesController', () => {
         {
           provide: OrdersService,
           useValue: mockOrdersService,
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
         },
       ],
     }).compile();
