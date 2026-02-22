@@ -102,9 +102,9 @@ export interface PantryApplicationDto {
 }
 
 export enum DonationStatus {
+  MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
 }
 
 export enum RecurrenceEnum {
@@ -134,9 +134,10 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem: number;
-  estimatedValue: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
   foodType: FoodType;
+  foodRescue?: boolean;
 }
 
 export const FoodTypes = [
@@ -278,9 +279,10 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    ozPerItem: number;
-    estimatedValue: number;
+    ozPerItem?: number;
+    estimatedValue?: number;
     foodType: FoodType;
+    foodRescue?: boolean;
   }[];
 }
 
@@ -302,9 +304,9 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  DELIVERED = 'delivered',
   PENDING = 'pending',
   SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
 }
 
 export enum RequestSize {
@@ -346,3 +348,14 @@ export enum ApplicationStatus {
   DENIED = 'denied',
   PENDING = 'pending',
 }
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export type RepeatOnState = Record<DayOfWeek, boolean>;

@@ -34,7 +34,7 @@ const SignupPage: React.FC = () => {
           </Box>
 
           <Button
-            bgColor="yellow"
+            bgColor="yellow.ssf"
             w="full"
             borderRadius={5}
             color="white"
