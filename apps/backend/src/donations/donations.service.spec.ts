@@ -1,30 +1,81 @@
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { mock } from 'jest-mock-extended';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { testDataSource } from '../config/typeormTestDataSource';
+import { RecurrenceEnum } from './types';
 
-const mockDonationRepository = mock<Repository<Donation>>();
-const mockFoodManufacturerRepository = mock<Repository<FoodManufacturer>>();
+jest.setTimeout(60000);
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const daysAgo = (numDays: number) => {
+  const date = new Date(today);
+  date.setDate(date.getDate() - numDays);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const daysFromNow = (numDays: number) => {
+  const date = new Date(today);
+  date.setDate(date.getDate() + numDays);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+// insert a minimal donation and return its generated ID
+async function insertDonation(overrides: {
+  recurrence: RecurrenceEnum;
+  recurrenceFreq: number;
+  nextDonationDates: Date[];
+  occurrencesRemaining: number;
+}): Promise<number> {
+  // uses FoodCorp Industries manufacturer from test seed data
+  const result = await testDataSource.query(
+    `INSERT INTO donations
+      (food_manufacturer_id, status, recurrence, recurrence_freq, 
+      next_donation_dates, occurrences_remaining)
+    VALUES
+      (
+        (SELECT food_manufacturer_id FROM food_manufacturers
+        WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
+        'available',
+        $1, $2, $3, $4
+      )
+      RETURNING donation_id`,
+    [
+      overrides.recurrence,
+      overrides.recurrenceFreq,
+      overrides.nextDonationDates,
+      overrides.occurrencesRemaining,
+    ],
+  );
+  return result[0].donation_id;
+}
 
 describe('DonationService', () => {
   let service: DonationService;
 
   beforeAll(async () => {
-    mockDonationRepository.count.mockReset();
+    if (!testDataSource.isInitialized) {
+      await testDataSource.initialize();
+    }
 
-    const module = await Test.createTestingModule({
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
         {
           provide: getRepositoryToken(Donation),
-          useValue: mockDonationRepository,
+          useValue: testDataSource.getRepository(Donation),
         },
         {
           provide: getRepositoryToken(FoodManufacturer),
-          useValue: mockFoodManufacturerRepository,
+          useValue: testDataSource.getRepository(FoodManufacturer),
         },
       ],
     }).compile();
@@ -32,18 +83,318 @@ describe('DonationService', () => {
     service = module.get<DonationService>(DonationService);
   });
 
+  beforeEach(async () => {
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+    await testDataSource.runMigrations();
+  });
+
+  afterEach(async () => {
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+  });
+
+  afterAll(async () => {
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('getDonationCount', () => {
-    it.each([[0], [5]])('should return %i of donations', async (count) => {
-      mockDonationRepository.count.mockResolvedValue(count);
+    it('returns total number of donations in the database', async () => {
+      const donationCount = await service.getNumberOfDonations();
+      expect(donationCount).toEqual(4);
+    });
+  });
 
-      const donationCount: number = await service.getNumberOfDonations();
+  describe('handleRecurringDonations', () => {
+    describe('no-op cases', () => {
+      it('skips donation with no nextDonationDates', async () => {
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [],
+          occurrencesRemaining: 3,
+        });
 
-      expect(donationCount).toEqual(count);
-      expect(mockDonationRepository.count).toHaveBeenCalled();
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toEqual([]);
+        expect(donation.occurrencesRemaining).toEqual(3);
+      });
+
+      it('skips donation whose nextDonationDates are all in the future', async () => {
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysFromNow(7)],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates.length).toEqual(1);
+        expect(donation.occurrencesRemaining).toEqual(3);
+      });
+    });
+
+    describe('single expired date', () => {
+      it('removes expired date and adds next weekly occurrence', async () => {
+        const pastDate = daysAgo(5);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const expectedNextDate = new Date(pastDate);
+        expectedNextDate.setDate(expectedNextDate.getDate() + 7);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+          expectedNextDate.toDateString(),
+        );
+        expect(donation.occurrencesRemaining).toEqual(2);
+      });
+
+      it(`'removes expired date and adds next monthly occurrence'`, async () => {
+        const pastDate = daysAgo(30);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.MONTHLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const expectedNextDate = new Date(pastDate);
+        expectedNextDate.setMonth(expectedNextDate.getMonth() + 1);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+          expectedNextDate.toDateString(),
+        );
+        expect(donation.occurrencesRemaining).toEqual(2);
+      });
+
+      it('removes expired date and adds next yearly occurrence', async () => {
+        const pastDate = daysAgo(7);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.YEARLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const expectedNextDate = new Date(pastDate);
+        expectedNextDate.setFullYear(expectedNextDate.getFullYear() + 1);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+          expectedNextDate.toDateString(),
+        );
+        expect(donation.occurrencesRemaining).toEqual(2);
+      });
+    });
+
+    describe('expired and future dates coexisting', () => {
+      it('processes expired date and preserves the existing future date', async () => {
+        const pastDate = daysAgo(1);
+        const futureDate = daysFromNow(1);
+
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate, futureDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+
+        const replacementDate = new Date(pastDate);
+        replacementDate.setDate(replacementDate.getDate() + 7);
+
+        expect(donation.nextDonationDates).toHaveLength(2);
+
+        const times = donation.nextDonationDates.map((d) =>
+          new Date(d).getTime(),
+        );
+        expect(times).toContain(futureDate.getTime());
+        expect(times).toContain(replacementDate.getTime());
+
+        expect(donation.occurrencesRemaining).toEqual(2);
+      });
+
+      it('processes only past dates and leaves future dates intact', async () => {
+        const pastDate = daysAgo(7);
+        const futureDate = daysFromNow(7);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate, futureDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(1);
+
+        const times = donation.nextDonationDates.map((d) =>
+          new Date(d).getTime(),
+        );
+        expect(times).toContain(futureDate.getTime());
+
+        expect(donation.occurrencesRemaining).toEqual(1);
+      });
+    });
+
+    describe('occurrence exhaustion', () => {
+      it(`removes expired date without adding replacement when it was the last occurrence`, async () => {
+        const pastDate = daysAgo(7);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 1,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(0);
+        expect(donation.occurrencesRemaining).toEqual(0);
+      });
+
+      it(`doesn't add replacement for non-recurring donation`, async () => {
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(1);
+        expect(donation.nextDonationDates).toBeNull();
+        expect(donation.occurrencesRemaining).toBeNull();
+      });
+
+      it('clears nextDonationDates when occurrencesRemaining is already 0', async () => {
+        const pastDate = daysAgo(7);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 0,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(0);
+        expect(donation.occurrencesRemaining).toEqual(0);
+      });
+    });
+
+    describe('cascading recalculation', () => {
+      it('advances through multiple expired replacement dates until a future date is reached', async () => {
+        const pastDate1 = daysAgo(10);
+        const pastDate2 = daysAgo(3);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate1, pastDate2],
+          occurrencesRemaining: 4,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.occurrencesRemaining).toEqual(1);
+        expect(
+          new Date(donation.nextDonationDates[0]).getTime(),
+        ).toBeGreaterThan(new Date().getTime());
+      });
+
+      it('stops advancing and schedules no replacement when occurrences run out mid-cascade', async () => {
+        const pastDate1 = daysAgo(14);
+        const pastDate2 = daysAgo(7);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate1, pastDate2],
+          occurrencesRemaining: 1,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).toHaveLength(0);
+        expect(donation.occurrencesRemaining).toEqual(0);
+      });
+    });
+
+    describe('multiple donations', () => {
+      it('processes each donation independently based on their recurrence rules', async () => {
+        const pastDate1 = daysAgo(14);
+        const pastDate2 = daysAgo(7);
+        const futureDate = daysFromNow(7);
+
+        const donationId1 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 3,
+          nextDonationDates: [pastDate1],
+          occurrencesRemaining: 2,
+        });
+
+        const donationId2 = await insertDonation({
+          recurrence: RecurrenceEnum.MONTHLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate2],
+          occurrencesRemaining: 1,
+        });
+
+        const donationId3 = await insertDonation({
+          recurrence: RecurrenceEnum.YEARLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [futureDate],
+          occurrencesRemaining: 3,
+        });
+
+        await service.handleRecurringDonations();
+
+        const donation1 = await service.findOne(donationId1);
+        const donation2 = await service.findOne(donationId2);
+        const donation3 = await service.findOne(donationId3);
+
+        expect(donation1.nextDonationDates).toHaveLength(1);
+        expect(
+          new Date(donation1.nextDonationDates[0]).getTime(),
+        ).toBeGreaterThan(new Date().getTime());
+        expect(donation1.occurrencesRemaining).toEqual(1);
+
+        expect(donation2.nextDonationDates).toHaveLength(0);
+        expect(donation2.occurrencesRemaining).toEqual(0);
+
+        expect(donation3.nextDonationDates).toHaveLength(1);
+        expect(new Date(donation3.nextDonationDates[0]).toDateString()).toEqual(
+          futureDate.toDateString(),
+        );
+        expect(donation3.occurrencesRemaining).toEqual(3);
+      });
     });
   });
 });

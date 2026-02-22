@@ -163,12 +163,6 @@ export class RequestsController {
 
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
-    console.log(
-      'Received photo files:',
-      photos?.map((p) => p.originalname),
-      '| Count:',
-      photos?.length,
-    );
 
     const updatedRequest = await this.requestsService.updateDeliveryDetails(
       requestId,
