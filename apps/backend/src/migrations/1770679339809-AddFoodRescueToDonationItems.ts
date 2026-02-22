@@ -6,7 +6,7 @@ export class AddFoodRescueToDonationItems1770679339809
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             ALTER TABLE donation_items
-            ADD COLUMN food_rescue boolean NOT NULL DEFAULT false
+            ADD COLUMN food_rescue boolean
         `);
   }
 

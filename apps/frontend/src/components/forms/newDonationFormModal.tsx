@@ -101,7 +101,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       totalOz = 0,
       totalValue = 0;
     updatedRows.forEach((row) => {
-      if (row.numItems && row.ozPerItem && row.valuePerItem) {
+      if (row.numItems) {
         const qty = parseInt(row.numItems);
         totalItems += qty;
         totalOz += parseFloat(row.ozPerItem) * qty;
@@ -167,12 +167,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
   const handleSubmit = async () => {
     const hasEmpty = rows.some(
-      (row) =>
-        !row.foodItem ||
-        !row.foodType ||
-        !row.numItems ||
-        !row.ozPerItem ||
-        !row.valuePerItem,
+      (row) => !row.foodItem || !row.foodType || !row.numItems,
     );
     if (hasEmpty) {
       alert('Please fill in all fields before submitting.');
@@ -191,8 +186,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     const donation_body = {
       foodManufacturerId: 1,
       totalItems,
-      totalOz,
-      totalEstimatedValue: totalValue,
+      totalOz: totalOz > 0 ? totalOz : undefined,
+      totalEstimatedValue: totalValue > 0 ? totalValue : undefined,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : null,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
@@ -204,6 +199,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
+      console.log('Submitted donation');
       const donationId = donationResponse?.donationId;
 
       if (donationId) {

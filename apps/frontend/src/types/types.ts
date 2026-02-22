@@ -134,10 +134,10 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem: number;
-  estimatedValue: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
   foodType: FoodType;
-  foodRescue: boolean;
+  foodRescue?: boolean;
 }
 
 export const FoodTypes = [
@@ -279,10 +279,10 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    ozPerItem: number;
-    estimatedValue: number;
+    ozPerItem?: number;
+    estimatedValue?: number;
     foodType: FoodType;
-    foodRescue: boolean;
+    foodRescue?: boolean;
   }[];
 }
 

@@ -63,9 +63,9 @@ export class CreateDonationDto {
   @Min(1)
   foodManufacturerId!: number;
 
+  @IsOptional()
   @IsNumber()
   @Min(1)
-  @IsOptional()
   totalItems?: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })

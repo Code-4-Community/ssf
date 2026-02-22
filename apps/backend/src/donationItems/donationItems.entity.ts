@@ -31,10 +31,10 @@ export class DonationItem {
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
   reservedQuantity!: number;
 
-  @Column({ name: 'oz_per_item', type: 'int', nullable: true })
+  @Column({ name: 'oz_per_item', type: 'numeric', nullable: true })
   ozPerItem?: number;
 
-  @Column({ name: 'estimated_value', type: 'int', nullable: true })
+  @Column({ name: 'estimated_value', type: 'numeric', nullable: true })
   estimatedValue?: number;
 
   @Column({
@@ -42,13 +42,12 @@ export class DonationItem {
     type: 'enum',
     enum: FoodType,
     enumName: 'food_type_enum',
-    nullable: true,
   })
-  foodType?: FoodType;
+  foodType!: FoodType;
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
   allocations!: Allocation[];
 
-  @Column({ name: 'food_rescue', type: 'boolean', default: false })
-  foodRescue!: boolean;
+  @Column({ name: 'food_rescue', type: 'boolean', nullable: true })
+  foodRescue?: boolean;
 }
