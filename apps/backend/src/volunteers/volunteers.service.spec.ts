@@ -19,6 +19,9 @@ describe('VolunteersService', () => {
       await testDataSource.initialize();
     }
 
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         VolunteersService,
@@ -45,7 +48,9 @@ describe('VolunteersService', () => {
   });
 
   afterEach(async () => {
+    // Drop the schema completely (cascades all tables)
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
   });
 
   afterAll(async () => {
