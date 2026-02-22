@@ -7,7 +7,6 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
