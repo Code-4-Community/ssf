@@ -269,6 +269,7 @@ describe('PantriesController', () => {
           shipmentAddressLine1: '123 Main Street',
           shipmentAddressCity: 'Boston',
           shipmentAddressZip: '02101',
+          shipmentAddressState: 'MA',
           shipmentAddressCountry: 'United States',
 
           allergenClients: '10 to 20',

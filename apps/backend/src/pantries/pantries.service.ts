@@ -137,6 +137,7 @@ export class PantriesService {
       shipmentAddressLine1: pantry.shipmentAddressLine1,
       shipmentAddressCity: pantry.shipmentAddressCity,
       shipmentAddressZip: pantry.shipmentAddressZip,
+      shipmentAddressState: pantry.shipmentAddressState,
       shipmentAddressCountry: pantry.shipmentAddressCountry,
       allergenClients: pantry.allergenClients,
       restrictions: pantry.restrictions,

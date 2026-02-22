@@ -8,6 +8,7 @@ export interface ApprovedPantryResponse {
   shipmentAddressLine1: string;
   shipmentAddressCity: string;
   shipmentAddressZip: string;
+  shipmentAddressState: string;
   shipmentAddressCountry?: string;
   allergenClients: string;
   restrictions: string[];
