@@ -6,6 +6,8 @@ import { FoodManufacturer } from './manufacturers.entity';
 import { Allergen, DonateWastedFood } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
+import { Donation } from '../donations/donations.entity';
+import { DonationService } from '../donations/donations.service';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -79,6 +81,29 @@ describe('FoodManufacturersController', () => {
 
       expect(result).toEqual(mockManufacturer1);
       expect(mockManufacturersService.findOne).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('GET /:foodManufacturerId/donations', () => {
+    it('should return donations for a given food manufacturer', async () => {
+      const mockDonations: Partial<Donation>[] = [
+        {
+          donationId: 1,
+          foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+        },
+        {
+          donationId: 2,
+          foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+        },
+      ];
+      mockManufacturersService.getFMDonations.mockResolvedValue(
+        mockDonations as Donation[],
+      );
+
+      const result = await controller.getFoodManufacturerDonations(1);
+
+      expect(result).toBe(mockDonations);
+      expect(mockManufacturersService.getFMDonations).toHaveBeenCalledWith(1);
     });
   });
 

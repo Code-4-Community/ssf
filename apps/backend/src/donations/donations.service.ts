@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { DonationStatus, RecurrenceEnum } from './types';
-import { CreateDonationDto } from './dtos/create-donation.dto';
+import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
+import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Injectable()
@@ -24,7 +24,6 @@ export class DonationService {
       where: { donationId },
       relations: ['foodManufacturer'],
     });
-
     if (!donation) {
       throw new NotFoundException(`Donation ${donationId} not found`);
     }
@@ -52,16 +51,26 @@ export class DonationService {
         `Food Manufacturer ${donationData.foodManufacturerId} not found`,
       );
     }
+
+    const nextDonationDates =
+      donationData.recurrence !== RecurrenceEnum.NONE
+        ? await this.generateNextDonationDates(
+            donationData.recurrenceFreq,
+            donationData.recurrence,
+            donationData.repeatOnDays ?? null,
+          )
+        : null;
+
     const donation = this.repo.create({
       foodManufacturer: manufacturer,
-      dateDonated: donationData.dateDonated,
-      status: donationData.status,
+      dateDonated: new Date(),
+      status: DonationStatus.AVAILABLE,
       totalItems: donationData.totalItems,
       totalOz: donationData.totalOz,
       totalEstimatedValue: donationData.totalEstimatedValue,
       recurrence: donationData.recurrence,
       recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: donationData.nextDonationDates,
+      nextDonationDates: nextDonationDates,
       occurrencesRemaining: donationData.occurrencesRemaining,
     });
 
@@ -194,5 +203,57 @@ export class DonationService {
         break;
     }
     return nextDate;
+  }
+
+  async generateNextDonationDates(
+    recurrenceFreq: number,
+    recurrence: RecurrenceEnum,
+    repeatOnDays: RepeatOnDaysDto | null,
+  ): Promise<string[]> {
+    const today = new Date();
+    const dates: string[] = [];
+
+    if (recurrence === RecurrenceEnum.WEEKLY) {
+      const selectedDays = repeatOnDays
+        ? (Object.keys(repeatOnDays) as DayOfWeek[]).filter(
+            (day) => repeatOnDays[day],
+          )
+        : [];
+      if (selectedDays.length === 0) return [];
+
+      const daysOfWeek: DayOfWeek[] = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+
+      const startDay = recurrenceFreq > 1 ? recurrenceFreq * 7 : 1;
+
+      for (let i = startDay; i <= startDay + 6; i++) {
+        const nextDay = daysOfWeek[(today.getDay() + i) % 7];
+        if (selectedDays.includes(nextDay)) {
+          const nextDate = new Date(today);
+          nextDate.setDate(today.getDate() + i);
+          dates.push(nextDate.toISOString());
+        }
+      }
+    } else if (recurrence === RecurrenceEnum.MONTHLY) {
+      const nextDate = new Date(today);
+      // Date clamp if the day is later than 28th
+      if (nextDate.getDate() > 28) nextDate.setDate(28);
+      nextDate.setMonth(today.getMonth() + recurrenceFreq);
+      dates.push(nextDate.toISOString());
+    } else if (recurrence === RecurrenceEnum.YEARLY) {
+      const nextDate = new Date(today);
+      // Date clamp if the day is later than 28th
+      if (nextDate.getDate() > 28) nextDate.setDate(28);
+      nextDate.setFullYear(today.getFullYear() + recurrenceFreq);
+      dates.push(nextDate.toISOString());
+    }
+    return dates;
   }
 }

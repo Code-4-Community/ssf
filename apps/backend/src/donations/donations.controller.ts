@@ -11,7 +11,7 @@ import {
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
-import { DonationStatus, RecurrenceEnum } from './types';
+import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 
 @Controller('donations')
@@ -42,15 +42,6 @@ export class DonationsController {
       type: 'object',
       properties: {
         foodManufacturerId: { type: 'integer', example: 1 },
-        dateDonated: {
-          type: 'string',
-          format: 'date-time',
-        },
-        status: {
-          type: 'string',
-          enum: Object.values(DonationStatus),
-          example: DonationStatus.AVAILABLE,
-        },
         totalItems: { type: 'integer', example: 100 },
         totalOz: { type: 'number', example: 100.5 },
         totalEstimatedValue: { type: 'number', example: 100.5 },
@@ -60,11 +51,18 @@ export class DonationsController {
           example: RecurrenceEnum.NONE,
         },
         recurrenceFreq: { type: 'integer', example: 1, nullable: true },
-        nextDonationDates: {
-          type: 'array',
-          items: { type: 'string', format: 'date-time' },
-          example: ['2024-07-01T00:00:00Z', '2024-08-01T00:00:00Z'],
+        repeatOnDays: {
+          type: 'object',
           nullable: true,
+          properties: {
+            Sunday: { type: 'boolean', example: false },
+            Monday: { type: 'boolean', example: true },
+            Tuesday: { type: 'boolean', example: false },
+            Wednesday: { type: 'boolean', example: false },
+            Thursday: { type: 'boolean', example: false },
+            Friday: { type: 'boolean', example: false },
+            Saturday: { type: 'boolean', example: false },
+          },
         },
         occurrencesRemaining: { type: 'integer', example: 2, nullable: true },
       },
