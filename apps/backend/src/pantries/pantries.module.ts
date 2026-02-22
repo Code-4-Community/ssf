@@ -5,6 +5,7 @@ import { PantriesController } from './pantries.controller';
 import { Pantry } from './pantries.entity';
 import { AuthModule } from '../auth/auth.module';
 import { OrdersModule } from '../orders/order.module';
+import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/user.entity';
 import { UsersModule } from '../users/users.module';
 
@@ -13,6 +14,7 @@ import { UsersModule } from '../users/users.module';
     TypeOrmModule.forFeature([Pantry, User]),
     OrdersModule,
     forwardRef(() => UsersModule),
+    EmailsModule,
     forwardRef(() => AuthModule),
   ],
   controllers: [PantriesController],
