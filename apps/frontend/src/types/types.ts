@@ -6,6 +6,11 @@ import {
   AllergensConfidence,
   Activity,
 } from './pantryEnums';
+import {
+  DonateWastedFood,
+  Allergen,
+  ManufacturerAttribute,
+} from './manufacturerEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -104,9 +109,9 @@ export interface CreateRequestDto {
 }
 
 export enum DonationStatus {
+  MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
 }
 
 export enum RecurrenceEnum {
@@ -139,6 +144,7 @@ export interface DonationItem {
   ozPerItem?: number;
   estimatedValue?: number;
   foodType: FoodType;
+  foodRescue?: boolean;
 }
 
 export const FoodTypes = [
@@ -241,6 +247,29 @@ export interface FoodManufacturer {
   foodManufacturerRepresentative?: User;
 }
 
+export interface ManufacturerApplicationDto {
+  foodManufacturerName: string;
+  foodManufacturerWebsite: string;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  unlistedProductAllergens: Allergen[];
+  facilityFreeAllergens: Allergen[];
+  productsGlutenFree: boolean;
+  productsContainSulfites: boolean;
+  productsSustainableExplanation: string;
+  inKindDonations: boolean;
+  donateWastedFood: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: boolean;
+}
+
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: string;
@@ -260,6 +289,7 @@ export interface CreateMultipleDonationItemsBody {
     ozPerItem?: number;
     estimatedValue?: number;
     foodType: FoodType;
+    foodRescue?: boolean;
   }[];
 }
 
@@ -281,9 +311,9 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  DELIVERED = 'delivered',
   PENDING = 'pending',
   SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
 }
 
 export enum RequestSize {
@@ -325,3 +355,14 @@ export enum ApplicationStatus {
   DENIED = 'denied',
   PENDING = 'pending',
 }
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export type RepeatOnState = Record<DayOfWeek, boolean>;

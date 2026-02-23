@@ -1,34 +1,71 @@
 import {
-  ArrayNotEmpty,
-  IsArray,
-  IsDate,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   Min,
   ValidateIf,
+  ValidateNested,
+  registerDecorator,
 } from 'class-validator';
-import { DonationStatus, RecurrenceEnum } from '../types';
+import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
+
+function AtLeastOneDaySelected() {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'atLeastOneDaySelected',
+      target: object.constructor,
+      propertyName,
+      validator: {
+        validate(value: Record<string, any>) {
+          return !!value && Object.values(value).some((v) => v === true);
+        },
+      },
+    });
+  };
+}
+
+export class RepeatOnDaysDto {
+  @IsBoolean()
+  @IsOptional()
+  Monday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Tuesday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Wednesday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Thursday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Friday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Saturday?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  Sunday?: boolean;
+}
 
 export class CreateDonationDto {
   @IsNumber()
   @Min(1)
   foodManufacturerId!: number;
 
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  dateDonated!: Date;
-
-  @IsNotEmpty()
-  @IsEnum(DonationStatus)
-  status!: DonationStatus;
-
+  @IsOptional()
   @IsNumber()
   @Min(1)
-  @IsOptional()
   totalItems?: number;
 
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -50,12 +87,12 @@ export class CreateDonationDto {
   @Min(1)
   recurrenceFreq?: number;
 
-  @Type(() => Date)
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsDate({ each: true })
-  @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
-  nextDonationDates?: Date[];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RepeatOnDaysDto)
+  @AtLeastOneDaySelected()
+  @ValidateIf((o) => o.recurrence === RecurrenceEnum.WEEKLY)
+  repeatOnDays?: RepeatOnDaysDto;
 
   @IsNumber()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)

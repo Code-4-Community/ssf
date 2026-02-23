@@ -47,4 +47,7 @@ export class DonationItem {
 
   @OneToMany(() => Allocation, (allocation) => allocation.item)
   allocations!: Allocation[];
+
+  @Column({ name: 'food_rescue', type: 'boolean', nullable: true })
+  foodRescue?: boolean;
 }
