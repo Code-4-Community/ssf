@@ -13,6 +13,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 @Injectable()
 export class OrdersService {
@@ -155,11 +156,14 @@ export class OrdersService {
 
   async confirmDelivery(
     orderId: number,
-    dateReceived: Date,
-    feedback: string,
-    photos: string[],
+    dto: ConfirmDeliveryDto,
   ): Promise<Order> {
     validateId(orderId, 'Order');
+
+    const formattedDate = new Date(dto.dateReceived);
+    if (isNaN(formattedDate.getTime())) {
+      throw new BadRequestException('Invalid date format for dateReceived');
+    }
 
     const order = await this.repo.findOne({
       where: { orderId },
@@ -169,9 +173,9 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    order.dateReceived = dateReceived;
-    order.feedback = feedback;
-    order.photos = photos;
+    order.dateReceived = formattedDate;
+    order.feedback = dto.feedback;
+    order.photos = dto.photos as unknown as string[];
     order.status = OrderStatus.DELIVERED;
 
     const updatedOrder = await this.repo.save(order);

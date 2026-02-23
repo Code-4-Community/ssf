@@ -12,6 +12,7 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -294,11 +295,11 @@ describe('OrdersController', () => {
 
     it('should upload photos and confirm delivery with all fields', async () => {
       const orderId = 1;
-      const body = {
+      const body: ConfirmDeliveryDto = {
         dateReceived: new Date().toISOString(),
         feedback: 'Great delivery!',
       };
-      const mockFiles = [
+      const mockFiles: Express.Multer.File[] = [
         {
           fieldname: 'photos',
           originalname: 'photo1.jpg',
@@ -306,8 +307,8 @@ describe('OrdersController', () => {
           mimetype: 'image/jpeg',
           buffer: Buffer.from('photo1'),
           size: 1000,
-        },
-      ] as Express.Multer.File[];
+        } as Express.Multer.File,
+      ];
 
       const uploadedUrls = ['https://s3.example.com/photo1.jpg'];
       mockAWSS3Service.upload.mockResolvedValueOnce(uploadedUrls);
@@ -326,18 +327,16 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body, mockFiles);
 
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(mockFiles);
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
-        orderId,
-        new Date(body.dateReceived),
-        body.feedback,
-        uploadedUrls,
-      );
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
+        ...body,
+        photos: uploadedUrls,
+      });
       expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle no photos being uploaded', async () => {
       const orderId = 2;
-      const body = {
+      const body: ConfirmDeliveryDto = {
         dateReceived: new Date().toISOString(),
         feedback: 'Delivery without photos',
       };
@@ -356,18 +355,16 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
-        orderId,
-        new Date(body.dateReceived),
-        body.feedback,
-        [],
-      );
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
+        ...body,
+        photos: [],
+      });
       expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle empty photos array', async () => {
       const orderId = 3;
-      const body = {
+      const body: ConfirmDeliveryDto = {
         dateReceived: new Date().toISOString(),
         feedback: 'Empty photos',
       };
@@ -386,28 +383,11 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body, []);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
-        orderId,
-        new Date(body.dateReceived),
-        body.feedback,
-        [],
-      );
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
+        ...body,
+        photos: [],
+      });
       expect(result).toEqual(confirmedOrder);
-    });
-
-    it('should throw BadRequestException for invalid date format', async () => {
-      const orderId = 1;
-      const body = {
-        dateReceived: 'invalid-date',
-        feedback: 'test',
-      };
-
-      await expect(controller.confirmDelivery(orderId, body)).rejects.toThrow(
-        'Invalid date format for dateReceived',
-      );
-
-      expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
-      expect(mockOrdersService.confirmDelivery).not.toHaveBeenCalled();
     });
   });
 

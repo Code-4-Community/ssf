@@ -1,5 +1,5 @@
 export class ConfirmDeliveryDto {
   dateReceived: string;
-  feedback: string;
+  feedback?: string;
   photos?: Express.Multer.File[];
 }

@@ -154,21 +154,15 @@ export class OrdersController {
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<Order> {
-    body.photos = photos;
-
-    const formattedDate = new Date(body.dateReceived);
-    if (isNaN(formattedDate.getTime())) {
-      throw new BadRequestException('Invalid date format for dateReceived');
-    }
-
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
 
-    return this.ordersService.confirmDelivery(
-      orderId,
-      formattedDate,
-      body.feedback,
-      uploadedPhotoUrls,
-    );
+    body.photos = uploadedPhotoUrls as unknown as Express.Multer.File[];
+
+    return this.ordersService.confirmDelivery(orderId, {
+      dateReceived: body.dateReceived,
+      feedback: body.feedback,
+      photos: body.photos,
+    });
   }
 }
