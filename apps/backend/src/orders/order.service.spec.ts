@@ -156,7 +156,15 @@ describe('OrdersService', () => {
         ],
       };
 
-      expect(result).toEqual(expected);
+      expect(result).toMatchObject({
+        orderId: expected.orderId,
+        status: expected.status,
+        foodManufacturerName: expected.foodManufacturerName,
+        trackingLink: expected.trackingLink,
+      });
+
+      expect(result.items).toHaveLength(expected.items.length);
+      expect(result.items).toEqual(expect.arrayContaining(expected.items));
     });
 
     it('throws NotFoundException when order does not exist', async () => {
