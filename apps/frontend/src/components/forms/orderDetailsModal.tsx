@@ -85,7 +85,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       Food Type(s)
                     </Text>
                   </Field.Label>
-                  <TagGroup values={foodRequest.requestedItems} />
+                  <TagGroup values={foodRequest.requestedFoodTypes} />
                 </Field.Root>
 
                 <Field.Root mb={4}>

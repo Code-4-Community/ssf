@@ -1,7 +1,7 @@
 import apiClient from '@api/apiClient';
 import {
   FoodRequest,
-  FoodTypes,
+  FoodType,
   OrderDetails,
   OrderItemDetails,
 } from 'types/types';
@@ -42,7 +42,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const requestedSize = request.requestedSize;
-  const selectedItems = request.requestedItems;
+  const selectedFoodTypes = request.requestedFoodTypes;
   const additionalNotes = request.additionalInformation;
 
   useEffect(() => {
@@ -85,12 +85,13 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     if (!currentOrder) return {};
 
     return currentOrder.items.reduce(
-      (acc: Record<(typeof FoodTypes)[number], OrderItemDetails[]>, item) => {
-        if (!acc[item.foodType]) acc[item.foodType] = [];
-        acc[item.foodType].push(item);
+      (acc: Partial<Record<FoodType, OrderItemDetails[]>>, item) => {
+        const existing = acc[item.foodType];
+        if (existing) existing.push(item);
+        else acc[item.foodType] = [];
         return acc;
       },
-      {} as Record<(typeof FoodTypes)[number], OrderItemDetails[]>,
+      {} as Partial<Record<FoodType, OrderItemDetails[]>>,
     );
   }, [currentOrder]);
 
@@ -176,7 +177,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
 
-                  <TagGroup values={selectedItems} />
+                  <TagGroup values={selectedFoodTypes} />
                 </Field.Root>
 
                 <Field.Root mb={4}>
@@ -233,9 +234,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       )}
                     </Flex>
                     {Object.entries(
-                      groupedOrderItemsByType as Record<
-                        string,
-                        OrderItemDetails[]
+                      groupedOrderItemsByType as Partial<
+                        Record<FoodType, OrderItemDetails[]>
                       >,
                     ).map(([foodType, items]) => (
                       <Box key={foodType} mb={4}>

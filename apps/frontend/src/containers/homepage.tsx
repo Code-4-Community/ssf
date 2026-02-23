@@ -11,8 +11,11 @@ import {
   Text,
   Alert,
 } from '@chakra-ui/react';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const Homepage: React.FC = () => {
+  const { user } = useAuthenticator((context) => [context.user]);
+
   return (
     <Container maxW="container.md" py={5}>
       <VStack align="center" gap={8}>
@@ -128,23 +131,25 @@ const Homepage: React.FC = () => {
           </List.Root>
         </Box>
 
-        <Box w="full">
-          <Heading as="h3" size="md" mb={3} textAlign="center">
-            Other Pages
-          </Heading>
-          <List.Root unstyled gap={2}>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/landing-page">Landing Page</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
-              </Link>
-            </ListItem>
-          </List.Root>
-        </Box>
+        {!user && (
+          <Box w="full">
+            <Heading as="h3" size="md" mb={3} textAlign="center">
+              Other Pages
+            </Heading>
+            <List.Root unstyled gap={2}>
+              <ListItem textAlign="center">
+                <Link asChild color="teal.500">
+                  <RouterLink to="/login">Login</RouterLink>
+                </Link>
+              </ListItem>
+              <ListItem textAlign="center">
+                <Link asChild color="teal.500">
+                  <RouterLink to="/signup">Sign Up</RouterLink>
+                </Link>
+              </ListItem>
+            </List.Root>
+          </Box>
+        )}
 
         <Alert.Root
           status="info"
@@ -163,9 +168,6 @@ const Homepage: React.FC = () => {
                 <Text>
                   <strong>Note:</strong> This is a temporary navigation page for
                   development purposes.
-                </Text>
-                <Text>
-                  Routes with parameters are using default values (e.g., ID: 1)
                 </Text>
               </VStack>
             </Alert.Description>

@@ -22,6 +22,12 @@ import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { FoodType } from '../donationItems/types';
+import {
+  MatchingItemsDto,
+  MatchingManufacturersDto,
+} from './dtos/matching.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller('requests')
 export class RequestsController {
@@ -54,6 +60,23 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
+  @Public()
+  @Get('/:requestId/matching-manufacturers')
+  async getMatchingManufacturers(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<MatchingManufacturersDto> {
+    return this.requestsService.getMatchingManufacturers(requestId);
+  }
+
+  @Public()
+  @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
+  async getAvailableItemsForManufacturer(
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+  ): Promise<MatchingItemsDto> {
+    return this.requestsService.getAvailableItems(requestId, manufacturerId);
+  }
+
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',
@@ -66,10 +89,10 @@ export class RequestsController {
           enum: Object.values(RequestSize),
           example: RequestSize.LARGE,
         },
-        requestedItems: {
+        requestedFoodTypes: {
           type: 'array',
-          items: { type: 'string' },
-          example: ['Rice Noodles', 'Quinoa'],
+          items: { type: 'string', enum: Object.values(FoodType) },
+          example: [FoodType.DAIRY_FREE_ALTERNATIVES, FoodType.DRIED_BEANS],
         },
         additionalInformation: {
           type: 'string',
@@ -97,7 +120,7 @@ export class RequestsController {
     body: {
       pantryId: number;
       requestedSize: RequestSize;
-      requestedItems: string[];
+      requestedFoodTypes: FoodType[];
       additionalInformation: string;
       dateReceived: Date;
       feedback: string;
@@ -112,7 +135,7 @@ export class RequestsController {
     return this.requestsService.create(
       body.pantryId,
       body.requestedSize,
-      body.requestedItems,
+      body.requestedFoodTypes,
       body.additionalInformation,
       body.dateReceived,
       body.feedback,

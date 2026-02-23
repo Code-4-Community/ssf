@@ -31,6 +31,7 @@ import { UpdateManufacturerEntity1768680807820 } from '../migrations/17686808078
 import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
 import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
+import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
 
 const schemaMigrations = [
   User1725726359198,
@@ -66,6 +67,7 @@ const schemaMigrations = [
   AddUserPoolId1769189327767,
   UpdateOrderEntity1769990652833,
   RenameDonationMatchingStatus1771260403657,
+  CleanupRequestsAndAllocations1771821377918,
 ];
 
 export default schemaMigrations;

@@ -140,23 +140,6 @@ export interface DonationItem {
   foodRescue?: boolean;
 }
 
-export const FoodTypes = [
-  'Dairy-Free Alternatives',
-  'Dried Beans (Gluten-Free, Nut-Free)',
-  'Gluten-Free Baking/Pancake Mixes',
-  'Gluten-Free Bread',
-  'Gluten-Free Tortillas',
-  'Granola',
-  'Masa Harina Flour',
-  'Nut-Free Granola Bars',
-  'Olive Oil',
-  'Refrigerated Meals',
-  'Rice Noodles',
-  'Seed Butters (Peanut Butter Alternative)',
-  'Whole-Grain Cookies',
-  'Quinoa',
-] as const;
-
 export enum FoodType {
   DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
   DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
@@ -197,7 +180,7 @@ export interface FoodRequest {
   pantryId: number;
   pantry: Pantry;
   requestedSize: string;
-  requestedItems: string[];
+  requestedFoodTypes: FoodType[];
   additionalInformation: string | null;
   requestedAt: string;
   dateReceived: string | null;
@@ -266,7 +249,7 @@ export interface ManufacturerApplicationDto {
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: string;
-  requestedItems: string[];
+  requestedFoodTypes: FoodType[];
   additionalInformation: string | null | undefined;
   dateReceived: string | null | undefined;
   feedback: string | null | undefined;
@@ -292,8 +275,6 @@ export interface Allocation {
   itemId: number;
   item: DonationItem;
   allocatedQuantity: number;
-  reservedAt: string;
-  fulfilledAt: string;
 }
 
 export enum Role {

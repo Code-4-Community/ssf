@@ -18,8 +18,6 @@ export class AllocationsService {
       select: {
         allocationId: true,
         allocatedQuantity: true,
-        reservedAt: true,
-        fulfilledAt: true,
       },
     });
   }

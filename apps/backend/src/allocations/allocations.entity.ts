@@ -29,10 +29,4 @@ export class Allocation {
 
   @Column({ name: 'allocated_quantity', type: 'int' })
   allocatedQuantity: number;
-
-  @Column({ name: 'reserved_at', type: 'timestamp' })
-  reservedAt: Date;
-
-  @Column({ name: 'fulfilled_at', type: 'timestamp' })
-  fulfilledAt: Date;
 }

@@ -9,12 +9,20 @@ import { AuthModule } from '../auth/auth.module';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Module({
   imports: [
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
-    TypeOrmModule.forFeature([FoodRequest, Order, Pantry]),
+    TypeOrmModule.forFeature([
+      FoodRequest,
+      Order,
+      Pantry,
+      FoodManufacturer,
+      DonationItem,
+    ]),
     AuthModule,
   ],
   controllers: [RequestsController],
