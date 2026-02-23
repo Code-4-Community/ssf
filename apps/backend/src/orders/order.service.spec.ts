@@ -8,7 +8,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { Repository } from 'typeorm';
+import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
 
 // Set 1 minute timeout for async DB operations
@@ -431,7 +431,7 @@ describe('OrdersService', () => {
       const result = await service.confirmDelivery(shippedOrder.orderId, {
         dateReceived,
         feedback,
-        photos: [] as unknown as Express.Multer.File[],
+        photos: photos as unknown as Express.Multer.File[],
       });
 
       expect(result.orderId).toBe(shippedOrder.orderId);
@@ -477,7 +477,7 @@ describe('OrdersService', () => {
       const result = await service.confirmDelivery(shippedOrder.orderId, {
         dateReceived,
         feedback,
-        photos: [] as unknown as Express.Multer.File[],
+        photos: photos as unknown as Express.Multer.File[],
       });
 
       expect(result.orderId).toBe(shippedOrder.orderId);
