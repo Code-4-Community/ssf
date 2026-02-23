@@ -54,6 +54,12 @@ const LoginPage: React.FC = () => {
       alert('Passwords need to match');
       return;
     }
+
+    if (newPassword.length < 8) {
+      alert('Password needs to be at least 8 characters');
+      return;
+    }
+
     try {
       await confirmSignIn({ challengeResponse: newPassword });
       navigate(from, { replace: true });

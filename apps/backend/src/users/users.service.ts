@@ -29,24 +29,25 @@ export class UsersService {
 
   async create(createUserDto: userSchemaDto): Promise<User> {
     const { email, firstName, lastName, phone, role } = createUserDto;
-    // Create first time user
-    const userCognitoSub = await this.authService.adminCreateUser({
-      firstName,
-      lastName,
-      email,
-      phone,
-    });
 
-    // Pantry/Manufacturer users already exist, so just give them a userCognitoSub to login
     if (role === Role.PANTRY || role === Role.FOODMANUFACTURER) {
       const existingUser = await this.repo.findOneBy({ email });
       if (!existingUser) {
         throw new NotFoundException(`User with email ${email} not found`);
       }
-      existingUser.userCognitoSub = userCognitoSub;
+      existingUser.userCognitoSub = await this.authService.adminCreateUser({
+        firstName,
+        lastName,
+        email,
+      });
       return this.repo.save(existingUser);
     }
 
+    const userCognitoSub = await this.authService.adminCreateUser({
+      firstName,
+      lastName,
+      email,
+    });
     const user = this.repo.create({
       role,
       firstName,

@@ -4,10 +4,11 @@ import { FoodManufacturer } from './manufacturers.entity';
 import { FoodManufacturersController } from './manufacturers.controller';
 import { FoodManufacturersService } from './manufacturers.service';
 import { UsersModule } from '../users/users.module';
+import { Donation } from '../donations/donations.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FoodManufacturer]),
+    TypeOrmModule.forFeature([FoodManufacturer, Donation]),
     forwardRef(() => UsersModule),
   ],
   controllers: [FoodManufacturersController],

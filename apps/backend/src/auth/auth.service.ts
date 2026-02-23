@@ -83,7 +83,7 @@ export class AuthService {
     firstName,
     lastName,
     email,
-  }: Omit<SignUpDto, 'password'>): Promise<string> {
+  }: Omit<SignUpDto, 'password' | 'phone'>): Promise<string> {
     const createUserCommand = new AdminCreateUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
       Username: email,
