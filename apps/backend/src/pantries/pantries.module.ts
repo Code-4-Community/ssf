@@ -7,7 +7,6 @@ import { AuthModule } from '../auth/auth.module';
 import { OrdersModule } from '../orders/order.module';
 import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/user.entity';
-import { SharedAuthModule } from '../auth/sharedAuth.module';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { SharedAuthModule } from '../auth/sharedAuth.module';
     OrdersModule,
     EmailsModule,
     forwardRef(() => AuthModule),
-    SharedAuthModule,
   ],
   controllers: [PantriesController],
   providers: [PantriesService],

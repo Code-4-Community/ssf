@@ -9,7 +9,6 @@ import { AuthModule } from '../auth/auth.module';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { SharedAuthModule } from '../auth/sharedAuth.module';
 
 @Module({
   imports: [
@@ -17,7 +16,6 @@ import { SharedAuthModule } from '../auth/sharedAuth.module';
     MulterModule.register({ dest: './uploads' }),
     TypeOrmModule.forFeature([FoodRequest, Order, Pantry]),
     AuthModule,
-    SharedAuthModule,
   ],
   controllers: [RequestsController],
   providers: [RequestsService, OrdersService],

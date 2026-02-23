@@ -19,7 +19,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { AuthGuard } from '@nestjs/passport';
 import { OwnershipGuard } from '../auth/ownership.guard';
-import { CheckOwnership } from '../auth/ownership.decorator';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 
@@ -66,28 +66,19 @@ export class OrdersController {
   @CheckOwnership({
     idParam: 'orderId',
     resolver: async ({ entityId, services }) => {
-      const request = await services
-        .get(OrdersService)
-        .findOrderFoodRequest(entityId);
-
-      if (!request) {
-        return null;
-      }
-
-      const pantry = await services
-        .get(PantriesService)
-        .findOne(request.pantryId);
-
-      if (!pantry) {
-        return null;
-      }
-      return pantry?.pantryUser?.id ?? null;
+      return pipeNullable(
+        () => services.get(OrdersService).findOrderFoodRequest(entityId),
+        (request: FoodRequest) =>
+          services.get(PantriesService).findOne(request.pantryId),
+        (pantry: Pantry) => pantry.pantryUser?.id,
+      );
     },
   })
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequest> {
+    console.log('Handler reached');
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 

@@ -166,7 +166,7 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
     confirmDeliveryData.append('dateReceived', formattedDate);
   } else {
     alert('Delivery date is missing or invalid.');
-    return redirect(`/request-form/${pantryId}`);
+    return redirect(`/request-form`);
   }
 
   confirmDeliveryData.append('feedback', form.get('feedback') as string);

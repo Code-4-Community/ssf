@@ -60,6 +60,8 @@ export class ApiClient {
             },
           });
         }
+        // In case this.navgiate is not initialized, fall back on window relocation
+        window.location.href = 'unauthorized';
         return Promise.reject(error);
       },
     );

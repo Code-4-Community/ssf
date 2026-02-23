@@ -13,6 +13,7 @@ import {
   OwnershipConfig,
   ServiceRegistry,
 } from './ownership.decorator';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
@@ -30,15 +31,16 @@ export class OwnershipGuard implements CanActivate {
 
     // Process all request information and the logged in user
     const req = context.switchToHttp().getRequest();
-    const user = req.user;
+    const user: User = req.user;
 
     // Admins bypass ownership checks
-    if (user.role === 'ADMIN') {
-      return true;
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    if (!user) {
-      throw new ForbiddenException('Not authenticated');
+    console.log('Checking user: ', user);
+    if (user.role === 'admin') {
+      return true;
     }
 
     // Get the id from the parameters

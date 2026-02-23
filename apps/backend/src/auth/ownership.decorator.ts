@@ -21,5 +21,17 @@ export interface OwnershipConfig {
 
 export const OWNERSHIP_CHECK_KEY = 'ownership_check';
 
+export async function pipeNullable<T>(
+  init_fn: () => Promise<any> | any,
+  ...fns: Array<(arg: NonNullable<any>) => Promise<any> | any>
+): Promise<any | null> {
+  let acc = await init_fn();
+  for (const fn of fns) {
+    if (acc === null || acc === undefined) return null;
+    acc = await fn(acc);
+  }
+  return acc ?? null;
+}
+
 export const CheckOwnership = (config: OwnershipConfig) =>
   SetMetadata(OWNERSHIP_CHECK_KEY, config);
