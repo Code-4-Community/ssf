@@ -154,6 +154,7 @@ export class PantryApplicationDto {
   @Length(1, 25)
   allergenClients!: string;
 
+  @ArrayNotEmpty()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @MaxLength(255, { each: true })

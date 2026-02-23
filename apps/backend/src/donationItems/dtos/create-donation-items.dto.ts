@@ -7,6 +7,7 @@ import {
   IsEnum,
   IsNotEmpty,
   Length,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FoodType } from '../types';
@@ -27,11 +28,13 @@ export class CreateDonationItemDto {
 
   @IsNumber()
   @Min(1)
-  ozPerItem!: number;
+  @IsOptional()
+  ozPerItem?: number;
 
   @IsNumber()
   @Min(1)
-  estimatedValue!: number;
+  @IsOptional()
+  estimatedValue?: number;
 
   @IsEnum(FoodType)
   foodType!: FoodType;

@@ -76,7 +76,7 @@ export class Order {
     length: 255,
     nullable: true,
   })
-  trackingLink!: string;
+  trackingLink!: string | null;
 
   @Column({
     name: 'shipping_cost',
@@ -85,5 +85,5 @@ export class Order {
     scale: 2,
     nullable: true,
   })
-  shippingCost!: number;
+  shippingCost!: number | null;
 }

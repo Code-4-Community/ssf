@@ -41,11 +41,7 @@ export class PantriesController {
   async getCurrentUserPantryId(
     @Req() req: AuthenticatedRequest | Request,
   ): Promise<number> {
-    if (!('user' in req)) {
-      throw new UnauthorizedException('Not authenticated');
-    }
-
-    const currentUser = req.user;
+    const currentUser = (req as AuthenticatedRequest).user;
 
     const pantry = await this.pantriesService.findByUserId(currentUser.id);
     return pantry.pantryId;
