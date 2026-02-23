@@ -144,14 +144,14 @@ describe('OrdersService', () => {
             quantity: 10,
           },
           {
-            foodType: FoodType.GLUTEN_FREE_BREAD,
-            name: 'Whole Wheat Bread',
-            quantity: 25,
-          },
-          {
             foodType: FoodType.REFRIGERATED_MEALS,
             name: 'Canned Green Beans',
             quantity: 5,
+          },
+          {
+            foodType: FoodType.GLUTEN_FREE_BREAD,
+            name: 'Whole Wheat Bread',
+            quantity: 25,
           },
         ],
       };
