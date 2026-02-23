@@ -154,8 +154,6 @@ export class OrdersController {
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<Order> {
-    body.photos = photos;
-
     const formattedDate = new Date(body.dateReceived);
     if (isNaN(formattedDate.getTime())) {
       throw new BadRequestException('Invalid date format for dateReceived');

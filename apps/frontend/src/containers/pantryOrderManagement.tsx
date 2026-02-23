@@ -8,21 +8,18 @@ import {
   IconButton,
   VStack,
   ButtonGroup,
-  Checkbox,
-  Input,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
   ChevronRight,
   ChevronLeft,
-  Funnel,
   Mail,
   CircleCheck,
-  Search,
 } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
+import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
 
@@ -36,8 +33,13 @@ const PantryOrderManagement: React.FC = () => {
     [OrderStatus.DELIVERED]: [],
   });
 
-  // State to hold selected order for details modal
+  // State to hold selected order for details modal TODO: will be used for order details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+
+  // State to hold selected order for action modal
+  const [selectedActionOrderId, setSelectedActionOrderId] = useState<
+    number | null
+  >(null);
 
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
@@ -87,40 +89,40 @@ const PantryOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const pantryId = await ApiClient.getCurrentUserPantryId();
-        const data = await ApiClient.getPantryOrders(pantryId);
+  const fetchOrders = async () => {
+    try {
+      const pantryId = await ApiClient.getCurrentUserPantryId();
+      const data = await ApiClient.getPantryOrders(pantryId);
 
-        const grouped: Record<OrderStatus, OrderWithColor[]> = {
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.DELIVERED]: [],
-        };
+      const grouped: Record<OrderStatus, OrderWithColor[]> = {
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.DELIVERED]: [],
+      };
 
-        for (const order of data) {
-          const status = order.status;
+      for (const order of data) {
+        const status = order.status;
 
-          const orderWithColor: OrderWithColor = { ...order };
+        const orderWithColor: OrderWithColor = { ...order };
 
-          grouped[status].push(orderWithColor);
-        }
-
-        setStatusOrders(grouped);
-
-        // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.DELIVERED]: 1,
-        };
-        setCurrentPages(initialPages);
-      } catch (error) {
-        alert('Error fetching orders: ' + error);
+        grouped[status].push(orderWithColor);
       }
-    };
 
+      setStatusOrders(grouped);
+
+      // Initialize current page for each status
+      const initialPages: Record<OrderStatus, number> = {
+        [OrderStatus.PENDING]: 1,
+        [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.DELIVERED]: 1,
+      };
+      setCurrentPages(initialPages);
+    } catch (error) {
+      alert('Error fetching orders: ' + error);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, []);
 
@@ -166,10 +168,13 @@ const PantryOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={STATUS_COLORS.get(status)!}
+              selectedActionOrderId={selectedActionOrderId}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
+              onOrderSelectForAction={setSelectedActionOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
+              onSuccess={fetchOrders}
               onPageChange={(page) => handlePageChange(status, page)}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
@@ -193,9 +198,12 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
+  onOrderSelectForAction: (orderId: number | null) => void;
   selectedOrderId: number | null;
+  selectedActionOrderId: number | null;
   totalOrders: number;
   currentPage: number;
+  onSuccess: () => void;
   onPageChange: (page: number) => void;
   filterState: {
     sortAsc: boolean;
@@ -208,12 +216,15 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
+  onOrderSelectForAction,
+  selectedActionOrderId,
   selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
   filterState,
   onFilterChange,
+  onSuccess,
 }) => {
   const [isSortOpen, setIsSortOpen] = useState(false);
 
@@ -486,10 +497,18 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           variant="plain"
                           fontWeight="400"
                           textDecoration="underline"
-                          onClick={() => onOrderSelect(order.orderId)}
+                          onClick={() => onOrderSelectForAction(order.orderId)}
                         >
                           Complete Required Action
                         </Button>
+                      )}
+                      {selectedActionOrderId === order.orderId && (
+                        <OrderReceivedActionModal
+                          orderId={order.orderId}
+                          isOpen={true}
+                          onClose={() => onOrderSelectForAction(null)}
+                          onSuccess={onSuccess}
+                        />
                       )}
                     </Table.Cell>
                   </Table.Row>
