@@ -78,7 +78,7 @@ export class OrdersController {
     return this.ordersService.findOne(orderId);
   }
 
-  @Get('/:orderId/order-details')
+  @Get('/:orderId/details')
   async getOrderDetails(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {

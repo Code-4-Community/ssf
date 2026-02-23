@@ -20,6 +20,7 @@ import {
   OrderItemDetails,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
+import { TagGroup } from './tagGroup';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -205,24 +206,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </Field.Label>
 
                       {foodRequest.requestedItems.length > 0 && (
-                        <Flex wrap="wrap" mt={3} gap={2}>
-                          {foodRequest.requestedItems.map((item) => (
-                            <Tag.Root
-                              key={item}
-                              size="xl"
-                              variant="solid"
-                              bg={'neutral.100'}
-                              color="neutral.800"
-                              borderRadius="4px"
-                              borderColor={'neutral.300'}
-                              borderWidth="1px"
-                              fontFamily="Inter"
-                              fontWeight={500}
-                            >
-                              <Tag.Label>{item}</Tag.Label>
-                            </Tag.Root>
-                          ))}
-                        </Flex>
+                        <TagGroup values={foodRequest.requestedItems} />
                       )}
                     </Field.Root>
 

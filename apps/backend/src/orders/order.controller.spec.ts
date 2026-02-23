@@ -64,21 +64,19 @@ describe('OrdersController', () => {
     { allocationId: 3, orderId: 2 },
   ];
 
-  const mockOrderDetails: Partial<OrderDetailsDto>[] = [
-    {
-      orderId: 1,
-      status: OrderStatus.DELIVERED,
-      foodManufacturerName: 'food manufacturer 1',
-      trackingLink: 'example-link.com',
-      items: [
-        {
-          name: 'item1',
-          quantity: 10,
-          foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-        },
-      ],
-    },
-  ];
+  const mockOrderDetails: Partial<OrderDetailsDto> = {
+    orderId: 1,
+    status: OrderStatus.DELIVERED,
+    foodManufacturerName: 'food manufacturer 1',
+    trackingLink: 'example-link.com',
+    items: [
+      {
+        name: 'item1',
+        quantity: 10,
+        foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+      },
+    ],
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -99,14 +97,14 @@ describe('OrdersController', () => {
   describe('getOrderDetails', () => {
     it('should call ordersService.findOrderDetails and return order details', async () => {
       mockOrdersService.findOrderDetails.mockResolvedValueOnce(
-        mockOrderDetails[0] as OrderDetailsDto,
+        mockOrderDetails as OrderDetailsDto,
       );
 
       const orderId = 1;
 
       const result = await controller.getOrderDetails(orderId);
 
-      expect(result).toEqual(mockOrderDetails[0] as OrderDetailsDto);
+      expect(result).toEqual(mockOrderDetails as OrderDetailsDto);
       expect(mockOrdersService.findOrderDetails).toHaveBeenCalledWith(orderId);
     });
   });
