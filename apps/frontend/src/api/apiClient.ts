@@ -151,6 +151,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getPantryOrders(pantryId: number): Promise<OrderSummary[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/${pantryId}/orders`)
+      .then((response) => response.data);
+  }
+
   public async getPantry(pantryId: number): Promise<Pantry> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
   }

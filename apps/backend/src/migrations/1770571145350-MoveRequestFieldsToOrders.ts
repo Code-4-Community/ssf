@@ -1,7 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class MoveRequestFieldsToOrders1770571145350 implements MigrationInterface {
-
+export class MoveRequestFieldsToOrders1770571145350
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         CREATE TYPE food_requests_status_enum AS ENUM ('active', 'closed');
