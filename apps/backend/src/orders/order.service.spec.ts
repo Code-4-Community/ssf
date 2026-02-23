@@ -431,7 +431,7 @@ describe('OrdersService', () => {
       const result = await service.confirmDelivery(shippedOrder.orderId, {
         dateReceived,
         feedback,
-        photos,
+        photos: [] as unknown as Express.Multer.File[],
       });
 
       expect(result.orderId).toBe(shippedOrder.orderId);
@@ -477,7 +477,7 @@ describe('OrdersService', () => {
       const result = await service.confirmDelivery(shippedOrder.orderId, {
         dateReceived,
         feedback,
-        photos,
+        photos: [] as unknown as Express.Multer.File[],
       });
 
       expect(result.orderId).toBe(shippedOrder.orderId);
