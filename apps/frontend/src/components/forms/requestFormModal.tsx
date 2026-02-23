@@ -73,11 +73,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setAlert({isError: false, message: 'Request Submitted'})
+      setAlert({ isError: false, message: 'Request Submitted' });
       onClose();
       onSuccess();
     } catch {
-      setAlert({isError: true, message: 'Request could not be submitted.'})
+      setAlert({ isError: true, message: 'Request could not be submitted.' });
     }
   };
 
@@ -271,7 +271,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setAlert({isError: true, message: 'Exceeded word limit'})
+                      setAlert({
+                        isError: true,
+                        message: 'Exceeded word limit',
+                      });
                     }
                   }}
                 />
