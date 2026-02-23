@@ -39,9 +39,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-  const [isAlertError, setIsAlertError] = useState<boolean>(true);
-
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    isError: boolean;
+    message: string;
+  }>({
+    isError: true,
+    message: '',
+  });
 
   const isFormValid = requestedSize !== '' && selectedItems.length > 0;
 
@@ -69,13 +73,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setIsAlertError(false);
-      setAlertMessage('Request Submitted');
+      setAlert({isError: false, message: 'Request Submitted'})
       onClose();
       onSuccess();
     } catch {
-      setIsAlertError(true);
-      setAlertMessage('Request could not be submitted.');
+      setAlert({isError: true, message: 'Request could not be submitted.'})
     }
   };
 
@@ -88,11 +90,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && isAlertError && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert.message && alert.isError && (
+        <FloatingAlert message={alert.message} status="error" timeout={6000} />
       )}
-      {alertMessage && !isAlertError && (
-        <FloatingAlert message={alertMessage} status="info" timeout={6000} />
+      {alert.message && !alert.isError && (
+        <FloatingAlert message={alert.message} status="info" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -269,7 +271,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setAlertMessage('Exceeded word limit');
+                      setAlert({isError: true, message: 'Exceeded word limit'})
                     }
                   }}
                 />
