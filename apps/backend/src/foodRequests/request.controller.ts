@@ -27,7 +27,6 @@ import {
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
-import { Public } from '../auth/public.decorator';
 
 @Controller('requests')
 export class RequestsController {
@@ -60,7 +59,7 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
-  @Public()
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers')
   async getMatchingManufacturers(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -68,7 +67,7 @@ export class RequestsController {
     return this.requestsService.getMatchingManufacturers(requestId);
   }
 
-  @Public()
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
   async getAvailableItemsForManufacturer(
     @Param('requestId', ParseIntPipe) requestId: number,
