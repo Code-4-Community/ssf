@@ -9,19 +9,19 @@ import { testDataSource } from '../config/typeormTestDataSource';
 
 jest.setTimeout(60000);
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
 const MOCK_MONDAY = new Date(2025, 0, 6);
 
 const daysAgo = (numDays: number) => {
-  const date = new Date(today);
+  const date = new Date(TODAY);
   date.setDate(date.getDate() - numDays);
   date.setHours(0, 0, 0, 0);
   return date;
 };
 
 const daysFromNow = (numDays: number) => {
-  const date = new Date(today);
+  const date = new Date(TODAY);
   date.setDate(date.getDate() + numDays);
   date.setHours(0, 0, 0, 0);
   return date;
@@ -67,7 +67,7 @@ const allFalse: RepeatOnDaysDto = {
   Saturday: false,
 };
 
-const toDayOfWeek = (iso: string): DayOfWeek => {
+const TODAYOfWeek = (iso: string): DayOfWeek => {
   const days: DayOfWeek[] = [
     'Sunday',
     'Monday',
@@ -192,7 +192,7 @@ describe('DonationService', () => {
         expect(donation.occurrencesRemaining).toEqual(2);
       });
 
-      it(`'removes expired date and adds next monthly occurrence'`, async () => {
+      it('removes expired date and adds next monthly occurrence', async () => {
         const pastDate = daysAgo(30);
         const donationId = await insertDonation({
           recurrence: RecurrenceEnum.MONTHLY,
@@ -309,9 +309,15 @@ describe('DonationService', () => {
       });
 
       it(`doesn't add replacement for non-recurring donation`, async () => {
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.NONE,
+          recurrenceFreq: null,
+          nextDonationDates: null,
+          occurrencesRemaining: null,
+        });
         await service.handleRecurringDonations();
 
-        const donation = await service.findOne(1);
+        const donation = await service.findOne(donationId);
         expect(donation.nextDonationDates).toBeNull();
         expect(donation.occurrencesRemaining).toBeNull();
       });
@@ -444,7 +450,7 @@ describe('DonationService', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(toDayOfWeek(result[0])).toBe('Wednesday');
+      expect(TODAYOfWeek(result[0])).toBe('Wednesday');
     });
 
     it('WEEKLY - returns dates only for selected days within the target week window', async () => {
@@ -461,7 +467,7 @@ describe('DonationService', () => {
       );
 
       expect(result).toHaveLength(2);
-      const resultDays = result.map(toDayOfWeek);
+      const resultDays = result.map(TODAYOfWeek);
       expect(resultDays).toContain('Wednesday');
       expect(resultDays).toContain('Friday');
     });
@@ -477,7 +483,7 @@ describe('DonationService', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(toDayOfWeek(result[0])).toBe('Wednesday');
+      expect(TODAYOfWeek(result[0])).toBe('Wednesday');
 
       const resultDate = new Date(result[0]);
       expect(resultDate.getDate()).toBe(22);
@@ -502,7 +508,7 @@ describe('DonationService', () => {
       expect(timestamps).toEqual([...timestamps].sort((a, b) => a - b));
     });
 
-    it("WEEKLY - does not include today's DOW if selected", async () => {
+    it("WEEKLY - does not include TODAY's DOW if selected", async () => {
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Monday: true };
       const result = await service.generateNextDonationDates(
         MOCK_MONDAY,
@@ -589,9 +595,9 @@ describe('DonationService', () => {
       expect(withDays).toEqual(withoutDays);
     });
 
-    it('MONTHLY - clamps to 28th when today is the 29th', async () => {
+    it('MONTHLY - clamps to 28th when TODAY is the 29th', async () => {
       const result = await service.generateNextDonationDates(
-        new Date('2025-01-29T12:00:00.000Z'),
+        new Date(2025, 0, 29),
         1,
         RecurrenceEnum.MONTHLY,
         null,
@@ -655,7 +661,7 @@ describe('DonationService', () => {
       expect(withDays).toEqual(withoutDays);
     });
 
-    it('YEARLY - clamps to 28th when today is the 29th', async () => {
+    it('YEARLY - clamps to 28th when TODAY is the 29th', async () => {
       const result = await service.generateNextDonationDates(
         new Date('2025-01-29T12:00:00.000Z'),
         1,
