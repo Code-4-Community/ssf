@@ -60,9 +60,9 @@ export class DonationItemsService {
       itemName: string;
       quantity: number;
       reservedQuantity: number;
-      ozPerItem: number;
-      estimatedValue: number;
-      foodType: FoodType;
+      ozPerItem?: number;
+      estimatedValue?: number;
+      foodType?: FoodType;
     }[],
   ): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');

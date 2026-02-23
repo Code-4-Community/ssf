@@ -113,6 +113,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllDonationsByFoodManufacturer(
+    foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.axiosInstance
+      .get(`/api/manufacturers/${foodManufacturerId}/donations`)
+      .then((response) => response.data);
+  }
+
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
@@ -192,11 +200,11 @@ export class ApiClient {
     await this.axiosInstance.put(`/api/users/${userId}/role`, body);
   }
 
-  public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
+  public async getFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
   }
 
-  public async getOrderDonation(donationId: number): Promise<Donation> {
+  public async getDonation(donationId: number): Promise<Donation> {
     return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
   }
 
