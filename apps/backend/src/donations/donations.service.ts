@@ -55,6 +55,7 @@ export class DonationService {
     const nextDonationDates =
       donationData.recurrence !== RecurrenceEnum.NONE
         ? await this.generateNextDonationDates(
+            new Date(),
             donationData.recurrenceFreq,
             donationData.recurrence,
             donationData.repeatOnDays ?? null,
@@ -206,11 +207,11 @@ export class DonationService {
   }
 
   async generateNextDonationDates(
+    fromDate: Date,
     recurrenceFreq: number,
     recurrence: RecurrenceEnum,
-    repeatOnDays: RepeatOnDaysDto | null,
+    repeatOnDays: RepeatOnDaysDto | null = null,
   ): Promise<string[]> {
-    const today = new Date();
     const dates: string[] = [];
 
     if (recurrence === RecurrenceEnum.WEEKLY) {
@@ -234,24 +235,24 @@ export class DonationService {
       const startDay = recurrenceFreq > 1 ? recurrenceFreq * 7 : 1;
 
       for (let i = startDay; i <= startDay + 6; i++) {
-        const nextDay = daysOfWeek[(today.getDay() + i) % 7];
+        const nextDay = daysOfWeek[(fromDate.getDay() + i) % 7];
         if (selectedDays.includes(nextDay)) {
-          const nextDate = new Date(today);
-          nextDate.setDate(today.getDate() + i);
+          const nextDate = new Date(fromDate);
+          nextDate.setDate(fromDate.getDate() + i);
           dates.push(nextDate.toISOString());
         }
       }
     } else if (recurrence === RecurrenceEnum.MONTHLY) {
-      const nextDate = new Date(today);
+      const nextDate = new Date(fromDate);
       // Date clamp if the day is later than 28th
       if (nextDate.getDate() > 28) nextDate.setDate(28);
-      nextDate.setMonth(today.getMonth() + recurrenceFreq);
+      nextDate.setMonth(fromDate.getMonth() + recurrenceFreq);
       dates.push(nextDate.toISOString());
     } else if (recurrence === RecurrenceEnum.YEARLY) {
-      const nextDate = new Date(today);
+      const nextDate = new Date(fromDate);
       // Date clamp if the day is later than 28th
       if (nextDate.getDate() > 28) nextDate.setDate(28);
-      nextDate.setFullYear(today.getFullYear() + recurrenceFreq);
+      nextDate.setFullYear(fromDate.getFullYear() + recurrenceFreq);
       dates.push(nextDate.toISOString());
     }
     return dates;

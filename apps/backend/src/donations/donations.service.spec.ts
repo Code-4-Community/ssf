@@ -11,6 +11,7 @@ jest.setTimeout(60000);
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
+const MOCK_MONDAY = new Date(2025, 0, 6);
 
 const daysAgo = (numDays: number) => {
   const date = new Date(today);
@@ -66,10 +67,6 @@ const allFalse: RepeatOnDaysDto = {
   Saturday: false,
 };
 
-// Pin "today" to a known day so tests are deterministic.
-// 2025-01-06 is a Monday.
-const MOCK_MONDAY = new Date('2025-01-06T12:00:00.000Z');
-
 const toDayOfWeek = (iso: string): DayOfWeek => {
   const days: DayOfWeek[] = [
     'Sunday',
@@ -112,14 +109,11 @@ describe('DonationService', () => {
   });
 
   afterEach(async () => {
-    jest.useRealTimers();
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
 
   beforeEach(async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(MOCK_MONDAY);
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -432,6 +426,7 @@ describe('DonationService', () => {
   describe('generateNextDonationDates', () => {
     it('WEEKLY - returns empty array when no days are selected', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.WEEKLY,
         allFalse,
@@ -442,6 +437,7 @@ describe('DonationService', () => {
     it('WEEKLY - returns one date when exactly one day is selected (freq = 1)', async () => {
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Wednesday: true };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.WEEKLY,
         repeatOnDays,
@@ -458,6 +454,7 @@ describe('DonationService', () => {
         Friday: true,
       };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.WEEKLY,
         repeatOnDays,
@@ -470,9 +467,10 @@ describe('DonationService', () => {
     });
 
     it('WEEKLY - offsets dates correctly when freq = 2', async () => {
-      // Today is Monday 2025-01-06, day 14 = Monday 2025-01-20, +2 for Wed = Jan 22.
+      // From date is Monday 2025-01-06, day 14 = Monday 2025-01-20, +2 for Wed = Jan 22.
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Wednesday: true };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         2,
         RecurrenceEnum.WEEKLY,
         repeatOnDays,
@@ -482,8 +480,8 @@ describe('DonationService', () => {
       expect(toDayOfWeek(result[0])).toBe('Wednesday');
 
       const resultDate = new Date(result[0]);
-      expect(resultDate.getUTCDate()).toBe(22);
-      expect(resultDate.getUTCMonth()).toBe(0);
+      expect(resultDate.getDate()).toBe(22);
+      expect(resultDate.getMonth()).toBe(0);
     });
 
     it('WEEKLY - returns dates in ascending order', async () => {
@@ -494,6 +492,7 @@ describe('DonationService', () => {
         Saturday: true,
       };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.WEEKLY,
         repeatOnDays,
@@ -506,6 +505,7 @@ describe('DonationService', () => {
     it("WEEKLY - does not include today's DOW if selected", async () => {
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Monday: true };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.WEEKLY,
         repeatOnDays,
@@ -516,6 +516,7 @@ describe('DonationService', () => {
 
     it('MONTHLY - returns exactly one date', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.MONTHLY,
         null,
@@ -525,6 +526,7 @@ describe('DonationService', () => {
 
     it('MONTHLY - adds correct number of months for freq = 1', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.MONTHLY,
         null,
@@ -532,13 +534,14 @@ describe('DonationService', () => {
       const resultDate = new Date(result[0]);
 
       // 2025-01-06 + 1 month = 2025-02-06
-      expect(resultDate.getUTCFullYear()).toBe(2025);
-      expect(resultDate.getUTCMonth()).toBe(1); // February
-      expect(resultDate.getUTCDate()).toBe(6);
+      expect(resultDate.getFullYear()).toBe(2025);
+      expect(resultDate.getMonth()).toBe(1); // February
+      expect(resultDate.getDate()).toBe(6);
     });
 
     it('MONTHLY - adds correct number of months for freq = 3', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         3,
         RecurrenceEnum.MONTHLY,
         null,
@@ -546,12 +549,13 @@ describe('DonationService', () => {
       const resultDate = new Date(result[0]);
 
       // 2025-01-06 + 3 months = 2025-04-06
-      expect(resultDate.getUTCMonth()).toBe(3); // April
-      expect(resultDate.getUTCDate()).toBe(6);
+      expect(resultDate.getMonth()).toBe(3); // April
+      expect(resultDate.getDate()).toBe(6);
     });
 
     it('MONTHLY - rolls over the year correctly', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         12,
         RecurrenceEnum.MONTHLY,
         null,
@@ -559,8 +563,8 @@ describe('DonationService', () => {
       const resultDate = new Date(result[0]);
 
       // 2025-01-06 + 12 months = 2026-01-06
-      expect(resultDate.getUTCFullYear()).toBe(2026);
-      expect(resultDate.getUTCMonth()).toBe(0); // January
+      expect(resultDate.getFullYear()).toBe(2026);
+      expect(resultDate.getMonth()).toBe(0); // January
     });
 
     it('MONTHLY - ignores repeatOnDays', async () => {
@@ -570,11 +574,13 @@ describe('DonationService', () => {
         Friday: true,
       };
       const withDays = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.MONTHLY,
         repeatOnDays,
       );
       const withoutDays = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.MONTHLY,
         null,
@@ -584,19 +590,20 @@ describe('DonationService', () => {
     });
 
     it('MONTHLY - clamps to 28th when today is the 29th', async () => {
-      jest.setSystemTime(new Date('2025-01-29T12:00:00.000Z'));
       const result = await service.generateNextDonationDates(
+        new Date('2025-01-29T12:00:00.000Z'),
         1,
         RecurrenceEnum.MONTHLY,
         null,
       );
 
-      expect(new Date(result[0]).getUTCDate()).toBe(28);
-      expect(new Date(result[0]).getUTCMonth()).toBe(1); // February
+      expect(new Date(result[0]).getDate()).toBe(28);
+      expect(new Date(result[0]).getMonth()).toBe(1); // February
     });
 
     it('YEARLY - returns exactly one date', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.YEARLY,
         null,
@@ -606,6 +613,7 @@ describe('DonationService', () => {
 
     it('YEARLY - adds correct number of years for freq = 1', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.YEARLY,
         null,
@@ -613,29 +621,32 @@ describe('DonationService', () => {
       const resultDate = new Date(result[0]);
 
       // 2025-01-06 + 1 year = 2026-01-06
-      expect(resultDate.getUTCFullYear()).toBe(2026);
-      expect(resultDate.getUTCMonth()).toBe(0); // January
-      expect(resultDate.getUTCDate()).toBe(6);
+      expect(resultDate.getFullYear()).toBe(2026);
+      expect(resultDate.getMonth()).toBe(0); // January
+      expect(resultDate.getDate()).toBe(6);
     });
 
     it('YEARLY - adds correct number of years for freq = 5', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         5,
         RecurrenceEnum.YEARLY,
         null,
       );
 
-      expect(new Date(result[0]).getUTCFullYear()).toBe(2030);
+      expect(new Date(result[0]).getFullYear()).toBe(2030);
     });
 
     it('YEARLY - ignores repeatOnDays', async () => {
       const repeatOnDays: RepeatOnDaysDto = { ...allFalse, Wednesday: true };
       const withDays = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.YEARLY,
         repeatOnDays,
       );
       const withoutDays = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.YEARLY,
         null,
@@ -645,20 +656,21 @@ describe('DonationService', () => {
     });
 
     it('YEARLY - clamps to 28th when today is the 29th', async () => {
-      jest.setSystemTime(new Date('2025-01-29T12:00:00.000Z'));
       const result = await service.generateNextDonationDates(
+        new Date('2025-01-29T12:00:00.000Z'),
         1,
         RecurrenceEnum.YEARLY,
         null,
       );
 
-      expect(new Date(result[0]).getUTCFullYear()).toBe(2026);
-      expect(new Date(result[0]).getUTCDate()).toBe(28);
-      expect(new Date(result[0]).getUTCMonth()).toBe(0); // January
+      expect(new Date(result[0]).getFullYear()).toBe(2026);
+      expect(new Date(result[0]).getDate()).toBe(28);
+      expect(new Date(result[0]).getMonth()).toBe(0); // January
     });
 
     it('NONE - returns empty array', async () => {
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.NONE,
         null,
@@ -673,6 +685,7 @@ describe('DonationService', () => {
         Friday: true,
       };
       const result = await service.generateNextDonationDates(
+        MOCK_MONDAY,
         1,
         RecurrenceEnum.NONE,
         repeatOnDays,
