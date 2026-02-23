@@ -39,6 +39,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [isAlertError, setIsAlertError] = useState<boolean>(true);
 
   const [alertMessage, setAlertMessage] = useState<string>('');
 
@@ -68,10 +69,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
+      setIsAlertError(false);
+      setAlertMessage('Request Submitted');
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Failed to submit food request');
+      setIsAlertError(true);
+      setAlertMessage('Request could not be submitted.');
     }
   };
 
@@ -84,8 +88,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
+      {alertMessage && isAlertError && (
         <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
+      {alertMessage && !isAlertError && (
+        <FloatingAlert message={alertMessage} status="info" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
