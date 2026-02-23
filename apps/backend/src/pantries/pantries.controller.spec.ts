@@ -14,10 +14,14 @@ import {
   ReserveFoodForAllergic,
   ServeAllergicChildren,
 } from './types';
+import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { User } from '../users/user.entity';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
+const mockEmailsService = mock<EmailsService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
@@ -84,6 +88,10 @@ describe('PantriesController', () => {
           provide: OrdersService,
           useValue: mockOrdersService,
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -121,12 +129,24 @@ describe('PantriesController', () => {
   });
 
   describe('getPantry', () => {
-    it('should return a single pantry by id', async () => {
-      mockPantriesService.findOne.mockResolvedValueOnce(mockPantry as Pantry);
+    it('should return a pantry by ID', async () => {
+      const mockUser: Partial<User> = {
+        id: 1,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@test.com',
+      };
+      const mockPantry: Partial<Pantry> = {
+        pantryId: 1,
+        pantryName: 'Test Pantry',
+        pantryUser: mockUser as User,
+      };
+
+      mockPantriesService.findOne.mockResolvedValue(mockPantry as Pantry);
 
       const result = await controller.getPantry(1);
-
-      expect(result).toEqual(mockPantry as Pantry);
+      expect(result).toEqual(mockPantry);
+      expect(result.pantryUser).toEqual(mockUser);
       expect(mockPantriesService.findOne).toHaveBeenCalledWith(1);
     });
 
@@ -230,6 +250,37 @@ describe('PantriesController', () => {
       expect(result[0].orderId).toBe(26);
       expect(result[1].orderId).toBe(27);
       expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
+    });
+  });
+
+  describe('getCurrentUserPantryId', () => {
+    it('returns pantryId when req.currentUser is present', async () => {
+      const req = { user: { id: 1 } };
+      const pantry: Partial<Pantry> = { pantryId: 10 };
+      mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
+
+      const result = await controller.getCurrentUserPantryId(req);
+
+      expect(result).toEqual(10);
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(1);
+    });
+
+    it('throws UnauthorizedException when unauthenticated', async () => {
+      await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
+        new UnauthorizedException('Not authenticated'),
+      );
+    });
+
+    it('propagates NotFoundException from service', async () => {
+      const req = { user: { id: 999 } };
+      mockPantriesService.findByUserId.mockRejectedValueOnce(
+        new NotFoundException('Pantry for User 999 not found'),
+      );
+
+      const promise = controller.getCurrentUserPantryId(req);
+      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
+      await expect(promise).rejects.toThrow('Pantry for User 999 not found');
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(999);
     });
   });
 });

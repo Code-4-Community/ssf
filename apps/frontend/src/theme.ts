@@ -64,16 +64,24 @@ const customConfig = defineConfig({
         black: { value: '#000' },
         blue: {
           ssf: { value: '#2B5061' },
+          core: { value: '#2B4E60' },
+          hover: { value: '#213C4A' },
           100: { value: '#bee3f8' },
+          200: { value: '#D5DCDF' },
         },
         red: { value: '#CC3538' },
-        yellow: { value: '#F89E19' },
+        yellow: {
+          ssf: { value: '#F89E19' },
+          hover: { value: '#9C5D00' },
+          200: { value: '#FEECD1' },
+        },
         cyan: { value: '#2795A5' },
         neutral: {
           50: { value: '#FAFAFA' },
           100: { value: '#E7E7E7' },
           200: { value: '#CFCFCF' },
           300: { value: '#B8B8B8' },
+          500: { value: '#888' },
           600: { value: '#707070' },
           700: { value: '#585858' },
           800: { value: '#414141' },
@@ -87,6 +95,7 @@ const customConfig = defineConfig({
           100: { value: '#E9F4F6' },
           200: { value: '#D4EAED' },
           400: { value: '#A9D5DB' },
+          hover: { value: '#19717D' },
         },
       },
       fonts: {

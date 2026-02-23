@@ -6,6 +6,11 @@ import {
   AllergensConfidence,
   Activity,
 } from './pantryEnums';
+import {
+  DonateWastedFood,
+  Allergen,
+  ManufacturerAttribute,
+} from './manufacturerEnums';
 
 // Note: The API calls as currently written do not
 // return a pantry's SSF representative or pantry
@@ -97,9 +102,16 @@ export interface PantryApplicationDto {
 }
 
 export enum DonationStatus {
+  MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
+}
+
+export enum RecurrenceEnum {
+  NONE = 'none',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
 }
 
 export interface Donation {
@@ -110,6 +122,10 @@ export interface Donation {
   totalOz: number;
   totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
+  recurrence: RecurrenceEnum;
+  recurrenceFreq?: number;
+  nextDonationDates?: string[];
+  occurrencesRemaining?: number;
 }
 
 export interface DonationItem {
@@ -118,9 +134,10 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem: number;
-  estimatedValue: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
   foodType: FoodType;
+  foodRescue?: boolean;
 }
 
 export const FoodTypes = [
@@ -224,13 +241,34 @@ export interface FoodManufacturer {
   foodManufacturerRepresentative?: User;
 }
 
+export interface ManufacturerApplicationDto {
+  foodManufacturerName: string;
+  foodManufacturerWebsite: string;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  unlistedProductAllergens: Allergen[];
+  facilityFreeAllergens: Allergen[];
+  productsGlutenFree: boolean;
+  productsContainSulfites: boolean;
+  productsSustainableExplanation: string;
+  inKindDonations: boolean;
+  donateWastedFood: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: boolean;
+}
+
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: string;
   requestedItems: string[];
   additionalInformation: string | null | undefined;
-  status: string;
-  fulfilledBy: number | null | undefined;
   dateReceived: string | null | undefined;
   feedback: string | null | undefined;
   photos: string[] | null | undefined;
@@ -242,9 +280,10 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    ozPerItem: number;
-    estimatedValue: number;
+    ozPerItem?: number;
+    estimatedValue?: number;
     foodType: FoodType;
+    foodRescue?: boolean;
   }[];
 }
 
@@ -266,9 +305,9 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  DELIVERED = 'delivered',
   PENDING = 'pending',
   SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
 }
 
 export enum RequestSize {
@@ -310,3 +349,14 @@ export enum ApplicationStatus {
   DENIED = 'denied',
   PENDING = 'pending',
 }
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export type RepeatOnState = Record<DayOfWeek, boolean>;

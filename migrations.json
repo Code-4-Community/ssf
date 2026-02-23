@@ -1,0 +1,366 @@
+{
+  "migrations": [
+    {
+      "cli": "nx",
+      "version": "17.0.0-beta.1",
+      "description": "Updates the default cache directory to .nx/cache",
+      "implementation": "./src/migrations/update-17-0-0/move-cache-directory",
+      "package": "nx",
+      "name": "17.0.0-move-cache-directory"
+    },
+    {
+      "cli": "nx",
+      "version": "17.0.0-beta.3",
+      "description": "Use minimal config for tasksRunnerOptions",
+      "implementation": "./src/migrations/update-17-0-0/use-minimal-config-for-tasks-runner-options",
+      "package": "nx",
+      "name": "17.0.0-use-minimal-config-for-tasks-runner-options"
+    },
+    {
+      "version": "17.0.0-rc.1",
+      "description": "Migration for v17.0.0-rc.1",
+      "implementation": "./src/migrations/update-17-0-0/rm-default-collection-npm-scope",
+      "package": "nx",
+      "name": "rm-default-collection-npm-scope"
+    },
+    {
+      "cli": "nx",
+      "version": "17.3.0-beta.6",
+      "description": "Updates the nx wrapper.",
+      "implementation": "./src/migrations/update-17-3-0/update-nxw",
+      "package": "nx",
+      "name": "17.3.0-update-nx-wrapper"
+    },
+    {
+      "cli": "nx",
+      "version": "18.0.0-beta.2",
+      "description": "Updates nx.json to disabled adding plugins when generating projects in an existing Nx workspace",
+      "implementation": "./src/migrations/update-18-0-0/disable-crystal-for-existing-workspaces",
+      "x-repair-skip": true,
+      "package": "nx",
+      "name": "18.0.0-disable-adding-plugins-for-existing-workspaces"
+    },
+    {
+      "version": "18.1.0-beta.3",
+      "description": "Moves affected.defaultBase to defaultBase in `nx.json`",
+      "implementation": "./src/migrations/update-17-2-0/move-default-base",
+      "package": "nx",
+      "name": "move-default-base-to-nx-json-root"
+    },
+    {
+      "cli": "nx",
+      "version": "19.2.0-beta.2",
+      "description": "Updates the default workspace data directory to .nx/workspace-data",
+      "implementation": "./src/migrations/update-19-2-0/move-workspace-data-directory",
+      "package": "nx",
+      "name": "19-2-0-move-graph-cache-directory"
+    },
+    {
+      "cli": "nx",
+      "version": "19.2.2-beta.0",
+      "description": "Updates the nx wrapper.",
+      "implementation": "./src/migrations/update-17-3-0/update-nxw",
+      "package": "nx",
+      "name": "19-2-2-update-nx-wrapper"
+    },
+    {
+      "version": "19.2.4-beta.0",
+      "description": "Set project name in nx.json explicitly",
+      "implementation": "./src/migrations/update-19-2-4/set-project-name",
+      "x-repair-skip": true,
+      "package": "nx",
+      "name": "19-2-4-set-project-name"
+    },
+    {
+      "version": "20.0.0-beta.7",
+      "description": "Migration for v20.0.0-beta.7",
+      "implementation": "./src/migrations/update-20-0-0/move-use-daemon-process",
+      "package": "nx",
+      "name": "move-use-daemon-process"
+    },
+    {
+      "version": "20.0.1",
+      "description": "Set `useLegacyCache` to true for migrating workspaces",
+      "implementation": "./src/migrations/update-20-0-1/use-legacy-cache",
+      "x-repair-skip": true,
+      "package": "nx",
+      "name": "use-legacy-cache"
+    },
+    {
+      "version": "21.0.0-beta.8",
+      "description": "Removes the legacy cache configuration from nx.json",
+      "implementation": "./src/migrations/update-21-0-0/remove-legacy-cache",
+      "package": "nx",
+      "name": "remove-legacy-cache"
+    },
+    {
+      "version": "21.0.0-beta.8",
+      "description": "Removes the legacy cache configuration from nx.json",
+      "implementation": "./src/migrations/update-21-0-0/remove-custom-tasks-runner",
+      "package": "nx",
+      "name": "remove-custom-tasks-runner"
+    },
+    {
+      "version": "21.0.0-beta.11",
+      "description": "Updates release version config based on the breaking changes in Nx v21",
+      "implementation": "./src/migrations/update-21-0-0/release-version-config-changes",
+      "package": "nx",
+      "name": "release-version-config-changes"
+    },
+    {
+      "version": "21.0.0-beta.11",
+      "description": "Updates release changelog config based on the breaking changes in Nx v21",
+      "implementation": "./src/migrations/update-21-0-0/release-changelog-config-changes",
+      "package": "nx",
+      "name": "release-changelog-config-changes"
+    },
+    {
+      "version": "22.0.0-beta.1",
+      "description": "Updates release version config based on the breaking changes in Nx v22",
+      "implementation": "./src/migrations/update-22-0-0/release-version-config-changes",
+      "package": "nx",
+      "name": "22-0-0-release-version-config-changes"
+    },
+    {
+      "version": "22.0.0-beta.2",
+      "description": "Consolidates releaseTag* options into nested releaseTag object structure",
+      "implementation": "./src/migrations/update-22-0-0/consolidate-release-tag-config",
+      "package": "nx",
+      "name": "22-0-0-consolidate-release-tag-config"
+    },
+    {
+      "cli": "nx",
+      "version": "22.1.0-beta.5",
+      "description": "Updates the nx wrapper.",
+      "implementation": "./src/migrations/update-22-1-0/update-nx-wrapper",
+      "package": "nx",
+      "name": "22-1-0-update-nx-wrapper"
+    },
+    {
+      "version": "20.0.4-beta.0",
+      "description": "Add gitignore entry for temporary vite config files.",
+      "implementation": "./src/migrations/update-20-0-4/add-vite-temp-files-to-git-ignore",
+      "package": "@nx/vite",
+      "name": "update-20-0-4"
+    },
+    {
+      "version": "20.0.6-beta.0",
+      "description": "Add gitignore entry for temporary vite config files and remove previous incorrect glob.",
+      "implementation": "./src/migrations/update-20-0-4/add-vite-temp-files-to-git-ignore",
+      "package": "@nx/vite",
+      "name": "update-20-0-6"
+    },
+    {
+      "version": "20.5.0-beta.2",
+      "description": "Install jiti as a devDependency to allow vite to parse TS postcss files.",
+      "implementation": "./src/migrations/update-20-5-0/install-jiti",
+      "package": "@nx/vite",
+      "name": "update-20-5-0-install-jiti"
+    },
+    {
+      "version": "20.5.0-beta.3",
+      "description": "Update resolve.conditions to include defaults that are no longer provided by Vite.",
+      "implementation": "./src/migrations/update-20-5-0/update-resolve-conditions",
+      "package": "@nx/vite",
+      "name": "update-20-5-0-update-resolve-conditions"
+    },
+    {
+      "version": "20.5.0-beta.3",
+      "description": "Add vite config temporary files to the ESLint configuration ignore patterns if ESLint is used.",
+      "implementation": "./src/migrations/update-20-5-0/eslint-ignore-vite-temp-files",
+      "package": "@nx/vite",
+      "name": "eslint-ignore-vite-temp-files"
+    },
+    {
+      "version": "22.2.0-beta.2",
+      "description": "Migrate Vitest usage from @nx/vite to @nx/vitest package.",
+      "implementation": "./src/migrations/update-22-2-0/migrate-vitest-to-vitest-package",
+      "package": "@nx/vite",
+      "name": "migrate-vitest-to-vitest-package"
+    },
+    {
+      "cli": "nx",
+      "version": "20.8.0-beta.0",
+      "requires": { "cypress": ">=14.0.0" },
+      "description": "Replaces the `experimentalSkipDomainInjection` configuration option with the new `injectDocumentDomain` configuration option.",
+      "implementation": "./src/migrations/update-20-8-0/set-inject-document-domain",
+      "package": "@nx/cypress",
+      "name": "set-inject-document-domain"
+    },
+    {
+      "cli": "nx",
+      "version": "20.8.0-beta.0",
+      "requires": { "cypress": ">=14.0.0" },
+      "description": "Removes the `experimentalFetchPolyfill` configuration option.",
+      "implementation": "./src/migrations/update-20-8-0/remove-experimental-fetch-polyfill",
+      "package": "@nx/cypress",
+      "name": "remove-experimental-fetch-polyfill"
+    },
+    {
+      "cli": "nx",
+      "version": "20.8.0-beta.0",
+      "requires": { "cypress": ">=14.0.0" },
+      "description": "Replaces the `experimentalJustInTimeCompile` configuration option with the new `justInTimeCompile` configuration option.",
+      "implementation": "./src/migrations/update-20-8-0/replace-experimental-just-in-time-compile",
+      "package": "@nx/cypress",
+      "name": "replace-experimental-just-in-time-compile"
+    },
+    {
+      "cli": "nx",
+      "version": "20.8.0-beta.0",
+      "requires": { "cypress": ">=14.0.0" },
+      "description": "Updates the module specifier for the Component Testing `mount` function.",
+      "implementation": "./src/migrations/update-20-8-0/update-component-testing-mount-imports",
+      "package": "@nx/cypress",
+      "name": "update-component-testing-mount-imports"
+    },
+    {
+      "version": "21.0.0-beta.10",
+      "description": "Removes the `tsConfig` and `copyFiles` options from the `@nx/cypress:cypress` executor.",
+      "implementation": "./src/migrations/update-21-0-0/remove-tsconfig-and-copy-files-options-from-cypress-executor",
+      "package": "@nx/cypress",
+      "name": "remove-tsconfig-and-copy-files-options-from-cypress-executor"
+    },
+    {
+      "version": "22.1.0-beta.6",
+      "requires": { "cypress": ">=15.0.0" },
+      "description": "Renames `cy.exec().its('code')` usages to the new `exitCode` property introduced in Cypress v15.",
+      "implementation": "./src/migrations/update-22-1-0/rename-cy-exec-code-property",
+      "package": "@nx/cypress",
+      "name": "rename-cy-exec-code-property"
+    },
+    {
+      "version": "22.1.0-beta.6",
+      "requires": { "cypress": ">=15.0.0" },
+      "description": "Updates the deprecated `Cypress.SelectorPlayground` API to `Cypress.ElementSelector` and removes the unsupported `onElement` option.",
+      "implementation": "./src/migrations/update-22-1-0/update-selector-playground-api",
+      "package": "@nx/cypress",
+      "name": "update-selector-playground-api"
+    },
+    {
+      "version": "22.1.0-beta.6",
+      "requires": { "cypress": ">=15.0.0" },
+      "description": "For Angular component testing projects below v18, switches to the fallback `@cypress/angular` harness required by Cypress v15.",
+      "implementation": "./src/migrations/update-22-1-0/update-angular-component-testing-support",
+      "package": "@nx/cypress",
+      "name": "update-angular-component-testing-support"
+    },
+    {
+      "cli": "nx",
+      "version": "20.0.0-beta.5",
+      "description": "Replace usage of `getJestProjects` with `getJestProjectsAsync`.",
+      "implementation": "./src/migrations/update-20-0-0/replace-getJestProjects-with-getJestProjectsAsync",
+      "package": "@nx/jest",
+      "name": "replace-getJestProjects-with-getJestProjectsAsync"
+    },
+    {
+      "cli": "nx",
+      "version": "21.0.0-beta.9",
+      "description": "Replace usage of `getJestProjects` with `getJestProjectsAsync`.",
+      "implementation": "./src/migrations/update-21-0-0/replace-getJestProjects-with-getJestProjectsAsync",
+      "package": "@nx/jest",
+      "name": "replace-getJestProjects-with-getJestProjectsAsync-v21"
+    },
+    {
+      "version": "21.0.0-beta.10",
+      "description": "Remove the previously deprecated and unused `tsConfig` option from the `@nx/jest:jest` executor.",
+      "implementation": "./src/migrations/update-21-0-0/remove-tsconfig-option-from-jest-executor",
+      "package": "@nx/jest",
+      "name": "remove-tsconfig-option-from-jest-executor"
+    },
+    {
+      "version": "21.3.0-beta.3",
+      "description": "Rename the CLI option `testPathPattern` to `testPathPatterns`.",
+      "implementation": "./src/migrations/update-21-3-0/rename-test-path-pattern",
+      "package": "@nx/jest",
+      "name": "rename-test-path-pattern"
+    },
+    {
+      "version": "21.3.0-beta.3",
+      "requires": { "jest": ">=30.0.0" },
+      "description": "Replace removed matcher aliases in Jest v30 with their corresponding matcher",
+      "implementation": "./src/migrations/update-21-3-0/replace-removed-matcher-aliases",
+      "package": "@nx/jest",
+      "name": "replace-removed-matcher-aliases"
+    },
+    {
+      "version": "22.2.0-beta.2",
+      "description": "Convert jest.config.ts files from ESM to CJS syntax (export default -> module.exports, import -> require) for projects using CommonJS resolution to ensure correct loading under Node.js type-stripping.",
+      "implementation": "./src/migrations/update-22-2-0/convert-jest-config-to-cjs",
+      "package": "@nx/jest",
+      "name": "convert-jest-config-to-cjs"
+    },
+    {
+      "version": "22.3.2-beta.0",
+      "requires": { "jest": ">=30.0.0" },
+      "description": "Replace removed matcher aliases in Jest v30 with their corresponding matcher",
+      "implementation": "./src/migrations/update-21-3-0/replace-removed-matcher-aliases",
+      "package": "@nx/jest",
+      "name": "replace-removed-matcher-aliases-v22-3"
+    },
+    {
+      "cli": "nx",
+      "version": "20.2.0-beta.2",
+      "description": "Update the ModuleFederationConfig import use @nx/module-federation.",
+      "factory": "./src/migrations/update-20-2-0/migrate-mf-imports-to-new-package",
+      "package": "@nx/react",
+      "name": "update-20-2-0-update-module-federation-config-import"
+    },
+    {
+      "cli": "nx",
+      "version": "20.2.0-beta.2",
+      "description": "Update the withModuleFederation import use @nx/module-federation/webpack.",
+      "factory": "./src/migrations/update-20-2-0/migrate-with-mf-import-to-new-package",
+      "package": "@nx/react",
+      "name": "update-20-2-0-update-with-module-federation-import"
+    },
+    {
+      "cli": "nx",
+      "version": "20.3.0-beta.2",
+      "description": "If workspace includes Module Federation projects, ensure the new @nx/module-federation package is installed.",
+      "factory": "./src/migrations/update-20-3-0/ensure-nx-module-federation-package",
+      "package": "@nx/react",
+      "name": "ensure-nx-module-federation-package"
+    },
+    {
+      "cli": "nx",
+      "version": "20.4.0-beta.0",
+      "description": "Add NX_MF_DEV_REMOTES to inputs for task hashing when '@nx/webpack:webpack' or '@nx/rspack:rspack' is used for Module Federation.",
+      "factory": "./src/migrations/update-18-0-0/add-mf-env-var-to-target-defaults",
+      "package": "@nx/react",
+      "name": "add-mf-env-var-to-target-defaults"
+    },
+    {
+      "cli": "nx",
+      "version": "21.0.0-beta.11",
+      "description": "Replaces `classProperties.loose` option with `loose`.",
+      "factory": "./src/migrations/update-21-0-0/update-babel-loose",
+      "package": "@nx/react",
+      "name": "update-21-0-0-update-babel-loose"
+    },
+    {
+      "cli": "nx",
+      "version": "22.0.0-beta.0",
+      "description": "Updates webpack configs using React to use the new withSvgr composable function instead of the svgr option in withReact or NxReactWebpackPlugin.",
+      "factory": "./src/migrations/update-22-0-0/add-svgr-to-webpack-config",
+      "package": "@nx/react",
+      "name": "update-22-0-0-add-svgr-to-webpack-config"
+    },
+    {
+      "cli": "nx",
+      "version": "21.0.0-beta.11",
+      "description": "Remove isolatedConfig option for @nx/webpack:webpack",
+      "implementation": "./src/migrations/update-21-0-0/remove-isolated-config",
+      "package": "@nx/webpack",
+      "name": "update-21-0-0-remove-isolated-config"
+    },
+    {
+      "cli": "nx",
+      "version": "22.0.0-beta.0",
+      "description": "Remove deprecated deleteOutputPath and sassImplementation options from @nx/webpack:webpack",
+      "implementation": "./src/migrations/update-22-0-0/remove-deprecated-options",
+      "package": "@nx/webpack",
+      "name": "update-22-0-0-remove-deprecated-options"
+    }
+  ]
+}

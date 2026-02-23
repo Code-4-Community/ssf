@@ -13,7 +13,6 @@ import {
   Menu,
   Text,
   Dialog,
-  Tag,
   Field,
   CloseButton,
   Tabs,
@@ -23,6 +22,7 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { TagGroup } from './tagGroup';
 
 interface RequestDetailsModalProps {
   request: FoodRequest;
@@ -176,26 +176,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
 
-                  {selectedItems.length > 0 && (
-                    <Flex wrap="wrap" mt={3} gap={2}>
-                      {selectedItems.map((item) => (
-                        <Tag.Root
-                          key={item}
-                          size="xl"
-                          variant="solid"
-                          bg={'neutral.100'}
-                          color="neutral.800"
-                          borderRadius="4px"
-                          borderColor={'neutral.300'}
-                          borderWidth="1px"
-                          fontFamily="Inter"
-                          fontWeight={500}
-                        >
-                          <Tag.Label>{item}</Tag.Label>
-                        </Tag.Root>
-                      ))}
-                    </Flex>
-                  )}
+                  <TagGroup values={selectedItems} />
                 </Field.Root>
 
                 <Field.Root mb={4}>
@@ -311,7 +292,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       count={orderDetailsList.length}
                       pageSize={1}
                       page={currentPage}
-                      onChange={(page) => setCurrentPage(page)}
+                      onChange={(page: number) => setCurrentPage(page)}
                     >
                       <ButtonGroup variant="outline" size="sm">
                         <Pagination.PrevTrigger asChild>
