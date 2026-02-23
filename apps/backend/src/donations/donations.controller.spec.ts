@@ -2,6 +2,7 @@ import { DonationService } from './donations.service';
 import { DonationsController } from './donations.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import { Donation } from './donations.entity';
 
 const mockDonationService = mock<DonationService>();
 
@@ -36,6 +37,19 @@ describe('DonationsController', () => {
 
       expect(result).toBe(count);
       expect(mockDonationService.getNumberOfDonations).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /:donationId', () => {
+    it('should return a donation for a given donation ID', async () => {
+      const mockDonation: Partial<Donation> = { donationId: 1 };
+
+      mockDonationService.findOne.mockResolvedValue(mockDonation as Donation);
+
+      const result = await controller.getDonation(1);
+
+      expect(result).toBe(mockDonation);
+      expect(mockDonationService.findOne).toHaveBeenCalledWith(1);
     });
   });
 });
