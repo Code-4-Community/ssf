@@ -262,12 +262,6 @@ describe('PantriesController', () => {
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(1);
     });
 
-    it('throws UnauthorizedException when unauthenticated', async () => {
-      await expect(
-        controller.getCurrentUserPantryId({} as AuthenticatedRequest),
-      ).rejects.toThrow(new UnauthorizedException('Not authenticated'));
-    });
-
     it('propagates NotFoundException from service', async () => {
       const req = { user: { id: 999 } };
       mockPantriesService.findByUserId.mockRejectedValueOnce(

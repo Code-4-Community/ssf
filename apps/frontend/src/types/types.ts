@@ -136,8 +136,8 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem: number;
-  estimatedValue: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
   foodType: FoodType;
 }
 
@@ -257,8 +257,8 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    ozPerItem: number;
-    estimatedValue: number;
+    ozPerItem?: number;
+    estimatedValue?: number;
     foodType: FoodType;
   }[];
 }
