@@ -8,6 +8,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { FoodType } from '../donationItems/types';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -127,33 +128,32 @@ describe('OrdersService', () => {
 
   describe('findOrderDetails', () => {
     it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
-      const orderRepo = testDataSource.getRepository(Order);
-
-      const seededOrder = await orderRepo.findOne({
-        where: {},
-        relations: {
-          allocations: { item: true },
-          foodManufacturer: true,
-        },
-      });
-
-      expect(seededOrder).toBeTruthy();
-      expect(seededOrder.allocations.length).toBeGreaterThan(0);
-
-      const orderId = seededOrder.orderId;
+      const orderId = 1;
 
       const result = await service.findOrderDetails(orderId);
 
       const expected: OrderDetailsDto = {
-        orderId: seededOrder.orderId,
-        status: seededOrder.status,
-        foodManufacturerName: seededOrder.foodManufacturer.foodManufacturerName,
-        trackingLink: seededOrder.trackingLink,
-        items: seededOrder.allocations.map((allocation) => ({
-          name: allocation.item.itemName,
-          quantity: allocation.allocatedQuantity,
-          foodType: allocation.item.foodType,
-        })),
+        orderId: 1,
+        status: OrderStatus.DELIVERED,
+        foodManufacturerName: 'FoodCorp Industries',
+        trackingLink: 'www.samplelink/samplelink',
+        items: [
+          {
+            foodType: FoodType.SEED_BUTTERS,
+            name: 'Peanut Butter (16oz)',
+            quantity: 10,
+          },
+          {
+            foodType: FoodType.GLUTEN_FREE_BREAD,
+            name: 'Whole Wheat Bread',
+            quantity: 25,
+          },
+          {
+            foodType: FoodType.REFRIGERATED_MEALS,
+            name: 'Canned Green Beans',
+            quantity: 5,
+          },
+        ],
       };
 
       expect(result).toEqual(expected);

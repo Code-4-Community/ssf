@@ -13,6 +13,7 @@ import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 
 @Injectable()
 export class OrdersService {
@@ -137,7 +138,7 @@ export class OrdersService {
     return pantry;
   }
 
-  async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
+  async findOrderFoodRequest(orderId: number): Promise<FoodRequestSummaryDto> {
     validateId(orderId, 'Order');
 
     const order = await this.repo.findOne({
@@ -147,12 +148,44 @@ export class OrdersService {
           pantry: true,
         },
       },
+      select: {
+        request: {
+          requestId: true,
+          pantryId: true,
+          requestedSize: true,
+          requestedItems: true,
+          additionalInformation: true,
+          requestedAt: true,
+          dateReceived: true,
+          feedback: true,
+          photos: true,
+          pantry: {
+            pantryName: true,
+          },
+        },
+      },
     });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-    return order.request;
+
+    return {
+      requestId: order.request.requestId,
+      pantryId: order.request.pantryId,
+      pantryName: order.request.pantry.pantryName,
+
+      requestedSize: order.request.requestedSize,
+      requestedItems: order.request.requestedItems,
+
+      additionalInformation: order.request.additionalInformation ?? null,
+
+      requestedAt: order.request.requestedAt,
+      dateReceived: order.request.dateReceived ?? null,
+
+      feedback: order.request.feedback ?? null,
+      photos: order.request.photos ?? null,
+    };
   }
 
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {

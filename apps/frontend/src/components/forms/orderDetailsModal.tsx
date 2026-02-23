@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   Dialog,
   CloseButton,
   Flex,
   Field,
-  Tag,
   Box,
   Badge,
   Tabs,
@@ -14,13 +13,13 @@ import {
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import {
-  FoodRequest,
-  FoodTypes,
+  FoodRequestSummaryDto,
+  GroupedByFoodType,
   OrderDetails,
-  OrderItemDetails,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -33,8 +32,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
-  const [orderDetails, setOrderDetails] = useState<OrderDetails>();
+  const [foodRequest, setFoodRequest] = useState<FoodRequestSummaryDto | null>(
+    null,
+  );
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,7 +58,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     if (isOpen) {
       const fetchOrderDetails = async () => {
         try {
-          const orderDetailsData = await ApiClient.getOrderDetails(orderId);
+          const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch (error) {
           alert('Error fetching order details:' + error);
@@ -68,18 +69,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   }, [isOpen, orderId]);
 
-  const groupedOrderItemsByType = useMemo(() => {
-    if (!orderDetails) return {};
-
-    return orderDetails.items.reduce(
-      (acc: Record<(typeof FoodTypes)[number], OrderItemDetails[]>, item) => {
-        if (!acc[item.foodType]) acc[item.foodType] = [];
-        acc[item.foodType].push(item);
-        return acc;
-      },
-      {} as Record<(typeof FoodTypes)[number], OrderItemDetails[]>,
-    );
-  }, [orderDetails]);
+  const groupedOrderItemsByType: GroupedByFoodType =
+    useGroupedItemsByFoodType(orderDetails);
 
   const sectionTitleStyles = {
     textStyle: 'p2',
@@ -165,7 +156,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         Request {foodRequest.requestId} -
                         <Text as="span" color="neutral.800" textStyle="p2">
                           {' '}
-                          {foodRequest.pantry?.pantryName}
+                          {foodRequest.pantryName}
                         </Text>
                       </Text>
                       {orderDetails?.status === OrderStatus.DELIVERED ? (
@@ -225,48 +216,49 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               </Tabs.Content>
 
               <Tabs.Content value="orderDetails" mt={6}>
-                {Object.entries(
-                  groupedOrderItemsByType as Record<string, OrderItemDetails[]>,
-                ).map(([foodType, items]) => (
-                  <Box key={foodType} mb={4}>
-                    <Text {...sectionTitleStyles}>{foodType}</Text>
-                    {items.map((item) => (
-                      <Flex
-                        border="1px solid"
-                        borderColor="neutral.100"
-                        borderRadius="md"
-                        px={4}
-                        align="center"
-                        mt="2"
-                      >
-                        <Text
-                          py={2}
-                          textStyle="p2"
-                          color="neutral.800"
-                          flex={1}
-                        >
-                          {item.name}
-                        </Text>
-
-                        <Box
-                          alignSelf="stretch"
-                          borderLeft="1px solid"
+                {Object.entries(groupedOrderItemsByType).map(
+                  ([foodType, items]) => (
+                    <Box key={foodType} mb={4}>
+                      <Text {...sectionTitleStyles}>{foodType}</Text>
+                      {items.map((item, idx) => (
+                        <Flex
+                          border="1px solid"
                           borderColor="neutral.100"
-                          mx={3}
-                        />
-
-                        <Text
-                          minW={5}
-                          py={2}
-                          textStyle="p2"
-                          color="neutral.800"
+                          borderRadius="md"
+                          px={4}
+                          align="center"
+                          mt="2"
+                          key={idx}
                         >
-                          {item.quantity}
-                        </Text>
-                      </Flex>
-                    ))}
-                  </Box>
-                ))}
+                          <Text
+                            py={2}
+                            textStyle="p2"
+                            color="neutral.800"
+                            flex={1}
+                          >
+                            {item.name}
+                          </Text>
+
+                          <Box
+                            alignSelf="stretch"
+                            borderLeft="1px solid"
+                            borderColor="neutral.100"
+                            mx={3}
+                          />
+
+                          <Text
+                            minW={5}
+                            py={2}
+                            textStyle="p2"
+                            color="neutral.800"
+                          >
+                            {item.quantity}
+                          </Text>
+                        </Flex>
+                      ))}
+                    </Box>
+                  ),
+                )}
                 <Text {...sectionTitleStyles} mt="3">
                   Tracking
                 </Text>
