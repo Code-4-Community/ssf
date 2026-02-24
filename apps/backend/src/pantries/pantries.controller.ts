@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
@@ -42,9 +41,9 @@ export class PantriesController {
   @Roles(Role.PANTRY)
   @Get('/my-id')
   async getCurrentUserPantryId(
-    @Req() req: AuthenticatedRequest | Request,
+    @Req() req: AuthenticatedRequest,
   ): Promise<number> {
-    const currentUser = (req as AuthenticatedRequest).user;
+    const currentUser = req.user;
 
     const pantry = await this.pantriesService.findByUserId(currentUser.id);
     return pantry.pantryId;

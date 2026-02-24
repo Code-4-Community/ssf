@@ -49,5 +49,5 @@ export class DonationItem {
   allocations!: Allocation[];
 
   @Column({ name: 'food_rescue', type: 'boolean', nullable: true })
-  foodRescue!: boolean;
+  foodRescue!: boolean | null;
 }
