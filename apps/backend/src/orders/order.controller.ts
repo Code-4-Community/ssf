@@ -120,7 +120,7 @@ export class OrdersController {
     return this.ordersService.updateTrackingCostInfo(orderId, dto);
   }
 
-  @Post('/:orderId/confirm-delivery')
+  @Patch('/:orderId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation form',
     schema: {
@@ -157,12 +157,6 @@ export class OrdersController {
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
 
-    body.photos = uploadedPhotoUrls as unknown as Express.Multer.File[];
-
-    return this.ordersService.confirmDelivery(orderId, {
-      dateReceived: body.dateReceived,
-      feedback: body.feedback,
-      photos: body.photos,
-    });
+    return this.ordersService.confirmDelivery(orderId, body, uploadedPhotoUrls);
   }
 }

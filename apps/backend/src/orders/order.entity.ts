@@ -74,7 +74,7 @@ export class Order {
   feedback?: string | null;
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
-  photos?: string[] | null;
+  photos?: string[];
 
   @OneToMany(() => Allocation, (allocation) => allocation.order)
   allocations!: Allocation[];

@@ -286,7 +286,6 @@ describe('OrdersController', () => {
       ).toHaveBeenCalledWith(orderId);
     });
   });
-
   describe('confirmDelivery', () => {
     beforeEach(() => {
       mockAWSS3Service.upload.mockReset();
@@ -327,10 +326,11 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body, mockFiles);
 
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(mockFiles);
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
-        ...body,
-        photos: uploadedUrls,
-      });
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        uploadedUrls,
+      );
       expect(result).toEqual(confirmedOrder);
     });
 
@@ -355,10 +355,11 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
-        ...body,
-        photos: [],
-      });
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        [],
+      );
       expect(result).toEqual(confirmedOrder);
     });
 
@@ -383,10 +384,11 @@ describe('OrdersController', () => {
       const result = await controller.confirmDelivery(orderId, body, []);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
-      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(orderId, {
-        ...body,
-        photos: [],
-      });
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        [],
+      );
       expect(result).toEqual(confirmedOrder);
     });
   });

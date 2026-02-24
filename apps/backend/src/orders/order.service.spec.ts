@@ -10,6 +10,7 @@ import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
+import { RequestsService } from '../foodRequests/request.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -30,6 +31,7 @@ describe('OrdersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
+        RequestsService,
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
@@ -405,15 +407,15 @@ describe('OrdersService', () => {
   describe('confirmDelivery', () => {
     it('should throw BadRequestException for invalid date format', async () => {
       await expect(
-        service.confirmDelivery(1, {
-          dateReceived: 'invalid-date',
-          feedback: 'test feedback',
-          photos: [],
-        }),
+        service.confirmDelivery(
+          1,
+          { dateReceived: 'invalid-date', feedback: 'test feedback' },
+          [],
+        ),
       ).rejects.toThrow('Invalid date format for dateReceived');
     });
 
-    it('should update order with delivery details and set status to delivered', async () => {
+    it('should update order with delivery details and set status to delivered and update request status to closed', async () => {
       const orderRepo = testDataSource.getRepository(Order);
       const requestRepo = testDataSource.getRepository(FoodRequest);
 
@@ -428,11 +430,11 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(shippedOrder.orderId, {
-        dateReceived,
-        feedback,
-        photos: photos as unknown as Express.Multer.File[],
-      });
+      const result = await service.confirmDelivery(
+        shippedOrder.orderId,
+        { dateReceived, feedback },
+        photos,
+      );
 
       expect(result.orderId).toBe(shippedOrder.orderId);
       expect(result.status).toBe(OrderStatus.DELIVERED);
@@ -474,11 +476,11 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(shippedOrder.orderId, {
-        dateReceived,
-        feedback,
-        photos: photos as unknown as Express.Multer.File[],
-      });
+      const result = await service.confirmDelivery(
+        shippedOrder.orderId,
+        { dateReceived, feedback },
+        photos,
+      );
 
       expect(result.orderId).toBe(shippedOrder.orderId);
       expect(result.status).toBe(OrderStatus.DELIVERED);
@@ -515,11 +517,14 @@ describe('OrdersService', () => {
           }
         }
 
-        await service.confirmDelivery(shippedOrder.orderId, {
-          dateReceived: new Date().toISOString(),
-          feedback: 'Final delivery',
-          photos: [],
-        });
+        await service.confirmDelivery(
+          shippedOrder.orderId,
+          {
+            dateReceived: new Date().toISOString(),
+            feedback: 'Final delivery',
+          },
+          [],
+        );
 
         const updatedRequest = await requestRepo.findOne({
           where: { requestId: request.requestId },
@@ -550,11 +555,14 @@ describe('OrdersService', () => {
         );
 
         if (shippedOrder) {
-          await service.confirmDelivery(shippedOrder.orderId, {
-            dateReceived: new Date().toISOString(),
-            feedback: 'Partial delivery',
-            photos: [],
-          });
+          await service.confirmDelivery(
+            shippedOrder.orderId,
+            {
+              dateReceived: new Date().toISOString(),
+              feedback: 'Partial delivery',
+            },
+            [],
+          );
 
           const updatedRequest = await requestRepo.findOne({
             where: { requestId: request.requestId },
@@ -575,12 +583,32 @@ describe('OrdersService', () => {
       const invalidOrderId = 99999;
 
       await expect(
-        service.confirmDelivery(invalidOrderId, {
-          dateReceived: new Date().toISOString(),
-          feedback: 'test',
-          photos: [],
-        }),
+        service.confirmDelivery(
+          invalidOrderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
       ).rejects.toThrow(`Order ${invalidOrderId} not found`);
+    });
+
+    it('should throw BadRequestException when order is not shipped', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      const pendingOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.PENDING },
+      });
+
+      expect(pendingOrder).toBeDefined();
+
+      await expect(
+        service.confirmDelivery(
+          pendingOrder.orderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Can only confirm delivery for shipped orders'),
+      );
     });
   });
 });
