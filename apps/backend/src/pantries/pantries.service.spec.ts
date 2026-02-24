@@ -16,6 +16,8 @@ import {
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
+import { Role } from '../users/types';
 
 const mockRepository = mock<Repository<Pantry>>();
 const mockUsersService = mock<UsersService>();
@@ -168,6 +170,37 @@ describe('PantriesService', () => {
 
   // Approve pantry by ID (status = approved)
   describe('approve', () => {
+    it('should approve a pantry', async () => {
+      const mockPantryUser: Partial<User> = { id: 1, email: 'test@test.com' };
+      const mockCreatedUser: Partial<User> = { id: 2, role: Role.PANTRY };
+
+      const mockPendingPantryWithUser: Partial<Pantry> = {
+        ...mockPendingPantry,
+        pantryUser: mockPantryUser as User,
+      };
+
+      mockRepository.findOne.mockResolvedValueOnce(
+        mockPendingPantryWithUser as Pantry,
+      );
+      mockUsersService.create.mockResolvedValueOnce(mockCreatedUser as User);
+      mockRepository.update.mockResolvedValueOnce(undefined);
+
+      await service.approve(1);
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { pantryId: 1 },
+        relations: ['pantryUser'],
+      });
+      expect(mockUsersService.create).toHaveBeenCalledWith({
+        ...mockPantryUser,
+        role: Role.PANTRY,
+      });
+      expect(mockRepository.update).toHaveBeenCalledWith(1, {
+        status: ApplicationStatus.APPROVED,
+        pantryUser: mockCreatedUser,
+      });
+    });
+
     it('should throw NotFoundException if pantry not found', async () => {
       mockRepository.findOne.mockResolvedValueOnce(null);
 

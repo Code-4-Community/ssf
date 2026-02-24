@@ -12,7 +12,6 @@ import {
   ForgotPasswordCommand,
   SignUpCommand,
   AdminCreateUserCommand,
-  AdminGetUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
