@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import 'multer';
 
 @Injectable()
 export class AWSS3Service {

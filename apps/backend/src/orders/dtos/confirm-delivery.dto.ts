@@ -1,4 +1,10 @@
+import { IsDateString, IsOptional, IsString } from 'class-validator';
+
 export class ConfirmDeliveryDto {
-  dateReceived: string;
+  @IsDateString()
+  dateReceived!: string;
+
+  @IsOptional()
+  @IsString()
   feedback?: string;
 }

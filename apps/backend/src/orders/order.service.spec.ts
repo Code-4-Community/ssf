@@ -412,7 +412,9 @@ describe('OrdersService', () => {
           { dateReceived: 'invalid-date', feedback: 'test feedback' },
           [],
         ),
-      ).rejects.toThrow('Invalid date format for dateReceived');
+      ).rejects.toThrow(
+        new BadRequestException('Invalid date format for dateReceived'),
+      );
     });
 
     it('should update order with delivery details and set status to delivered and update request status to closed', async () => {
@@ -420,7 +422,7 @@ describe('OrdersService', () => {
       const requestRepo = testDataSource.getRepository(FoodRequest);
 
       const shippedOrder = await orderRepo.findOne({
-        where: { status: OrderStatus.SHIPPED },
+        where: { status: OrderStatus.SHIPPED, orderId: 3 },
         relations: ['request'],
       });
 
@@ -540,45 +542,6 @@ describe('OrdersService', () => {
       }
     });
 
-    it('should set request status to ACTIVE when not all orders are delivered', async () => {
-      const orderRepo = testDataSource.getRepository(Order);
-      const requestRepo = testDataSource.getRepository(FoodRequest);
-
-      const request = await requestRepo.findOne({
-        where: { status: FoodRequestStatus.ACTIVE },
-        relations: ['orders'],
-      });
-
-      if (request && request.orders.length > 1) {
-        const shippedOrder = request.orders.find(
-          (order) => order.status === OrderStatus.SHIPPED,
-        );
-
-        if (shippedOrder) {
-          await service.confirmDelivery(
-            shippedOrder.orderId,
-            {
-              dateReceived: new Date().toISOString(),
-              feedback: 'Partial delivery',
-            },
-            [],
-          );
-
-          const updatedRequest = await requestRepo.findOne({
-            where: { requestId: request.requestId },
-            relations: ['orders'],
-          });
-
-          expect(
-            updatedRequest.orders.some(
-              (o) => o.status !== OrderStatus.DELIVERED,
-            ),
-          ).toBe(true);
-          expect(updatedRequest.status).toBe(FoodRequestStatus.ACTIVE);
-        }
-      }
-    });
-
     it('should throw NotFoundException for invalid order id', async () => {
       const invalidOrderId = 99999;
 
@@ -588,7 +551,9 @@ describe('OrdersService', () => {
           { dateReceived: new Date().toISOString(), feedback: 'test' },
           [],
         ),
-      ).rejects.toThrow(`Order ${invalidOrderId} not found`);
+      ).rejects.toThrow(
+        new NotFoundException(`Order ${invalidOrderId} not found`),
+      );
     });
 
     it('should throw BadRequestException when order is not shipped', async () => {

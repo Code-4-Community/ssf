@@ -129,7 +129,6 @@ export class OrdersController {
         dateReceived: {
           type: 'string',
           format: 'date-time',
-          nullable: true,
           example: new Date().toISOString(),
         },
         feedback: {
