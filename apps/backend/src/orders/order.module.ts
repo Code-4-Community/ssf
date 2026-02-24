@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AWSS3Module } from '../aws/aws-s3.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { RequestsModule } from '../foodRequests/request.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MulterModule } from '@nestjs/platform-express';
     forwardRef(() => AuthModule),
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
+    forwardRef(() => RequestsModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
