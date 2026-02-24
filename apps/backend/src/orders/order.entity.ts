@@ -68,10 +68,10 @@ export class Order {
   deliveredAt?: Date;
 
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
-  dateReceived?: Date | null;
+  dateReceived?: Date;
 
   @Column({ name: 'feedback', type: 'text', nullable: true })
-  feedback?: string | null;
+  feedback?: string;
 
   @Column({ name: 'photos', type: 'text', array: true, nullable: true })
   photos?: string[];
