@@ -16,8 +16,9 @@ export class FoodManufacturersService {
   constructor(
     @InjectRepository(FoodManufacturer)
     private repo: Repository<FoodManufacturer>,
-    @InjectRepository(User)
+
     private usersService: UsersService,
+
     @InjectRepository(Donation)
     private donationsRepo: Repository<Donation>,
   ) {}

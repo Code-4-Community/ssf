@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signIn, confirmSignIn } from '@aws-amplify/auth';
+import { signIn, confirmSignIn, fetchAuthSession } from '@aws-amplify/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -54,7 +54,6 @@ const LoginPage: React.FC = () => {
       alert('Passwords need to match');
       return;
     }
-
     if (newPassword.length < 8) {
       alert('Password needs to be at least 8 characters');
       return;
@@ -62,6 +61,8 @@ const LoginPage: React.FC = () => {
 
     try {
       await confirmSignIn({ challengeResponse: newPassword });
+      // Wait for auth session to establish
+      await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
     } catch (error) {
       alert('Failed to set new password: ' + error);

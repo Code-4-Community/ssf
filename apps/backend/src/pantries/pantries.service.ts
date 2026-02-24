@@ -116,10 +116,7 @@ export class PantriesService {
     }
 
     const createUserDto: userSchemaDto = {
-      email: pantry.pantryUser.email,
-      firstName: pantry.pantryUser.firstName,
-      lastName: pantry.pantryUser.lastName,
-      phone: pantry.pantryUser.phone,
+      ...pantry.pantryUser,
       role: Role.PANTRY,
     };
 
