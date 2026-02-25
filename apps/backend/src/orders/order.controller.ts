@@ -122,7 +122,7 @@ export class OrdersController {
 
   @Patch('/:orderId/confirm-delivery')
   @ApiBody({
-    description: 'Details for a confirmation form',
+    description: 'Details for a confirmation of order delivery form',
     schema: {
       type: 'object',
       properties: {
@@ -140,7 +140,10 @@ export class OrdersController {
           type: 'array',
           items: { type: 'string' },
           nullable: true,
-          example: [],
+          example: [
+            'https://s3.amazonaws.com/bucket/photo1.jpg',
+            'https://s3.amazonaws.com/bucket/photo2.jpg',
+          ],
         },
       },
     },

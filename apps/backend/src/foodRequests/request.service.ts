@@ -119,8 +119,11 @@ export class RequestsService {
     }
 
     const orders = request.orders || [];
+
     if (!orders.length) {
-      throw new NotFoundException(`No orders found for request ${requestId}`);
+      request.status = FoodRequestStatus.ACTIVE;
+      await this.repo.save(request);
+      return;
     }
 
     const allDelivered = orders.every(

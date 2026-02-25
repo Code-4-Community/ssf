@@ -457,41 +457,41 @@ describe('OrdersService', () => {
       const orderRepo = testDataSource.getRepository(Order);
       const requestRepo = testDataSource.getRepository(FoodRequest);
 
-      const shippedOrder = await orderRepo.findOne({
-        where: {
-          status: OrderStatus.SHIPPED,
-          shippedAt: new Date('2024-02-06T08:00:00'),
-        },
-        relations: ['request', 'request.orders'],
+      // Get an existing shipped order
+      const existingShippedOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.SHIPPED },
+        relations: ['request'],
       });
 
-      expect(shippedOrder).toBeDefined();
+      expect(existingShippedOrder).toBeDefined();
 
-      const hasOtherUndeliveredOrders = shippedOrder.request.orders.some(
-        (o) =>
-          o.orderId !== shippedOrder.orderId &&
-          o.status !== OrderStatus.DELIVERED,
-      );
-      expect(hasOtherUndeliveredOrders).toBe(true);
+      // Add a second shipped order to the same request so it stays active after delivery
+      const secondOrder = orderRepo.create({
+        requestId: existingShippedOrder.requestId,
+        foodManufacturerId: existingShippedOrder.foodManufacturerId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date(),
+      });
+      await orderRepo.save(secondOrder);
 
       const dateReceived = new Date().toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
       const result = await service.confirmDelivery(
-        shippedOrder.orderId,
+        existingShippedOrder.orderId,
         { dateReceived, feedback },
         photos,
       );
 
-      expect(result.orderId).toBe(shippedOrder.orderId);
+      expect(result.orderId).toBe(existingShippedOrder.orderId);
       expect(result.status).toBe(OrderStatus.DELIVERED);
       expect(result.dateReceived).toEqual(new Date(dateReceived));
       expect(result.feedback).toBe(feedback);
       expect(result.photos).toEqual(photos);
 
       const updatedRequest = await requestRepo.findOne({
-        where: { requestId: shippedOrder.requestId },
+        where: { requestId: existingShippedOrder.requestId },
         relations: ['orders'],
       });
 
