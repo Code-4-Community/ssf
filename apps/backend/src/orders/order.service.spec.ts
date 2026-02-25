@@ -24,7 +24,7 @@ describe('OrdersService', () => {
     }
 
     // Clean database at the start
-    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
 
     const module: TestingModule = await Test.createTestingModule({

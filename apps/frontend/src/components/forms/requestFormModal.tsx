@@ -6,7 +6,6 @@ import {
   Menu,
   Text,
   Dialog,
-  Tag,
   Box,
   Field,
   CloseButton,
@@ -19,6 +18,7 @@ import {
 } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
 import apiClient from '@api/apiClient';
+import { TagGroup } from './tagGroup';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -227,37 +227,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   </Menu.Positioner>
                 </Menu.Root>
 
-                {selectedItems.length > 0 && (
-                  <Flex wrap="wrap" mt={1} gap={2}>
-                    {selectedItems.map((item) => (
-                      <Tag.Root
-                        key={item}
-                        size="xl"
-                        variant="solid"
-                        bg={'neutral.100'}
-                        color="neutral.800"
-                        borderRadius="4px"
-                        borderColor={'neutral.300'}
-                        borderWidth="1px"
-                        fontFamily="Inter"
-                        fontWeight={500}
-                      >
-                        <Tag.Label>{item}</Tag.Label>
-
-                        <Tag.EndElement>
-                          <Tag.CloseTrigger
-                            cursor="pointer"
-                            onClick={() =>
-                              setSelectedItems((prev) =>
-                                prev.filter((i) => i !== item),
-                              )
-                            }
-                          />
-                        </Tag.EndElement>
-                      </Tag.Root>
-                    ))}
-                  </Flex>
-                )}
+                <TagGroup
+                  values={selectedItems}
+                  onRemove={(value) =>
+                    setSelectedItems((prev) => prev.filter((i) => i !== value))
+                  }
+                />
               </Field.Root>
 
               <Field.Root mb={4}>

@@ -10,17 +10,17 @@ import PantryDashboard from '@containers/pantryDashboard';
 import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
-import PantryApplicationSubmitted from '@containers/pantryApplicationSubmitted';
+import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
-import DonationManagement from '@containers/donationManagement';
 import AdminDonation from '@containers/adminDonation';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
+import FoodManufacturerDonationManagement from '@containers/foodManufacturerDonationManagement';
 import LoginPage from '@containers/loginPage';
 import SignupPage from '@containers/signupPage';
 import ForgotPasswordPage from '@containers/forgotPasswordPage';
@@ -28,6 +28,8 @@ import ProtectedRoute from '@components/protectedRoute';
 import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
 import PantryOrderManagement from '@containers/pantryOrderManagement';
+import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
+import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -64,8 +66,13 @@ const router = createBrowserRouter([
         action: submitPantryApplicationForm,
       },
       {
-        path: '/pantry-application/submitted',
-        element: <PantryApplicationSubmitted />,
+        path: '/food-manufacturer-application',
+        element: <FoodManufacturerApplication />,
+        action: submitManufacturerApplicationForm,
+      },
+      {
+        path: '/application-submitted',
+        element: <ApplicationSubmitted />,
       },
       {
         path: '/unauthorized',
@@ -153,10 +160,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/donation-management',
+        path: '/fm-donation-management',
         element: (
           <ProtectedRoute>
-            <DonationManagement />
+            <FoodManufacturerDonationManagement />
           </ProtectedRoute>
         ),
       },
