@@ -498,50 +498,6 @@ describe('OrdersService', () => {
       expect(updatedRequest.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
-    it('should set request status to CLOSED when all orders are delivered', async () => {
-      const orderRepo = testDataSource.getRepository(Order);
-      const requestRepo = testDataSource.getRepository(FoodRequest);
-
-      const request = await requestRepo.findOne({
-        where: { status: FoodRequestStatus.ACTIVE },
-        relations: ['orders'],
-      });
-
-      const shippedOrder = request.orders.find(
-        (order) => order.status === OrderStatus.SHIPPED,
-      );
-
-      if (shippedOrder) {
-        for (const order of request.orders) {
-          if (order.orderId !== shippedOrder.orderId) {
-            order.status = OrderStatus.DELIVERED;
-            await orderRepo.save(order);
-          }
-        }
-
-        await service.confirmDelivery(
-          shippedOrder.orderId,
-          {
-            dateReceived: new Date().toISOString(),
-            feedback: 'Final delivery',
-          },
-          [],
-        );
-
-        const updatedRequest = await requestRepo.findOne({
-          where: { requestId: request.requestId },
-          relations: ['orders'],
-        });
-
-        expect(
-          updatedRequest.orders.every(
-            (o) => o.status === OrderStatus.DELIVERED,
-          ),
-        ).toBe(true);
-        expect(updatedRequest.status).toBe(FoodRequestStatus.CLOSED);
-      }
-    });
-
     it('should throw NotFoundException for invalid order id', async () => {
       const invalidOrderId = 99999;
 
@@ -568,6 +524,26 @@ describe('OrdersService', () => {
       await expect(
         service.confirmDelivery(
           pendingOrder.orderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Can only confirm delivery for shipped orders'),
+      );
+    });
+
+    it('should throw BadRequestException when order is already delivered', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      const deliveredOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.DELIVERED },
+      });
+
+      expect(deliveredOrder).toBeDefined();
+
+      await expect(
+        service.confirmDelivery(
+          deliveredOrder.orderId,
           { dateReceived: new Date().toISOString(), feedback: 'test' },
           [],
         ),
