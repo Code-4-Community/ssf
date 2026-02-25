@@ -10,10 +10,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import typeorm from './config/typeorm';
 import { OrdersModule } from './orders/order.module';
-import { ManufacturerModule } from './foodManufacturers/manufacturer.module';
+import { ManufacturerModule } from './foodManufacturers/manufacturers.module';
 import { DonationModule } from './donations/donations.module';
 import { DonationItemsModule } from './donationItems/donationItems.module';
 import { AllocationModule } from './allocations/allocations.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/roles.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -29,6 +33,7 @@ import { AllocationModule } from './allocations/allocations.module';
       useFactory: async (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
     PantriesModule,
@@ -40,6 +45,16 @@ import { AllocationModule } from './allocations/allocations.module';
     AllocationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

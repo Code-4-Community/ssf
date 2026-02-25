@@ -82,22 +82,16 @@ const AdminOrderManagement: React.FC = () => {
     },
   });
 
-  const STATUS_ORDER = [
-    OrderStatus.PENDING,
-    OrderStatus.SHIPPED,
-    OrderStatus.DELIVERED,
-  ];
-
   // Color mapping for statuses
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.PENDING, ['#FEECD1', '#9C5D00']],
-    [OrderStatus.SHIPPED, ['#D5DCDF', '#2B4E60']],
-    [OrderStatus.DELIVERED, ['#D4EAED', '#19717D']],
+    [OrderStatus.PENDING, ['yellow.200', 'yellow.hover']],
+    [OrderStatus.SHIPPED, ['blue.200', 'blue.core']],
+    [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
   ]);
 
   const MAX_PER_STATUS = 5;
 
-  const ASSIGNEE_COLORS = ['yellow', 'red', 'cyan', 'blue.ssf'];
+  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'cyan', 'blue.ssf'];
 
   useEffect(() => {
     // Fetch all orders on component mount and sorts them into their appropriate status lists
@@ -120,8 +114,12 @@ const AdminOrderManagement: React.FC = () => {
 
         for (const order of data) {
           const status = order.status;
+
           const orderWithColor: OrderWithColor = { ...order };
-          if (order.pantry.volunteers && order.pantry.volunteers.length > 0) {
+          if (
+            order.request.pantry.volunteers &&
+            order.request.pantry.volunteers.length > 0
+          ) {
             orderWithColor.assigneeColor =
               ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
             counters[status]++;
@@ -164,13 +162,13 @@ const AdminOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {STATUS_ORDER.map((status) => {
+      {Object.values(OrderStatus).map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
         // Get pantry options through all orders in the status
         const pantryOptions = [
-          ...new Set(allOrders.map((o) => o.pantry.pantryName)),
+          ...new Set(allOrders.map((o) => o.request.pantry.pantryName)),
         ].sort((a, b) => a.localeCompare(b));
 
         // Apply filters and sorting to all orders
@@ -178,7 +176,9 @@ const AdminOrderManagement: React.FC = () => {
           .filter(
             (o) =>
               filterState.selectedPantries.length === 0 ||
-              filterState.selectedPantries.includes(o.pantry.pantryName),
+              filterState.selectedPantries.includes(
+                o.request.pantry.pantryName,
+              ),
           )
           .sort((a, b) =>
             filterState.sortAsc
@@ -559,7 +559,24 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="25%"
+                  width="18%"
+                >
+                  Status
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="7%"
+                  textAlign="center"
+                >
+                  Assignee
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="30%"
                 >
                   Pantry
                 </Table.ColumnHeader>
@@ -569,124 +586,126 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   borderRightColor="neutral.100"
                   width="15%"
                 >
-                  Assignee
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="15%"
-                >
-                  Status
+                  Dates
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
                   textAlign="right"
-                  width="25%"
+                  width="20%"
                 >
-                  Date Started
+                  Action Required
                 </Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {orders.map((order, index) => (
-                <Table.Row
-                  key={`${order.orderId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
+              {orders.map((order, index) => {
+                const pantry = order.request.pantry;
+                const volunteers = pantry.volunteers || [];
+
+                return (
+                  <Table.Row
+                    key={`${order.orderId}-${index}`}
+                    _hover={{ bg: 'gray.50' }}
                   >
-                    <Button
-                      variant="plain"
-                      fontWeight="400"
-                      textDecoration="underline"
-                      onClick={() => onOrderSelect(order.orderId)}
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
                     >
-                      {order.orderId}
-                    </Button>
-                    {selectedOrderId === order.orderId && (
-                      <OrderDetailsModal
-                        order={order}
-                        isOpen={true}
-                        onClose={() => onOrderSelect(null)}
-                      />
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    {order.pantry.pantryName}
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    <Box
-                      direction="row"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      {order.pantry.volunteers &&
-                      order.pantry.volunteers.length > 0 ? (
-                        <Box
-                          key={index}
-                          borderRadius="full"
-                          bg={order.assigneeColor || 'gray'}
-                          width="33px"
-                          height="33px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          color="white"
-                          p={2}
-                        >
-                          {/* TODO: Change logic later to only get one volunteer */}
-                          {order.pantry.volunteers[0].firstName
-                            .charAt(0)
-                            .toUpperCase()}
-                          {order.pantry.volunteers[0].lastName
-                            .charAt(0)
-                            .toUpperCase()}
-                        </Box>
-                      ) : (
-                        <Box>No Assignees</Box>
+                      <Button
+                        variant="plain"
+                        fontWeight="400"
+                        textDecoration="underline"
+                        onClick={() => onOrderSelect(order.orderId)}
+                      >
+                        {order.orderId}
+                      </Button>
+                      {selectedOrderId === order.orderId && (
+                        <OrderDetailsModal
+                          order={order}
+                          isOpen={true}
+                          onClose={() => onOrderSelect(null)}
+                        />
                       )}
-                    </Box>
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    <Box
-                      borderRadius="md"
-                      bg={colors[0]}
-                      color={colors[1]}
-                      display="inline-block"
-                      fontWeight="500"
-                      my={2}
-                      py={1}
-                      px={3}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
                     >
-                      {capitalize(order.status)}
-                    </Box>
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    textAlign="right"
-                    color="neutral.700"
-                  >
-                    {formatDate(order.createdAt)}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
+                      <Box
+                        borderRadius="md"
+                        bg={colors[0]}
+                        color={colors[1]}
+                        display="inline-block"
+                        fontWeight="500"
+                        my={2}
+                        py={1}
+                        px={3}
+                      >
+                        {capitalize(order.status)}
+                      </Box>
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      <Box
+                        direction="row"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        {volunteers && volunteers.length > 0 ? (
+                          <Box
+                            key={index}
+                            borderRadius="full"
+                            bg={order.assigneeColor || 'gray'}
+                            width="33px"
+                            height="33px"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="white"
+                            p={2}
+                          >
+                            {/* TODO: Change logic later to only get one volunteer */}
+                            {volunteers[0].firstName.charAt(0).toUpperCase()}
+                            {volunteers[0].lastName.charAt(0).toUpperCase()}
+                          </Box>
+                        ) : (
+                          <Box>No Assignees</Box>
+                        )}
+                      </Box>
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {pantry.pantryName}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      textAlign="left"
+                      color="neutral.700"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {formatDate(order.createdAt)}-
+                      {order.deliveredAt && formatDate(order.deliveredAt)}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      textAlign="left"
+                      color="neutral.700"
+                    >
+                      {/* TODO: IMPLEMENT WHAT GOES HERE */}
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
 
