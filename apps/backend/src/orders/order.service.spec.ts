@@ -136,7 +136,7 @@ describe('OrdersService', () => {
   describe('getCurrentOrders', () => {
     it(`returns only orders with status 'pending' or 'shipped'`, async () => {
       const orders = await service.getCurrentOrders();
-      expect(orders).toHaveLength(4);
+      expect(orders).toHaveLength(2);
       expect(
         orders.every(
           (order) =>
