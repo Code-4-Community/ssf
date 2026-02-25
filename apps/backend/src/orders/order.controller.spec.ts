@@ -329,8 +329,8 @@ describe('OrdersController', () => {
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
         orderId,
         new Date(body.dateReceived),
-        body.feedback,
         uploadedUrls,
+        body.feedback,
       );
       expect(result).toEqual(confirmedOrder);
     });
@@ -359,8 +359,8 @@ describe('OrdersController', () => {
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
         orderId,
         new Date(body.dateReceived),
-        body.feedback,
         [],
+        body.feedback,
       );
       expect(result).toEqual(confirmedOrder);
     });
@@ -389,8 +389,8 @@ describe('OrdersController', () => {
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
         orderId,
         new Date(body.dateReceived),
-        body.feedback,
         [],
+        body.feedback,
       );
       expect(result).toEqual(confirmedOrder);
     });

@@ -165,8 +165,8 @@ export class OrdersController {
     return this.ordersService.confirmDelivery(
       orderId,
       formattedDate,
-      body.feedback,
       uploadedPhotoUrls,
+      body.feedback,
     );
   }
 }

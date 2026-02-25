@@ -156,8 +156,8 @@ export class OrdersService {
   async confirmDelivery(
     orderId: number,
     dateReceived: Date,
-    feedback: string,
     photos: string[],
+    feedback?: string,
   ): Promise<Order> {
     validateId(orderId, 'Order');
 

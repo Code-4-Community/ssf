@@ -56,7 +56,7 @@ export interface Pantry {
 
 export interface ConfirmDeliveryDto {
   dateReceived: string;
-  feedback: string;
+  feedback?: string;
 }
 
 export interface PantryApplicationDto {

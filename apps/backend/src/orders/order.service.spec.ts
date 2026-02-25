@@ -422,8 +422,8 @@ describe('OrdersService', () => {
       const result = await service.confirmDelivery(
         shippedOrder.orderId,
         dateReceived,
-        feedback,
         photos,
+        feedback,
       );
 
       expect(result.orderId).toBe(shippedOrder.orderId);
@@ -479,8 +479,8 @@ describe('OrdersService', () => {
         await service.confirmDelivery(
           shippedOrder.orderId,
           new Date(),
-          'Final delivery',
           [],
+          'Final delivery',
         );
 
         // Verify request is now closed
@@ -518,8 +518,8 @@ describe('OrdersService', () => {
           await service.confirmDelivery(
             shippedOrder.orderId,
             new Date(),
-            'Partial delivery',
             [],
+            'Partial delivery',
           );
 
           // Verify request is still active
@@ -542,7 +542,7 @@ describe('OrdersService', () => {
       const invalidOrderId = 99999;
 
       await expect(
-        service.confirmDelivery(invalidOrderId, new Date(), 'test', []),
+        service.confirmDelivery(invalidOrderId, new Date(), [], 'test'),
       ).rejects.toThrow(`Order ${invalidOrderId} not found`);
     });
   });

@@ -1,9 +1,16 @@
-import { IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class ConfirmDeliveryDto {
-  @IsString()
+  @IsDateString()
   dateReceived: string;
 
+  @IsOptional()
   @IsString()
-  feedback: string;
+  @IsNotEmpty()
+  feedback?: string;
 }

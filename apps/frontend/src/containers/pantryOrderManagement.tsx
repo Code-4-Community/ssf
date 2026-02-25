@@ -490,6 +490,11 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       {...tableCellStyles}
                       textAlign="right"
                       color="neutral.700"
+                      bgColor={
+                        order.status !== OrderStatus.PENDING
+                          ? 'neutral.50'
+                          : 'white'
+                      }
                       pr={0}
                     >
                       {order.status === OrderStatus.PENDING && (

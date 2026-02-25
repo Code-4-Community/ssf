@@ -36,7 +36,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
 
-  const isFormValid = feedback !== '' && dateReceived !== '';
+  const isFormValid = dateReceived !== '';
 
   const resetForm = () => {
     setAlertMessage('');
@@ -49,7 +49,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
     try {
       const dto: ConfirmDeliveryDto = {
         dateReceived: new Date(dateReceived).toISOString(),
-        feedback: feedback.trim(),
+        feedback: feedback,
       };
 
       await apiClient.confirmOrderDelivery(orderId, dto, photos);
@@ -137,6 +137,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   textStyle="p2"
                   color="neutral.800"
                   borderColor="neutral.100"
+                  minH={150}
                   value={feedback}
                   onChange={(e) => {
                     const inputText = e.target.value;
@@ -176,6 +177,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     borderRadius="4px"
                     borderStyle="solid"
                     borderWidth="1px"
+                    minH="150px"
                   >
                     <Icon size="md" color="fg.muted">
                       <Upload />
@@ -189,6 +191,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                       </Box>
                     </FileUpload.DropzoneContent>
                   </FileUpload.Dropzone>
+                  <FileUpload.List clearable />
                 </FileUpload.Root>
               </Field.Root>
 

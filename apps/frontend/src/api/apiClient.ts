@@ -220,7 +220,9 @@ export class ApiClient {
 
     // DTO fields
     formData.append('dateReceived', dto.dateReceived);
-    formData.append('feedback', dto.feedback);
+    if (dto.feedback) {
+      formData.append('feedback', dto.feedback);
+    }
 
     // files (must be key = "photos")
     for (const file of photos) {
