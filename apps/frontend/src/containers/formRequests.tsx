@@ -19,10 +19,8 @@ import { OrderStatus, FoodRequest } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
-  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const newRequestDisclosure = useDisclosure();
   const previousRequestDisclosure = useDisclosure();
@@ -60,9 +58,8 @@ const FormRequests: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (authStatus !== 'authenticated') return;
     fetchRequests();
-  }, [authStatus, fetchRequests]);
+  }, [fetchRequests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,

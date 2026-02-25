@@ -1,3 +1,4 @@
+import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
   AxiosResponse,
@@ -35,11 +36,12 @@ export class ApiClient {
     // Attach the access token to each request if available
     // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = this.accessToken || localStorage.getItem('accessToken');
+      async (config: InternalAxiosRequestConfig) => {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.accessToken?.toString();
+
         if (token) {
-          config.headers = config.headers || {};
-          config.headers['Authorization'] = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
@@ -50,16 +52,11 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
           window.location.replace('/unauthorized');
         }
         return Promise.reject(error);
       },
     );
-  }
-
-  public setAccessToken(token: string | undefined) {
-    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
