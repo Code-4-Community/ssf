@@ -2,21 +2,21 @@ import {
   IsString,
   IsOptional,
   IsNotEmpty,
-  MaxLength,
   IsEmail,
   IsArray,
+  Length,
 } from 'class-validator';
-import { EmailAttachment } from './awsSes.wrapper';
+import { EmailAttachment } from '../awsSes.wrapper';
 
 export class SendEmailDTO {
   @IsArray()
   @IsEmail({}, { each: true })
-  @MaxLength(255, { each: true })
+  @Length(1, 255, { each: true })
   toEmails!: string[];
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
+  @Length(1, 255)
   subject!: string;
 
   @IsString()

@@ -26,7 +26,7 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { EmailsService } from '../emails/email.service';
-import { SendEmailDTO } from '../emails/types';
+import { SendEmailDTO } from '../emails/dto/send-email.dto';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 

@@ -147,7 +147,7 @@ describe('RequestsController', () => {
 
   describe('POST /create', () => {
     it('should call requestsService.create and return the created food request', async () => {
-      const createBody = {
+      const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
         requestedSize: RequestSize.MEDIUM,
         requestedItems: [
@@ -168,7 +168,9 @@ describe('RequestsController', () => {
         createdRequest as FoodRequest,
       );
 
-      const result = await controller.createRequest(createBody);
+      const result = await controller.createRequest(
+        createBody as CreateRequestDto,
+      );
 
       expect(result).toEqual(createdRequest);
       expect(mockRequestsService.create).toHaveBeenCalledWith(

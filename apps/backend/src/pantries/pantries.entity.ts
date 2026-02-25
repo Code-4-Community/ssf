@@ -108,7 +108,7 @@ export class Pantry {
     enum: ReserveFoodForAllergic,
     enumName: 'reserve_food_for_allergic_enum',
   })
-  reserveFoodForAllergic!: string;
+  reserveFoodForAllergic!: ReserveFoodForAllergic;
 
   @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
   reservationExplanation!: string | null;

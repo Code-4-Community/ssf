@@ -251,7 +251,7 @@ describe('RequestsService', () => {
         mockRequest.pantryId,
         mockRequest.requestedSize,
         mockRequest.requestedItems,
-        mockRequest.additionalInformation,
+        mockRequest.additionalInformation ?? undefined,
       );
 
       expect(result).toEqual(mockRequest);
