@@ -8,7 +8,6 @@ import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
@@ -159,9 +158,7 @@ export class OrdersService {
           requestedItems: true,
           additionalInformation: true,
           requestedAt: true,
-          dateReceived: true,
-          feedback: true,
-          photos: true,
+          status: true,
           pantry: {
             pantryName: true,
           },
@@ -184,10 +181,8 @@ export class OrdersService {
       additionalInformation: order.request.additionalInformation ?? null,
 
       requestedAt: order.request.requestedAt,
-      dateReceived: order.request.dateReceived ?? null,
 
-      feedback: order.request.feedback ?? null,
-      photos: order.request.photos ?? null,
+      status: order.request.status,
     };
   }
 

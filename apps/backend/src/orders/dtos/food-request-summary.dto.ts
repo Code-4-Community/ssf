@@ -1,19 +1,12 @@
-import { RequestSize } from '../../foodRequests/types';
+import { FoodRequestStatus, RequestSize } from '../../foodRequests/types';
 
 export class FoodRequestSummaryDto {
   requestId!: number;
   pantryId!: number;
-
   pantryName!: string;
-
   requestedSize!: RequestSize;
   requestedItems!: string[];
-
-  additionalInformation!: string | null;
-
+  additionalInformation?: string;
   requestedAt!: Date;
-  dateReceived!: Date | null;
-
-  feedback!: string | null;
-  photos!: string[] | null;
+  status!: FoodRequestStatus;
 }

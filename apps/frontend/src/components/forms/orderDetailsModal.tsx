@@ -17,7 +17,7 @@ import {
   GroupedByFoodType,
   OrderDetails,
 } from 'types/types';
-import { OrderStatus } from '../../types/types';
+import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 
@@ -159,7 +159,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           {foodRequest.pantryName}
                         </Text>
                       </Text>
-                      {orderDetails?.status === OrderStatus.DELIVERED ? (
+                      {foodRequest?.status === FoodRequestStatus.CLOSED ? (
                         <Badge
                           {...badgeStyles}
                           bgColor="#FEECD1"

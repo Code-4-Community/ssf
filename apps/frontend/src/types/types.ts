@@ -207,20 +207,12 @@ export interface FoodRequest {
 export interface FoodRequestSummaryDto {
   requestId: number;
   pantryId: number;
-
   pantryName: string;
-
   requestedSize: RequestSize;
-
   requestedItems: string[];
-
-  additionalInformation: string | null;
-
+  additionalInformation?: string;
   requestedAt: string;
-  dateReceived: string | null;
-
-  feedback: string | null;
-  photos: string[] | null;
+  status: FoodRequestStatus;
 }
 
 export interface Order {
@@ -248,7 +240,7 @@ export interface OrderDetails {
   orderId: number;
   status: OrderStatus;
   foodManufacturerName: string;
-  trackingLink: string | null;
+  trackingLink?: string;
   items: OrderItemDetails[];
 }
 

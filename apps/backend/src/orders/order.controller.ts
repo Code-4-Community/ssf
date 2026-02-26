@@ -17,7 +17,6 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
