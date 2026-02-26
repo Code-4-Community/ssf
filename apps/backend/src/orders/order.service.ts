@@ -14,12 +14,15 @@ import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { RequestsService } from '../foodRequests/request.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    private requestsService: RequestsService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -216,6 +219,44 @@ export class OrdersService {
       })
       .where('order_id = :orderId', { orderId })
       .execute();
+  }
+
+  async confirmDelivery(
+    orderId: number,
+    dto: ConfirmDeliveryDto,
+    photos: string[],
+  ): Promise<Order> {
+    validateId(orderId, 'Order');
+
+    const formattedDate = new Date(dto.dateReceived);
+    if (isNaN(formattedDate.getTime())) {
+      throw new BadRequestException('Invalid date format for dateReceived');
+    }
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        'Can only confirm delivery for shipped orders',
+      );
+    }
+
+    order.dateReceived = formattedDate;
+    order.feedback = dto.feedback;
+    order.photos = photos;
+    order.status = OrderStatus.DELIVERED;
+
+    const updatedOrder = await this.repo.save(order);
+
+    await this.requestsService.updateRequestStatus(order.requestId);
+
+    return updatedOrder;
   }
 
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {

@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Param,
   ParseIntPipe,
@@ -8,7 +9,10 @@ import {
   Query,
   BadRequestException,
   ValidationPipe,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
@@ -19,12 +23,17 @@ import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
+import { AWSS3Service } from '../aws/aws-s3.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly allocationsService: AllocationsService,
+    private readonly awsS3Service: AWSS3Service,
   ) {}
 
   // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
@@ -111,5 +120,47 @@ export class OrdersController {
     dto: TrackingCostDto,
   ): Promise<void> {
     return this.ordersService.updateTrackingCostInfo(orderId, dto);
+  }
+
+  @Patch('/:orderId/confirm-delivery')
+  @ApiBody({
+    description: 'Details for a confirmation of order delivery form',
+    schema: {
+      type: 'object',
+      properties: {
+        dateReceived: {
+          type: 'string',
+          format: 'date-time',
+          example: new Date().toISOString(),
+        },
+        feedback: {
+          type: 'string',
+          nullable: true,
+          example: 'Wonderful shipment!',
+        },
+        photos: {
+          type: 'array',
+          items: { type: 'string' },
+          nullable: true,
+          example: [
+            'https://s3.amazonaws.com/bucket/photo1.jpg',
+            'https://s3.amazonaws.com/bucket/photo2.jpg',
+          ],
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FilesInterceptor('photos', 10, { storage: multer.memoryStorage() }),
+  )
+  async confirmDelivery(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: ConfirmDeliveryDto,
+    @UploadedFiles() photos?: Express.Multer.File[],
+  ): Promise<Order> {
+    const uploadedPhotoUrls =
+      photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
+
+    return this.ordersService.confirmDelivery(orderId, body, uploadedPhotoUrls);
   }
 }

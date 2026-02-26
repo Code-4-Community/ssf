@@ -8,15 +8,18 @@ import { mock } from 'jest-mock-extended';
 import { OrderStatus } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { AWSS3Service } from '../aws/aws-s3.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
 import { FoodType } from '../donationItems/types';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
+const mockAWSS3Service = mock<AWSS3Service>();
 
 describe('OrdersController', () => {
   let controller: OrdersController;
@@ -90,6 +93,7 @@ describe('OrdersController', () => {
       providers: [
         { provide: OrdersService, useValue: mockOrdersService },
         { provide: AllocationsService, useValue: mockAllocationsService },
+        { provide: AWSS3Service, useValue: mockAWSS3Service },
       ],
     }).compile();
 
@@ -293,6 +297,112 @@ describe('OrdersController', () => {
       expect(
         mockAllocationsService.getAllAllocationsByOrder,
       ).toHaveBeenCalledWith(orderId);
+    });
+  });
+  describe('confirmDelivery', () => {
+    beforeEach(() => {
+      mockAWSS3Service.upload.mockReset();
+      mockOrdersService.confirmDelivery.mockReset();
+    });
+
+    it('should upload photos and confirm delivery with all fields', async () => {
+      const orderId = 1;
+      const body: ConfirmDeliveryDto = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'Great delivery!',
+      };
+      const mockFiles: Express.Multer.File[] = [
+        {
+          fieldname: 'photos',
+          originalname: 'photo1.jpg',
+          encoding: '7bit',
+          mimetype: 'image/jpeg',
+          buffer: Buffer.from('photo1'),
+          size: 1000,
+        } as Express.Multer.File,
+      ];
+
+      const uploadedUrls = ['https://s3.example.com/photo1.jpg'];
+      mockAWSS3Service.upload.mockResolvedValueOnce(uploadedUrls);
+
+      const confirmedOrder: Partial<Order> = {
+        orderId,
+        status: OrderStatus.DELIVERED,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: uploadedUrls,
+      };
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
+        confirmedOrder as Order,
+      );
+
+      const result = await controller.confirmDelivery(orderId, body, mockFiles);
+
+      expect(mockAWSS3Service.upload).toHaveBeenCalledWith(mockFiles);
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        uploadedUrls,
+      );
+      expect(result).toEqual(confirmedOrder);
+    });
+
+    it('should handle no photos being uploaded', async () => {
+      const orderId = 2;
+      const body: ConfirmDeliveryDto = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'Delivery without photos',
+      };
+
+      const confirmedOrder: Partial<Order> = {
+        orderId,
+        status: OrderStatus.DELIVERED,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: [],
+      };
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
+        confirmedOrder as Order,
+      );
+
+      const result = await controller.confirmDelivery(orderId, body);
+
+      expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        [],
+      );
+      expect(result).toEqual(confirmedOrder);
+    });
+
+    it('should handle empty photos array', async () => {
+      const orderId = 3;
+      const body: ConfirmDeliveryDto = {
+        dateReceived: new Date().toISOString(),
+        feedback: 'Empty photos',
+      };
+
+      const confirmedOrder: Partial<Order> = {
+        orderId,
+        status: OrderStatus.DELIVERED,
+        dateReceived: new Date(body.dateReceived),
+        feedback: body.feedback,
+        photos: [],
+      };
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
+        confirmedOrder as Order,
+      );
+
+      const result = await controller.confirmDelivery(orderId, body, []);
+
+      expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
+      expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
+        orderId,
+        body,
+        [],
+      );
+      expect(result).toEqual(confirmedOrder);
     });
   });
 
