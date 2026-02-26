@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import { OrderStatus, FoodRequest } from '../types/types';
+import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -161,13 +161,7 @@ const FormRequests: React.FC = () => {
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {!request.orders ||
-                request.orders.length === 0 ||
-                request.orders.every(
-                  (order) =>
-                    order.status === OrderStatus.PENDING ||
-                    order.status === OrderStatus.SHIPPED,
-                ) ? (
+                {request.status === FoodRequestStatus.ACTIVE ? (
                   <Badge
                     bgColor="#D4EAED"
                     color="#19717D"
