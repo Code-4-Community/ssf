@@ -51,7 +51,7 @@ export class FoodRequest {
     enum: FoodRequestStatus,
     default: FoodRequestStatus.ACTIVE,
   })
-  status: FoodRequestStatus;
+  status!: FoodRequestStatus;
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
   orders!: Order[] | null;

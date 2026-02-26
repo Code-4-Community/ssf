@@ -428,6 +428,8 @@ describe('OrdersService', () => {
 
       expect(shippedOrder).toBeDefined();
 
+      if (!shippedOrder) throw new Error('Missing shipped order test object');
+
       const dateReceived = new Date().toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
@@ -450,6 +452,9 @@ describe('OrdersService', () => {
         relations: ['orders'],
       });
 
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
       expect(updatedRequest.status).toBe(FoodRequestStatus.CLOSED);
     });
 
@@ -464,6 +469,9 @@ describe('OrdersService', () => {
       });
 
       expect(existingShippedOrder).toBeDefined();
+
+      if (!existingShippedOrder)
+        throw new Error('Missing existingShippedOrder test object');
 
       // Add a second shipped order to the same request so it stays active after delivery
       const secondOrder = orderRepo.create({
@@ -495,6 +503,9 @@ describe('OrdersService', () => {
         relations: ['orders'],
       });
 
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
       expect(updatedRequest.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
@@ -521,6 +532,8 @@ describe('OrdersService', () => {
 
       expect(pendingOrder).toBeDefined();
 
+      if (!pendingOrder) throw new Error('Missing pendingOrder test object');
+
       await expect(
         service.confirmDelivery(
           pendingOrder.orderId,
@@ -540,6 +553,9 @@ describe('OrdersService', () => {
       });
 
       expect(deliveredOrder).toBeDefined();
+
+      if (!deliveredOrder)
+        throw new Error('Missing deliveredOrder test object');
 
       await expect(
         service.confirmDelivery(

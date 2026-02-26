@@ -17,14 +17,14 @@ const mockRequestsRepository = mock<Repository<FoodRequest>>();
 const mockPantryRepository = mock<Repository<Pantry>>();
 const mockOrdersRepository = mock<Repository<Order>>();
 
-const mockRequest: FoodRequest = {
+const mockRequest = {
   requestId: 1,
   pantryId: 1,
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
-  requestedAt: null,
+  requestedAt: new Date(),
   orders: null,
-};
+} as FoodRequest;
 
 describe('RequestsService', () => {
   let service: RequestsService;
@@ -286,7 +286,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
-          requestedAt: null,
+          requestedAt: new Date(),
           orders: null,
         },
         {
@@ -295,7 +295,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.SMALL,
           requestedItems: ['Fruits', 'Snacks'],
           additionalInformation: 'No nuts, please.',
-          requestedAt: null,
+          requestedAt: new Date(),
           orders: null,
         },
       ];

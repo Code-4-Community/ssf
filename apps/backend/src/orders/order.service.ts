@@ -184,7 +184,7 @@ export class OrdersService {
     }
 
     order.dateReceived = formattedDate;
-    order.feedback = dto.feedback;
+    order.feedback = dto.feedback ?? null;
     order.photos = photos;
     order.status = OrderStatus.DELIVERED;
 

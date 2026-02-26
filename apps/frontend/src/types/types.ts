@@ -205,7 +205,7 @@ export interface FoodRequest {
   pantry: Pantry;
   requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation: string | null;
+  additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
   orders?: Order[];
@@ -272,7 +272,7 @@ export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation?: string | null;
+  additionalInformation?: string;
 }
 
 export interface CreateMultipleDonationItemsBody {
