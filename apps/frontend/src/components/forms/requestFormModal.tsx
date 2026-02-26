@@ -60,9 +60,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       requestedSize: requestedSize as RequestSize,
       additionalInformation: additionalNotes || '',
       requestedItems: selectedItems,
-      dateReceived: null,
-      feedback: null,
-      photos: [],
     };
 
     try {
