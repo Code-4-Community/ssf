@@ -217,9 +217,6 @@ export interface Order {
   allocations: Allocation[];
   trackingLink?: string;
   shippingCost?: number;
-  dateReceived?: string;
-  feedback?: string;
-  photos?: string[];
 }
 
 export interface OrderItemDetails {
