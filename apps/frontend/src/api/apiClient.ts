@@ -238,14 +238,14 @@ export class ApiClient {
       formData.append('photos', file);
     }
 
-    const { data } = await this.axiosInstance.post(
+    const { data } = await this.axiosInstance.patch(
       `/api/orders/${orderId}/confirm-delivery`,
       formData,
     );
 
     return data;
   }
-  
+
   public async postManufacturer(
     data: ManufacturerApplicationDto,
   ): Promise<AxiosResponse<void>> {
