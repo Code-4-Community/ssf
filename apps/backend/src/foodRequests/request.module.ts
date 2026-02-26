@@ -11,5 +11,6 @@ import { Pantry } from '../pantries/pantries.entity';
   imports: [TypeOrmModule.forFeature([FoodRequest, Order, Pantry]), AuthModule],
   controllers: [RequestsController],
   providers: [RequestsService],
+  exports: [RequestsService],
 })
 export class RequestsModule {}

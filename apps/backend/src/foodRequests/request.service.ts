@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderStatus } from '../orders/types';
 
 @Injectable()
 export class RequestsService {
@@ -103,5 +104,36 @@ export class RequestsService {
       where: { pantryId },
       relations: ['orders'],
     });
+  }
+
+  async updateRequestStatus(requestId: number): Promise<void> {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    const orders = request.orders || [];
+
+    if (!orders.length) {
+      request.status = FoodRequestStatus.ACTIVE;
+      await this.repo.save(request);
+      return;
+    }
+
+    const allDelivered = orders.every(
+      (order) => order.status === OrderStatus.DELIVERED,
+    );
+
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
+
+    await this.repo.save(request);
   }
 }

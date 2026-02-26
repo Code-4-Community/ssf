@@ -7,7 +7,7 @@ import {
 
 export class ConfirmDeliveryDto {
   @IsDateString()
-  dateReceived: string;
+  dateReceived!: string;
 
   @IsOptional()
   @IsString()
