@@ -22,12 +22,7 @@ const mockRequest: FoodRequest = {
   pantryId: 1,
   requestedItems: ['Canned Goods', 'Vegetables'],
   additionalInformation: 'No onions, please.',
-  requestedAt: new Date(),
-  requestedSize: RequestSize.LARGE,
-  pantry: new Pantry(),
-  dateReceived: null,
-  feedback: null,
-  photos: null,
+  requestedAt: null,
   orders: null,
 };
 
@@ -291,10 +286,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.LARGE,
           requestedItems: ['Rice', 'Beans'],
           additionalInformation: 'Gluten-free items only.',
-          requestedAt: undefined,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
+          requestedAt: null,
           orders: null,
         },
         {
@@ -303,10 +295,7 @@ describe('RequestsService', () => {
           requestedSize: RequestSize.SMALL,
           requestedItems: ['Fruits', 'Snacks'],
           additionalInformation: 'No nuts, please.',
-          requestedAt: undefined,
-          dateReceived: null,
-          feedback: null,
-          photos: null,
+          requestedAt: null,
           orders: null,
         },
       ];
@@ -320,119 +309,6 @@ describe('RequestsService', () => {
       expect(result).toEqual(mockRequests.slice(0, 2));
       expect(mockRequestsRepository.find).toHaveBeenCalledWith({
         where: { pantryId },
-        relations: ['orders'],
-      });
-    });
-  });
-
-  describe('updateDeliveryDetails', () => {
-    it('should update and return the food request with new delivery details', async () => {
-      const mockOrder: Partial<Order> = {
-        orderId: 1,
-        request: undefined,
-        status: OrderStatus.SHIPPED,
-        createdAt: new Date(),
-        shippedAt: new Date(),
-        deliveredAt: null,
-      };
-
-      const mockRequest2: Partial<FoodRequest> = {
-        ...mockRequest,
-        orders: [mockOrder] as Order[],
-      };
-
-      const requestId = 1;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
-
-      mockRequestsRepository.findOne.mockResolvedValueOnce(
-        mockRequest2 as FoodRequest,
-      );
-
-      const updatedOrder = { ...mockOrder, status: OrderStatus.DELIVERED };
-
-      mockRequestsRepository.save.mockResolvedValueOnce({
-        ...mockRequest,
-        dateReceived: deliveryDate,
-        feedback,
-        photos,
-        orders: [updatedOrder],
-      } as FoodRequest);
-
-      const result = await service.updateDeliveryDetails(
-        requestId,
-        deliveryDate,
-        feedback,
-        photos,
-      );
-
-      expect(result).toEqual({
-        ...mockRequest,
-        dateReceived: deliveryDate,
-        feedback,
-        photos,
-        orders: [updatedOrder],
-      });
-
-      expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
-        where: { requestId },
-        relations: ['orders'],
-      });
-
-      expect(mockRequestsRepository.save).toHaveBeenCalledWith({
-        ...mockRequest,
-        dateReceived: deliveryDate,
-        feedback,
-        photos,
-        orders: [mockOrder],
-      });
-    });
-
-    it('should throw an error if the request ID is invalid', async () => {
-      const requestId = 999;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
-
-      mockRequestsRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(
-        service.updateDeliveryDetails(
-          requestId,
-          deliveryDate,
-          feedback,
-          photos,
-        ),
-      ).rejects.toThrow('Invalid request ID');
-
-      expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
-        where: { requestId },
-        relations: ['orders'],
-      });
-    });
-
-    it('should throw an error if there is no associated order', async () => {
-      const requestId = 1;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
-
-      mockRequestsRepository.findOne.mockResolvedValueOnce(
-        mockRequest as FoodRequest,
-      );
-
-      await expect(
-        service.updateDeliveryDetails(
-          requestId,
-          deliveryDate,
-          feedback,
-          photos,
-        ),
-      ).rejects.toThrow('No associated orders found for this request');
-
-      expect(mockRequestsRepository.findOne).toHaveBeenCalledWith({
-        where: { requestId },
         relations: ['orders'],
       });
     });

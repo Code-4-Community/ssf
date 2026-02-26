@@ -9,28 +9,20 @@ import {
   UseInterceptors,
   NotFoundException,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
-import { AWSS3Service } from '../aws/aws-s3.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { OrdersService } from '../orders/order.service';
 import { RequestSize } from './types';
-import { OrderStatus } from '../orders/types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 
 @Controller('requests')
 export class RequestsController {
-  constructor(
-    private requestsService: RequestsService,
-    private awsS3Service: AWSS3Service,
-    private ordersService: OrdersService,
-  ) {}
+  constructor(private requestsService: RequestsService) {}
 
   @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:requestId')
@@ -77,19 +69,6 @@ export class RequestsController {
           nullable: true,
           example: 'Urgent request',
         },
-        dateReceived: {
-          type: 'string',
-          format: 'date-time',
-          nullable: true,
-          example: null,
-        },
-        feedback: { type: 'string', nullable: true, example: null },
-        photos: {
-          type: 'array',
-          items: { type: 'string' },
-          nullable: true,
-          example: [],
-        },
       },
     },
   })
@@ -103,81 +82,5 @@ export class RequestsController {
       requestData.requestedItems,
       requestData.additionalInformation,
     );
-  }
-
-  @Roles(Role.PANTRY, Role.ADMIN)
-  //TODO: delete endpoint, here temporarily as a logic reference for order status impl.
-  @Post('/:requestId/confirm-delivery')
-  @ApiBody({
-    description: 'Details for a confirmation form',
-    schema: {
-      type: 'object',
-      properties: {
-        dateReceived: {
-          type: 'string',
-          format: 'date-time',
-          nullable: true,
-          example: new Date().toISOString(),
-        },
-        feedback: {
-          type: 'string',
-          nullable: true,
-          example: 'Wonderful shipment!',
-        },
-        photos: {
-          type: 'array',
-          items: { type: 'string' },
-          nullable: true,
-          example: [],
-        },
-      },
-    },
-  })
-  @UseInterceptors(
-    FilesInterceptor('photos', 10, { storage: multer.memoryStorage() }),
-  )
-  async confirmDelivery(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Body() body: { dateReceived: string; feedback: string },
-    @UploadedFiles() photos?: Express.Multer.File[],
-  ): Promise<FoodRequest> {
-    const formattedDate = new Date(body.dateReceived);
-    if (isNaN(formattedDate.getTime())) {
-      throw new Error('Invalid date format for deliveryDate');
-    }
-
-    const uploadedPhotoUrls =
-      photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
-    console.log(
-      'Received photo files:',
-      photos?.map((p) => p.originalname),
-      '| Count:',
-      photos?.length,
-    );
-
-    const updatedRequest = await this.requestsService.updateDeliveryDetails(
-      requestId,
-      formattedDate,
-      body.feedback,
-      uploadedPhotoUrls,
-    );
-
-    if (!updatedRequest) {
-      throw new NotFoundException('Invalid request ID');
-    }
-
-    if (!updatedRequest.orders || updatedRequest.orders.length == 0) {
-      throw new NotFoundException(
-        'No associated orders found for this request',
-      );
-    }
-
-    await Promise.all(
-      updatedRequest.orders.map((order) =>
-        this.ordersService.updateStatus(order.orderId, OrderStatus.DELIVERED),
-      ),
-    );
-
-    return updatedRequest;
   }
 }

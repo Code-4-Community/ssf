@@ -8,7 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
-import { RequestSize } from './types';
+import { RequestSize, FoodRequestStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Entity('food_requests')
@@ -44,14 +44,14 @@ export class FoodRequest {
   })
   requestedAt!: Date;
 
-  @Column({ name: 'date_received', type: 'timestamp', nullable: true })
-  dateReceived!: Date | null;
-
-  @Column({ name: 'feedback', type: 'text', nullable: true })
-  feedback!: string | null;
-
-  @Column({ name: 'photos', type: 'text', array: true, nullable: true })
-  photos!: string[] | null;
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enumName: 'food_requests_status_enum',
+    enum: FoodRequestStatus,
+    default: FoodRequestStatus.ACTIVE,
+  })
+  status: FoodRequestStatus;
 
   @OneToMany(() => Order, (order) => order.request, { nullable: true })
   orders!: Order[] | null;

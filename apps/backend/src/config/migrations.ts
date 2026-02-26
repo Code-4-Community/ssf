@@ -31,6 +31,7 @@ import { UpdateManufacturerEntity1768680807820 } from '../migrations/17686808078
 import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
 import { DonationItemFoodTypeNotNull1771524930613 } from '../migrations/1771524930613-DonationItemFoodTypeNotNull';
+import { MoveRequestFieldsToOrders1770571145350 } from '../migrations/1770571145350-MoveRequestFieldsToOrders';
 import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
 
 const schemaMigrations = [
@@ -67,6 +68,7 @@ const schemaMigrations = [
   AddUserPoolId1769189327767,
   UpdateOrderEntity1769990652833,
   DonationItemFoodTypeNotNull1771524930613,
+  MoveRequestFieldsToOrders1770571145350,
   RenameDonationMatchingStatus1771260403657,
 ];
 
