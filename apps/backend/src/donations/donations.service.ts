@@ -102,6 +102,19 @@ export class DonationService {
         continue;
       }
 
+      if (donation.recurrence === RecurrenceEnum.NONE) continue;
+
+      if (
+        !donation.occurrencesRemaining ||
+        donation.occurrencesRemaining <= 0
+      ) {
+        await this.repo.update(donation.donationId, {
+          nextDonationDates: [],
+          occurrencesRemaining: 0,
+        });
+        continue;
+      }
+
       let dates = [...donation.nextDonationDates].sort(
         (a, b) => a.getTime() - b.getTime(),
       );
@@ -137,7 +150,7 @@ export class DonationService {
         occurrences -= 1;
         occurrencesUpdated = true;
 
-        if (occurrences > 0 && donation.recurrence !== RecurrenceEnum.NONE) {
+        if (occurrences > 0) {
           let nextDate = this.calculateNextDate(
             currentDate,
             donation.recurrence,
@@ -169,13 +182,14 @@ export class DonationService {
             );
             if (!alreadyExists) {
               dates.push(nextDate);
-              dates.sort((a, b) => a.getTime() - b.getTime());
             }
           }
         }
       }
 
       if (occurrencesUpdated) {
+        dates.sort((a, b) => a.getTime() - b.getTime());
+
         await this.repo.update(donation.donationId, {
           nextDonationDates: dates,
           occurrencesRemaining: occurrences,
