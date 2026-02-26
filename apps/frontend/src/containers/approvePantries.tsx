@@ -91,7 +91,9 @@ const ApprovePantries: React.FC = () => {
                   bg="transparent"
                   color="cyan"
                   fontWeight="600"
-                  onClick={() => navigate(`/application-details/${pantry.pantryId}`)}
+                  onClick={() =>
+                    navigate(`/application-details/${pantry.pantryId}`)
+                  }
                 >
                   <Link>{pantry.pantryName}</Link>
                 </Button>

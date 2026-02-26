@@ -178,9 +178,9 @@ const router = createBrowserRouter([
       {
         path: '/application-details/:applicationId',
         element: (
-          <Authenticator components={components}>
+          <ProtectedRoute>
             <ApplicationDetails />
-          </Authenticator>
+          </ProtectedRoute>
         ),
       },
       {
