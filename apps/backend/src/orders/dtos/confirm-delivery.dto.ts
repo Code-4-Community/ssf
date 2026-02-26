@@ -1,5 +1,16 @@
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+
 export class ConfirmDeliveryDto {
-  dateReceived: string;
-  feedback: string;
-  photos?: Express.Multer.File[];
+  @IsDateString()
+  dateReceived!: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  feedback?: string;
 }

@@ -26,10 +26,12 @@ import { UpdatePantryFields1763762628431 } from '../migrations/1763762628431-Upd
 import { PopulateDummyData1768501812134 } from '../migrations/1768501812134-populateDummyData';
 import { RemovePantryFromOrders1769316004958 } from '../migrations/1769316004958-RemovePantryFromOrders';
 import { AddDonationRecurrenceFields1770080947285 } from '../migrations/1770080947285-AddDonationRecurrenceFields';
+import { AddFoodRescueToDonationItems1770679339809 } from '../migrations/1770679339809-AddFoodRescueToDonationItems';
 import { UpdateManufacturerEntity1768680807820 } from '../migrations/1768680807820-UpdateManufacturerEntity';
 import { AddUserPoolId1769189327767 } from '../migrations/1769189327767-AddUserPoolId';
 import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-UpdateOrderEntity';
 import { MoveRequestFieldsToOrders1770571145350 } from '../migrations/1770571145350-MoveRequestFieldsToOrders';
+import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
 
 const schemaMigrations = [
   User1725726359198,
@@ -60,10 +62,12 @@ const schemaMigrations = [
   PopulateDummyData1768501812134,
   RemovePantryFromOrders1769316004958,
   AddDonationRecurrenceFields1770080947285,
+  AddFoodRescueToDonationItems1770679339809,
   UpdateManufacturerEntity1768680807820,
   AddUserPoolId1769189327767,
   UpdateOrderEntity1769990652833,
   MoveRequestFieldsToOrders1770571145350,
+  RenameDonationMatchingStatus1771260403657,
 ];
 
 export default schemaMigrations;

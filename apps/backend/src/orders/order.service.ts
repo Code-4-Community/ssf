@@ -13,14 +13,15 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { RequestsService } from '../foodRequests/request.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
-    @InjectRepository(FoodRequest)
-    private requestRepo: Repository<FoodRequest>,
+    private requestsService: RequestsService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -155,11 +156,15 @@ export class OrdersService {
 
   async confirmDelivery(
     orderId: number,
-    dateReceived: Date,
-    feedback: string,
+    dto: ConfirmDeliveryDto,
     photos: string[],
   ): Promise<Order> {
     validateId(orderId, 'Order');
+
+    const formattedDate = new Date(dto.dateReceived);
+    if (isNaN(formattedDate.getTime())) {
+      throw new BadRequestException('Invalid date format for dateReceived');
+    }
 
     const order = await this.repo.findOne({
       where: { orderId },
@@ -169,44 +174,22 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    order.dateReceived = dateReceived;
-    order.feedback = feedback;
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        'Can only confirm delivery for shipped orders',
+      );
+    }
+
+    order.dateReceived = formattedDate;
+    order.feedback = dto.feedback;
     order.photos = photos;
     order.status = OrderStatus.DELIVERED;
 
     const updatedOrder = await this.repo.save(order);
 
-    await this.updateRequestStatus(order.requestId);
+    await this.requestsService.updateRequestStatus(order.requestId);
 
     return updatedOrder;
-  }
-
-  private async updateRequestStatus(requestId: number): Promise<void> {
-    validateId(requestId, 'Request');
-
-    const request = await this.requestRepo.findOne({
-      where: { requestId },
-      relations: ['orders'],
-    });
-
-    if (!request) {
-      throw new NotFoundException(`Request ${requestId} not found`);
-    }
-
-    const orders = request.orders || [];
-    if (!orders.length) {
-      throw new NotFoundException(`No orders found for request ${requestId}`);
-    }
-
-    const allDelivered = orders.every(
-      (order) => order.status === OrderStatus.DELIVERED,
-    );
-
-    request.status = allDelivered
-      ? FoodRequestStatus.CLOSED
-      : FoodRequestStatus.ACTIVE;
-
-    await this.requestRepo.save(request);
   }
 
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {

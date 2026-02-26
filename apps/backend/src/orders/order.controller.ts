@@ -120,16 +120,15 @@ export class OrdersController {
     return this.ordersService.updateTrackingCostInfo(orderId, dto);
   }
 
-  @Post('/:orderId/confirm-delivery')
+  @Patch('/:orderId/confirm-delivery')
   @ApiBody({
-    description: 'Details for a confirmation form',
+    description: 'Details for a confirmation of order delivery form',
     schema: {
       type: 'object',
       properties: {
         dateReceived: {
           type: 'string',
           format: 'date-time',
-          nullable: true,
           example: new Date().toISOString(),
         },
         feedback: {
@@ -141,7 +140,10 @@ export class OrdersController {
           type: 'array',
           items: { type: 'string' },
           nullable: true,
-          example: [],
+          example: [
+            'https://s3.amazonaws.com/bucket/photo1.jpg',
+            'https://s3.amazonaws.com/bucket/photo2.jpg',
+          ],
         },
       },
     },
@@ -154,21 +156,9 @@ export class OrdersController {
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<Order> {
-    body.photos = photos;
-
-    const formattedDate = new Date(body.dateReceived);
-    if (isNaN(formattedDate.getTime())) {
-      throw new BadRequestException('Invalid date format for dateReceived');
-    }
-
     const uploadedPhotoUrls =
       photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
 
-    return this.ordersService.confirmDelivery(
-      orderId,
-      formattedDate,
-      body.feedback,
-      uploadedPhotoUrls,
-    );
+    return this.ordersService.confirmDelivery(orderId, body, uploadedPhotoUrls);
   }
 }

@@ -58,14 +58,23 @@ export class Order {
     type: 'timestamp',
     nullable: true,
   })
-  shippedAt?: Date;
+  shippedAt!: Date | null;
 
   @Column({
     name: 'delivered_at',
     type: 'timestamp',
     nullable: true,
   })
-  deliveredAt?: Date;
+  deliveredAt!: Date | null;
+
+  @Column({ name: 'date_received', type: 'timestamp', nullable: true })
+  dateReceived!: Date | null;
+
+  @Column({ name: 'feedback', type: 'text', nullable: true })
+  feedback!: string | null;
+
+  @Column({ name: 'photos', type: 'text', array: true, nullable: true })
+  photos!: string[] | null;
 
   @Column({ name: 'date_received', type: 'timestamp', nullable: true })
   dateReceived?: Date | null;
@@ -85,7 +94,7 @@ export class Order {
     length: 255,
     nullable: true,
   })
-  trackingLink?: string;
+  trackingLink!: string | null;
 
   @Column({
     name: 'shipping_cost',
@@ -94,5 +103,5 @@ export class Order {
     scale: 2,
     nullable: true,
   })
-  shippingCost?: number;
+  shippingCost!: number | null;
 }
