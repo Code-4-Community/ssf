@@ -19,6 +19,7 @@ import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const FormRequests: React.FC = () => {
@@ -36,6 +37,8 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
@@ -52,10 +55,10 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch (error) {
-        console.log(error);
+        setAlertMessage('Error fetching requests: ' + error);
       }
     } else {
-      alert('No pantry associated with this account.');
+      setAlertMessage('No pantry associated with this account.');
     }
   }, []);
 
@@ -74,6 +77,9 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"

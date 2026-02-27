@@ -10,13 +10,13 @@ import {
   Pagination,
   ButtonGroup,
   IconButton,
-  Alert,
   Link,
 } from '@chakra-ui/react';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -36,8 +36,7 @@ const VolunteerManagement: React.FC = () => {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
       } catch (error) {
-        alert('Error fetching volunteers');
-        console.error('Error fetching volunteers: ', error);
+        setAlertMessage('Error fetching volunteers: ' + error);
       }
     };
 
@@ -70,24 +69,13 @@ const VolunteerManagement: React.FC = () => {
         Volunteer Management
       </Text>
       {alertMessage && (
-        <Alert.Root
-          color={submitSuccess ? 'neutral.800' : 'red'}
-          status="info"
-          bg="white"
-          variant="subtle"
-          boxShadow="lg"
-          position="absolute"
-          top="12px"
-          right="12px"
-          w="fit-content"
-          maxW="400px"
-        >
-          <Alert.Indicator />
-          <Alert.Title textStyle="p2" fontWeight={500}>
-            {alertMessage}
-          </Alert.Title>
-        </Alert.Root>
+        <FloatingAlert
+          message={alertMessage}
+          status={submitSuccess ? 'info' : 'error'}
+          timeout={6000}
+        />
       )}
+
       <Box
         mt={3}
         display="block"
@@ -119,12 +107,10 @@ const VolunteerManagement: React.FC = () => {
               onSubmitSuccess={() => {
                 setAlertMessage('Volunteer added.');
                 setSubmitSuccess(true);
-                setTimeout(() => setAlertMessage(''), 3000);
               }}
               onSubmitFail={() => {
                 setAlertMessage('Volunteer could not be added.');
                 setSubmitSuccess(false);
-                setTimeout(() => setAlertMessage(''), 3000);
               }}
             />
           </Flex>
