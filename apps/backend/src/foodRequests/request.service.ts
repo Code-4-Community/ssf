@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderStatus } from '../orders/types';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import {
   MatchingItemsDto,
@@ -178,9 +179,6 @@ export class RequestsService {
     requestedSize: RequestSize,
     requestedFoodTypes: FoodType[],
     additionalInformation: string | undefined,
-    dateReceived: Date | undefined,
-    feedback: string | undefined,
-    photos: string[] | undefined,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -194,9 +192,6 @@ export class RequestsService {
       requestedSize,
       requestedFoodTypes,
       additionalInformation,
-      dateReceived,
-      feedback,
-      photos,
     });
 
     return await this.repo.save(foodRequest);
@@ -211,12 +206,7 @@ export class RequestsService {
     });
   }
 
-  async updateDeliveryDetails(
-    requestId: number,
-    deliveryDate: Date,
-    feedback: string,
-    photos: string[],
-  ): Promise<FoodRequest> {
+  async updateRequestStatus(requestId: number): Promise<void> {
     validateId(requestId, 'Request');
 
     const request = await this.repo.findOne({
@@ -228,16 +218,22 @@ export class RequestsService {
       throw new NotFoundException(`Request ${requestId} not found`);
     }
 
-    if (!request.orders || request.orders.length == 0) {
-      throw new NotFoundException(
-        'No associated orders found for this request',
-      );
+    const orders = request.orders || [];
+
+    if (!orders.length) {
+      request.status = FoodRequestStatus.ACTIVE;
+      await this.repo.save(request);
+      return;
     }
 
-    request.feedback = feedback;
-    request.dateReceived = deliveryDate;
-    request.photos = photos;
+    const allDelivered = orders.every(
+      (order) => order.status === OrderStatus.DELIVERED,
+    );
 
-    return await this.repo.save(request);
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
+
+    await this.repo.save(request);
   }
 }

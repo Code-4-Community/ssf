@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { FoodRequest } from './request.entity';
 import { RequestsService } from './request.service';
 import { Pantry } from '../pantries/pantries.entity';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { Order } from '../orders/order.entity';
 import { OrderStatus } from '../orders/types';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
@@ -134,9 +134,6 @@ describe('RequestsService', () => {
         RequestSize.MEDIUM,
         [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
         'Additional info',
-        null,
-        null,
-        null,
       );
       expect(result).toBeDefined();
       expect(result.pantryId).toBe(pantryId);
@@ -146,9 +143,6 @@ describe('RequestsService', () => {
         FoodType.REFRIGERATED_MEALS,
       ]);
       expect(result.additionalInformation).toBe('Additional info');
-      expect(result.dateReceived).toBeNull();
-      expect(result.feedback).toBeNull();
-      expect(result.photos).toBeNull();
     });
 
     it('should throw NotFoundException for non-existent pantry', async () => {
@@ -158,9 +152,6 @@ describe('RequestsService', () => {
           RequestSize.MEDIUM,
           [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
           'Additional info',
-          null,
-          null,
-          null,
         ),
       ).rejects.toThrow(new NotFoundException('Pantry 999 not found'));
     });
@@ -185,69 +176,30 @@ describe('RequestsService', () => {
     });
   });
 
-  describe('updateDeliveryDetails', () => {
-    it('should update and return the food request with new delivery details', async () => {
+  describe('updateRequestStatus', () => {
+    it('should update request status to closed since all orders are delivered', async () => {
       const requestId = 1;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.updateDeliveryDetails(
-        requestId,
-        deliveryDate,
-        feedback,
-        photos,
-      );
+      await service.updateRequestStatus(requestId);
 
-      expect(result).toBeDefined();
-      expect(result.requestId).toBe(requestId);
-      expect(result.dateReceived).toEqual(deliveryDate);
-      expect(result.feedback).toBe(feedback);
-      expect(result.photos).toEqual(photos);
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
+    it('should update request status to active since all orders are not delivered', async () => {
+      const requestId = 3;
+
+      await service.updateRequestStatus(requestId);
+
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
     it('should throw NotFoundException for non-existent request', async () => {
       const requestId = 999;
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      await expect(
-        service.updateDeliveryDetails(
-          requestId,
-          deliveryDate,
-          feedback,
-          photos,
-        ),
-      ).rejects.toThrow(new NotFoundException('Request 999 not found'));
-    });
-
-    it('should throw NotFoundException if there are no associated orders', async () => {
-      const deliveryDate = new Date();
-      const feedback = 'Good delivery!';
-      const photos = ['photo1.jpg', 'photo2.jpg'];
-
-      const result = await testDataSource.query(`
-        INSERT INTO food_requests (pantry_id, requested_size, requested_food_types, requested_at)
-        VALUES (
-          (SELECT pantry_id FROM pantries LIMIT 1),
-          'Small (2-5 boxes)',
-          ARRAY[]::food_type_enum[],
-          NOW()
-        )
-        RETURNING request_id
-      `);
-      const requestId = result[0].request_id;
-
-      await expect(
-        service.updateDeliveryDetails(
-          requestId,
-          deliveryDate,
-          feedback,
-          photos,
-        ),
-      ).rejects.toThrow(
-        new NotFoundException('No associated orders found for this request'),
+      await expect(service.updateRequestStatus(requestId)).rejects.toThrow(
+        new NotFoundException('Request 999 not found'),
       );
     });
   });

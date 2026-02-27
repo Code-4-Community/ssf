@@ -179,13 +179,11 @@ export interface FoodRequest {
   requestId: number;
   pantryId: number;
   pantry: Pantry;
-  requestedSize: string;
+  requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
   additionalInformation: string | null;
   requestedAt: string;
-  dateReceived: string | null;
-  feedback: string | null;
-  photos: string[] | null;
+  status: FoodRequestStatus;
   orders?: Order[];
 }
 
@@ -248,12 +246,9 @@ export interface ManufacturerApplicationDto {
 
 export interface CreateFoodRequestBody {
   pantryId: number;
-  requestedSize: string;
+  requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
-  additionalInformation: string | null | undefined;
-  dateReceived: string | null | undefined;
-  feedback: string | null | undefined;
-  photos: string[] | null | undefined;
+  additionalInformation?: string | null;
 }
 
 export interface CreateMultipleDonationItemsBody {
@@ -295,6 +290,11 @@ export enum RequestSize {
   SMALL = 'Small (2-5 boxes)',
   MEDIUM = 'Medium (5-10 boxes)',
   LARGE = 'Large (10+ boxes)',
+}
+
+export enum FoodRequestStatus {
+  ACTIVE = 'active',
+  CLOSED = 'closed',
 }
 
 export enum DonationFrequency {
