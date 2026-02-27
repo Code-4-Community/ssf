@@ -78,7 +78,7 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedItems: string[],
-    additionalInformation: string | undefined,
+    additionalInformation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 

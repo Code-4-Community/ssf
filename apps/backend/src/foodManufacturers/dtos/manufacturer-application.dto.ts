@@ -16,27 +16,27 @@ export class FoodManufacturerApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  foodManufacturerName: string;
+  foodManufacturerName!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  foodManufacturerWebsite: string;
+  foodManufacturerWebsite!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  contactFirstName: string;
+  contactFirstName!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  contactLastName: string;
+  contactLastName!: string;
 
   @IsEmail()
   @IsNotEmpty()
   @Length(1, 255)
-  contactEmail: string;
+  contactEmail!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -44,7 +44,7 @@ export class FoodManufacturerApplicationDto {
     message:
       'contactPhone must be a valid phone number (make sure all the digits are correct)',
   })
-  contactPhone: string;
+  contactPhone!: string;
 
   @IsOptional()
   @IsString()
@@ -75,27 +75,27 @@ export class FoodManufacturerApplicationDto {
 
   @ArrayNotEmpty()
   @IsEnum(Allergen, { each: true })
-  unlistedProductAllergens: Allergen[];
+  unlistedProductAllergens!: Allergen[];
 
   @ArrayNotEmpty()
   @IsEnum(Allergen, { each: true })
-  facilityFreeAllergens: Allergen[];
+  facilityFreeAllergens!: Allergen[];
 
   @IsBoolean()
-  productsGlutenFree: boolean;
+  productsGlutenFree!: boolean;
 
   @IsBoolean()
-  productsContainSulfites: boolean;
+  productsContainSulfites!: boolean;
 
   @IsString()
   @IsNotEmpty()
-  productsSustainableExplanation: string;
+  productsSustainableExplanation!: string;
 
   @IsBoolean()
-  inKindDonations: boolean;
+  inKindDonations!: boolean;
 
   @IsEnum(DonateWastedFood)
-  donateWastedFood: DonateWastedFood;
+  donateWastedFood!: DonateWastedFood;
 
   @IsOptional()
   @IsEnum(ManufacturerAttribute)

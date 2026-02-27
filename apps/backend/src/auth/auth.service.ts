@@ -1,12 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   AdminDeleteUserCommand,
   AdminInitiateAuthCommand,
+  AdminInitiateAuthCommandOutput,
   CognitoIdentityProviderClient,
   ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
   SignUpCommand,
+  AuthenticationResultType,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
@@ -17,6 +23,18 @@ import { createHmac } from 'crypto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { Role } from '../users/types';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
+import { validateEnv } from '../utils/validation.utils';
+
+type SignInAuthResult = AuthenticationResultType & {
+  AccessToken: string;
+  RefreshToken: string;
+  IdToken: string;
+};
+
+type RefreshAuthResult = AuthenticationResultType & {
+  AccessToken: string;
+  IdToken: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -27,12 +45,12 @@ export class AuthService {
     this.providerClient = new CognitoIdentityProviderClient({
       region: CognitoAuthConfig.region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: validateEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: validateEnv('AWS_SECRET_ACCESS_KEY'),
       },
     });
 
-    this.clientSecret = process.env.COGNITO_CLIENT_SECRET;
+    this.clientSecret = validateEnv('COGNITO_CLIENT_SECRET');
   }
 
   // Computes secret hash to authenticate this backend to Cognito
@@ -69,8 +87,19 @@ export class AuthService {
       ],
     });
 
-    const response = await this.providerClient.send(signUpCommand);
-    return response.UserConfirmed;
+    try {
+      const response = await this.providerClient.send(signUpCommand);
+
+      if (response.UserConfirmed == null) {
+        throw new InternalServerErrorException(
+          'Missing UserConfirmed from Cognito',
+        );
+      }
+
+      return response.UserConfirmed;
+    } catch (err: unknown) {
+      throw new InternalServerErrorException('Failed to sign up user');
+    }
   }
 
   async verifyUser(email: string, verificationCode: string): Promise<void> {
@@ -98,10 +127,13 @@ export class AuthService {
 
     const response = await this.providerClient.send(signInCommand);
 
+    const authResult =
+      this.validateAuthenticationResultTokensForSignIn(response);
+
     return {
-      accessToken: response.AuthenticationResult.AccessToken,
-      refreshToken: response.AuthenticationResult.RefreshToken,
-      idToken: response.AuthenticationResult.IdToken,
+      accessToken: authResult.AccessToken,
+      refreshToken: authResult.RefreshToken,
+      idToken: authResult.IdToken,
     };
   }
 
@@ -122,10 +154,13 @@ export class AuthService {
 
     const response = await this.providerClient.send(refreshCommand);
 
+    const authResult =
+      this.validateAuthenticationResultTokensForRefresh(response);
+
     return {
-      accessToken: response.AuthenticationResult.AccessToken,
+      accessToken: authResult.AccessToken,
       refreshToken: refreshToken,
-      idToken: response.AuthenticationResult.IdToken,
+      idToken: authResult.IdToken,
     };
   }
 
@@ -162,5 +197,49 @@ export class AuthService {
     });
 
     await this.providerClient.send(adminDeleteUserCommand);
+  }
+
+  private validateAuthenticationResultTokensForSignIn(
+    commandOutput: AdminInitiateAuthCommandOutput,
+  ): SignInAuthResult {
+    const result = commandOutput.AuthenticationResult;
+
+    if (result == null) {
+      throw new NotFoundException(
+        'No associated authentication result for sign in',
+      );
+    }
+
+    if (
+      result.AccessToken == null ||
+      result.RefreshToken == null ||
+      result.IdToken == null
+    ) {
+      throw new NotFoundException(
+        'Necessary Authentication Result tokens not found for sign in ',
+      );
+    }
+
+    return result as SignInAuthResult;
+  }
+
+  private validateAuthenticationResultTokensForRefresh(
+    commandOutput: AdminInitiateAuthCommandOutput,
+  ): RefreshAuthResult {
+    const result = commandOutput.AuthenticationResult;
+
+    if (result == null) {
+      throw new NotFoundException(
+        'No associated authentication result for refresh',
+      );
+    }
+
+    if (result.AccessToken == null || result.IdToken == null) {
+      throw new NotFoundException(
+        'Necessary Authentication Result tokens not found for refresh',
+      );
+    }
+
+    return result as RefreshAuthResult;
   }
 }
