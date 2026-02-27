@@ -84,7 +84,7 @@ export interface PantryApplicationDto {
   mailingAddressZip: string;
   mailingAddressCountry?: string;
   allergenClients: string;
-  restrictions?: string[];
+  restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
   deliveryWindowInstructions?: string;
@@ -101,10 +101,17 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
+export interface CreateRequestDto {
+  pantryId: number;
+  requestedSize: RequestSize;
+  requestedItems: FoodType[];
+  additionalInformation?: string;
+}
+
 export enum DonationStatus {
+  MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
-  MATCHING = 'matching',
 }
 
 export enum RecurrenceEnum {
@@ -134,9 +141,10 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem: number;
-  estimatedValue: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
   foodType: FoodType;
+  foodRescue?: boolean;
 }
 
 export const FoodTypes = [
@@ -195,13 +203,11 @@ export interface FoodRequest {
   requestId: number;
   pantryId: number;
   pantry: Pantry;
-  requestedSize: string;
+  requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation: string | null;
+  additionalInformation?: string;
   requestedAt: string;
-  dateReceived: string | null;
-  feedback: string | null;
-  photos: string[] | null;
+  status: FoodRequestStatus;
   orders?: Order[];
 }
 
@@ -264,12 +270,9 @@ export interface ManufacturerApplicationDto {
 
 export interface CreateFoodRequestBody {
   pantryId: number;
-  requestedSize: string;
+  requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation: string | null | undefined;
-  dateReceived: string | null | undefined;
-  feedback: string | null | undefined;
-  photos: string[] | null | undefined;
+  additionalInformation?: string;
 }
 
 export interface CreateMultipleDonationItemsBody {
@@ -278,9 +281,10 @@ export interface CreateMultipleDonationItemsBody {
     itemName: string;
     quantity: number;
     reservedQuantity: number;
-    ozPerItem: number;
-    estimatedValue: number;
+    ozPerItem?: number;
+    estimatedValue?: number;
     foodType: FoodType;
+    foodRescue?: boolean;
   }[];
 }
 
@@ -302,9 +306,9 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  DELIVERED = 'delivered',
   PENDING = 'pending',
   SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
 }
 
 export enum RequestSize {
@@ -312,6 +316,11 @@ export enum RequestSize {
   SMALL = 'Small (2-5 boxes)',
   MEDIUM = 'Medium (5-10 boxes)',
   LARGE = 'Large (10+ boxes)',
+}
+
+export enum FoodRequestStatus {
+  ACTIVE = 'active',
+  CLOSED = 'closed',
 }
 
 export enum DonationFrequency {
@@ -346,3 +355,14 @@ export enum ApplicationStatus {
   DENIED = 'denied',
   PENDING = 'pending',
 }
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export type RepeatOnState = Record<DayOfWeek, boolean>;

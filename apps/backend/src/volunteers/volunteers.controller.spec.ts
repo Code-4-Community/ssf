@@ -156,8 +156,8 @@ describe('VolunteersController', () => {
 
       expect(result).toEqual(updatedUser);
       expect(result.pantries).toHaveLength(2);
-      expect(result.pantries[0].pantryId).toBe(1);
-      expect(result.pantries[1].pantryId).toBe(3);
+      expect(result.pantries![0].pantryId).toBe(1);
+      expect(result.pantries![1].pantryId).toBe(3);
       expect(
         mockVolunteersService.assignPantriesToVolunteer,
       ).toHaveBeenCalledWith(3, pantryIds);

@@ -12,17 +12,17 @@ export class userSchemaDto {
   @IsEmail()
   @IsNotEmpty()
   @Length(1, 255)
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  firstName: string;
+  firstName!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  lastName: string;
+  lastName!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -30,8 +30,8 @@ export class userSchemaDto {
     message:
       'phone must be a valid phone number (make sure all the digits are correct)',
   })
-  phone: string;
+  phone!: string;
 
   @IsEnum(Role)
-  role: Role;
+  role!: Role;
 }

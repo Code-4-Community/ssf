@@ -45,7 +45,7 @@ export class VolunteersService {
       const { pantries, ...volunteerWithoutPantries } = v;
       return {
         ...volunteerWithoutPantries,
-        pantryIds: pantries.map((p) => p.pantryId),
+        pantryIds: pantries!.map((p) => p.pantryId),
       };
     });
   }
@@ -53,7 +53,7 @@ export class VolunteersService {
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
     validateId(volunteerId, 'Volunteer');
     const volunteer = await this.findOne(volunteerId);
-    return volunteer.pantries;
+    return volunteer.pantries!;
   }
 
   async assignPantriesToVolunteer(
@@ -65,12 +65,13 @@ export class VolunteersService {
     const volunteer = await this.findOne(volunteerId);
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
-    const existingPantryIds = volunteer.pantries.map((p) => p.pantryId);
+    const existingPantries = volunteer.pantries!;
+    const existingPantryIds = existingPantries.map((p) => p.pantryId);
     const newPantries = pantries.filter(
       (p) => !existingPantryIds.includes(p.pantryId),
     );
 
-    volunteer.pantries = [...volunteer.pantries, ...newPantries];
+    volunteer.pantries = [...existingPantries, ...newPantries];
     return this.repo.save(volunteer);
   }
 }

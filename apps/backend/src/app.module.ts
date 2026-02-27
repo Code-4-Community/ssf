@@ -32,7 +32,7 @@ import { VolunteersModule } from './volunteers/volunteers.module';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        configService.get('typeorm'),
+        configService.getOrThrow('typeorm'),
     }),
     ScheduleModule.forRoot(),
     UsersModule,
