@@ -82,8 +82,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     currentOrder = orderDetailsList[currentPage - 1];
   }
 
-  const groupedOrderItemsByType: GroupedByFoodType =
-    useGroupedItemsByFoodType(currentOrder);
+  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
+    currentOrder?.items,
+  );
 
   const sectionTitleStyles = {
     textStyle: 'p2',

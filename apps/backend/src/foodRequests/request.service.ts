@@ -68,6 +68,7 @@ export class RequestsService {
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
       trackingLink: order.trackingLink,
       items: order.allocations.map((allocation) => ({
+        id: allocation.item.itemId,
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
         foodType: allocation.item.foodType,

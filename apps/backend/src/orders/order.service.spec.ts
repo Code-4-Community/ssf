@@ -148,19 +148,22 @@ describe('OrdersService', () => {
         trackingLink: 'www.samplelink/samplelink',
         items: [
           {
+            id: 1,
             foodType: FoodType.SEED_BUTTERS,
             name: 'Peanut Butter (16oz)',
             quantity: 10,
           },
           {
-            foodType: FoodType.REFRIGERATED_MEALS,
-            name: 'Canned Green Beans',
-            quantity: 5,
-          },
-          {
+            id: 2,
             foodType: FoodType.GLUTEN_FREE_BREAD,
             name: 'Whole Wheat Bread',
             quantity: 25,
+          },
+          {
+            id: 3,
+            foodType: FoodType.REFRIGERATED_MEALS,
+            name: 'Canned Green Beans',
+            quantity: 5,
           },
         ],
       };

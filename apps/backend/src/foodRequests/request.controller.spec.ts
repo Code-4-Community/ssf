@@ -88,11 +88,13 @@ describe('RequestsController', () => {
           trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Rice',
               quantity: 5,
               foodType: FoodType.GRANOLA,
             },
             {
+              id: 2,
               name: 'Beans',
               quantity: 3,
               foodType: FoodType.DRIED_BEANS,
@@ -106,6 +108,7 @@ describe('RequestsController', () => {
           trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Milk',
               quantity: 2,
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,

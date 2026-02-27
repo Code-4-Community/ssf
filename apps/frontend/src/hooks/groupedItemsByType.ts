@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import { FoodTypes, GroupedByFoodType, OrderItemDetails } from 'types/types';
 
 export function useGroupedItemsByFoodType(
-  source: { items: OrderItemDetails[] } | null | undefined,
+  items: OrderItemDetails[] | null | undefined,
 ): GroupedByFoodType {
   return useMemo(() => {
-    if (!source) return {} as GroupedByFoodType;
+    if (!items) return {} as GroupedByFoodType;
 
-    return source.items.reduce(
+    return items.reduce(
       (acc: Record<(typeof FoodTypes)[number], OrderItemDetails[]>, item) => {
         if (!acc[item.foodType]) acc[item.foodType] = [];
         acc[item.foodType].push(item);
@@ -15,5 +15,5 @@ export function useGroupedItemsByFoodType(
       },
       {} as GroupedByFoodType,
     );
-  }, [source]);
+  }, [items]);
 }

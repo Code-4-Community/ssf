@@ -69,8 +69,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   }, [isOpen, orderId]);
 
-  const groupedOrderItemsByType: GroupedByFoodType =
-    useGroupedItemsByFoodType(orderDetails);
+  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
+    orderDetails?.items,
+  );
 
   const sectionTitleStyles = {
     textStyle: 'p2',
@@ -159,7 +160,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           {foodRequest.pantryName}
                         </Text>
                       </Text>
-                      {foodRequest?.status === FoodRequestStatus.CLOSED ? (
+                      {foodRequest.status === FoodRequestStatus.CLOSED ? (
                         <Badge
                           {...badgeStyles}
                           bgColor="#FEECD1"
@@ -220,7 +221,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   ([foodType, items]) => (
                     <Box key={foodType} mb={4}>
                       <Text {...sectionTitleStyles}>{foodType}</Text>
-                      {items.map((item, idx) => (
+                      {items.map((item) => (
                         <Flex
                           border="1px solid"
                           borderColor="neutral.100"
@@ -228,7 +229,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           px={4}
                           align="center"
                           mt="2"
-                          key={idx}
+                          key={item.id}
                         >
                           <Text
                             py={2}

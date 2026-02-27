@@ -80,6 +80,7 @@ describe('OrdersController', () => {
     trackingLink: 'example-link.com',
     items: [
       {
+        id: 1,
         name: 'item1',
         quantity: 10,
         foodType: FoodType.DAIRY_FREE_ALTERNATIVES,

@@ -210,7 +210,7 @@ export interface FoodRequestSummaryDto {
   pantryName: string;
   requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation?: string;
+  additionalInformation?: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
 }
@@ -231,6 +231,7 @@ export interface Order {
 }
 
 export interface OrderItemDetails {
+  id: number;
   name: string;
   quantity: number;
   foodType: FoodType;
@@ -240,7 +241,7 @@ export interface OrderDetails {
   orderId: number;
   status: OrderStatus;
   foodManufacturerName: string;
-  trackingLink?: string;
+  trackingLink: string | null;
   items: OrderItemDetails[];
 }
 

@@ -6,7 +6,7 @@ export class FoodRequestSummaryDto {
   pantryName!: string;
   requestedSize!: RequestSize;
   requestedItems!: string[];
-  additionalInformation?: string;
+  additionalInformation!: string | null;
   requestedAt!: Date;
   status!: FoodRequestStatus;
 }
