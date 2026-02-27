@@ -1,10 +1,5 @@
 import apiClient from '@api/apiClient';
-import {
-  FoodRequest,
-  FoodType,
-  OrderDetails,
-  OrderItemDetails,
-} from 'types/types';
+import { FoodRequest, GroupedByFoodType, OrderDetails } from 'types/types';
 import { OrderStatus } from '../../types/types';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -84,15 +79,12 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const groupedOrderItemsByType = useMemo(() => {
     if (!currentOrder) return {};
 
-    return currentOrder.items.reduce(
-      (acc: Partial<Record<FoodType, OrderItemDetails[]>>, item) => {
-        const existing = acc[item.foodType];
-        if (existing) existing.push(item);
-        else acc[item.foodType] = [];
-        return acc;
-      },
-      {} as Partial<Record<FoodType, OrderItemDetails[]>>,
-    );
+    return currentOrder.items.reduce((acc: GroupedByFoodType, item) => {
+      const existing = acc[item.foodType];
+      if (existing) existing.push(item);
+      else acc[item.foodType] = [];
+      return acc;
+    }, {} as GroupedByFoodType);
   }, [currentOrder]);
 
   const sectionTitleStyles = {
@@ -233,50 +225,48 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         </Badge>
                       )}
                     </Flex>
-                    {Object.entries(
-                      groupedOrderItemsByType as Partial<
-                        Record<FoodType, OrderItemDetails[]>
-                      >,
-                    ).map(([foodType, items]) => (
-                      <Box key={foodType} mb={4}>
-                        <Text {...sectionTitleStyles}>{foodType}</Text>
-                        {items.map((item) => (
-                          <Flex
-                            border="1px solid"
-                            borderColor="neutral.100"
-                            borderRadius="md"
-                            px={4}
-                            align="center"
-                            mt="2"
-                          >
-                            <Text
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
-                              flex={1}
-                            >
-                              {item.name}
-                            </Text>
-
-                            <Box
-                              alignSelf="stretch"
-                              borderLeft="1px solid"
+                    {Object.entries(groupedOrderItemsByType).map(
+                      ([foodType, items]) => (
+                        <Box key={foodType} mb={4}>
+                          <Text {...sectionTitleStyles}>{foodType}</Text>
+                          {items.map((item) => (
+                            <Flex
+                              border="1px solid"
                               borderColor="neutral.100"
-                              mx={3}
-                            />
-
-                            <Text
-                              minW={5}
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
+                              borderRadius="md"
+                              px={4}
+                              align="center"
+                              mt="2"
                             >
-                              {item.quantity}
-                            </Text>
-                          </Flex>
-                        ))}
-                      </Box>
-                    ))}
+                              <Text
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                                flex={1}
+                              >
+                                {item.name}
+                              </Text>
+
+                              <Box
+                                alignSelf="stretch"
+                                borderLeft="1px solid"
+                                borderColor="neutral.100"
+                                mx={3}
+                              />
+
+                              <Text
+                                minW={5}
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                              >
+                                {item.quantity}
+                              </Text>
+                            </Flex>
+                          ))}
+                        </Box>
+                      ),
+                    )}
                     <Text {...sectionTitleStyles} mt="3">
                       Tracking
                     </Text>

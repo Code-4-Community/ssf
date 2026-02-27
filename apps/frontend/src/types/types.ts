@@ -340,3 +340,5 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
