@@ -7,7 +7,6 @@ import { Allergen, DonateWastedFood } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { Donation } from '../donations/donations.entity';
-import { DonationService } from '../donations/donations.service';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 

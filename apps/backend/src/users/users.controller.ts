@@ -56,8 +56,7 @@ export class UsersController {
 
   @Post('/')
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
-    const { email, firstName, lastName, phone, role } = createUserDto;
-    return this.usersService.create(email, firstName, lastName, phone, role);
+    return this.usersService.create(createUserDto);
   }
 
   @Post('/:id/pantries')

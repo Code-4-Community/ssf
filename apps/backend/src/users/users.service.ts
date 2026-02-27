@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +12,8 @@ import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
+import { AuthService } from '../auth/auth.service';
+import { userSchemaDto } from './dtos/userSchema.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,24 +21,41 @@ export class UsersService {
     @InjectRepository(User)
     private repo: Repository<User>,
 
+    @Inject(forwardRef(() => PantriesService))
     private pantriesService: PantriesService,
+
+    private authService: AuthService,
   ) {}
 
-  async create(
-    email: string,
-    firstName: string,
-    lastName: string,
-    phone: string,
-    role: Role,
-  ) {
+  async create(createUserDto: userSchemaDto): Promise<User> {
+    const { email, firstName, lastName, phone, role } = createUserDto;
+
+    if (role === Role.PANTRY || role === Role.FOODMANUFACTURER) {
+      const existingUser = await this.repo.findOneBy({ email });
+      if (!existingUser) {
+        throw new NotFoundException(`User with email ${email} not found`);
+      }
+      existingUser.userCognitoSub = await this.authService.adminCreateUser({
+        firstName,
+        lastName,
+        email,
+      });
+      return this.repo.save(existingUser);
+    }
+
+    const userCognitoSub = await this.authService.adminCreateUser({
+      firstName,
+      lastName,
+      email,
+    });
     const user = this.repo.create({
       role,
       firstName,
       lastName,
       email,
       phone,
+      userCognitoSub,
     });
-
     return this.repo.save(user);
   }
 

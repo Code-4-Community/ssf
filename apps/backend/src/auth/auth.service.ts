@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,6 +13,7 @@ import {
   ConfirmSignUpCommand,
   ForgotPasswordCommand,
   SignUpCommand,
+  AdminCreateUserCommand,
   AuthenticationResultType,
 } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -99,6 +101,37 @@ export class AuthService {
       return response.UserConfirmed;
     } catch (err: unknown) {
       throw new InternalServerErrorException('Failed to sign up user');
+    }
+  }
+
+  async adminCreateUser({
+    firstName,
+    lastName,
+    email,
+  }: Omit<SignUpDto, 'password' | 'phone'>): Promise<string> {
+    const createUserCommand = new AdminCreateUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+      UserAttributes: [
+        { Name: 'name', Value: `${firstName} ${lastName}` },
+        { Name: 'email', Value: email },
+        { Name: 'email_verified', Value: 'true' },
+      ],
+      DesiredDeliveryMediums: ['EMAIL'],
+    });
+
+    try {
+      const response = await this.providerClient.send(createUserCommand);
+      const sub = response.User?.Attributes?.find(
+        (attr) => attr.Name === 'sub',
+      )?.Value;
+      return sub ?? '';
+    } catch (error) {
+      if (error instanceof Error && error.name == 'UsernameExistsException') {
+        throw new ConflictException('A user with this email already exists');
+      } else {
+        throw new InternalServerErrorException('Failed to create user');
+      }
     }
   }
 

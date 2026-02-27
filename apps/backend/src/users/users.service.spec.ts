@@ -9,9 +9,12 @@ import { mock } from 'jest-mock-extended';
 import { In } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { PantriesService } from '../pantries/pantries.service';
+import { userSchemaDto } from './dtos/userSchema.dto';
+import { AuthService } from '../auth/auth.service';
 
 const mockUserRepository = mock<Repository<User>>();
 const mockPantriesService = mock<PantriesService>();
+const mockAuthService = mock<AuthService>();
 
 const mockUser: Partial<User> = {
   id: 1,
@@ -32,6 +35,7 @@ describe('UsersService', () => {
     mockUserRepository.find.mockReset();
     mockUserRepository.remove.mockReset();
     mockPantriesService.findByIds.mockReset();
+    mockAuthService.adminCreateUser.mockResolvedValue('mock-sub');
 
     const module = await Test.createTestingModule({
       providers: [
@@ -43,6 +47,10 @@ describe('UsersService', () => {
         {
           provide: PantriesService,
           useValue: mockPantriesService,
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
     }).compile();
@@ -69,33 +77,32 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a new user with auto-generated ID', async () => {
-      const userData = {
+      const createUserDto: userSchemaDto = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
         role: Role.ADMIN,
-      } as User;
+      };
 
-      const createdUser = { ...userData, id: 1 };
+      const createdUser = {
+        ...createUserDto,
+        id: 1,
+        userCognitoSub: 'mock-sub',
+      } as User;
       mockUserRepository.create.mockReturnValue(createdUser);
       mockUserRepository.save.mockResolvedValue(createdUser);
 
-      const result = await service.create(
-        userData.email,
-        userData.firstName,
-        userData.lastName,
-        userData.phone,
-        userData.role,
-      );
+      const result = await service.create(createUserDto);
 
       expect(result).toEqual(createdUser);
       expect(mockUserRepository.create).toHaveBeenCalledWith({
-        role: userData.role,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phone: userData.phone,
+        role: createUserDto.role,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+        phone: createUserDto.phone,
+        userCognitoSub: 'mock-sub',
       });
       expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
     });

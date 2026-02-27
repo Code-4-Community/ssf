@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
@@ -7,10 +12,17 @@ import { validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PantriesService {
-  constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
+  constructor(
+    @InjectRepository(Pantry) private repo: Repository<Pantry>,
+
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
+  ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
@@ -97,12 +109,25 @@ export class PantriesService {
   async approve(id: number) {
     validateId(id, 'Pantry');
 
-    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    const pantry = await this.repo.findOne({
+      where: { pantryId: id },
+      relations: ['pantryUser'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
+    const createUserDto: userSchemaDto = {
+      ...pantry.pantryUser,
+      role: Role.PANTRY,
+    };
+
+    const newPantryUser = await this.usersService.create(createUserDto);
+
+    await this.repo.update(id, {
+      status: ApplicationStatus.APPROVED,
+      pantryUser: newPantryUser,
+    });
   }
 
   async deny(id: number) {

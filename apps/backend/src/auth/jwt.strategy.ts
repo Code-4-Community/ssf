@@ -29,8 +29,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // This function is natively called when we validate a JWT token
   // Afer confirming that our jwt is valid and our payload is signed,
   // we use the sub field in the payload to find the user in our database
-  async validate(payload: CognitoJwtPayload): Promise<User> {
-    const dbUser = await this.usersService.findUserByCognitoId(payload.sub);
-    return dbUser;
+  async validate(payload: CognitoJwtPayload): Promise<User | null> {
+    try {
+      return await this.usersService.findUserByCognitoId(payload.sub);
+    } catch {
+      return null; // Passport treats null as unauthenticated → clean 401
+    }
   }
 }

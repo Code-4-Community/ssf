@@ -14,6 +14,7 @@ import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.
 import { ApiBody } from '@nestjs/swagger';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
 import { Donation } from '../donations/donations.entity';
+import { Public } from '../auth/public.decorator';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -157,6 +158,7 @@ export class FoodManufacturersController {
       ],
     },
   })
+  @Public()
   @Post('/application')
   async submitFoodManufacturerApplication(
     @Body(new ValidationPipe())

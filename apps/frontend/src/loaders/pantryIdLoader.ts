@@ -20,8 +20,6 @@ export async function pantryIdLoader({ params }: LoaderFunctionArgs) {
       return { pantry: null };
     }
 
-    ApiClient.setAccessToken(idToken);
-
     const pantry = await ApiClient.getPantry(parseInt(pantryId, 10));
     return { pantry };
   } catch (error: unknown) {
