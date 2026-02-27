@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  Center,
   Box,
   Grid,
   GridItem,
@@ -16,6 +15,61 @@ import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
+import { FileX, WifiOff } from 'lucide-react';
+import { AxiosError } from 'axios';
+
+interface EmptyStateProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+}
+
+const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, subtitle }) => {
+  return (
+    <Box minH="100vh" p={8} mb={8}>
+      <Box maxW="1200px" mx="auto">
+        <Heading as="h1" textStyle="h1" color="gray.light" mb={8}>
+          Application Details
+        </Heading>
+
+        <Box
+          bg="white"
+          borderRadius="6px"
+          border="1px solid"
+          borderColor="neutral.100"
+          p={64}
+          boxShadow="sm"
+          display="flex"
+          alignItems="center"
+          flexDirection="column"
+          justifyContent="center"
+          textAlign="center"
+          gap={4}
+        >
+          {icon}
+          <Heading textStyle="p" fontWeight={600}>
+            {title}
+          </Heading>
+          {subtitle && (
+            <Text textStyle="p2" color="neutral.800">
+              {subtitle}
+            </Text>
+          )}
+          <Button
+            bg="blue.hover"
+            color="white"
+            px={6}
+            _hover={{ bg: 'neutral.800' }}
+            textStyle="p2"
+            fontWeight={600}
+          >
+            <Link to="/approve-pantries">Return to applications</Link>
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
 
 const ApplicationDetails: React.FC = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
@@ -56,11 +110,12 @@ const ApplicationDetails: React.FC = () => {
       }
       const data = await ApiClient.getPantry(parseInt(applicationId, 10));
       setApplication(data);
-    } catch (err) {
-      setError(
-        'Error loading application details: ' +
-          (err instanceof Error ? err.message : String(err)),
-      );
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        if (err.response?.status !== 404) {
+          setError('Could not load application details.');
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -94,36 +149,27 @@ const ApplicationDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <Center h="100vh" flexDirection="column">
-        <Spinner size="lg" />
-        <Text mt={4}>Loading application details...</Text>
-      </Center>
+      <EmptyState icon={<Spinner />} title="Loading application details..." />
     );
   }
 
   if (error) {
     return (
-      <Center h="100vh" flexDirection="column">
-        <Text color="red" fontSize="lg" mb={4}>
-          {error}
-        </Text>
-        <Button onClick={() => navigate('/approve-pantries')}>
-          Back to Applications
-        </Button>
-      </Center>
+      <EmptyState
+        icon={<WifiOff />}
+        title={error ?? 'An error occurred.'}
+        subtitle="Please try again later."
+      />
     );
   }
 
   if (!application) {
     return (
-      <Center h="100vh" flexDirection="column">
-        <Text fontSize="lg" mb={4}>
-          Application not found
-        </Text>
-        <Button onClick={() => navigate('/approve-pantries')}>
-          Back to Applications
-        </Button>
-      </Center>
+      <EmptyState
+        icon={<FileX />}
+        title="Application not found."
+        subtitle="Please try again later."
+      />
     );
   }
 
