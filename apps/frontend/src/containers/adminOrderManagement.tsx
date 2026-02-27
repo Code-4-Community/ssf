@@ -622,7 +622,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       </Button>
                       {selectedOrderId === order.orderId && (
                         <OrderDetailsModal
-                          order={order}
+                          orderId={order.orderId}
                           isOpen={true}
                           onClose={() => onOrderSelect(null)}
                         />

@@ -10,8 +10,11 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
+import { FoodType } from '../donationItems/types';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
 const mockOrdersService = mock<OrdersService>();
@@ -32,6 +35,11 @@ describe('OrdersController', () => {
     { requestId: 2, pantry: mockPantries[1] as Pantry },
     { requestId: 3, pantry: mockPantries[2] as Pantry },
   ];
+
+  const mockRequestSummary: Partial<FoodRequestSummaryDto> = {
+    requestId: 4,
+    pantryName: 'Example Pantry',
+  };
 
   const mockFoodManufacturer: Partial<FoodManufacturer> = {
     foodManufacturerId: 1,
@@ -65,6 +73,21 @@ describe('OrdersController', () => {
     { allocationId: 3, orderId: 2 },
   ];
 
+  const mockOrderDetails: Partial<OrderDetailsDto> = {
+    orderId: 1,
+    status: OrderStatus.DELIVERED,
+    foodManufacturerName: 'food manufacturer 1',
+    trackingLink: 'example-link.com',
+    items: [
+      {
+        id: 1,
+        name: 'item1',
+        quantity: 10,
+        foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+      },
+    ],
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrdersController],
@@ -80,6 +103,21 @@ describe('OrdersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getOrder', () => {
+    it('should call ordersService.findOrderDetails and return order details', async () => {
+      mockOrdersService.findOrderDetails.mockResolvedValueOnce(
+        mockOrderDetails as OrderDetailsDto,
+      );
+
+      const orderId = 1;
+
+      const result = await controller.getOrder(orderId);
+
+      expect(result).toEqual(mockOrderDetails as OrderDetailsDto);
+      expect(mockOrdersService.findOrderDetails).toHaveBeenCalledWith(orderId);
+    });
   });
 
   describe('getAllOrders', () => {
@@ -159,12 +197,12 @@ describe('OrdersController', () => {
     it('should call ordersService.findOrderFoodRequest and return food request', async () => {
       const orderId = 1;
       mockOrdersService.findOrderFoodRequest.mockResolvedValueOnce(
-        mockRequests[0] as FoodRequest,
+        mockRequestSummary as FoodRequestSummaryDto,
       );
 
       const result = await controller.getRequestFromOrder(orderId);
 
-      expect(result).toEqual(mockRequests[0] as FoodRequest);
+      expect(result).toEqual(mockRequestSummary as FoodRequestSummaryDto);
       expect(mockOrdersService.findOrderFoodRequest).toHaveBeenCalledWith(
         orderId,
       );
@@ -212,30 +250,6 @@ describe('OrdersController', () => {
       expect(mockOrdersService.findOrderFoodManufacturer).toHaveBeenCalledWith(
         orderId,
       );
-    });
-  });
-
-  describe('getOrder', () => {
-    it('should call ordersService.findOne and return order', async () => {
-      const orderId = 1;
-      mockOrdersService.findOne.mockResolvedValueOnce(mockOrders[0] as Order);
-
-      const result = await controller.getOrder(orderId);
-
-      expect(result).toEqual(mockOrders[0] as Order);
-      expect(mockOrdersService.findOne).toHaveBeenCalledWith(orderId);
-    });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const orderId = 999;
-      mockOrdersService.findOne.mockRejectedValueOnce(
-        new NotFoundException(`Order ${orderId} not found`),
-      );
-
-      const promise = controller.getOrder(orderId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(`Order ${orderId} not found`);
-      expect(mockOrdersService.findOne).toHaveBeenCalledWith(orderId);
     });
   });
 

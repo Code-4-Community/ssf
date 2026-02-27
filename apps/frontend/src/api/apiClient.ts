@@ -20,6 +20,7 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  FoodRequestSummaryDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -172,7 +173,7 @@ export class ApiClient {
 
   public async getFoodRequestFromOrder(
     orderId: number,
-  ): Promise<FoodRequest | null> {
+  ): Promise<FoodRequestSummaryDto | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/request`)
       .then((response) => response.data);
@@ -237,16 +238,18 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
-  }
-
   public async getOrderDetailsListFromRequest(
     requestId: number,
   ): Promise<OrderDetails[]> {
     return this.axiosInstance
       .get(`/api/requests/${requestId}/order-details`)
       .then((response) => response.data) as Promise<OrderDetails[]>;
+  }
+
+  public async getOrder(orderId: number): Promise<OrderDetails> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}`)
+      .then((response) => response.data) as Promise<OrderDetails>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {

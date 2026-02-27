@@ -17,10 +17,11 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -68,7 +69,7 @@ export class OrdersController {
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodRequest> {
+  ): Promise<FoodRequestSummaryDto> {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
@@ -82,8 +83,8 @@ export class OrdersController {
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Order> {
-    return this.ordersService.findOne(orderId);
+  ): Promise<OrderDetailsDto> {
+    return this.ordersService.findOrderDetails(orderId);
   }
 
   @Get('/order/:requestId')

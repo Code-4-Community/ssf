@@ -1,29 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Text, Dialog, CloseButton, Textarea, Field } from '@chakra-ui/react';
+import {
+  Text,
+  Dialog,
+  CloseButton,
+  Flex,
+  Field,
+  Box,
+  Badge,
+  Tabs,
+  Menu,
+  Link,
+} from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodRequest, OrderSummary } from 'types/types';
-import { formatDate } from '@utils/utils';
+import {
+  FoodRequestSummaryDto,
+  GroupedByFoodType,
+  OrderDetails,
+} from 'types/types';
+import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 
 interface OrderDetailsModalProps {
-  order: OrderSummary;
+  orderId: number;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
-  order,
+  orderId,
   isOpen,
   onClose,
 }) => {
-  const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
+  const [foodRequest, setFoodRequest] = useState<FoodRequestSummaryDto | null>(
+    null,
+  );
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      const fetchData = async () => {
+      const fetchRequestData = async () => {
         try {
           const foodRequestData = await ApiClient.getFoodRequestFromOrder(
-            order.orderId,
+            orderId,
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
@@ -31,9 +50,42 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         }
       };
 
-      fetchData();
+      fetchRequestData();
     }
-  }, [isOpen, order.orderId]);
+  }, [isOpen, orderId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchOrderDetails = async () => {
+        try {
+          const orderDetailsData = await ApiClient.getOrder(orderId);
+          setOrderDetails(orderDetailsData);
+        } catch (error) {
+          alert('Error fetching order details:' + error);
+        }
+      };
+
+      fetchOrderDetails();
+    }
+  }, [isOpen, orderId]);
+
+  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
+    orderDetails?.items,
+  );
+
+  const sectionTitleStyles = {
+    textStyle: 'p2',
+    fontWeight: '600',
+    color: 'neutral.800',
+  };
+
+  const badgeStyles = {
+    py: '1',
+    px: '2',
+    textStyle: 'p2',
+    fontSize: '12px',
+    fontWeight: '500',
+  };
 
   return (
     <Dialog.Root
@@ -48,72 +100,187 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>
           <Dialog.Header pb={0} mt={2}>
-            <Dialog.Title fontSize="lg" fontWeight={700} fontFamily="inter">
-              Order {order.orderId}
+            <Dialog.Title fontSize="lg" fontWeight={600} fontFamily="inter">
+              Order #{orderId}
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            {foodRequest && (
-              <>
-                <Text textStyle="p2" color="#111111">
-                  {order.request.pantry.pantryName}
-                </Text>
-                <Text mb={8} color="#52525B" textStyle="p2" pt={0} mt={0}>
-                  Requested {formatDate(foodRequest.requestedAt)}
-                </Text>
+            <Text textStyle="p2" color="#111111">
+              Fulfilled by {orderDetails?.foodManufacturerName}
+            </Text>
 
-                <Field.Root mb={4}>
-                  <Field.Label>
-                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
-                      Size of Shipment
-                    </Text>
-                  </Field.Label>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="400"
-                    color="neutral.800"
-                    mt={1}
-                    w="full"
-                  >
-                    {foodRequest.requestedSize}
+            <Tabs.Root unstyled mt={5} fitted defaultValue="orderDetails">
+              <Tabs.List maxW="60%">
+                <Tabs.Trigger
+                  textStyle="p2"
+                  px={4}
+                  py={1}
+                  color="neutral.800"
+                  value="orderDetails"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{ borderColor: 'neutral.700' }}
+                >
+                  Order Details
+                </Tabs.Trigger>
+                <Tabs.Trigger
+                  textStyle="p2"
+                  px={4}
+                  py={1}
+                  color="neutral.800"
+                  value="associatedRequest"
+                  borderBottom="1.5px solid"
+                  borderColor="neutral.100"
+                  _selected={{ borderColor: 'neutral.700' }}
+                >
+                  Associated Request
+                </Tabs.Trigger>
+              </Tabs.List>
+              <Tabs.Content value="associatedRequest">
+                {!foodRequest && (
+                  <Text mt={5} textStyle="p2">
+                    {' '}
+                    No associated food request to display{' '}
                   </Text>
-                </Field.Root>
+                )}
 
-                <Field.Root mb={4}>
-                  <Field.Label>
-                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
-                      Food Type(s)
-                    </Text>
-                  </Field.Label>
-                  <TagGroup values={foodRequest.requestedItems} />
-                </Field.Root>
+                {foodRequest && (
+                  <Box
+                    borderWidth="1px"
+                    borderColor="neutral.100"
+                    borderRadius="5px"
+                    p={3}
+                    mt={6}
+                  >
+                    <Flex justify="space-between" align="center" mb={3}>
+                      <Text {...sectionTitleStyles}>
+                        Request {foodRequest.requestId} -
+                        <Text as="span" color="neutral.800" textStyle="p2">
+                          {' '}
+                          {foodRequest.pantryName}
+                        </Text>
+                      </Text>
+                      {foodRequest.status === FoodRequestStatus.CLOSED ? (
+                        <Badge
+                          {...badgeStyles}
+                          bgColor="#FEECD1"
+                          color="#9C5D00"
+                        >
+                          Closed
+                        </Badge>
+                      ) : (
+                        <Badge
+                          {...badgeStyles}
+                          bgColor="teal.200"
+                          color="#19717D"
+                        >
+                          Active
+                        </Badge>
+                      )}
+                    </Flex>
 
-                <Field.Root mb={4}>
-                  <Field.Label>
-                    <Text textStyle="p2" fontWeight={600} color="neutral.800">
-                      Additional Information
-                    </Text>
-                  </Field.Label>
-                  <Textarea
-                    value={
-                      foodRequest.additionalInformation ||
-                      'No additional information supplied.'
-                    }
-                    readOnly
-                    pl={-2}
-                    size="lg"
-                    textStyle="p2"
-                    color="neutral.800"
-                    bg="white"
-                    border="none"
-                    resize="none"
-                    disabled
-                  />
-                </Field.Root>
-              </>
-            )}
+                    <Field.Root mb={4} mt={6}>
+                      <Field.Label>
+                        <Text {...sectionTitleStyles}>Size of Shipment</Text>
+                      </Field.Label>
+                      <Menu.Root>
+                        <Text textStyle="p2" color="neutral.800" mt={3}>
+                          {foodRequest.requestedSize}
+                        </Text>
+                      </Menu.Root>
+                    </Field.Root>
+
+                    <Field.Root mb={4} mt={3}>
+                      <Field.Label>
+                        <Text {...sectionTitleStyles} mt={3}>
+                          Food Type(s)
+                        </Text>
+                      </Field.Label>
+
+                      {foodRequest.requestedItems.length > 0 && (
+                        <TagGroup values={foodRequest.requestedItems} />
+                      )}
+                    </Field.Root>
+
+                    <Field.Root mb={4}>
+                      <Field.Label>
+                        <Text {...sectionTitleStyles} mt={3}>
+                          Additional Information
+                        </Text>
+                      </Field.Label>
+                      <Text textStyle="p2" color="neutral.800" mt={3}>
+                        {foodRequest.additionalInformation}
+                      </Text>
+                    </Field.Root>
+                  </Box>
+                )}
+              </Tabs.Content>
+
+              <Tabs.Content value="orderDetails" mt={6}>
+                {Object.entries(groupedOrderItemsByType).map(
+                  ([foodType, items]) => (
+                    <Box key={foodType} mb={4}>
+                      <Text {...sectionTitleStyles}>{foodType}</Text>
+                      {items.map((item) => (
+                        <Flex
+                          border="1px solid"
+                          borderColor="neutral.100"
+                          borderRadius="md"
+                          px={4}
+                          align="center"
+                          mt="2"
+                          key={item.id}
+                        >
+                          <Text
+                            py={2}
+                            textStyle="p2"
+                            color="neutral.800"
+                            flex={1}
+                          >
+                            {item.name}
+                          </Text>
+
+                          <Box
+                            alignSelf="stretch"
+                            borderLeft="1px solid"
+                            borderColor="neutral.100"
+                            mx={3}
+                          />
+
+                          <Text
+                            minW={5}
+                            py={2}
+                            textStyle="p2"
+                            color="neutral.800"
+                          >
+                            {item.quantity}
+                          </Text>
+                        </Flex>
+                      ))}
+                    </Box>
+                  ),
+                )}
+                <Text {...sectionTitleStyles} mt="3">
+                  Tracking
+                </Text>
+                {orderDetails?.trackingLink ? (
+                  <Link
+                    href={orderDetails.trackingLink}
+                    color="#2795A5"
+                    variant="underline"
+                    mt="3"
+                    mb="3"
+                  >
+                    {orderDetails.trackingLink}
+                  </Link>
+                ) : (
+                  <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
+                    No tracking link available at this time
+                  </Text>
+                )}
+              </Tabs.Content>
+            </Tabs.Root>
           </Dialog.Body>
-
           <Dialog.CloseTrigger asChild>
             <CloseButton size="lg" />
           </Dialog.CloseTrigger>
