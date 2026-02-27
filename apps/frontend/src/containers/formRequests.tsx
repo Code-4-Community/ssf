@@ -15,10 +15,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import { OrderStatus, FoodRequest } from '../types/types';
+import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -33,6 +34,8 @@ const FormRequests: React.FC = () => {
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const pageSize = 10;
 
@@ -50,10 +53,10 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch (error) {
-        console.log(error);
+        setAlertMessage('Error fetching requests: ' + error);
       }
     } else {
-      alert('No pantry associated with this account.');
+      setAlertMessage('No pantry associated with this account.');
     }
   }, []);
 
@@ -71,6 +74,9 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <HStack gap={3} my={5}>
         <Button
           fontFamily="ibm"
@@ -158,13 +164,7 @@ const FormRequests: React.FC = () => {
                 </Link>
               </Table.Cell>
               <Table.Cell>
-                {!request.orders ||
-                request.orders.length === 0 ||
-                request.orders.every(
-                  (order) =>
-                    order.status === OrderStatus.PENDING ||
-                    order.status === OrderStatus.SHIPPED,
-                ) ? (
+                {request.status === FoodRequestStatus.ACTIVE ? (
                   <Badge
                     bgColor="#D4EAED"
                     color="#19717D"

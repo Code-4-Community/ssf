@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
 import { Eye, EyeOff } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 
 type Step = 'login' | 'new-password';
 
@@ -26,6 +27,7 @@ const LoginPage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [step, setStep] = useState<Step>('login');
+  const [alertMessage, setAlertMessage] = useState<string>('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,18 +46,18 @@ const LoginPage: React.FC = () => {
         navigate(from, { replace: true });
       }
     } catch (error) {
-      alert(error || 'Login failed');
+      setAlertMessage('Login failed: ' + error);
     }
   };
 
   // Sets the new password for the first time
   const handleSetNewPassword = async () => {
     if (newPassword !== confirmNewPassword) {
-      alert('Passwords need to match');
+      setAlertMessage('Passwords need to match');
       return;
     }
     if (newPassword.length < 8) {
-      alert('Password needs to be at least 8 characters');
+      setAlertMessage('Password needs to be at least 8 characters');
       return;
     }
 
@@ -65,7 +67,7 @@ const LoginPage: React.FC = () => {
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
     } catch (error) {
-      alert('Failed to set new password: ' + error);
+      setAlertMessage('Failed to set new password: ' + error);
     }
   };
 
@@ -94,6 +96,9 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Box
         maxW="500px"
         w="full"

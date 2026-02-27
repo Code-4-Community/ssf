@@ -26,8 +26,12 @@ export class AuthController {
     // By default, creates a standard user
     try {
       await this.authService.signup(signUpDto);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when signing up user';
+      throw new BadRequestException(message);
     }
 
     const createUserDto: userSchemaDto = {
@@ -47,8 +51,12 @@ export class AuthController {
   verifyUser(@Body() body: VerifyUserDto): void {
     try {
       this.authService.verifyUser(body.email, body.verificationCode);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when verifying user';
+      throw new BadRequestException(message);
     }
   }
 
@@ -78,8 +86,12 @@ export class AuthController {
 
     try {
       await this.authService.deleteUser(user.email);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when deleting user';
+      throw new BadRequestException(message);
     }
 
     this.usersService.remove(user.id);

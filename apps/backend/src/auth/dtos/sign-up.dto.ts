@@ -2,16 +2,16 @@ import { IsEmail, IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
 
 export class SignUpDto {
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
-  password: string;
+  password!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -19,5 +19,5 @@ export class SignUpDto {
     message:
       'phone must be a valid phone number (make sure all the digits are correct)',
   })
-  phone: string;
+  phone!: string;
 }
