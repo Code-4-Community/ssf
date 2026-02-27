@@ -3,6 +3,7 @@ import { Text, Dialog, CloseButton, Textarea, Field } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { FoodRequest, OrderSummary } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 import { TagGroup } from './tagGroup';
 
 interface OrderDetailsModalProps {
@@ -18,6 +19,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 }) => {
   const [foodRequest, setFoodRequest] = useState<FoodRequest | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
@@ -27,7 +30,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
-          alert('Error fetching food request details:' + error);
+          setAlertMessage('Error fetching food request details:' + error);
         }
       };
 
@@ -44,6 +47,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>

@@ -178,7 +178,7 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedFoodTypes: FoodType[],
-    additionalInformation: string | undefined,
+    additionalInformation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 

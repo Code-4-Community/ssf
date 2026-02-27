@@ -5,7 +5,7 @@ import {
   ParseIntPipe,
   Post,
   Body,
-  BadRequestException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -14,6 +14,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { RequestSize } from './types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { CreateRequestDto } from './dtos/create-request.dto';
 import { FoodType } from '../donationItems/types';
 import {
   MatchingItemsDto,
@@ -90,24 +91,14 @@ export class RequestsController {
     },
   })
   async createRequest(
-    @Body()
-    body: {
-      pantryId: number;
-      requestedSize: RequestSize;
-      requestedFoodTypes: FoodType[];
-      additionalInformation: string;
-    },
+    @Body(new ValidationPipe())
+    requestData: CreateRequestDto,
   ): Promise<FoodRequest> {
-    if (
-      !Object.values(RequestSize).includes(body.requestedSize as RequestSize)
-    ) {
-      throw new BadRequestException('Invalid request size');
-    }
     return this.requestsService.create(
-      body.pantryId,
-      body.requestedSize,
-      body.requestedFoodTypes,
-      body.additionalInformation,
+      requestData.pantryId,
+      requestData.requestedSize,
+      requestData.requestedFoodTypes,
+      requestData.additionalInformation,
     );
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
@@ -50,14 +54,21 @@ export class DonationService {
       );
     }
 
-    const nextDonationDates =
-      donationData.recurrence !== RecurrenceEnum.NONE
-        ? await this.generateNextDonationDates(
-            donationData.recurrenceFreq,
-            donationData.recurrence,
-            donationData.repeatOnDays ?? null,
-          )
-        : null;
+    let nextDonationDates = null;
+
+    if (donationData.recurrence !== RecurrenceEnum.NONE) {
+      if (donationData.recurrenceFreq == null) {
+        throw new BadRequestException(
+          'recurrenceFreq is required for recurring donations',
+        );
+      }
+
+      nextDonationDates = await this.generateNextDonationDates(
+        donationData.recurrenceFreq,
+        donationData.recurrence,
+        donationData.repeatOnDays ?? null,
+      );
+    }
 
     const donation = this.repo.create({
       foodManufacturer: manufacturer,

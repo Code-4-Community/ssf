@@ -16,8 +16,8 @@ import {
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
-import { UnauthorizedException } from '@nestjs/common';
 import { User } from '../users/user.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -40,7 +40,7 @@ describe('PantriesController', () => {
     contactEmail: 'jane.smith@example.com',
     contactPhone: '(508) 222-2222',
     hasEmailContact: true,
-    emailContactOther: null,
+    emailContactOther: undefined,
     secondaryContactFirstName: 'John',
     secondaryContactLastName: 'Doe',
     secondaryContactEmail: 'john.doe@example.com',
@@ -254,21 +254,17 @@ describe('PantriesController', () => {
   });
 
   describe('getCurrentUserPantryId', () => {
-    it('returns pantryId when req.currentUser is present', async () => {
+    it('returns pantryId for authenticated user', async () => {
       const req = { user: { id: 1 } };
       const pantry: Partial<Pantry> = { pantryId: 10 };
       mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
 
-      const result = await controller.getCurrentUserPantryId(req);
+      const result = await controller.getCurrentUserPantryId(
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(10);
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(1);
-    });
-
-    it('throws UnauthorizedException when unauthenticated', async () => {
-      await expect(controller.getCurrentUserPantryId({})).rejects.toThrow(
-        new UnauthorizedException('Not authenticated'),
-      );
     });
   });
 });

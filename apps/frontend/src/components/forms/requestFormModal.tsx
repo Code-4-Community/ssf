@@ -17,6 +17,7 @@ import {
   RequestSize,
 } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
+import { FloatingAlert } from '@components/floatingAlert';
 import apiClient from '@api/apiClient';
 import { TagGroup } from './tagGroup';
 
@@ -38,8 +39,13 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    isError: boolean;
+    message: string;
+  }>({
+    isError: true,
+    message: '',
+  });
 
   const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
 
@@ -58,16 +64,17 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
-      additionalInformation: additionalNotes || '',
+      additionalInformation: additionalNotes || undefined,
       requestedFoodTypes: selectedFoodTypes,
     };
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
+      setAlert({ isError: false, message: 'Request Submitted' });
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Failed to submit food request');
+      setAlert({ isError: true, message: 'Request could not be submitted.' });
     }
   };
 
@@ -80,10 +87,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
-        // TODO: add Justin's alert component/uncomment below out and remove text component
-        // <FloatingAlert message={alertMessage} status="error" timeout={6000} />
-        <Text>{alertMessage}</Text>
+      {alert.message && alert.isError && (
+        <FloatingAlert message={alert.message} status="error" timeout={6000} />
+      )}
+      {alert.message && !alert.isError && (
+        <FloatingAlert message={alert.message} status="info" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -262,7 +270,10 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      alert('Exceeded word limit');
+                      setAlert({
+                        isError: true,
+                        message: 'Exceeded word limit',
+                      });
                     }
                   }}
                 />
