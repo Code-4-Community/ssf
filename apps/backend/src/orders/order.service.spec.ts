@@ -7,6 +7,10 @@ import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { FoodRequest } from '../foodRequests/request.entity';
+import 'multer';
+import { FoodRequestStatus } from '../foodRequests/types';
+import { RequestsService } from '../foodRequests/request.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -27,6 +31,7 @@ describe('OrdersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
+        RequestsService,
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
@@ -34,6 +39,10 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
+        },
+        {
+          provide: getRepositoryToken(FoodRequest),
+          useValue: testDataSource.getRepository(FoodRequest),
         },
       ],
     }).compile();
@@ -392,6 +401,171 @@ describe('OrdersService', () => {
 
       expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
       expect(updatedOrder.shippedAt).toBeDefined();
+    });
+  });
+
+  describe('confirmDelivery', () => {
+    it('should throw BadRequestException for invalid date format', async () => {
+      await expect(
+        service.confirmDelivery(
+          1,
+          { dateReceived: 'invalid-date', feedback: 'test feedback' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Invalid date format for dateReceived'),
+      );
+    });
+
+    it('should update order with delivery details and set status to delivered and update request status to closed', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+
+      const shippedOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.SHIPPED, orderId: 3 },
+        relations: ['request'],
+      });
+
+      expect(shippedOrder).toBeDefined();
+
+      if (!shippedOrder) throw new Error('Missing shipped order test object');
+
+      const dateReceived = new Date().toISOString();
+      const feedback = 'Perfect delivery!';
+      const photos = ['photo1.jpg', 'photo2.jpg'];
+
+      const result = await service.confirmDelivery(
+        shippedOrder.orderId,
+        { dateReceived, feedback },
+        photos,
+      );
+
+      expect(result.orderId).toBe(shippedOrder.orderId);
+      expect(result.status).toBe(OrderStatus.DELIVERED);
+      expect(result.dateReceived).toEqual(new Date(dateReceived));
+      expect(result.feedback).toBe(feedback);
+      expect(result.photos).toEqual(photos);
+      expect(result.deliveredAt).toBeNull();
+
+      const updatedRequest = await requestRepo.findOne({
+        where: { requestId: shippedOrder.requestId },
+        relations: ['orders'],
+      });
+
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
+      expect(updatedRequest.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
+    it('should update order with delivery details and set status to delivered but request remains active', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+
+      // Get an existing shipped order
+      const existingShippedOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.SHIPPED },
+        relations: ['request'],
+      });
+
+      expect(existingShippedOrder).toBeDefined();
+
+      if (!existingShippedOrder)
+        throw new Error('Missing existingShippedOrder test object');
+
+      // Add a second shipped order to the same request so it stays active after delivery
+      const secondOrder = orderRepo.create({
+        requestId: existingShippedOrder.requestId,
+        foodManufacturerId: existingShippedOrder.foodManufacturerId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date(),
+      });
+      await orderRepo.save(secondOrder);
+
+      const dateReceived = new Date().toISOString();
+      const feedback = 'Perfect delivery!';
+      const photos = ['photo1.jpg', 'photo2.jpg'];
+
+      const result = await service.confirmDelivery(
+        existingShippedOrder.orderId,
+        { dateReceived, feedback },
+        photos,
+      );
+
+      expect(result.orderId).toBe(existingShippedOrder.orderId);
+      expect(result.status).toBe(OrderStatus.DELIVERED);
+      expect(result.dateReceived).toEqual(new Date(dateReceived));
+      expect(result.feedback).toBe(feedback);
+      expect(result.photos).toEqual(photos);
+
+      const updatedRequest = await requestRepo.findOne({
+        where: { requestId: existingShippedOrder.requestId },
+        relations: ['orders'],
+      });
+
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
+      expect(updatedRequest.status).toBe(FoodRequestStatus.ACTIVE);
+    });
+
+    it('should throw NotFoundException for invalid order id', async () => {
+      const invalidOrderId = 99999;
+
+      await expect(
+        service.confirmDelivery(
+          invalidOrderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new NotFoundException(`Order ${invalidOrderId} not found`),
+      );
+    });
+
+    it('should throw BadRequestException when order is not shipped', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      const pendingOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.PENDING },
+      });
+
+      expect(pendingOrder).toBeDefined();
+
+      if (!pendingOrder) throw new Error('Missing pendingOrder test object');
+
+      await expect(
+        service.confirmDelivery(
+          pendingOrder.orderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Can only confirm delivery for shipped orders'),
+      );
+    });
+
+    it('should throw BadRequestException when order is already delivered', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      const deliveredOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.DELIVERED },
+      });
+
+      expect(deliveredOrder).toBeDefined();
+
+      if (!deliveredOrder)
+        throw new Error('Missing deliveredOrder test object');
+
+      await expect(
+        service.confirmDelivery(
+          deliveredOrder.orderId,
+          { dateReceived: new Date().toISOString(), feedback: 'test' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Can only confirm delivery for shipped orders'),
+      );
     });
   });
 });
