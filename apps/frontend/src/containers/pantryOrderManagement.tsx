@@ -28,8 +28,8 @@ const PantryOrderManagement: React.FC = () => {
   const [statusOrders, setStatusOrders] = useState<
     Record<OrderStatus, OrderWithColor[]>
   >({
-    [OrderStatus.PENDING]: [],
     [OrderStatus.SHIPPED]: [],
+    [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
   });
 
@@ -44,8 +44,8 @@ const PantryOrderManagement: React.FC = () => {
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
-      [OrderStatus.PENDING]: 1,
       [OrderStatus.SHIPPED]: 1,
+      [OrderStatus.PENDING]: 1,
       [OrderStatus.DELIVERED]: 1,
     },
   );
@@ -63,10 +63,10 @@ const PantryOrderManagement: React.FC = () => {
   const [filterStates, setFilterStates] = useState<
     Record<OrderStatus, FilterState>
   >({
-    [OrderStatus.PENDING]: {
+    [OrderStatus.SHIPPED]: {
       sortAsc: true,
     },
-    [OrderStatus.SHIPPED]: {
+    [OrderStatus.PENDING]: {
       sortAsc: true,
     },
     [OrderStatus.DELIVERED]: {
@@ -75,15 +75,15 @@ const PantryOrderManagement: React.FC = () => {
   });
 
   const STATUS_ORDER = [
-    OrderStatus.PENDING,
     OrderStatus.SHIPPED,
+    OrderStatus.PENDING,
     OrderStatus.DELIVERED,
   ];
 
   // Color mapping for statuses
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.PENDING, ['#FEECD1', '#9C5D00']],
-    [OrderStatus.SHIPPED, ['#D5DCDF', '#2B4E60']],
+    [OrderStatus.SHIPPED, ['#FEECD1', '#9C5D00']],
+    [OrderStatus.PENDING, ['#D5DCDF', '#2B4E60']],
     [OrderStatus.DELIVERED, ['#D4EAED', '#19717D']],
   ]);
 
@@ -95,8 +95,8 @@ const PantryOrderManagement: React.FC = () => {
       const data = await ApiClient.getPantryOrders(pantryId);
 
       const grouped: Record<OrderStatus, OrderWithColor[]> = {
-        [OrderStatus.PENDING]: [],
         [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
         [OrderStatus.DELIVERED]: [],
       };
 
@@ -112,8 +112,8 @@ const PantryOrderManagement: React.FC = () => {
 
       // Initialize current page for each status
       const initialPages: Record<OrderStatus, number> = {
-        [OrderStatus.PENDING]: 1,
         [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.PENDING]: 1,
         [OrderStatus.DELIVERED]: 1,
       };
       setCurrentPages(initialPages);
@@ -491,13 +491,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       textAlign="right"
                       color="neutral.700"
                       bgColor={
-                        order.status !== OrderStatus.PENDING
+                        order.status !== OrderStatus.SHIPPED
                           ? 'neutral.50'
                           : 'white'
                       }
                       pr={0}
                     >
-                      {order.status === OrderStatus.PENDING && (
+                      {order.status === OrderStatus.SHIPPED && (
                         <Button
                           variant="plain"
                           fontWeight="400"
