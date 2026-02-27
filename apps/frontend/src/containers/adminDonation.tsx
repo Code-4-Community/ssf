@@ -15,6 +15,7 @@ import { Donation } from 'types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -28,13 +29,15 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   useEffect(() => {
     const fetchDonations = async () => {
       try {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch (error) {
-        alert('Error fetching donations: ' + error);
+        setAlertMessage('Error fetching donations: ' + error);
       }
     };
     fetchDonations();
@@ -99,6 +102,9 @@ const AdminDonation: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button
