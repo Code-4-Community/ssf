@@ -10,6 +10,7 @@ import {
   Activity,
   AllergensConfidence,
   ClientVisitFrequency,
+  PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
@@ -280,6 +281,69 @@ describe('PantriesController', () => {
       await expect(promise).rejects.toBeInstanceOf(NotFoundException);
       await expect(promise).rejects.toThrow('Pantry for User 999 not found');
       expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('getPantryStats', () => {
+    it('should return stats for all pantries', async () => {
+      const mockStats: PantryStats[] = [
+        {
+          pantryId: 1,
+          totalItems: 100,
+          totalOz: 1600,
+          totalLbs: 100,
+          totalDonatedFoodValue: 500,
+          totalShippingCost: 50,
+          totalValue: 550,
+          percentageFoodRescueItems: 80,
+        },
+      ];
+
+      mockPantriesService.getPantryStats.mockResolvedValueOnce(mockStats);
+
+      const result = await controller.getPantryStats();
+
+      expect(result).toEqual(mockStats);
+      expect(mockPantriesService.getPantryStats).toHaveBeenCalled();
+    });
+
+    it('should forward query parameters to service', async () => {
+      const mockStats: PantryStats[] = [];
+      mockPantriesService.getPantryStats.mockResolvedValueOnce(mockStats);
+
+      const pantryNames = ['A', 'B'];
+      const years = [2024, 2025];
+      const page = 3;
+
+      const result = await controller.getPantryStats(pantryNames, years, page);
+
+      expect(result).toEqual(mockStats);
+      expect(mockPantriesService.getPantryStats).toHaveBeenCalledWith(
+        pantryNames,
+        years,
+        page,
+      );
+    });
+  });
+
+  describe('getTotalStats', () => {
+    it('should return total stats across all pantries', async () => {
+      const mockTotalStats: PantryStats = {
+        totalItems: 500,
+        totalOz: 8000,
+        totalLbs: 500,
+        totalDonatedFoodValue: 2500,
+        totalShippingCost: 200,
+        totalValue: 2700,
+        percentageFoodRescueItems: 75,
+      };
+
+      mockPantriesService.getTotalStats.mockResolvedValueOnce(mockTotalStats);
+
+      const result = await controller.getTotalStats();
+
+      expect(result).toEqual(mockTotalStats);
+      expect(mockPantriesService.getTotalStats).toHaveBeenCalled();
     });
   });
 });

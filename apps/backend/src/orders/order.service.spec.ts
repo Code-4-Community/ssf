@@ -277,6 +277,33 @@ describe('OrdersService', () => {
       expect(orders).toEqual([]);
     });
 
+    it('honors year filter (no results for future year)', async () => {
+      const pantryId = 1;
+      const orders = await service.getOrdersByPantry(pantryId, [2025]);
+      expect(orders).toEqual([]);
+    });
+
+    it('returns orders when a valid year filter is provided', async () => {
+      const pantryId = 1;
+
+      // Change some order dates so we have 2024, 2025 and 2026 values
+      await testDataSource.query(
+        `UPDATE "orders" SET created_at='2025-01-01' WHERE order_id = 1`,
+      );
+      await testDataSource.query(
+        `UPDATE "orders" SET created_at='2026-01-01' WHERE order_id = 2`,
+      );
+
+      const orders = await service.getOrdersByPantry(pantryId, [2024, 2025]);
+      expect(orders.length).toBeGreaterThan(0);
+
+      const years = orders.map((o) => new Date(o.createdAt).getFullYear());
+      expect(years).toContain(2025);
+      expect(years).not.toContain(2026);
+      // Remaining orders may still be 2024; none should be 2026
+      expect(years.every((y) => y === 2024 || y === 2025)).toBe(true);
+    });
+
     it('throws NotFoundException for non-existent pantry', async () => {
       const pantryId = 9999;
 
@@ -327,7 +354,7 @@ describe('OrdersService', () => {
 
       const order = await service.findOne(3);
       expect(order.shippingCost).toBeDefined();
-      expect(order.shippingCost).toEqual('12.99');
+      expect(order.shippingCost).toEqual(12.99);
     });
 
     it('updates both shipping cost and tracking link', async () => {
@@ -340,7 +367,7 @@ describe('OrdersService', () => {
 
       const order = await service.findOne(3);
       expect(order.trackingLink).toEqual('testtracking.com');
-      expect(order.shippingCost).toEqual('7.50');
+      expect(order.shippingCost).toEqual(7.5);
     });
 
     it('throws BadRequestException for delivered order', async () => {

@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
@@ -19,6 +20,7 @@ import {
   Activity,
   AllergensConfidence,
   ClientVisitFrequency,
+  PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
@@ -37,6 +39,20 @@ export class PantriesController {
     private ordersService: OrdersService,
     private emailsService: EmailsService,
   ) {}
+
+  @Get('/stats-by-pantry')
+  async getPantryStats(
+    @Query('pantryNames') pantryNames?: string[],
+    @Query('years') years?: number[],
+    @Query('page') page = 1,
+  ): Promise<PantryStats[]> {
+    return this.pantriesService.getPantryStats(pantryNames, years, page);
+  }
+
+  @Get('/total-stats')
+  async getTotalStats(): Promise<PantryStats> {
+    return this.pantriesService.getTotalStats();
+  }
 
   @Roles(Role.PANTRY)
   @Get('/my-id')

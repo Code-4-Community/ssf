@@ -195,7 +195,10 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async getOrdersByPantry(pantryId: number): Promise<Order[]> {
+  async getOrdersByPantry(
+    pantryId: number,
+    years?: number[],
+  ): Promise<Order[]> {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.pantryRepo.findOneBy({ pantryId });
@@ -203,12 +206,20 @@ export class OrdersService {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
 
-    const orders = await this.repo.find({
-      where: { request: { pantryId } },
-      relations: ['request'],
-    });
+    const qb = this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('order.allocations', 'allocations')
+      .leftJoinAndSelect('allocations.item', 'item')
+      .where('request.pantryId = :pantryId', { pantryId });
 
-    return orders;
+    if (years && years.length > 0) {
+      qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
+        years,
+      });
+    }
+
+    return qb.getMany();
   }
 
   async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {

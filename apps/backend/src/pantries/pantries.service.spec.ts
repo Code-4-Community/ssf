@@ -2,9 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { Repository, UpdateResult } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { mock } from 'jest-mock-extended';
+import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
   ClientVisitFrequency,
@@ -16,289 +15,274 @@ import {
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 
-const mockRepository = mock<Repository<Pantry>>();
+// database helpers
+import { testDataSource } from '../config/typeormTestDataSource';
+import { Order } from '../orders/order.entity';
+import { OrdersService } from '../orders/order.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { RequestsService } from '../foodRequests/request.service';
 
-describe('PantriesService', () => {
+// This spec uses the migration-populated dummy data to exercise
+// PantriesService against a real database.  Each test resets the
+// schema to guarantee isolation.
+
+describe('PantriesService (integration using dummy data)', () => {
   let service: PantriesService;
+  let ordersService: OrdersService;
 
-  // Mock Pantry
-  const mockPendingPantry = {
-    pantryId: 1,
-    pantryName: 'Test Pantry',
-    status: ApplicationStatus.PENDING,
-  } as Pantry;
+  beforeAll(async () => {
+    if (!testDataSource.isInitialized) {
+      await testDataSource.initialize();
+    }
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
 
-  // Mock Pantry Application
-  const mockPantryApplication = {
-    contactFirstName: 'Jane',
-    contactLastName: 'Smith',
-    contactEmail: 'jane.smith@example.com',
-    contactPhone: '(508) 222-2222',
-    hasEmailContact: true,
-    emailContactOther: undefined,
-    secondaryContactFirstName: 'John',
-    secondaryContactLastName: 'Doe',
-    secondaryContactEmail: 'john.doe@example.com',
-    secondaryContactPhone: '(508) 333-3333',
-    shipmentAddressLine1: '456 New St',
-    shipmentAddressLine2: 'Suite 200',
-    shipmentAddressCity: 'Cambridge',
-    shipmentAddressState: 'MA',
-    shipmentAddressZip: '02139',
-    shipmentAddressCountry: 'USA',
-    acceptFoodDeliveries: true,
-    deliveryWindowInstructions: 'Please deliver between 9am-5pm',
-    mailingAddressLine1: '456 New St',
-    mailingAddressLine2: 'Suite 200',
-    mailingAddressCity: 'Cambridge',
-    mailingAddressState: 'MA',
-    mailingAddressZip: '02139',
-    mailingAddressCountry: 'USA',
-    pantryName: 'New Community Pantry',
-    allergenClients: '10 to 20',
-    restrictions: ['Peanut allergy', 'Gluten'],
-    refrigeratedDonation: RefrigeratedDonation.YES,
-    dedicatedAllergyFriendly: true,
-    reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
-    reservationExplanation: 'We have a dedicated allergen-free section',
-    clientVisitFrequency: ClientVisitFrequency.DAILY,
-    identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
-    serveAllergicChildren: ServeAllergicChildren.YES_MANY,
-    activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
-    activitiesComments: 'We provide nutritional counseling',
-    itemsInStock: 'Canned goods, pasta',
-    needMoreOptions: 'More fresh produce',
-    newsletterSubscription: true,
-  } as PantryApplicationDto;
-
-  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PantriesService,
+        OrdersService,
+        RequestsService,
         {
           provide: getRepositoryToken(Pantry),
-          useValue: mockRepository,
+          useValue: testDataSource.getRepository(Pantry),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: testDataSource.getRepository(User),
+        },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: testDataSource.getRepository(Order),
+        },
+        {
+          provide: getRepositoryToken(FoodRequest),
+          useValue: testDataSource.getRepository(FoodRequest),
         },
       ],
     }).compile();
 
     service = module.get<PantriesService>(PantriesService);
+    ordersService = module.get<OrdersService>(OrdersService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    await testDataSource.runMigrations();
   });
 
-  it('should be defined', () => {
+  afterEach(async () => {
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+  });
+
+  afterAll(async () => {
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
+  });
+
+  it('service should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // Find pantry by ID
   describe('findOne', () => {
-    it('should return a pantry by id', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-
-      const result = await service.findOne(1);
-
-      expect(result).toBe(mockPendingPantry);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { pantryId: 1 },
-        relations: ['pantryUser'],
-      });
+    it('returns pantry by existing ID', async () => {
+      const pantry = await service.findOne(1);
+      expect(pantry).toBeDefined();
+      expect(pantry.pantryId).toBe(1);
     });
 
-    it('should throw NotFoundException if pantry not found', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
-      await expect(service.findOne(999)).rejects.toThrow(
-        'Pantry 999 not found',
+    it('throws NotFoundException for missing ID', async () => {
+      await expect(service.findOne(9999)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
       );
     });
   });
 
-  // Get pantries with pending status
   describe('getPendingPantries', () => {
-    it('should return only pending pantries', async () => {
-      const pendingPantries = [
-        mockPendingPantry,
-        { ...mockPendingPantry, pantryId: 3 },
-      ];
-      mockRepository.find.mockResolvedValueOnce(pendingPantries);
-
-      const result = await service.getPendingPantries();
-
-      expect(result).toEqual(pendingPantries);
-      expect(result).toHaveLength(2);
-      expect(result.every((pantry) => pantry.status === 'pending')).toBe(true);
-      expect(mockRepository.find).toHaveBeenCalledWith({
-        where: { status: 'pending' },
-        relations: ['pantryUser'],
-      });
-    });
-
-    it('should not return approved pantries', async () => {
-      mockRepository.find.mockResolvedValueOnce([mockPendingPantry]);
-
-      const result = await service.getPendingPantries();
-
-      expect(result).not.toContainEqual(
-        expect.objectContaining({ status: 'approved' }),
+    it('returns pantries with pending status', async () => {
+      const pending = await service.getPendingPantries();
+      expect(pending.length).toBeGreaterThan(0);
+      expect(pending.every((p) => p.status === ApplicationStatus.PENDING)).toBe(
+        true,
       );
-      expect(mockRepository.find).toHaveBeenCalledWith({
-        where: { status: 'pending' },
-        relations: ['pantryUser'],
-      });
-    });
-
-    it('should return an empty array if no pending pantries', async () => {
-      mockRepository.find.mockResolvedValueOnce([]);
-
-      const result = await service.getPendingPantries();
-
-      expect(result).toEqual([]);
     });
   });
 
-  // Approve pantry by ID (status = approved)
-  describe('approve', () => {
-    it('should approve a pantry', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
-
-      await service.approve(1);
-
-      expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { pantryId: 1 },
-      });
-      expect(mockRepository.update).toHaveBeenCalledWith(1, {
-        status: 'approved',
-      });
+  describe('approve/deny', () => {
+    it('approves a pending pantry', async () => {
+      await service.approve(5);
+      const p = await service.findOne(5);
+      expect(p.status).toBe('approved');
     });
 
-    it('should throw NotFoundException if pantry not found', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(null);
+    it('denies a pending pantry', async () => {
+      await service.deny(6);
+      const p = await service.findOne(6);
+      expect(p.status).toBe('denied');
+    });
 
-      await expect(service.approve(999)).rejects.toThrow(NotFoundException);
-      await expect(service.approve(999)).rejects.toThrow(
-        'Pantry 999 not found',
+    it('throws when approving non-existent', async () => {
+      await expect(service.approve(9999)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
       );
-      expect(mockRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('throws when denying non-existent', async () => {
+      await expect(service.deny(9999)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
+      );
     });
   });
 
-  // Deny pantry by ID (status = denied)
-  describe('deny', () => {
-    it('should deny a pantry', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
-
-      await service.deny(1);
-
-      expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { pantryId: 1 },
-      });
-      expect(mockRepository.update).toHaveBeenCalledWith(1, {
-        status: 'denied',
-      });
-    });
-
-    it('should throw NotFoundException if pantry not found', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(service.deny(999)).rejects.toThrow(NotFoundException);
-      await expect(service.deny(999)).rejects.toThrow('Pantry 999 not found');
-      expect(mockRepository.update).not.toHaveBeenCalled();
-    });
-  });
-
-  // Add pantry
   describe('addPantry', () => {
-    it('should add a new pantry application', async () => {
-      mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
+    it('creates pantry with minimal required fields', async () => {
+      const dto: PantryApplicationDto = {
+        contactFirstName: 'Jane',
+        contactLastName: 'Doe',
+        contactEmail: 'jane.doe@example.com',
+        contactPhone: '555-555-5555',
+        hasEmailContact: true,
+        pantryName: 'Test Minimal Pantry',
+        shipmentAddressLine1: '1 Test St',
+        shipmentAddressCity: 'Testville',
+        shipmentAddressState: 'TX',
+        shipmentAddressZip: '11111',
+        mailingAddressLine1: '1 Test St',
+        mailingAddressCity: 'Testville',
+        mailingAddressState: 'TX',
+        mailingAddressZip: '11111',
+        allergenClients: 'none',
+        restrictions: ['none'],
+        refrigeratedDonation: RefrigeratedDonation.NO,
+        acceptFoodDeliveries: false,
+        reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+        dedicatedAllergyFriendly: false,
+        activities: [Activity.CREATE_LABELED_SHELF],
+        itemsInStock: 'none',
+        needMoreOptions: 'none',
+      } as PantryApplicationDto;
 
-      await service.addPantry(mockPantryApplication);
-
-      expect(mockRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pantryName: mockPantryApplication.pantryName,
-          shipmentAddressLine1: mockPantryApplication.shipmentAddressLine1,
-          shipmentAddressLine2: mockPantryApplication.shipmentAddressLine2,
-          shipmentAddressCity: mockPantryApplication.shipmentAddressCity,
-          shipmentAddressState: mockPantryApplication.shipmentAddressState,
-          shipmentAddressZip: mockPantryApplication.shipmentAddressZip,
-          shipmentAddressCountry: mockPantryApplication.shipmentAddressCountry,
-          mailingAddressLine1: mockPantryApplication.mailingAddressLine1,
-          mailingAddressLine2: mockPantryApplication.mailingAddressLine2,
-          mailingAddressCity: mockPantryApplication.mailingAddressCity,
-          mailingAddressState: mockPantryApplication.mailingAddressState,
-          mailingAddressZip: mockPantryApplication.mailingAddressZip,
-          mailingAddressCountry: mockPantryApplication.mailingAddressCountry,
-          allergenClients: mockPantryApplication.allergenClients,
-          restrictions: mockPantryApplication.restrictions,
-          refrigeratedDonation: mockPantryApplication.refrigeratedDonation,
-          reserveFoodForAllergic: mockPantryApplication.reserveFoodForAllergic,
-          reservationExplanation: mockPantryApplication.reservationExplanation,
-          dedicatedAllergyFriendly:
-            mockPantryApplication.dedicatedAllergyFriendly,
-          clientVisitFrequency: mockPantryApplication.clientVisitFrequency,
-          identifyAllergensConfidence:
-            mockPantryApplication.identifyAllergensConfidence,
-          serveAllergicChildren: mockPantryApplication.serveAllergicChildren,
-          activities: mockPantryApplication.activities,
-          activitiesComments: mockPantryApplication.activitiesComments,
-          itemsInStock: mockPantryApplication.itemsInStock,
-          needMoreOptions: mockPantryApplication.needMoreOptions,
-          newsletterSubscription: true,
-        }),
-      );
+      await service.addPantry(dto);
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'Test Minimal Pantry' },
+        relations: ['pantryUser'],
+      });
+      expect(saved).toBeDefined();
+      expect(saved?.pantryUser?.email).toBe('jane.doe@example.com');
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
     });
 
-    it('should create pantry representative from contact info', async () => {
-      mockRepository.save.mockResolvedValueOnce(mockPendingPantry);
+    it('creates pantry with all optional fields included', async () => {
+      const dto: PantryApplicationDto = {
+        contactFirstName: 'John',
+        contactLastName: 'Smith',
+        contactEmail: 'john.smith@example.com',
+        contactPhone: '555-555-5556',
+        hasEmailContact: true,
+        emailContactOther: 'Use work phone',
+        secondaryContactFirstName: 'Sarah',
+        secondaryContactLastName: 'Johnson',
+        secondaryContactEmail: 'sarah.johnson@example.com',
+        secondaryContactPhone: '555-555-5557',
+        pantryName: 'Test Full Pantry',
+        shipmentAddressLine1: '100 Main St',
+        shipmentAddressLine2: 'Suite 200',
+        shipmentAddressCity: 'Springfield',
+        shipmentAddressState: 'IL',
+        shipmentAddressZip: '62701',
+        shipmentAddressCountry: 'USA',
+        mailingAddressLine1: '100 Main St',
+        mailingAddressLine2: 'Suite 200',
+        mailingAddressCity: 'Springfield',
+        mailingAddressState: 'IL',
+        mailingAddressZip: '62701',
+        mailingAddressCountry: 'USA',
+        allergenClients: '10 to 20',
+        restrictions: ['Peanut allergy', 'Tree nut allergy'],
+        refrigeratedDonation: RefrigeratedDonation.YES,
+        acceptFoodDeliveries: true,
+        deliveryWindowInstructions: 'Weekdays 9am-5pm',
+        reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
+        reservationExplanation: 'We have a dedicated section',
+        dedicatedAllergyFriendly: true,
+        clientVisitFrequency: ClientVisitFrequency.DAILY,
+        identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
+        serveAllergicChildren: ServeAllergicChildren.YES_MANY,
+        activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
+        activitiesComments: 'We are committed to allergen management',
+        itemsInStock: 'Canned goods, pasta',
+        needMoreOptions: 'Fresh produce',
+        newsletterSubscription: true,
+      } as PantryApplicationDto;
 
-      await service.addPantry(mockPantryApplication);
-
-      expect(mockRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pantryUser: expect.objectContaining({
-            firstName: mockPantryApplication.contactFirstName,
-            lastName: mockPantryApplication.contactLastName,
-            email: mockPantryApplication.contactEmail,
-            phone: mockPantryApplication.contactPhone,
-            role: 'pantry',
-          }),
-        }),
-      );
-    });
-
-    it('should throw error if save fails', async () => {
-      mockRepository.save.mockRejectedValueOnce(new Error('Database error'));
-
-      await expect(service.addPantry(mockPantryApplication)).rejects.toThrow(
-        'Database error',
-      );
-      expect(mockRepository.save).toHaveBeenCalled();
+      await service.addPantry(dto);
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'Test Full Pantry' },
+        relations: ['pantryUser'],
+      });
+      expect(saved).toBeDefined();
+      expect(saved?.pantryUser?.email).toBe('john.smith@example.com');
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
+      expect(saved?.secondaryContactFirstName).toBe('Sarah');
+      expect(saved?.shipmentAddressLine2).toBe('Suite 200');
     });
   });
 
-  // TODO: once pantry service tests are fixed, uncomment this out
-  // describe('findByUserId', () => {
-  //   it('should return a pantry by user id', async () => {
-  //     const userId = 10;
-  //     const pantry = await service.findByUserId(userId);
+  describe('getStatsForPantry', () => {
+    it('returns meaningful stats for pantry with orders', async () => {
+      const pantry = await service.findOne(1);
+      const stats = await service.getStatsForPantry(pantry);
+      expect(stats.totalItems).toBeGreaterThan(0);
+      expect(stats.totalOz).toBeGreaterThan(0);
+      expect(stats.pantryId).toBe(1);
+    });
+  });
 
-  //     expect(pantry.pantryId).toBe(1);
-  //     expect(pantry.pantryName).toBe('Community Food Pantry Downtown');
-  //     expect(mockRepository.findOne).toHaveBeenCalledWith({
-  //       where: { pantryUser: { id: userId } },
-  //     });
-  //   });
+  describe('getPantryStats', () => {
+    it('filters by pantry name correctly', async () => {
+      const stats = await service.getPantryStats([
+        'Community Food Pantry Downtown',
+      ]);
+      expect(stats.length).toBe(1);
+      expect(stats[0].pantryId).toBe(1);
+    });
 
-  //   it('should throw NotFoundException if pantry not found', async () => {
-  //     await expect(service.findByUserId(999)).rejects.toThrow(
-  //       new NotFoundException('Pantry for User 999 not found'),
-  //     );
-  //   });
-  // });
+    it('handles pagination', async () => {
+      const paged = await service.getPantryStats(undefined, undefined, 1);
+      expect(paged.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('filters by year correctly', async () => {
+      const yearFiltered = await service.getPantryStats(undefined, [2030]);
+      expect(yearFiltered.every((s) => s.totalItems === 0)).toBe(true);
+    });
+  });
+
+  describe('getTotalStats', () => {
+    it('aggregates stats across all pantries', async () => {
+      const total = await service.getTotalStats();
+      expect(total.totalItems).toBeGreaterThan(0);
+    });
+
+    it('respects year filter', async () => {
+      const totalEmpty = await service.getTotalStats([2030]);
+      expect(totalEmpty.totalItems).toBe(0);
+    });
+  });
+
+  it('findByIds success and failure', async () => {
+    const found = await service.findByIds([1, 2]);
+    expect(found.map((p) => p.pantryId)).toEqual([1, 2]);
+    await expect(service.findByIds([1, 9999])).rejects.toThrow();
+  });
+
+  it('findByUserId success and failure', async () => {
+    const res: any[] = await testDataSource.query(
+      `SELECT user_id FROM public.users WHERE email='pantry1@ssf.org' LIMIT 1`,
+    );
+    const userId = res[0].user_id;
+    const pantry = await service.findByUserId(userId);
+    expect(pantry.pantryId).toBe(1);
+    await expect(service.findByUserId(999999)).rejects.toThrow();
+  });
 });

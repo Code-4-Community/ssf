@@ -93,6 +93,10 @@ export class Order {
     precision: 10,
     scale: 2,
     nullable: true,
+    transformer: {
+      to: (v: number | null) => v,
+      from: (v: string | null) => (v !== null ? parseFloat(v) : null),
+    },
   })
   shippingCost!: number | null;
 }

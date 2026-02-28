@@ -1,3 +1,5 @@
+import { NumericType } from 'typeorm';
+
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',
@@ -39,3 +41,14 @@ export enum ReserveFoodForAllergic {
   SOME = 'Some',
   NO = 'No',
 }
+
+export type PantryStats = {
+  pantryId?: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+};

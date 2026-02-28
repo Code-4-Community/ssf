@@ -125,9 +125,6 @@ export interface Donation {
   donationId: number;
   dateDonated: string;
   status: DonationStatus;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
   recurrence: RecurrenceEnum;
   recurrenceFreq?: number;
