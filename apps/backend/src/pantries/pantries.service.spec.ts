@@ -21,6 +21,7 @@ import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
+import { stat } from 'fs';
 
 // This spec uses the migration-populated dummy data to exercise
 // PantriesService against a real database.  Each test resets the
@@ -108,23 +109,25 @@ describe('PantriesService (integration using dummy data)', () => {
     });
   });
 
-  describe('approve/deny', () => {
+  describe('approve', () => {
     it('approves a pending pantry', async () => {
       await service.approve(5);
       const p = await service.findOne(5);
-      expect(p.status).toBe('approved');
-    });
-
-    it('denies a pending pantry', async () => {
-      await service.deny(6);
-      const p = await service.findOne(6);
-      expect(p.status).toBe('denied');
+      expect(p.status).toBe(ApplicationStatus.APPROVED);
     });
 
     it('throws when approving non-existent', async () => {
       await expect(service.approve(9999)).rejects.toThrow(
         new NotFoundException('Pantry 9999 not found'),
       );
+    });
+  });
+
+  describe('deny', () => {
+    it('denies a pending pantry', async () => {
+      await service.deny(6);
+      const p = await service.findOne(6);
+      expect(p.status).toBe(ApplicationStatus.DENIED);
     });
 
     it('throws when denying non-existent', async () => {
@@ -229,17 +232,73 @@ describe('PantriesService (integration using dummy data)', () => {
   });
 
   describe('getStatsForPantry', () => {
-    it('returns meaningful stats for pantry with orders', async () => {
+    it('returns accurate aggregated stats for pantry with orders (Community Food Pantry Downtown)', async () => {
       const pantry = await service.findOne(1);
       const stats = await service.getStatsForPantry(pantry);
-      expect(stats.totalItems).toBeGreaterThan(0);
-      expect(stats.totalOz).toBeGreaterThan(0);
+
+      // From the dummy data migration: pantry 1 allocations total
+      // delivered allocations: 10 + 5 + 25 = 40
+      // pending allocations: 75 + 10 = 85
+      // totalItems = 125
       expect(stats.pantryId).toBe(1);
+      expect(stats.totalItems).toBe(125);
+
+      // totalOz: delivered (10*16 + 5*8.01 + 25*24) = 800.05
+      // pending (75*16 + 10*32) = 1520
+      // total = 2320.05
+      expect(stats.totalOz).toBeCloseTo(2320.05, 2);
+
+      // totalLbs is rounded to 2 decimals inside the service
+      expect(stats.totalLbs).toBeCloseTo(145.0, 2);
+
+      // total donated value: delivered (10*4.5 + 5*2 + 25*3) = 130
+      // pending (75*6 + 10*4.5) = 495 -> total = 625
+      expect(stats.totalDonatedFoodValue).toBeCloseTo(625.0, 2);
+
+      // Migration sets a default shipping cost (20.00) for delivered/shipped orders
+      // Community has one delivered order -> shippingCost = 20 -> totalValue = 625 + 20
+      expect(stats.totalValue).toBeCloseTo(645.0, 2);
+
+      // Dummy data contains no explicit foodRescue flags -> percentage 0
+      expect(stats.percentageFoodRescueItems).toBe(0);
+    });
+
+    it('returns zeroed stats for a pantry with no orders (Riverside Food Assistance)', async () => {
+      const pantry = await service.findOne(4);
+      const stats = await service.getStatsForPantry(pantry);
+      expect(stats.pantryId).toBe(4);
+      expect(stats.totalItems).toBe(0);
+      expect(stats.totalOz).toBe(0);
+      expect(stats.totalLbs).toBe(0);
+      expect(stats.totalDonatedFoodValue).toBe(0);
+      expect(stats.totalShippingCost).toBe(0);
+      expect(stats.totalValue).toBe(0);
+      expect(stats.percentageFoodRescueItems).toBe(0);
     });
   });
 
   describe('getPantryStats', () => {
-    it('filters by pantry name correctly', async () => {
+    it('filters by pantry name correctly and returns accurate sums', async () => {
+      const stats = await service.getPantryStats([
+        'Community Food Pantry Downtown',
+        'Westside Community Kitchen',
+      ]);
+      // Expect two pantries
+      expect(stats.length).toBe(2);
+
+      const community = stats.find((s) => s.pantryId === 1)!;
+      const westside = stats.find((s) => s.pantryId === 2)!;
+
+      expect(community).toBeDefined();
+      expect(community.totalItems).toBe(125);
+      expect(community.totalOz).toBeCloseTo(2320.05, 2);
+
+      expect(westside).toBeDefined();
+      expect(westside.totalItems).toBe(65);
+      expect(westside.totalOz).toBeCloseTo(1195.0, 2);
+    });
+
+    it('accepts single pantry name as string', async () => {
       const stats = await service.getPantryStats([
         'Community Food Pantry Downtown',
       ]);
@@ -247,42 +306,134 @@ describe('PantriesService (integration using dummy data)', () => {
       expect(stats[0].pantryId).toBe(1);
     });
 
-    it('handles pagination', async () => {
-      const paged = await service.getPantryStats(undefined, undefined, 1);
-      expect(paged.length).toBeGreaterThanOrEqual(1);
+    it('pagination beyond range returns empty array', async () => {
+      const paged = await service.getPantryStats(undefined, undefined, 100);
+      expect(paged.length).toBe(0);
     });
 
-    it('filters by year correctly', async () => {
+    it('filters by year correctly (no results for future year)', async () => {
       const yearFiltered = await service.getPantryStats(undefined, [2030]);
       expect(yearFiltered.every((s) => s.totalItems === 0)).toBe(true);
+    });
+
+    it('pagination page returns first 10 items', async () => {
+      // Get over 10 pantries in the system to verify pagination
+      for (let i = 0; i < 10; i++) {
+        await service.addPantry({
+          contactFirstName: `Bulk${i}`,
+          contactLastName: 'Tester',
+          contactEmail: `bulk${i}@example.com`,
+          contactPhone: '555-000-0000',
+          hasEmailContact: false,
+          pantryName: `BulkTest Pantry ${i}`,
+          shipmentAddressLine1: '1 Bulk St',
+          shipmentAddressCity: 'Testville',
+          shipmentAddressState: 'TS',
+          shipmentAddressZip: '00000',
+          mailingAddressLine1: '1 Bulk St',
+          mailingAddressCity: 'Testville',
+          mailingAddressState: 'TS',
+          mailingAddressZip: '00000',
+          allergenClients: 'none',
+          restrictions: ['none'],
+          refrigeratedDonation: RefrigeratedDonation.NO,
+          acceptFoodDeliveries: false,
+          reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+          dedicatedAllergyFriendly: false,
+          activities: [Activity.CREATE_LABELED_SHELF],
+          itemsInStock: 'none',
+          needMoreOptions: 'none',
+        } as PantryApplicationDto);
+      }
+
+      const page1 = await service.getPantryStats(undefined, undefined, 1);
+      expect(page1.length).toBe(10);
+    });
+
+    it('year filter isolates orders by year (move one delivered order to 2025)', async () => {
+      // Find the delivered order for Community Food Pantry Downtown and set its created_at to 2025
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2025-01-16 09:00:00'
+        WHERE order_id = (
+          SELECT o.order_id FROM public.orders o
+          JOIN public.food_requests r ON o.request_id = r.request_id
+          WHERE r.pantry_id = (
+            SELECT pantry_id FROM public.pantries WHERE pantry_name = 'Community Food Pantry Downtown' LIMIT 1
+          ) AND o.status = 'delivered'
+          ORDER BY o.order_id DESC
+          LIMIT 1
+        )
+      `);
+
+      const res = await service.getPantryStats(undefined, [2025]);
+      const community = res.find((s) => s.pantryId === 1);
+      expect(community).toBeDefined();
+      expect(community!.totalItems).toBe(40);
+      expect(community!.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
     });
   });
 
   describe('getTotalStats', () => {
-    it('aggregates stats across all pantries', async () => {
+    it('aggregates stats across all pantries and matches migration sums', async () => {
       const total = await service.getTotalStats();
-      expect(total.totalItems).toBeGreaterThan(0);
+
+      // totalItems: 125 + 65 + 30 = 220
+      expect(total.totalItems).toBe(220);
+
+      // totalOz: 2320.05 + 1195 + 1015 = 4530.05
+      expect(total.totalOz).toBeCloseTo(4530.05, 2);
+
+      // totalLbs: 145.00 + 74.69 + 63.44 = 283.13
+      expect(total.totalLbs).toBeCloseTo(283.13, 2);
+
+      // total donated value: 625 + 292.5 + 170 = 1087.5
+      expect(total.totalDonatedFoodValue).toBeCloseTo(1087.5, 2);
+
+      // shipping costs were applied to delivered/shipped orders
+      expect(total.totalShippingCost).toBeCloseTo(60.0, 2);
+
+      expect(total.totalValue).toBeCloseTo(1147.5, 2);
     });
 
-    it('respects year filter', async () => {
+    it('respects year filter and returns zeros for non-matching years', async () => {
       const totalEmpty = await service.getTotalStats([2030]);
+      expect(totalEmpty).toBeDefined();
       expect(totalEmpty.totalItems).toBe(0);
+      expect(totalEmpty.totalOz).toBe(0);
+      expect(totalEmpty.totalLbs).toBe(0);
+      expect(totalEmpty.totalDonatedFoodValue).toBe(0);
+      expect(totalEmpty.totalShippingCost).toBe(0);
+      expect(totalEmpty.totalValue).toBe(0);
+      expect(totalEmpty.percentageFoodRescueItems).toBe(0);
     });
   });
 
-  it('findByIds success and failure', async () => {
-    const found = await service.findByIds([1, 2]);
-    expect(found.map((p) => p.pantryId)).toEqual([1, 2]);
-    await expect(service.findByIds([1, 9999])).rejects.toThrow();
+  describe('findByIds', () => {
+    it('findByIds success', async () => {
+      const found = await service.findByIds([1, 2]);
+      expect(found.map((p) => p.pantryId)).toEqual([1, 2]);
+    });
+
+    it('findByIds with some non-existent IDs throws NotFoundException', async () => {
+      await expect(service.findByIds([1, 9999])).rejects.toThrow(
+        new NotFoundException('Pantries not found: 9999'),
+      );
+    });
   });
 
-  it('findByUserId success and failure', async () => {
-    const res: any[] = await testDataSource.query(
-      `SELECT user_id FROM public.users WHERE email='pantry1@ssf.org' LIMIT 1`,
-    );
-    const userId = res[0].user_id;
-    const pantry = await service.findByUserId(userId);
-    expect(pantry.pantryId).toBe(1);
-    await expect(service.findByUserId(999999)).rejects.toThrow();
+  describe('findByUserId', () => {
+    it('findByUserId success', async () => {
+      const pantry = await service.findOne(1);
+      const userId = pantry.pantryUser.id;
+      const result = await service.findByUserId(userId);
+      expect(result.pantryId).toBe(1);
+    });
+
+    it('findByUserId with non-existent user throws NotFoundException', async () => {
+      await expect(service.findByUserId(9999)).rejects.toThrow(
+        new NotFoundException('Pantry for User 9999 not found'),
+      );
+    });
   });
 });

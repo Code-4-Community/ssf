@@ -36,7 +36,7 @@ export class PantriesService {
     return pantry;
   }
 
-  // Get all order stats for a pantry, with optional filtering by year
+  // Helper to get all order stats for a pantry, with optional filtering by year
   async getStatsForPantry(
     pantry: Pantry,
     years?: number[],
