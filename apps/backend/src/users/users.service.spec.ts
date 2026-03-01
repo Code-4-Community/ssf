@@ -5,10 +5,13 @@ import { User } from './user.entity';
 import { Role } from './types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
+import { AuthService } from '../auth/auth.service';
+import { mock } from 'jest-mock-extended';
 
 jest.setTimeout(60000);
+
+const mockAuthService = mock<AuthService>();
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -24,7 +27,6 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
-        PantriesService,
         {
           provide: getRepositoryToken(User),
           useValue: testDataSource.getRepository(User),
@@ -32,6 +34,10 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
     }).compile();
@@ -41,9 +47,11 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     await testDataSource.runMigrations();
+    mockAuthService.adminCreateUser.mockResolvedValue('mock-cognito-sub');
   });
 
   afterEach(async () => {
+    mockAuthService.adminCreateUser.mockReset();
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
@@ -59,41 +67,59 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    it('should create a new user with auto-generated ID', async () => {
-      const result = await service.create(
-        'newuser@example.com',
-        'Jane',
-        'Smith',
-        '9876543210',
-        Role.ADMIN,
-      );
-
-      expect(result).toMatchObject({
+    it('should create a new volunteer user', async () => {
+      const dto = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.ADMIN,
+        role: Role.VOLUNTEER,
+      };
+
+      const result = await service.create(dto);
+
+      expect(result).toMatchObject({
+        email: dto.email,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        role: Role.VOLUNTEER,
       });
       expect(result.id).toBeDefined();
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+      });
+    });
+
+    it('should throw NotFoundException when creating pantry user with unknown email', async () => {
+      const dto = {
+        email: 'nonexistent@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        phone: '9876543210',
+        role: Role.PANTRY,
+      };
+
+      await expect(service.create(dto)).rejects.toThrow(
+        new NotFoundException(`User with email ${dto.email} not found`),
+      );
     });
   });
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      const created = await service.create(
-        'find@example.com',
-        'John',
-        'Doe',
-        '1234567890',
-        Role.VOLUNTEER,
-      );
+      const created = await service.create({
+        email: 'find@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '1234567890',
+        role: Role.VOLUNTEER,
+      });
 
       const result = await service.findOne(created.id);
-      expect(result).toMatchObject({
-        id: created.id,
-        email: 'find@example.com',
-      });
+      expect(result).toMatchObject({ id: created.id, email: 'find@example.com' });
     });
 
     it('should throw NotFoundException when user is not found', async () => {
@@ -109,18 +135,45 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findByEmail', () => {
-    it('should return user by email', async () => {
-      await service.create(
-        'email@example.com',
-        'Jane',
-        'Doe',
-        '1111111111',
-        Role.PANTRY,
-      );
+  describe('findVolunteer', () => {
+    it('should return a volunteer with pantries', async () => {
+      const created = await service.create({
+        email: 'vol@example.com',
+        firstName: 'Vol',
+        lastName: 'User',
+        phone: '1234567890',
+        role: Role.VOLUNTEER,
+      });
 
-      const result = await service.findByEmail('email@example.com');
-      expect(result).toMatchObject({ email: 'email@example.com' });
+      const result = await service.findVolunteer(created.id);
+      expect(result).toMatchObject({ id: created.id, role: Role.VOLUNTEER });
+      expect(result.pantries).toBeDefined();
+    });
+
+    it('should throw NotFoundException when volunteer not found', async () => {
+      await expect(service.findVolunteer(999)).rejects.toThrow(
+        new NotFoundException('User 999 not found'),
+      );
+    });
+
+    it('should throw BadRequestException when user is not a volunteer', async () => {
+      const created = await service.create({
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        phone: '1234567890',
+        role: Role.ADMIN,
+      });
+
+      await expect(service.findVolunteer(created.id)).rejects.toThrow(
+        new BadRequestException(`User ${created.id} is not a volunteer`),
+      );
+    });
+
+    it('should throw BadRequestException for invalid id', async () => {
+      await expect(service.findVolunteer(-1)).rejects.toThrow(
+        new BadRequestException('Invalid Volunteer ID'),
+      );
     });
   });
 
@@ -128,19 +181,17 @@ describe('UsersService', () => {
     let testUser: User;
 
     beforeEach(async () => {
-      testUser = await service.create(
-        'update@example.com',
-        'John',
-        'Doe',
-        '1234567890',
-        Role.VOLUNTEER,
-      );
+      testUser = await service.create({
+        email: 'update@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '1234567890',
+        role: Role.VOLUNTEER,
+      });
     });
 
     it('should update firstName', async () => {
-      const result = await service.update(testUser.id, {
-        firstName: 'Updated',
-      });
+      const result = await service.update(testUser.id, { firstName: 'Updated' });
 
       expect(result.firstName).toBe('Updated');
       expect(result.lastName).toBe(testUser.lastName);
@@ -169,9 +220,7 @@ describe('UsersService', () => {
     });
 
     it('should not overwrite fields absent from the DTO', async () => {
-      const result = await service.update(testUser.id, {
-        firstName: 'OnlyFirst',
-      });
+      const result = await service.update(testUser.id, { firstName: 'OnlyFirst' });
 
       expect(result.firstName).toBe('OnlyFirst');
       expect(result.lastName).toBe(testUser.lastName);
@@ -182,39 +231,35 @@ describe('UsersService', () => {
 
     it('should throw BadRequestException when DTO is empty', async () => {
       await expect(service.update(testUser.id, {})).rejects.toThrow(
-        new BadRequestException(
-          'At least one field must be provided to update',
-        ),
+        new BadRequestException('At least one field must be provided to update'),
       );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      await expect(
-        service.update(999, { firstName: 'Updated' }),
-      ).rejects.toThrow(new NotFoundException('User 999 not found'));
+      await expect(service.update(999, { firstName: 'Updated' })).rejects.toThrow(
+        new NotFoundException('User 999 not found'),
+      );
     });
 
     it('should throw BadRequestException for invalid id', async () => {
-      await expect(
-        service.update(-1, { firstName: 'Updated' }),
-      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
+      await expect(service.update(-1, { firstName: 'Updated' })).rejects.toThrow(
+        new BadRequestException('Invalid User ID'),
+      );
     });
   });
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      const created = await service.create(
-        'remove@example.com',
-        'John',
-        'Doe',
-        '1234567890',
-        Role.VOLUNTEER,
-      );
+      const created = await service.create({
+        email: 'remove@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '1234567890',
+        role: Role.VOLUNTEER,
+      });
 
       await service.remove(created.id);
-      await expect(service.findOne(created.id)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when user is not found', async () => {
@@ -232,13 +277,13 @@ describe('UsersService', () => {
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const created = await service.create(
-        'vol@example.com',
-        'Vol',
-        'User',
-        '2222222222',
-        Role.VOLUNTEER,
-      );
+      const created = await service.create({
+        email: 'vol@example.com',
+        firstName: 'Vol',
+        lastName: 'User',
+        phone: '2222222222',
+        role: Role.VOLUNTEER,
+      });
 
       const result = await service.findUsersByRoles([Role.VOLUNTEER]);
 
