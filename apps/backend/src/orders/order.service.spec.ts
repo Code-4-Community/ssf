@@ -300,7 +300,6 @@ describe('OrdersService', () => {
       const years = orders.map((o) => new Date(o.createdAt).getFullYear());
       expect(years).toContain(2025);
       expect(years).not.toContain(2026);
-      // Remaining orders may still be 2024; none should be 2026
       expect(years.every((y) => y === 2024 || y === 2025)).toBe(true);
     });
 

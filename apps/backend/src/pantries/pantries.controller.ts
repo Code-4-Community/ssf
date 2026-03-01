@@ -40,6 +40,7 @@ export class PantriesController {
     private emailsService: EmailsService,
   ) {}
 
+  @Roles(Role.ADMIN)
   @Get('/stats-by-pantry')
   async getPantryStats(
     @Query('pantryNames') pantryNames?: string[],
@@ -49,6 +50,7 @@ export class PantriesController {
     return this.pantriesService.getPantryStats(pantryNames, years, page);
   }
 
+  @Roles(Role.ADMIN)
   @Get('/total-stats')
   async getTotalStats(): Promise<PantryStats> {
     return this.pantriesService.getTotalStats();

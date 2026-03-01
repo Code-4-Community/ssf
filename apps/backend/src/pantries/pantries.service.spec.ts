@@ -14,18 +14,11 @@ import {
   AllergensConfidence,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
-
-// database helpers
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
-import { stat } from 'fs';
-
-// This spec uses the migration-populated dummy data to exercise
-// PantriesService against a real database.  Each test resets the
-// schema to guarantee isolation.
 
 describe('PantriesService (integration using dummy data)', () => {
   let service: PantriesService;
@@ -283,7 +276,6 @@ describe('PantriesService (integration using dummy data)', () => {
         'Community Food Pantry Downtown',
         'Westside Community Kitchen',
       ]);
-      // Expect two pantries
       expect(stats.length).toBe(2);
 
       const community = stats.find((s) => s.pantryId === 1)!;

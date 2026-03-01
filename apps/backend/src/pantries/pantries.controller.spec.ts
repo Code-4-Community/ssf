@@ -17,7 +17,7 @@ import {
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 

@@ -363,3 +363,14 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export interface PantryStats {
+  pantryId?: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+}
