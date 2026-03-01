@@ -198,6 +198,21 @@ export class DonationService {
     }
   }
 
+  /**
+   * Calculates next single donation date from a given currentDate during recurring donation processing
+   *
+   * used by handleRecurringDonations to determine the replacement date when an occurrence is processed
+   * unlike generateNextDonationDates, this always returns exactly one date and doesn't consider
+   *  multiple selected days for weekly recurrence
+   *
+   * for MONTHLY/YEARLY recurrence, dates > 28 are clamped to 28 before adding the interval to
+   *  prevent date rollover
+   *
+   * @param currentDate - date to calculate from (typically an expired donation date)
+   * @param recurrence - recurrence type (WEEKLY, MONTHLY, YEARLY, or NONE)
+   * @param recurrenceFreq - how many weeks/months/years to add (defaults to 1)
+   * @returns a new Date representing the next occurrence
+   */
   private calculateNextDate(
     currentDate: Date,
     recurrence: RecurrenceEnum,
@@ -209,9 +224,11 @@ export class DonationService {
         nextDate.setDate(nextDate.getDate() + 7 * recurrenceFreq);
         break;
       case RecurrenceEnum.MONTHLY:
+        if (nextDate.getDate() > 28) nextDate.setDate(28);
         nextDate.setMonth(nextDate.getMonth() + recurrenceFreq);
         break;
       case RecurrenceEnum.YEARLY:
+        if (nextDate.getDate() > 28) nextDate.setDate(28);
         nextDate.setFullYear(nextDate.getFullYear() + recurrenceFreq);
         break;
       default:
@@ -220,6 +237,21 @@ export class DonationService {
     return nextDate;
   }
 
+  /**
+   * Generates the initial set of next donation dates when creating a new recurring donation.
+   *
+   * WEEKLY recurrence: returns multiple dates if multiple DOWs are selected
+   * dates offset by recurrenceFreq weeks from the fromDate
+   *
+   * MONTHLY/YEARLY recurrence: returns single date offset by recurrenceFreq months/years
+   * dates clamped to 28th to avoid month-end rollover issues
+   *
+   * @param fromDate - base date to calculate from (typically current date at donation creation)
+   * @param recurrenceFreq - how many weeks/months/years between occurrences
+   * @param recurrence - recurrence type (WEEKLY, MONTHLY, YEARLY, or NONE)
+   * @param repeatOnDays - for WEEKLY recurrence only: which DOW to repeat on
+   * @returns array of IOS date strings representing initial scheduled donation dates
+   */
   async generateNextDonationDates(
     fromDate: Date,
     recurrenceFreq: number,
