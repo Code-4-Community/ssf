@@ -59,6 +59,9 @@ export class OwnershipGuard implements CanActivate {
         entityId,
         services,
       });
+      console.log(
+        `Ownership check for entity ${entityId}: ownerId=${ownerId}, user.id=${user.id}, user.role=${user.role}`,
+      );
 
       if (ownerId === null || ownerId === undefined) {
         throw new ForbiddenException('Unable to determine resource ownership');

@@ -30,6 +30,7 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller('orders')
 export class OrdersController {

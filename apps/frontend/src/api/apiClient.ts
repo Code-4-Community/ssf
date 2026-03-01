@@ -1,3 +1,4 @@
+import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
   AxiosResponse,
@@ -37,11 +38,12 @@ export class ApiClient {
     // Attach the access token to each request if available
     // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = this.accessToken || localStorage.getItem('accessToken');
+      async (config: InternalAxiosRequestConfig) => {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.accessToken?.toString();
+
         if (token) {
-          config.headers = config.headers || {};
-          config.headers['Authorization'] = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
@@ -51,28 +53,14 @@ export class ApiClient {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 403 && this.navigate) {
-          const errorData = error.response?.data as { message?: string };
-          this.navigate('/unauthorized', {
-            replace: true,
-            state: {
-              errorMessage: errorData?.message || 'Access forbidden',
-            },
-          });
+        if (error.response?.status === 403) {
+          window.location.replace('/unauthorized');
         }
         // In case this.navgiate is not initialized, fall back on window relocation
         window.location.href = 'unauthorized';
         return Promise.reject(error);
       },
     );
-  }
-
-  public setNavigate(navigate: NavigateFunction) {
-    this.navigate = navigate;
-  }
-
-  public setAccessToken(token: string | undefined) {
-    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -192,7 +180,7 @@ export class ApiClient {
   }
 
   public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/users/volunteers') as Promise<User[]>;
+    return this.get('/api/volunteers/') as Promise<User[]>;
   }
 
   public async updateUserVolunteerRole(

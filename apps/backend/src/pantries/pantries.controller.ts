@@ -28,11 +28,12 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { OwnershipGuard } from '../auth/ownership.guard';
-import { CheckOwnership } from '../auth/ownership.decorator';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { EmailsService } from '../emails/email.service';
 import { SendEmailDTO } from '../emails/dto/send-email.dto';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 @Controller('pantries')
 export class PantriesController {
@@ -63,8 +64,10 @@ export class PantriesController {
   @CheckOwnership({
     idParam: 'pantryId',
     resolver: async ({ entityId, services }) => {
-      const pantry = await services.get(PantriesService).findOne(entityId);
-      return pantry?.pantryUser?.id ?? null;
+      return pipeNullable(
+        () => services.get(PantriesService).findOne(entityId),
+        (pantry: Pantry) => pantry.pantryUser?.id,
+      );
     },
   })
   @Roles(Role.PANTRY, Role.ADMIN)
