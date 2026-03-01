@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donations.entity';
@@ -52,15 +57,22 @@ export class DonationService {
       );
     }
 
-    const nextDonationDates =
-      donationData.recurrence !== RecurrenceEnum.NONE
-        ? await this.generateNextDonationDates(
-            new Date(),
-            donationData.recurrenceFreq,
-            donationData.recurrence,
-            donationData.repeatOnDays ?? null,
-          )
-        : null;
+    let nextDonationDates = null;
+
+    if (donationData.recurrence !== RecurrenceEnum.NONE) {
+      if (donationData.recurrenceFreq == null) {
+        throw new BadRequestException(
+          'recurrenceFreq is required for recurring donations',
+        );
+      }
+
+      nextDonationDates = await this.generateNextDonationDates(
+        new Date(),
+        donationData.recurrenceFreq,
+        donationData.recurrence,
+        donationData.repeatOnDays ?? null,
+      );
+    }
 
     const donation = this.repo.create({
       foodManufacturer: manufacturer,
@@ -216,20 +228,21 @@ export class DonationService {
   private calculateNextDate(
     currentDate: Date,
     recurrence: RecurrenceEnum,
-    recurrenceFreq = 1,
+    recurrenceFreq: number | null = 1,
   ): Date {
+    const freq = recurrenceFreq ?? 1;
     const nextDate = new Date(currentDate);
     switch (recurrence) {
       case RecurrenceEnum.WEEKLY:
-        nextDate.setDate(nextDate.getDate() + 7 * recurrenceFreq);
+        nextDate.setDate(nextDate.getDate() + 7 * freq);
         break;
       case RecurrenceEnum.MONTHLY:
         if (nextDate.getDate() > 28) nextDate.setDate(28);
-        nextDate.setMonth(nextDate.getMonth() + recurrenceFreq);
+        nextDate.setMonth(nextDate.getMonth() + freq);
         break;
       case RecurrenceEnum.YEARLY:
         if (nextDate.getDate() > 28) nextDate.setDate(28);
-        nextDate.setFullYear(nextDate.getFullYear() + recurrenceFreq);
+        nextDate.setFullYear(nextDate.getFullYear() + freq);
         break;
       default:
         break;

@@ -164,7 +164,8 @@ describe('DonationService', () => {
         await service.handleRecurringDonations();
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates.length).toEqual(1);
+        expect(donation.nextDonationDates).not.toBeNull();
+        expect(donation.nextDonationDates?.length).toEqual(1);
         expect(donation.occurrencesRemaining).toEqual(3);
       });
     });
@@ -185,8 +186,9 @@ describe('DonationService', () => {
         expectedNextDate.setDate(expectedNextDate.getDate() + 7);
 
         const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
-        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(2);
@@ -210,8 +212,9 @@ describe('DonationService', () => {
         expectedNextDate.setMonth(expectedNextDate.getMonth() + 1);
 
         const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
-        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(2);
@@ -235,8 +238,9 @@ describe('DonationService', () => {
         expectedNextDate.setFullYear(expectedNextDate.getFullYear() + 1);
 
         const donation = await service.findOne(donationId);
+        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
-        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(2);
@@ -264,7 +268,7 @@ describe('DonationService', () => {
 
         expect(donation.nextDonationDates).toHaveLength(2);
 
-        const times = donation.nextDonationDates.map((d) =>
+        const times = (donation.nextDonationDates ?? []).map((d) =>
           new Date(d).getTime(),
         );
         expect(times).toContain(futureDate.getTime());
@@ -337,11 +341,14 @@ describe('DonationService', () => {
         await service.handleRecurringDonations();
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.occurrencesRemaining).toEqual(1);
-        expect(
-          new Date(donation.nextDonationDates[0]).getTime(),
-        ).toBeGreaterThan(new Date().getTime());
+        expect(donation.nextDonationDates).not.toBeNull();
+        expect(donation.nextDonationDates).toHaveLength(1);
+        if (donation.nextDonationDates?.[0]) {
+          expect(
+            new Date(donation.nextDonationDates[0]).getTime(),
+          ).toBeGreaterThan(new Date().getTime());
+        }
       });
 
       it('stops advancing and schedules no replacement when occurrences run out mid-cascade', async () => {
@@ -405,20 +412,25 @@ describe('DonationService', () => {
           donationId0Recurrences,
         );
 
+        expect(donation1.nextDonationDates).not.toBeNull();
         expect(donation1.nextDonationDates).toHaveLength(1);
-        expect(
-          new Date(donation1.nextDonationDates[0]).getTime(),
-        ).toBeGreaterThan(new Date().getTime());
-        expect(donation1.nextDonationDates[0].toDateString()).toEqual(
+        if (donation1.nextDonationDates?.[0]) {
+          expect(
+            new Date(donation1.nextDonationDates[0]).getTime(),
+          ).toBeGreaterThan(new Date().getTime());
+        }
+        expect(donation1.nextDonationDates?.[0].toDateString()).toEqual(
           daysFromNow(7).toDateString(),
         );
         expect(donation1.occurrencesRemaining).toEqual(1);
 
+        expect(donation2.nextDonationDates).not.toBeNull();
         expect(donation2.nextDonationDates).toHaveLength(0);
         expect(donation2.occurrencesRemaining).toEqual(0);
 
+        expect(donation3.nextDonationDates).not.toBeNull();
         expect(donation3.nextDonationDates).toHaveLength(1);
-        expect(new Date(donation3.nextDonationDates[0]).toDateString()).toEqual(
+        expect(donation3.nextDonationDates?.[0].toDateString()).toEqual(
           futureDate.toDateString(),
         );
         expect(donation3.occurrencesRemaining).toEqual(3);
@@ -444,7 +456,8 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
-        expect(donation.nextDonationDates[0].getDate()).toEqual(28);
+        expect(donation.nextDonationDates).not.toBeNull();
+        expect(donation.nextDonationDates?.[0].getDate()).toEqual(28);
       });
     });
 
@@ -462,8 +475,9 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
+        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
-        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           daysFromNow(7).toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(2);
@@ -482,8 +496,9 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
+        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
-        expect(donation.nextDonationDates[0].toDateString()).toEqual(
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           tomorrow.toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(3);
