@@ -1,48 +1,37 @@
-import { NotFoundException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
-import { mock } from 'jest-mock-extended';
-import { In } from 'typeorm';
-import { BadRequestException } from '@nestjs/common';
+import { testDataSource } from '../config/typeormTestDataSource';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { PantriesService } from '../pantries/pantries.service';
+import { Pantry } from '../pantries/pantries.entity';
 
-const mockUserRepository = mock<Repository<User>>();
-const mockPantriesService = mock<PantriesService>();
-
-const mockUser: Partial<User> = {
-  id: 1,
-  email: 'test@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '1234567890',
-  role: Role.VOLUNTEER,
-};
+jest.setTimeout(60000);
 
 describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
-    mockUserRepository.create.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.findOneBy.mockReset();
-    mockUserRepository.find.mockReset();
-    mockUserRepository.remove.mockReset();
-    mockPantriesService.findByIds.mockReset();
+    if (!testDataSource.isInitialized) {
+      await testDataSource.initialize();
+    }
 
-    const module = await Test.createTestingModule({
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
+        PantriesService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockUserRepository,
+          useValue: testDataSource.getRepository(User),
         },
         {
-          provide: PantriesService,
-          useValue: mockPantriesService,
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
         },
       ],
     }).compile();
@@ -50,17 +39,19 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
   });
 
-  beforeEach(() => {
-    mockUserRepository.create.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.findOneBy.mockReset();
-    mockUserRepository.find.mockReset();
-    mockUserRepository.remove.mockReset();
-    mockPantriesService.findByIds.mockReset();
+  beforeEach(async () => {
+    await testDataSource.runMigrations();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  afterEach(async () => {
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+  });
+
+  afterAll(async () => {
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
   });
 
   it('should be defined', () => {
@@ -69,51 +60,43 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a new user with auto-generated ID', async () => {
-      const userData = {
+      const result = await service.create(
+        'newuser@example.com',
+        'Jane',
+        'Smith',
+        '9876543210',
+        Role.ADMIN,
+      );
+
+      expect(result).toMatchObject({
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
         role: Role.ADMIN,
-      } as User;
-
-      const createdUser = { ...userData, id: 1 };
-      mockUserRepository.create.mockReturnValue(createdUser);
-      mockUserRepository.save.mockResolvedValue(createdUser);
-
-      const result = await service.create(
-        userData.email,
-        userData.firstName,
-        userData.lastName,
-        userData.phone,
-        userData.role,
-      );
-
-      expect(result).toEqual(createdUser);
-      expect(mockUserRepository.create).toHaveBeenCalledWith({
-        role: userData.role,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phone: userData.phone,
       });
-      expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
+      expect(result.id).toBeDefined();
     });
   });
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      const created = await service.create(
+        'find@example.com',
+        'John',
+        'Doe',
+        '1234567890',
+        Role.VOLUNTEER,
+      );
 
-      const result = await service.findOne(1);
-
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      const result = await service.findOne(created.id);
+      expect(result).toMatchObject({
+        id: created.id,
+        email: 'find@example.com',
+      });
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(service.findOne(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
       );
@@ -123,69 +106,118 @@ describe('UsersService', () => {
       await expect(service.findOne(-1)).rejects.toThrow(
         new BadRequestException('Invalid User ID'),
       );
-
-      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
     });
   });
 
   describe('findByEmail', () => {
     it('should return user by email', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
+      await service.create(
+        'email@example.com',
+        'Jane',
+        'Doe',
+        '1111111111',
+        Role.PANTRY,
+      );
 
-      const result = await service.findByEmail('test@example.com');
-
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({
-        email: 'test@example.com',
-      });
+      const result = await service.findByEmail('email@example.com');
+      expect(result).toMatchObject({ email: 'email@example.com' });
     });
   });
 
   describe('update', () => {
-    it('should update user attributes', async () => {
-      const updateData = { firstName: 'Updated', role: Role.ADMIN };
-      const updatedUser = { ...mockUser, ...updateData };
+    let testUser: User;
 
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+    beforeEach(async () => {
+      testUser = await service.create(
+        'update@example.com',
+        'John',
+        'Doe',
+        '1234567890',
+        Role.VOLUNTEER,
+      );
+    });
 
-      const result = await service.update(1, updateData);
+    it('should update firstName', async () => {
+      const result = await service.update(testUser.id, {
+        firstName: 'Updated',
+      });
 
-      expect(result).toEqual(updatedUser);
-      expect(mockUserRepository.save).toHaveBeenCalledWith(updatedUser);
+      expect(result.firstName).toBe('Updated');
+      expect(result.lastName).toBe(testUser.lastName);
+    });
+
+    it('should update lastName', async () => {
+      const result = await service.update(testUser.id, { lastName: 'Smith' });
+
+      expect(result.lastName).toBe('Smith');
+    });
+
+    it('should update phone', async () => {
+      const result = await service.update(testUser.id, { phone: '0987654321' });
+
+      expect(result.phone).toBe('0987654321');
+    });
+
+    it('should update multiple fields at once', async () => {
+      const result = await service.update(testUser.id, {
+        firstName: 'Updated',
+        lastName: 'Smith',
+      });
+
+      expect(result.firstName).toBe('Updated');
+      expect(result.lastName).toBe('Smith');
+    });
+
+    it('should not overwrite fields absent from the DTO', async () => {
+      const result = await service.update(testUser.id, {
+        firstName: 'OnlyFirst',
+      });
+
+      expect(result.firstName).toBe('OnlyFirst');
+      expect(result.lastName).toBe(testUser.lastName);
+      expect(result.email).toBe(testUser.email);
+      expect(result.phone).toBe(testUser.phone);
+      expect(result.role).toBe(testUser.role);
+    });
+
+    it('should throw BadRequestException when DTO is empty', async () => {
+      await expect(service.update(testUser.id, {})).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(
         service.update(999, { firstName: 'Updated' }),
       ).rejects.toThrow(new NotFoundException('User 999 not found'));
     });
 
-    it('should throw error for invalid id', async () => {
+    it('should throw BadRequestException for invalid id', async () => {
       await expect(
         service.update(-1, { firstName: 'Updated' }),
       ).rejects.toThrow(new BadRequestException('Invalid User ID'));
-
-      expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
   });
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-      mockUserRepository.remove.mockResolvedValue(mockUser as User);
+      const created = await service.create(
+        'remove@example.com',
+        'John',
+        'Doe',
+        '1234567890',
+        Role.VOLUNTEER,
+      );
 
-      const result = await service.remove(1);
-
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.remove).toHaveBeenCalledWith(mockUser);
+      await service.remove(created.id);
+      await expect(service.findOne(created.id)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(service.remove(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
       );
@@ -195,32 +227,33 @@ describe('UsersService', () => {
       await expect(service.remove(-1)).rejects.toThrow(
         new BadRequestException('Invalid User ID'),
       );
-
-      expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });
   });
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const roles = [Role.ADMIN, Role.VOLUNTEER];
-      const users = [mockUser];
-      mockUserRepository.find.mockResolvedValue(users as User[]);
+      const created = await service.create(
+        'vol@example.com',
+        'Vol',
+        'User',
+        '2222222222',
+        Role.VOLUNTEER,
+      );
 
-      const result = await service.findUsersByRoles(roles);
+      const result = await service.findUsersByRoles([Role.VOLUNTEER]);
 
-      expect(result).toEqual(users);
-      expect(mockUserRepository.find).toHaveBeenCalledWith({
-        where: { role: In(roles) },
-        relations: ['pantries'],
-      });
+      expect(result.some((u) => u.id === created.id)).toBe(true);
+      expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
     });
 
-    it('should return empty array when no users found', async () => {
-      const roles = [Role.ADMIN];
-      mockUserRepository.find.mockResolvedValue([]);
+    it('should return empty array when no users match roles', async () => {
+      await testDataSource.query(`DELETE FROM "allocations"`);
+      await testDataSource.query(`DELETE FROM "orders"`);
+      await testDataSource.query(`DELETE FROM "food_requests"`);
+      await testDataSource.query(`DELETE FROM "pantries"`);
+      await testDataSource.query(`DELETE FROM "users" WHERE role = 'pantry'`);
 
-      const result = await service.findUsersByRoles(roles);
-
+      const result = await service.findUsersByRoles([Role.PANTRY]);
       expect(result).toEqual([]);
     });
   });

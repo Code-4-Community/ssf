@@ -4,15 +4,14 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Put,
   Post,
-  BadRequestException,
   Body,
+  Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { updateUserInfo } from './dtos/update-user-info.dto';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Controller('users')
@@ -43,15 +42,12 @@ export class UsersController {
     return this.usersService.remove(userId);
   }
 
-  @Put('/:id/role')
-  async updateRole(
+  @Patch('/:id')
+  async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string,
+    @Body() dto: updateUserInfo,
   ): Promise<User> {
-    if (!Object.values(Role).includes(role as Role)) {
-      throw new BadRequestException('Invalid role');
-    }
-    return this.usersService.update(id, { role: role as Role });
+    return this.usersService.update(id, dto);
   }
 
   @Post('/')

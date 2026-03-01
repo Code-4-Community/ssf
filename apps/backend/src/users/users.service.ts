@@ -10,6 +10,7 @@ import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
+import { updateUserInfo } from './dtos/update-user-info.dto';
 
 @Injectable()
 export class UsersService {
@@ -73,16 +74,29 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, attrs: Partial<User>) {
+  async update(id: number, dto: updateUserInfo): Promise<User> {
     validateId(id, 'User');
 
-    const user = await this.findOne(id);
+    const { firstName, lastName, phone } = dto;
 
+    if (
+      firstName === undefined &&
+      lastName === undefined &&
+      phone === undefined
+    ) {
+      throw new BadRequestException(
+        'At least one field must be provided to update',
+      );
+    }
+
+    const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException(`User ${id} not found`);
     }
 
-    Object.assign(user, attrs);
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
 
     return this.repo.save(user);
   }

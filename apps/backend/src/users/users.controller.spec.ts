@@ -1,13 +1,13 @@
-import { BadRequestException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import { updateUserInfo } from './dtos/update-user-info.dto';
 import { Pantry } from '../pantries/pantries.entity';
+import { BadRequestException } from '@nestjs/common';
 
 const mockUserService = mock<UsersService>();
 
@@ -113,6 +113,32 @@ describe('UsersController', () => {
         mockUserService.getVolunteersAndPantryAssignments,
       ).toHaveBeenCalled();
     });
+
+    it('should return all volunteers with their pantry assignments', async () => {
+      const assignments: (User & { pantryIds: number[] })[] = [
+        { ...(mockUser1 as User), pantryIds: [1, 2] },
+        { ...(mockUser2 as User), pantryIds: [1] },
+        { ...(mockUser3 as User), pantryIds: [] },
+      ];
+
+      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
+        assignments,
+      );
+
+      const result = await controller.getAllVolunteers();
+
+      expect(result).toEqual(assignments);
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe(1);
+      expect(result[0].pantryIds).toEqual([1, 2]);
+      expect(result[1].id).toBe(2543210);
+      expect(result[1].pantryIds).toEqual([1]);
+      expect(result[2].id).toBe(3);
+      expect(result[2].pantryIds).toEqual([]);
+      expect(
+        mockUserService.getVolunteersAndPantryAssignments,
+      ).toHaveBeenCalled();
+    });
   });
 
   describe('GET /:id', () => {
@@ -137,24 +163,42 @@ describe('UsersController', () => {
     });
   });
 
-  describe('PUT /:id/role', () => {
-    it('should update user role with valid role', async () => {
-      const updatedUser = { ...mockUser1, role: Role.ADMIN };
+  describe('PATCH :id/info', () => {
+    it('should update user info with valid information', async () => {
+      const updatedUser = {
+        ...mockUser1,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
       mockUserService.update.mockResolvedValue(updatedUser as User);
 
-      const result = await controller.updateRole(1, Role.ADMIN);
+      const updateUserSchema: updateUserInfo = {
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
+      const result = await controller.updateInfo(1, updateUserSchema);
 
       expect(result).toEqual(updatedUser);
-      expect(mockUserService.update).toHaveBeenCalledWith(1, {
-        role: Role.ADMIN,
-      });
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
     });
 
-    it('should throw BadRequestException for invalid role', async () => {
-      await expect(controller.updateRole(1, 'invalid_role')).rejects.toThrow(
-        BadRequestException,
+    it('should throw BadRequestException when DTO is empty', async () => {
+      mockUserService.update.mockRejectedValue(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
       );
-      expect(mockUserService.update).not.toHaveBeenCalled();
+
+      const updateUserSchema: updateUserInfo = {};
+
+      await expect(controller.updateInfo(1, updateUserSchema)).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
     });
   });
 
@@ -198,34 +242,6 @@ describe('UsersController', () => {
       await expect(controller.createUser(createUserSchema)).rejects.toThrow(
         error,
       );
-    });
-  });
-
-  describe('GET /volunteers', () => {
-    it('should return all volunteers with their pantry assignments', async () => {
-      const assignments: (User & { pantryIds: number[] })[] = [
-        { ...(mockUser1 as User), pantryIds: [1, 2] },
-        { ...(mockUser2 as User), pantryIds: [1] },
-        { ...(mockUser3 as User), pantryIds: [] },
-      ];
-
-      mockUserService.getVolunteersAndPantryAssignments.mockResolvedValue(
-        assignments,
-      );
-
-      const result = await controller.getAllVolunteers();
-
-      expect(result).toEqual(assignments);
-      expect(result).toHaveLength(3);
-      expect(result[0].id).toBe(1);
-      expect(result[0].pantryIds).toEqual([1, 2]);
-      expect(result[1].id).toBe(2543210);
-      expect(result[1].pantryIds).toEqual([1]);
-      expect(result[2].id).toBe(3);
-      expect(result[2].pantryIds).toEqual([]);
-      expect(
-        mockUserService.getVolunteersAndPantryAssignments,
-      ).toHaveBeenCalled();
     });
   });
 
