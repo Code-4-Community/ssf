@@ -19,6 +19,8 @@ import { Order } from '../orders/order.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { OrdersService } from '../orders/order.service';
+import { UsersService } from '../users/users.service';
+import { AuthService } from '../auth/auth.service';
 
 describe('PantriesService (integration using dummy data)', () => {
   let service: PantriesService;
@@ -35,6 +37,13 @@ describe('PantriesService (integration using dummy data)', () => {
         PantriesService,
         OrdersService,
         RequestsService,
+        UsersService,
+        {
+          provide: AuthService,
+          useValue: {
+            adminCreateUser: jest.fn().mockResolvedValue('test-sub'),
+          },
+        },
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
