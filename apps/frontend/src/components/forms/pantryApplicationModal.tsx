@@ -66,32 +66,32 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Shipping Address Line 1</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressLine1}</GridItem>
+              <GridItem>{pantry.shipmentAddressLine1}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Shipping Address Line 2</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressLine2 ?? ''}</GridItem>
+              <GridItem>{pantry.shipmentAddressLine2 ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Shipping Address City</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressCity}</GridItem>
+              <GridItem>{pantry.shipmentAddressCity}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Shipping Address State</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressState}</GridItem>
+              <GridItem>{pantry.shipmentAddressState}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Shipping Address Zip</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressZip}</GridItem>
+              <GridItem>{pantry.shipmentAddressZip}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Shipping Address Country</Text>
               </GridItem>
-              <GridItem>{pantry.shippingAddressCountry ?? ''}</GridItem>
+              <GridItem>{pantry.shipmentAddressCountry ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Allergen Clients</Text>

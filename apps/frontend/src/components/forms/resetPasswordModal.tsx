@@ -26,16 +26,16 @@ const ResetPasswordModal: React.FC = () => {
     try {
       await resetPassword({ username: email });
       setStep('new');
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlertMessage('Failed to send verification code');
     }
   };
 
   const handleResendCode = async () => {
     try {
       await resetPassword({ username: email });
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlertMessage('Failed to send verification code');
     }
   };
 
@@ -57,8 +57,8 @@ const ResetPasswordModal: React.FC = () => {
         newPassword: password,
       });
       navigate('/login');
-    } catch (error) {
-      setAlertMessage('Failed to set new password: ' + error);
+    } catch {
+      setAlertMessage('Failed to set new password');
     }
   };
 

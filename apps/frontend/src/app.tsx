@@ -13,6 +13,7 @@ import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import ApplicationDetails from '@containers/applicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import AdminDonation from '@containers/adminDonation';
@@ -171,6 +172,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/application-details/:applicationId',
+        element: (
+          <ProtectedRoute>
+            <ApplicationDetails />
           </ProtectedRoute>
         ),
       },

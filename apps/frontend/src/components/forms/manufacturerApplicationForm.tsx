@@ -715,7 +715,6 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
         );
       } else {
         alert('Form submission failed; please try again');
-        console.log(error);
       }
     },
   );

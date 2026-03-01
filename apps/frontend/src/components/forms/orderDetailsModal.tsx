@@ -29,8 +29,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             order.orderId,
           );
           setFoodRequest(foodRequestData);
-        } catch (error) {
-          setAlertMessage('Error fetching food request details:' + error);
+        } catch {
+          setAlertMessage('Error fetching food request details');
         }
       };
 
