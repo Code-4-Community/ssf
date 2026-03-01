@@ -1,17 +1,9 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
-import { Pantry } from '../pantries/pantries.entity';
-import { PantriesService } from '../pantries/pantries.service';
 import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 
@@ -20,9 +12,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
-
-    @Inject(forwardRef(() => PantriesService))
-    private pantriesService: PantriesService,
 
     private authService: AuthService,
   ) {}
@@ -70,30 +59,6 @@ export class UsersService {
     return user;
   }
 
-  async findVolunteer(volunteerId: number): Promise<User> {
-    validateId(volunteerId, 'Volunteer');
-
-    const volunteer = await this.repo.findOne({
-      where: { id: volunteerId },
-      relations: ['pantries'],
-    });
-
-    if (!volunteer)
-      throw new NotFoundException(`User ${volunteerId} not found`);
-    if (volunteer.role !== Role.VOLUNTEER) {
-      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
-    }
-    return volunteer;
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    const user = await this.repo.findOneBy({ email });
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
-    return user;
-  }
-
   async update(id: number, attrs: Partial<User>) {
     validateId(id, 'User');
 
@@ -125,43 +90,6 @@ export class UsersService {
       where: { role: In(roles) },
       relations: ['pantries'],
     });
-  }
-
-  async getVolunteersAndPantryAssignments(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
-    const volunteers = await this.findUsersByRoles([Role.VOLUNTEER]);
-
-    return volunteers.map((v) => {
-      const { pantries, ...volunteerWithoutPantries } = v;
-      return {
-        ...volunteerWithoutPantries,
-        pantryIds: (pantries ?? []).map((p) => p.pantryId),
-      };
-    });
-  }
-
-  async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
-    const volunteer = await this.findVolunteer(volunteerId);
-    return volunteer.pantries ?? [];
-  }
-
-  async assignPantriesToVolunteer(
-    volunteerId: number,
-    pantryIds: number[],
-  ): Promise<User> {
-    pantryIds.forEach((id) => validateId(id, 'Pantry'));
-
-    const volunteer = await this.findVolunteer(volunteerId);
-
-    const pantries = await this.pantriesService.findByIds(pantryIds);
-    const existingPantryIds = (volunteer.pantries ?? []).map((p) => p.pantryId);
-    const newPantries = pantries.filter(
-      (p) => !existingPantryIds.includes(p.pantryId),
-    );
-
-    volunteer.pantries = [...(volunteer.pantries ?? []), ...newPantries];
-    return this.repo.save(volunteer);
   }
 
   async findUserByCognitoId(cognitoId: string): Promise<User> {
