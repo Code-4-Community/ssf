@@ -85,7 +85,7 @@ const PantryDashboard: React.FC = () => {
                 <Menu.Content>
                   <Menu.Item
                     as={Link}
-                    href="/landing-page"
+                    href="/"
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >
@@ -101,7 +101,7 @@ const PantryDashboard: React.FC = () => {
                   </Menu.Item>
                   <Menu.Item
                     as={Link}
-                    href="/landing-page"
+                    href="/"
                     _hover={{ textDecoration: 'none', cursor: 'pointer' }}
                     textDecoration="none"
                   >

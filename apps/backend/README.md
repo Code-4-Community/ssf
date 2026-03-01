@@ -57,14 +57,14 @@ We have a few environment variables that we utilize to access several AWS servic
    - There, you can validate the information in `auth/aws_exports.ts` (the `userPoolClientId`), as well as copy the client secret into your env file
 
 5. Creating a new user within AWS Cognito
-   There are 2 ways you can create a new user in AWS Cognito. The simplest, is through loading the up, going to the landing page, and creating a new account there. If you choose to do it alternatively through the console, follow these steps:
+   There are 2 ways you can create a new user in AWS Cognito. The simplest, is through loading the app, going to the signup page, and creating a new account there. If you choose to do it alternatively through the console, follow these steps:
    - Navigate to AWS Cognito
-   - Make sure you are on "United States (N. Virginia) as your region
+   - Make sure you are on "United States (N. Virginia)" as your region
    - Go into User pools and click on the one that says "ssf"
    - Go to Users
-   - If you do not already see your email there, create a new User, setting an email in password (this will be what you login with on the frontend)
+   - If you do not already see your email there, create a new User, setting an email and password (this will be what you login with on the frontend)
    - Click 'Create User'
-   - Load up the app, and go to the landing page
+   - Load up the app, and go to the login page
    - Verify you are able to login with these new credentials you created
 
 ### Running backend tests

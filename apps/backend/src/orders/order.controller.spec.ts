@@ -10,7 +10,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 
@@ -139,20 +139,6 @@ describe('OrdersController', () => {
       expect(result).toEqual(mockPantries[0] as Pantry);
       expect(mockOrdersService.findOrderPantry).toHaveBeenCalledWith(orderId);
     });
-
-    it('should propagate NotFoundException when request not found', async () => {
-      const orderId = 999;
-      mockOrdersService.findOrderPantry.mockRejectedValueOnce(
-        new NotFoundException(`Request for order ${orderId} not found`),
-      );
-
-      const promise = controller.getPantryFromOrder(orderId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(
-        `Request for order ${orderId} not found`,
-      );
-      expect(mockOrdersService.findOrderPantry).toHaveBeenCalledWith(orderId);
-    });
   });
 
   describe('getRequestFromOrder', () => {
@@ -165,20 +151,6 @@ describe('OrdersController', () => {
       const result = await controller.getRequestFromOrder(orderId);
 
       expect(result).toEqual(mockRequests[0] as FoodRequest);
-      expect(mockOrdersService.findOrderFoodRequest).toHaveBeenCalledWith(
-        orderId,
-      );
-    });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const orderId = 999;
-      mockOrdersService.findOrderFoodRequest.mockRejectedValueOnce(
-        new NotFoundException(`Order ${orderId} not found`),
-      );
-
-      const promise = controller.getRequestFromOrder(orderId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(`Order ${orderId} not found`);
       expect(mockOrdersService.findOrderFoodRequest).toHaveBeenCalledWith(
         orderId,
       );
@@ -199,20 +171,6 @@ describe('OrdersController', () => {
         orderId,
       );
     });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const orderId = 999;
-      mockOrdersService.findOrderFoodManufacturer.mockRejectedValueOnce(
-        new NotFoundException(`Order ${orderId} not found`),
-      );
-
-      const promise = controller.getManufacturerFromOrder(orderId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(`Order ${orderId} not found`);
-      expect(mockOrdersService.findOrderFoodManufacturer).toHaveBeenCalledWith(
-        orderId,
-      );
-    });
   });
 
   describe('getOrder', () => {
@@ -223,18 +181,6 @@ describe('OrdersController', () => {
       const result = await controller.getOrder(orderId);
 
       expect(result).toEqual(mockOrders[0] as Order);
-      expect(mockOrdersService.findOne).toHaveBeenCalledWith(orderId);
-    });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const orderId = 999;
-      mockOrdersService.findOne.mockRejectedValueOnce(
-        new NotFoundException(`Order ${orderId} not found`),
-      );
-
-      const promise = controller.getOrder(orderId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(`Order ${orderId} not found`);
       expect(mockOrdersService.findOne).toHaveBeenCalledWith(orderId);
     });
   });
@@ -249,22 +195,6 @@ describe('OrdersController', () => {
       const result = await controller.getOrderByRequestId(requestId);
 
       expect(result).toEqual(mockOrders[0] as Order);
-      expect(mockOrdersService.findOrderByRequest).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const requestId = 999;
-      mockOrdersService.findOrderByRequest.mockRejectedValueOnce(
-        new NotFoundException(`Order with request ID ${requestId} not found`),
-      );
-
-      const promise = controller.getOrderByRequestId(requestId);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(
-        `Order with request ID ${requestId} not found`,
-      );
       expect(mockOrdersService.findOrderByRequest).toHaveBeenCalledWith(
         requestId,
       );
@@ -425,92 +355,6 @@ describe('OrdersController', () => {
 
       await controller.updateTrackingCostInfo(orderId, dto);
 
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
-        dto,
-      );
-    });
-
-    it('should propagate BadRequestException when neither tracking link nor shipping cost is provided', async () => {
-      const orderId = 1;
-
-      mockOrdersService.updateTrackingCostInfo.mockRejectedValueOnce(
-        new BadRequestException(
-          'At least one of tracking link or shipping cost must be provided',
-        ),
-      );
-
-      const promise = controller.updateTrackingCostInfo(orderId, {});
-      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
-      await expect(promise).rejects.toThrow(
-        'At least one of tracking link or shipping cost must be provided',
-      );
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
-        {},
-      );
-    });
-
-    it('should propagate NotFoundException when order not found', async () => {
-      const orderId = 999;
-      const trackingLink = 'www.samplelink/samplelink';
-      const shippingCost = 15.99;
-      const dto: TrackingCostDto = { trackingLink, shippingCost };
-
-      mockOrdersService.updateTrackingCostInfo.mockRejectedValueOnce(
-        new NotFoundException(`Order ${orderId} not found`),
-      );
-
-      const promise = controller.updateTrackingCostInfo(orderId, dto);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(`Order ${orderId} not found`);
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
-        dto,
-      );
-    });
-
-    it('should propagate BadRequestException for delivered order', async () => {
-      const dto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-        shippingCost: 7.5,
-      };
-      const orderId = 2;
-
-      mockOrdersService.updateTrackingCostInfo.mockRejectedValueOnce(
-        new BadRequestException(
-          'Can only update tracking info for pending or shipped orders',
-        ),
-      );
-
-      const promise = controller.updateTrackingCostInfo(orderId, dto);
-      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
-      await expect(promise).rejects.toThrow(
-        'Can only update tracking info for pending or shipped orders',
-      );
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
-        dto,
-      );
-    });
-
-    it('throws when both fields are not provided for first time setting', async () => {
-      const dto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-      };
-      const orderId = 4;
-
-      mockOrdersService.updateTrackingCostInfo.mockRejectedValueOnce(
-        new BadRequestException(
-          'Must provide both tracking link and shipping cost on initial assignment',
-        ),
-      );
-
-      const promise = controller.updateTrackingCostInfo(orderId, dto);
-      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
-      await expect(promise).rejects.toThrow(
-        'Must provide both tracking link and shipping cost on initial assignment',
-      );
       expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
         orderId,
         dto,

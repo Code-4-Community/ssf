@@ -18,7 +18,7 @@ export class CreateRequestDto {
 
   @ArrayNotEmpty()
   @IsEnum(FoodType, { each: true })
-  requestedItems!: FoodType[];
+  requestedFoodTypes!: FoodType[];
 
   @IsOptional()
   @IsString()
