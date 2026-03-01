@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -12,12 +14,16 @@ import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
 import { ApprovedPantryResponse } from './types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PantriesService {
   constructor(
     @InjectRepository(Pantry) private repo: Repository<Pantry>,
-    @InjectRepository(User) private userRepo: Repository<User>,
+
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -105,12 +111,25 @@ export class PantriesService {
   async approve(id: number) {
     validateId(id, 'Pantry');
 
-    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    const pantry = await this.repo.findOne({
+      where: { pantryId: id },
+      relations: ['pantryUser'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
+    const createUserDto: userSchemaDto = {
+      ...pantry.pantryUser,
+      role: Role.PANTRY,
+    };
+
+    const newPantryUser = await this.usersService.create(createUserDto);
+
+    await this.repo.update(id, {
+      status: ApplicationStatus.APPROVED,
+      pantryUser: newPantryUser,
+    });
   }
 
   async deny(id: number) {
@@ -182,7 +201,9 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const users = await this.userRepo.findBy({ id: In(volunteerIds) });
+    const users = await Promise.all(
+      volunteerIds.map((id) => this.usersService.findOne(id)),
+    );
 
     if (users.length !== volunteerIds.length) {
       throw new NotFoundException('One or more users not found');
