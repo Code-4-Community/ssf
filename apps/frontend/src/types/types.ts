@@ -84,7 +84,7 @@ export interface PantryApplicationDto {
   mailingAddressZip: string;
   mailingAddressCountry?: string;
   allergenClients: string;
-  restrictions?: string[];
+  restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
   deliveryWindowInstructions?: string;
@@ -99,6 +99,13 @@ export interface PantryApplicationDto {
   itemsInStock: string;
   needMoreOptions: string;
   newsletterSubscription?: string;
+}
+
+export interface CreateRequestDto {
+  pantryId: number;
+  requestedSize: RequestSize;
+  requestedItems: FoodType[];
+  additionalInformation?: string;
 }
 
 export enum DonationStatus {
@@ -198,7 +205,7 @@ export interface FoodRequest {
   pantry: Pantry;
   requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation: string | null;
+  additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
   orders?: Order[];
@@ -265,7 +272,7 @@ export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
   requestedItems: string[];
-  additionalInformation?: string | null;
+  additionalInformation?: string;
 }
 
 export interface CreateMultipleDonationItemsBody {

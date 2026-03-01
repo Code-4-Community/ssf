@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
 export class AWSS3Service {
@@ -9,15 +10,15 @@ export class AWSS3Service {
 
   constructor() {
     this.region = process.env.AWS_REGION || 'us-east-2';
-    this.bucket = process.env.AWS_BUCKET_NAME;
+    this.bucket = validateEnv('AWS_BUCKET_NAME');
     if (!this.bucket) {
       throw new Error('AWS_BUCKET_NAME is not defined');
     }
     this.client = new S3Client({
       region: this.region,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: validateEnv('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: validateEnv('AWS_SECRET_ACCESS_KEY'),
       },
     });
   }
