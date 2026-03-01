@@ -6,7 +6,6 @@ import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
-import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -14,6 +13,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  ApprovedPantryResponse,
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
@@ -268,8 +268,8 @@ describe('PantriesController', () => {
 
           shipmentAddressLine1: '123 Main Street',
           shipmentAddressCity: 'Boston',
-          shipmentAddressZip: '02101',
           shipmentAddressState: 'MA',
+          shipmentAddressZip: '02101',
           shipmentAddressCountry: 'United States',
 
           allergenClients: '10 to 20',
@@ -302,14 +302,12 @@ describe('PantriesController', () => {
               name: 'Alice Johnson',
               email: 'alice.johnson@example.com',
               phone: '(617) 555-0100',
-              role: 'Volunteer Coordinator',
             },
             {
               userId: 11,
               name: 'Bob Williams',
               email: 'bob.williams@example.com',
               phone: '(617) 555-0101',
-              role: 'Food Distributor',
             },
           ],
         },

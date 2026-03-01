@@ -7,9 +7,9 @@ export interface ApprovedPantryResponse {
   contactPhone: string;
   shipmentAddressLine1: string;
   shipmentAddressCity: string;
-  shipmentAddressZip: string;
   shipmentAddressState: string;
   shipmentAddressCountry?: string;
+  shipmentAddressZip: string;
   allergenClients: string;
   restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
@@ -32,7 +32,6 @@ export interface AssignedVolunteer {
   name: string;
   email: string;
   phone: string;
-  role: string;
 }
 
 export enum RefrigeratedDonation {

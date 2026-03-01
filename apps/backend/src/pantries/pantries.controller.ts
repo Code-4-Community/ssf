@@ -9,15 +9,14 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
-import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { ApprovedPantryResponse } from './types';
 import {
   Activity,
   AllergensConfidence,
@@ -25,6 +24,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  ApprovedPantryResponse
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
@@ -58,6 +58,7 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
+  @Roles(Role.ADMIN)
   @Get('/approved')
   async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
     return this.pantriesService.getApprovedPantriesWithVolunteers();
@@ -351,6 +352,7 @@ export class PantriesController {
     );
   }
 
+  @Roles(Role.ADMIN)
   @Put('/:pantryId/volunteers')
   async updatePantryVolunteers(
     @Param('pantryId', ParseIntPipe) pantryId: number,
