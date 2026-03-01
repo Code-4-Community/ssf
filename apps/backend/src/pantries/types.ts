@@ -1,5 +1,3 @@
-import { NumericType } from 'typeorm';
-
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',

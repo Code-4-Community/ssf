@@ -16,13 +16,11 @@ import {
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
-import { OrdersService } from '../orders/order.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
 
 describe('PantriesService (integration using dummy data)', () => {
   let service: PantriesService;
-  let ordersService: OrdersService;
 
   beforeAll(async () => {
     if (!testDataSource.isInitialized) {
@@ -34,7 +32,6 @@ describe('PantriesService (integration using dummy data)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PantriesService,
-        OrdersService,
         RequestsService,
         {
           provide: getRepositoryToken(Pantry),
@@ -56,7 +53,6 @@ describe('PantriesService (integration using dummy data)', () => {
     }).compile();
 
     service = module.get<PantriesService>(PantriesService);
-    ordersService = module.get<OrdersService>(OrdersService);
   });
 
   beforeEach(async () => {
