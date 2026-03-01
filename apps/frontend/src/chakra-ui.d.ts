@@ -33,6 +33,10 @@ declare module '@chakra-ui/react' {
     extends ComponentPropsStrictChildren {}
   export interface MenuRadioItemProps extends ComponentPropsLenientChildren {}
 
+  // FileUpload components
+  export interface FileUploadDropzoneProps
+    extends ComponentPropsLenientChildren {}
+
   // Dialog components
   export interface DialogCloseTriggerProps
     extends ComponentPropsStrictChildren {}
