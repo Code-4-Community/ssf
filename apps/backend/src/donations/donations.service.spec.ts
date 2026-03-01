@@ -30,9 +30,9 @@ const daysFromNow = (numDays: number): Date => {
 // insert a minimal donation and return its generated ID
 async function insertDonation(overrides: {
   recurrence: RecurrenceEnum;
-  recurrenceFreq: number;
-  nextDonationDates: Date[];
-  occurrencesRemaining: number;
+  recurrenceFreq: number | null;
+  nextDonationDates: Date[] | null;
+  occurrencesRemaining: number | null;
 }): Promise<number> {
   // uses FoodCorp Industries manufacturer from test seed data
   const result = await testDataSource.query(
