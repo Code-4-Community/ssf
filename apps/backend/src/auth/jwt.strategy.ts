@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { passportJwtSecret } from 'jwks-rsa';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -31,6 +31,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // we use the sub field in the payload to find the user in our database
   async validate(payload: CognitoJwtPayload): Promise<User> {
     const dbUser = await this.usersService.findUserByCognitoId(payload.sub);
+    // If an exception is thrown, throw something here
+    if (!dbUser) {
+      throw new NotFoundException(
+        `User with payload sub ${payload.sub} not found`,
+      );
+    }
     return dbUser;
   }
 }

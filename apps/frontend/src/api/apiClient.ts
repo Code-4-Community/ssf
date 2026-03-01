@@ -4,6 +4,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { NavigateFunction } from 'react-router-dom';
 import {
   User,
   Order,
@@ -28,6 +29,7 @@ const defaultBaseUrl =
 export class ApiClient {
   private axiosInstance: AxiosInstance;
   private accessToken: string | undefined;
+  private navigate: NavigateFunction | null = null;
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
@@ -49,13 +51,24 @@ export class ApiClient {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
-          window.location.replace('/unauthorized');
+        if (error.response?.status === 403 && this.navigate) {
+          const errorData = error.response?.data as { message?: string };
+          this.navigate('/unauthorized', {
+            replace: true,
+            state: {
+              errorMessage: errorData?.message || 'Access forbidden',
+            },
+          });
         }
+        // In case this.navgiate is not initialized, fall back on window relocation
+        window.location.href = 'unauthorized';
         return Promise.reject(error);
       },
     );
+  }
+
+  public setNavigate(navigate: NavigateFunction) {
+    this.navigate = navigate;
   }
 
   public setAccessToken(token: string | undefined) {
