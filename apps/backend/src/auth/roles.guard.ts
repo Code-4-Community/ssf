@@ -29,7 +29,6 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user || !user.role) {
-      console.log('RolesGuard: no user or role, denying');
       return false;
     }
 
