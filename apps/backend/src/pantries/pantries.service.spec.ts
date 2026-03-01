@@ -18,6 +18,7 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
+import { OrdersService } from '../orders/order.service';
 
 describe('PantriesService (integration using dummy data)', () => {
   let service: PantriesService;
@@ -32,6 +33,7 @@ describe('PantriesService (integration using dummy data)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PantriesService,
+        OrdersService,
         RequestsService,
         {
           provide: getRepositoryToken(Pantry),
