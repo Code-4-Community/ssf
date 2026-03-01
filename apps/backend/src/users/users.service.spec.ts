@@ -90,7 +90,10 @@ describe('UsersService', () => {
       );
 
       const result = await service.findOne(created.id);
-      expect(result).toMatchObject({ id: created.id, email: 'find@example.com' });
+      expect(result).toMatchObject({
+        id: created.id,
+        email: 'find@example.com',
+      });
     });
 
     it('should throw NotFoundException when user is not found', async () => {
@@ -108,7 +111,13 @@ describe('UsersService', () => {
 
   describe('findByEmail', () => {
     it('should return user by email', async () => {
-      await service.create('email@example.com', 'Jane', 'Doe', '1111111111', Role.PANTRY);
+      await service.create(
+        'email@example.com',
+        'Jane',
+        'Doe',
+        '1111111111',
+        Role.PANTRY,
+      );
 
       const result = await service.findByEmail('email@example.com');
       expect(result).toMatchObject({ email: 'email@example.com' });
@@ -129,7 +138,9 @@ describe('UsersService', () => {
     });
 
     it('should update firstName', async () => {
-      const result = await service.update(testUser.id, { firstName: 'Updated' });
+      const result = await service.update(testUser.id, {
+        firstName: 'Updated',
+      });
 
       expect(result.firstName).toBe('Updated');
       expect(result.lastName).toBe(testUser.lastName);
@@ -158,7 +169,9 @@ describe('UsersService', () => {
     });
 
     it('should not overwrite fields absent from the DTO', async () => {
-      const result = await service.update(testUser.id, { firstName: 'OnlyFirst' });
+      const result = await service.update(testUser.id, {
+        firstName: 'OnlyFirst',
+      });
 
       expect(result.firstName).toBe('OnlyFirst');
       expect(result.lastName).toBe(testUser.lastName);
@@ -169,20 +182,22 @@ describe('UsersService', () => {
 
     it('should throw BadRequestException when DTO is empty', async () => {
       await expect(service.update(testUser.id, {})).rejects.toThrow(
-        new BadRequestException('At least one field must be provided to update'),
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
       );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      await expect(service.update(999, { firstName: 'Updated' })).rejects.toThrow(
-        new NotFoundException('User 999 not found'),
-      );
+      await expect(
+        service.update(999, { firstName: 'Updated' }),
+      ).rejects.toThrow(new NotFoundException('User 999 not found'));
     });
 
     it('should throw BadRequestException for invalid id', async () => {
-      await expect(service.update(-1, { firstName: 'Updated' })).rejects.toThrow(
-        new BadRequestException('Invalid User ID'),
-      );
+      await expect(
+        service.update(-1, { firstName: 'Updated' }),
+      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
     });
   });
 
@@ -197,7 +212,9 @@ describe('UsersService', () => {
       );
 
       await service.remove(created.id);
-      await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(created.id)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
@@ -215,7 +232,13 @@ describe('UsersService', () => {
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const created = await service.create('vol@example.com', 'Vol', 'User', '2222222222', Role.VOLUNTEER);
+      const created = await service.create(
+        'vol@example.com',
+        'Vol',
+        'User',
+        '2222222222',
+        Role.VOLUNTEER,
+      );
 
       const result = await service.findUsersByRoles([Role.VOLUNTEER]);
 

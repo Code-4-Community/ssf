@@ -1,4 +1,10 @@
-import { IsString, IsPhoneNumber, IsOptional, IsNotEmpty, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsPhoneNumber,
+  IsOptional,
+  IsNotEmpty,
+  MaxLength,
+} from 'class-validator';
 
 export class updateUserInfo {
   @IsOptional()

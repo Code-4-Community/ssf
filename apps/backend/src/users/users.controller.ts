@@ -11,7 +11,7 @@ import {
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { userSchemaDto } from './dtos/userSchema.dto';
-import { updateUserInfo } from './dtos/updateUserInfo.dto';
+import { updateUserInfo } from './dtos/update-user-info.dto';
 import { Pantry } from '../pantries/pantries.entity';
 
 @Controller('users')
@@ -42,7 +42,7 @@ export class UsersController {
     return this.usersService.remove(userId);
   }
 
-  @Patch(':id/info')
+  @Patch('/:id')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: updateUserInfo,

@@ -10,7 +10,7 @@ import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
-import { updateUserInfo } from './dtos/updateUserInfo.dto';
+import { updateUserInfo } from './dtos/update-user-info.dto';
 
 @Injectable()
 export class UsersService {
@@ -90,6 +90,9 @@ export class UsersService {
     }
 
     const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
 
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
