@@ -12,7 +12,7 @@ import { Pantry } from '../pantries/pantries.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn({ name: 'user_id' })
-  id: number;
+  id!: number;
 
   @Column({
     type: 'enum',
@@ -21,22 +21,22 @@ export class User {
     enumName: 'users_role_enum',
     default: Role.VOLUNTEER,
   })
-  role: Role;
+  role!: Role;
 
   @Column()
-  firstName: string;
+  firstName!: string;
 
   @Column()
-  lastName: string;
+  lastName!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Column({
     type: 'varchar',
     length: 20,
   })
-  phone: string;
+  phone!: string;
 
   @Column({
     type: 'varchar',
@@ -44,7 +44,7 @@ export class User {
     name: 'user_cognito_sub',
     default: '',
   })
-  userCognitoSub: string;
+  userCognitoSub!: string;
 
   @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
   @JoinTable({
@@ -58,5 +58,5 @@ export class User {
       referencedColumnName: 'pantryId',
     },
   })
-  pantries?: Pantry[];
+  pantries!: Pantry[] | null;
 }

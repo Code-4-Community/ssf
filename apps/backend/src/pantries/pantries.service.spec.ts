@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { Repository, In } from 'typeorm';
+import { Repository, UpdateResult, In } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
@@ -38,7 +38,7 @@ describe('PantriesService', () => {
     contactEmail: 'jane.smith@example.com',
     contactPhone: '(508) 222-2222',
     hasEmailContact: true,
-    emailContactOther: null,
+    emailContactOther: undefined,
     secondaryContactFirstName: 'John',
     secondaryContactLastName: 'Doe',
     secondaryContactEmail: 'john.doe@example.com',
@@ -171,7 +171,7 @@ describe('PantriesService', () => {
   describe('approve', () => {
     it('should approve a pantry', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce(undefined);
+      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
 
       await service.approve(1);
 
@@ -198,7 +198,7 @@ describe('PantriesService', () => {
   describe('deny', () => {
     it('should deny a pantry', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce(undefined);
+      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
 
       await service.deny(1);
 
