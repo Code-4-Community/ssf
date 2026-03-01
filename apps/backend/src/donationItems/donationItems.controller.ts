@@ -6,7 +6,6 @@ import {
   Get,
   Patch,
   ParseIntPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
@@ -19,8 +18,8 @@ import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto
 export class DonationItemsController {
   constructor(private donationItemsService: DonationItemsService) {}
 
-  @Get('/get-donation-items/:donationId')
-  async getAllDonationIdItems(
+  @Get('/:donationId/all')
+  async getAllDonationItemsForDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);

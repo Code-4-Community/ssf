@@ -30,8 +30,8 @@ const LoginPage: React.FC = () => {
     try {
       await signIn({ username: email, password });
       navigate(from, { replace: true });
-    } catch (error) {
-      setAlertMessage('Login failed: ' + error);
+    } catch {
+      setAlertMessage('Login failed');
     }
   };
 
@@ -61,7 +61,12 @@ const LoginPage: React.FC = () => {
       justifyContent="center"
     >
       {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+        <FloatingAlert
+          message={alertMessage}
+          status="error"
+          timeout={6000}
+          onClose={() => setAlertMessage('')}
+        />
       )}
       <Box
         maxW="500px"

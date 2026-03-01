@@ -199,7 +199,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
-      console.log('Submitted donation');
       const donationId = donationResponse?.donationId;
 
       if (donationId) {

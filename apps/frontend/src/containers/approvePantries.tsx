@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Center,
   Table,
@@ -11,12 +11,15 @@ import {
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const ApprovePantries: React.FC = () => {
   const navigate = useNavigate();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const fetchPantries = async () => {
     try {
@@ -65,8 +68,26 @@ const ApprovePantries: React.FC = () => {
     setSortedPantries(sorted);
   }, [sort, pendingPantries]);
 
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const id = searchParams.get('id');
+
+    if (action && id) {
+      const message =
+        action === 'approved'
+          ? `Application for Pantry ${id} approved`
+          : `Application for Pantry ${id} denied`;
+
+      setAlertMessage(message);
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
   return (
     <Center flexDirection="column" p={4}>
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="info" timeout={6000} />
+      )}
       <NativeSelect.Root width="40%" mb={4}>
         <NativeSelect.Field
           placeholder="Sort By"

@@ -70,7 +70,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setAlert({ isError: false, message: 'Request Submitted' });
+      setAlert({ isError: false, message: 'Request submitted' });
       onClose();
       onSuccess();
     } catch {
@@ -91,7 +91,12 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <FloatingAlert message={alert.message} status="error" timeout={6000} />
       )}
       {alert.message && !alert.isError && (
-        <FloatingAlert message={alert.message} status="info" timeout={6000} />
+        <FloatingAlert
+          message={alert.message}
+          status="info"
+          timeout={6000}
+          onClose={() => setAlert({ isError: true, message: '' })}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>

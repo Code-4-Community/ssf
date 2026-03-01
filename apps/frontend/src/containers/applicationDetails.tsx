@@ -15,8 +15,10 @@ import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
-import { FileX, WifiOff } from 'lucide-react';
+import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
 import { AxiosError } from 'axios';
+import { FloatingAlert } from '@components/floatingAlert';
+import ConfirmPantryDecisionModal from '@components/forms/confirmPantryDecisionModal';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -76,7 +78,16 @@ const ApplicationDetails: React.FC = () => {
   const navigate = useNavigate();
   const [application, setApplication] = useState<Pantry | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    isNetwork: boolean;
+    message: string;
+  }>({
+    isNetwork: false,
+    message: '',
+  });
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
+  const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
 
   const fieldContentStyles = {
     textStyle: 'p2',
@@ -103,17 +114,24 @@ const ApplicationDetails: React.FC = () => {
   const fetchApplicationDetails = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       if (!applicationId) {
-        setError('Application ID not provided');
+        setError({ isNetwork: false, message: 'Application ID not provided.' });
         return;
+      } else if (isNaN(parseInt(applicationId))) {
+        setError({
+          isNetwork: false,
+          message: 'Application ID is not a number.',
+        });
       }
       const data = await ApiClient.getPantry(parseInt(applicationId, 10));
       setApplication(data);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
-        if (err.response?.status !== 404) {
-          setError('Could not load application details.');
+        if (err.response?.status !== 404 && err.response?.status !== 400) {
+          setError({
+            isNetwork: true,
+            message: 'Could not load application details.',
+          });
         }
       }
     } finally {
@@ -129,9 +147,11 @@ const ApplicationDetails: React.FC = () => {
     if (application) {
       try {
         await ApiClient.updatePantry(application.pantryId, 'approve');
-        navigate('/approve-pantries');
-      } catch (err) {
-        alert('Error approving application: ' + err);
+        navigate(
+          '/approve-pantries?action=approved&id=' + application.pantryId,
+        );
+      } catch {
+        setAlertMessage('Error approving application');
       }
     }
   };
@@ -140,9 +160,9 @@ const ApplicationDetails: React.FC = () => {
     if (application) {
       try {
         await ApiClient.updatePantry(application.pantryId, 'deny');
-        navigate('/approve-pantries');
-      } catch (err) {
-        alert('Error denying application: ' + err);
+        navigate('/approve-pantries?action=denied&id=' + application.pantryId);
+      } catch {
+        setAlertMessage('Error denying application');
       }
     }
   };
@@ -153,12 +173,12 @@ const ApplicationDetails: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error.message) {
     return (
       <EmptyState
-        icon={<WifiOff />}
-        title={error ?? 'An error occurred.'}
-        subtitle="Please try again later."
+        icon={error.isNetwork ? <WifiOff /> : <TriangleAlert />}
+        title={error.message}
+        subtitle={error.isNetwork ? 'Please try again later.' : undefined}
       />
     );
   }
@@ -182,6 +202,15 @@ const ApplicationDetails: React.FC = () => {
           Application Details
         </Heading>
 
+        {alertMessage && (
+          <FloatingAlert
+            message={alertMessage}
+            status="error"
+            timeout={6000}
+            onClose={() => setAlertMessage('')}
+          />
+        )}
+
         <Box
           bg="white"
           borderRadius="6px"
@@ -195,7 +224,7 @@ const ApplicationDetails: React.FC = () => {
               <Heading fontSize="18px" fontWeight={600} mb={2}>
                 Application #{application.pantryId}
               </Heading>
-              <Text textStyle="p2" color="#111" mb={1}>
+              <Text textStyle="p2" color="gray.dark" mb={1}>
                 {application.pantryName}
               </Text>
               <Text textStyle="p3" color="neutral.600">
@@ -390,7 +419,7 @@ const ApplicationDetails: React.FC = () => {
                 variant="outline"
                 borderColor="neutral.200"
                 color="neutral.800"
-                onClick={handleDeny}
+                onClick={() => setShowDenyModal(true)}
                 px={4}
                 textStyle="p2"
                 fontWeight={600}
@@ -400,7 +429,7 @@ const ApplicationDetails: React.FC = () => {
               <Button
                 bg="blue.hover"
                 color="white"
-                onClick={handleApprove}
+                onClick={() => setShowApproveModal(true)}
                 px={4}
                 _hover={{ bg: 'neutral.800' }}
                 textStyle="p2"
@@ -408,6 +437,24 @@ const ApplicationDetails: React.FC = () => {
               >
                 Approve Application
               </Button>
+
+              <ConfirmPantryDecisionModal
+                isOpen={showApproveModal}
+                onClose={() => setShowApproveModal(false)}
+                onConfirm={handleApprove}
+                decision="approve"
+                pantryName={application.pantryName}
+                dateApplied={formatDate(application.dateApplied)}
+              />
+
+              <ConfirmPantryDecisionModal
+                isOpen={showDenyModal}
+                onClose={() => setShowDenyModal(false)}
+                onConfirm={handleDeny}
+                decision="deny"
+                pantryName={application.pantryName}
+                dateApplied={formatDate(application.dateApplied)}
+              />
             </HStack>
           </VStack>
         </Box>

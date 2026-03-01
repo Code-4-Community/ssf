@@ -54,8 +54,8 @@ const FormRequests: React.FC = () => {
         if (sortedData.length > 0) {
           setPreviousRequest(sortedData[0]);
         }
-      } catch (error) {
-        setAlertMessage('Error fetching requests: ' + error);
+      } catch {
+        setAlertMessage('Error fetching requests');
       }
     } else {
       setAlertMessage('No pantry associated with this account.');

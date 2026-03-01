@@ -39,8 +39,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         );
 
         setItems(itemsData);
-      } catch (err) {
-        setAlertMessage('Error fetching donation details: ' + err);
+      } catch {
+        setAlertMessage('Error fetching donation details');
       }
     };
 
