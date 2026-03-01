@@ -38,7 +38,6 @@ export class OwnershipGuard implements CanActivate {
       throw new NotFoundException('User not found');
     }
 
-    console.log('Checking user: ', user);
     if (user.role === 'admin') {
       return true;
     }
@@ -59,9 +58,6 @@ export class OwnershipGuard implements CanActivate {
         entityId,
         services,
       });
-      console.log(
-        `Ownership check for entity ${entityId}: ownerId=${ownerId}, user.id=${user.id}, user.role=${user.role}`,
-      );
 
       if (ownerId === null || ownerId === undefined) {
         throw new ForbiddenException('Unable to determine resource ownership');

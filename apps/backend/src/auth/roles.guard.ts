@@ -34,14 +34,6 @@ export class RolesGuard implements CanActivate {
     }
 
     const allowed = requiredRoles.includes(user.role);
-    console.log(
-      'RolesGuard: user.role=',
-      user.role,
-      'required=',
-      requiredRoles,
-      'allowed=',
-      allowed,
-    );
     return allowed;
   }
 }
