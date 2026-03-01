@@ -345,5 +345,25 @@ describe('PantriesController', () => {
       expect(result).toEqual(mockTotalStats);
       expect(mockPantriesService.getTotalStats).toHaveBeenCalled();
     });
+
+    it('should forward years query parameter to service', async () => {
+      const mockTotalStats: PantryStats = {
+        totalItems: 500,
+        totalOz: 8000,
+        totalLbs: 500,
+        totalDonatedFoodValue: 2500,
+        totalShippingCost: 200,
+        totalValue: 2700,
+        percentageFoodRescueItems: 75,
+      };
+
+      mockPantriesService.getTotalStats.mockResolvedValueOnce(mockTotalStats);
+
+      const years = [2024, 2025];
+      const result = await controller.getTotalStats(years);
+
+      expect(result).toEqual(mockTotalStats);
+      expect(mockPantriesService.getTotalStats).toHaveBeenCalledWith(years);
+    });
   });
 });

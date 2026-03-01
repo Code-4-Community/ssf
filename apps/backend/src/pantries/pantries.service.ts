@@ -18,10 +18,6 @@ export class PantriesService {
     private ordersService: OrdersService,
   ) {}
 
-  async getAll(): Promise<Pantry[]> {
-    return this.repo.find({ relations: ['pantryUser'] });
-  }
-
   async findOne(pantryId: number): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
 
@@ -122,6 +118,10 @@ export class PantriesService {
 
   // Get total stats across all pantries, with optional filtering by year
   async getTotalStats(years?: number[]): Promise<PantryStats> {
+    // Ensure years is an array
+    const yearsArray = years
+      ? (Array.isArray(years) ? years : [years]).map(Number)
+      : undefined;
     const pantries = await this.repo.find();
     const totalStats: PantryStats = {
       totalItems: 0,
@@ -134,7 +134,7 @@ export class PantriesService {
     };
     let totalFoodRescueItems = 0;
     for (const pantry of pantries) {
-      const stats = await this.getStatsForPantry(pantry, years);
+      const stats = await this.getStatsForPantry(pantry, yearsArray);
       totalStats.totalItems += stats.totalItems;
       totalStats.totalOz += stats.totalOz;
       totalStats.totalLbs += stats.totalLbs;

@@ -52,8 +52,8 @@ export class PantriesController {
 
   @Roles(Role.ADMIN)
   @Get('/total-stats')
-  async getTotalStats(): Promise<PantryStats> {
-    return this.pantriesService.getTotalStats();
+  async getTotalStats(@Query('years') years?: number[]): Promise<PantryStats> {
+    return this.pantriesService.getTotalStats(years);
   }
 
   @Roles(Role.PANTRY)
