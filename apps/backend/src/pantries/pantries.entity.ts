@@ -208,7 +208,7 @@ export class Pantry {
     name: 'status',
     type: 'enum',
     enum: ApplicationStatus,
-    enumName: 'application_status_enum',
+    enumName: 'pantries_status_enum',
   })
   status!: ApplicationStatus;
 

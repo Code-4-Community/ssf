@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { Repository, UpdateResult } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { Repository, UpdateResult, In } from 'typeorm';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
@@ -15,8 +15,11 @@ import {
   AllergensConfidence,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
+import { User } from '../users/user.entity';
+import { Role } from '../users/types';
 
 const mockRepository = mock<Repository<Pantry>>();
+const mockUserRepository = mock<Repository<User>>();
 
 describe('PantriesService', () => {
   let service: PantriesService;
@@ -78,6 +81,10 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: mockUserRepository,
         },
       ],
     }).compile();
@@ -279,6 +286,152 @@ describe('PantriesService', () => {
         'Database error',
       );
       expect(mockRepository.save).toHaveBeenCalled();
+    });
+  });
+  describe('getApprovedPantriesWithVolunteers', () => {
+    const mockVolunteer = {
+      id: 10,
+      firstName: 'Jane',
+      lastName: 'Volunteer',
+      email: 'jane@example.com',
+      phone: '555-000-0001',
+      role: Role.VOLUNTEER,
+    } as User;
+  
+    const mockApprovedPantry = {
+      pantryId: 1,
+      pantryName: 'Approved Pantry',
+      status: ApplicationStatus.APPROVED,
+      pantryUser: {
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane@example.com',
+        phone: '555-000-0000',
+      },
+      shipmentAddressLine1: '123 Main St',
+      shipmentAddressCity: 'Boston',
+      shipmentAddressState: 'MA',
+      shipmentAddressZip: '02101',
+      shipmentAddressCountry: 'US',
+      allergenClients: '10 to 20',
+      restrictions: ['Peanut allergy'],
+      refrigeratedDonation: RefrigeratedDonation.YES,
+      reserveFoodForAllergic: ReserveFoodForAllergic.YES,
+      dedicatedAllergyFriendly: true,
+      activities: [Activity.CREATE_LABELED_SHELF],
+      itemsInStock: 'Canned goods',
+      needMoreOptions: 'Fresh produce',
+      newsletterSubscription: true,
+      volunteers: [mockVolunteer],
+    } as unknown as Pantry;
+  
+    it('should return approved pantries with mapped volunteer info', async () => {
+      mockRepository.find.mockResolvedValueOnce([mockApprovedPantry]);
+  
+      const result = await service.getApprovedPantriesWithVolunteers();
+  
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['volunteers', 'pantryUser'],
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].pantryId).toBe(1);
+      expect(result[0].pantryName).toBe('Approved Pantry');
+      expect(result[0].volunteers).toHaveLength(1);
+      expect(result[0].volunteers[0]).toEqual({
+        userId: mockVolunteer.id,
+        name: `${mockVolunteer.firstName} ${mockVolunteer.lastName}`,
+        email: mockVolunteer.email,
+        phone: mockVolunteer.phone,
+        role: mockVolunteer.role,
+      });
+    });
+  
+    it('should return empty volunteers array when pantry has no volunteers', async () => {
+      mockRepository.find.mockResolvedValueOnce([
+        { ...mockApprovedPantry, volunteers: [] },
+      ]);
+  
+      const result = await service.getApprovedPantriesWithVolunteers();
+  
+      expect(result[0].volunteers).toEqual([]);
+    });
+  
+    it('should return empty array when no approved pantries exist', async () => {
+      mockRepository.find.mockResolvedValueOnce([]);
+  
+      const result = await service.getApprovedPantriesWithVolunteers();
+  
+      expect(result).toEqual([]);
+    });
+  });
+  
+  describe('updatePantryVolunteers', () => {
+    const mockVolunteer1 = {
+      id: 10,
+      role: Role.VOLUNTEER,
+    } as User;
+  
+    const mockVolunteer2 = {
+      id: 11,
+      role: Role.VOLUNTEER,
+    } as User;
+  
+    const mockPantryWithVolunteers = {
+      ...mockPendingPantry,
+      volunteers: [],
+    } as unknown as Pantry;
+  
+    it('should update volunteers for a pantry', async () => {
+      mockRepository.findOne.mockResolvedValueOnce(mockPantryWithVolunteers);
+      mockUserRepository.findBy.mockResolvedValueOnce([mockVolunteer1, mockVolunteer2]);
+      mockRepository.save.mockResolvedValueOnce({
+        ...mockPantryWithVolunteers,
+        volunteers: [mockVolunteer1, mockVolunteer2],
+      });
+  
+      await service.updatePantryVolunteers(1, [10, 11]);
+  
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { pantryId: 1 },
+        relations: ['volunteers'],
+      });
+      expect(mockUserRepository.findBy).toHaveBeenCalledWith({ id: In([10, 11]) });
+      expect(mockRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          volunteers: [mockVolunteer1, mockVolunteer2],
+        }),
+      );
+    });
+  
+    it('should throw NotFoundException if pantry not found', async () => {
+      mockRepository.findOne.mockResolvedValueOnce(null);
+  
+      await expect(service.updatePantryVolunteers(999, [10])).rejects.toThrow(
+        new NotFoundException('Pantry with ID 999 not found'),
+      );
+      expect(mockRepository.save).not.toHaveBeenCalled();
+    });
+  
+    it('should throw NotFoundException if one or more users not found', async () => {
+      mockRepository.findOne.mockResolvedValueOnce(mockPantryWithVolunteers);
+      mockUserRepository.findBy.mockResolvedValueOnce([mockVolunteer1]); // only 1 returned, 2 requested
+  
+      await expect(service.updatePantryVolunteers(1, [10, 11])).rejects.toThrow(
+        new NotFoundException('One or more users not found'),
+      );
+      expect(mockRepository.save).not.toHaveBeenCalled();
+    });
+  
+    it('should throw BadRequestException if a user is not a volunteer', async () => {
+      const nonVolunteer = { id: 12, role: Role.ADMIN } as User;
+      mockRepository.findOne.mockResolvedValueOnce(mockPantryWithVolunteers);
+      mockUserRepository.findBy.mockResolvedValueOnce([mockVolunteer1, nonVolunteer]);
+  
+      await expect(service.updatePantryVolunteers(1, [10, 12])).rejects.toThrow(
+        new BadRequestException('Users 12 are not volunteers'),
+      );
+      expect(mockRepository.save).not.toHaveBeenCalled();
     });
   });
 

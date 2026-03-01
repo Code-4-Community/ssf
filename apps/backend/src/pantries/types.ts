@@ -1,3 +1,39 @@
+export interface ApprovedPantryResponse {
+  pantryId: number;
+  pantryName: string;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  shipmentAddressLine1: string;
+  shipmentAddressCity: string;
+  shipmentAddressState: string;
+  shipmentAddressCountry?: string;
+  shipmentAddressZip: string;
+  allergenClients: string;
+  restrictions: string[];
+  refrigeratedDonation: RefrigeratedDonation;
+  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reservationExplanation?: string;
+  dedicatedAllergyFriendly: boolean;
+  clientVisitFrequency?: ClientVisitFrequency;
+  identifyAllergensConfidence?: AllergensConfidence;
+  serveAllergicChildren?: ServeAllergicChildren;
+  activities: Activity[];
+  activitiesComments?: string;
+  itemsInStock: string;
+  needMoreOptions: string;
+  newsletterSubscription: boolean;
+  volunteers: AssignedVolunteer[];
+}
+
+export interface AssignedVolunteer {
+  userId: number;
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',
