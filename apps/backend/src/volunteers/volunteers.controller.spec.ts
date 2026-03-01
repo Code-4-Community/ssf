@@ -1,7 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { VolunteersController } from './volunteers.controller';
-import { UsersController } from '../users/users.controller';
-import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { Test, TestingModule } from '@nestjs/testing';
