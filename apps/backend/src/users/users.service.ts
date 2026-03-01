@@ -63,22 +63,6 @@ export class UsersService {
     return user;
   }
 
-  async findVolunteer(volunteerId: number): Promise<User> {
-    validateId(volunteerId, 'Volunteer');
-
-    const volunteer = await this.repo.findOne({
-      where: { id: volunteerId },
-      relations: ['pantries'],
-    });
-
-    if (!volunteer)
-      throw new NotFoundException(`User ${volunteerId} not found`);
-    if (volunteer.role !== Role.VOLUNTEER) {
-      throw new BadRequestException(`User ${volunteerId} is not a volunteer`);
-    }
-    return volunteer;
-  }
-
   async update(id: number, dto: updateUserInfo): Promise<User> {
     validateId(id, 'User');
 
@@ -95,6 +79,10 @@ export class UsersService {
     }
 
     const user = await this.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
 
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
