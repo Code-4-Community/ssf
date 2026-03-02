@@ -107,14 +107,14 @@ export class DonationService {
     today.setHours(0, 0, 0, 0);
 
     for (const donation of donations) {
+      if (donation.recurrence === RecurrenceEnum.NONE) continue;
+
       if (
         !donation.nextDonationDates ||
         donation.nextDonationDates.length === 0
       ) {
         continue;
       }
-
-      if (donation.recurrence === RecurrenceEnum.NONE) continue;
 
       if (
         !donation.occurrencesRemaining ||

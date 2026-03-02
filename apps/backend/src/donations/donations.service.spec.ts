@@ -164,7 +164,6 @@ describe('DonationService', () => {
         await service.handleRecurringDonations();
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates?.length).toEqual(1);
         expect(donation.occurrencesRemaining).toEqual(3);
       });
@@ -186,7 +185,6 @@ describe('DonationService', () => {
         expectedNextDate.setDate(expectedNextDate.getDate() + 7);
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
@@ -212,7 +210,6 @@ describe('DonationService', () => {
         expectedNextDate.setMonth(expectedNextDate.getMonth() + 1);
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
@@ -238,7 +235,6 @@ describe('DonationService', () => {
         expectedNextDate.setFullYear(expectedNextDate.getFullYear() + 1);
 
         const donation = await service.findOne(donationId);
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           expectedNextDate.toDateString(),
@@ -342,7 +338,6 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
         expect(donation.occurrencesRemaining).toEqual(1);
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         if (donation.nextDonationDates?.[0]) {
           expect(
@@ -412,7 +407,6 @@ describe('DonationService', () => {
           donationId0Recurrences,
         );
 
-        expect(donation1.nextDonationDates).not.toBeNull();
         expect(donation1.nextDonationDates).toHaveLength(1);
         if (donation1.nextDonationDates?.[0]) {
           expect(
@@ -424,11 +418,9 @@ describe('DonationService', () => {
         );
         expect(donation1.occurrencesRemaining).toEqual(1);
 
-        expect(donation2.nextDonationDates).not.toBeNull();
         expect(donation2.nextDonationDates).toHaveLength(0);
         expect(donation2.occurrencesRemaining).toEqual(0);
 
-        expect(donation3.nextDonationDates).not.toBeNull();
         expect(donation3.nextDonationDates).toHaveLength(1);
         expect(donation3.nextDonationDates?.[0].toDateString()).toEqual(
           futureDate.toDateString(),
@@ -442,7 +434,7 @@ describe('DonationService', () => {
 
     describe('date calculation', () => {
       it('clips monthly recurrence to 28th when date is 31st', async () => {
-        const jan31 = new Date(2024, 0, 31);
+        const jan31 = new Date(2026, 0, 31);
         jan31.setHours(0, 0, 0, 0);
 
         const donationId = await insertDonation({
@@ -456,7 +448,6 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates?.[0].getDate()).toEqual(28);
       });
     });
@@ -475,7 +466,6 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           daysFromNow(7).toDateString(),
@@ -496,7 +486,6 @@ describe('DonationService', () => {
 
         const donation = await service.findOne(donationId);
 
-        expect(donation.nextDonationDates).not.toBeNull();
         expect(donation.nextDonationDates).toHaveLength(1);
         expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
           tomorrow.toDateString(),
