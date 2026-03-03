@@ -98,6 +98,8 @@ const AssignedPantries: React.FC = () => {
     fontFamily: 'inter',
     fontWeight: '600',
     fontSize: 'sm',
+    py: 3,
+    px: 4,
   };
 
   return (
@@ -207,7 +209,7 @@ const AssignedPantries: React.FC = () => {
       </Box>
 
       {/* Pantries Table */}
-      <Table.Root>
+      <Table.Root variant="line">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader
@@ -220,15 +222,14 @@ const AssignedPantries: React.FC = () => {
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
               width="35%"
+              textAlign="center"
             >
               Refrigerator-Friendly
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
-              textAlign="center"
+              textAlign="right"
               width="25%"
             >
               Action
@@ -239,36 +240,38 @@ const AssignedPantries: React.FC = () => {
           {filteredAssignments.flatMap((assignment) =>
             assignment.pantryIds.map((pantryId) => {
               const pantry = pantryDetails.get(pantryId);
+              const friendly = isRefrigeratorFriendly(pantryId);
               return (
                 <Table.Row
                   key={`${assignment.id}-${pantryId}`}
                   _hover={{ bg: 'gray.50' }}
                 >
+                  {/* Pantry Name */}
                   <Table.Cell
-                    textStyle="p2"
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
-                    py={0}
+                    px={4}
+                    py={3}
                   >
-                    <Button
-                      variant="plain"
-                      textDecoration="underline"
+                    <Text
+                      as="span"
+                      fontSize="sm"
                       fontFamily="inter"
+                      textDecoration="underline"
+                      cursor="pointer"
+                      color="gray.800"
                     >
                       {pantry?.pantryName ?? 'Loading...'}
-                    </Button>
+                    </Text>
                   </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                    color="neutral.700"
-                  >
+
+                  {/* Refrigerator-Friendly Badge */}
+                  <Table.Cell px={4} py={3} textAlign="center">
                     <Box
                       bg={
                         isRefrigeratorFriendly(pantryId)
-                          ? 'gray.100'
-                          : 'orange.50'
+                          ? 'neutral.100'
+                          : 'neutral.200'
                       }
                       px={3}
                       py={1}
@@ -276,18 +279,24 @@ const AssignedPantries: React.FC = () => {
                       display="inline-block"
                       fontSize="sm"
                       fontFamily="inter"
+                      color="neutral.700"
                     >
                       {getRefrigeratorFriendlyText(pantryId)}
                     </Box>
                   </Table.Cell>
-                  <Table.Cell textStyle="p2" textAlign="center">
+
+                  {/* Action */}
+                  <Table.Cell px={4} py={3} textAlign="right">
                     <Button
                       variant="plain"
                       textDecoration="underline"
-                      color="blue.600"
+                      color="neutral.500"
                       onClick={() => handleViewOrders(pantryId)}
                       fontFamily="inter"
                       fontSize="sm"
+                      p={0}
+                      height="auto"
+                      minW="auto"
                     >
                       View Orders
                     </Button>
