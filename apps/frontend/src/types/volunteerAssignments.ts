@@ -1,18 +1,8 @@
+import { User } from './types';
+
 export interface LimitedPantryInfo {
   pantryId: number;
   pantryName: string;
 }
 
-export interface Assignments {
-  assignmentId: number;
-  volunteer: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
-  pantry: LimitedPantryInfo | null;
-}
-
+export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };

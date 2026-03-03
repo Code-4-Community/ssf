@@ -301,6 +301,14 @@ export class ApiClient {
     const data = await this.get('/api/pantries/my-id');
     return data as number;
   }
+
+  public async getAllVolunteers(): Promise<
+    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
+  > {
+    return this.get('/api/volunteers/') as Promise<
+      (Omit<User, 'pantries'> & { pantryIds: number[] })[]
+    >;
+  }
 }
 
 export default new ApiClient();

@@ -29,6 +29,7 @@ import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
+import AssignedPantries from '@containers/volunteerAssignedPantries';
 
 Amplify.configure(CognitoAuthConfig);
 

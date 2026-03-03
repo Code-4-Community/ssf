@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Funnel } from 'lucide-react';
 import {
   Box,
@@ -16,31 +16,31 @@ import { Assignments } from 'types/volunteerAssignments';
 
 const AssignedPantries: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignments[]>([]);
-  const [filteredAssignments, setFilteredAssignments] = useState<Assignments[]>([]);
-  const [pantryDetails, setPantryDetails] = useState<Map<number, Pantry>>(new Map());
+  const [pantryDetails, setPantryDetails] = useState<Map<number, Pantry>>(
+    new Map(),
+  );
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] = useState<boolean | null>(null);
+  const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] = useState<
+    boolean | null
+  >(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-
-        const data = await ApiClient.getAllAssignments() as Assignments[];
+        const data = (await ApiClient.getAllVolunteers()) as Assignments[];
         setAssignments(data);
-        setFilteredAssignments(data);
-        
+
         const detailsMap = new Map<number, Pantry>();
+        const allPantryIds = [...new Set(data.flatMap((a) => a.pantryIds))];
         await Promise.all(
-          data
-            .filter(assignment => assignment.pantry)
-            .map(async (assignment) => {
-              try {
-                const pantry = await ApiClient.getPantry(assignment.pantry!.pantryId);
-                detailsMap.set(assignment.pantry!.pantryId, pantry);
-              } catch (error) {
-                console.error(`Error fetching pantry ${assignment.pantry!.pantryId}:`, error);
-              }
-            })
+          allPantryIds.map(async (id) => {
+            try {
+              const pantry = await ApiClient.getPantry(id);
+              detailsMap.set(id, pantry);
+            } catch (error) {
+              console.error(`Error fetching pantry ${id}:`, error);
+            }
+          }),
         );
         setPantryDetails(detailsMap);
       } catch (error) {
@@ -48,50 +48,47 @@ const AssignedPantries: React.FC = () => {
         alert('Error fetching assigned pantries: ' + error);
       }
     };
-    
+
     fetchAssignments();
   }, []);
 
-  useEffect(() => {
+  const filteredAssignments = useMemo(() => {
+    if (filterRefrigeratorFriendly === null) return assignments;
 
-    let filtered = [...assignments];
-    
-    if (filterRefrigeratorFriendly !== null) {
-      filtered = filtered.filter(assignment => {
-        if (!assignment.pantry) return false;
-        const pantry = pantryDetails.get(assignment.pantry.pantryId);
-        if (!pantry) return true;
-        const isRefrigeratorFriendlyValue = 
-          pantry.refrigeratedDonation === RefrigeratedDonation.YES || 
-          pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES;
-        return isRefrigeratorFriendlyValue === filterRefrigeratorFriendly;
-      });
-    }
-    
-    setFilteredAssignments(filtered);
+    return assignments
+      .map((a) => ({
+        ...a,
+        pantryIds: a.pantryIds.filter((id) => {
+          const pantry = pantryDetails.get(id);
+          if (!pantry) return false;
+          const friendly =
+            pantry.refrigeratedDonation === RefrigeratedDonation.YES ||
+            pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES;
+          return friendly === filterRefrigeratorFriendly;
+        }),
+      }))
+      .filter((a) => a.pantryIds.length > 0);
   }, [filterRefrigeratorFriendly, assignments, pantryDetails]);
 
-
   const handleViewOrders = (pantryId: number) => {
-    // TODO: Redirect to Order Management page when it's created
     console.log('View orders for pantry:', pantryId);
   };
 
   const isRefrigeratorFriendly = (pantryId: number): boolean => {
     const pantry = pantryDetails.get(pantryId);
     if (!pantry) return false;
-    return pantry.refrigeratedDonation === RefrigeratedDonation.YES || 
-           pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES;
+    return (
+      pantry.refrigeratedDonation === RefrigeratedDonation.YES ||
+      pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES
+    );
   };
 
   const getRefrigeratorFriendlyText = (pantryId: number): string => {
     const pantry = pantryDetails.get(pantryId);
     if (!pantry) return 'Loading...';
-    if (pantry.refrigeratedDonation === RefrigeratedDonation.YES || 
-        pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES) {
-      return 'Refrigerator-Friendly';
-    }
-    return 'Not Refrigerator-Friendly';
+    return isRefrigeratorFriendly(pantryId)
+      ? 'Refrigerator-Friendly'
+      : 'Not Refrigerator-Friendly';
   };
 
   const tableHeaderStyles = {
@@ -108,7 +105,7 @@ const AssignedPantries: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Assigned Pantries
       </Heading>
-      
+
       {/* Filter Button */}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
@@ -156,7 +153,7 @@ const AssignedPantries: React.FC = () => {
                   <Box display="flex" alignItems="center" gap={2}>
                     <Checkbox.Root
                       checked={filterRefrigeratorFriendly === true}
-                      onCheckedChange={(e: { checked: boolean }) => 
+                      onCheckedChange={(e: { checked: boolean }) =>
                         setFilterRefrigeratorFriendly(e.checked ? true : null)
                       }
                       color="black"
@@ -165,15 +162,23 @@ const AssignedPantries: React.FC = () => {
                       <Checkbox.HiddenInput />
                       <Checkbox.Control />
                     </Checkbox.Root>
-                    <Text fontSize="sm" cursor="pointer" onClick={() => setFilterRefrigeratorFriendly(filterRefrigeratorFriendly === true ? null : true)}>
+                    <Text
+                      fontSize="sm"
+                      cursor="pointer"
+                      onClick={() =>
+                        setFilterRefrigeratorFriendly(
+                          filterRefrigeratorFriendly === true ? null : true,
+                        )
+                      }
+                    >
                       Refrigerator-Friendly Only
                     </Text>
                   </Box>
-                  
+
                   <Box display="flex" alignItems="center" gap={2}>
                     <Checkbox.Root
                       checked={filterRefrigeratorFriendly === false}
-                      onCheckedChange={(e: { checked: boolean }) => 
+                      onCheckedChange={(e: { checked: boolean }) =>
                         setFilterRefrigeratorFriendly(e.checked ? false : null)
                       }
                       color="black"
@@ -182,7 +187,15 @@ const AssignedPantries: React.FC = () => {
                       <Checkbox.HiddenInput />
                       <Checkbox.Control />
                     </Checkbox.Root>
-                    <Text fontSize="sm" cursor="pointer" onClick={() => setFilterRefrigeratorFriendly(filterRefrigeratorFriendly === false ? null : false)}>
+                    <Text
+                      fontSize="sm"
+                      cursor="pointer"
+                      onClick={() =>
+                        setFilterRefrigeratorFriendly(
+                          filterRefrigeratorFriendly === false ? null : false,
+                        )
+                      }
+                    >
                       Not Refrigerator-Friendly Only
                     </Text>
                   </Box>
@@ -223,63 +236,66 @@ const AssignedPantries: React.FC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {filteredAssignments.map((assignment) => {
-
-            if (!assignment.pantry) return null;
-            
-            return (
-              <Table.Row
-                key={assignment.assignmentId}
-                _hover={{ bg: 'gray.50' }}
-              >
-                <Table.Cell
-                  textStyle="p2"
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  py={0}
+          {filteredAssignments.flatMap((assignment) =>
+            assignment.pantryIds.map((pantryId) => {
+              const pantry = pantryDetails.get(pantryId);
+              return (
+                <Table.Row
+                  key={`${assignment.id}-${pantryId}`}
+                  _hover={{ bg: 'gray.50' }}
                 >
-                  <Button
-                    variant="plain"
-                    textDecoration="underline"
-                    onClick={() => assignment.pantry}
-                    fontFamily="inter"
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
                   >
-                    {assignment.pantry.pantryName}
-                  </Button>
-                </Table.Cell>
-                <Table.Cell
-                  textStyle="p2"
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  color="neutral.700"
-                >
-                  <Box
-                    bg={assignment.pantry && isRefrigeratorFriendly(assignment.pantry.pantryId) ? 'gray.100' : 'orange.50'}
-                    px={3}
-                    py={1}
-                    borderRadius="md"
-                    display="inline-block"
-                    fontSize="sm"
-                    fontFamily="inter"
+                    <Button
+                      variant="plain"
+                      textDecoration="underline"
+                      fontFamily="inter"
+                    >
+                      {pantry?.pantryName ?? 'Loading...'}
+                    </Button>
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    color="neutral.700"
                   >
-                    {assignment.pantry ? getRefrigeratorFriendlyText(assignment.pantry.pantryId) : 'N/A'}
-                  </Box>
-                </Table.Cell>
-                <Table.Cell textStyle="p2" textAlign="center">
-                  <Button
-                    variant="plain"
-                    textDecoration="underline"
-                    color="blue.600"
-                    onClick={() => assignment.pantry && handleViewOrders(assignment.pantry.pantryId)}
-                    fontFamily="inter"
-                    fontSize="sm"
-                  >
-                    View Orders
-                  </Button>
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
+                    <Box
+                      bg={
+                        isRefrigeratorFriendly(pantryId)
+                          ? 'gray.100'
+                          : 'orange.50'
+                      }
+                      px={3}
+                      py={1}
+                      borderRadius="md"
+                      display="inline-block"
+                      fontSize="sm"
+                      fontFamily="inter"
+                    >
+                      {getRefrigeratorFriendlyText(pantryId)}
+                    </Box>
+                  </Table.Cell>
+                  <Table.Cell textStyle="p2" textAlign="center">
+                    <Button
+                      variant="plain"
+                      textDecoration="underline"
+                      color="blue.600"
+                      onClick={() => handleViewOrders(pantryId)}
+                      fontFamily="inter"
+                      fontSize="sm"
+                    >
+                      View Orders
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            }),
+          )}
         </Table.Body>
       </Table.Root>
     </Box>
