@@ -1,14 +1,12 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Param,
   ParseIntPipe,
   Body,
   Query,
   BadRequestException,
-  UseGuards,
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
@@ -21,8 +19,6 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
-import { AuthGuard } from '@nestjs/passport';
-import { OwnershipGuard } from '../auth/ownership.guard';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
@@ -30,7 +26,6 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
-import { Public } from '../auth/public.decorator';
 
 @Controller('orders')
 export class OrdersController {
@@ -72,7 +67,6 @@ export class OrdersController {
   }
 
   // Test endpoint for right now
-  @UseGuards(AuthGuard('jwt'), OwnershipGuard)
   @CheckOwnership({
     idParam: 'orderId',
     resolver: async ({ entityId, services }) => {
@@ -80,7 +74,7 @@ export class OrdersController {
         () => services.get(OrdersService).findOrderFoodRequest(entityId),
         (request: FoodRequest) =>
           services.get(PantriesService).findOne(request.pantryId),
-        (pantry: Pantry) => pantry.pantryUser?.id,
+        (pantry: Pantry) => [pantry.pantryUser?.id],
       );
     },
   })

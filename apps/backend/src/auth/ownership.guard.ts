@@ -25,19 +25,20 @@ export class OwnershipGuard implements CanActivate {
       context.getHandler(),
     );
 
+    // If no ownership check metadata, allow access
     if (!config) {
       return true;
     }
 
     // Process all request information and the logged in user
     const req = context.switchToHttp().getRequest();
-    const user: User = req.user;
+    const user: User | null = req.user;
 
-    // Admins bypass ownership checks
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    // Admins bypass ownership checks
     if (user.role === 'admin') {
       return true;
     }
@@ -54,16 +55,16 @@ export class OwnershipGuard implements CanActivate {
 
     try {
       // Execute the lambda function to get the owner user ID
-      const ownerId = await config.resolver({
+      const ownerIds = await config.resolver({
         entityId,
         services,
       });
 
-      if (ownerId === null || ownerId === undefined) {
+      if (ownerIds === null || ownerIds === undefined) {
         throw new ForbiddenException('Unable to determine resource ownership');
       }
 
-      if (ownerId !== user.id) {
+      if (!ownerIds.includes(user.id)) {
         throw new ForbiddenException('Access denied');
       }
 
