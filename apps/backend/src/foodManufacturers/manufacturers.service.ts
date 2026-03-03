@@ -7,12 +7,20 @@ import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.
 import { User } from '../users/user.entity';
 import { Role } from '../users/types';
 import { ApplicationStatus } from '../shared/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
+import { UsersService } from '../users/users.service';
+import { Donation } from '../donations/donations.entity';
 
 @Injectable()
 export class FoodManufacturersService {
   constructor(
     @InjectRepository(FoodManufacturer)
     private repo: Repository<FoodManufacturer>,
+
+    private usersService: UsersService,
+
+    @InjectRepository(Donation)
+    private donationsRepo: Repository<Donation>,
   ) {}
 
   async findOne(foodManufacturerId: number): Promise<FoodManufacturer> {
@@ -28,6 +36,25 @@ export class FoodManufacturersService {
       );
     }
     return foodManufacturer;
+  }
+
+  async getFMDonations(foodManufacturerId: number): Promise<Donation[]> {
+    validateId(foodManufacturerId, 'Food Manufacturer');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    return this.donationsRepo.find({
+      where: { foodManufacturer: { foodManufacturerId } },
+      relations: ['foodManufacturer'],
+    });
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
@@ -54,13 +81,13 @@ export class FoodManufacturersService {
 
     // secondary contact information
     foodManufacturer.secondaryContactFirstName =
-      foodManufacturerData.secondaryContactFirstName;
+      foodManufacturerData.secondaryContactFirstName ?? null;
     foodManufacturer.secondaryContactLastName =
-      foodManufacturerData.secondaryContactLastName;
+      foodManufacturerData.secondaryContactLastName ?? null;
     foodManufacturer.secondaryContactEmail =
-      foodManufacturerData.secondaryContactEmail;
+      foodManufacturerData.secondaryContactEmail ?? null;
     foodManufacturer.secondaryContactPhone =
-      foodManufacturerData.secondaryContactPhone;
+      foodManufacturerData.secondaryContactPhone ?? null;
 
     // food manufacturer details information
     foodManufacturer.foodManufacturerName =
@@ -80,11 +107,11 @@ export class FoodManufacturersService {
     foodManufacturer.inKindDonations = foodManufacturerData.inKindDonations;
     foodManufacturer.donateWastedFood = foodManufacturerData.donateWastedFood;
     foodManufacturer.manufacturerAttribute =
-      foodManufacturerData.manufacturerAttribute;
+      foodManufacturerData.manufacturerAttribute ?? null;
     foodManufacturer.additionalComments =
-      foodManufacturerData.additionalComments;
+      foodManufacturerData.additionalComments ?? null;
     foodManufacturer.newsletterSubscription =
-      foodManufacturerData.newsletterSubscription;
+      foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
   }
@@ -99,7 +126,20 @@ export class FoodManufacturersService {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
-    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
+    const createUserDto: userSchemaDto = {
+      email: foodManufacturer.foodManufacturerRepresentative.email,
+      firstName: foodManufacturer.foodManufacturerRepresentative.firstName,
+      lastName: foodManufacturer.foodManufacturerRepresentative.lastName,
+      phone: foodManufacturer.foodManufacturerRepresentative.phone,
+      role: Role.FOODMANUFACTURER,
+    };
+
+    const newFoodManufacturer = await this.usersService.create(createUserDto);
+
+    await this.repo.update(id, {
+      status: ApplicationStatus.APPROVED,
+      foodManufacturerRepresentative: newFoodManufacturer,
+    });
   }
 
   async deny(id: number) {

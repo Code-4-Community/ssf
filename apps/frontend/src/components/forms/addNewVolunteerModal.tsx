@@ -33,7 +33,6 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
-    console.log('RAW phone value:', phone);
     if (!firstName || !lastName || !email || !phone || phone === '+1') {
       setError('Please fill in all fields. *');
       return;

@@ -1,3 +1,4 @@
+import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
   AxiosResponse,
@@ -16,6 +17,7 @@ import {
   Pantry,
   PantryApplicationDto,
   CreateMultipleDonationItemsBody,
+  ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
   OrderDetails,
@@ -34,11 +36,12 @@ export class ApiClient {
     // Attach the access token to each request if available
     // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = this.accessToken || localStorage.getItem('accessToken');
+      async (config: InternalAxiosRequestConfig) => {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.accessToken?.toString();
+
         if (token) {
-          config.headers = config.headers || {};
-          config.headers['Authorization'] = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
@@ -49,16 +52,11 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
           window.location.replace('/unauthorized');
         }
         return Promise.reject(error);
       },
     );
-  }
-
-  public setAccessToken(token: string | undefined) {
-    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -98,6 +96,14 @@ export class ApiClient {
   public async getAllDonations(): Promise<Donation[]> {
     return this.axiosInstance
       .get('/api/donations')
+      .then((response) => response.data);
+  }
+
+  public async getAllDonationsByFoodManufacturer(
+    foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.axiosInstance
+      .get(`/api/manufacturers/${foodManufacturerId}/donations`)
       .then((response) => response.data);
   }
 
@@ -170,23 +176,21 @@ export class ApiClient {
   }
 
   public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/users/volunteers') as Promise<User[]>;
+    return this.get('/api/volunteers/') as Promise<User[]>;
   }
 
   public async updateUserVolunteerRole(
     userId: number,
     body: { role: string },
   ): Promise<void> {
-    return this.axiosInstance
-      .put(`/api/users/${userId}/role`, body)
-      .then(() => {});
+    await this.axiosInstance.put(`/api/users/${userId}/role`, body);
   }
 
-  public async getOrderFoodRequest(requestId: number): Promise<FoodRequest> {
+  public async getFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.get(`/api/requests/${requestId}`) as Promise<FoodRequest>;
   }
 
-  public async getOrderDonation(donationId: number): Promise<Donation> {
+  public async getDonation(donationId: number): Promise<Donation> {
     return this.get(`/api/donations/${donationId}`) as Promise<Donation>;
   }
 
@@ -204,6 +208,12 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async postManufacturer(
+    data: ManufacturerApplicationDto,
+  ): Promise<AxiosResponse<void>> {
+    return this.axiosInstance.post(`/api/manufacturers/application`, data);
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {
@@ -232,7 +242,7 @@ export class ApiClient {
     requestId: number,
   ): Promise<OrderDetails[]> {
     return this.axiosInstance
-      .get(`/api/requests/all-order-details/${requestId}`)
+      .get(`/api/requests/${requestId}/order-details`)
       .then((response) => response.data) as Promise<OrderDetails[]>;
   }
 
@@ -262,7 +272,7 @@ export class ApiClient {
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
-    const data = await this.get(`/api/requests/get-all-requests/${pantryId}`);
+    const data = await this.get(`/api/requests/${pantryId}/all`);
     return data as FoodRequest[];
   }
 
@@ -278,13 +288,18 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form/1';
+        window.location.href = '/request-form';
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }
     } catch (error) {
       alert(`Error submitting delivery confirmation: ${error}`);
     }
+  }
+
+  public async getCurrentUserPantryId(): Promise<number> {
+    const data = await this.get('/api/pantries/my-id');
+    return data as number;
   }
 }
 

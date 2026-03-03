@@ -12,13 +12,18 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { RequestsService } from '../foodRequests/request.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    private requestsService: RequestsService,
   ) {}
+
+  // TODO: when order is created, set FM
 
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
@@ -93,6 +98,10 @@ export class OrdersService {
 
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
+    if (!request) {
+      throw new NotFoundException(`Request for order ${orderId} not found`);
+    }
+
     const pantry = await this.pantryRepo.findOneBy({
       pantryId: request.pantryId,
     });
@@ -129,30 +138,61 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-    if (!order.foodManufacturer) {
-      throw new NotFoundException(
-        `Order ${orderId} does not have a food manufacturer assigned`,
-      );
-    }
     return order.foodManufacturer;
   }
 
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
-    // TODO: Once we start navigating to proper food manufacturer page, change the 1 to be the proper food manufacturer id
     await this.repo
       .createQueryBuilder()
       .update(Order)
       .set({
         status: newStatus as OrderStatus,
-        shippedBy: 1,
         shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
         deliveredAt:
           newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
       })
       .where('order_id = :orderId', { orderId })
       .execute();
+  }
+
+  async confirmDelivery(
+    orderId: number,
+    dto: ConfirmDeliveryDto,
+    photos: string[],
+  ): Promise<Order> {
+    validateId(orderId, 'Order');
+
+    const formattedDate = new Date(dto.dateReceived);
+    if (isNaN(formattedDate.getTime())) {
+      throw new BadRequestException('Invalid date format for dateReceived');
+    }
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        'Can only confirm delivery for shipped orders',
+      );
+    }
+
+    order.dateReceived = formattedDate;
+    order.feedback = dto.feedback ?? null;
+    order.photos = photos;
+    order.status = OrderStatus.DELIVERED;
+
+    const updatedOrder = await this.repo.save(order);
+
+    await this.requestsService.updateRequestStatus(order.requestId);
+
+    return updatedOrder;
   }
 
   async getOrdersByPantry(pantryId: number): Promise<Order[]> {

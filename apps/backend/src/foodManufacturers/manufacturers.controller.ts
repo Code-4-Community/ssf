@@ -13,6 +13,8 @@ import { FoodManufacturer } from './manufacturers.entity';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { Donation } from '../donations/donations.entity';
+import { Public } from '../auth/public.decorator';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -28,6 +30,13 @@ export class FoodManufacturersController {
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<FoodManufacturer> {
     return this.foodManufacturersService.findOne(foodManufacturerId);
+  }
+
+  @Get('/:foodManufacturerId/donations')
+  async getFoodManufacturerDonations(
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+  ): Promise<Donation[]> {
+    return this.foodManufacturersService.getFMDonations(foodManufacturerId);
   }
 
   @ApiBody({
@@ -149,6 +158,7 @@ export class FoodManufacturersController {
       ],
     },
   })
+  @Public()
   @Post('/application')
   async submitFoodManufacturerApplication(
     @Body(new ValidationPipe())

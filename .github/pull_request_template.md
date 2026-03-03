@@ -16,7 +16,7 @@ What steps did you take to verify your changes work? These should be clear enoug
 
 Describe any new unit tests you added.
 
-Provide screenshots of any new components, styling changes, or pages. 
+Provide screenshots of any new components, styling changes, or pages.
 
 ### 🏕️ (Optional) Future Work / Notes
 

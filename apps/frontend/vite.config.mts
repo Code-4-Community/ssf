@@ -1,10 +1,10 @@
-/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import path from 'path';
 
 export default defineConfig({
+  root: __dirname,
   cacheDir: '../../node_modules/.vite/frontend',
 
   server: {
@@ -24,15 +24,6 @@ export default defineConfig({
   //  plugins: [ nxViteTsPaths() ],
   // },
 
-  test: {
-    globals: true,
-    cache: {
-      dir: '../../node_modules/.vitest',
-    },
-    environment: 'jsdom',
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-  },
-
   resolve: {
     alias: {
       '@api': path.resolve(__dirname, './src/api'),
@@ -41,7 +32,7 @@ export default defineConfig({
       '@public': path.resolve(__dirname, './public'),
       '@shared': path.resolve(__dirname, '../../shared'),
       '@utils': path.resolve(__dirname, './src/utils'),
-      '@loaders': path.resolve(__dirname, './src/loaders')
+      '@loaders': path.resolve(__dirname, './src/loaders'),
     },
   },
 });

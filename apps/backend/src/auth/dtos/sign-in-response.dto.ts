@@ -1,7 +1,7 @@
 export class SignInResponseDto {
-  accessToken: string;
+  accessToken!: string;
 
-  refreshToken: string;
+  refreshToken!: string;
 
-  idToken: string;
+  idToken!: string;
 }

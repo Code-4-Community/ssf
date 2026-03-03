@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
@@ -15,8 +15,12 @@ import {
   AllergensConfidence,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
+import { Role } from '../users/types';
 
 const mockRepository = mock<Repository<Pantry>>();
+const mockUsersService = mock<UsersService>();
 
 describe('PantriesService', () => {
   let service: PantriesService;
@@ -35,7 +39,7 @@ describe('PantriesService', () => {
     contactEmail: 'jane.smith@example.com',
     contactPhone: '(508) 222-2222',
     hasEmailContact: true,
-    emailContactOther: null,
+    emailContactOther: undefined,
     secondaryContactFirstName: 'John',
     secondaryContactLastName: 'Doe',
     secondaryContactEmail: 'john.doe@example.com',
@@ -79,6 +83,10 @@ describe('PantriesService', () => {
           provide: getRepositoryToken(Pantry),
           useValue: mockRepository,
         },
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
       ],
     }).compile();
 
@@ -103,6 +111,7 @@ describe('PantriesService', () => {
       expect(result).toBe(mockPendingPantry);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
+        relations: ['pantryUser'],
       });
     });
 
@@ -162,16 +171,33 @@ describe('PantriesService', () => {
   // Approve pantry by ID (status = approved)
   describe('approve', () => {
     it('should approve a pantry', async () => {
-      mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce(undefined);
+      const mockPantryUser: Partial<User> = { id: 1, email: 'test@test.com' };
+      const mockCreatedUser: Partial<User> = { id: 2, role: Role.PANTRY };
+
+      const mockPendingPantryWithUser: Partial<Pantry> = {
+        ...mockPendingPantry,
+        pantryUser: mockPantryUser as User,
+      };
+
+      mockRepository.findOne.mockResolvedValueOnce(
+        mockPendingPantryWithUser as Pantry,
+      );
+      mockUsersService.create.mockResolvedValueOnce(mockCreatedUser as User);
+      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
 
       await service.approve(1);
 
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { pantryId: 1 },
+        relations: ['pantryUser'],
+      });
+      expect(mockUsersService.create).toHaveBeenCalledWith({
+        ...mockPantryUser,
+        role: Role.PANTRY,
       });
       expect(mockRepository.update).toHaveBeenCalledWith(1, {
-        status: 'approved',
+        status: ApplicationStatus.APPROVED,
+        pantryUser: mockCreatedUser,
       });
     });
 
@@ -190,7 +216,7 @@ describe('PantriesService', () => {
   describe('deny', () => {
     it('should deny a pantry', async () => {
       mockRepository.findOne.mockResolvedValueOnce(mockPendingPantry);
-      mockRepository.update.mockResolvedValueOnce(undefined);
+      mockRepository.update.mockResolvedValueOnce({} as UpdateResult);
 
       await service.deny(1);
 
@@ -280,4 +306,24 @@ describe('PantriesService', () => {
       expect(mockRepository.save).toHaveBeenCalled();
     });
   });
+
+  // TODO: once pantry service tests are fixed, uncomment this out
+  // describe('findByUserId', () => {
+  //   it('should return a pantry by user id', async () => {
+  //     const userId = 10;
+  //     const pantry = await service.findByUserId(userId);
+
+  //     expect(pantry.pantryId).toBe(1);
+  //     expect(pantry.pantryName).toBe('Community Food Pantry Downtown');
+  //     expect(mockRepository.findOne).toHaveBeenCalledWith({
+  //       where: { pantryUser: { id: userId } },
+  //     });
+  //   });
+
+  //   it('should throw NotFoundException if pantry not found', async () => {
+  //     await expect(service.findByUserId(999)).rejects.toThrow(
+  //       new NotFoundException('Pantry for User 999 not found'),
+  //     );
+  //   });
+  // });
 });

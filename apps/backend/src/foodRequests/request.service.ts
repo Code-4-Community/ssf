@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderStatus } from '../orders/types';
 
 @Injectable()
 export class RequestsService {
@@ -77,10 +78,7 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedItems: string[],
-    additionalInformation: string | undefined,
-    dateReceived: Date | undefined,
-    feedback: string | undefined,
-    photos: string[] | undefined,
+    additionalInformation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -94,9 +92,6 @@ export class RequestsService {
       requestedSize,
       requestedItems,
       additionalInformation,
-      dateReceived,
-      feedback,
-      photos,
     });
 
     return await this.repo.save(foodRequest);
@@ -111,12 +106,7 @@ export class RequestsService {
     });
   }
 
-  async updateDeliveryDetails(
-    requestId: number,
-    deliveryDate: Date,
-    feedback: string,
-    photos: string[],
-  ): Promise<FoodRequest> {
+  async updateRequestStatus(requestId: number): Promise<void> {
     validateId(requestId, 'Request');
 
     const request = await this.repo.findOne({
@@ -125,29 +115,25 @@ export class RequestsService {
     });
 
     if (!request) {
-      throw new NotFoundException('Invalid request ID');
+      throw new NotFoundException(`Request ${requestId} not found`);
     }
 
-    if (!request.orders || request.orders.length == 0) {
-      throw new NotFoundException(
-        'No associated orders found for this request',
-      );
+    const orders = request.orders || [];
+
+    if (!orders.length) {
+      request.status = FoodRequestStatus.ACTIVE;
+      await this.repo.save(request);
+      return;
     }
 
-    const orders = request.orders;
+    const allDelivered = orders.every(
+      (order) => order.status === OrderStatus.DELIVERED,
+    );
 
-    for (const order of orders) {
-      if (!order.shippedBy) {
-        throw new NotFoundException(
-          'No associated food manufacturer found for an associated order',
-        );
-      }
-    }
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
 
-    request.feedback = feedback;
-    request.dateReceived = deliveryDate;
-    request.photos = photos;
-
-    return await this.repo.save(request);
+    await this.repo.save(request);
   }
 }
