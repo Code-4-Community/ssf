@@ -9,11 +9,14 @@ import {
 import { User } from '../users/user.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
+import { Role } from '../users/types';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('volunteers')
 export class VolunteersController {
   constructor(private volunteersService: VolunteersService) {}
 
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/')
   async getAllVolunteers(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]

@@ -21,6 +21,7 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  Assignments,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -302,12 +303,8 @@ export class ApiClient {
     return data as number;
   }
 
-  public async getAllVolunteers(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
-    return this.get('/api/volunteers/') as Promise<
-      (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-    >;
+  public async getAllVolunteers(): Promise<Assignments[]> {
+    return this.get('/api/volunteers') as Promise<Assignments[]>;
   }
 }
 

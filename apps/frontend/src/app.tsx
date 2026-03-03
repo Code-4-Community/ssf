@@ -217,7 +217,11 @@ const router = createBrowserRouter([
       },
       {
         path: '/volunteer-assigned-pantries',
-        element: <AssignedPantries />,
+        element: (
+          <ProtectedRoute>
+            <AssignedPantries />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
