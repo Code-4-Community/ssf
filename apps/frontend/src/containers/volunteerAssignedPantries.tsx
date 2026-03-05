@@ -10,7 +10,9 @@ import {
   RadioGroup,
   Spinner,
   Center,
+  Icon,
 } from '@chakra-ui/react';
+import { CircleCheck } from 'lucide-react';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
@@ -197,103 +199,126 @@ const AssignedPantries: React.FC = () => {
             </Box>
           </Box>
 
+          {/* Empty State */}
+          {filteredAssignments.length === 0 && (
+            <Center flexDirection="column" gap={2} mt={12}>
+              <Icon as={CircleCheck} boxSize={6} color="gray.400" />
+              <Text fontWeight="semibold" fontSize="md" color="gray.700">
+                No Assigned Pantries
+              </Text>
+              <Text fontSize="sm" color="gray.400">
+                You have no assigned pantries at this time.
+              </Text>
+            </Center>
+          )}
+
           {/* Pantries Table */}
-          <Table.Root variant="line">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="40%"
-                >
-                  Pantry
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  width="35%"
-                  textAlign="right"
-                >
-                  Refrigerator-Friendly
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
-                >
-                  Action
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {filteredAssignments.flatMap((assignment) =>
-                assignment.pantryIds.map((pantryId) => {
-                  const pantry = pantryDetails.get(pantryId);
-                  const friendly = isRefrigeratorFriendly(pantryId);
-                  return (
-                    <Table.Row
-                      key={`${assignment.id}-${pantryId}`}
-                      _hover={{ bg: 'gray.50' }}
-                    >
-                      {/* Pantry Name */}
-                      <Table.Cell
-                        borderRight="1px solid"
-                        borderRightColor="neutral.100"
-                        px={4}
-                        py={3}
+          {filteredAssignments.length > 0 && (
+            <Table.Root variant="line">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    width="40%"
+                  >
+                    Pantry
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    width="35%"
+                    textAlign="right"
+                  >
+                    Refrigerator-Friendly
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    textAlign="right"
+                    width="25%"
+                  >
+                    Action
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {filteredAssignments.flatMap((assignment) =>
+                  assignment.pantryIds.map((pantryId) => {
+                    const pantry = pantryDetails.get(pantryId);
+                    const friendly = isRefrigeratorFriendly(pantryId);
+                    return (
+                      <Table.Row
+                        key={`${assignment.id}-${pantryId}`}
+                        _hover={{ bg: 'gray.50' }}
                       >
-                        <Text
-                          as="span"
-                          textStyle="p2"
-                          fontFamily="inter"
-                          textDecoration="underline"
-                          cursor="pointer"
-                          color="gray.800"
+                        {/* Pantry Name */}
+                        <Table.Cell
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                          px={4}
+                          py={3}
                         >
-                          {pantry?.pantryName}
-                        </Text>
-                      </Table.Cell>
+                          <Text
+                            as="span"
+                            textStyle="p2"
+                            fontFamily="inter"
+                            textDecoration="underline"
+                            cursor="pointer"
+                            color="gray.800"
+                          >
+                            {pantry?.pantryName}
+                          </Text>
+                        </Table.Cell>
 
-                      {/* Refrigerator-Friendly Badge */}
-                      <Table.Cell px={4} py={3} textAlign="right">
-                        <Box
-                          bg={friendly ? 'neutral.100' : 'neutral.200'}
-                          px={3}
-                          py={1}
-                          borderRadius="md"
-                          display="inline-block"
-                          fontSize="sm"
-                          fontFamily="inter"
-                          color="neutral.800"
-                        >
-                          {getRefrigeratorFriendlyText(pantryId)}
-                        </Box>
-                      </Table.Cell>
-
-                      {/* Action */}
-                      <Table.Cell px={4} py={3} textAlign="right">
-                        <Button
-                          variant="plain"
-                          textDecoration="underline"
-                          color="neutral.700"
-                          textStyle="p2"
-                          onClick={() => navigator(`/`)}
-                          fontFamily="inter"
+                        {/* Refrigerator-Friendly Badge */}
+                        <Table.Cell
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                          px={4}
+                          py={3}
                           textAlign="right"
-                          fontSize="sm"
-                          p={0}
-                          height="auto"
-                          minW="auto"
                         >
-                          View Orders
-                        </Button>
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                }),
-              )}
-            </Table.Body>
-          </Table.Root>
+                          <Box
+                            bg={friendly ? 'neutral.100' : 'neutral.200'}
+                            px={3}
+                            py={1}
+                            borderRadius="md"
+                            display="inline-block"
+                            fontSize="sm"
+                            fontFamily="inter"
+                            color="neutral.800"
+                          >
+                            {getRefrigeratorFriendlyText(pantryId)}
+                          </Box>
+                        </Table.Cell>
+
+                        {/* Action */}
+                        <Table.Cell px={4} py={3} textAlign="right">
+                          <Button
+                            variant="plain"
+                            textDecoration="underline"
+                            color="neutral.700"
+                            textStyle="p2"
+                            onClick={() => navigator(`/`)}
+                            fontFamily="inter"
+                            textAlign="right"
+                            fontSize="sm"
+                            p={0}
+                            height="auto"
+                            minW="auto"
+                          >
+                            View Orders
+                          </Button>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  }),
+                )}
+              </Table.Body>
+            </Table.Root>
+          )}
         </>
       )}
     </Box>
