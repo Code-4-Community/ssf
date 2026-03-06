@@ -7,6 +7,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { UsersService } from '../users/users.service';
 import { PantriesService } from '../pantries/pantries.service';
+import { AuthService } from '../auth/auth.service';
 
 jest.setTimeout(60000);
 
@@ -24,6 +25,10 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
+        {
+          provide: AuthService,
+          useValue: {},
+        },
         {
           provide: getRepositoryToken(User),
           useValue: testDataSource.getRepository(User),

@@ -12,6 +12,7 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { Role } from '../users/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,13 +34,14 @@ export class AuthController {
       throw new BadRequestException(message);
     }
 
-    const user = await this.usersService.create(
-      signUpDto.email,
-      signUpDto.firstName,
-      signUpDto.lastName,
-      signUpDto.phone,
-      Role.VOLUNTEER,
-    );
+    const createUserDto: userSchemaDto = {
+      email: signUpDto.email,
+      firstName: signUpDto.firstName,
+      lastName: signUpDto.lastName,
+      phone: signUpDto.phone,
+      role: Role.VOLUNTEER,
+    };
+    const user = await this.usersService.create(createUserDto);
 
     return user;
   }
