@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Param,
   ParseIntPipe,
@@ -20,6 +19,8 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -65,10 +66,23 @@ export class OrdersController {
     return this.ordersService.findOrderPantry(orderId);
   }
 
+  // Test endpoint for right now
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(OrdersService).findOrderFoodRequest(entityId),
+        (request: FoodRequest) =>
+          services.get(PantriesService).findOne(request.pantryId),
+        (pantry: Pantry) => [pantry.pantryUser?.id],
+      );
+    },
+  })
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequest> {
+    console.log('Handler reached');
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 

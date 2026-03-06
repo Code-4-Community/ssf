@@ -5,6 +5,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { NavigateFunction } from 'react-router-dom';
 import {
   User,
   Order,
@@ -28,7 +29,11 @@ const defaultBaseUrl =
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
-  private accessToken: string | undefined;
+  private navigate: NavigateFunction | null = null;
+
+  public setNavigate(navigate: NavigateFunction): void {
+    this.navigate = navigate;
+  }
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
@@ -52,7 +57,11 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          window.location.replace('/unauthorized');
+          if (this.navigate) {
+            this.navigate('/unauthorized');
+          } else {
+            window.location.replace('/unauthorized');
+          }
         }
         return Promise.reject(error);
       },
@@ -288,7 +297,11 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form';
+        if (this.navigate) {
+          this.navigate('/request-form');
+        } else {
+          window.location.href = '/request-form';
+        }
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }
