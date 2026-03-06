@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
+import { Assignments } from './types';
 
 @Injectable()
 export class VolunteersService {
@@ -34,9 +35,7 @@ export class VolunteersService {
     return volunteer;
   }
 
-  async getVolunteersAndPantryAssignments(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
+  async getVolunteersAndPantryAssignments(): Promise<Assignments[]> {
     const volunteers = await this.usersService.findUsersByRoles([
       Role.VOLUNTEER,
     ]);

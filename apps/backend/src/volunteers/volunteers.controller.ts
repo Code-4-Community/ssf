@@ -6,11 +6,12 @@ import {
   Post,
   Body,
 } from '@nestjs/common';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
+import { Assignments } from './types';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -18,9 +19,7 @@ export class VolunteersController {
 
   @Roles(Role.ADMIN)
   @Get('/')
-  async getAllVolunteers(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
+  async getAllVolunteers(): Promise<Assignments[]> {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
+import { User } from './users.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 
