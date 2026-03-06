@@ -18,8 +18,8 @@ export class DropDonationTotalColumns1772241115031
             ALTER TABLE "donations"
 
             ADD COLUMN total_items INTEGER,
-            ADD COLUMN total_oz NUMERIC(10,2),
-            ADD COLUMN total_estimated_value NUMERIC(10,2);
+            ADD COLUMN total_oz NUMERIC(20,2),
+            ADD COLUMN total_estimated_value NUMERIC(20,2);
         `);
   }
 }

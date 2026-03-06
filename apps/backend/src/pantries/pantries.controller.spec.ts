@@ -14,6 +14,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  TotalStats,
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
@@ -328,7 +329,7 @@ describe('PantriesController', () => {
 
   describe('getTotalStats', () => {
     it('should return total stats across all pantries', async () => {
-      const mockTotalStats: PantryStats = {
+      const mockTotalStats: TotalStats = {
         totalItems: 500,
         totalOz: 8000,
         totalLbs: 500,
@@ -347,7 +348,7 @@ describe('PantriesController', () => {
     });
 
     it('should forward years query parameter to service', async () => {
-      const mockTotalStats: PantryStats = {
+      const mockTotalStats: TotalStats = {
         totalItems: 500,
         totalOz: 8000,
         totalLbs: 500,

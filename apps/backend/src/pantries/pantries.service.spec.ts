@@ -111,9 +111,11 @@ describe('PantriesService (integration using dummy data)', () => {
 
   describe('approve', () => {
     it('approves a pending pantry', async () => {
+      const pantryBefore = await service.findOne(5);
+      expect(pantryBefore.status).toBe(ApplicationStatus.PENDING);
       await service.approve(5);
-      const p = await service.findOne(5);
-      expect(p.status).toBe(ApplicationStatus.APPROVED);
+      const pantryAfter = await service.findOne(5);
+      expect(pantryAfter.status).toBe(ApplicationStatus.APPROVED);
     });
 
     it('throws when approving non-existent', async () => {
@@ -125,9 +127,11 @@ describe('PantriesService (integration using dummy data)', () => {
 
   describe('deny', () => {
     it('denies a pending pantry', async () => {
+      const pantryBefore = await service.findOne(6);
+      expect(pantryBefore.status).toBe(ApplicationStatus.PENDING);
       await service.deny(6);
-      const p = await service.findOne(6);
-      expect(p.status).toBe(ApplicationStatus.DENIED);
+      const pantryAfter = await service.findOne(6);
+      expect(pantryAfter.status).toBe(ApplicationStatus.DENIED);
     });
 
     it('throws when denying non-existent', async () => {
@@ -163,7 +167,7 @@ describe('PantriesService (integration using dummy data)', () => {
         activities: [Activity.CREATE_LABELED_SHELF],
         itemsInStock: 'none',
         needMoreOptions: 'none',
-      } as PantryApplicationDto;
+      };
 
       await service.addPantry(dto);
       const saved = await testDataSource.getRepository(Pantry).findOne({
@@ -231,41 +235,50 @@ describe('PantriesService (integration using dummy data)', () => {
     });
   });
 
-  describe('getStatsForPantry', () => {
-    it('returns accurate aggregated stats for pantry with orders (Community Food Pantry Downtown)', async () => {
-      const pantry = await service.findOne(1);
-      const stats = await service.getStatsForPantry(pantry);
+  describe('getPantryStats (single pantry)', () => {
+    it('throws NotFoundException for non-existent pantry names', async () => {
+      await expect(
+        service.getPantryStats(['Nonexistent Pantry']),
+      ).rejects.toThrow(NotFoundException);
+    });
 
-      // From the dummy data migration: pantry 1 allocations total
-      // delivered allocations: 10 + 5 + 25 = 40
-      // pending allocations: 75 + 10 = 85
-      // totalItems = 125
+    it('throws NotFoundException when some provided pantry names do not exist', async () => {
+      await expect(
+        service.getPantryStats([
+          'Community Food Pantry Downtown',
+          'Fake Pantry',
+        ]),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('error message includes the missing pantry name', async () => {
+      await expect(
+        service.getPantryStats([
+          'Community Food Pantry Downtown',
+          'Fake Pantry',
+        ]),
+      ).rejects.toThrow('Pantries not found: Fake Pantry');
+    });
+
+    it('returns accurate aggregated stats for pantry with orders (Community Food Pantry Downtown)', async () => {
+      const stats = (
+        await service.getPantryStats(['Community Food Pantry Downtown'])
+      )[0];
+
       expect(stats.pantryId).toBe(1);
       expect(stats.totalItems).toBe(125);
-
-      // totalOz: delivered (10*16 + 5*8.01 + 25*24) = 800.05
-      // pending (75*16 + 10*32) = 1520
-      // total = 2320.05
       expect(stats.totalOz).toBeCloseTo(2320.05, 2);
-
-      // totalLbs is rounded to 2 decimals inside the service
       expect(stats.totalLbs).toBeCloseTo(145.0, 2);
-
-      // total donated value: delivered (10*4.5 + 5*2 + 25*3) = 130
-      // pending (75*6 + 10*4.5) = 495 -> total = 625
       expect(stats.totalDonatedFoodValue).toBeCloseTo(625.0, 2);
-
-      // Migration sets a default shipping cost (20.00) for delivered/shipped orders
-      // Community has one delivered order -> shippingCost = 20 -> totalValue = 625 + 20
       expect(stats.totalValue).toBeCloseTo(645.0, 2);
-
-      // Dummy data contains no explicit foodRescue flags -> percentage 0
       expect(stats.percentageFoodRescueItems).toBe(0);
     });
 
     it('returns zeroed stats for a pantry with no orders (Riverside Food Assistance)', async () => {
-      const pantry = await service.findOne(4);
-      const stats = await service.getStatsForPantry(pantry);
+      const stats = (
+        await service.getPantryStats(['Riverside Food Assistance'])
+      )[0];
+
       expect(stats.pantryId).toBe(4);
       expect(stats.totalItems).toBe(0);
       expect(stats.totalOz).toBe(0);
@@ -274,6 +287,17 @@ describe('PantriesService (integration using dummy data)', () => {
       expect(stats.totalShippingCost).toBe(0);
       expect(stats.totalValue).toBe(0);
       expect(stats.percentageFoodRescueItems).toBe(0);
+    });
+
+    it('respects year filter and returns zeros for a non-matching year', async () => {
+      const stats = (
+        await service.getPantryStats(['Community Food Pantry Downtown'], [2030])
+      )[0];
+
+      expect(stats.pantryId).toBe(1);
+      expect(stats.totalItems).toBe(0);
+      expect(stats.totalOz).toBe(0);
+      expect(stats.totalDonatedFoodValue).toBe(0);
     });
   });
 
@@ -285,16 +309,16 @@ describe('PantriesService (integration using dummy data)', () => {
       ]);
       expect(stats.length).toBe(2);
 
-      const community = stats.find((s) => s.pantryId === 1)!;
-      const westside = stats.find((s) => s.pantryId === 2)!;
+      const community = stats.find((s) => s.pantryId === 1);
+      const westside = stats.find((s) => s.pantryId === 2);
 
       expect(community).toBeDefined();
-      expect(community.totalItems).toBe(125);
-      expect(community.totalOz).toBeCloseTo(2320.05, 2);
+      expect(community?.totalItems).toBe(125);
+      expect(community?.totalOz).toBeCloseTo(2320.05, 2);
 
       expect(westside).toBeDefined();
-      expect(westside.totalItems).toBe(65);
-      expect(westside.totalOz).toBeCloseTo(1195.0, 2);
+      expect(westside?.totalItems).toBe(65);
+      expect(westside?.totalOz).toBeCloseTo(1195.0, 2);
     });
 
     it('accepts single pantry name as string', async () => {
@@ -316,7 +340,6 @@ describe('PantriesService (integration using dummy data)', () => {
     });
 
     it('pagination page returns first 10 items', async () => {
-      // Get over 10 pantries in the system to verify pagination
       for (let i = 0; i < 10; i++) {
         await service.addPantry({
           contactFirstName: `Bulk${i}`,
@@ -350,7 +373,6 @@ describe('PantriesService (integration using dummy data)', () => {
     });
 
     it('year filter isolates orders by year (move one delivered order to 2025)', async () => {
-      // Find the delivered order for Community Food Pantry Downtown and set its created_at to 2025
       await testDataSource.query(`
         UPDATE public.orders
         SET created_at = '2025-01-16 09:00:00'
@@ -377,27 +399,16 @@ describe('PantriesService (integration using dummy data)', () => {
     it('aggregates stats across all pantries and matches migration sums', async () => {
       const total = await service.getTotalStats();
 
-      // totalItems: 125 + 65 + 30 = 220
       expect(total.totalItems).toBe(220);
-
-      // totalOz: 2320.05 + 1195 + 1015 = 4530.05
       expect(total.totalOz).toBeCloseTo(4530.05, 2);
-
-      // totalLbs: 145.00 + 74.69 + 63.44 = 283.13
       expect(total.totalLbs).toBeCloseTo(283.13, 2);
-
-      // total donated value: 625 + 292.5 + 170 = 1087.5
       expect(total.totalDonatedFoodValue).toBeCloseTo(1087.5, 2);
-
-      // shipping costs were applied to delivered/shipped orders
       expect(total.totalShippingCost).toBeCloseTo(60.0, 2);
-
       expect(total.totalValue).toBeCloseTo(1147.5, 2);
     });
 
     it('respects year filter and returns zeros for non-matching years', async () => {
       const totalEmpty = await service.getTotalStats([2030]);
-      expect(totalEmpty).toBeDefined();
       expect(totalEmpty.totalItems).toBe(0);
       expect(totalEmpty.totalOz).toBe(0);
       expect(totalEmpty.totalLbs).toBe(0);

@@ -8,10 +8,11 @@ import { OrdersModule } from '../orders/order.module';
 import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/user.entity';
 import { UsersModule } from '../users/users.module';
+import { Order } from '../orders/order.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Pantry, User]),
+    TypeOrmModule.forFeature([Pantry, User, Order]),
     OrdersModule,
     forwardRef(() => UsersModule),
     EmailsModule,
