@@ -92,7 +92,6 @@ export class PantriesService {
       qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
       });
-      // Replace the shipping cost select with a year-filtered version
       qb.addSelect(
         `COALESCE((
           SELECT SUM(o2.shipping_cost)
@@ -179,9 +178,7 @@ export class PantriesService {
     );
   }
 
-  async getTotalStats(
-    years?: number[],
-  ): Promise<Omit<PantryStats, 'pantryId'>> {
+  async getTotalStats(years?: number[]): Promise<TotalStats> {
     const yearsArray = years
       ? (Array.isArray(years) ? years : [years]).map(Number)
       : undefined;

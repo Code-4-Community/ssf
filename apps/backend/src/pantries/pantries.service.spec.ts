@@ -390,8 +390,8 @@ describe('PantriesService (integration using dummy data)', () => {
       const res = await service.getPantryStats(undefined, [2025]);
       const community = res.find((s) => s.pantryId === 1);
       expect(community).toBeDefined();
-      expect(community!.totalItems).toBe(40);
-      expect(community!.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
+      expect(community?.totalItems).toBe(40);
+      expect(community?.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
     });
   });
 

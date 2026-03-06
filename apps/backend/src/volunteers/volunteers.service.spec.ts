@@ -193,8 +193,8 @@ describe('VolunteersService', () => {
       expect(beforePantryIds).toEqual([2, 3]);
 
       const result = await service.assignPantriesToVolunteer(7, [1, 4]);
-      expect(result.pantries!).toHaveLength(4);
-      const afterPantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(4);
+      const afterPantryIds = result.pantries?.map((p) => p.pantryId);
       expect(afterPantryIds).toEqual([2, 3, 1, 4]);
     });
 
@@ -207,8 +207,8 @@ describe('VolunteersService', () => {
       expect(beforeAssignment).toEqual([]);
 
       const result = await service.assignPantriesToVolunteer(6, [2, 3]);
-      expect(result.pantries!).toHaveLength(2);
-      const pantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(2);
+      const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
 
@@ -219,8 +219,8 @@ describe('VolunteersService', () => {
       expect(beforePantryIds).toEqual([2, 3]);
 
       const result = await service.assignPantriesToVolunteer(7, [2, 3]);
-      expect(result.pantries!).toHaveLength(2);
-      const pantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(2);
+      const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
   });
