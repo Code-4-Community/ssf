@@ -168,22 +168,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-pantries',
-        element: (
-          <ProtectedRoute>
-            <ApprovePantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/admin-donation',
-        element: (
-          <ProtectedRoute>
-            <AdminDonation />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/volunteer-management',
         element: (
           <ProtectedRoute>
@@ -205,15 +189,19 @@ const router = createBrowserRouter([
       },
       {
         path: '/approve-pantries',
-        element: <ApprovePantries />,
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/admin-donation',
-        element: <AdminDonation />,
-      },
-      {
-        path: '/volunteer-management',
-        element: <VolunteerManagement />,
+        element: (
+          <ProtectedRoute>
+            <AdminDonation />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/volunteer-assigned-pantries',

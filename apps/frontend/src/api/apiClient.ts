@@ -180,6 +180,10 @@ export class ApiClient {
     return this.get('/api/volunteers/') as Promise<User[]>;
   }
 
+  public async getVolunteerPantries(userId: number): Promise<Pantry[]> {
+    return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
+  }
+
   public async updateUserVolunteerRole(
     userId: number,
     body: { role: string },
@@ -303,8 +307,9 @@ export class ApiClient {
     return data as number;
   }
 
-  public async getAllVolunteers(): Promise<Assignments[]> {
-    return this.get('/api/volunteers') as Promise<Assignments[]>;
+  public async getMyId(): Promise<number> {
+    const data = await this.get('/api/users/my-id');
+    return data as number;
   }
 }
 

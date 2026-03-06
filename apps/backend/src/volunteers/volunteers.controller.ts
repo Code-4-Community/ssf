@@ -16,7 +16,7 @@ import { Roles } from '../auth/roles.decorator';
 export class VolunteersController {
   constructor(private volunteersService: VolunteersService) {}
 
-  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @Roles(Role.ADMIN)
   @Get('/')
   async getAllVolunteers(): Promise<
     (Omit<User, 'pantries'> & { pantryIds: number[] })[]
@@ -24,16 +24,16 @@ export class VolunteersController {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 
-  @Get('/:id')
-  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.volunteersService.findOne(userId);
-  }
-
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Pantry[]> {
     return this.volunteersService.getVolunteerPantries(id);
+  }
+
+  @Get('/:id')
+  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+    return this.volunteersService.findOne(userId);
   }
 
   @Post('/:id/pantries')

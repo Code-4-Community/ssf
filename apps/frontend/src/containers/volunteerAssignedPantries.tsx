@@ -1,96 +1,70 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Funnel } from 'lucide-react';
+import { Funnel, CircleCheck } from 'lucide-react';
 import {
   Box,
   Button,
   Table,
   Heading,
   VStack,
-  Text,
   RadioGroup,
-  Spinner,
-  Center,
-  Icon,
+  Text,
 } from '@chakra-ui/react';
-import { CircleCheck } from 'lucide-react';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
-import { Assignments } from './../types/types';
-import { useNavigate } from 'react-router-dom';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useNavigate } from 'react-router-dom';
 
 const AssignedPantries: React.FC = () => {
-  const navigator = useNavigate();
-  const [assignments, setAssignments] = useState<Assignments[]>([]);
-  const [pantryDetails, setPantryDetails] = useState<Map<number, Pantry>>(
-    new Map(),
-  );
+  const navigate = useNavigate();
+  const [pantries, setPantries] = useState<Pantry[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] =
-    useState<string>('all');
-  const [alertMessage, setAlertMessage] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] = useState<
+    boolean | null
+  >(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
-  const isRefrigeratorFriendly = (pantryId: number): boolean => {
-    const pantry = pantryDetails.get(pantryId);
-    if (!pantry) return false;
+  useEffect(() => {
+    const fetchAssignedPantries = async () => {
+      try {
+        const userId = await ApiClient.getMyId();
+        const data = await ApiClient.getVolunteerPantries(userId);
+        setPantries(data);
+      } catch (error) {
+        console.error('Error fetching assigned pantries:', error);
+        setAlertMessage('Error fetching assigned pantries');
+      }
+    };
+
+    fetchAssignedPantries();
+  }, []);
+
+  const isRefrigeratorFriendly = (pantry: Pantry): boolean => {
     return (
       pantry.refrigeratedDonation === RefrigeratedDonation.YES ||
       pantry.refrigeratedDonation === RefrigeratedDonation.SOMETIMES
     );
   };
 
-  useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const data = await ApiClient.getAllVolunteers();
-        setAssignments(data);
+  const filteredPantries = useMemo(() => {
+    if (filterRefrigeratorFriendly === null) return pantries;
+    return pantries.filter(
+      (pantry) => isRefrigeratorFriendly(pantry) === filterRefrigeratorFriendly,
+    );
+  }, [filterRefrigeratorFriendly, pantries]);
 
-        const detailsMap = new Map<number, Pantry>();
-        const allPantryIds = [...new Set(data.flatMap((a) => a.pantryIds))];
-        await Promise.all(
-          allPantryIds.map(async (id) => {
-            try {
-              const pantry = await ApiClient.getPantry(id);
-              detailsMap.set(id, pantry);
-            } catch (error) {
-              console.error(`Error fetching pantry ${id}:`, error);
-            }
-          }),
-        );
-        setPantryDetails(detailsMap);
-      } catch (error) {
-        console.error('Error fetching assignments:', error);
-        setAlertMessage('Error fetching assigned pantries');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Map radio value string to filter state
+  const radioValue =
+    filterRefrigeratorFriendly === true
+      ? 'yes'
+      : filterRefrigeratorFriendly === false
+      ? 'no'
+      : '';
 
-    fetchAssignments();
-  }, []);
-
-  const filteredAssignments = useMemo(() => {
-    if (filterRefrigeratorFriendly === 'all') return assignments;
-
-    const target = filterRefrigeratorFriendly === 'friendly';
-    return assignments
-      .map((a) => ({
-        ...a,
-        pantryIds: a.pantryIds.filter((id) => {
-          const pantry = pantryDetails.get(id);
-          if (!pantry) return false;
-          return isRefrigeratorFriendly(pantry.pantryId) === target;
-        }),
-      }))
-      .filter((a) => a.pantryIds.length > 0);
-  }, [filterRefrigeratorFriendly, assignments, pantryDetails]);
-
-  const getRefrigeratorFriendlyText = (pantryId: number): string => {
-    return isRefrigeratorFriendly(pantryId)
-      ? 'Refrigerator-Friendly'
-      : 'Not Refrigerator-Friendly';
+  const handleRadioChange = (value: string) => {
+    if (value === 'yes') setFilterRefrigeratorFriendly(true);
+    else if (value === 'no') setFilterRefrigeratorFriendly(false);
+    else setFilterRefrigeratorFriendly(null);
   };
 
   const tableHeaderStyles = {
@@ -107,219 +81,202 @@ const AssignedPantries: React.FC = () => {
   return (
     <Box p={12}>
       {alertMessage && (
-        <FloatingAlert message={alertMessage} status="info" timeout={6000} />
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
       )}
 
       <Heading textStyle="h1" color="gray.light" mb={6}>
         Assigned Pantries
       </Heading>
 
-      {isLoading ? (
-        <Center mt={12}>
-          <Spinner size="lg" />
-        </Center>
-      ) : (
-        <>
-          {/* Filter Button */}
-          <Box display="flex" gap={2} mb={6}>
-            <Box position="relative">
-              <Button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                variant="outline"
-                color="neutral.800"
+      {/* Filter Button */}
+      <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
+        <Box position="relative">
+          <Button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            variant="outline"
+            color="neutral.800"
+            border="1px solid"
+            borderColor="neutral.200"
+            size="sm"
+            p={3}
+            fontFamily="ibm"
+            fontWeight="semibold"
+          >
+            <Funnel />
+            Filter
+          </Button>
+
+          {isFilterOpen && (
+            <>
+              <Box
+                position="fixed"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                onClick={() => setIsFilterOpen(false)}
+                zIndex={10}
+              />
+              <Box
+                position="absolute"
+                top="100%"
+                left={0}
+                mt={2}
+                bg="white"
                 border="1px solid"
-                borderColor="neutral.200"
-                size="sm"
-                p={3}
-                fontFamily="ibm"
-                fontWeight="semibold"
+                borderColor="gray.200"
+                borderRadius="md"
+                boxShadow="lg"
+                p={4}
+                minW="275px"
+                zIndex={20}
               >
-                <Funnel />
-                Filter
-              </Button>
+                <RadioGroup.Root
+                  value={radioValue}
+                  onValueChange={(e: { value: string }) =>
+                    handleRadioChange(e.value)
+                  }
+                  size="sm"
+                >
+                  <VStack align="stretch" gap={2}>
+                    <RadioGroup.Item value="yes">
+                      <RadioGroup.ItemHiddenInput />
+                      <RadioGroup.ItemIndicator />
+                      <RadioGroup.ItemText fontSize="sm">
+                        Refrigerator-Friendly Only
+                      </RadioGroup.ItemText>
+                    </RadioGroup.Item>
+                    <RadioGroup.Item value="no">
+                      <RadioGroup.ItemHiddenInput />
+                      <RadioGroup.ItemIndicator />
+                      <RadioGroup.ItemText fontSize="sm">
+                        Not Refrigerator-Friendly Only
+                      </RadioGroup.ItemText>
+                    </RadioGroup.Item>
+                  </VStack>
+                </RadioGroup.Root>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Box>
 
-              {isFilterOpen && (
-                <>
-                  <Box
-                    position="fixed"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    onClick={() => setIsFilterOpen(false)}
-                    zIndex={10}
-                  />
-                  <Box
-                    position="absolute"
-                    top="100%"
-                    left={0}
-                    mt={2}
-                    bg="white"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    borderRadius="md"
-                    boxShadow="lg"
-                    p={4}
-                    minW="275px"
-                    zIndex={20}
+      {/* Pantries Table */}
+      {filteredPantries.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          mt={16}
+          gap={2}
+        >
+          <CircleCheck size={32} color="gray" />
+          <Text fontWeight="bold" fontSize="md" color="gray.800">
+            No Assigned Pantries
+          </Text>
+          <Text fontSize="sm" color="gray.500">
+            You have no assigned pantries at this time.
+          </Text>
+        </Box>
+      ) : (
+        <Table.Root variant="line">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                width="40%"
+              >
+                Pantry
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                width="35%"
+                textAlign="right"
+                pr={12}
+              >
+                Refrigerator-Friendly
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                textAlign="right"
+                width="25%"
+              >
+                Action
+              </Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {filteredPantries.map((pantry) => (
+              <Table.Row key={pantry.pantryId} _hover={{ bg: 'gray.50' }}>
+                {/* Pantry Name */}
+                <Table.Cell
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  px={4}
+                  py={3}
+                >
+                  <Text
+                    as="span"
+                    fontSize="sm"
+                    fontFamily="inter"
+                    textDecoration="underline"
+                    cursor="pointer"
+                    color="gray.800"
+                    textStyle="p2"
                   >
-                    <RadioGroup.Root
-                      value={filterRefrigeratorFriendly}
-                      onValueChange={(e: { value: string }) =>
-                        setFilterRefrigeratorFriendly(e.value)
-                      }
+                    {pantry.pantryName}
+                  </Text>
+                </Table.Cell>
+
+                {/* Refrigerator-Friendly Badge */}
+                <Table.Cell
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  px={4}
+                  py={3}
+                >
+                  <Box display="flex" justifyContent="flex-end" pr={4}>
+                    <Box
+                      bg="neutral.200"
+                      px={3}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="sm"
+                      color="neutral.800"
                     >
-                      <VStack align="stretch" gap={2}>
-                        <RadioGroup.Item value="all">
-                          <RadioGroup.ItemHiddenInput />
-                          <RadioGroup.ItemIndicator />
-                          <RadioGroup.ItemText fontSize="sm">
-                            Show All
-                          </RadioGroup.ItemText>
-                        </RadioGroup.Item>
-                        <RadioGroup.Item value="friendly">
-                          <RadioGroup.ItemHiddenInput />
-                          <RadioGroup.ItemIndicator />
-                          <RadioGroup.ItemText fontSize="sm">
-                            Refrigerator-Friendly Only
-                          </RadioGroup.ItemText>
-                        </RadioGroup.Item>
-                        <RadioGroup.Item value="not-friendly">
-                          <RadioGroup.ItemHiddenInput />
-                          <RadioGroup.ItemIndicator />
-                          <RadioGroup.ItemText fontSize="sm">
-                            Not Refrigerator-Friendly Only
-                          </RadioGroup.ItemText>
-                        </RadioGroup.Item>
-                      </VStack>
-                    </RadioGroup.Root>
+                      {isRefrigeratorFriendly(pantry)
+                        ? 'Refrigerator-Friendly'
+                        : 'Not Refrigerator-Friendly'}
+                    </Box>
                   </Box>
-                </>
-              )}
-            </Box>
-          </Box>
+                </Table.Cell>
 
-          {/* Empty State */}
-          {filteredAssignments.length === 0 && (
-            <Center flexDirection="column" gap={2} mt={12}>
-              <Icon as={CircleCheck} boxSize={6} color="gray.400" />
-              <Text fontWeight="semibold" fontSize="md" color="gray.700">
-                No Assigned Pantries
-              </Text>
-              <Text fontSize="sm" color="gray.400">
-                You have no assigned pantries at this time.
-              </Text>
-            </Center>
-          )}
-
-          {/* Pantries Table */}
-          {filteredAssignments.length > 0 && (
-            <Table.Root variant="line">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeader
-                    {...tableHeaderStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                    width="40%"
+                {/* Action */}
+                <Table.Cell px={4} py={3} textAlign="right">
+                  <Button
+                    variant="plain"
+                    textDecoration="underline"
+                    color="neutral.500"
+                    textStyle="p2"
+                    onClick={() => navigate('/landing-page')}
+                    fontFamily="inter"
+                    fontSize="sm"
+                    p={0}
+                    height="auto"
+                    minW="auto"
                   >
-                    Pantry
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader
-                    {...tableHeaderStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                    width="35%"
-                    textAlign="right"
-                  >
-                    Refrigerator-Friendly
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader
-                    {...tableHeaderStyles}
-                    textAlign="right"
-                    width="25%"
-                  >
-                    Action
-                  </Table.ColumnHeader>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {filteredAssignments.flatMap((assignment) =>
-                  assignment.pantryIds.map((pantryId) => {
-                    const pantry = pantryDetails.get(pantryId);
-                    const friendly = isRefrigeratorFriendly(pantryId);
-                    return (
-                      <Table.Row
-                        key={`${assignment.id}-${pantryId}`}
-                        _hover={{ bg: 'gray.50' }}
-                      >
-                        {/* Pantry Name */}
-                        <Table.Cell
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                          px={4}
-                          py={3}
-                        >
-                          <Text
-                            as="span"
-                            textStyle="p2"
-                            fontFamily="inter"
-                            textDecoration="underline"
-                            cursor="pointer"
-                            color="gray.800"
-                          >
-                            {pantry?.pantryName}
-                          </Text>
-                        </Table.Cell>
-
-                        {/* Refrigerator-Friendly Badge */}
-                        <Table.Cell
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                          px={4}
-                          py={3}
-                          textAlign="right"
-                        >
-                          <Box
-                            bg={friendly ? 'neutral.100' : 'neutral.200'}
-                            px={3}
-                            py={1}
-                            borderRadius="md"
-                            display="inline-block"
-                            fontSize="sm"
-                            fontFamily="inter"
-                            color="neutral.800"
-                          >
-                            {getRefrigeratorFriendlyText(pantryId)}
-                          </Box>
-                        </Table.Cell>
-
-                        {/* Action */}
-                        <Table.Cell px={4} py={3} textAlign="right">
-                          <Button
-                            variant="plain"
-                            textDecoration="underline"
-                            color="neutral.700"
-                            textStyle="p2"
-                            onClick={() => navigator(`/`)}
-                            fontFamily="inter"
-                            textAlign="right"
-                            fontSize="sm"
-                            p={0}
-                            height="auto"
-                            minW="auto"
-                          >
-                            View Orders
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    );
-                  }),
-                )}
-              </Table.Body>
-            </Table.Root>
-          )}
-        </>
+                    View Orders
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       )}
     </Box>
   );
