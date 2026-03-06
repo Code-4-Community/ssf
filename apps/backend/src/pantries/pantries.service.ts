@@ -55,6 +55,8 @@ export class PantriesService {
     pantryIds?: number[],
     years?: number[],
   ): Promise<PantryStats[]> {
+    // Make all the total calulcations
+    // Coalesce to account fo nulls when there are no orders or no items in an order
     const qb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
