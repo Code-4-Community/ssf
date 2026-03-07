@@ -8,7 +8,6 @@ import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
-import { Order } from '../orders/order.entity';
 
 const mockRequestsService = mock<RequestsService>();
 

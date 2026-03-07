@@ -26,6 +26,7 @@ import {
 } from '../../types/types';
 import { Minus } from 'lucide-react';
 import { generateNextDonationDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -83,34 +84,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     Sunday: false,
   });
   const [endsAfter, setEndsAfter] = useState('1');
-
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalOz, setTotalOz] = useState(0);
-  const [totalValue, setTotalValue] = useState(0);
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
     const updatedRows = rows.map((row) =>
       row.id === id ? { ...row, [field]: value } : row,
     );
     setRows(updatedRows);
-    calculateTotals(updatedRows);
-  };
-
-  const calculateTotals = (updatedRows: DonationRow[]) => {
-    let totalItems = 0,
-      totalOz = 0,
-      totalValue = 0;
-    updatedRows.forEach((row) => {
-      if (row.numItems) {
-        const qty = parseInt(row.numItems);
-        totalItems += qty;
-        totalOz += parseFloat(row.ozPerItem) * qty;
-        totalValue += parseFloat(row.valuePerItem) * qty;
-      }
-    });
-    setTotalItems(totalItems);
-    setTotalOz(parseFloat(totalOz.toFixed(2)));
-    setTotalValue(parseFloat(totalValue.toFixed(2)));
   };
 
   const handleDayToggle = (day: DayOfWeek) => {
@@ -136,7 +116,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     if (rows.length > 1) {
       const newRows = rows.filter((r) => r.id !== id);
       setRows(newRows);
-      calculateTotals(newRows);
     }
   };
 
@@ -170,7 +149,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       (row) => !row.foodItem || !row.foodType || !row.numItems,
     );
     if (hasEmpty) {
-      alert('Please fill in all fields before submitting.');
+      setAlertMessage('Please fill in all fields before submitting.');
       return;
     }
 
@@ -179,15 +158,12 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       repeatInterval === RecurrenceEnum.WEEKLY &&
       !Object.values(repeatOn).some(Boolean)
     ) {
-      alert('Please select at least one day for weekly recurrence.');
+      setAlertMessage('Please select at least one day for weekly recurrence.');
       return;
     }
 
     const donation_body = {
       foodManufacturerId: 1,
-      totalItems,
-      totalOz: totalOz > 0 ? totalOz : undefined,
-      totalEstimatedValue: totalValue > 0 ? totalValue : undefined,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : null,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
@@ -227,17 +203,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
             foodRescue: false,
           },
         ]);
-        setTotalItems(0);
-        setTotalOz(0);
-        setTotalValue(0);
         setIsRecurring(false);
         setRepeatInterval(RecurrenceEnum.NONE);
         onClose();
       } else {
-        alert('Failed to submit donation');
+        setAlertMessage('Failed to submit donation');
       }
     } catch (error) {
-      alert('Error submitting new donation: ' + error);
+      setAlertMessage('Error submitting new donation: ' + error);
     }
   };
 
@@ -259,6 +232,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        <FloatingAlert
+          key={alertMessage + Date.now()}
+          message={alertMessage}
+          status="error"
+          timeout={6000}
+        />
+      )}
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

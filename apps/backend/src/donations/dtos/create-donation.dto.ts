@@ -63,21 +63,6 @@ export class CreateDonationDto {
   @Min(1)
   foodManufacturerId!: number;
 
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  totalItems?: number;
-
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0.01)
-  @IsOptional()
-  totalOz?: number;
-
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0.01)
-  @IsOptional()
-  totalEstimatedValue?: number;
-
   @IsNotEmpty()
   @IsEnum(RecurrenceEnum)
   recurrence!: RecurrenceEnum;

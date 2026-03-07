@@ -125,9 +125,6 @@ export interface Donation {
   donationId: number;
   dateDonated: string;
   status: DonationStatus;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
   recurrence: RecurrenceEnum;
   recurrenceFreq?: number;
@@ -379,6 +376,20 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export interface PantryStats {
+  pantryId: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+}
+
+// Make TotalStats interface just not include pantryId
+export type TotalStats = Omit<PantryStats, 'pantryId'>;
 
 export type GroupedByFoodType = Record<
   (typeof FoodTypes)[number],

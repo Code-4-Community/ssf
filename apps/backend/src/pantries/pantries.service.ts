@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -7,11 +8,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
+import { Order } from '../orders/order.entity';
 import { User } from '../users/user.entity';
 import { validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { PantryStats, TotalStats } from './types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 
@@ -19,6 +22,7 @@ import { UsersService } from '../users/users.service';
 export class PantriesService {
   constructor(
     @InjectRepository(Pantry) private repo: Repository<Pantry>,
+    @InjectRepository(Order) private orderRepo: Repository<Order>,
 
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
@@ -36,6 +40,178 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
     return pantry;
+  }
+
+  private readonly EMPTY_STATS: Omit<PantryStats, 'pantryId'> = {
+    totalItems: 0,
+    totalOz: 0,
+    totalLbs: 0,
+    totalDonatedFoodValue: 0,
+    totalShippingCost: 0,
+    totalValue: 0,
+    percentageFoodRescueItems: 0,
+  };
+
+  private async aggregateStats(
+    pantryIds?: number[],
+    years?: number[],
+  ): Promise<PantryStats[]> {
+    // Make all the total calculations
+    // Coalesce to account for nulls when there are no orders or no items in an order
+    const ordersSubquery = years?.length
+      ? `COALESCE((
+            SELECT SUM(o2.shipping_cost)
+            FROM orders o2
+            JOIN food_requests r2 ON o2.request_id = r2.request_id
+            WHERE r2.pantry_id = request.pantry_id
+              AND EXTRACT(YEAR FROM o2.created_at) IN (:...years)
+          ), 0)`
+      : `COALESCE((
+            SELECT SUM(o2.shipping_cost)
+            FROM orders o2
+            JOIN food_requests r2 ON o2.request_id = r2.request_id
+            WHERE r2.pantry_id = request.pantry_id
+          ), 0)`;
+
+    const qb = this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoin('order.request', 'request')
+      .leftJoin('order.allocations', 'allocation')
+      .leftJoin('allocation.item', 'item')
+      .select('request.pantryId', 'pantryId')
+      .addSelect('COALESCE(SUM(allocation.allocatedQuantity), 0)', 'totalItems')
+      .addSelect(
+        'COALESCE(SUM(COALESCE(item.ozPerItem, 0) * allocation.allocatedQuantity), 0)',
+        'totalOz',
+      )
+      .addSelect(
+        'COALESCE(SUM(COALESCE(item.estimatedValue, 0) * allocation.allocatedQuantity), 0)',
+        'totalDonatedFoodValue',
+      )
+      .addSelect(ordersSubquery, 'totalShippingCost')
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
+        'totalFoodRescueItems',
+      )
+      .groupBy('request.pantryId');
+
+    if (pantryIds && pantryIds.length > 0) {
+      qb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
+    }
+    if (years && years.length > 0) {
+      qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
+        years,
+      });
+    }
+
+    const rows = await qb.getRawMany();
+
+    return rows.map((row) => {
+      const totalItems = Number(row.totalItems);
+      const totalOz = Number(row.totalOz);
+      const totalDonatedFoodValue = Number(row.totalDonatedFoodValue);
+      const totalShippingCost = Number(row.totalShippingCost);
+      const totalFoodRescueItems = Number(row.totalFoodRescueItems);
+
+      return {
+        pantryId: Number(row.pantryId),
+        totalItems,
+        totalOz,
+        totalLbs: parseFloat((totalOz / 16).toFixed(2)),
+        totalDonatedFoodValue,
+        totalShippingCost,
+        totalValue: totalDonatedFoodValue + totalShippingCost,
+        percentageFoodRescueItems:
+          totalItems > 0
+            ? parseFloat(((totalFoodRescueItems / totalItems) * 100).toFixed(2))
+            : 0,
+      } satisfies PantryStats;
+    });
+  }
+
+  async getPantryStats(
+    pantryNames?: string[],
+    years?: number[],
+    page = 1,
+  ): Promise<PantryStats[]> {
+    const PAGE_SIZE = 10;
+    // Throw an error if page is less than 1
+    if (page < 1) {
+      throw new BadRequestException('Page number must be greater than 0');
+    }
+    const nameArray = pantryNames
+      ? Array.isArray(pantryNames)
+        ? pantryNames
+        : [pantryNames]
+      : undefined;
+
+    // Verify the nameArray exists and is greater than 0
+    const pantryFilter = nameArray?.length ? { pantryName: In(nameArray) } : {};
+    const pantries = await this.repo.find({
+      select: ['pantryId', 'pantryName'],
+      where: pantryFilter,
+      order: { pantryId: 'ASC' },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    });
+
+    if (pantries.length === 0 && !nameArray?.length) return [];
+
+    // If pantry names were provided but no pantries were found, throw an error
+    if (nameArray?.length) {
+      const missingNames = nameArray.filter(
+        (name) => !pantries.some((p) => p.pantryName === name),
+      );
+      if (missingNames.length > 0) {
+        throw new NotFoundException(
+          `Pantries not found: ${missingNames.join(', ')}`,
+        );
+      }
+    }
+
+    const pantryIds = pantries.map((p) => p.pantryId);
+    const yearsArray = years
+      ? (Array.isArray(years) ? years : [years]).map(Number)
+      : undefined;
+
+    const stats = await this.aggregateStats(pantryIds, yearsArray);
+
+    // Fill zeros for any pantries that had no orders
+    const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
+    return pantryIds.map(
+      (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
+    );
+  }
+
+  async getTotalStats(years?: number[]): Promise<TotalStats> {
+    const yearsArray = years
+      ? (Array.isArray(years) ? years : [years]).map(Number)
+      : undefined;
+
+    const stats = await this.aggregateStats(undefined, yearsArray);
+
+    const totalStats = { ...this.EMPTY_STATS };
+    let totalFoodRescueItems = 0;
+
+    for (const s of stats) {
+      totalStats.totalItems += s.totalItems;
+      totalStats.totalOz += s.totalOz;
+      totalStats.totalDonatedFoodValue += s.totalDonatedFoodValue;
+      totalStats.totalShippingCost += s.totalShippingCost;
+      totalStats.totalValue += s.totalValue;
+      totalFoodRescueItems +=
+        (s.percentageFoodRescueItems / 100) * s.totalItems;
+    }
+
+    totalStats.totalLbs = parseFloat((totalStats.totalOz / 16).toFixed(2));
+    totalStats.percentageFoodRescueItems =
+      totalStats.totalItems > 0
+        ? parseFloat(
+            ((totalFoodRescueItems / totalStats.totalItems) * 100).toFixed(2),
+          )
+        : 0;
+
+    return totalStats;
   }
 
   async getPendingPantries(): Promise<Pantry[]> {
