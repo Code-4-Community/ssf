@@ -26,14 +26,14 @@ export class CreateDonationItemDto {
   @Min(0)
   reservedQuantity!: number;
 
-  @IsOptional()
   @IsNumber()
   @Min(0.01)
+  @IsOptional()
   ozPerItem?: number;
 
-  @IsOptional()
   @IsNumber()
   @Min(0.01)
+  @IsOptional()
   estimatedValue?: number;
 
   @IsEnum(FoodType)

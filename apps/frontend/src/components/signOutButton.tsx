@@ -10,7 +10,6 @@ const SignOutButton: React.FC<SignOutButtonProps> = (props) => {
 
   const handleSignOut = async () => {
     await signOut();
-    apiClient.setAccessToken(undefined);
     navigate('/');
   };
 

@@ -18,6 +18,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
+import { VolunteersModule } from './volunteers/volunteers.module';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        configService.get('typeorm'),
+        configService.getOrThrow('typeorm'),
     }),
     ScheduleModule.forRoot(),
     UsersModule,
@@ -43,6 +44,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     OrdersModule,
     ManufacturerModule,
     AllocationModule,
+    VolunteersModule,
   ],
   controllers: [AppController],
   providers: [

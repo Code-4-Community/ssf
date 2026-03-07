@@ -7,6 +7,8 @@ import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { CreateRequestDto } from './dtos/create-request.dto';
+import { Order } from '../orders/order.entity';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -129,10 +131,13 @@ describe('RequestsController', () => {
 
   describe('POST /create', () => {
     it('should call requestsService.create and return the created food request', async () => {
-      const createBody: Partial<FoodRequest> = {
+      const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
         requestedSize: RequestSize.MEDIUM,
-        requestedItems: ['Test item 1', 'Test item 2'],
+        requestedItems: [
+          FoodType.DAIRY_FREE_ALTERNATIVES,
+          FoodType.DRIED_BEANS,
+        ],
         additionalInformation: 'Test information.',
       };
 
@@ -147,7 +152,9 @@ describe('RequestsController', () => {
         createdRequest as FoodRequest,
       );
 
-      const result = await controller.createRequest(createBody as FoodRequest);
+      const result = await controller.createRequest(
+        createBody as CreateRequestDto,
+      );
 
       expect(result).toEqual(createdRequest);
       expect(mockRequestsService.create).toHaveBeenCalledWith(

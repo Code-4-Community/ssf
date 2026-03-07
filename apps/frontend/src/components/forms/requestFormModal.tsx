@@ -64,7 +64,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
-      additionalInformation: additionalNotes || '',
+      additionalInformation: additionalNotes || undefined,
       requestedItems: selectedItems,
     };
 

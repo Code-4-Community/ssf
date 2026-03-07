@@ -23,17 +23,17 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  contactFirstName: string;
+  contactFirstName!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  contactLastName: string;
+  contactLastName!: string;
 
   @IsEmail()
   @IsNotEmpty()
   @Length(1, 255)
-  contactEmail: string;
+  contactEmail!: string;
 
   // This validation is very strict and won't accept phone numbers
   // that look right but aren't actually possible phone numbers
@@ -43,10 +43,10 @@ export class PantryApplicationDto {
     message:
       'contactPhone must be a valid phone number (make sure all the digits are correct)',
   })
-  contactPhone: string;
+  contactPhone!: string;
 
   @IsBoolean()
-  hasEmailContact: boolean;
+  hasEmailContact!: boolean;
 
   @IsOptional()
   @IsString()
@@ -83,12 +83,12 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  pantryName: string;
+  pantryName!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  shipmentAddressLine1: string;
+  shipmentAddressLine1!: string;
 
   @IsOptional()
   @IsString()
@@ -99,17 +99,17 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  shipmentAddressCity: string;
+  shipmentAddressCity!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  shipmentAddressState: string;
+  shipmentAddressState!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  shipmentAddressZip: string;
+  shipmentAddressZip!: string;
 
   @IsOptional()
   @IsString()
@@ -120,7 +120,7 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  mailingAddressLine1: string;
+  mailingAddressLine1!: string;
 
   @IsOptional()
   @IsString()
@@ -131,17 +131,17 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  mailingAddressCity: string;
+  mailingAddressCity!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  mailingAddressState: string;
+  mailingAddressState!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  mailingAddressZip: string;
+  mailingAddressZip!: string;
 
   @IsOptional()
   @IsString()
@@ -152,19 +152,19 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 25)
-  allergenClients: string;
+  allergenClients!: string;
 
-  @IsOptional()
+  @ArrayNotEmpty()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @MaxLength(255, { each: true })
-  restrictions?: string[];
+  restrictions!: string[];
 
   @IsEnum(RefrigeratedDonation)
-  refrigeratedDonation: RefrigeratedDonation;
+  refrigeratedDonation!: RefrigeratedDonation;
 
   @IsBoolean()
-  acceptFoodDeliveries: boolean;
+  acceptFoodDeliveries!: boolean;
 
   @IsOptional()
   @IsString()
@@ -172,7 +172,7 @@ export class PantryApplicationDto {
   deliveryWindowInstructions?: string;
 
   @IsEnum(ReserveFoodForAllergic)
-  reserveFoodForAllergic: ReserveFoodForAllergic;
+  reserveFoodForAllergic!: ReserveFoodForAllergic;
 
   // TODO: Really, this validation should be different depending on the value of reserveFoodForAllergic
   @IsOptional()
@@ -181,7 +181,7 @@ export class PantryApplicationDto {
   reservationExplanation?: string;
 
   @IsBoolean()
-  dedicatedAllergyFriendly: boolean;
+  dedicatedAllergyFriendly!: boolean;
 
   @IsOptional()
   @IsEnum(ClientVisitFrequency)
@@ -197,7 +197,7 @@ export class PantryApplicationDto {
 
   @ArrayNotEmpty()
   @IsEnum(Activity, { each: true })
-  activities: Activity[];
+  activities!: Activity[];
 
   @IsOptional()
   @IsString()
@@ -208,12 +208,12 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  itemsInStock: string;
+  itemsInStock!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)
-  needMoreOptions: string;
+  needMoreOptions!: string;
 
   @IsOptional()
   @IsBoolean()

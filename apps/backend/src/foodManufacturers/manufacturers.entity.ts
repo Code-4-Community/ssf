@@ -39,7 +39,7 @@ export class FoodManufacturer {
     length: 255,
     nullable: true,
   })
-  secondaryContactFirstName?: string;
+  secondaryContactFirstName!: string | null;
 
   @Column({
     name: 'secondary_contact_last_name',
@@ -47,7 +47,7 @@ export class FoodManufacturer {
     length: 255,
     nullable: true,
   })
-  secondaryContactLastName?: string;
+  secondaryContactLastName!: string | null;
 
   @Column({
     name: 'secondary_contact_email',
@@ -55,7 +55,7 @@ export class FoodManufacturer {
     length: 255,
     nullable: true,
   })
-  secondaryContactEmail?: string;
+  secondaryContactEmail!: string | null;
 
   @Column({
     name: 'secondary_contact_phone',
@@ -63,7 +63,7 @@ export class FoodManufacturer {
     length: 20,
     nullable: true,
   })
-  secondaryContactPhone?: string;
+  secondaryContactPhone!: string | null;
 
   @Column({
     name: 'unlisted_product_allergens',
@@ -113,17 +113,17 @@ export class FoodManufacturer {
     enumName: 'manufacturer_attribute_enum',
     nullable: true,
   })
-  manufacturerAttribute?: ManufacturerAttribute;
+  manufacturerAttribute!: ManufacturerAttribute | null;
 
   @Column({
     name: 'additional_comments',
     type: 'text',
     nullable: true,
   })
-  additionalComments?: string;
+  additionalComments!: string | null;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription?: boolean;
+  newsletterSubscription!: boolean | null;
 
   @OneToMany(() => Donation, (donation) => donation.foodManufacturer)
   donations!: Donation[];
