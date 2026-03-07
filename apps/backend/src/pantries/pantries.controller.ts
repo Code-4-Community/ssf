@@ -46,7 +46,7 @@ export class PantriesController {
   async getPantryStats(
     @Query('pantryNames') pantryNames?: string[],
     @Query('years') years?: number[],
-    @Query('page', ParseIntPipe) page = 1,
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
   ): Promise<PantryStats[]> {
     return this.pantriesService.getPantryStats(pantryNames, years, page);
   }

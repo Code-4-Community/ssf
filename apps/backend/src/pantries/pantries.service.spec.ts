@@ -425,6 +425,23 @@ describe('PantriesService', () => {
       expect(community?.totalItems).toBe(40);
       expect(community?.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
     });
+
+    it('returns proper array for no pantryNames given', async () => {
+      const stats = await service.getPantryStats();
+      expect(stats.length).toBe(6);
+    });
+
+    it('returns nothing for an invalid pantry name', async () => {
+      expect(service.getPantryStats(['Invalid Pantry Name'])).rejects.toThrow(
+        new NotFoundException(`Pantries not found: Invalid Pantry Name`),
+      );
+    });
+
+    it('throws an error for a page less than 1', async () => {
+      await expect(
+        service.getPantryStats(undefined, undefined, 0),
+      ).rejects.toThrow(new Error('Page number must be greater than 0'));
+    });
   });
 
   describe('getTotalStats', () => {

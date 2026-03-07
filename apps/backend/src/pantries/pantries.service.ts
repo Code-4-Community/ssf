@@ -57,6 +57,21 @@ export class PantriesService {
   ): Promise<PantryStats[]> {
     // Make all the total calulcations
     // Coalesce to account fo nulls when there are no orders or no items in an order
+    const ordersSubquery = years?.length
+      ? `COALESCE((
+            SELECT SUM(o2.shipping_cost)
+            FROM orders o2
+            JOIN food_requests r2 ON o2.request_id = r2.request_id
+            WHERE r2.pantry_id = request.pantry_id
+              AND EXTRACT(YEAR FROM o2.created_at) IN (:...years)
+          ), 0)`
+      : `COALESCE((
+            SELECT SUM(o2.shipping_cost)
+            FROM orders o2
+            JOIN food_requests r2 ON o2.request_id = r2.request_id
+            WHERE r2.pantry_id = request.pantry_id
+          ), 0)`;
+
     const qb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
@@ -72,15 +87,7 @@ export class PantriesService {
         'COALESCE(SUM(COALESCE(item.estimatedValue, 0) * allocation.allocatedQuantity), 0)',
         'totalDonatedFoodValue',
       )
-      .addSelect(
-        `COALESCE((
-          SELECT SUM(o2.shipping_cost)
-          FROM orders o2
-          JOIN food_requests r2 ON o2.request_id = r2.request_id
-          WHERE r2.pantry_id = request.pantry_id
-        ), 0)`,
-        'totalShippingCost',
-      )
+      .addSelect(ordersSubquery, 'totalShippingCost')
       .addSelect(
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
         'totalFoodRescueItems',
@@ -94,16 +101,6 @@ export class PantriesService {
       qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
       });
-      qb.addSelect(
-        `COALESCE((
-          SELECT SUM(o2.shipping_cost)
-          FROM orders o2
-          JOIN food_requests r2 ON o2.request_id = r2.request_id
-          WHERE r2.pantry_id = request.pantry_id
-            AND EXTRACT(YEAR FROM o2.created_at) IN (:...years)
-        ), 0)`,
-        'totalShippingCost',
-      );
     }
 
     const rows = await qb.getRawMany();
@@ -137,12 +134,17 @@ export class PantriesService {
     page = 1,
   ): Promise<PantryStats[]> {
     const PAGE_SIZE = 10;
+    // Throw an error if page is less than 1
+    if (page < 1) {
+      throw new NotFoundException('Page number must be greater than 0');
+    }
     const nameArray = pantryNames
       ? Array.isArray(pantryNames)
         ? pantryNames
         : [pantryNames]
       : undefined;
 
+    // Verify the nameArray exists and is greater than 0
     const pantryFilter = nameArray?.length ? { pantryName: In(nameArray) } : {};
     const pantries = await this.repo.find({
       select: ['pantryId', 'pantryName'],
