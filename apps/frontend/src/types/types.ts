@@ -207,6 +207,17 @@ export interface FoodRequest {
   orders?: Order[];
 }
 
+export interface FoodRequestSummaryDto {
+  requestId: number;
+  pantryId: number;
+  pantryName: string;
+  requestedSize: RequestSize;
+  requestedItems: string[];
+  additionalInformation?: string | null;
+  requestedAt: string;
+  status: FoodRequestStatus;
+}
+
 export interface Order {
   orderId: number;
   request: FoodRequest;
@@ -223,6 +234,7 @@ export interface Order {
 }
 
 export interface OrderItemDetails {
+  id: number;
   name: string;
   quantity: number;
   foodType: FoodType;
@@ -232,6 +244,7 @@ export interface OrderDetails {
   orderId: number;
   status: OrderStatus;
   foodManufacturerName: string;
+  trackingLink: string | null;
   items: OrderItemDetails[];
 }
 
@@ -362,3 +375,8 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export type GroupedByFoodType = Record<
+  (typeof FoodTypes)[number],
+  OrderItemDetails[]
+>;

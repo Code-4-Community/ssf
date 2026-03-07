@@ -1,12 +1,12 @@
 import apiClient from '@api/apiClient';
 import {
   FoodRequest,
-  FoodTypes,
+  GroupedByFoodType,
   OrderDetails,
   OrderItemDetails,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   Box,
@@ -23,6 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 
 interface RequestDetailsModalProps {
   request: FoodRequest;
@@ -81,18 +82,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     currentOrder = orderDetailsList[currentPage - 1];
   }
 
-  const groupedOrderItemsByType = useMemo(() => {
-    if (!currentOrder) return {};
-
-    return currentOrder.items.reduce(
-      (acc: Record<(typeof FoodTypes)[number], OrderItemDetails[]>, item) => {
-        if (!acc[item.foodType]) acc[item.foodType] = [];
-        acc[item.foodType].push(item);
-        return acc;
-      },
-      {} as Record<(typeof FoodTypes)[number], OrderItemDetails[]>,
-    );
-  }, [currentOrder]);
+  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
+    currentOrder?.items,
+  );
 
   const sectionTitleStyles = {
     textStyle: 'p2',
