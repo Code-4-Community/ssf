@@ -27,6 +27,7 @@ import ForgotPasswordPage from '@containers/forgotPasswordPage';
 import ProtectedRoute from '@components/protectedRoute';
 import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
+import PantryOrderManagement from '@containers/pantryOrderManagement';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 
@@ -195,6 +196,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AdminOrderManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-order-management',
+        element: (
+          <ProtectedRoute>
+            <PantryOrderManagement />
           </ProtectedRoute>
         ),
       },

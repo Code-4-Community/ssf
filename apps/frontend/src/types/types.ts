@@ -59,6 +59,11 @@ export interface Pantry {
   volunteers?: User[];
 }
 
+export interface ConfirmDeliveryDto {
+  dateReceived: string;
+  feedback?: string;
+}
+
 export interface PantryApplicationDto {
   contactFirstName: string;
   contactLastName: string;
@@ -224,6 +229,9 @@ export interface Order {
   allocations: Allocation[];
   trackingLink?: string;
   shippingCost?: number;
+  dateReceived?: string;
+  feedback?: string;
+  photos?: string[];
 }
 
 export interface OrderItemDetails {
