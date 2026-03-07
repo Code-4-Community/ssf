@@ -1,5 +1,5 @@
 import { FoodType } from '../../donationItems/types';
-import { OrderStatus } from '../../orders/types';
+import { OrderStatus } from '../types';
 
 export class OrderItemDetailsDto {
   id!: number;

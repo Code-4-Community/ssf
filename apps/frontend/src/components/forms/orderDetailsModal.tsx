@@ -20,6 +20,7 @@ import {
 import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -63,7 +64,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch (error) {
-          alert('Error fetching order details:' + error);
+          setAlertMessage('Error fetching order details:' + error);
         }
       };
 

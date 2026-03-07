@@ -11,8 +11,8 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
-import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
-import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
+import { OrderDetailsDto } from './dtos/order-details.dto';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
 

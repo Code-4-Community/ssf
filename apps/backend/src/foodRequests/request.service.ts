@@ -6,7 +6,7 @@ import { validateId } from '../utils/validation.utils';
 import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { OrderStatus } from '../orders/types';
 
 @Injectable()

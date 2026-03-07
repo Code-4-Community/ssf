@@ -5,7 +5,7 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
-import { OrderDetailsDto } from '../foodRequests/dtos/order-details.dto';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
