@@ -13,7 +13,7 @@ import { FoodRequest } from './request.entity';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { RequestSize } from './types';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 
 @Controller('requests')

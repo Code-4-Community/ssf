@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
@@ -440,7 +440,9 @@ describe('PantriesService', () => {
     it('throws an error for a page less than 1', async () => {
       await expect(
         service.getPantryStats(undefined, undefined, 0),
-      ).rejects.toThrow(new Error('Page number must be greater than 0'));
+      ).rejects.toThrow(
+        new BadRequestException('Page number must be greater than 0'),
+      );
     });
   });
 

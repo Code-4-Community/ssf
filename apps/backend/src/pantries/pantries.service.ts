@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -55,8 +56,8 @@ export class PantriesService {
     pantryIds?: number[],
     years?: number[],
   ): Promise<PantryStats[]> {
-    // Make all the total calulcations
-    // Coalesce to account fo nulls when there are no orders or no items in an order
+    // Make all the total calculations
+    // Coalesce to account for nulls when there are no orders or no items in an order
     const ordersSubquery = years?.length
       ? `COALESCE((
             SELECT SUM(o2.shipping_cost)
@@ -136,7 +137,7 @@ export class PantriesService {
     const PAGE_SIZE = 10;
     // Throw an error if page is less than 1
     if (page < 1) {
-      throw new NotFoundException('Page number must be greater than 0');
+      throw new BadRequestException('Page number must be greater than 0');
     }
     const nameArray = pantryNames
       ? Array.isArray(pantryNames)

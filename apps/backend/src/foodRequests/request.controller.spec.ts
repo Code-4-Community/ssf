@@ -6,7 +6,7 @@ import { FoodRequest } from './request.entity';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 
 const mockRequestsService = mock<RequestsService>();
@@ -79,20 +79,23 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /all-order-details/:requestId', () => {
+  describe('GET /:requestId/order-details', () => {
     it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
       const mockOrderDetails: OrderDetailsDto[] = [
         {
           orderId: 10,
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Rice',
               quantity: 5,
               foodType: FoodType.GRANOLA,
             },
             {
+              id: 2,
               name: 'Beans',
               quantity: 3,
               foodType: FoodType.DRIED_BEANS,
@@ -103,8 +106,10 @@ describe('RequestsController', () => {
           orderId: 11,
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Milk',
               quantity: 2,
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
