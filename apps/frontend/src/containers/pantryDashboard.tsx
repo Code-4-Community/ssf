@@ -14,27 +14,23 @@ import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Pantry } from 'types/types';
 import ApiClient from '@api/apiClient';
-import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const PantryDashboard: React.FC = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
   const [pantryId, setPantryId] = useState<number | null>(null);
   const [pantry, setPantry] = useState<Pantry | null>(null);
 
   useEffect(() => {
     const fetchPantryId = async () => {
-      if (user.userId) {
-        try {
-          const pantryId = await ApiClient.getCurrentUserPantryId();
-          setPantryId(pantryId);
-        } catch (error) {
-          console.error('Error fetching pantry ID', error);
-        }
+      try {
+        const pantryId = await ApiClient.getCurrentUserPantryId();
+        setPantryId(pantryId);
+      } catch (error) {
+        console.error('Error fetching pantry ID', error);
       }
     };
 
     fetchPantryId();
-  }, [user.userId]);
+  }, []);
 
   useEffect(() => {
     const fetchPantryData = async () => {

@@ -104,7 +104,7 @@ export interface PantryApplicationDto {
 export interface CreateRequestDto {
   pantryId: number;
   requestedSize: RequestSize;
-  requestedItems: FoodType[];
+  requestedFoodTypes: FoodType[];
   additionalInformation?: string;
 }
 
@@ -194,6 +194,17 @@ export interface FoodRequest {
   orders?: Order[];
 }
 
+export interface FoodRequestSummaryDto {
+  requestId: number;
+  pantryId: number;
+  pantryName: string;
+  requestedSize: RequestSize;
+  requestedFoodTypes: FoodType[];
+  additionalInformation?: string | null;
+  requestedAt: string;
+  status: FoodRequestStatus;
+}
+
 export interface Order {
   orderId: number;
   request: FoodRequest;
@@ -210,6 +221,7 @@ export interface Order {
 }
 
 export interface OrderItemDetails {
+  id: number;
   name: string;
   quantity: number;
   foodType: FoodType;
@@ -219,6 +231,7 @@ export interface OrderDetails {
   orderId: number;
   status: OrderStatus;
   foodManufacturerName: string;
+  trackingLink: string | null;
   items: OrderItemDetails[];
 }
 
