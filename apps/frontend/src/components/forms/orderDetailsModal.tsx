@@ -69,8 +69,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         try {
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
-        } catch (error) {
-          setAlertMessage('Error fetching order details:' + error);
+        } catch {
+          setAlert((prev) => ({
+            message: 'Error fetching order details',
+            key: prev.key + 1,
+          }));
         }
       };
 
