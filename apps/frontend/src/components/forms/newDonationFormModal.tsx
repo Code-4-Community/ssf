@@ -26,6 +26,7 @@ import {
 } from '../../types/types';
 import { Minus } from 'lucide-react';
 import { generateNextDonationDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -87,6 +88,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   const [totalItems, setTotalItems] = useState(0);
   const [totalOz, setTotalOz] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
     const updatedRows = rows.map((row) =>
@@ -170,7 +175,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       (row) => !row.foodItem || !row.foodType || !row.numItems,
     );
     if (hasEmpty) {
-      alert('Please fill in all fields before submitting.');
+      setAlert((prev) => ({
+        message: 'Please fill in all fields before submitting.',
+        key: prev.key + 1,
+      }));
       return;
     }
 
@@ -179,7 +187,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       repeatInterval === RecurrenceEnum.WEEKLY &&
       !Object.values(repeatOn).some(Boolean)
     ) {
-      alert('Please select at least one day for weekly recurrence.');
+      setAlert((prev) => ({
+        message: 'Please select at least one day for weekly recurrence.',
+        key: prev.key + 1,
+      }));
       return;
     }
 
@@ -233,10 +244,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         setRepeatInterval(RecurrenceEnum.NONE);
         onClose();
       } else {
-        alert('Failed to submit donation');
+        setAlert((prev) => ({
+          message: 'Failed to submit donation',
+          key: prev.key + 1,
+        }));
       }
-    } catch (error) {
-      alert('Error submitting new donation: ' + error);
+    } catch {
+      setAlert((prev) => ({
+        message: 'Error submitting new donation',
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -258,6 +275,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

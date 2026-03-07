@@ -20,7 +20,10 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,7 +34,7 @@ const LoginPage: React.FC = () => {
       await signIn({ username: email, password });
       navigate(from, { replace: true });
     } catch {
-      setAlertMessage('Login failed');
+      setAlert((prev) => ({ message: 'Login failed', key: prev.key + 1 }));
     }
   };
 
@@ -60,12 +63,12 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
-      {alertMessage && (
+      {alert && (
         <FloatingAlert
-          message={alertMessage}
+          key={alert.key}
+          message={alert.message}
           status="error"
           timeout={6000}
-          onClose={() => setAlertMessage('')}
         />
       )}
       <Box

@@ -12,10 +12,6 @@ import {
   ManufacturerAttribute,
 } from './manufacturerEnums';
 
-// Note: The API calls as currently written do not
-// return a pantry's SSF representative or pantry
-// representative, or their IDs, as part of the
-// Pantry data
 export interface Pantry {
   pantryId: number;
   pantryName: string;
@@ -49,7 +45,7 @@ export interface Pantry {
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
-  pantryUser?: User;
+  pantryUser: User;
   status: ApplicationStatus;
   dateApplied: string;
   activities: Activity[];
@@ -223,7 +219,7 @@ export interface Order {
   deliveredAt?: Date;
   allocations: Allocation[];
   trackingLink?: string;
-  shipmentCost?: number;
+  shippingCost?: number;
 }
 
 export interface OrderItemDetails {

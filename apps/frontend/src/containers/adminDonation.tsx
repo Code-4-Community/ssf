@@ -29,7 +29,10 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -37,7 +40,10 @@ const AdminDonation: React.FC = () => {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch {
-        setAlertMessage('Error fetching donations');
+        setAlert((prev) => ({
+          message: 'Error fetching donations',
+          key: prev.key + 1,
+        }));
       }
     };
     fetchDonations();
@@ -102,8 +108,13 @@ const AdminDonation: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">

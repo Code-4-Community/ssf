@@ -37,7 +37,10 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const pageSize = 10;
 
@@ -55,10 +58,16 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch {
-        setAlertMessage('Error fetching requests');
+        setAlert((prev) => ({
+          message: 'Error fetching requests',
+          key: prev.key + 1,
+        }));
       }
     } else {
-      setAlertMessage('No pantry associated with this account.');
+      setAlert((prev) => ({
+        message: 'No pantry associated with this account.',
+        key: prev.key + 1,
+      }));
     }
   }, []);
 
@@ -77,8 +86,13 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <HStack gap={3} my={5}>
         <Button

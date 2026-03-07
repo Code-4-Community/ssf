@@ -1,4 +1,5 @@
 import { Dialog, Text, Box, Button, CloseButton } from '@chakra-ui/react';
+import { capitalize } from '@utils/utils';
 
 interface ConfirmPantryDecisionModalProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ const ConfirmPantryDecisionModal: React.FC<ConfirmPantryDecisionModalProps> = ({
               textStyle="p2"
               fontWeight={600}
             >
-              {decision.charAt(0).toUpperCase() + decision.slice(1)}
+              {capitalize(decision)}
             </Button>
           </Dialog.Footer>
         </Dialog.Content>

@@ -24,9 +24,15 @@ interface EmptyStateProps {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
+  isLoading?: boolean;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, subtitle }) => {
+const EmptyState: React.FC<EmptyStateProps> = ({
+  icon,
+  title,
+  subtitle,
+  isLoading = false,
+}) => {
   return (
     <Box minH="100vh" p={8} mb={8}>
       <Box maxW="1200px" mx="auto">
@@ -65,7 +71,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, subtitle }) => {
             textStyle="p2"
             fontWeight={600}
           >
-            <Link to="/approve-pantries">Return to applications</Link>
+            {!isLoading && (
+              <Link to="/approve-pantries">Return to applications</Link>
+            )}
           </Button>
         </Box>
       </Box>
@@ -73,7 +81,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, subtitle }) => {
   );
 };
 
-const ApplicationDetails: React.FC = () => {
+const PantryApplicationDetails: React.FC = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
   const [application, setApplication] = useState<Pantry | null>(null);
@@ -85,7 +93,10 @@ const ApplicationDetails: React.FC = () => {
     isNetwork: false,
     message: '',
   });
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
 
@@ -117,7 +128,7 @@ const ApplicationDetails: React.FC = () => {
       if (!applicationId) {
         setError({ isNetwork: false, message: 'Application ID not provided.' });
         return;
-      } else if (isNaN(parseInt(applicationId))) {
+      } else if (isNaN(parseInt(applicationId, 10))) {
         setError({
           isNetwork: false,
           message: 'Application ID is not a number.',
@@ -148,10 +159,13 @@ const ApplicationDetails: React.FC = () => {
       try {
         await ApiClient.updatePantry(application.pantryId, 'approve');
         navigate(
-          '/approve-pantries?action=approved&id=' + application.pantryId,
+          '/approve-pantries?action=approved&name=' + application.pantryName,
         );
       } catch {
-        setAlertMessage('Error approving application');
+        setAlert((prev) => ({
+          message: 'Error approving application',
+          key: prev.key + 1,
+        }));
       }
     }
   };
@@ -162,14 +176,21 @@ const ApplicationDetails: React.FC = () => {
         await ApiClient.updatePantry(application.pantryId, 'deny');
         navigate('/approve-pantries?action=denied&id=' + application.pantryId);
       } catch {
-        setAlertMessage('Error denying application');
+        setAlert((prev) => ({
+          message: 'Error denying application',
+          key: prev.key + 1,
+        }));
       }
     }
   };
 
   if (loading) {
     return (
-      <EmptyState icon={<Spinner />} title="Loading application details..." />
+      <EmptyState
+        icon={<Spinner />}
+        title="Loading application details..."
+        isLoading={true}
+      />
     );
   }
 
@@ -202,12 +223,12 @@ const ApplicationDetails: React.FC = () => {
           Application Details
         </Heading>
 
-        {alertMessage && (
+        {alert && (
           <FloatingAlert
-            message={alertMessage}
+            key={alert.key}
+            message={alert.message}
             status="error"
             timeout={6000}
-            onClose={() => setAlertMessage('')}
           />
         )}
 
@@ -238,23 +259,12 @@ const ApplicationDetails: React.FC = () => {
                   Point of Contact Information
                 </Heading>
                 <Text {...fieldContentStyles}>
-                  {pantryUser
-                    ? `${pantryUser.firstName} ${pantryUser.lastName}`
-                    : application.secondaryContactFirstName &&
-                      application.secondaryContactLastName
-                    ? `${application.secondaryContactFirstName} ${application.secondaryContactLastName}`
-                    : 'N/A'}
+                  {pantryUser.firstName} {pantryUser.lastName}
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {formatPhone(
-                    pantryUser?.phone ?? application.secondaryContactPhone,
-                  ) ?? 'N/A'}
+                  {formatPhone(pantryUser.phone)}
                 </Text>
-                <Text {...fieldContentStyles}>
-                  {pantryUser?.email ??
-                    application.secondaryContactEmail ??
-                    'N/A'}
-                </Text>
+                <Text {...fieldContentStyles}>{pantryUser.email}</Text>
               </GridItem>
               <GridItem>
                 <Heading
@@ -263,20 +273,22 @@ const ApplicationDetails: React.FC = () => {
                   color="neutral.800"
                   mb={2}
                 >
-                  Shipment Address
+                  Shipping Address
                 </Heading>
                 <Text {...fieldContentStyles}>
-                  {application.shipmentAddressLine1 ?? 'N/A'},
+                  {application.shipmentAddressLine1}
+                  {application.shipmentAddressLine2 &&
+                    `, ${application.shipmentAddressLine2}`}
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.shipmentAddressCity ?? 'N/A'},{' '}
-                  {application.shipmentAddressState ?? 'N/A'}{' '}
-                  {application.shipmentAddressZip ?? ''}
+                  {application.shipmentAddressCity},{' '}
+                  {application.shipmentAddressState}{' '}
+                  {application.shipmentAddressZip}
                 </Text>
                 <Text {...fieldContentStyles}>
                   {application.shipmentAddressCountry === 'US'
                     ? 'United States of America'
-                    : application.shipmentAddressCountry ?? 'N/A'}
+                    : application.shipmentAddressCountry ?? ''}
                 </Text>
               </GridItem>
             </Grid>
@@ -463,4 +475,4 @@ const ApplicationDetails: React.FC = () => {
   );
 };
 
-export default ApplicationDetails;
+export default PantryApplicationDetails;

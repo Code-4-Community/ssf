@@ -19,14 +19,20 @@ const ApprovePantries: React.FC = () => {
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const fetchPantries = async () => {
     try {
       const data = await ApiClient.getAllPendingPantries();
       setPendingPantries(data);
-    } catch (err) {
-      alert(err);
+    } catch {
+      setAlert((prev) => ({
+        message: 'Error fetching pantries',
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -37,8 +43,11 @@ const ApprovePantries: React.FC = () => {
     try {
       await ApiClient.updatePantry(pantryId, decision);
       setPendingPantries((prev) => prev.filter((p) => p.pantryId !== pantryId));
-    } catch (error) {
-      alert(`Error ${decision} pantry: ` + error);
+    } catch {
+      setAlert((prev) => ({
+        message: `Error ${decision} pantry`,
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -70,23 +79,28 @@ const ApprovePantries: React.FC = () => {
 
   useEffect(() => {
     const action = searchParams.get('action');
-    const id = searchParams.get('id');
+    const name = searchParams.get('name');
 
-    if (action && id) {
+    if (action && name) {
       const message =
         action === 'approved'
-          ? `Application for Pantry ${id} approved`
-          : `Application for Pantry ${id} denied`;
+          ? `${name} - Application Accepted`
+          : `${name} - Application Rejected`;
 
-      setAlertMessage(message);
+      setAlert((prev) => ({ message, key: prev.key + 1 }));
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
 
   return (
     <Center flexDirection="column" p={4}>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="info" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="info"
+          timeout={6000}
+        />
       )}
       <NativeSelect.Root width="40%" mb={4}>
         <NativeSelect.Field
@@ -113,7 +127,7 @@ const ApprovePantries: React.FC = () => {
                   color="cyan"
                   fontWeight="600"
                   onClick={() =>
-                    navigate(`/application-details/${pantry.pantryId}`)
+                    navigate(`/pantry-application-details/${pantry.pantryId}`)
                   }
                 >
                   <Link>{pantry.pantryName}</Link>

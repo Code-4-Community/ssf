@@ -25,7 +25,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 }) => {
   const [items, setItems] = useState<DonationItem[]>([]);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const donationId = donation.donationId;
 
@@ -40,7 +43,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
         setItems(itemsData);
       } catch {
-        setAlertMessage('Error fetching donation details');
+        setAlert((prev) => ({
+          message: 'Error fetching donation details',
+          key: prev.key + 1,
+        }));
       }
     };
 
@@ -63,8 +69,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.300" />

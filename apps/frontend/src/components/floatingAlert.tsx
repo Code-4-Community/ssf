@@ -5,14 +5,12 @@ type FloatingAlertProps = {
   message?: string | null;
   status?: 'info' | 'error';
   timeout?: number;
-  onClose?: () => void;
 };
 
 export function FloatingAlert({
   message,
   status,
   timeout,
-  onClose,
 }: FloatingAlertProps) {
   const [visible, setVisible] = useState(!!message);
 
@@ -28,11 +26,10 @@ export function FloatingAlert({
 
     const timer = setTimeout(() => {
       setVisible(false);
-      onClose?.();
     }, timeout);
 
     return () => clearTimeout(timer);
-  }, [message, timeout, onClose]);
+  }, [message, timeout]);
 
   if (!message || !visible) return null;
 
