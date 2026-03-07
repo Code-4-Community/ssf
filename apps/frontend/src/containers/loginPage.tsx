@@ -27,7 +27,10 @@ const LoginPage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [step, setStep] = useState<Step>('login');
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,19 +48,25 @@ const LoginPage: React.FC = () => {
       } else {
         navigate(from, { replace: true });
       }
-    } catch (error) {
-      setAlertMessage('Login failed: ' + error);
+    } catch {
+      setAlert((prev) => ({ message: 'Login failed', key: prev.key + 1 }));
     }
   };
 
   // Sets the new password for the first time
   const handleSetNewPassword = async () => {
     if (newPassword !== confirmNewPassword) {
-      setAlertMessage('Passwords need to match');
+      setAlert((prev) => ({
+        message: 'Passwords need to match',
+        key: prev.key + 1,
+      }));
       return;
     }
     if (newPassword.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters');
+      setAlert((prev) => ({
+        message: 'Password needs to be at least 8 characters',
+        key: prev.key + 1,
+      }));
       return;
     }
 
@@ -66,8 +75,11 @@ const LoginPage: React.FC = () => {
       // Wait for auth session to establish
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
-    } catch (error) {
-      setAlertMessage('Failed to set new password: ' + error);
+    } catch {
+      setAlert((prev) => ({
+        message: 'Failed to set new password',
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -96,8 +108,13 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Box
         maxW="500px"

@@ -18,7 +18,10 @@ const ResetPasswordModal: React.FC = () => {
   const [step, setStep] = useState<'reset' | 'new'>('reset');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const navigate = useNavigate();
 
@@ -26,27 +29,39 @@ const ResetPasswordModal: React.FC = () => {
     try {
       await resetPassword({ username: email });
       setStep('new');
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlert((prev) => ({
+        key: prev.key + 1,
+        message: 'Failed to send verification code',
+      }));
     }
   };
 
   const handleResendCode = async () => {
     try {
       await resetPassword({ username: email });
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlert((prev) => ({
+        key: prev.key + 1,
+        message: 'Failed to send verification code',
+      }));
     }
   };
 
   const handleResetPassword = async () => {
     if (password !== confirmPassword) {
-      setAlertMessage('Passwords need to match');
+      setAlert((prev) => ({
+        message: 'Passwords need to match',
+        key: prev.key + 1,
+      }));
       return;
     }
 
     if (password.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters');
+      setAlert((prev) => ({
+        message: 'Password needs to be at least 8 characters',
+        key: prev.key + 1,
+      }));
       return;
     }
 
@@ -57,8 +72,11 @@ const ResetPasswordModal: React.FC = () => {
         newPassword: password,
       });
       navigate('/login');
-    } catch (error) {
-      setAlertMessage('Failed to set new password: ' + error);
+    } catch {
+      setAlert((prev) => ({
+        message: 'Failed to set new password',
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -92,8 +110,13 @@ const ResetPasswordModal: React.FC = () => {
       borderRadius="xl"
       boxShadow="xl"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <VStack gap={5} align="stretch">
         <Box mb={4}>

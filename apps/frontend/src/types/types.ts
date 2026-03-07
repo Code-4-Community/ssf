@@ -12,19 +12,15 @@ import {
   ManufacturerAttribute,
 } from './manufacturerEnums';
 
-// Note: The API calls as currently written do not
-// return a pantry's SSF representative or pantry
-// representative, or their IDs, as part of the
-// Pantry data
 export interface Pantry {
   pantryId: number;
   pantryName: string;
-  shippingAddressLine1: string;
-  shippingAddressLine2?: string;
-  shippingAddressCity: string;
-  shippingAddressState: string;
-  shippingAddressZip: string;
-  shippingAddressCountry?: string;
+  shipmentAddressLine1: string;
+  shipmentAddressLine2?: string;
+  shipmentAddressCity: string;
+  shipmentAddressState: string;
+  shipmentAddressZip: string;
+  shipmentAddressCountry?: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
@@ -49,7 +45,7 @@ export interface Pantry {
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
-  pantryUser?: User;
+  pantryUser: User;
   status: ApplicationStatus;
   dateApplied: string;
   activities: Activity[];
@@ -71,12 +67,12 @@ export interface PantryApplicationDto {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryName: string;
-  shippingAddressLine1: string;
-  shippingAddressLine2?: string;
-  shippingAddressCity: string;
-  shippingAddressState: string;
-  shippingAddressZip: string;
-  shippingAddressCountry?: string;
+  shipmentAddressLine1: string;
+  shipmentAddressLine2?: string;
+  shipmentAddressCity: string;
+  shipmentAddressState: string;
+  shipmentAddressZip: string;
+  shipmentAddressCountry?: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;

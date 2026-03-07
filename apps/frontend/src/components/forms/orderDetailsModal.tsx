@@ -38,7 +38,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   );
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   useEffect(() => {
     if (isOpen) {
@@ -48,8 +51,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             orderId,
           );
           setFoodRequest(foodRequestData);
-        } catch (error) {
-          setAlertMessage('Error fetching food request details:' + error);
+        } catch {
+          setAlert((prev) => ({
+            message: 'Error fetching food request details',
+            key: prev.key + 1,
+          }));
         }
       };
 
@@ -63,8 +69,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         try {
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
-        } catch (error) {
-          setAlertMessage('Error fetching order details:' + error);
+        } catch {
+          setAlert((prev) => ({
+            message: 'Error fetching order details',
+            key: prev.key + 1,
+          }));
         }
       };
 
@@ -99,8 +108,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>

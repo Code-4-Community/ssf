@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Center,
   Table,
@@ -7,23 +8,31 @@ import {
   NativeSelect,
   NativeSelectIndicator,
 } from '@chakra-ui/react';
-import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const ApprovePantries: React.FC = () => {
+  const navigate = useNavigate();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
-  const [openPantry, setOpenPantry] = useState<Pantry | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [alert, setAlert] = useState<{
+    message: string;
+    key: number;
+  }>({ message: '', key: 0 });
 
   const fetchPantries = async () => {
     try {
       const data = await ApiClient.getAllPendingPantries();
       setPendingPantries(data);
-    } catch (err) {
-      alert(err);
+    } catch {
+      setAlert((prev) => ({
+        message: 'Error fetching pantries',
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -34,8 +43,11 @@ const ApprovePantries: React.FC = () => {
     try {
       await ApiClient.updatePantry(pantryId, decision);
       setPendingPantries((prev) => prev.filter((p) => p.pantryId !== pantryId));
-    } catch (error) {
-      alert(`Error ${decision} pantry: ` + error);
+    } catch {
+      setAlert((prev) => ({
+        message: `Error ${decision} pantry`,
+        key: prev.key + 1,
+      }));
     }
   };
 
@@ -65,8 +77,31 @@ const ApprovePantries: React.FC = () => {
     setSortedPantries(sorted);
   }, [sort, pendingPantries]);
 
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const name = searchParams.get('name');
+
+    if (action && name) {
+      const message =
+        action === 'approved'
+          ? `${name} - Application Accepted`
+          : `${name} - Application Rejected`;
+
+      setAlert((prev) => ({ message, key: prev.key + 1 }));
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
   return (
     <Center flexDirection="column" p={4}>
+      {alert && (
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       <NativeSelect.Root width="40%" mb={4}>
         <NativeSelect.Field
           placeholder="Sort By"
@@ -91,7 +126,9 @@ const ApprovePantries: React.FC = () => {
                   bg="transparent"
                   color="cyan"
                   fontWeight="600"
-                  onClick={() => setOpenPantry(pantry)}
+                  onClick={() =>
+                    navigate(`/pantry-application-details/${pantry.pantryId}`)
+                  }
                 >
                   <Link>{pantry.pantryName}</Link>
                 </Button>
@@ -117,13 +154,6 @@ const ApprovePantries: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openPantry && (
-            <PantryApplicationModal
-              pantry={openPantry}
-              isOpen={openPantry !== null}
-              onClose={() => setOpenPantry(null)}
-            />
-          )}
         </Table.Body>
       </Table.Root>
     </Center>
