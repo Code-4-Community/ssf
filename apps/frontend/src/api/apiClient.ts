@@ -176,8 +176,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/volunteers') as Promise<User[]>;
+  public async getVolunteers(): Promise<Assignments[]> {
+    return this.get('/api/volunteers') as Promise<Assignments[]>;
   }
 
   public async getVolunteerPantries(userId: number): Promise<Pantry[]> {

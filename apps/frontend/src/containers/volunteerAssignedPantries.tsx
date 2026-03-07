@@ -6,9 +6,10 @@ import {
   Table,
   Heading,
   VStack,
-  RadioGroup,
+  Checkbox,
   Text,
   Spinner,
+  Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
@@ -21,9 +22,10 @@ const AssignedPantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterRefrigeratorFriendly, setFilterRefrigeratorFriendly] = useState<
-    boolean | null
-  >(null);
+  const [selectedPantryIds, setSelectedPantryIds] = useState<Set<number>>(
+    new Set(),
+  );
+  const [pantrySearch, setPantrySearch] = useState('');
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,34 +60,43 @@ const AssignedPantries: React.FC = () => {
   };
 
   const filteredPantries = useMemo(() => {
-    if (filterRefrigeratorFriendly === null) return pantries;
-    return pantries.filter(
-      (pantry) => isRefrigeratorFriendly(pantry) === filterRefrigeratorFriendly,
-    );
-  }, [filterRefrigeratorFriendly, pantries]);
+    if (selectedPantryIds.size === 0) return pantries;
+    return pantries.filter((pantry) => selectedPantryIds.has(pantry.pantryId));
+  }, [selectedPantryIds, pantries]);
 
   const hasNoAssignedPantries = !isLoading && pantries.length === 0;
   const hasNoFilterResults =
     !isLoading && pantries.length > 0 && filteredPantries.length === 0;
 
-  // Map radio value string to filter state
-  const radioValue =
-    filterRefrigeratorFriendly === true
-      ? 'yes'
-      : filterRefrigeratorFriendly === false
-      ? 'no'
-      : '';
+  const isFiltered = selectedPantryIds.size > 0;
 
-  const handleRadioChange = (value: string) => {
-    if (value === 'yes') setFilterRefrigeratorFriendly(true);
-    else if (value === 'no') setFilterRefrigeratorFriendly(false);
-    else setFilterRefrigeratorFriendly(null);
+  const togglePantry = (pantryId: number) => {
+    setSelectedPantryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(pantryId)) next.delete(pantryId);
+      else next.add(pantryId);
+      return next;
+    });
   };
 
-  const clearFilter = () => {
-    setFilterRefrigeratorFriendly(null);
-    setIsFilterOpen(false);
+  const allChecked =
+    pantries.length > 0 && selectedPantryIds.size === pantries.length;
+  const isIndeterminate = selectedPantryIds.size > 0 && !allChecked;
+
+  const toggleAll = () => {
+    if (allChecked || isIndeterminate) {
+      setSelectedPantryIds(new Set());
+    } else {
+      setSelectedPantryIds(new Set(pantries.map((p) => p.pantryId)));
+    }
   };
+
+  const visiblePantries = useMemo(() => {
+    if (!pantrySearch.trim()) return pantries;
+    return pantries.filter((p) =>
+      p.pantryName.toLowerCase().includes(pantrySearch.toLowerCase()),
+    );
+  }, [pantrySearch, pantries]);
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -114,16 +125,16 @@ const AssignedPantries: React.FC = () => {
         </Box>
       ) : (
         <>
-          {/* Filter Button — only shown when pantries exist */}
           {!hasNoAssignedPantries && (
             <Box display="flex" gap={2} mb={6}>
               <Box position="relative">
                 <Button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   variant="outline"
-                  color="neutral.800"
+                  color={isFiltered ? 'blue.600' : 'neutral.800'}
                   border="1px solid"
-                  borderColor="neutral.200"
+                  borderColor={isFiltered ? 'blue.300' : 'neutral.200'}
+                  bg={isFiltered ? 'blue.50' : undefined}
                   size="sm"
                   p={3}
                   fontFamily="ibm"
@@ -131,6 +142,20 @@ const AssignedPantries: React.FC = () => {
                 >
                   <Funnel />
                   Filter
+                  {isFiltered && (
+                    <Box
+                      as="span"
+                      ml={1}
+                      bg="blue.500"
+                      color="white"
+                      borderRadius="full"
+                      fontSize="xs"
+                      px={1.5}
+                      lineHeight="1.4"
+                    >
+                      {selectedPantryIds.size}
+                    </Box>
+                  )}
                 </Button>
 
                 {isFilterOpen && (
@@ -158,43 +183,71 @@ const AssignedPantries: React.FC = () => {
                       minW="275px"
                       zIndex={20}
                     >
-                      <RadioGroup.Root
-                        value={radioValue}
-                        onValueChange={(e: { value: string }) =>
-                          handleRadioChange(e.value)
-                        }
-                        size="sm"
-                      >
-                        <VStack align="stretch" gap={2}>
-                          <RadioGroup.Item value="yes">
-                            <RadioGroup.ItemHiddenInput />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText fontSize="sm">
-                              Refrigerator-Friendly Only
-                            </RadioGroup.ItemText>
-                          </RadioGroup.Item>
-                          <RadioGroup.Item value="no">
-                            <RadioGroup.ItemHiddenInput />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText fontSize="sm">
-                              Not Refrigerator-Friendly Only
-                            </RadioGroup.ItemText>
-                          </RadioGroup.Item>
-                        </VStack>
-                      </RadioGroup.Root>
-                      {filterRefrigeratorFriendly !== null && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          mt={3}
-                          color="neutral.600"
+                      <VStack align="stretch" gap={2}>
+                        <Input
+                          placeholder="Search pantries..."
+                          size="sm"
+                          value={pantrySearch}
+                          onChange={(e) => setPantrySearch(e.target.value)}
                           fontFamily="inter"
-                          onClick={clearFilter}
-                          width="full"
+                        />
+
+                        <Checkbox.Root
+                          checked={
+                            allChecked
+                              ? true
+                              : isIndeterminate
+                              ? 'indeterminate'
+                              : false
+                          }
+                          onCheckedChange={toggleAll}
+                          size="sm"
                         >
-                          Clear filter
-                        </Button>
-                      )}
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control />
+                          <Checkbox.Label>
+                            <Text
+                              fontSize="sm"
+                              fontWeight="semibold"
+                              color="neutral.800"
+                            >
+                              Select All
+                            </Text>
+                          </Checkbox.Label>
+                        </Checkbox.Root>
+
+                        <Box borderBottom="1px solid" borderColor="gray.100" />
+
+                        {visiblePantries.length > 0 ? (
+                          visiblePantries.map((pantry) => (
+                            <Checkbox.Root
+                              key={pantry.pantryId}
+                              checked={selectedPantryIds.has(pantry.pantryId)}
+                              onCheckedChange={() =>
+                                togglePantry(pantry.pantryId)
+                              }
+                              size="sm"
+                            >
+                              <Checkbox.HiddenInput />
+                              <Checkbox.Control />
+                              <Checkbox.Label>
+                                <Text fontSize="sm" color="neutral.800">
+                                  {pantry.pantryName}
+                                </Text>
+                              </Checkbox.Label>
+                            </Checkbox.Root>
+                          ))
+                        ) : (
+                          <Text
+                            fontSize="sm"
+                            color="neutral.500"
+                            textAlign="center"
+                            py={2}
+                          >
+                            No pantries found.
+                          </Text>
+                        )}
+                      </VStack>
                     </Box>
                   </>
                 )}
