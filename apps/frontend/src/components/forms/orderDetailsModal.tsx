@@ -37,6 +37,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   );
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   useEffect(() => {
     if (isOpen) {
       const fetchRequestData = async () => {
@@ -46,7 +48,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch (error) {
-          alert('Error fetching food request details:' + error);
+          setAlertMessage('Error fetching food request details:' + error);
         }
       };
 
@@ -96,6 +98,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
         <Dialog.Content maxW={650}>

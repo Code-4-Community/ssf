@@ -2,8 +2,8 @@ import { IsString } from 'class-validator';
 
 export class RefreshTokenDto {
   @IsString()
-  refreshToken: string;
+  refreshToken!: string;
 
   @IsString()
-  userSub: string;
+  userSub!: string;
 }

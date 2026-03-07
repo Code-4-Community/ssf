@@ -12,6 +12,7 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { Role } from '../users/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,17 +26,22 @@ export class AuthController {
     // By default, creates a standard user
     try {
       await this.authService.signup(signUpDto);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when signing up user';
+      throw new BadRequestException(message);
     }
 
-    const user = await this.usersService.create(
-      signUpDto.email,
-      signUpDto.firstName,
-      signUpDto.lastName,
-      signUpDto.phone,
-      Role.VOLUNTEER,
-    );
+    const createUserDto: userSchemaDto = {
+      email: signUpDto.email,
+      firstName: signUpDto.firstName,
+      lastName: signUpDto.lastName,
+      phone: signUpDto.phone,
+      role: Role.VOLUNTEER,
+    };
+    const user = await this.usersService.create(createUserDto);
 
     return user;
   }
@@ -45,8 +51,12 @@ export class AuthController {
   verifyUser(@Body() body: VerifyUserDto): void {
     try {
       this.authService.verifyUser(body.email, body.verificationCode);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when verifying user';
+      throw new BadRequestException(message);
     }
   }
 
@@ -76,8 +86,12 @@ export class AuthController {
 
     try {
       await this.authService.deleteUser(user.email);
-    } catch (e) {
-      throw new BadRequestException(e.message);
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Unexpected error occurred when deleting user';
+      throw new BadRequestException(message);
     }
 
     this.usersService.remove(user.id);

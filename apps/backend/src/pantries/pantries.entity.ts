@@ -20,13 +20,13 @@ import { ApplicationStatus } from '../shared/types';
 @Entity('pantries')
 export class Pantry {
   @PrimaryGeneratedColumn({ name: 'pantry_id' })
-  pantryId: number;
+  pantryId!: number;
 
   @Column({ name: 'pantry_name', type: 'varchar', length: 255 })
-  pantryName: string;
+  pantryName!: string;
 
   @Column({ name: 'shipment_address_line_1', type: 'varchar', length: 255 })
-  shipmentAddressLine1: string;
+  shipmentAddressLine1!: string;
 
   @Column({
     name: 'shipment_address_line_2',
@@ -34,16 +34,16 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  shipmentAddressLine2?: string;
+  shipmentAddressLine2!: string | null;
 
   @Column({ name: 'shipment_address_city', type: 'varchar', length: 255 })
-  shipmentAddressCity: string;
+  shipmentAddressCity!: string;
 
   @Column({ name: 'shipment_address_state', type: 'varchar', length: 255 })
-  shipmentAddressState: string;
+  shipmentAddressState!: string;
 
   @Column({ name: 'shipment_address_zip', type: 'varchar', length: 255 })
-  shipmentAddressZip: string;
+  shipmentAddressZip!: string;
 
   @Column({
     name: 'shipment_address_country',
@@ -51,10 +51,10 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry!: string | null;
 
   @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
-  mailingAddressLine1: string;
+  mailingAddressLine1!: string;
 
   @Column({
     name: 'mailing_address_line_2',
@@ -62,16 +62,16 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  mailingAddressLine2?: string;
+  mailingAddressLine2!: string | null;
 
   @Column({ name: 'mailing_address_city', type: 'varchar', length: 255 })
-  mailingAddressCity: string;
+  mailingAddressCity!: string;
 
   @Column({ name: 'mailing_address_state', type: 'varchar', length: 255 })
-  mailingAddressState: string;
+  mailingAddressState!: string;
 
   @Column({ name: 'mailing_address_zip', type: 'varchar', length: 255 })
-  mailingAddressZip: string;
+  mailingAddressZip!: string;
 
   @Column({
     name: 'mailing_address_country',
@@ -79,10 +79,10 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  mailingAddressCountry?: string;
+  mailingAddressCountry!: string | null;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
-  allergenClients: string;
+  allergenClients!: string;
 
   @Column({
     name: 'refrigerated_donation',
@@ -90,17 +90,17 @@ export class Pantry {
     enum: RefrigeratedDonation,
     enumName: 'refrigerated_donation_enum',
   })
-  refrigeratedDonation: RefrigeratedDonation;
+  refrigeratedDonation!: RefrigeratedDonation;
 
   @Column({ name: 'accept_food_deliveries', type: 'boolean' })
-  acceptFoodDeliveries: boolean;
+  acceptFoodDeliveries!: boolean;
 
   @Column({
     name: 'delivery_window_instructions',
     type: 'text',
     nullable: true,
   })
-  deliveryWindowInstructions?: string;
+  deliveryWindowInstructions!: string | null;
 
   @Column({
     name: 'reserve_food_for_allergic',
@@ -108,16 +108,16 @@ export class Pantry {
     enum: ReserveFoodForAllergic,
     enumName: 'reserve_food_for_allergic_enum',
   })
-  reserveFoodForAllergic: string;
+  reserveFoodForAllergic!: ReserveFoodForAllergic;
 
   @Column({ name: 'reservation_explanation', type: 'text', nullable: true })
-  reservationExplanation?: string;
+  reservationExplanation!: string | null;
 
   @Column({
     name: 'dedicated_allergy_friendly',
     type: 'boolean',
   })
-  dedicatedAllergyFriendly: boolean;
+  dedicatedAllergyFriendly!: boolean;
 
   @Column({
     name: 'client_visit_frequency',
@@ -126,7 +126,7 @@ export class Pantry {
     enumName: 'client_visit_frequency_enum',
     nullable: true,
   })
-  clientVisitFrequency?: ClientVisitFrequency;
+  clientVisitFrequency!: ClientVisitFrequency | null;
 
   @Column({
     name: 'identify_allergens_confidence',
@@ -135,7 +135,7 @@ export class Pantry {
     enumName: 'allergens_confidence_enum',
     nullable: true,
   })
-  identifyAllergensConfidence?: AllergensConfidence;
+  identifyAllergensConfidence!: AllergensConfidence | null;
 
   @Column({
     name: 'serve_allergic_children',
@@ -144,19 +144,19 @@ export class Pantry {
     enumName: 'serve_allergic_children_enum',
     nullable: true,
   })
-  serveAllergicChildren?: ServeAllergicChildren;
+  serveAllergicChildren!: ServeAllergicChildren | null;
 
   @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription?: boolean;
+  newsletterSubscription!: boolean | null;
 
   @Column({ name: 'restrictions', type: 'text', array: true })
-  restrictions: string[];
+  restrictions!: string[];
 
   @Column({ name: 'has_email_contact', type: 'boolean' })
-  hasEmailContact: boolean;
+  hasEmailContact!: boolean;
 
   @Column({ name: 'email_contact_other', type: 'text', nullable: true })
-  emailContactOther?: string;
+  emailContactOther!: string | null;
 
   @Column({
     name: 'secondary_contact_first_name',
@@ -164,7 +164,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactFirstName?: string;
+  secondaryContactFirstName!: string | null;
 
   @Column({
     name: 'secondary_contact_last_name',
@@ -172,7 +172,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactLastName?: string;
+  secondaryContactLastName!: string | null;
 
   @Column({
     name: 'secondary_contact_email',
@@ -180,7 +180,7 @@ export class Pantry {
     length: 255,
     nullable: true,
   })
-  secondaryContactEmail?: string;
+  secondaryContactEmail!: string | null;
 
   @Column({
     name: 'secondary_contact_phone',
@@ -188,7 +188,7 @@ export class Pantry {
     length: 20,
     nullable: true,
   })
-  secondaryContactPhone?: string;
+  secondaryContactPhone!: string | null;
 
   // cascade: ['insert'] means that when we create a new
   // pantry, the pantry user will automatically be added
@@ -202,7 +202,7 @@ export class Pantry {
     name: 'pantry_user_id',
     referencedColumnName: 'id',
   })
-  pantryUser: User;
+  pantryUser!: User;
 
   @Column({
     name: 'status',
@@ -210,14 +210,14 @@ export class Pantry {
     enum: ApplicationStatus,
     enumName: 'application_status_enum',
   })
-  status: ApplicationStatus;
+  status!: ApplicationStatus;
 
   @Column({
     name: 'date_applied',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  dateApplied: Date;
+  dateApplied!: Date;
 
   @Column({
     name: 'activities',
@@ -226,17 +226,17 @@ export class Pantry {
     enumName: 'activity_enum',
     array: true,
   })
-  activities: Activity[];
+  activities!: Activity[];
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
-  activitiesComments?: string;
+  activitiesComments!: string | null;
 
   @Column({ name: 'items_in_stock', type: 'text' })
-  itemsInStock: string;
+  itemsInStock!: string;
 
   @Column({ name: 'need_more_options', type: 'text' })
-  needMoreOptions: string;
+  needMoreOptions!: string;
 
   @ManyToMany(() => User, (user) => user.pantries)
-  volunteers?: User[];
+  volunteers!: User[] | null;
 }

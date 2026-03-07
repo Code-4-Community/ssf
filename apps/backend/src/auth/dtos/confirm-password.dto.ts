@@ -2,11 +2,11 @@ import { IsEmail, IsString } from 'class-validator';
 
 export class ConfirmPasswordDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
-  newPassword: string;
+  newPassword!: string;
 
   @IsString()
-  confirmationCode: string;
+  confirmationCode!: string;
 }

@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
@@ -27,8 +26,9 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { EmailsService } from '../emails/email.service';
-import { SendEmailDTO } from '../emails/types';
+import { SendEmailDTO } from '../emails/dto/send-email.dto';
 import { Public } from '../auth/public.decorator';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('pantries')
 export class PantriesController {
@@ -40,11 +40,10 @@ export class PantriesController {
 
   @Roles(Role.PANTRY)
   @Get('/my-id')
-  async getCurrentUserPantryId(@Req() req): Promise<number> {
+  async getCurrentUserPantryId(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<number> {
     const currentUser = req.user;
-    if (!currentUser) {
-      throw new UnauthorizedException('Not authenticated');
-    }
 
     const pantry = await this.pantriesService.findByUserId(currentUser.id);
     return pantry.pantryId;
