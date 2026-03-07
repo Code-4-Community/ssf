@@ -121,8 +121,16 @@ export class RequestsService {
           })),
         );
 
-    const matchingManufacturers = rows.filter((fm) => fm.matching);
-    const nonMatchingManufacturers = rows.filter((fm) => !fm.matching);
+    const matchingManufacturers: typeof rows = [];
+    const nonMatchingManufacturers: typeof rows = [];
+
+    for (const fm of rows) {
+      if (fm.matching) {
+        matchingManufacturers.push(fm);
+      } else {
+        nonMatchingManufacturers.push(fm);
+      }
+    }
 
     return {
       matchingManufacturers,
@@ -166,12 +174,18 @@ export class RequestsService {
       .andWhere('di.reserved_quantity < di.quantity')
       .getRawMany();
 
-    const matchingItems = availableItems.filter((item) =>
-      request.requestedFoodTypes.includes(item.foodType),
-    );
-    const nonMatchingItems = availableItems.filter(
-      (item) => !request.requestedFoodTypes.includes(item.foodType),
-    );
+    const requestedFoodTypes = new Set(request.requestedFoodTypes);
+
+    const matchingItems: typeof availableItems = [];
+    const nonMatchingItems: typeof availableItems = [];
+
+    for (const item of availableItems) {
+      if (requestedFoodTypes.has(item.foodType)) {
+        matchingItems.push(item);
+      } else {
+        nonMatchingItems.push(item);
+      }
+    }
 
     return { matchingItems, nonMatchingItems };
   }

@@ -32,6 +32,8 @@ export class FoodRequest {
   })
   requestedSize!: RequestSize;
 
+  // Custom transformer needed because TypeORM's enum array parsing fails when values
+  // contain commas (e.g. "Dried Beans (Gluten-Free, Nut-Free)")
   @Column({
     name: 'requested_food_types',
     type: 'text',
