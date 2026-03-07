@@ -268,19 +268,19 @@ const AssignedPantries: React.FC = () => {
               <CircleCheck size={32} color="gray" />
               {hasNoAssignedPantries ? (
                 <>
-                  <Text fontWeight="bold" fontSize="md" color="gray.dark">
+                  <Text fontWeight="semibold" fontSize="md" color="neutral.800">
                     No Assigned Pantries
                   </Text>
-                  <Text fontSize="sm" color="gray.500">
+                  <Text textStyle="p2" color="neutral.700">
                     You have no assigned pantries at this time.
                   </Text>
                 </>
               ) : (
                 <>
-                  <Text fontWeight="bold" fontSize="md" color="gray.dark">
+                  <Text fontWeight="semibold" fontSize="md" color="neutral.800">
                     No Matching Pantries
                   </Text>
-                  <Text fontSize="sm" color="gray.500">
+                  <Text textStyle="p2" color="neutral.700">
                     No pantries match the current filter.
                   </Text>
                 </>
