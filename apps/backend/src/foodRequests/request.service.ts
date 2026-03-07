@@ -6,7 +6,7 @@ import { validateId } from '../utils/validation.utils';
 import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { OrderStatus } from '../orders/types';
 
 @Injectable()
@@ -66,7 +66,9 @@ export class RequestsService {
       orderId: order.orderId,
       status: order.status,
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
+      trackingLink: order.trackingLink,
       items: order.allocations.map((allocation) => ({
+        id: allocation.item.itemId,
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
         foodType: allocation.item.foodType,
@@ -78,7 +80,7 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedItems: string[],
-    additionalInformation: string | undefined,
+    additionalInformation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 

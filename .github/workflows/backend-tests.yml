@@ -42,4 +42,4 @@ jobs:
           node-version: 20
       - run: yarn install --frozen-lockfile
       - run: yarn list strip-ansi string-width string-length
-      - run: npx jest
+      - run: yarn test

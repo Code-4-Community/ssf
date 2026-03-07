@@ -5,8 +5,10 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
@@ -51,7 +53,8 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
-    // Run all migrations fresh for each test
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
   });
 
@@ -130,6 +133,62 @@ describe('OrdersService', () => {
         'Westside Community Kitchen',
       );
       expect(orders[0].status).toBe(OrderStatus.DELIVERED);
+    });
+  });
+
+  describe('findOrderDetails', () => {
+    it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
+      const orderId = 1;
+
+      const result = await service.findOrderDetails(orderId);
+
+      const expected: OrderDetailsDto = {
+        orderId: 1,
+        status: OrderStatus.DELIVERED,
+        foodManufacturerName: 'FoodCorp Industries',
+        trackingLink: 'www.samplelink/samplelink',
+        items: [
+          {
+            id: 1,
+            foodType: FoodType.SEED_BUTTERS,
+            name: 'Peanut Butter (16oz)',
+            quantity: 10,
+          },
+          {
+            id: 2,
+            foodType: FoodType.GLUTEN_FREE_BREAD,
+            name: 'Whole Wheat Bread',
+            quantity: 25,
+          },
+          {
+            id: 3,
+            foodType: FoodType.REFRIGERATED_MEALS,
+            name: 'Canned Green Beans',
+            quantity: 5,
+          },
+        ],
+      };
+
+      expect(result).toMatchObject({
+        orderId: expected.orderId,
+        status: expected.status,
+        foodManufacturerName: expected.foodManufacturerName,
+        trackingLink: expected.trackingLink,
+      });
+
+      expect(result.items).toHaveLength(expected.items.length);
+      expect(result.items).toEqual(expect.arrayContaining(expected.items));
+    });
+
+    it('throws NotFoundException when order does not exist', async () => {
+      const missingOrderId = 99999999;
+
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        `Order ${missingOrderId} not found`,
+      );
     });
   });
 
@@ -428,6 +487,8 @@ describe('OrdersService', () => {
 
       expect(shippedOrder).toBeDefined();
 
+      if (!shippedOrder) throw new Error('Missing shipped order test object');
+
       const dateReceived = new Date().toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
@@ -450,6 +511,9 @@ describe('OrdersService', () => {
         relations: ['orders'],
       });
 
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
       expect(updatedRequest.status).toBe(FoodRequestStatus.CLOSED);
     });
 
@@ -464,6 +528,9 @@ describe('OrdersService', () => {
       });
 
       expect(existingShippedOrder).toBeDefined();
+
+      if (!existingShippedOrder)
+        throw new Error('Missing existingShippedOrder test object');
 
       // Add a second shipped order to the same request so it stays active after delivery
       const secondOrder = orderRepo.create({
@@ -495,6 +562,9 @@ describe('OrdersService', () => {
         relations: ['orders'],
       });
 
+      if (!updatedRequest)
+        throw new Error('Missing updatedRequest test object');
+
       expect(updatedRequest.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
@@ -521,6 +591,8 @@ describe('OrdersService', () => {
 
       expect(pendingOrder).toBeDefined();
 
+      if (!pendingOrder) throw new Error('Missing pendingOrder test object');
+
       await expect(
         service.confirmDelivery(
           pendingOrder.orderId,
@@ -540,6 +612,9 @@ describe('OrdersService', () => {
       });
 
       expect(deliveredOrder).toBeDefined();
+
+      if (!deliveredOrder)
+        throw new Error('Missing deliveredOrder test object');
 
       await expect(
         service.confirmDelivery(

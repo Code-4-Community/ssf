@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
@@ -7,10 +12,17 @@ import { validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { userSchemaDto } from '../users/dtos/userSchema.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PantriesService {
-  constructor(@InjectRepository(Pantry) private repo: Repository<Pantry>) {}
+  constructor(
+    @InjectRepository(Pantry) private repo: Repository<Pantry>,
+
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
+  ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
@@ -46,29 +58,31 @@ export class PantriesService {
 
     pantry.pantryUser = pantryContact;
     pantry.hasEmailContact = pantryData.hasEmailContact;
-    pantry.emailContactOther = pantryData.emailContactOther;
+    pantry.emailContactOther = pantryData.emailContactOther ?? null;
 
     // secondary contact information
-    pantry.secondaryContactFirstName = pantryData.secondaryContactFirstName;
-    pantry.secondaryContactLastName = pantryData.secondaryContactLastName;
-    pantry.secondaryContactEmail = pantryData.secondaryContactEmail;
-    pantry.secondaryContactPhone = pantryData.secondaryContactPhone;
+    pantry.secondaryContactFirstName =
+      pantryData.secondaryContactFirstName ?? null;
+    pantry.secondaryContactLastName =
+      pantryData.secondaryContactLastName ?? null;
+    pantry.secondaryContactEmail = pantryData.secondaryContactEmail ?? null;
+    pantry.secondaryContactPhone = pantryData.secondaryContactPhone ?? null;
 
     // food shipment address information
     pantry.shipmentAddressLine1 = pantryData.shipmentAddressLine1;
-    pantry.shipmentAddressLine2 = pantryData.shipmentAddressLine2;
+    pantry.shipmentAddressLine2 = pantryData.shipmentAddressLine2 ?? null;
     pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
     pantry.shipmentAddressState = pantryData.shipmentAddressState;
     pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
-    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? null;
 
     // mailing address information
     pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
-    pantry.mailingAddressLine2 = pantryData.mailingAddressLine2;
+    pantry.mailingAddressLine2 = pantryData.mailingAddressLine2 ?? null;
     pantry.mailingAddressCity = pantryData.mailingAddressCity;
     pantry.mailingAddressState = pantryData.mailingAddressState;
     pantry.mailingAddressZip = pantryData.mailingAddressZip;
-    pantry.mailingAddressCountry = pantryData.mailingAddressCountry;
+    pantry.mailingAddressCountry = pantryData.mailingAddressCountry ?? null;
 
     // pantry details information
     pantry.pantryName = pantryData.pantryName;
@@ -77,15 +91,16 @@ export class PantriesService {
     pantry.refrigeratedDonation = pantryData.refrigeratedDonation;
     pantry.dedicatedAllergyFriendly = pantryData.dedicatedAllergyFriendly;
     pantry.reserveFoodForAllergic = pantryData.reserveFoodForAllergic;
-    pantry.reservationExplanation = pantryData.reservationExplanation;
-    pantry.clientVisitFrequency = pantryData.clientVisitFrequency;
-    pantry.identifyAllergensConfidence = pantryData.identifyAllergensConfidence;
-    pantry.serveAllergicChildren = pantryData.serveAllergicChildren;
+    pantry.reservationExplanation = pantryData.reservationExplanation ?? null;
+    pantry.clientVisitFrequency = pantryData.clientVisitFrequency ?? null;
+    pantry.identifyAllergensConfidence =
+      pantryData.identifyAllergensConfidence ?? null;
+    pantry.serveAllergicChildren = pantryData.serveAllergicChildren ?? null;
     pantry.activities = pantryData.activities;
-    pantry.activitiesComments = pantryData.activitiesComments;
+    pantry.activitiesComments = pantryData.activitiesComments ?? null;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
-    pantry.newsletterSubscription = pantryData.newsletterSubscription;
+    pantry.newsletterSubscription = pantryData.newsletterSubscription ?? null;
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
@@ -94,12 +109,25 @@ export class PantriesService {
   async approve(id: number) {
     validateId(id, 'Pantry');
 
-    const pantry = await this.repo.findOne({ where: { pantryId: id } });
+    const pantry = await this.repo.findOne({
+      where: { pantryId: id },
+      relations: ['pantryUser'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    await this.repo.update(id, { status: ApplicationStatus.APPROVED });
+    const createUserDto: userSchemaDto = {
+      ...pantry.pantryUser,
+      role: Role.PANTRY,
+    };
+
+    const newPantryUser = await this.usersService.create(createUserDto);
+
+    await this.repo.update(id, {
+      status: ApplicationStatus.APPROVED,
+      pantryUser: newPantryUser,
+    });
   }
 
   async deny(id: number) {

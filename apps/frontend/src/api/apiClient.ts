@@ -1,3 +1,4 @@
+import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
   AxiosResponse,
@@ -21,6 +22,7 @@ import {
   UserDto,
   OrderDetails,
   ConfirmDeliveryDto,
+  FoodRequestSummaryDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -36,11 +38,12 @@ export class ApiClient {
     // Attach the access token to each request if available
     // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = this.accessToken || localStorage.getItem('accessToken');
+      async (config: InternalAxiosRequestConfig) => {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.accessToken?.toString();
+
         if (token) {
-          config.headers = config.headers || {};
-          config.headers['Authorization'] = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
@@ -51,16 +54,11 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          // TODO: For a future ticket, figure out a better method than renavigation on failure (or a better place to check than in the api requests)
           window.location.replace('/unauthorized');
         }
         return Promise.reject(error);
       },
     );
-  }
-
-  public setAccessToken(token: string | undefined) {
-    this.accessToken = token;
   }
 
   public async get(path: string): Promise<unknown> {
@@ -179,14 +177,14 @@ export class ApiClient {
 
   public async getFoodRequestFromOrder(
     orderId: number,
-  ): Promise<FoodRequest | null> {
+  ): Promise<FoodRequestSummaryDto | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/request`)
       .then((response) => response.data);
   }
 
   public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/users/volunteers') as Promise<User[]>;
+    return this.get('/api/volunteers/') as Promise<User[]>;
   }
 
   public async updateUserVolunteerRole(
@@ -270,16 +268,18 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getOrder(orderId: number): Promise<Order> {
-    return this.axiosInstance.get(`/api/orders/${orderId}`) as Promise<Order>;
-  }
-
   public async getOrderDetailsListFromRequest(
     requestId: number,
   ): Promise<OrderDetails[]> {
     return this.axiosInstance
       .get(`/api/requests/${requestId}/order-details`)
       .then((response) => response.data) as Promise<OrderDetails[]>;
+  }
+
+  public async getOrder(orderId: number): Promise<OrderDetails> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}`)
+      .then((response) => response.data) as Promise<OrderDetails>;
   }
 
   async getAllAllocationsByOrder(orderId: number): Promise<Allocation[]> {

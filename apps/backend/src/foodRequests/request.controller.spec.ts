@@ -6,7 +6,9 @@ import { FoodRequest } from './request.entity';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
+import { CreateRequestDto } from './dtos/create-request.dto';
+import { Order } from '../orders/order.entity';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -78,20 +80,23 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /all-order-details/:requestId', () => {
+  describe('GET /:requestId/order-details', () => {
     it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
       const mockOrderDetails: OrderDetailsDto[] = [
         {
           orderId: 10,
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Rice',
               quantity: 5,
               foodType: FoodType.GRANOLA,
             },
             {
+              id: 2,
               name: 'Beans',
               quantity: 3,
               foodType: FoodType.DRIED_BEANS,
@@ -102,8 +107,10 @@ describe('RequestsController', () => {
           orderId: 11,
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Milk',
               quantity: 2,
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
@@ -129,10 +136,13 @@ describe('RequestsController', () => {
 
   describe('POST /create', () => {
     it('should call requestsService.create and return the created food request', async () => {
-      const createBody: Partial<FoodRequest> = {
+      const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
         requestedSize: RequestSize.MEDIUM,
-        requestedItems: ['Test item 1', 'Test item 2'],
+        requestedItems: [
+          FoodType.DAIRY_FREE_ALTERNATIVES,
+          FoodType.DRIED_BEANS,
+        ],
         additionalInformation: 'Test information.',
       };
 
@@ -147,7 +157,9 @@ describe('RequestsController', () => {
         createdRequest as FoodRequest,
       );
 
-      const result = await controller.createRequest(createBody as FoodRequest);
+      const result = await controller.createRequest(
+        createBody as CreateRequestDto,
+      );
 
       expect(result).toEqual(createdRequest);
       expect(mockRequestsService.create).toHaveBeenCalledWith(
