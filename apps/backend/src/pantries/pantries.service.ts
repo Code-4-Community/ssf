@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -117,6 +118,12 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
+    if (pantry.status !== ApplicationStatus.PENDING) {
+      throw new BadRequestException(
+        `Cannot approve a pantry with status: ${pantry.status}`,
+      );
+    }
+
     const createUserDto: userSchemaDto = {
       ...pantry.pantryUser,
       role: Role.PANTRY,
@@ -136,6 +143,12 @@ export class PantriesService {
     const pantry = await this.repo.findOne({ where: { pantryId: id } });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
+    }
+
+    if (pantry.status !== ApplicationStatus.PENDING) {
+      throw new BadRequestException(
+        `Cannot deny a pantry with status: ${pantry.status}`,
+      );
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
