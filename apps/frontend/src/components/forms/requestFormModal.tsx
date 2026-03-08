@@ -59,6 +59,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       setRequestedSize('');
       setAdditionalNotes('');
     }
+    setAlert({ isError: true, message: '' });
   }, [isOpen, previousRequest]);
 
   const handleSubmit = async () => {
