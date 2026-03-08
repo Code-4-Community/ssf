@@ -20,6 +20,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
+import OrderDetailsModal from '@components/forms/orderDetailsModal';
 
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
 
@@ -449,7 +450,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       >
                         {order.orderId}
                       </Button>
-                      {/* TODO: Add reusable order details modal here */}
+                      {selectedOrderId === order.orderId && (
+                        <OrderDetailsModal
+                          orderId={order.orderId}
+                          isOpen={true}
+                          onClose={() => onOrderSelect(null)}
+                        />
+                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
