@@ -48,7 +48,7 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers')
   async getMatchingManufacturers(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -56,7 +56,7 @@ export class RequestsController {
     return this.requestsService.getMatchingManufacturers(requestId);
   }
 
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
   async getAvailableItemsForManufacturer(
     @Param('requestId', ParseIntPipe) requestId: number,

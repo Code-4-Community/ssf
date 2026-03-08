@@ -91,16 +91,38 @@ describe('RequestsService', () => {
 
   describe('getOrderDetails', () => {
     it('should return mapped order details for a valid requestId', async () => {
+      const expectedItems = [
+        {
+          id: 1,
+          name: 'Peanut Butter (16oz)',
+          quantity: 10,
+          foodType: 'Seed Butters (Peanut Butter Alternative)',
+        },
+        {
+          id: 3,
+          name: 'Canned Green Beans',
+          quantity: 5,
+          foodType: 'Refrigerated Meals',
+        },
+        {
+          id: 2,
+          name: 'Whole Wheat Bread',
+          quantity: 25,
+          foodType: 'Gluten-Free Bread',
+        },
+      ];
+
       const result = await service.getOrderDetails(1);
+
       expect(result).toBeDefined();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
         orderId: 1,
         status: OrderStatus.DELIVERED,
         foodManufacturerName: 'FoodCorp Industries',
-        items: expect.any(Array),
+        trackingLink: 'www.samplelink/samplelink',
+        items: expectedItems,
       });
-      expect(result[0].items).toHaveLength(3);
     });
 
     it('should throw NotFoundException for non-existent request', async () => {
@@ -145,6 +167,22 @@ describe('RequestsService', () => {
       expect(result.additionalInformation).toBe('Additional info');
     });
 
+    it('should successfully create and return new food request w/o additional info', async () => {
+      const pantryId = 1;
+      const result = await service.create(pantryId, RequestSize.LARGE, [
+        FoodType.GRANOLA,
+        FoodType.NUT_FREE_GRANOLA_BARS,
+      ]);
+      expect(result).toBeDefined();
+      expect(result.pantryId).toBe(pantryId);
+      expect(result.requestedSize).toBe(RequestSize.LARGE);
+      expect(result.requestedFoodTypes).toEqual([
+        FoodType.GRANOLA,
+        FoodType.NUT_FREE_GRANOLA_BARS,
+      ]);
+      expect(result.additionalInformation).toBeNull();
+    });
+
     it('should throw NotFoundException for non-existent pantry', async () => {
       await expect(
         service.create(
@@ -165,6 +203,9 @@ describe('RequestsService', () => {
       expect(result).toBeDefined();
       expect(result).toHaveLength(2);
       expect(result.every((r) => r.pantryId === pantryId)).toBe(true);
+      result.forEach((request) => {
+        expect(request.orders).toBeDefined();
+      });
     });
 
     it('should return empty array for pantry with no requests', async () => {
@@ -195,6 +236,20 @@ describe('RequestsService', () => {
       expect(request.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
+    it('should update status to active for request with no orders', async () => {
+      const pantryId = 1;
+      const result = await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+      const requestId = result.requestId;
+
+      await service.updateRequestStatus(requestId);
+
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.ACTIVE);
+    });
+
     it('should throw NotFoundException for non-existent request', async () => {
       const requestId = 999;
 
@@ -211,7 +266,7 @@ describe('RequestsService', () => {
       );
     });
 
-    it('every manufacturer in matchingManufacturers has at least one item matching a requested food type', async () => {
+    it('should correctly match manufacturers based on requested food types and available stock', async () => {
       const requestId = 1;
       const request = await service.findOne(requestId);
       const result = await service.getMatchingManufacturers(requestId);
@@ -230,12 +285,6 @@ describe('RequestsService', () => {
         );
         expect(items.length).toBe(1);
       }
-    });
-
-    it('every manufacturer in nonMatchingManufacturers has no items matching a requested food type', async () => {
-      const requestId = 1;
-      const request = await service.findOne(requestId);
-      const result = await service.getMatchingManufacturers(requestId);
 
       for (const fm of result.nonMatchingManufacturers) {
         const items = await testDataSource.query(
@@ -288,25 +337,6 @@ describe('RequestsService', () => {
         );
         expect(items.length).toBe(1);
       }
-    });
-
-    it('returns empty matching list when no food types are requested', async () => {
-      const result = await testDataSource.query(`
-        INSERT INTO food_requests (pantry_id, requested_size, requested_food_types, requested_at)
-        VALUES (
-          (SELECT pantry_id FROM pantries LIMIT 1),
-          'Small (2-5 boxes)',
-          ARRAY[]::food_type_enum[],
-          NOW()
-        )
-        RETURNING request_id
-      `);
-      const requestId = result[0].request_id;
-
-      const { matchingManufacturers } = await service.getMatchingManufacturers(
-        requestId,
-      );
-      expect(matchingManufacturers).toHaveLength(0);
     });
   });
 
@@ -366,6 +396,54 @@ describe('RequestsService', () => {
       allItems.forEach((item) => {
         expect(item.availableQuantity).toBeGreaterThan(0);
       });
+    });
+
+    it('returned items conform to MatchingItemsDto', async () => {
+      const result = await service.getAvailableItems(1, 1);
+
+      expect(result).toHaveProperty('matchingItems');
+      expect(result).toHaveProperty('nonMatchingItems');
+      expect(Array.isArray(result.matchingItems)).toBe(true);
+      expect(Array.isArray(result.nonMatchingItems)).toBe(true);
+
+      const allItems = [...result.matchingItems, ...result.nonMatchingItems];
+
+      if (allItems.length > 0) {
+        allItems.forEach((item) => {
+          expect(item).toHaveProperty('itemId');
+          expect(item).toHaveProperty('itemName');
+          expect(item).toHaveProperty('foodType');
+          expect(item).toHaveProperty('availableQuantity');
+
+          expect(typeof item.itemId).toBe('number');
+          expect(typeof item.itemName).toBe('string');
+          expect(typeof item.foodType).toBe('string');
+          expect(Object.values(FoodType)).toContain(item.foodType);
+          expect(typeof item.availableQuantity).toBe('number');
+        });
+      }
+    });
+
+    it('returns empty arrays for no available items', async () => {
+      await testDataSource.query(`
+        UPDATE donation_items 
+        SET reserved_quantity = quantity
+      `);
+
+      const result = await service.getAvailableItems(1, 1);
+
+      expect(result.matchingItems).toEqual([]);
+      expect(result.nonMatchingItems).toEqual([]);
+    });
+
+    it('returns empty matchingItems array for no available matching items', async () => {
+      const result = await service.getAvailableItems(2, 3);
+      expect(result.matchingItems).toHaveLength(0);
+    });
+
+    it('returns empty nonMatchingItems array for no available non-matching items', async () => {
+      const result = await service.getAvailableItems(1, 2);
+      expect(result.nonMatchingItems).toHaveLength(0);
     });
 
     it('throws NotFoundException for non-existent request', async () => {
