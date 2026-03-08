@@ -29,9 +29,10 @@ export class OrdersService {
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.request', 'request')
-      .leftJoinAndSelect('request.pantry', 'pantry')
-      .leftJoinAndSelect('pantry.volunteers', 'volunteers')
+      .leftJoin('order.request', 'request')
+      .leftJoin('request.pantry', 'pantry')
+      .leftJoin('pantry.volunteers', 'volunteers')
+      .leftJoin('order.assignee', 'assignee')
       .select([
         'order.orderId',
         'order.status',
@@ -43,6 +44,9 @@ export class OrdersService {
         'volunteers.id',
         'volunteers.firstName',
         'volunteers.lastName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
       ]);
 
     if (filters?.status) {

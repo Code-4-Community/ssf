@@ -664,7 +664,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         alignItems="center"
                         justifyContent="center"
                       >
-                        {volunteers && volunteers.length > 0 ? (
+                        {order.assignee ? (
                           <Box
                             key={index}
                             borderRadius="full"
@@ -677,9 +677,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                             color="white"
                             p={2}
                           >
-                            {/* TODO: Change logic later to only get one volunteer */}
-                            {volunteers[0].firstName.charAt(0).toUpperCase()}
-                            {volunteers[0].lastName.charAt(0).toUpperCase()}
+                            {order.assignee?.firstName.charAt(0).toUpperCase()}
+                            {order.assignee?.lastName.charAt(0).toUpperCase()}
                           </Box>
                         ) : (
                           <Box>No Assignees</Box>
@@ -706,7 +705,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="left"
-                      color="neutral.700"
+                      bg="#FAFAFA"
                     >
                       {/* TODO: IMPLEMENT WHAT GOES HERE */}
                     </Table.Cell>
