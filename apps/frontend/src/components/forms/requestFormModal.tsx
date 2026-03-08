@@ -53,10 +53,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     if (isOpen && previousRequest) {
       setSelectedItems(previousRequest.requestedItems || []);
       setRequestedSize(previousRequest.requestedSize || '');
-      setAdditionalNotes(
-        previousRequest.additionalInformation ||
-          'No additional information supplied',
-      );
+      setAdditionalNotes(previousRequest.additionalInformation || '');
+    } else {
+      setSelectedItems([]);
+      setRequestedSize('');
+      setAdditionalNotes('');
     }
   }, [isOpen, previousRequest]);
 
