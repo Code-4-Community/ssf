@@ -15,6 +15,10 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { FoodRequestStatus } from '../foodRequests/types';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 
 @Injectable()
 export class OrdersService {
@@ -22,6 +26,8 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     private requestsService: RequestsService,
+    private manufacturerService: FoodManufacturersService,
+    private donationItemsService: DonationItemsService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -68,6 +74,66 @@ export class OrdersService {
     return this.repo.find({
       where: { status: OrderStatus.DELIVERED },
     });
+  }
+
+  async create(orderData: CreateOrderDto): Promise<Order> {
+    const requestId = orderData.foodRequestId;
+    const manufacturerId = orderData.manufacturerId;
+
+    validateId(manufacturerId, 'Food Manufacturer');
+    validateId(requestId, 'Food Request');
+
+    const request = await this.requestsService.findOne(requestId);
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(`Request ${requestId} is not active`);
+    }
+
+    // Ensure all donation items belong to specified manufacturer
+
+    const donations = this.manufacturerService.getFMDonations(manufacturerId);
+    const donationIds = (await donations).map((d) => d.donationId);
+
+    const donationItems =
+      await this.donationItemsService.getDonationItemsByDonationIds(
+        donationIds,
+      );
+    const validDonationItemIds = new Set(donationItems.map((d) => d.itemId));
+
+    for (const [itemId, quantity] of Object.entries(orderData.donationItems)) {
+      const id = Number(itemId);
+      const count = Number(quantity);
+
+      if (!validDonationItemIds.has(id)) {
+        throw new BadRequestException(
+          `Donation item ${id} does not belong to this manufacturer`,
+        );
+      }
+
+      const donationItem = donationItems.find((d) => d.itemId === id);
+
+      if (!donationItem) {
+        throw new NotFoundException(`Couldn't find donation item ${id} `);
+      }
+
+      if (count > donationItem.quantity - donationItem.reservedQuantity) {
+        throw new BadRequestException(
+          `Donation item ${id} allocated quantity exceeds remaining quantity`,
+        );
+      }
+    }
+
+    const order = this.repo.create({
+      requestId: requestId,
+      foodManufacturerId: manufacturerId,
+      status: OrderStatus.PENDING,
+    });
+
+    return this.repo.save(order);
   }
 
   async findOne(orderId: number): Promise<Order> {

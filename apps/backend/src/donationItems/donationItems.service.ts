@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
@@ -16,6 +16,18 @@ export class DonationItemsService {
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
     return this.repo.find({ where: { donation: { donationId } } });
+  }
+
+  async getDonationItemsByDonationIds(
+    donationIds: number[],
+  ): Promise<DonationItem[]> {
+    return this.repo.find({
+      where: {
+        donation: {
+          donationId: In(donationIds),
+        },
+      },
+    });
   }
 
   async create(

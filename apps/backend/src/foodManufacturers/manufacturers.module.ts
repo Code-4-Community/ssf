@@ -13,5 +13,6 @@ import { Donation } from '../donations/donations.entity';
   ],
   controllers: [FoodManufacturersController],
   providers: [FoodManufacturersService],
+  exports: [FoodManufacturersService],
 })
 export class ManufacturerModule {}

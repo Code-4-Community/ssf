@@ -10,15 +10,27 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { AWSS3Module } from '../aws/aws-s3.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { RequestsModule } from '../foodRequests/request.module';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
+import { DonationItemsModule } from '../donationItems/donationItems.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, Pantry, FoodRequest]),
+    TypeOrmModule.forFeature([
+      Order,
+      Pantry,
+      FoodRequest,
+      FoodManufacturer,
+      DonationItem,
+    ]),
     AllocationModule,
     forwardRef(() => AuthModule),
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     forwardRef(() => RequestsModule),
+    ManufacturerModule,
+    DonationItemsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

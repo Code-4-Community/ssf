@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
+  Post,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -25,6 +26,7 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CreateOrderDto } from './dtos/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -84,6 +86,37 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {
     return this.ordersService.findOrderDetails(orderId);
+  }
+
+  @Post('/create')
+  @ApiBody({
+    description: 'Details for creating a order',
+    schema: {
+      type: 'object',
+      properties: {
+        requestId: { type: 'integer', example: 1 },
+        manufacturerId: { type: 'integer', example: 1 },
+        donationItems: {
+          type: 'object',
+          description: 'Map of donationItemId -> quantity',
+          additionalProperties: {
+            type: 'integer',
+            example: 10,
+          },
+          example: {
+            '5': 10,
+            '8': 3,
+            '12': 7,
+          },
+        },
+      },
+    },
+  })
+  async createOrder(
+    @Body(new ValidationPipe())
+    orderData: CreateOrderDto,
+  ): Promise<Order> {
+    return this.ordersService.create(orderData);
   }
 
   @Get('/order/:requestId')
