@@ -8,7 +8,7 @@ import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { validateId } from '../utils/validation.utils';
+import { sanitizeUrl, validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -281,6 +281,16 @@ export class OrdersService {
       throw new BadRequestException(
         'At least one of tracking link or shipping cost must be provided',
       );
+    }
+
+    if (dto.trackingLink) {
+      const sanitized = sanitizeUrl(dto.trackingLink);
+      if (!sanitized) {
+        throw new BadRequestException(
+          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
+        );
+      }
+      dto.trackingLink = sanitized;
     }
 
     const order = await this.repo.findOneBy({ orderId });
