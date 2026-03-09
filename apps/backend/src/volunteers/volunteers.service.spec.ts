@@ -12,6 +12,12 @@ import { Order } from '../orders/order.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthService } from '../auth/auth.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationService } from '../donations/donations.service';
+import { Donation } from '../donations/donations.entity';
 
 jest.setTimeout(60000);
 
@@ -31,6 +37,9 @@ describe('VolunteersService', () => {
         PantriesService,
         OrdersService,
         RequestsService,
+        FoodManufacturersService,
+        DonationItemsService,
+        DonationService,
         {
           provide: AuthService,
           useValue: {
@@ -52,6 +61,18 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
         },
       ],
     }).compile();
