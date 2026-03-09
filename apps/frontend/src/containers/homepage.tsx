@@ -30,11 +30,6 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-overview">Pantry Overview</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
                 <RouterLink to="/pantry-dashboard">Pantry Dashboard</RouterLink>
               </Link>
             </ListItem>

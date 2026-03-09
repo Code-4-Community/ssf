@@ -10,7 +10,7 @@ export function useGroupedItemsByFoodType(
     return items.reduce((acc: GroupedByFoodType, item) => {
       const existing = acc[item.foodType];
       if (existing) existing.push(item);
-      else acc[item.foodType] = [];
+      else acc[item.foodType] = [item];
       return acc;
     }, {} as GroupedByFoodType);
   }, [items]);
