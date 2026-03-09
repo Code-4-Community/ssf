@@ -6,9 +6,14 @@ import { FoodRequest } from './request.entity';
 import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
-import { Order } from '../orders/order.entity';
+import {
+  DonationItemDetailsDto,
+  MatchingItemsDto,
+  MatchingManufacturersDto,
+} from './dtos/matching.dto';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -80,20 +85,23 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /all-order-details/:requestId', () => {
+  describe('GET /:requestId/order-details', () => {
     it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
       const mockOrderDetails: OrderDetailsDto[] = [
         {
           orderId: 10,
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Rice',
               quantity: 5,
               foodType: FoodType.GRANOLA,
             },
             {
+              id: 2,
               name: 'Beans',
               quantity: 3,
               foodType: FoodType.DRIED_BEANS,
@@ -104,8 +112,10 @@ describe('RequestsController', () => {
           orderId: 11,
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
+          trackingLink: 'examplelink.com',
           items: [
             {
+              id: 1,
               name: 'Milk',
               quantity: 2,
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
@@ -134,7 +144,7 @@ describe('RequestsController', () => {
       const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
         requestedSize: RequestSize.MEDIUM,
-        requestedItems: [
+        requestedFoodTypes: [
           FoodType.DAIRY_FREE_ALTERNATIVES,
           FoodType.DRIED_BEANS,
         ],
@@ -160,8 +170,87 @@ describe('RequestsController', () => {
       expect(mockRequestsService.create).toHaveBeenCalledWith(
         createBody.pantryId,
         createBody.requestedSize,
-        createBody.requestedItems,
+        createBody.requestedFoodTypes,
         createBody.additionalInformation,
+      );
+    });
+  });
+
+  describe('GET /:requestId/matching-manufacturers', () => {
+    it('should call requestsService.getMatchingManufacturers and return grouped manufacturers', async () => {
+      const requestId = 1;
+
+      const mockResult: MatchingManufacturersDto = {
+        matchingManufacturers: [
+          {
+            foodManufacturerId: 1,
+            foodManufacturerName: 'Test Manufacturer 1',
+          } as FoodManufacturer,
+          {
+            foodManufacturerId: 2,
+            foodManufacturerName: 'Test Manufacturer 2',
+          } as FoodManufacturer,
+        ],
+        nonMatchingManufacturers: [
+          {
+            foodManufacturerId: 3,
+            foodManufacturerName: 'Non-Matching Manufacturer',
+          } as FoodManufacturer,
+        ],
+      };
+      mockRequestsService.getMatchingManufacturers.mockResolvedValueOnce(
+        mockResult,
+      );
+
+      const result = await controller.getMatchingManufacturers(requestId);
+
+      expect(result).toEqual(mockResult);
+      expect(mockRequestsService.getMatchingManufacturers).toHaveBeenCalledWith(
+        requestId,
+      );
+    });
+  });
+
+  describe('GET /:requestId/matching-manufacturers/:foodManufacturerId/available-items', () => {
+    it('should call requestsService.getAvailableItems and return grouped items', async () => {
+      const requestId = 1;
+      const foodManufacturerId = 1;
+
+      const mockResult: MatchingItemsDto = {
+        matchingItems: [
+          {
+            itemId: 1,
+            itemName: 'Granola',
+            foodType: FoodType.GRANOLA,
+            availableQuantity: 10,
+          } as DonationItemDetailsDto,
+          {
+            itemId: 2,
+            itemName: 'Dried Beans',
+            foodType: FoodType.DRIED_BEANS,
+            availableQuantity: 5,
+          } as DonationItemDetailsDto,
+        ],
+        nonMatchingItems: [
+          {
+            itemId: 3,
+            itemName: 'Dairy Free Alternatives',
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+            availableQuantity: 8,
+          } as DonationItemDetailsDto,
+        ],
+      };
+      mockRequestsService.getAvailableItems.mockResolvedValueOnce(mockResult);
+
+      const result = await controller.getAvailableItemsForManufacturer(
+        requestId,
+        foodManufacturerId,
+      );
+
+      expect(result).toEqual(mockResult);
+      expect(mockRequestsService.getAvailableItems).toHaveBeenCalledWith(
+        requestId,
+        foodManufacturerId,
       );
     });
   });

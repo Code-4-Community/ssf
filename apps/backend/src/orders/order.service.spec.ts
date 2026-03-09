@@ -5,12 +5,16 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { RequestsService } from '../foodRequests/request.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -43,6 +47,14 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
       ],
     }).compile();
@@ -131,6 +143,62 @@ describe('OrdersService', () => {
         'Westside Community Kitchen',
       );
       expect(orders[0].status).toBe(OrderStatus.DELIVERED);
+    });
+  });
+
+  describe('findOrderDetails', () => {
+    it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
+      const orderId = 1;
+
+      const result = await service.findOrderDetails(orderId);
+
+      const expected: OrderDetailsDto = {
+        orderId: 1,
+        status: OrderStatus.DELIVERED,
+        foodManufacturerName: 'FoodCorp Industries',
+        trackingLink: 'www.samplelink/samplelink',
+        items: [
+          {
+            id: 1,
+            foodType: FoodType.SEED_BUTTERS,
+            name: 'Peanut Butter (16oz)',
+            quantity: 10,
+          },
+          {
+            id: 2,
+            foodType: FoodType.GLUTEN_FREE_BREAD,
+            name: 'Whole Wheat Bread',
+            quantity: 25,
+          },
+          {
+            id: 3,
+            foodType: FoodType.REFRIGERATED_MEALS,
+            name: 'Canned Green Beans',
+            quantity: 5,
+          },
+        ],
+      };
+
+      expect(result).toMatchObject({
+        orderId: expected.orderId,
+        status: expected.status,
+        foodManufacturerName: expected.foodManufacturerName,
+        trackingLink: expected.trackingLink,
+      });
+
+      expect(result.items).toHaveLength(expected.items.length);
+      expect(result.items).toEqual(expect.arrayContaining(expected.items));
+    });
+
+    it('throws NotFoundException when order does not exist', async () => {
+      const missingOrderId = 99999999;
+
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        `Order ${missingOrderId} not found`,
+      );
     });
   });
 

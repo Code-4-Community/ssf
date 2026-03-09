@@ -1,12 +1,7 @@
 import apiClient from '@api/apiClient';
-import {
-  FoodRequest,
-  FoodTypes,
-  OrderDetails,
-  OrderItemDetails,
-} from 'types/types';
+import { FoodRequest, GroupedByFoodType, OrderDetails } from 'types/types';
 import { OrderStatus } from '../../types/types';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   Box,
@@ -23,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 
 interface RequestDetailsModalProps {
   request: FoodRequest;
@@ -42,7 +38,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const requestedSize = request.requestedSize;
-  const selectedItems = request.requestedItems;
+  const selectedFoodTypes = request.requestedFoodTypes;
   const additionalNotes = request.additionalInformation;
 
   useEffect(() => {
@@ -81,18 +77,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     currentOrder = orderDetailsList[currentPage - 1];
   }
 
-  const groupedOrderItemsByType = useMemo(() => {
-    if (!currentOrder) return {};
-
-    return currentOrder.items.reduce(
-      (acc: Record<(typeof FoodTypes)[number], OrderItemDetails[]>, item) => {
-        if (!acc[item.foodType]) acc[item.foodType] = [];
-        acc[item.foodType].push(item);
-        return acc;
-      },
-      {} as Record<(typeof FoodTypes)[number], OrderItemDetails[]>,
-    );
-  }, [currentOrder]);
+  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
+    currentOrder?.items,
+  );
 
   const sectionTitleStyles = {
     textStyle: 'p2',
@@ -176,7 +163,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Text>
                   </Field.Label>
 
-                  <TagGroup values={selectedItems} />
+                  <TagGroup values={selectedFoodTypes} />
                 </Field.Root>
 
                 <Field.Root mb={4}>
@@ -232,51 +219,48 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         </Badge>
                       )}
                     </Flex>
-                    {Object.entries(
-                      groupedOrderItemsByType as Record<
-                        string,
-                        OrderItemDetails[]
-                      >,
-                    ).map(([foodType, items]) => (
-                      <Box key={foodType} mb={4}>
-                        <Text {...sectionTitleStyles}>{foodType}</Text>
-                        {items.map((item) => (
-                          <Flex
-                            border="1px solid"
-                            borderColor="neutral.100"
-                            borderRadius="md"
-                            px={4}
-                            align="center"
-                            mt="2"
-                          >
-                            <Text
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
-                              flex={1}
-                            >
-                              {item.name}
-                            </Text>
-
-                            <Box
-                              alignSelf="stretch"
-                              borderLeft="1px solid"
+                    {Object.entries(groupedOrderItemsByType).map(
+                      ([foodType, items]) => (
+                        <Box key={foodType} mb={4}>
+                          <Text {...sectionTitleStyles}>{foodType}</Text>
+                          {items.map((item) => (
+                            <Flex
+                              border="1px solid"
                               borderColor="neutral.100"
-                              mx={3}
-                            />
-
-                            <Text
-                              minW={5}
-                              py={2}
-                              textStyle="p2"
-                              color="neutral.800"
+                              borderRadius="md"
+                              px={4}
+                              align="center"
+                              mt="2"
                             >
-                              {item.quantity}
-                            </Text>
-                          </Flex>
-                        ))}
-                      </Box>
-                    ))}
+                              <Text
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                                flex={1}
+                              >
+                                {item.name}
+                              </Text>
+
+                              <Box
+                                alignSelf="stretch"
+                                borderLeft="1px solid"
+                                borderColor="neutral.100"
+                                mx={3}
+                              />
+
+                              <Text
+                                minW={5}
+                                py={2}
+                                textStyle="p2"
+                                color="neutral.800"
+                              >
+                                {item.quantity}
+                              </Text>
+                            </Flex>
+                          ))}
+                        </Box>
+                      ),
+                    )}
                     <Text {...sectionTitleStyles} mt="3">
                       Tracking
                     </Text>

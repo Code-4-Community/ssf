@@ -6,8 +6,15 @@ import { validateId } from '../utils/validation.utils';
 import { FoodRequestStatus, RequestSize } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
-import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { OrderStatus } from '../orders/types';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import {
+  MatchingItemsDto,
+  MatchingManufacturersDto,
+} from './dtos/matching.dto';
+import { FoodType } from '../donationItems/types';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class RequestsService {
@@ -15,6 +22,10 @@ export class RequestsService {
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
+    @InjectRepository(FoodManufacturer)
+    private foodManufacturerRepo: Repository<FoodManufacturer>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -52,21 +63,13 @@ export class RequestsService {
       },
     });
 
-    if (!orders) {
-      throw new NotFoundException(
-        'No associated orders found for this request',
-      );
-    }
-
-    if (!orders.length) {
-      return [];
-    }
-
     return orders.map((order) => ({
       orderId: order.orderId,
       status: order.status,
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
+      trackingLink: order.trackingLink,
       items: order.allocations.map((allocation) => ({
+        id: allocation.item.itemId,
         name: allocation.item.itemName,
         quantity: allocation.allocatedQuantity,
         foodType: allocation.item.foodType,
@@ -74,10 +77,123 @@ export class RequestsService {
     }));
   }
 
+  async getMatchingManufacturers(
+    requestId: number,
+  ): Promise<MatchingManufacturersDto> {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({ where: { requestId } });
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    const requestedFoodTypes = request.requestedFoodTypes;
+
+    const rows: (FoodManufacturer & { matching: boolean })[] =
+      await this.foodManufacturerRepo
+        .createQueryBuilder('fm')
+        .addSelect(
+          `EXISTS (
+          SELECT 1
+          FROM donations d
+          JOIN donation_items di ON d.donation_id = di.donation_id
+          WHERE d.food_manufacturer_id = fm.food_manufacturer_id
+            AND di.food_type = ANY(:requestedFoodTypes)
+            AND di.reserved_quantity < di.quantity
+        )`,
+          'matching',
+        )
+        .where(
+          `EXISTS (
+          SELECT 1
+          FROM donations d
+          JOIN donation_items di ON d.donation_id = di.donation_id
+          WHERE d.food_manufacturer_id = fm.food_manufacturer_id
+            AND di.reserved_quantity < di.quantity
+        )`,
+          { requestedFoodTypes },
+        )
+        .getRawAndEntities()
+        .then(({ raw, entities }) =>
+          entities.map((fm, i) => ({
+            ...fm,
+            matching: raw[i].matching as boolean,
+          })),
+        );
+
+    const matchingManufacturers: typeof rows = [];
+    const nonMatchingManufacturers: typeof rows = [];
+
+    for (const fm of rows) {
+      if (fm.matching) {
+        matchingManufacturers.push(fm);
+      } else {
+        nonMatchingManufacturers.push(fm);
+      }
+    }
+
+    return {
+      matchingManufacturers,
+      nonMatchingManufacturers,
+    };
+  }
+
+  async getAvailableItems(
+    requestId: number,
+    foodManufacturerId: number,
+  ): Promise<MatchingItemsDto> {
+    validateId(requestId, 'Request');
+    validateId(foodManufacturerId, 'Manufacturer');
+
+    const request = await this.repo.findOne({ where: { requestId } });
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    const manufacturer = await this.foodManufacturerRepo.findOne({
+      where: { foodManufacturerId },
+    });
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    const availableItems = await this.donationItemRepo
+      .createQueryBuilder('di')
+      .select([
+        'di.item_id AS "itemId"',
+        'di.item_name AS "itemName"',
+        'di.food_type AS "foodType"',
+        '(di.quantity - di.reserved_quantity) AS "availableQuantity"',
+      ])
+      .innerJoin('di.donation', 'd')
+      .where('d.food_manufacturer_id = :foodManufacturerId', {
+        foodManufacturerId,
+      })
+      .andWhere('di.reserved_quantity < di.quantity')
+      .getRawMany();
+
+    const requestedFoodTypes = new Set(request.requestedFoodTypes);
+
+    const matchingItems: typeof availableItems = [];
+    const nonMatchingItems: typeof availableItems = [];
+
+    for (const item of availableItems) {
+      if (requestedFoodTypes.has(item.foodType)) {
+        matchingItems.push(item);
+      } else {
+        nonMatchingItems.push(item);
+      }
+    }
+
+    return { matchingItems, nonMatchingItems };
+  }
+
   async create(
     pantryId: number,
     requestedSize: RequestSize,
-    requestedItems: string[],
+    requestedFoodTypes: FoodType[],
     additionalInformation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
@@ -90,7 +206,7 @@ export class RequestsService {
     const foodRequest = this.repo.create({
       pantryId,
       requestedSize,
-      requestedItems,
+      requestedFoodTypes,
       additionalInformation,
     });
 

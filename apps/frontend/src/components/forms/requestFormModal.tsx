@@ -13,7 +13,7 @@ import {
 import {
   CreateFoodRequestBody,
   FoodRequest,
-  FoodTypes,
+  FoodType,
   RequestSize,
 } from '../../types/types';
 import { ChevronDownIcon } from 'lucide-react';
@@ -36,7 +36,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   pantryId,
   onSuccess,
 }) => {
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
   const [alert, setAlert] = useState<{
@@ -47,11 +47,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     message: '',
   });
 
-  const isFormValid = requestedSize !== '' && selectedItems.length > 0;
+  const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
 
   useEffect(() => {
     if (isOpen && previousRequest) {
-      setSelectedItems(previousRequest.requestedItems || []);
+      setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
       setRequestedSize(previousRequest.requestedSize || '');
       setAdditionalNotes(
         previousRequest.additionalInformation ||
@@ -65,7 +65,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       pantryId,
       requestedSize: requestedSize as RequestSize,
       additionalInformation: additionalNotes || undefined,
-      requestedItems: selectedItems,
+      requestedFoodTypes: selectedFoodTypes,
     };
 
     try {
@@ -184,7 +184,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                       textStyle="p2"
                     >
-                      {selectedItems.length > 0
+                      {selectedFoodTypes.length > 0
                         ? `Select more food types`
                         : 'Select food types'}
                       <ChevronDownIcon />
@@ -193,16 +193,16 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
                   <Menu.Positioner w="full">
                     <Menu.Content maxH="200px" overflowY="auto">
-                      {FoodTypes.map((allergen) => {
-                        const isChecked = selectedItems.includes(allergen);
+                      {Object.values(FoodType).map((allergen) => {
+                        const isChecked = selectedFoodTypes.includes(allergen);
                         return (
                           <Menu.CheckboxItem
                             key={allergen}
                             checked={isChecked}
                             onCheckedChange={(checked: boolean) => {
-                              setSelectedItems((prev) =>
+                              setSelectedFoodTypes((prev) =>
                                 checked
-                                  ? [...prev, allergen]
+                                  ? [...prev, allergen as FoodType]
                                   : prev.filter((i) => i !== allergen),
                               );
                             }}
@@ -236,9 +236,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                 </Menu.Root>
 
                 <TagGroup
-                  values={selectedItems}
+                  values={selectedFoodTypes}
                   onRemove={(value) =>
-                    setSelectedItems((prev) => prev.filter((i) => i !== value))
+                    setSelectedFoodTypes((prev) =>
+                      prev.filter((i) => i !== value),
+                    )
                   }
                 />
               </Field.Root>
