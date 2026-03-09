@@ -15,13 +15,14 @@ import { User } from './users.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { Roles } from '../auth/roles.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Roles(Role.VOLUNTEER)
+  @UseGuards(JwtAuthGuard)
   @Get('/my-id')
   getCurrentUserId(@Req() req: AuthenticatedRequest): number {
     return req.user.id;
