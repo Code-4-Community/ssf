@@ -15,6 +15,7 @@ import {
 import { Upload } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
 import apiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface OrderReceivedActionModalProps {
   orderId: number;
@@ -31,7 +32,13 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    isError: boolean;
+    message: string;
+  }>({
+    isError: true,
+    message: '',
+  });
   const [feedback, setFeedback] = useState<string>('');
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
@@ -39,7 +46,6 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const isFormValid = dateReceived !== '';
 
   const resetForm = () => {
-    setAlertMessage('');
     setFeedback('');
     setDateReceived('');
     setPhotos([]);
@@ -54,12 +60,12 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
       await apiClient.confirmOrderDelivery(orderId, dto, photos);
 
-      setAlertMessage('Delivery Confirmed');
+      setAlert({ isError: false, message: 'Delivery Confirmed' });
       resetForm();
       onSuccess();
       onClose();
     } catch (err) {
-      setAlertMessage('Delivery could not be confirmed.');
+      setAlert({ isError: true, message: 'Delivery could not be confirmed.' });
       resetForm();
       onClose();
     }
@@ -74,10 +80,11 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
-        // TODO: add Justin's alert component/uncomment below out and remove text component
-        // <FloatingAlert message={alertMessage} status="error" timeout={6000} />
-        <Text>{alertMessage}</Text>
+      {alert.message && alert.isError && (
+        <FloatingAlert message={alert.message} status="error" timeout={6000} />
+      )}
+      {alert.message && !alert.isError && (
+        <FloatingAlert message={alert.message} status="info" timeout={6000} />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -95,7 +102,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
           <Dialog.Body>
             <Text
               mb={5}
-              color="#52525B"
+              color="neutral.800"
               textStyle="p2"
               pt={0}
               mt={2}
@@ -146,7 +153,10 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     if (words.length <= 250) {
                       setFeedback(e.target.value);
                     } else {
-                      alert('Exceeded word limit');
+                      setAlert({
+                        isError: true,
+                        message: 'Exceeded word limit',
+                      });
                     }
                   }}
                 />
@@ -166,8 +176,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   accept={['image/png', 'image/jpeg', 'image/jpg']}
                   alignItems="stretch"
                   maxFiles={MAX_FILES}
-                  onFileChange={(e: any) => {
-                    const files: File[] = e?.acceptedFiles ?? [];
+                  onFileChange={(e: { acceptedFiles?: File[] }) => {
+                    const files: File[] = e.acceptedFiles ?? [];
                     setPhotos(files);
                   }}
                 >
@@ -207,7 +217,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
                 <Button
                   onClick={handleSubmit}
-                  bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                  bg={isFormValid ? 'blue.hover' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
                 >

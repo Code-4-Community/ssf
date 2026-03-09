@@ -18,11 +18,14 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { Order, OrderStatus } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
+import { FloatingAlert } from '@components/floatingAlert';
 
-type OrderWithColor = OrderSummary & { assigneeColor?: string };
+type OrderWithColor = Order & { assigneeColor?: string };
+type StatusWithColors = [status: OrderStatus, colors: [string, string]];
+const MAX_PER_STATUS = 5;
 
 const PantryOrderManagement: React.FC = () => {
   // State to hold orders grouped by status
@@ -34,7 +37,7 @@ const PantryOrderManagement: React.FC = () => {
     [OrderStatus.DELIVERED]: [],
   });
 
-  // State to hold selected order for details modal TODO: will be used for order details modal
+  // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   // State to hold selected order for action modal
@@ -51,14 +54,14 @@ const PantryOrderManagement: React.FC = () => {
     },
   );
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
   // State to hold filter state per status
   type FilterState = {
     sortAsc: boolean;
   };
 
   // Record to store the filter state for each status
-  // selectedPantries represents the pantries selected in the filter
-  // searchPantry is the current search input for pantry filtering
   // sortAsc indicates whether the sorting is ascending (oldest first) or descending (newest first)
   // We store all these here to determine what orders to display for each status
   const [filterStates, setFilterStates] = useState<
@@ -75,20 +78,12 @@ const PantryOrderManagement: React.FC = () => {
     },
   });
 
-  const STATUS_ORDER = [
-    OrderStatus.SHIPPED,
-    OrderStatus.PENDING,
-    OrderStatus.DELIVERED,
-  ];
-
-  // Color mapping for statuses
+  // Color mapping for statuses, the first color is background, the second is color for status text
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.SHIPPED, ['#FEECD1', '#9C5D00']],
-    [OrderStatus.PENDING, ['#D5DCDF', '#2B4E60']],
-    [OrderStatus.DELIVERED, ['#D4EAED', '#19717D']],
+    [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
+    [OrderStatus.PENDING, ['blue.200', 'blue.core']],
+    [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
   ]);
-
-  const MAX_PER_STATUS = 5;
 
   const fetchOrders = async () => {
     try {
@@ -119,7 +114,7 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch (error) {
-      alert('Error fetching orders: ' + error);
+      setAlertMessage('Error fetching orders: ' + error);
     }
   };
 
@@ -145,7 +140,11 @@ const PantryOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {STATUS_ORDER.map((status) => {
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      )}
+
+      {Object.values(OrderStatus).map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
@@ -167,8 +166,7 @@ const PantryOrderManagement: React.FC = () => {
           <Box key={status} mb={12}>
             <OrderStatusSection
               orders={displayedOrders}
-              status={status}
-              colors={STATUS_COLORS.get(status)!}
+              statusWithColors={[status, STATUS_COLORS.get(status)!]}
               selectedActionOrderId={selectedActionOrderId}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
@@ -196,8 +194,7 @@ const PantryOrderManagement: React.FC = () => {
 
 interface OrderStatusSectionProps {
   orders: OrderWithColor[];
-  status: OrderStatus;
-  colors: string[];
+  statusWithColors: StatusWithColors;
   onOrderSelect: (orderId: number | null) => void;
   onOrderSelectForAction: (orderId: number | null) => void;
   selectedOrderId: number | null;
@@ -214,8 +211,7 @@ interface OrderStatusSectionProps {
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   orders,
-  status,
-  colors,
+  statusWithColors,
   onOrderSelect,
   onOrderSelectForAction,
   selectedActionOrderId,
@@ -227,9 +223,10 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   onFilterChange,
   onSuccess,
 }) => {
+  const [status, colors] = statusWithColors;
+
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
 
   const tableHeaderStyles = {
@@ -431,12 +428,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {orders.map((order, index) => {
+              {orders.map((order) => {
                 return (
-                  <Table.Row
-                    key={`${order.orderId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
-                  >
+                  <Table.Row key={order.orderId} _hover={{ bg: 'gray.50' }}>
                     <Table.Cell
                       {...tableCellStyles}
                       borderRight="1px solid"
@@ -491,7 +485,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRightColor="neutral.100"
                     >
                       {formatDate(order.createdAt)}-
-                      {order.deliveredAt && formatDate(order.deliveredAt)}
+                      {order.deliveredAt &&
+                        formatDate(new Date(order.deliveredAt).toISOString())}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

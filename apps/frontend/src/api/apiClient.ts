@@ -23,6 +23,7 @@ import {
   OrderDetails,
   ConfirmDeliveryDto,
   FoodRequestSummaryDto,
+  OrderWithoutRelations,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -159,7 +160,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getPantryOrders(pantryId: number): Promise<OrderSummary[]> {
+  public async getPantryOrders(pantryId: number): Promise<Order[]> {
     return this.axiosInstance
       .get(`/api/pantries/${pantryId}/orders`)
       .then((response) => response.data);
@@ -222,7 +223,7 @@ export class ApiClient {
     orderId: number,
     dto: ConfirmDeliveryDto,
     photos: File[],
-  ): Promise<Order> {
+  ): Promise<OrderWithoutRelations> {
     const formData = new FormData();
 
     // DTO fields
@@ -310,27 +311,6 @@ export class ApiClient {
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
     const data = await this.get(`/api/requests/${pantryId}/all`);
     return data as FoodRequest[];
-  }
-
-  public async confirmDelivery(
-    requestId: number,
-    data: FormData,
-  ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form';
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
   }
 
   public async getCurrentUserPantryId(): Promise<number> {

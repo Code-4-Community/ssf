@@ -245,6 +245,21 @@ export interface Order {
   photos?: string[];
 }
 
+export interface OrderWithoutRelations {
+  orderId: number;
+  requestId: number;
+  foodManufacturerId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  trackingLink?: string;
+  shippingCost?: number;
+  dateReceived?: string;
+  feedback?: string;
+  photos?: string[];
+}
+
 export interface OrderItemDetails {
   id: number;
   name: string;

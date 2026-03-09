@@ -85,7 +85,7 @@ const AdminOrderManagement: React.FC = () => {
     },
   });
 
-  // Color mapping for statuses
+  // Color mapping for statuses, the first color is background, the second is color for status text
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
     [OrderStatus.PENDING, ['yellow.200', 'yellow.hover']],
     [OrderStatus.SHIPPED, ['blue.200', 'blue.core']],
