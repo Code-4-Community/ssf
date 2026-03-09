@@ -20,7 +20,6 @@ import ApiClient from '@api/apiClient';
 import {
   DayOfWeek,
   FoodType,
-  FoodTypes,
   RecurrenceEnum,
   RepeatOnState,
 } from '../../types/types';
@@ -416,7 +415,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 handleChange(row.id, 'foodType', e.target.value)
                               }
                             >
-                              {FoodTypes.map((type) => (
+                              {Object.values(FoodType).map((type) => (
                                 <option key={type} value={type}>
                                   {type}
                                 </option>
