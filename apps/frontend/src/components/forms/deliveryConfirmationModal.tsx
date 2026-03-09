@@ -172,10 +172,11 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   }
 
   try {
-    await ApiClient.confirmDelivery(
-      parseInt(requestId, 10),
-      confirmDeliveryData,
-    );
+    // confirm delivery endpoint is deprecated and has been deleted. TODO: refactor this
+    // await ApiClient.confirmDelivery(
+    //   parseInt(requestId, 10),
+    //   confirmDeliveryData,
+    // );
     alert('Delivery confirmation submitted successfully');
   } catch (error) {
     alert(`Error submitting delivery confirmation: ${error}`);
