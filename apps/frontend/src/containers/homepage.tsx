@@ -91,6 +91,28 @@ const Homepage: React.FC = () => {
 
         <Box w="full">
           <Heading as="h3" size="md" mb={3} textAlign="center">
+            Volunteer View
+          </Heading>
+          <List.Root unstyled gap={2}>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-assigned-pantries">
+                  Assigned Pantries
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-request-management">
+                  Food Request Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+          </List.Root>
+        </Box>
+
+        <Box w="full">
+          <Heading as="h3" size="md" mb={3} textAlign="center">
             Admin View
           </Heading>
           <List.Root unstyled gap={2}>

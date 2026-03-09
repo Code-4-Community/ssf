@@ -8,6 +8,9 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { UsersService } from '../users/users.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { AuthService } from '../auth/auth.service';
+import { RequestsService } from '../foodRequests/request.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Order } from '../orders/order.entity';
 
 jest.setTimeout(60000);
 
@@ -25,6 +28,7 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
+        RequestsService,
         {
           provide: AuthService,
           useValue: {},
@@ -36,6 +40,14 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
+        },
+        {
+          provide: getRepositoryToken(FoodRequest),
+          useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: testDataSource.getRepository(Order),
         },
       ],
     }).compile();
@@ -177,8 +189,8 @@ describe('VolunteersService', () => {
       expect(beforePantryIds).toEqual([2, 3]);
 
       const result = await service.assignPantriesToVolunteer(7, [1, 4]);
-      expect(result.pantries!).toHaveLength(4);
-      const afterPantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(4);
+      const afterPantryIds = result.pantries?.map((p) => p.pantryId);
       expect(afterPantryIds).toEqual([2, 3, 1, 4]);
     });
 
@@ -191,8 +203,8 @@ describe('VolunteersService', () => {
       expect(beforeAssignment).toEqual([]);
 
       const result = await service.assignPantriesToVolunteer(6, [2, 3]);
-      expect(result.pantries!).toHaveLength(2);
-      const pantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(2);
+      const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
 
@@ -203,9 +215,76 @@ describe('VolunteersService', () => {
       expect(beforePantryIds).toEqual([2, 3]);
 
       const result = await service.assignPantriesToVolunteer(7, [2, 3]);
-      expect(result.pantries!).toHaveLength(2);
-      const pantryIds = result.pantries!.map((p) => p.pantryId);
+      expect(result.pantries).toHaveLength(2);
+      const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
+    });
+  });
+
+  describe('findRequestsByVolunteer', () => {
+    it('returned requests include pantry info', async () => {
+      const requests = await service.findRequestsByVolunteer(7);
+      requests.forEach((request) => {
+        expect(request.pantry).toBeDefined();
+        expect(request.pantry).toHaveProperty('pantryName');
+      });
+    });
+
+    it('returns requests only from assigned pantries', async () => {
+      const volunteerId = 6;
+
+      const assignedPantries = await service.getVolunteerPantries(volunteerId);
+      const assignedPantryIds = assignedPantries.map((p) => p.pantryId);
+
+      const requests = await service.findRequestsByVolunteer(volunteerId);
+      requests.forEach((request) => {
+        expect(assignedPantryIds).toContain(request.pantryId);
+      });
+    });
+
+    it('returns empty array when volunteer has no assigned pantries', async () => {
+      const volunteerId = await testDataSource
+        .query(
+          `
+        INSERT INTO users (first_name, last_name, email, phone, role)
+        VALUES ('Test', 'Volunteer', 'test@volunteer.com', '537-280-1238', 'volunteer')
+        RETURNING user_id
+      `,
+        )
+        .then((rows) => rows[0].user_id);
+
+      const result = await service.findRequestsByVolunteer(volunteerId);
+      expect(result).toEqual([]);
+    });
+
+    it('returns empty array when assigned pantries have no requests', async () => {
+      const volunteerId = 8;
+
+      const assignedPantries = await service.getVolunteerPantries(volunteerId);
+      const assignedPantryIds = assignedPantries.map((p) => p.pantryId);
+      await testDataSource.query(
+        `DELETE FROM allocations 
+      WHERE order_id IN (
+        SELECT o.order_id FROM orders o
+        JOIN food_requests fr ON o.request_id = fr.request_id
+        WHERE fr.pantry_id = ANY($1)
+      )`,
+        [assignedPantryIds],
+      );
+      await testDataSource.query(
+        `DELETE FROM orders 
+      WHERE request_id IN (
+        SELECT request_id FROM food_requests WHERE pantry_id = ANY($1)
+      )`,
+        [assignedPantryIds],
+      );
+      await testDataSource.query(
+        `DELETE FROM food_requests WHERE pantry_id = ANY($1)`,
+        [assignedPantryIds],
+      );
+
+      const requests = await service.findRequestsByVolunteer(volunteerId);
+      expect(requests).toEqual([]);
     });
   });
 });

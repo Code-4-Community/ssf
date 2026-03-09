@@ -55,7 +55,7 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
-  @Roles(Role.PANTRY, Role.ADMIN)
+  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,

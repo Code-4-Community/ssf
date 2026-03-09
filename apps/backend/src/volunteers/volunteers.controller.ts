@@ -5,10 +5,15 @@ import {
   ParseIntPipe,
   Post,
   Body,
+  Req,
 } from '@nestjs/common';
 import { User } from '../users/user.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -39,5 +44,15 @@ export class VolunteersController {
     @Body('pantryIds') pantryIds: number[],
   ): Promise<User> {
     return this.volunteersService.assignPantriesToVolunteer(id, pantryIds);
+  }
+
+  @Roles(Role.VOLUNTEER)
+  @Get('/me/assigned-requests')
+  async getAssignedRequests(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<FoodRequest[]> {
+    const currentUser = req.user;
+
+    return this.volunteersService.findRequestsByVolunteer(currentUser.id);
   }
 }

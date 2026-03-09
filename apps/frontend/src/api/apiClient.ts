@@ -279,6 +279,11 @@ export class ApiClient {
     return data as FoodRequest[];
   }
 
+  public async getVolunteerAssignedRequests(): Promise<FoodRequest[]> {
+    const data = await this.get(`/api/volunteers/me/assigned-requests`);
+    return data as FoodRequest[];
+  }
+
   public async confirmDelivery(
     requestId: number,
     data: FormData,

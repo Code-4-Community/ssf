@@ -5,11 +5,7 @@ import {
   ParseIntPipe,
   Post,
   Body,
-  UploadedFiles,
-  UseInterceptors,
-  NotFoundException,
   ValidationPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -40,6 +36,7 @@ export class RequestsController {
     return this.requestsService.find(pantryId);
   }
 
+  @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
