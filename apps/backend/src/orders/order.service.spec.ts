@@ -156,7 +156,7 @@ describe('OrdersService', () => {
         orderId: 1,
         status: OrderStatus.DELIVERED,
         foodManufacturerName: 'FoodCorp Industries',
-        trackingLink: 'www.samplelink/samplelink',
+        trackingLink: 'https://www.samplelink.com/samplelink',
         items: [
           {
             id: 1,
@@ -358,7 +358,7 @@ describe('OrdersService', () => {
   describe('updateTrackingCostInfo', () => {
     it('throws when order is non-existent', async () => {
       const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'test',
+        trackingLink: 'www.test.com',
         shippingCost: 5.99,
       };
 
