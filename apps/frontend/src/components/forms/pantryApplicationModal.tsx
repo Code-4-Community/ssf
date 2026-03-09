@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
-import { Pantry } from 'types/types';
+import { PantryWithUser } from 'types/types';
 
 interface PantryApplicationModalProps {
-  pantry: Pantry;
+  pantry: PantryWithUser;
   isOpen: boolean;
   onClose: () => void;
 }

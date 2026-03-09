@@ -12,7 +12,7 @@ import {
   ManufacturerAttribute,
 } from './manufacturerEnums';
 
-export interface Pantry {
+export interface PantryWithUser {
   pantryId: number;
   pantryName: string;
   shipmentAddressLine1: string;
@@ -54,6 +54,8 @@ export interface Pantry {
   needMoreOptions: string;
   volunteers?: User[];
 }
+
+export type Pantry = Omit<PantryWithUser, 'pantryUser'>;
 
 export interface PantryApplicationDto {
   contactFirstName: string;

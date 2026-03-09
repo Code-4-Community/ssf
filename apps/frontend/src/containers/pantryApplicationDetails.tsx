@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry } from 'types/types';
+import { PantryWithUser } from 'types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -63,18 +63,18 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               {subtitle}
             </Text>
           )}
-          <Button
-            bg="blue.hover"
-            color="white"
-            px={6}
-            _hover={{ bg: 'neutral.800' }}
-            textStyle="p2"
-            fontWeight={600}
-          >
-            {!isLoading && (
+          {!isLoading && (
+            <Button
+              bg="blue.hover"
+              color="white"
+              px={6}
+              _hover={{ bg: 'neutral.800' }}
+              textStyle="p2"
+              fontWeight={600}
+            >
               <Link to="/approve-pantries">Return to applications</Link>
-            )}
-          </Button>
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>
@@ -84,13 +84,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 const PantryApplicationDetails: React.FC = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
-  const [application, setApplication] = useState<Pantry | null>(null);
+  const [application, setApplication] = useState<PantryWithUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{
-    isNetwork: boolean;
+    type: 'network' | 'not_found' | 'invalid' | null;
     message: string;
   }>({
-    isNetwork: false,
+    type: null,
     message: '',
   });
   const [alert, setAlert] = useState<{
@@ -126,21 +126,27 @@ const PantryApplicationDetails: React.FC = () => {
     try {
       setLoading(true);
       if (!applicationId) {
-        setError({ isNetwork: false, message: 'Application ID not provided.' });
+        setError({ type: 'invalid', message: 'Application ID not provided.' });
         return;
       } else if (isNaN(parseInt(applicationId, 10))) {
         setError({
-          isNetwork: false,
+          type: 'invalid',
           message: 'Application ID is not a number.',
         });
       }
       const data = await ApiClient.getPantry(parseInt(applicationId, 10));
+      if (!data) {
+        setError({
+          type: 'not_found',
+          message: 'Application not found.',
+        });
+      }
       setApplication(data);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status !== 404 && err.response?.status !== 400) {
           setError({
-            isNetwork: true,
+            type: 'network',
             message: 'Could not load application details.',
           });
         }
@@ -174,7 +180,9 @@ const PantryApplicationDetails: React.FC = () => {
     if (application) {
       try {
         await ApiClient.updatePantry(application.pantryId, 'deny');
-        navigate('/approve-pantries?action=denied&id=' + application.pantryId);
+        navigate(
+          '/approve-pantries?action=denied&name=' + application.pantryName,
+        );
       } catch {
         setAlert((prev) => ({
           message: 'Error denying application',
@@ -194,22 +202,25 @@ const PantryApplicationDetails: React.FC = () => {
     );
   }
 
-  if (error.message) {
-    return (
-      <EmptyState
-        icon={error.isNetwork ? <WifiOff /> : <TriangleAlert />}
-        title={error.message}
-        subtitle={error.isNetwork ? 'Please try again later.' : undefined}
-      />
-    );
-  }
+  if (error.message || !application) {
+    const getIcon = () => {
+      switch (error.type) {
+        case 'network':
+          return <WifiOff />;
+        case 'not_found':
+          return <FileX />;
+        default:
+          return <TriangleAlert />;
+      }
+    };
 
-  if (!application) {
     return (
       <EmptyState
-        icon={<FileX />}
-        title="Application not found."
-        subtitle="Please try again later."
+        icon={getIcon()}
+        title={error.message}
+        subtitle={
+          error.type === 'network' ? 'Please try again later.' : undefined
+        }
       />
     );
   }
