@@ -15,6 +15,11 @@ import { Role } from '../users/types';
 import { RequestSize } from './types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
+import { FoodType } from '../donationItems/types';
+import {
+  MatchingItemsDto,
+  MatchingManufacturersDto,
+} from './dtos/matching.dto';
 
 @Controller('requests')
 export class RequestsController {
@@ -44,6 +49,23 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
+  @Roles(Role.VOLUNTEER)
+  @Get('/:requestId/matching-manufacturers')
+  async getMatchingManufacturers(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<MatchingManufacturersDto> {
+    return this.requestsService.getMatchingManufacturers(requestId);
+  }
+
+  @Roles(Role.VOLUNTEER)
+  @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
+  async getAvailableItemsForManufacturer(
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+  ): Promise<MatchingItemsDto> {
+    return this.requestsService.getAvailableItems(requestId, manufacturerId);
+  }
+
   @Post('/create')
   @ApiBody({
     description: 'Details for creating a food request',
@@ -56,10 +78,10 @@ export class RequestsController {
           enum: Object.values(RequestSize),
           example: RequestSize.LARGE,
         },
-        requestedItems: {
+        requestedFoodTypes: {
           type: 'array',
-          items: { type: 'string' },
-          example: ['Rice Noodles', 'Quinoa'],
+          items: { type: 'string', enum: Object.values(FoodType) },
+          example: [FoodType.DAIRY_FREE_ALTERNATIVES, FoodType.DRIED_BEANS],
         },
         additionalInformation: {
           type: 'string',
@@ -76,7 +98,7 @@ export class RequestsController {
     return this.requestsService.create(
       requestData.pantryId,
       requestData.requestedSize,
-      requestData.requestedItems,
+      requestData.requestedFoodTypes,
       requestData.additionalInformation,
     );
   }

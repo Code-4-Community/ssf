@@ -11,6 +11,8 @@ import { AuthService } from '../auth/auth.service';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 jest.setTimeout(60000);
 
@@ -48,6 +50,14 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
       ],
     }).compile();
