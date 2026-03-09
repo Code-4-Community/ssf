@@ -16,16 +16,18 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from './dtos/order-details.dto';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 @Controller('orders')
 export class OrdersController {
@@ -81,8 +83,7 @@ export class OrdersController {
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodRequest> {
-    console.log('Handler reached');
+  ): Promise<FoodRequestSummaryDto> {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
@@ -96,8 +97,8 @@ export class OrdersController {
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Order> {
-    return this.ordersService.findOne(orderId);
+  ): Promise<OrderDetailsDto> {
+    return this.ordersService.findOrderDetails(orderId);
   }
 
   @Get('/order/:requestId')
