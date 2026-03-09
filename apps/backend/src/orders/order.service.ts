@@ -160,7 +160,7 @@ export class OrdersService {
           requestId: true,
           pantryId: true,
           requestedSize: true,
-          requestedItems: true,
+          requestedFoodTypes: true,
           additionalInformation: true,
           requestedAt: true,
           status: true,
@@ -181,7 +181,7 @@ export class OrdersService {
       pantryName: order.request.pantry.pantryName,
 
       requestedSize: order.request.requestedSize,
-      requestedItems: order.request.requestedItems,
+      requestedFoodTypes: order.request.requestedFoodTypes,
 
       additionalInformation: order.request.additionalInformation ?? null,
 

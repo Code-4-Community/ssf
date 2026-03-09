@@ -109,7 +109,7 @@ export interface PantryApplicationDto {
 export interface CreateRequestDto {
   pantryId: number;
   requestedSize: RequestSize;
-  requestedItems: FoodType[];
+  requestedFoodTypes: FoodType[];
   additionalInformation?: string;
 }
 
@@ -152,23 +152,6 @@ export interface DonationItem {
   foodRescue?: boolean;
 }
 
-export const FoodTypes = [
-  'Dairy-Free Alternatives',
-  'Dried Beans (Gluten-Free, Nut-Free)',
-  'Gluten-Free Baking/Pancake Mixes',
-  'Gluten-Free Bread',
-  'Gluten-Free Tortillas',
-  'Granola',
-  'Masa Harina Flour',
-  'Nut-Free Granola Bars',
-  'Olive Oil',
-  'Refrigerated Meals',
-  'Rice Noodles',
-  'Seed Butters (Peanut Butter Alternative)',
-  'Whole-Grain Cookies',
-  'Quinoa',
-] as const;
-
 export enum FoodType {
   DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
   DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
@@ -209,7 +192,7 @@ export interface FoodRequest {
   pantryId: number;
   pantry: Pantry;
   requestedSize: RequestSize;
-  requestedItems: string[];
+  requestedFoodTypes: FoodType[];
   additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
@@ -221,7 +204,7 @@ export interface FoodRequestSummaryDto {
   pantryId: number;
   pantryName: string;
   requestedSize: RequestSize;
-  requestedItems: string[];
+  requestedFoodTypes: FoodType[];
   additionalInformation?: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
@@ -307,7 +290,7 @@ export interface ManufacturerApplicationDto {
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
-  requestedItems: string[];
+  requestedFoodTypes: FoodType[];
   additionalInformation?: string;
 }
 
@@ -330,8 +313,6 @@ export interface Allocation {
   itemId: number;
   item: DonationItem;
   allocatedQuantity: number;
-  reservedAt: string;
-  fulfilledAt: string;
 }
 
 export enum Role {
@@ -403,7 +384,4 @@ export type DayOfWeek =
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
 
-export type GroupedByFoodType = Record<
-  (typeof FoodTypes)[number],
-  OrderItemDetails[]
->;
+export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;

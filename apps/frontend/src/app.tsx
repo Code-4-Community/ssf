@@ -1,8 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import LandingPage from '@containers/landingPage';
-import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
@@ -45,10 +43,6 @@ const router = createBrowserRouter([
         element: <Homepage />,
       },
       {
-        path: '/landing-page',
-        element: <LandingPage />,
-      },
-      {
         path: '/login',
         element: <LoginPage />,
       },
@@ -80,14 +74,6 @@ const router = createBrowserRouter([
       },
       // Private routes (protected by auth)
       {
-        path: '/pantry-overview',
-        element: (
-          <ProtectedRoute>
-            <PantryOverview />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/pantry-past-orders',
         element: (
           <ProtectedRoute>
@@ -100,14 +86,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantry-overview',
-        element: (
-          <ProtectedRoute>
-            <PantryOverview />
           </ProtectedRoute>
         ),
       },
