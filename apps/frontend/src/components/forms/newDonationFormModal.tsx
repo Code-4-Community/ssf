@@ -457,8 +457,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
-                            min={0}
-                            step={0.1}
+                            min={0.01}
+                            step={0.01}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -479,7 +479,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter $"
                             type="number"
-                            min={0}
+                            min={0.01}
                             step={0.01}
                             value={row.valuePerItem}
                             onChange={(e) =>
