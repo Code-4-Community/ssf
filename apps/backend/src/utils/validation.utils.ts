@@ -33,7 +33,7 @@ export function sanitizeUrl(url: string): string | null {
 
     if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:')
       return null;
-    if (!urlObj.hostname || urlObj.hostname.length === 0) return null;
+    if (!urlObj.hostname || !urlObj.hostname.includes('.')) return null;
     return urlObj.href;
   } catch {
     return null;

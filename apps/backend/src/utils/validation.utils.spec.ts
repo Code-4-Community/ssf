@@ -49,9 +49,10 @@ describe('sanitizeUrl', () => {
     }
   });
 
-  it('should return null for empty URLs', () => {
+  it('should return null for empty or invalid URLs', () => {
     expect(sanitizeUrl('')).toBeNull();
     expect(sanitizeUrl('https://')).toBeNull();
+    expect(sanitizeUrl('https://foo')).toBeNull();
   });
 
   it('should accept valid http/https URLs', () => {
