@@ -6,7 +6,7 @@ import { Pantry } from './pantries.entity';
 import { AuthModule } from '../auth/auth.module';
 import { OrdersModule } from '../orders/order.module';
 import { EmailsModule } from '../emails/email.module';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({

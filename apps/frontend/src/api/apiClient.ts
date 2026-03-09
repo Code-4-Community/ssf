@@ -21,7 +21,7 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
-  FoodRequestSummaryDto,
+  Assignments,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -176,8 +176,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/volunteers/') as Promise<User[]>;
+  public async getVolunteers(): Promise<Assignments[]> {
+    return this.get('/api/volunteers') as Promise<Assignments[]>;
+  }
+
+  public async getVolunteerPantries(userId: number): Promise<Pantry[]> {
+    return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
   }
 
   public async updateUserVolunteerRole(
@@ -302,6 +306,11 @@ export class ApiClient {
 
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
+    return data as number;
+  }
+
+  public async getMyId(): Promise<number> {
+    const data = await this.get('/api/users/my-id');
     return data as number;
   }
 }
