@@ -1,3 +1,4 @@
+import { FoodType } from '../../donationItems/types';
 import { FoodRequestStatus, RequestSize } from '../../foodRequests/types';
 
 export class FoodRequestSummaryDto {
@@ -5,7 +6,7 @@ export class FoodRequestSummaryDto {
   pantryId!: number;
   pantryName!: string;
   requestedSize!: RequestSize;
-  requestedItems!: string[];
+  requestedFoodTypes!: FoodType[];
   additionalInformation!: string | null;
   requestedAt!: Date;
   status!: FoodRequestStatus;
