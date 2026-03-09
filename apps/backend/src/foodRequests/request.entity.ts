@@ -10,6 +10,7 @@ import {
 import { Order } from '../orders/order.entity';
 import { RequestSize, FoodRequestStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
+import { FoodType } from '../donationItems/types';
 
 @Entity('food_requests')
 export class FoodRequest {
@@ -31,8 +32,24 @@ export class FoodRequest {
   })
   requestedSize!: RequestSize;
 
-  @Column({ name: 'requested_items', type: 'text', array: true })
-  requestedItems!: string[];
+  // Custom transformer needed because TypeORM's enum array parsing fails when values
+  // contain commas (e.g. "Dried Beans (Gluten-Free, Nut-Free)")
+  @Column({
+    name: 'requested_food_types',
+    type: 'text',
+    array: true,
+    transformer: {
+      to: (value: FoodType[]) => value,
+      from: (value: string | string[]) =>
+        Array.isArray(value)
+          ? value
+          : value
+              .slice(1, -1)
+              .match(/("([^"]*)")|([^,]+)/g)
+              ?.map((v) => v.replace(/(^"|"$)/g, '').trim()) || [],
+    },
+  })
+  requestedFoodTypes!: FoodType[];
 
   @Column({ name: 'additional_information', type: 'text', nullable: true })
   additionalInformation!: string | null;
