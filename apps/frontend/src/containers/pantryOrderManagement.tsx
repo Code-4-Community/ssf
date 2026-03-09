@@ -167,13 +167,10 @@ const PantryOrderManagement: React.FC = () => {
             <OrderStatusSection
               orders={displayedOrders}
               statusWithColors={[status, STATUS_COLORS.get(status)!]}
-              selectedActionOrderId={selectedActionOrderId}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               onOrderSelectForAction={setSelectedActionOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
-              onSuccess={fetchOrders}
               onPageChange={(page) => handlePageChange(status, page)}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
@@ -188,6 +185,22 @@ const PantryOrderManagement: React.FC = () => {
           </Box>
         );
       })}
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={!!selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
+      )}
+
+      {selectedActionOrderId && (
+        <OrderReceivedActionModal
+          orderId={selectedActionOrderId}
+          isOpen={!!selectedActionOrderId}
+          onClose={() => setSelectedActionOrderId(null)}
+          onSuccess={fetchOrders}
+        />
+      )}
     </Box>
   );
 };
@@ -197,11 +210,8 @@ interface OrderStatusSectionProps {
   statusWithColors: StatusWithColors;
   onOrderSelect: (orderId: number | null) => void;
   onOrderSelectForAction: (orderId: number | null) => void;
-  selectedOrderId: number | null;
-  selectedActionOrderId: number | null;
   totalOrders: number;
   currentPage: number;
-  onSuccess: () => void;
   onPageChange: (page: number) => void;
   filterState: {
     sortAsc: boolean;
@@ -214,14 +224,11 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   statusWithColors,
   onOrderSelect,
   onOrderSelectForAction,
-  selectedActionOrderId,
-  selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
   filterState,
   onFilterChange,
-  onSuccess,
 }) => {
   const [status, colors] = statusWithColors;
 
@@ -444,13 +451,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       >
                         {order.orderId}
                       </Button>
-                      {selectedOrderId === order.orderId && (
-                        <OrderDetailsModal
-                          orderId={order.orderId}
-                          isOpen={true}
-                          onClose={() => onOrderSelect(null)}
-                        />
-                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -508,14 +508,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         >
                           Complete Required Action
                         </Button>
-                      )}
-                      {selectedActionOrderId === order.orderId && (
-                        <OrderReceivedActionModal
-                          orderId={order.orderId}
-                          isOpen={true}
-                          onClose={() => onOrderSelectForAction(null)}
-                          onSuccess={onSuccess}
-                        />
                       )}
                     </Table.Cell>
                   </Table.Row>
