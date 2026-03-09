@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   NotFoundException,
   Type,
+  HttpException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
@@ -53,25 +54,21 @@ export class OwnershipGuard implements CanActivate {
     // Create a service registry that easily resolves services
     const services = this.createServiceRegistry();
 
-    try {
-      // Execute the lambda function to get the owner user ID
-      const ownerIds = await config.resolver({
-        entityId,
-        services,
-      });
+    // Execute the lambda function to get the owner user ID
+    const ownerIds = await config.resolver({
+      entityId,
+      services,
+    });
 
-      if (ownerIds === null || ownerIds === undefined) {
-        throw new ForbiddenException('Unable to determine resource ownership');
-      }
-
-      if (!ownerIds.includes(user.id)) {
-        throw new ForbiddenException('Access denied');
-      }
-
-      return true;
-    } catch (error) {
-      throw new ForbiddenException('Error verifying resource ownership');
+    if (ownerIds === null || ownerIds === undefined) {
+      throw new ForbiddenException('Unable to determine resource ownership');
     }
+
+    if (!ownerIds.includes(user.id)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return true;
   }
 
   // Use a service registry for easy service resolution and caching

@@ -108,7 +108,7 @@ describe('OwnershipGuard', () => {
     const config: OwnershipConfig = {
       idParam: 'id',
       resolver: async () => {
-        throw new Error('boom');
+        throw new ForbiddenException('Resolver error');
       },
     };
     const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
@@ -123,6 +123,21 @@ describe('OwnershipGuard', () => {
     };
     const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
     const ctx = makeExecutionContext(dummyUser, { id: 10 });
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+  });
+
+  it('correctly extracts the requested route parameter', async () => {
+    const config: OwnershipConfig = {
+      idParam: 'pantryId',
+      resolver: async ({ entityId }) => {
+        expect(entityId).toBe(123);
+        return [dummyUser.id];
+      },
+    };
+    const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+    const ctx = makeExecutionContext(dummyUser, { pantryId: '123' });
+    // If the guard correctly extracts and parses pantryId, the resolver will receive 123 and return true
+    // If it fails to parse, it will throw ForbiddenException before even calling the resolver.
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
   });
 });
