@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
+import { Assignments } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
 
@@ -37,9 +38,7 @@ export class VolunteersService {
     return volunteer;
   }
 
-  async getVolunteersAndPantryAssignments(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
+  async getVolunteersAndPantryAssignments(): Promise<Assignments[]> {
     const volunteers = await this.usersService.findUsersByRoles([
       Role.VOLUNTEER,
     ]);
@@ -48,7 +47,7 @@ export class VolunteersService {
       const { pantries, ...volunteerWithoutPantries } = v;
       return {
         ...volunteerWithoutPantries,
-        pantryIds: pantries!.map((p) => p.pantryId),
+        pantryIds: pantries?.map((p) => p.pantryId) || [],
       };
     });
   }
@@ -56,7 +55,7 @@ export class VolunteersService {
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {
     validateId(volunteerId, 'Volunteer');
     const volunteer = await this.findOne(volunteerId);
-    return volunteer.pantries!;
+    return volunteer.pantries || [];
   }
 
   async assignPantriesToVolunteer(
@@ -68,7 +67,7 @@ export class VolunteersService {
     const volunteer = await this.findOne(volunteerId);
 
     const pantries = await this.pantriesService.findByIds(pantryIds);
-    const existingPantries = volunteer.pantries!;
+    const existingPantries = volunteer.pantries || [];
     const existingPantryIds = existingPantries.map((p) => p.pantryId);
     const newPantries = pantries.filter(
       (p) => !existingPantryIds.includes(p.pantryId),

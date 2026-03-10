@@ -27,6 +27,7 @@ import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
+import AssignedPantries from '@containers/volunteerAssignedPantries';
 import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 
 Amplify.configure(CognitoAuthConfig);
@@ -146,22 +147,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-pantries',
-        element: (
-          <ProtectedRoute>
-            <ApprovePantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/admin-donation',
-        element: (
-          <ProtectedRoute>
-            <AdminDonation />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/volunteer-management',
         element: (
           <ProtectedRoute>
@@ -178,16 +163,40 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/confirm-delivery',
+        action: submitDeliveryConfirmationFormModal,
+      },
+      {
+        path: '/approve-pantries',
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin-donation',
+        element: (
+          <ProtectedRoute>
+            <AdminDonation />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-assigned-pantries',
+        element: (
+          <ProtectedRoute>
+            <AssignedPantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/volunteer-request-management',
         element: (
           <ProtectedRoute>
             <VolunteerRequestManagement />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: '/confirm-delivery',
-        action: submitDeliveryConfirmationFormModal,
       },
     ],
   },

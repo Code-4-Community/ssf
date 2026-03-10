@@ -7,28 +7,23 @@ import {
   Body,
   Req,
 } from '@nestjs/common';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
+import { Role } from '../users/types';
+import { Roles } from '../auth/roles.decorator';
+import { Assignments } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../users/types';
 
 @Controller('volunteers')
 export class VolunteersController {
   constructor(private volunteersService: VolunteersService) {}
 
+  @Roles(Role.ADMIN)
   @Get('/')
-  async getAllVolunteers(): Promise<
-    (Omit<User, 'pantries'> & { pantryIds: number[] })[]
-  > {
+  async getAllVolunteers(): Promise<Assignments[]> {
     return this.volunteersService.getVolunteersAndPantryAssignments();
-  }
-
-  @Get('/:id')
-  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.volunteersService.findOne(userId);
   }
 
   @Get('/:id/pantries')
@@ -36,6 +31,11 @@ export class VolunteersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Pantry[]> {
     return this.volunteersService.getVolunteerPantries(id);
+  }
+
+  @Get('/:id')
+  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+    return this.volunteersService.findOne(userId);
   }
 
   @Post('/:id/pantries')
