@@ -28,6 +28,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import PantryOrderManagement from '@containers/pantryOrderManagement';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
+import AssignedPantries from '@containers/volunteerAssignedPantries';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -146,22 +147,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-pantries',
-        element: (
-          <ProtectedRoute>
-            <ApprovePantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/admin-donation',
-        element: (
-          <ProtectedRoute>
-            <AdminDonation />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/volunteer-management',
         element: (
           <ProtectedRoute>
@@ -188,6 +173,30 @@ const router = createBrowserRouter([
       {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
+      },
+      {
+        path: '/approve-pantries',
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin-donation',
+        element: (
+          <ProtectedRoute>
+            <AdminDonation />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-assigned-pantries',
+        element: (
+          <ProtectedRoute>
+            <AssignedPantries />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

@@ -384,4 +384,6 @@ export type DayOfWeek =
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
 
+export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
+
 export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
