@@ -9,6 +9,7 @@ import {
   VStack,
   ButtonGroup,
   Checkbox,
+  Link,
 } from '@chakra-ui/react';
 import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
@@ -239,26 +240,17 @@ const VolunteerRequestManagement: React.FC = () => {
               _hover={{ bg: 'gray.50' }}
             >
               <Table.Cell
-                textStyle="p2"
+                {...tableCellStyles}
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
-                py={0}
               >
-                <Button
-                  variant="plain"
-                  textDecoration="underline"
+                <Link
+                  textDecorationColor="black"
+                  variant="underline"
                   onClick={() => setSelectedRequest(request)}
                 >
                   {request.requestId}
-                </Button>
-                {selectedRequest && (
-                  <RequestDetailsModal
-                    request={selectedRequest}
-                    isOpen={selectedRequest !== null}
-                    onClose={() => setSelectedRequest(null)}
-                    pantryId={request.pantryId}
-                  />
-                )}
+                </Link>
               </Table.Cell>
               <Table.Cell
                 {...tableCellStyles}
@@ -279,8 +271,9 @@ const VolunteerRequestManagement: React.FC = () => {
                   }
                   display="inline-block"
                   fontWeight="500"
-                  my={2}
-                  py={1}
+                  fontSize="12px"
+                  my={3}
+                  py={0.5}
                   px={3}
                 >
                   {capitalize(request.status)}
@@ -305,6 +298,15 @@ const VolunteerRequestManagement: React.FC = () => {
               <Table.Cell {...tableCellStyles}>{/* TODO*/}</Table.Cell>
             </Table.Row>
           ))}
+
+          {selectedRequest && (
+            <RequestDetailsModal
+              request={selectedRequest}
+              isOpen={selectedRequest !== null}
+              onClose={() => setSelectedRequest(null)}
+              pantryId={selectedRequest.pantryId}
+            />
+          )}
         </Table.Body>
       </Table.Root>
 

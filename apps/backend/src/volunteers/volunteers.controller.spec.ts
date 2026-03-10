@@ -165,10 +165,12 @@ describe('VolunteersController', () => {
 
   describe('GET /me/assigned-requests', () => {
     it('returns assigned requests when req.currentUser is present', async () => {
-      const req = { user: { id: 1 } };
-      const foodRequests: Partial<FoodRequest[]> = [
-        { requestId: 10 } as FoodRequest,
-        { requestId: 5 } as FoodRequest,
+      const req: AuthenticatedRequest = {
+        user: { id: 1 },
+      } as AuthenticatedRequest;
+      const foodRequests: Partial<FoodRequest>[] = [
+        { requestId: 10 },
+        { requestId: 5 },
       ];
       mockVolunteersService.findRequestsByVolunteer.mockResolvedValueOnce(
         foodRequests as FoodRequest[],

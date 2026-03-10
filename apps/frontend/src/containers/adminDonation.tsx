@@ -10,6 +10,7 @@ import {
   Checkbox,
   VStack,
   ButtonGroup,
+  Link,
 } from '@chakra-ui/react';
 import { Donation } from 'types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
@@ -225,20 +226,13 @@ const AdminDonation: React.FC = () => {
                 borderRightColor="neutral.100"
                 py={0}
               >
-                <Button
-                  variant="plain"
-                  textDecoration="underline"
+                <Link
+                  textDecorationColor="black"
+                  variant="underline"
                   onClick={() => setSelectedDonation(donation)}
                 >
                   {donation.donationId}
-                </Button>
-                {selectedDonation && (
-                  <DonationDetailsModal
-                    donation={selectedDonation}
-                    isOpen={selectedDonation !== null}
-                    onClose={() => setSelectedDonation(null)}
-                  />
-                )}
+                </Link>
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -252,6 +246,13 @@ const AdminDonation: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
+          {selectedDonation && (
+            <DonationDetailsModal
+              donation={selectedDonation}
+              isOpen={selectedDonation !== null}
+              onClose={() => setSelectedDonation(null)}
+            />
+          )}
         </Table.Body>
       </Table.Root>
 
