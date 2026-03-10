@@ -5,7 +5,6 @@ import {
   ForbiddenException,
   NotFoundException,
   Type,
-  HttpException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
@@ -14,7 +13,7 @@ import {
   OwnershipConfig,
   ServiceRegistry,
 } from './ownership.decorator';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {

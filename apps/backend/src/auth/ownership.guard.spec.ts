@@ -3,7 +3,7 @@ import { OwnershipConfig, OwnerIdResolver } from './ownership.decorator';
 import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 
 // Helper to create a mock execution context with specified user and params
