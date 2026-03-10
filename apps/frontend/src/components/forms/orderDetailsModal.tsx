@@ -217,8 +217,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         </Text>
                       </Field.Label>
 
-                      {foodRequest.requestedItems.length > 0 && (
-                        <TagGroup values={foodRequest.requestedItems} />
+                      {foodRequest.requestedFoodTypes.length > 0 && (
+                        <TagGroup values={foodRequest.requestedFoodTypes} />
                       )}
                     </Field.Root>
 
