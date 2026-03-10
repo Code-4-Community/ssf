@@ -19,6 +19,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
 
 @Injectable()
 export class OrdersService {
@@ -28,6 +29,7 @@ export class OrdersService {
     private requestsService: RequestsService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
+    private allocationsService: AllocationsService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -133,7 +135,18 @@ export class OrdersService {
       status: OrderStatus.PENDING,
     });
 
-    return this.repo.save(order);
+    const savedOrder = await this.repo.save(order);
+
+    await this.allocationsService.createMultiple({
+      orderId: savedOrder.orderId,
+      donationItems: orderData.donationItems,
+    });
+
+    await this.donationItemsService.setDonationItemQuantities(
+      orderData.donationItems,
+    );
+
+    return savedOrder;
   }
 
   async findOne(orderId: number): Promise<Order> {

@@ -13,6 +13,16 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { RequestsService } from '../foodRequests/request.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { UsersService } from '../users/users.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Donation } from '../donations/donations.entity';
+import { Allocation } from '../allocations/allocations.entity';
+import { User } from '../users/user.entity';
+import { AuthService } from '../auth/auth.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -34,9 +44,17 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         RequestsService,
+        FoodManufacturersService,
+        DonationItemsService,
+        AllocationsService,
+        UsersService,
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
         },
         {
           provide: getRepositoryToken(Pantry),
@@ -45,6 +63,26 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: testDataSource.getRepository(User),
+        },
+        {
+          provide: AuthService,
+          useValue: {},
         },
       ],
     }).compile();

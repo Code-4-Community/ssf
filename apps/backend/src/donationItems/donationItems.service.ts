@@ -97,4 +97,16 @@ export class DonationItemsService {
     donationItem.quantity -= 1;
     return this.repo.save(donationItem);
   }
+
+  async setDonationItemQuantities(
+    donationItems: Record<number, number>,
+  ): Promise<void> {
+    for (const [itemId, quantity] of Object.entries(donationItems)) {
+      const id = Number(itemId);
+
+      validateId(id, 'Item');
+
+      await this.repo.increment({ itemId: id }, 'reservedQuantity', quantity);
+    }
+  }
 }

@@ -71,4 +71,11 @@ export class DonationItemsController {
   ): Promise<DonationItem> {
     return this.donationItemsService.updateDonationItemQuantity(itemId);
   }
+
+  @Patch('/set-quantities')
+  async setDonationItemQuantities(
+    @Body() body: Record<number, number>,
+  ): Promise<void> {
+    return this.donationItemsService.setDonationItemQuantities(body);
+  }
 }
