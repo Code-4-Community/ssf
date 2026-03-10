@@ -1,12 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
+import { User } from './users.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockUserService = mock<UsersService>();
 
@@ -44,6 +45,16 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('GET /my-id', () => {
+    it('should return the current user id', () => {
+      const req = { user: { id: 1 } } as AuthenticatedRequest;
+
+      const result = controller.getCurrentUserId(req);
+
+      expect(result).toBe(1);
+    });
   });
 
   describe('GET /:id', () => {
