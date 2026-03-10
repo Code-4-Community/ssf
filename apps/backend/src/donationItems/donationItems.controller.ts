@@ -12,6 +12,7 @@ import { DonationItemsService } from './donationItems.service';
 import { DonationItem } from './donationItems.entity';
 import { FoodType } from './types';
 import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
+import { Donation } from '../donations/donations.entity';
 
 @Controller('donation-items')
 //@UseInterceptors()
@@ -23,6 +24,20 @@ export class DonationItemsController {
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
+  }
+
+  @Get('/get-associated-donations')
+  async getDonationsFromDonationItemIds(
+    @Body() donationItemIds: number[],
+  ): Promise<Donation[]> {
+    return this.donationItemsService.getAssociatedDonations(donationItemIds);
+  }
+
+  @Get('/all')
+  async getAllDonationItems(
+    @Body() donationItemIds: number[],
+  ): Promise<DonationItem[]> {
+    return this.donationItemsService.getAll(donationItemIds);
   }
 
   @Post('/create-multiple')

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
@@ -99,6 +99,13 @@ export class DonationService {
     }
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
+  }
+
+  async matchAll(donationIds: number[]): Promise<void> {
+    await this.repo.update(
+      { donationId: In(donationIds) },
+      { status: DonationStatus.MATCHED },
+    );
   }
 
   async handleRecurringDonations(): Promise<void> {

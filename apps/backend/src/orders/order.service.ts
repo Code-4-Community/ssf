@@ -20,6 +20,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { DonationService } from '../donations/donations.service';
 
 @Injectable()
 export class OrdersService {
@@ -30,6 +31,7 @@ export class OrdersService {
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private donationService: DonationService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -83,7 +85,7 @@ export class OrdersService {
     const manufacturerId = orderData.manufacturerId;
 
     validateId(manufacturerId, 'Food Manufacturer');
-    validateId(requestId, 'Food Request');
+    validateId(requestId, 'Request');
 
     const request = await this.requestsService.findOne(requestId);
 
@@ -95,26 +97,42 @@ export class OrdersService {
       throw new BadRequestException(`Request ${requestId} is not active`);
     }
 
-    // Ensure all donation items belong to specified manufacturer
+    const donationItemIds = Object.keys(orderData.donationItems).map(Number);
+    const donationItems = await this.donationItemsService.getAll(
+      donationItemIds,
+    );
 
-    const donations = this.manufacturerService.getFMDonations(manufacturerId);
-    const donationIds = (await donations).map((d) => d.donationId);
-
-    const donationItems =
+    // All donations associated with the given donation items
+    const associatedDonations =
       await this.donationItemsService.getDonationItemsByDonationIds(
-        donationIds,
+        donationItemIds,
       );
-    const validDonationItemIds = new Set(donationItems.map((d) => d.itemId));
+    const associatedDonationDonationIds = associatedDonations.map(
+      (d) => d.donationId,
+    );
+
+    const donations = await this.manufacturerService.getFMDonations(
+      manufacturerId,
+    );
+    const FMDonationIds = donations.map((d) => d.donationId);
+
+    const fmDonationSet = new Set(FMDonationIds);
+
+    // True if there is an associated donation that does not belong to the current FM
+    const invalidDonation = associatedDonationDonationIds.find(
+      (id) => !fmDonationSet.has(id),
+    );
+
+    if (invalidDonation) {
+      throw new Error(
+        `Donation ${invalidDonation} is not associated with the current food manufacturer`,
+      );
+    }
 
     for (const [itemId, quantity] of Object.entries(orderData.donationItems)) {
       const id = Number(itemId);
       const count = Number(quantity);
-
-      if (!validDonationItemIds.has(id)) {
-        throw new BadRequestException(
-          `Donation item ${id} does not belong to this manufacturer`,
-        );
-      }
+      validateId(id, 'Donation Item');
 
       const donationItem = donationItems.find((d) => d.itemId === id);
 
@@ -145,6 +163,8 @@ export class OrdersService {
     await this.donationItemsService.setDonationItemQuantities(
       orderData.donationItems,
     );
+
+    await this.donationService.matchAll(associatedDonationDonationIds);
 
     return savedOrder;
   }

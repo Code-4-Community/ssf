@@ -23,6 +23,7 @@ import { Donation } from '../donations/donations.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { User } from '../users/user.entity';
 import { AuthService } from '../auth/auth.service';
+import { DonationService } from '../donations/donations.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -48,6 +49,7 @@ describe('OrdersService', () => {
         DonationItemsService,
         AllocationsService,
         UsersService,
+        DonationService,
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),

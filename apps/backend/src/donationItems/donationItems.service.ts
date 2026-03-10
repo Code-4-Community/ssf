@@ -18,6 +18,14 @@ export class DonationItemsService {
     return this.repo.find({ where: { donation: { donationId } } });
   }
 
+  async getAll(donationItemIds: number[]): Promise<DonationItem[]> {
+    return this.repo.find({
+      where: {
+        itemId: In(donationItemIds),
+      },
+    });
+  }
+
   async getDonationItemsByDonationIds(
     donationIds: number[],
   ): Promise<DonationItem[]> {
@@ -28,6 +36,20 @@ export class DonationItemsService {
         },
       },
     });
+  }
+
+  async getAssociatedDonations(donationItemIds: number[]): Promise<Donation[]> {
+    const items = await this.repo.find({
+      where: { itemId: In(donationItemIds) },
+      relations: ['donation'],
+    });
+
+    const donations = items.map((i) => i.donation);
+
+    // Assure no duplicates
+    return Array.from(
+      new Map(donations.map((d) => [d.donationId, d])).values(),
+    );
   }
 
   async create(
