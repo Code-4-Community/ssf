@@ -284,7 +284,7 @@ export class OrdersService {
     }
 
     if (dto.trackingLink) {
-      const sanitized = sanitizeUrl(dto.trackingLink);
+      const sanitized = await sanitizeUrl(dto.trackingLink);
       if (!sanitized) {
         throw new BadRequestException(
           'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
