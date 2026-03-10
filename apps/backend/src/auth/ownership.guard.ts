@@ -59,11 +59,11 @@ export class OwnershipGuard implements CanActivate {
       services,
     });
 
-    if (ownerIds === null || ownerIds === undefined) {
-      throw new ForbiddenException('Unable to determine resource ownership');
-    }
-
-    if (!ownerIds.includes(user.id)) {
+    if (
+      ownerIds === null ||
+      ownerIds === undefined ||
+      !ownerIds.includes(user.id)
+    ) {
       throw new ForbiddenException('Access denied');
     }
 

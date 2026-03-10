@@ -36,7 +36,7 @@ export const OWNERSHIP_CHECK_KEY = 'ownership_check';
  * @param fns The series of functions that follows, each taking in the output of the previous function and returning either the next entity or the final user ID(s)
  * @returns a list of user IDs that are authorized to access the resource, or null if the ownership cannot be determined (treat as unauthorized)
  */
-export async function pipeNullable<T>(
+export async function pipeNullable(
   initFn: () => Promise<any> | any,
   ...fns: Array<(arg: NonNullable<any>) => Promise<any> | any>
 ): Promise<any | null> {

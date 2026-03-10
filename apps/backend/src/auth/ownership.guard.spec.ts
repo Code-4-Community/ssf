@@ -104,7 +104,7 @@ describe('OwnershipGuard', () => {
     await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
   });
 
-  it('propagates resolver exception as ForbiddenException', async () => {
+  it('resolver throws ForbiddenException', async () => {
     const config: OwnershipConfig = {
       idParam: 'id',
       resolver: async () => {

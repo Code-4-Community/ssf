@@ -76,7 +76,7 @@ export class OrdersController {
         () => services.get(OrdersService).findOrderFoodRequest(entityId),
         (request: FoodRequest) =>
           services.get(PantriesService).findOne(request.pantryId),
-        (pantry: Pantry) => [pantry.pantryUser?.id],
+        (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },
   })

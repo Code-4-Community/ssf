@@ -61,7 +61,7 @@ export class PantriesController {
     resolver: async ({ entityId, services }) => {
       return pipeNullable(
         () => services.get(PantriesService).findOne(entityId),
-        (pantry: Pantry) => [pantry.pantryUser?.id],
+        (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },
   })
