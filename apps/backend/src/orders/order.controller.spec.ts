@@ -16,6 +16,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CreateOrderDto } from './dtos/create-order.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -529,6 +530,122 @@ describe('OrdersController', () => {
         orderId,
         dto,
       );
+    });
+  });
+
+  describe('createOrder', () => {
+    it('should call ordersService.create and return the created order', async () => {
+      const createOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        donationItems: {
+          5: 10,
+          8: 3,
+          12: 7,
+        },
+      };
+
+      const mockCreatedOrder: Partial<Order> = {
+        orderId: 42,
+        status: OrderStatus.PENDING,
+        request: { requestId: 1 } as FoodRequest,
+        foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+      };
+
+      mockOrdersService.create.mockResolvedValueOnce(mockCreatedOrder as Order);
+
+      const result = await controller.createOrder(createOrderDto);
+
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
+      expect(result).toEqual(mockCreatedOrder);
+    });
+
+    it('should propagate NotFoundException when request not found', async () => {
+      const foodRequestId = 999;
+
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: foodRequestId,
+        manufacturerId: 1,
+        donationItems: { 5: 10 },
+      };
+
+      mockOrdersService.create.mockRejectedValueOnce(
+        new NotFoundException(`Request ${foodRequestId} not found`),
+      );
+
+      const promise = controller.createOrder(createOrderDto);
+      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
+      await expect(promise).rejects.toThrow(
+        `Request ${foodRequestId} not found`,
+      );
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
+    });
+
+    it('should propagate BadRequestException when request is not active', async () => {
+      const foodRequestId = 1;
+
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: foodRequestId,
+        manufacturerId: 1,
+        donationItems: { 5: 10 },
+      };
+
+      mockOrdersService.create.mockRejectedValueOnce(
+        new BadRequestException(`Request ${foodRequestId} is not active`),
+      );
+
+      const promise = controller.createOrder(createOrderDto);
+      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+      await expect(promise).rejects.toThrow(
+        `Request ${foodRequestId} is not active`,
+      );
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
+    });
+
+    it('should propagate Error when donation item does not belong to FM', async () => {
+      const invalidDonationId = 1;
+
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        donationItems: { 5: 10 },
+      };
+
+      mockOrdersService.create.mockRejectedValueOnce(
+        new Error(
+          `Donation ${invalidDonationId} is not associated with the current food manufacturer`,
+        ),
+      );
+
+      const promise = controller.createOrder(createOrderDto);
+      await expect(promise).rejects.toThrow(Error);
+      await expect(promise).rejects.toThrow(
+        `Donation ${invalidDonationId} is not associated with the current food manufacturer`,
+      );
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
+    });
+
+    it('should propagate BadRequestException when allocated quantity exceeds remaining', async () => {
+      const donationItemId = 5;
+
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        donationItems: { [donationItemId]: 100 },
+      };
+
+      mockOrdersService.create.mockRejectedValueOnce(
+        new BadRequestException(
+          `Donation item ${donationItemId} allocated quantity exceeds remaining quantity`,
+        ),
+      );
+
+      const promise = controller.createOrder(createOrderDto);
+      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+      await expect(promise).rejects.toThrow(
+        `Donation item ${donationItemId} allocated quantity exceeds remaining quantity`,
+      );
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
     });
   });
 });

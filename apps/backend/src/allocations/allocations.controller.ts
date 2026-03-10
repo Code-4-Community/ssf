@@ -11,7 +11,7 @@ export class AllocationsController {
   @Post('/create-multiple')
   @ApiBody({
     description:
-      'Bulk create allocations given multiple donation item ids and quantities and an order id',
+      'Bulk create allocations given an order id, multiple donation item ids and quantities',
     schema: {
       type: 'object',
       properties: {

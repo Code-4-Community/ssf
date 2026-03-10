@@ -52,4 +52,18 @@ describe('DonationsController', () => {
       expect(mockDonationService.findOne).toHaveBeenCalledWith(1);
     });
   });
+
+  describe('PATCH /match-all', () => {
+    it('should call donationService.matchAll with donationIds', async () => {
+      const donationIds = [1, 2, 3];
+
+      mockDonationService.matchAll.mockResolvedValue(undefined);
+
+      const result = await controller.matchAllDonations(donationIds);
+
+      expect(mockDonationService.matchAll).toHaveBeenCalledWith(donationIds);
+
+      expect(result).toBeUndefined();
+    });
+  });
 });

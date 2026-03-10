@@ -26,11 +26,18 @@ export class DonationItemsController {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
 
-  @Get('/get-associated-donations')
+  @Get('/associated-donations')
   async getDonationsFromDonationItemIds(
     @Body() donationItemIds: number[],
   ): Promise<Donation[]> {
     return this.donationItemsService.getAssociatedDonations(donationItemIds);
+  }
+
+  @Get('/donation-items-by-donation-ids')
+  async getDonationItemsByDonationIds(
+    @Body() donationIds: number[],
+  ): Promise<DonationItem[]> {
+    return this.donationItemsService.getDonationItemsByDonationIds(donationIds);
   }
 
   @Get('/all')
