@@ -2,7 +2,6 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { promises as dns } from 'dns';
 
 export function validateId(id: number, entityName: string): void {
   if (!id || id < 1) {
@@ -20,7 +19,7 @@ export function validateEnv(name: string): string {
   return v;
 }
 
-export async function sanitizeUrl(url: string): Promise<string | null> {
+export function sanitizeUrl(url: string): string | null {
   try {
     const trimmed = url.trim();
     if (!trimmed) return null;
@@ -35,9 +34,6 @@ export async function sanitizeUrl(url: string): Promise<string | null> {
     if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:')
       return null;
     if (!urlObj.hostname || !urlObj.hostname.includes('.')) return null;
-
-    await dns.lookup(urlObj.hostname);
-
     return urlObj.href;
   } catch {
     return null;
