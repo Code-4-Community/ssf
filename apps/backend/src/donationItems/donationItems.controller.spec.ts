@@ -130,27 +130,4 @@ describe('DonationItemsController', () => {
       expect(result).toBeUndefined();
     });
   });
-
-  describe('getDonationItemsByDonationIds', () => {
-    it('should call service.getDonationItemsByDonationIds with donationIds and return items', async () => {
-      const donationIds = [1, 2];
-      const mockItems = [
-        { itemId: 1, donationId: 1, itemName: 'Rice' },
-        { itemId: 2, donationId: 2, itemName: 'Beans' },
-      ] as Partial<DonationItem>[];
-
-      mockDonationItemsService.getDonationItemsByDonationIds.mockResolvedValue(
-        mockItems as DonationItem[],
-      );
-
-      const result = await controller.getDonationItemsByDonationIds(
-        donationIds,
-      );
-
-      expect(
-        mockDonationItemsService.getDonationItemsByDonationIds,
-      ).toHaveBeenCalledWith(donationIds);
-      expect(result).toEqual(mockItems);
-    });
-  });
 });

@@ -26,18 +26,6 @@ export class DonationItemsService {
     });
   }
 
-  async getDonationItemsByDonationIds(
-    donationIds: number[],
-  ): Promise<DonationItem[]> {
-    return this.repo.find({
-      where: {
-        donation: {
-          donationId: In(donationIds),
-        },
-      },
-    });
-  }
-
   async getAssociatedDonations(donationItemIds: number[]): Promise<Donation[]> {
     const items = await this.repo.find({
       where: { itemId: In(donationItemIds) },

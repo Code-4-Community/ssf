@@ -581,6 +581,27 @@ describe('OrdersController', () => {
       expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
     });
 
+    it('should propagate NotFoundException when manufacturer not found', async () => {
+      const manufacturerId = 999;
+
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: manufacturerId,
+        donationItems: { 5: 10 },
+      };
+
+      mockOrdersService.create.mockRejectedValueOnce(
+        new NotFoundException(`Food Manufacturer ${manufacturerId} not found`),
+      );
+
+      const promise = controller.createOrder(createOrderDto);
+      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
+      await expect(promise).rejects.toThrow(
+        `Food Manufacturer ${manufacturerId} not found`,
+      );
+      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
+    });
+
     it('should propagate BadRequestException when request is not active', async () => {
       const foodRequestId = 1;
 
@@ -603,8 +624,6 @@ describe('OrdersController', () => {
     });
 
     it('should propagate Error when donation item does not belong to FM', async () => {
-      const invalidDonationId = 1;
-
       const createOrderDto: CreateOrderDto = {
         foodRequestId: 1,
         manufacturerId: 1,
@@ -612,15 +631,15 @@ describe('OrdersController', () => {
       };
 
       mockOrdersService.create.mockRejectedValueOnce(
-        new Error(
-          `Donation ${invalidDonationId} is not associated with the current food manufacturer`,
+        new BadRequestException(
+          `Donation is not associated with the current food manufacturer`,
         ),
       );
 
       const promise = controller.createOrder(createOrderDto);
-      await expect(promise).rejects.toThrow(Error);
+      await expect(promise).rejects.toThrow(BadRequestException);
       await expect(promise).rejects.toThrow(
-        `Donation ${invalidDonationId} is not associated with the current food manufacturer`,
+        `Donation is not associated with the current food manufacturer`,
       );
       expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
     });

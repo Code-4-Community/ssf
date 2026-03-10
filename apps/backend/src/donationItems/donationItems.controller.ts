@@ -33,13 +33,6 @@ export class DonationItemsController {
     return this.donationItemsService.getAssociatedDonations(donationItemIds);
   }
 
-  @Get('/donation-items-by-donation-ids')
-  async getDonationItemsByDonationIds(
-    @Body() donationIds: number[],
-  ): Promise<DonationItem[]> {
-    return this.donationItemsService.getDonationItemsByDonationIds(donationIds);
-  }
-
   @Get('/all')
   async getAllDonationItems(
     @Body() donationItemIds: number[],

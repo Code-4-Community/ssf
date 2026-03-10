@@ -27,6 +27,8 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(FoodManufacturer)
+    private manufacturerRepo: Repository<FoodManufacturer>,
     private requestsService: RequestsService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
@@ -97,6 +99,20 @@ export class OrdersService {
       throw new BadRequestException(`Request ${requestId} is not active`);
     }
 
+    const manufacturer = await this.manufacturerRepo.findOne({
+      where: { foodManufacturerId: manufacturerId },
+      relations: ['donations'],
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${manufacturerId} not found`,
+      );
+    }
+
+    const fmDonationIds = manufacturer.donations.map((d) => d.donationId);
+    const fmDonationSet = new Set(fmDonationIds);
+
     const donationItemIds = Object.keys(orderData.donationItems).map(Number);
     const donationItems = await this.donationItemsService.getAll(
       donationItemIds,
@@ -104,19 +120,10 @@ export class OrdersService {
 
     // All donations associated with the given donation items
     const associatedDonations =
-      await this.donationItemsService.getDonationItemsByDonationIds(
-        donationItemIds,
-      );
+      await this.donationItemsService.getAssociatedDonations(donationItemIds);
     const associatedDonationDonationIds = associatedDonations.map(
       (d) => d.donationId,
     );
-
-    const donations = await this.manufacturerService.getFMDonations(
-      manufacturerId,
-    );
-    const FMDonationIds = donations.map((d) => d.donationId);
-
-    const fmDonationSet = new Set(FMDonationIds);
 
     // True if there is an associated donation that does not belong to the current FM
     const invalidDonation = associatedDonationDonationIds.find(
@@ -124,8 +131,8 @@ export class OrdersService {
     );
 
     if (invalidDonation) {
-      throw new Error(
-        `Donation ${invalidDonation} is not associated with the current food manufacturer`,
+      throw new BadRequestException(
+        `Donation is not associated with the current food manufacturer`,
       );
     }
 
