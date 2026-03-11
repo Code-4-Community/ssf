@@ -39,7 +39,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-  const [selectedItems, setSelectedItems] = useState<string[]>([]); // For potential future use if we want to allow item-level selection
   const [alert, setAlert] = useState<{
     isError: boolean;
     message: string;
@@ -56,7 +55,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       setRequestedSize(previousRequest.requestedSize || '');
       setAdditionalNotes(previousRequest.additionalInformation || '');
     } else {
-      setSelectedItems([]);
+      setSelectedFoodTypes([]);
       setRequestedSize('');
       setAdditionalNotes('');
     }
