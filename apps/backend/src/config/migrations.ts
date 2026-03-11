@@ -33,6 +33,8 @@ import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-Upda
 import { DonationItemFoodTypeNotNull1771524930613 } from '../migrations/1771524930613-DonationItemFoodTypeNotNull';
 import { MoveRequestFieldsToOrders1770571145350 } from '../migrations/1770571145350-MoveRequestFieldsToOrders';
 import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
+import { FixTrackingLinks1773041840374 } from '../migrations/1773041840374-FixTrackingLinks';
+import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
 
 const schemaMigrations = [
   User1725726359198,
@@ -70,6 +72,8 @@ const schemaMigrations = [
   DonationItemFoodTypeNotNull1771524930613,
   MoveRequestFieldsToOrders1770571145350,
   RenameDonationMatchingStatus1771260403657,
+  FixTrackingLinks1773041840374,
+  CleanupRequestsAndAllocations1771821377918,
 ];
 
 export default schemaMigrations;

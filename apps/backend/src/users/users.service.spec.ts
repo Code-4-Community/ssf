@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
+import { User } from './users.entity';
 import { Role } from './types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
