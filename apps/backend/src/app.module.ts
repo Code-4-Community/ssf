@@ -19,6 +19,7 @@ import { RolesGuard } from './auth/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { VolunteersModule } from './volunteers/volunteers.module';
+import { OwnershipGuard } from './auth/ownership.guard';
 
 @Module({
   imports: [
@@ -56,6 +57,10 @@ import { VolunteersModule } from './volunteers/volunteers.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: OwnershipGuard,
     },
   ],
 })

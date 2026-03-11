@@ -120,7 +120,7 @@ describe('RequestsService', () => {
         orderId: 1,
         status: OrderStatus.DELIVERED,
         foodManufacturerName: 'FoodCorp Industries',
-        trackingLink: 'www.samplelink/samplelink',
+        trackingLink: 'https://www.samplelink.com/samplelink',
         items: expectedItems,
       });
     });
