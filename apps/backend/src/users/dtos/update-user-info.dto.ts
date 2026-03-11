@@ -6,7 +6,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class updateUserInfo {
+export class updateUserInfoDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
