@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { Order } from '../orders/order.entity';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';

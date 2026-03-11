@@ -372,4 +372,6 @@ export interface PantryStats {
 // Make TotalStats interface just not include pantryId
 export type TotalStats = Omit<PantryStats, 'pantryId'>;
 
+export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
+
 export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;

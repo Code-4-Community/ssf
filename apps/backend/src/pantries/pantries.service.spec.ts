@@ -3,7 +3,6 @@ import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { User } from '../users/user.entity';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
   ClientVisitFrequency,
@@ -27,6 +26,7 @@ import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { User } from '../users/users.entity';
 
 jest.setTimeout(60000);
 

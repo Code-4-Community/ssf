@@ -1,5 +1,5 @@
 import { VolunteersController } from './volunteers.controller';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
