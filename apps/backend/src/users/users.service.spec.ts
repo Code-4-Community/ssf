@@ -76,9 +76,9 @@ describe('UsersService', () => {
         phone: '9876543210',
         role: Role.VOLUNTEER,
       };
-  
+
       const result = await service.create(dto);
-  
+
       const dbUser = await service.findOne(result.id);
       expect(dbUser).toMatchObject({
         email: dto.email,
@@ -94,7 +94,7 @@ describe('UsersService', () => {
         email: dto.email,
       });
     });
-  
+
     it('should throw NotFoundException when creating pantry user with unknown email', async () => {
       const dto: userSchemaDto = {
         email: 'nonexistent@example.com',
@@ -103,7 +103,7 @@ describe('UsersService', () => {
         phone: '9876543210',
         role: Role.PANTRY,
       };
-  
+
       await expect(service.create(dto)).rejects.toThrow(
         new NotFoundException(`User with email ${dto.email} not found`),
       );
@@ -133,40 +133,40 @@ describe('UsersService', () => {
   describe('update', () => {
     it('should update firstName', async () => {
       await service.update(1, { firstName: 'Updated' });
-  
+
       const dbUser = await service.findOne(1);
       expect(dbUser.firstName).toBe('Updated');
     });
-  
+
     it('should update lastName', async () => {
       await service.update(1, { lastName: 'Smith' });
-  
+
       const dbUser = await service.findOne(1);
       expect(dbUser.lastName).toBe('Smith');
     });
-  
+
     it('should update phone', async () => {
       await service.update(1, { phone: '0987654321' });
-  
+
       const dbUser = await service.findOne(1);
       expect(dbUser.phone).toBe('0987654321');
     });
-  
+
     it('should update multiple fields at once', async () => {
       await service.update(1, {
         firstName: 'Updated',
         lastName: 'Smith',
       });
-  
+
       const dbUser = await service.findOne(1);
       expect(dbUser.firstName).toBe('Updated');
       expect(dbUser.lastName).toBe('Smith');
     });
-  
+
     it('should not overwrite fields absent from the DTO', async () => {
       const original = await service.findOne(1);
       await service.update(1, { firstName: 'OnlyFirst' });
-  
+
       const dbUser = await service.findOne(1);
       expect(dbUser.firstName).toBe('OnlyFirst');
       expect(dbUser.lastName).toBe(original.lastName);
@@ -174,7 +174,7 @@ describe('UsersService', () => {
       expect(dbUser.phone).toBe(original.phone);
       expect(dbUser.role).toBe(original.role);
     });
-  
+
     it('should throw BadRequestException when DTO is empty', async () => {
       await expect(service.update(1, {})).rejects.toThrow(
         new BadRequestException(
@@ -182,7 +182,7 @@ describe('UsersService', () => {
         ),
       );
     });
-  
+
     it('should throw NotFoundException when user is not found', async () => {
       await expect(
         service.update(999, { firstName: 'Updated' }),
