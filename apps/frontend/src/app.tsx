@@ -1,8 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import LandingPage from '@containers/landingPage';
-import PantryOverview from '@containers/pantryOverview';
 import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
@@ -29,6 +27,7 @@ import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
+import AssignedPantries from '@containers/volunteerAssignedPantries';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -42,10 +41,6 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Homepage />,
-      },
-      {
-        path: '/landing-page',
-        element: <LandingPage />,
       },
       {
         path: '/login',
@@ -79,14 +74,6 @@ const router = createBrowserRouter([
       },
       // Private routes (protected by auth)
       {
-        path: '/pantry-overview',
-        element: (
-          <ProtectedRoute>
-            <PantryOverview />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/pantry-past-orders',
         element: (
           <ProtectedRoute>
@@ -99,14 +86,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantry-overview',
-        element: (
-          <ProtectedRoute>
-            <PantryOverview />
           </ProtectedRoute>
         ),
       },
@@ -167,22 +146,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-pantries',
-        element: (
-          <ProtectedRoute>
-            <ApprovePantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/admin-donation',
-        element: (
-          <ProtectedRoute>
-            <AdminDonation />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/volunteer-management',
         element: (
           <ProtectedRoute>
@@ -201,6 +164,30 @@ const router = createBrowserRouter([
       {
         path: '/confirm-delivery',
         action: submitDeliveryConfirmationFormModal,
+      },
+      {
+        path: '/approve-pantries',
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin-donation',
+        element: (
+          <ProtectedRoute>
+            <AdminDonation />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-assigned-pantries',
+        element: (
+          <ProtectedRoute>
+            <AssignedPantries />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
