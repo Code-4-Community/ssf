@@ -420,7 +420,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 <option
                                   key={type}
                                   value={type}
-                                  style={{ color: '#414141' }}
+                                  style={{
+                                    color: 'var(--chakra-colors-neutral-800)',
+                                  }}
                                 >
                                   {type}
                                 </option>
@@ -443,6 +445,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               handleChange(row.id, 'numItems', e.target.value)
                             }
                             onBlur={(e) => {
+                              if (!e.target.value) return;
                               const value = Math.max(
                                 1,
                                 Math.floor(Number(e.target.value) || 1),
@@ -464,6 +467,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               handleChange(row.id, 'ozPerItem', e.target.value)
                             }
                             onBlur={(e) => {
+                              if (!e.target.value) return;
                               const value = Math.max(
                                 0,
                                 Number(e.target.value) || 0,
@@ -490,6 +494,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                               )
                             }
                             onBlur={(e) => {
+                              if (!e.target.value) return;
                               const value = Math.max(
                                 0,
                                 Number(e.target.value) || 0,
