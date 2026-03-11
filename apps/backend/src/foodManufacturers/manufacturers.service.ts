@@ -1,7 +1,7 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -132,7 +132,7 @@ export class FoodManufacturersService {
     }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
-      throw new BadRequestException(
+      throw new ConflictException(
         `Cannot approve a Food Manufacturer with status: ${foodManufacturer.status}`,
       );
     }
@@ -164,7 +164,7 @@ export class FoodManufacturersService {
     }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
-      throw new BadRequestException(
+      throw new ConflictException(
         `Cannot deny a Food Manufacturer with status: ${foodManufacturer.status}`,
       );
     }

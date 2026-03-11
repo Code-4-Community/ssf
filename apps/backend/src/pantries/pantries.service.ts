@@ -3,7 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -119,7 +119,7 @@ export class PantriesService {
     }
 
     if (pantry.status !== ApplicationStatus.PENDING) {
-      throw new BadRequestException(
+      throw new ConflictException(
         `Cannot approve a pantry with status: ${pantry.status}`,
       );
     }
@@ -146,7 +146,7 @@ export class PantriesService {
     }
 
     if (pantry.status !== ApplicationStatus.PENDING) {
-      throw new BadRequestException(
+      throw new ConflictException(
         `Cannot deny a pantry with status: ${pantry.status}`,
       );
     }
