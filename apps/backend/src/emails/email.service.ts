@@ -21,7 +21,7 @@ export class EmailsService {
    * @param recipientEmail the email address of the recipients
    * @param subject the subject of the email
    * @param bodyHtml the HTML body of the email
-   * @param attachments any base64 encoded attachments to inlude in the email
+   * @param attachments any base64 encoded attachments to include in the email
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
@@ -31,6 +31,10 @@ export class EmailsService {
     bodyHTML: string,
     attachments?: EmailAttachment[],
   ): Promise<unknown> {
+    if (process.env.SEND_AUTOMATED_EMAILS === 'false') {
+      this.logger.warn('Automated emails are disabled. Email not sent.');
+      return Promise.resolve();
+    }
     return this.amazonSESWrapper.sendEmails(
       recipientEmails,
       subject,

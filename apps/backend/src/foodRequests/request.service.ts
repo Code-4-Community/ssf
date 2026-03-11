@@ -15,6 +15,8 @@ import {
 } from './dtos/matching.dto';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class RequestsService {
@@ -26,6 +28,7 @@ export class RequestsService {
     private foodManufacturerRepo: Repository<FoodManufacturer>,
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -209,6 +212,20 @@ export class RequestsService {
       requestedFoodTypes,
       additionalInformation,
     });
+
+    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      await this.emailsService.sendEmails(
+        [foodRequest.pantry.pantryUser.email],
+        emailTemplates.pantrySubmitsFoodRequest({
+          pantryName: foodRequest.pantry.pantryName,
+          volunteerName: foodRequest.pantry.pantryUser.firstName,
+        }).subject,
+        emailTemplates.pantrySubmitsFoodRequest({
+          pantryName: foodRequest.pantry.pantryName,
+          volunteerName: foodRequest.pantry.pantryUser.firstName,
+        }).bodyHTML,
+      );
+    }
 
     return await this.repo.save(foodRequest);
   }

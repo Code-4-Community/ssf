@@ -14,6 +14,8 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
+import { emailTemplates } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class PantriesService {
@@ -22,6 +24,9 @@ export class PantriesService {
 
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+
+    @Inject(forwardRef(() => EmailsService))
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -104,6 +109,14 @@ export class PantriesService {
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
+
+    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      await this.emailsService.sendEmails(
+        [pantryContact.email],
+        emailTemplates.pantryFmApplicationSubmitted().subject,
+        emailTemplates.pantryFmApplicationSubmitted().bodyHTML,
+      );
+    }
   }
 
   async approve(id: number) {
@@ -128,6 +141,18 @@ export class PantriesService {
       status: ApplicationStatus.APPROVED,
       pantryUser: newPantryUser,
     });
+
+    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      await this.emailsService.sendEmails(
+        [newPantryUser.email],
+        emailTemplates.pantryFmApplicationApproved({
+          name: newPantryUser.firstName,
+        }).subject,
+        emailTemplates.pantryFmApplicationApproved({
+          name: newPantryUser.firstName,
+        }).bodyHTML,
+      );
+    }
   }
 
   async deny(id: number) {

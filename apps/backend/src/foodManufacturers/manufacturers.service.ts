@@ -10,6 +10,8 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
+import { emailTemplates } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -18,6 +20,7 @@ export class FoodManufacturersService {
     private repo: Repository<FoodManufacturer>,
 
     private usersService: UsersService,
+    private emailsService: EmailsService,
 
     @InjectRepository(Donation)
     private donationsRepo: Repository<Donation>,
@@ -114,6 +117,15 @@ export class FoodManufacturersService {
       foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
+
+    // TODO: Change receiver if deemed that they shouldn't receive an email on submisssion
+    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      await this.emailsService.sendEmails(
+        [foodManufacturer.foodManufacturerRepresentative.email],
+        emailTemplates.pantryFmApplicationSubmitted().subject,
+        emailTemplates.pantryFmApplicationSubmitted().bodyHTML,
+      );
+    }
   }
 
   async approve(id: number) {
@@ -127,10 +139,7 @@ export class FoodManufacturersService {
     }
 
     const createUserDto: userSchemaDto = {
-      email: foodManufacturer.foodManufacturerRepresentative.email,
-      firstName: foodManufacturer.foodManufacturerRepresentative.firstName,
-      lastName: foodManufacturer.foodManufacturerRepresentative.lastName,
-      phone: foodManufacturer.foodManufacturerRepresentative.phone,
+      ...foodManufacturer.foodManufacturerRepresentative,
       role: Role.FOODMANUFACTURER,
     };
 
@@ -140,6 +149,18 @@ export class FoodManufacturersService {
       status: ApplicationStatus.APPROVED,
       foodManufacturerRepresentative: newFoodManufacturer,
     });
+
+    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      await this.emailsService.sendEmails(
+        [newFoodManufacturer.email],
+        emailTemplates.pantryFmApplicationApproved({
+          name: newFoodManufacturer.firstName,
+        }).subject,
+        emailTemplates.pantryFmApplicationApproved({
+          name: newFoodManufacturer.firstName,
+        }).bodyHTML,
+      );
+    }
   }
 
   async deny(id: number) {
