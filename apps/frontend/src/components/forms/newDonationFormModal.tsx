@@ -469,8 +469,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             onBlur={(e) => {
                               if (!e.target.value) return;
                               const value = Math.max(
-                                0,
-                                Number(e.target.value) || 0,
+                                0.01,
+                                Number(e.target.value) || 0.01,
                               );
                               handleChange(row.id, 'ozPerItem', String(value));
                             }}
@@ -496,8 +496,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             onBlur={(e) => {
                               if (!e.target.value) return;
                               const value = Math.max(
-                                0,
-                                Number(e.target.value) || 0,
+                                0.01,
+                                Number(e.target.value) || 0.01,
                               );
                               handleChange(
                                 row.id,
