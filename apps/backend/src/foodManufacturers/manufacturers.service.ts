@@ -8,7 +8,7 @@ import { FoodManufacturer } from './manufacturers.entity';
 import { Repository } from 'typeorm';
 import { validateId } from '../utils/validation.utils';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
