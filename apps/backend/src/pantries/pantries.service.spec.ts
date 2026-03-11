@@ -16,7 +16,7 @@ import {
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { UsersService } from '../users/users.service';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 
 const mockRepository = mock<Repository<Pantry>>();
