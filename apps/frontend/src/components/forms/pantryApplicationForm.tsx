@@ -31,6 +31,7 @@ import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
@@ -81,10 +82,7 @@ const PantryApplicationForm: React.FC = () => {
     boolean | null
   >();
   const [otherEmailContact, setOtherEmailContact] = useState<boolean>(false);
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
   const actionData = useActionData() as { error?: string } | undefined;
 
   const sectionTitleStyles = {
@@ -112,21 +110,17 @@ const PantryApplicationForm: React.FC = () => {
 
   useEffect(() => {
     if (actionData?.error) {
-      const errorMessage = actionData.error;
-      setAlert((prev) => ({
-        message: errorMessage,
-        key: prev.key + 1,
-      }));
+      setAlertMessage(actionData.error);
     }
-  }, [actionData]);
+  }, [actionData, setAlertMessage]);
 
   return (
     <Box width="100%" mx="11em" my="4em">
       <Box as="section" mb="2.75em">
-        {alert && (
+        {alertState && (
           <FloatingAlert
-            key={alert.key}
-            message={alert.message}
+            key={alertState.id}
+            message={alertState.message}
             status="error"
             timeout={6000}
           />

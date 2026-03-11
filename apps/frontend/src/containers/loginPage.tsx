@@ -15,6 +15,7 @@ import {
 import loginBackground from '../assets/login_background.png';
 import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 type Step = 'login' | 'new-password';
 
@@ -27,10 +28,7 @@ const LoginPage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [step, setStep] = useState<Step>('login');
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,24 +47,18 @@ const LoginPage: React.FC = () => {
         navigate(from, { replace: true });
       }
     } catch {
-      setAlert((prev) => ({ message: 'Login failed', key: prev.key + 1 }));
+      setAlertMessage('Login failed');
     }
   };
 
   // Sets the new password for the first time
   const handleSetNewPassword = async () => {
     if (newPassword !== confirmNewPassword) {
-      setAlert((prev) => ({
-        message: 'Passwords need to match',
-        key: prev.key + 1,
-      }));
+      setAlertMessage('Passwords need to match');
       return;
     }
     if (newPassword.length < 8) {
-      setAlert((prev) => ({
-        message: 'Password needs to be at least 8 characters',
-        key: prev.key + 1,
-      }));
+      setAlertMessage('Password needs to be at least 8 characters');
       return;
     }
 
@@ -76,10 +68,7 @@ const LoginPage: React.FC = () => {
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
     } catch {
-      setAlert((prev) => ({
-        message: 'Failed to set new password',
-        key: prev.key + 1,
-      }));
+      setAlertMessage('Failed to set new password');
     }
   };
 
@@ -108,10 +97,10 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />

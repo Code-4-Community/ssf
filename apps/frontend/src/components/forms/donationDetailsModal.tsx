@@ -11,6 +11,7 @@ import ApiClient from '@api/apiClient';
 import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -25,10 +26,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 }) => {
   const [items, setItems] = useState<DonationItem[]>([]);
 
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
 
   const donationId = donation.donationId;
 
@@ -43,15 +41,12 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
         setItems(itemsData);
       } catch {
-        setAlert((prev) => ({
-          message: 'Error fetching donation details',
-          key: prev.key + 1,
-        }));
+        setAlertMessage('Error fetching donation details');
       }
     };
 
     fetchData();
-  }, [isOpen, donationId]);
+  }, [isOpen, donationId, setAlertMessage]);
 
   // Group items by food type
   const groupedItems = items.reduce((acc, item) => {
@@ -69,10 +64,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />

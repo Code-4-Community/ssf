@@ -19,6 +19,7 @@ import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import ConfirmPantryDecisionModal from '@components/forms/confirmPantryDecisionModal';
+import { useAlert } from '../hooks/alert';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -93,10 +94,7 @@ const PantryApplicationDetails: React.FC = () => {
     type: null,
     message: '',
   });
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
 
@@ -168,10 +166,7 @@ const PantryApplicationDetails: React.FC = () => {
           '/approve-pantries?action=approved&name=' + application.pantryName,
         );
       } catch {
-        setAlert((prev) => ({
-          message: 'Error approving application',
-          key: prev.key + 1,
-        }));
+        setAlertMessage('Error approving application');
       }
     }
   };
@@ -184,10 +179,7 @@ const PantryApplicationDetails: React.FC = () => {
           '/approve-pantries?action=denied&name=' + application.pantryName,
         );
       } catch {
-        setAlert((prev) => ({
-          message: 'Error denying application',
-          key: prev.key + 1,
-        }));
+        setAlertMessage('Error denying application');
       }
     }
   };
@@ -234,10 +226,10 @@ const PantryApplicationDetails: React.FC = () => {
           Application Details
         </Heading>
 
-        {alert && (
+        {alertState && (
           <FloatingAlert
-            key={alert.key}
-            message={alert.message}
+            key={alertState.id}
+            message={alertState.message}
             status="error"
             timeout={6000}
           />

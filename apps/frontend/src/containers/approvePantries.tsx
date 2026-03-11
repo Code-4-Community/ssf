@@ -12,6 +12,7 @@ import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const ApprovePantries: React.FC = () => {
   const navigate = useNavigate();
@@ -19,22 +20,7 @@ const ApprovePantries: React.FC = () => {
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
-
-  const fetchPantries = async () => {
-    try {
-      const data = await ApiClient.getAllPendingPantries();
-      setPendingPantries(data);
-    } catch {
-      setAlert((prev) => ({
-        message: 'Error fetching pantries',
-        key: prev.key + 1,
-      }));
-    }
-  };
+  const [alertState, setAlertMessage] = useAlert();
 
   const updatePantry = async (
     pantryId: number,
@@ -44,16 +30,22 @@ const ApprovePantries: React.FC = () => {
       await ApiClient.updatePantry(pantryId, decision);
       setPendingPantries((prev) => prev.filter((p) => p.pantryId !== pantryId));
     } catch {
-      setAlert((prev) => ({
-        message: `Error ${decision} pantry`,
-        key: prev.key + 1,
-      }));
+      setAlertMessage(`Error ${decision} pantry`);
     }
   };
 
   useEffect(() => {
+    const fetchPantries = async () => {
+      try {
+        const data = await ApiClient.getAllPendingPantries();
+        setPendingPantries(data);
+      } catch {
+        setAlertMessage('Error fetching pantries');
+      }
+    };
+
     fetchPantries();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     const sorted = [...pendingPantries];
@@ -87,17 +79,17 @@ const ApprovePantries: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setAlert((prev) => ({ message, key: prev.key + 1 }));
+      setAlertMessage(message);
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, setAlertMessage]);
 
   return (
     <Center flexDirection="column" p={4}>
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="info"
           timeout={6000}
         />

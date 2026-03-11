@@ -35,6 +35,7 @@ import {
   ManufacturerAttribute,
 } from '../../types/manufacturerEnums';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 const ManufacturerApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
@@ -46,10 +47,7 @@ const ManufacturerApplicationForm: React.FC = () => {
   const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<
     Allergen[]
   >([]);
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
   const actionData = useActionData() as { error?: string } | undefined;
 
   const sectionTitleStyles = {
@@ -77,21 +75,17 @@ const ManufacturerApplicationForm: React.FC = () => {
 
   useEffect(() => {
     if (actionData?.error) {
-      const errorMessage = actionData.error;
-      setAlert((prev) => ({
-        message: errorMessage,
-        key: prev.key + 1,
-      }));
+      setAlertMessage(actionData.error);
     }
-  }, [actionData]);
+  }, [actionData, setAlertMessage]);
 
   return (
     <Box width="100%" mx="11em" my="4em">
       <Box as="section" mb="2.75em">
-        {alert && (
+        {alertState && (
           <FloatingAlert
-            key={alert.key}
-            message={alert.message}
+            key={alertState.id}
+            message={alertState.message}
             status="error"
             timeout={6000}
           />

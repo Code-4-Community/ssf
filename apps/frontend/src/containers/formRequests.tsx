@@ -20,6 +20,7 @@ import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -35,10 +36,7 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
 
   const pageSize = 10;
 
@@ -56,18 +54,12 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch {
-        setAlert((prev) => ({
-          message: 'Error fetching requests',
-          key: prev.key + 1,
-        }));
+        setAlertMessage('Error fetching requests');
       }
     } else {
-      setAlert((prev) => ({
-        message: 'No pantry associated with this account.',
-        key: prev.key + 1,
-      }));
+      setAlertMessage('No pantry associated with this account.');
     }
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchRequests();
@@ -83,10 +75,10 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />

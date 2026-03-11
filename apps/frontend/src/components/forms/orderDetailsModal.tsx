@@ -21,6 +21,7 @@ import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -38,10 +39,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   );
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     if (isOpen) {
@@ -52,16 +50,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch {
-          setAlert((prev) => ({
-            message: 'Error fetching food request details',
-            key: prev.key + 1,
-          }));
+          setAlertMessage('Error fetching food request details');
         }
       };
 
       fetchRequestData();
     }
-  }, [isOpen, orderId]);
+  }, [isOpen, orderId, setAlertMessage]);
 
   useEffect(() => {
     if (isOpen) {
@@ -70,16 +65,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch {
-          setAlert((prev) => ({
-            message: 'Error fetching order details',
-            key: prev.key + 1,
-          }));
+          setAlertMessage('Error fetching order details');
         }
       };
 
       fetchOrderDetails();
     }
-  }, [isOpen, orderId]);
+  }, [isOpen, orderId, setAlertMessage]);
 
   const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
     orderDetails?.items,
@@ -108,10 +100,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />

@@ -16,6 +16,7 @@ import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -29,10 +30,7 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
-  const [alert, setAlert] = useState<{
-    message: string;
-    key: number;
-  }>({ message: '', key: 0 });
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -40,14 +38,11 @@ const AdminDonation: React.FC = () => {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch {
-        setAlert((prev) => ({
-          message: 'Error fetching donations',
-          key: prev.key + 1,
-        }));
+        setAlertMessage('Error fetching donations');
       }
     };
     fetchDonations();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -108,10 +103,10 @@ const AdminDonation: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />
