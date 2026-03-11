@@ -44,7 +44,7 @@ export class DonationItemsService {
 
     const donations = items.map((i) => i.donation);
 
-    // Assure no duplicates
+    // Ensure no duplicates
     return Array.from(
       new Map(donations.map((d) => [d.donationId, d])).values(),
     );
