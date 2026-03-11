@@ -156,7 +156,7 @@ describe('OrdersService', () => {
         orderId: 1,
         status: OrderStatus.DELIVERED,
         foodManufacturerName: 'FoodCorp Industries',
-        trackingLink: 'www.samplelink/samplelink',
+        trackingLink: 'https://www.samplelink.com/samplelink',
         items: [
           {
             id: 1,
@@ -358,7 +358,7 @@ describe('OrdersService', () => {
   describe('updateTrackingCostInfo', () => {
     it('throws when order is non-existent', async () => {
       const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'test',
+        trackingLink: 'www.test.com',
         shippingCost: 5.99,
       };
 
@@ -375,7 +375,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('updates tracking link for shipped order', async () => {
+    it('sanitizes and updates tracking link for shipped order', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'samplelink.com',
       };
@@ -384,7 +384,7 @@ describe('OrdersService', () => {
 
       const order = await service.findOne(3);
       expect(order.trackingLink).toBeDefined();
-      expect(order.trackingLink).toEqual('samplelink.com');
+      expect(order.trackingLink).toEqual('https://samplelink.com/');
     });
 
     it('updates shipping cost for shipped order', async () => {
@@ -399,7 +399,7 @@ describe('OrdersService', () => {
       expect(order.shippingCost).toEqual('12.99');
     });
 
-    it('updates both shipping cost and tracking link', async () => {
+    it('updates both shipping cost and tracking link (sanitized)', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'testtracking.com',
         shippingCost: 7.5,
@@ -408,7 +408,7 @@ describe('OrdersService', () => {
       await service.updateTrackingCostInfo(3, trackingCostDto);
 
       const order = await service.findOne(3);
-      expect(order.trackingLink).toEqual('testtracking.com');
+      expect(order.trackingLink).toEqual('https://testtracking.com/');
       expect(order.shippingCost).toEqual('7.50');
     });
 
@@ -448,6 +448,21 @@ describe('OrdersService', () => {
       ).rejects.toThrow(
         new BadRequestException(
           'Must provide both tracking link and shipping cost on initial assignment',
+        ),
+      );
+    });
+
+    it('throws when tracking link is invalid', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: `javascript:alert("you've been hacked!")`,
+        shippingCost: 7.5,
+      };
+
+      await expect(
+        service.updateTrackingCostInfo(3, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
         ),
       );
     });
