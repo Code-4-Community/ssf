@@ -6,7 +6,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Donation } from '../donations/donations.entity';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
 import { ApplicationStatus } from '../shared/types';

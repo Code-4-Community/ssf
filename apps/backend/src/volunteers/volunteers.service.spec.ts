@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { VolunteersService } from './volunteers.service';
 import { Pantry } from '../pantries/pantries.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
