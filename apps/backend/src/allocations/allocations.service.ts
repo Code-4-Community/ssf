@@ -36,7 +36,7 @@ export class AllocationsService {
       ([itemIdStr, quantity]) => {
         const itemId = Number(itemIdStr);
 
-        validateId(itemId, 'Item');
+        validateId(itemId, 'Donation Item');
 
         return this.repo.create({
           orderId,
