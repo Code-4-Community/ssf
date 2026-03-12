@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -188,7 +189,9 @@ export class OrdersController {
       );
     } catch (err: any) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        throw new BadRequestException('Each photo must be 5 MB or smaller');
+        throw new PayloadTooLargeException(
+          'Each photo must be 5 MB or smaller',
+        );
       }
       throw err;
     }

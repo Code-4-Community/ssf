@@ -18,13 +18,12 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { Order, OrderStatus } from '../types/types';
+import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 
-type OrderWithColor = Order & { assigneeColor?: string };
-type StatusWithColors = [status: OrderStatus, colors: [string, string]];
+type OrderWithColor = OrderWithoutFoodManufacturer & { assigneeColor?: string };
 const MAX_PER_STATUS = 5;
 
 const PantryOrderManagement: React.FC = () => {
@@ -54,7 +53,13 @@ const PantryOrderManagement: React.FC = () => {
     },
   );
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alert, setAlert] = useState<{
+    isError: boolean;
+    message: string;
+  }>({
+    isError: true,
+    message: '',
+  });
 
   // State to hold filter state per status
   type FilterState = {
@@ -114,7 +119,7 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch (error) {
-      setAlertMessage('Error fetching orders: ' + error);
+      setAlert({ isError: true, message: 'Error fetching orders: ' + error });
     }
   };
 
@@ -140,8 +145,12 @@ const PantryOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          message={alert.message}
+          status={alert.isError ? 'error' : 'info'}
+          timeout={6000}
+        />
       )}
 
       {Object.values(OrderStatus).map((status) => {
@@ -166,7 +175,8 @@ const PantryOrderManagement: React.FC = () => {
           <Box key={status} mb={12}>
             <OrderStatusSection
               orders={displayedOrders}
-              statusWithColors={[status, STATUS_COLORS.get(status)!]}
+              status={status}
+              colors={STATUS_COLORS.get(status)!}
               onOrderSelect={setSelectedOrderId}
               onOrderSelectForAction={setSelectedActionOrderId}
               totalOrders={totalFiltered}
@@ -185,29 +195,39 @@ const PantryOrderManagement: React.FC = () => {
           </Box>
         );
       })}
-      {selectedOrderId && (
-        <OrderDetailsModal
-          orderId={selectedOrderId}
-          isOpen={!!selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
-        />
-      )}
 
-      {selectedActionOrderId && (
-        <OrderReceivedActionModal
-          orderId={selectedActionOrderId}
-          isOpen={!!selectedActionOrderId}
-          onClose={() => setSelectedActionOrderId(null)}
-          onSuccess={fetchOrders}
-        />
-      )}
+      <OrderDetailsModal
+        orderId={selectedOrderId!}
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
+
+      <OrderReceivedActionModal
+        orderId={selectedActionOrderId!}
+        isOpen={!!selectedActionOrderId}
+        onClose={() => setSelectedActionOrderId(null)}
+        onSuccess={() => {
+          fetchOrders();
+          setAlert({
+            isError: false,
+            message: 'Delivery Confirmed',
+          });
+        }}
+        onError={() => {
+          setAlert({
+            isError: true,
+            message: 'Delivery could not be confirmed.',
+          });
+        }}
+      />
     </Box>
   );
 };
 
 interface OrderStatusSectionProps {
   orders: OrderWithColor[];
-  statusWithColors: StatusWithColors;
+  status: OrderStatus;
+  colors: [string, string];
   onOrderSelect: (orderId: number | null) => void;
   onOrderSelectForAction: (orderId: number | null) => void;
   totalOrders: number;
@@ -221,7 +241,8 @@ interface OrderStatusSectionProps {
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   orders,
-  statusWithColors,
+  status,
+  colors,
   onOrderSelect,
   onOrderSelectForAction,
   totalOrders,
@@ -230,8 +251,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   filterState,
   onFilterChange,
 }) => {
-  const [status, colors] = statusWithColors;
-
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
@@ -413,7 +432,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
                   width="7%"
-                  textAlign="center"
                 >
                   Assignee
                 </Table.ColumnHeader>

@@ -228,6 +228,23 @@ export interface Order {
   photos?: string[];
 }
 
+export interface OrderWithoutFoodManufacturer {
+  orderId: number;
+  request: FoodRequest;
+  requestId: number;
+  foodManufacturerId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  allocations: Allocation[];
+  trackingLink?: string;
+  shippingCost?: number;
+  dateReceived?: string;
+  feedback?: string;
+  photos?: string[];
+}
+
 export interface OrderWithoutRelations {
   orderId: number;
   requestId: number;

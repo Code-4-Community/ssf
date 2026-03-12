@@ -5,7 +5,6 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
@@ -169,10 +168,6 @@ const router = createBrowserRouter([
             <PantryOrderManagement />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: '/confirm-delivery',
-        action: submitDeliveryConfirmationFormModal,
       },
       {
         path: '/approve-pantries',

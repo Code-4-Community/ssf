@@ -23,10 +23,10 @@ import {
   UserDto,
   OrderDetails,
   ConfirmDeliveryDto,
-  FoodRequestSummaryDto,
   OrderWithoutRelations,
   Assignments,
   FoodRequestSummaryDto,
+  OrderWithoutFoodManufacturer,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -171,7 +171,9 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getPantryOrders(pantryId: number): Promise<Order[]> {
+  public async getPantryOrders(
+    pantryId: number,
+  ): Promise<OrderWithoutFoodManufacturer[]> {
     return this.axiosInstance
       .get(`/api/pantries/${pantryId}/orders`)
       .then((response) => response.data);

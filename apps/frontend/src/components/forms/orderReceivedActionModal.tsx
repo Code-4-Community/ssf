@@ -22,15 +22,18 @@ interface OrderReceivedActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onError: () => void;
 }
 
 const MAX_FILES = 10;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   orderId,
   isOpen,
   onClose,
   onSuccess,
+  onError,
 }) => {
   const [alert, setAlert] = useState<{
     isError: boolean;
@@ -42,8 +45,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const [feedback, setFeedback] = useState<string>('');
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
+  const [invalidPhotoExists, setInvalidPhotoExists] = useState<boolean>(false);
 
-  const isFormValid = dateReceived !== '';
+  const isFormValid = dateReceived !== '' && !invalidPhotoExists;
 
   const resetForm = () => {
     setFeedback('');
@@ -60,13 +64,12 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
       await apiClient.confirmOrderDelivery(orderId, dto, photos);
 
-      setAlert({ isError: false, message: 'Delivery Confirmed' });
       resetForm();
       onSuccess();
       onClose();
     } catch (err) {
-      setAlert({ isError: true, message: 'Delivery could not be confirmed.' });
       resetForm();
+      onError();
       onClose();
     }
   };
@@ -80,11 +83,12 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alert.message && alert.isError && (
-        <FloatingAlert message={alert.message} status="error" timeout={6000} />
-      )}
-      {alert.message && !alert.isError && (
-        <FloatingAlert message={alert.message} status="info" timeout={6000} />
+      {alert && (
+        <FloatingAlert
+          message={alert.message}
+          status={alert.isError ? 'error' : 'info'}
+          timeout={6000}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -178,6 +182,20 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   maxFiles={MAX_FILES}
                   onFileChange={(e: { acceptedFiles?: File[] }) => {
                     const files: File[] = e.acceptedFiles ?? [];
+                    const oversized = files.find(
+                      (file) => file.size > MAX_FILE_SIZE,
+                    );
+                    if (oversized) {
+                      setAlert({
+                        isError: true,
+                        message: `${oversized.name} exceeds the 5MB size limit`,
+                      });
+                      setInvalidPhotoExists(true);
+                      return;
+                    } else {
+                      setInvalidPhotoExists(false);
+                    }
+
                     setPhotos(files);
                   }}
                 >
@@ -188,13 +206,14 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     borderStyle="solid"
                     borderWidth="1px"
                     minH="150px"
+                    cursor="pointer"
                   >
                     <Icon size="md" color="fg.muted">
                       <Upload />
                     </Icon>
                     <FileUpload.DropzoneContent>
                       <Box textStyle="p2" fontWeight={600}>
-                        Drag and drop here to upload
+                        Click or drag and drop here to upload
                       </Box>
                       <Box textStyle="p2" color="neutral.800">
                         .png, .jpg up to 5MB
