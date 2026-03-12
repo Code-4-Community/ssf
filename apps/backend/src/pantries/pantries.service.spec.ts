@@ -30,6 +30,34 @@ import { User } from '../users/users.entity';
 
 jest.setTimeout(60000);
 
+// Minimal DTO factory to reduce repetition in bulk-creation tests
+const makePantryDto = (i: number): PantryApplicationDto =>
+  ({
+    contactFirstName: `Bulk${i}`,
+    contactLastName: 'Tester',
+    contactEmail: `bulk${i}@example.com`,
+    contactPhone: '555-000-0000',
+    hasEmailContact: false,
+    pantryName: `BulkTest Pantry ${i}`,
+    shipmentAddressLine1: '1 Bulk St',
+    shipmentAddressCity: 'Testville',
+    shipmentAddressState: 'TS',
+    shipmentAddressZip: '00000',
+    mailingAddressLine1: '1 Bulk St',
+    mailingAddressCity: 'Testville',
+    mailingAddressState: 'TS',
+    mailingAddressZip: '00000',
+    allergenClients: 'none',
+    restrictions: ['none'],
+    refrigeratedDonation: RefrigeratedDonation.NO,
+    acceptFoodDeliveries: false,
+    reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+    dedicatedAllergyFriendly: false,
+    activities: [Activity.CREATE_LABELED_SHELF],
+    itemsInStock: 'none',
+    needMoreOptions: 'none',
+  } as PantryApplicationDto);
+
 describe('PantriesService', () => {
   let service: PantriesService;
 
@@ -288,26 +316,12 @@ describe('PantriesService', () => {
         await service.getPantryStats(['Community Food Pantry Downtown'])
       )[0];
 
-      // From the dummy data migration: pantry 1 allocations total
-      // delivered allocations: 10 + 5 + 25 = 40
-      // pending allocations: 75 + 10 = 85
-      // totalItems = 125
       expect(stats.pantryId).toBe(1);
       expect(stats.totalItems).toBe(125);
-      // totalOz: delivered (10*16 + 5*8.01 + 25*24) = 800.05
-      // pending (75*16 + 10*32) = 1520
-      // total = 2320.05
       expect(stats.totalOz).toBeCloseTo(2320.05, 2);
-      // totalLbs = 2320.05 / 16 = 145.003... -> rounded to 145.0
       expect(stats.totalLbs).toBeCloseTo(145.0, 2);
-      // totalDonatedFoodValue: delivered (10*4.5 + 5*2 + 25*3) = 130
-      // pending (75*6 + 10*4.5) = 495
-      // total = 625
       expect(stats.totalDonatedFoodValue).toBeCloseTo(625.0, 2);
-      // Migration sets a default shipping cost (20.00) for delivered/shipped orders
-      // Community has one delivered order -> shippingCost = 20 -> totalValue = 625 + 20
       expect(stats.totalValue).toBeCloseTo(645.0, 2);
-      // Dummy data contains no explicit foodRescue flags -> percentage 0
       expect(stats.percentageFoodRescueItems).toBe(0);
     });
 
@@ -316,7 +330,6 @@ describe('PantriesService', () => {
         await service.getPantryStats(['Riverside Food Assistance'])
       )[0];
 
-      // Pantry 4 has no orders in the migration seed data, so all aggregates are 0
       expect(stats.pantryId).toBe(4);
       expect(stats.totalItems).toBe(0);
       expect(stats.totalOz).toBe(0);
@@ -332,7 +345,6 @@ describe('PantriesService', () => {
         await service.getPantryStats(['Community Food Pantry Downtown'], [2030])
       )[0];
 
-      // No orders exist with created_at in 2030, so all aggregates collapse to 0
       expect(stats.pantryId).toBe(1);
       expect(stats.totalItems).toBe(0);
       expect(stats.totalOz).toBe(0);
@@ -356,14 +368,10 @@ describe('PantriesService', () => {
       const westside = stats.find((s) => s.pantryId === 2);
 
       expect(community).toBeDefined();
-      // pantry 1: see single-pantry test above for full breakdown
       expect(community?.totalItems).toBe(125);
       expect(community?.totalOz).toBeCloseTo(2320.05, 2);
 
       expect(westside).toBeDefined();
-      // pantry 2 (Westside Community Kitchen) allocations:
-      // order allocations: 30 + 35 = 65
-      // totalOz: (30*25 + 35*20) = 750 + 450 = 1195 (using item ozPerItem from migration)
       expect(westside?.totalItems).toBe(65);
       expect(westside?.totalOz).toBeCloseTo(1195.0, 2);
     });
@@ -383,40 +391,14 @@ describe('PantriesService', () => {
 
     it('filters by year correctly (no results for future year)', async () => {
       const yearFiltered = await service.getPantryStats(undefined, [2030]);
-      // No orders were created in 2030 in the migration seed, so every pantry returns 0 items
       expect(yearFiltered.every((s) => s.totalItems === 0)).toBe(true);
     });
 
     it('pagination page returns first 10 items', async () => {
       for (let i = 0; i < 10; i++) {
-        await service.addPantry({
-          contactFirstName: `Bulk${i}`,
-          contactLastName: 'Tester',
-          contactEmail: `bulk${i}@example.com`,
-          contactPhone: '555-000-0000',
-          hasEmailContact: false,
-          pantryName: `BulkTest Pantry ${i}`,
-          shipmentAddressLine1: '1 Bulk St',
-          shipmentAddressCity: 'Testville',
-          shipmentAddressState: 'TS',
-          shipmentAddressZip: '00000',
-          mailingAddressLine1: '1 Bulk St',
-          mailingAddressCity: 'Testville',
-          mailingAddressState: 'TS',
-          mailingAddressZip: '00000',
-          allergenClients: 'none',
-          restrictions: ['none'],
-          refrigeratedDonation: RefrigeratedDonation.NO,
-          acceptFoodDeliveries: false,
-          reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-          dedicatedAllergyFriendly: false,
-          activities: [Activity.CREATE_LABELED_SHELF],
-          itemsInStock: 'none',
-          needMoreOptions: 'none',
-        } as PantryApplicationDto);
+        await service.addPantry(makePantryDto(i));
       }
 
-      // PAGE_SIZE = 10, so page 1 should return exactly 10 pantries
       const page1 = await service.getPantryStats(undefined, undefined, 1);
       expect(page1.length).toBe(10);
     });
@@ -436,10 +418,6 @@ describe('PantriesService', () => {
         )
       `);
 
-      // After moving pantry 1's most recent delivered order into 2025,
-      // a [2025] year filter should return only that order's allocations
-      // delivered allocations from that order: 10 + 5 + 25 = 40
-      // totalDonatedFoodValue: 10*4.5 + 5*2 + 25*3 = 45 + 10 + 75 = 130
       const res = await service.getPantryStats(undefined, [2025]);
       const community = res.find((s) => s.pantryId === 1);
       expect(community).toBeDefined();
@@ -465,29 +443,98 @@ describe('PantriesService', () => {
         new BadRequestException('Page number must be greater than 0'),
       );
     });
+
+    it('validates all names before paginating — throws if any name is invalid regardless of page', async () => {
+      // Create 12 valid pantries so we have enough to paginate
+      for (let i = 0; i < 12; i++) {
+        await service.addPantry(makePantryDto(i));
+      }
+      const validNames = Array.from(
+        { length: 12 },
+        (_, i) => `BulkTest Pantry ${i}`,
+      );
+
+      await expect(
+        service.getPantryStats([...validNames, 'Extra Pantry'], undefined, 1),
+      ).rejects.toThrow('Pantries not found: Extra Pantry');
+
+      await expect(
+        service.getPantryStats([...validNames, 'Extra Pantry'], undefined, 2),
+      ).rejects.toThrow('Pantries not found: Extra Pantry');
+    });
+
+    it('with 12 valid names, page 1 returns the first 10 (ordered by pantryId ASC)', async () => {
+      for (let i = 0; i < 12; i++) {
+        await service.addPantry(makePantryDto(i));
+      }
+      const names = Array.from(
+        { length: 12 },
+        (_, i) => `BulkTest Pantry ${i}`,
+      );
+
+      const page1 = await service.getPantryStats(names, undefined, 1);
+      expect(page1.length).toBe(10);
+    });
+
+    it('with 12 valid names, page 2 returns the remaining 2', async () => {
+      for (let i = 0; i < 12; i++) {
+        await service.addPantry(makePantryDto(i));
+      }
+      const names = Array.from(
+        { length: 12 },
+        (_, i) => `BulkTest Pantry ${i}`,
+      );
+
+      const page2 = await service.getPantryStats(names, undefined, 2);
+      expect(page2.length).toBe(2);
+    });
+
+    it('with 12 valid names, page 3 returns empty array', async () => {
+      for (let i = 0; i < 12; i++) {
+        await service.addPantry(makePantryDto(i));
+      }
+      const names = Array.from(
+        { length: 12 },
+        (_, i) => `BulkTest Pantry ${i}`,
+      );
+
+      const page3 = await service.getPantryStats(names, undefined, 3);
+      expect(page3.length).toBe(0);
+    });
+
+    it('page 1 and page 2 results are disjoint (no overlapping pantryIds)', async () => {
+      for (let i = 0; i < 12; i++) {
+        await service.addPantry(makePantryDto(i));
+      }
+      const names = Array.from(
+        { length: 12 },
+        (_, i) => `BulkTest Pantry ${i}`,
+      );
+
+      const [page1, page2] = await Promise.all([
+        service.getPantryStats(names, undefined, 1),
+        service.getPantryStats(names, undefined, 2),
+      ]);
+
+      const page1Ids = new Set(page1.map((s) => s.pantryId));
+      const overlap = page2.filter((s) => page1Ids.has(s.pantryId));
+      expect(overlap.length).toBe(0);
+    });
   });
 
   describe('getTotalStats', () => {
     it('aggregates stats across all pantries and matches migration sums', async () => {
       const total = await service.getTotalStats();
 
-      // totalItems: pantry 1 (125) + pantry 2 (65) + pantry 3 (30) + pantry 4 (0) = 220
       expect(total.totalItems).toBe(220);
-      // totalOz: pantry 1 (2320.05) + pantry 2 (1195) + pantry 3 (1015) + pantry 4 (0) = 4530.05
       expect(total.totalOz).toBeCloseTo(4530.05, 2);
-      // totalLbs = 4530.05 / 16 = 283.128... -> rounded to 283.13
       expect(total.totalLbs).toBeCloseTo(283.13, 2);
-      // totalDonatedFoodValue: pantry 1 (625) + pantry 2 (325) + pantry 3 (137.5) + pantry 4 (0) = 1087.5
       expect(total.totalDonatedFoodValue).toBeCloseTo(1087.5, 2);
-      // totalShippingCost: migration seeds one delivered/shipped order per active pantry at $20 each
-      // pantry 1 (20) + pantry 2 (20) + pantry 3 (20) + pantry 4 (0) = 60
       expect(total.totalShippingCost).toBeCloseTo(60.0, 2);
-      // totalValue = totalDonatedFoodValue + totalShippingCost = 1087.5 + 60 = 1147.5
       expect(total.totalValue).toBeCloseTo(1147.5, 2);
     });
 
     it('respects year filter and returns zeros for non-matching years', async () => {
-      // No orders exist with created_at in 2030, so all totals are 0
       const totalEmpty = await service.getTotalStats([2030]);
       expect(totalEmpty.totalItems).toBe(0);
       expect(totalEmpty.totalOz).toBe(0);

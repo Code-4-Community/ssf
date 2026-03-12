@@ -135,39 +135,62 @@ export class PantriesService {
     page = 1,
   ): Promise<PantryStats[]> {
     const PAGE_SIZE = 10;
-    // Throw an error if page is less than 1
+
     if (page < 1) {
       throw new BadRequestException('Page number must be greater than 0');
     }
+
     const nameArray = pantryNames
       ? Array.isArray(pantryNames)
         ? pantryNames
         : [pantryNames]
       : undefined;
 
-    // Verify the nameArray exists and is greater than 0
-    const pantryFilter = nameArray?.length ? { pantryName: In(nameArray) } : {};
-    const pantries = await this.repo.find({
-      select: ['pantryId', 'pantryName'],
-      where: pantryFilter,
-      order: { pantryId: 'ASC' },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    });
-
-    if (pantries.length === 0 && !nameArray?.length) return [];
-
-    // If pantry names were provided but no pantries were found, throw an error
+    // If names were provided, validate ALL of them before paginating
     if (nameArray?.length) {
+      const allMatched = await this.repo.find({
+        select: ['pantryId', 'pantryName'],
+        where: { pantryName: In(nameArray) },
+        order: { pantryId: 'ASC' },
+      });
+
       const missingNames = nameArray.filter(
-        (name) => !pantries.some((p) => p.pantryName === name),
+        (name) => !allMatched.some((p) => p.pantryName === name),
       );
       if (missingNames.length > 0) {
         throw new NotFoundException(
           `Pantries not found: ${missingNames.join(', ')}`,
         );
       }
+
+      // Paginate the validated results in-memory
+      const paginated = allMatched.slice(
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE,
+      );
+      if (paginated.length === 0) return [];
+
+      const pantryIds = paginated.map((p) => p.pantryId);
+      const yearsArray = years
+        ? (Array.isArray(years) ? years : [years]).map(Number)
+        : undefined;
+
+      const stats = await this.aggregateStats(pantryIds, yearsArray);
+      const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
+      return pantryIds.map(
+        (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
+      );
     }
+
+    // No names provided — paginate from the full table
+    const pantries = await this.repo.find({
+      select: ['pantryId', 'pantryName'],
+      order: { pantryId: 'ASC' },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    });
+
+    if (pantries.length === 0) return [];
 
     const pantryIds = pantries.map((p) => p.pantryId);
     const yearsArray = years
@@ -175,8 +198,6 @@ export class PantriesService {
       : undefined;
 
     const stats = await this.aggregateStats(pantryIds, yearsArray);
-
-    // Fill zeros for any pantries that had no orders
     const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
     return pantryIds.map(
       (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
