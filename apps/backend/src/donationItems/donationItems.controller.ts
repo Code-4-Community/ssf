@@ -7,6 +7,7 @@ import {
   Patch,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
@@ -30,16 +31,16 @@ export class DonationItemsController {
 
   @Get('/associated-donations')
   async getDonationsFromDonationItemIds(
-    @Body() donationItemIds: number[],
+    @Query('donationItemIds') donationItemIds: number[],
   ): Promise<Donation[]> {
     return this.donationItemsService.getAssociatedDonations(donationItemIds);
   }
 
   @Get('/all')
-  async getAllDonationItems(
-    @Body() donationItemIds: number[],
+  async getByIds(
+    @Query('donationItemIds') donationItemIds: number[],
   ): Promise<DonationItem[]> {
-    return this.donationItemsService.getAll(donationItemIds);
+    return this.donationItemsService.getByIds(donationItemIds);
   }
 
   @Post('/create-multiple')
@@ -90,9 +91,9 @@ export class DonationItemsController {
   }
 
   @Patch('/set-quantities')
-  async setDonationItemQuantities(
+  async setReservedQuantities(
     @Body() body: Record<number, number>,
   ): Promise<void> {
-    return this.donationItemsService.setDonationItemQuantities(body);
+    return this.donationItemsService.setReservedQuantities(body);
   }
 }

@@ -15,8 +15,8 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
-import { DonationService } from '../donations/donations.service';
 import { DonationModule } from '../donations/donations.module';
+import { Donation } from '../donations/donations.entity';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { DonationModule } from '../donations/donations.module';
       FoodManufacturer,
       DonationItem,
       Allocation,
-      DonationService,
+      Donation,
     ]),
     AllocationModule,
     forwardRef(() => AuthModule),

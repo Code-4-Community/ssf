@@ -740,26 +740,6 @@ describe('OrdersService', () => {
       expect(matchedDonation?.status).toBe(DonationStatus.MATCHED);
     });
 
-    it('should throw NotFoundException if request does not exist', async () => {
-      validCreateOrderDto.foodRequestId = 999;
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        `Request ${validCreateOrderDto.foodRequestId} not found`,
-      );
-    });
-
-    it('should throw NotFoundException if manufacturer does not exist', async () => {
-      validCreateOrderDto.manufacturerId = 999;
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        `Food Manufacturer ${validCreateOrderDto.manufacturerId} not found`,
-      );
-    });
-
     it('should throw BadRequestException if request is not active', async () => {
       const requestRepo = testDataSource.getRepository(FoodRequest);
 

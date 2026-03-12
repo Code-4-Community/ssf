@@ -137,7 +137,7 @@ describe('DonationService', () => {
   });
 
   describe('matchAll', () => {
-    it('should call repo.update with donationIds and set status MATCHED', async () => {
+    it('updates all given donations to have status MATCHED', async () => {
       const donationId1 = 1;
       const donationId2 = 2;
       const donationIds = [donationId1, donationId2];
@@ -154,6 +154,17 @@ describe('DonationService', () => {
 
       expect(updatedDonation1.status).toEqual(DonationStatus.MATCHED);
       expect(updatedDonation2.status).toEqual(DonationStatus.MATCHED);
+    });
+
+    it('throws an error if one or more donationIds do not exist', async () => {
+      const existingDonationId = 1;
+      const nonExistingDonationId = 999;
+
+      const donationIds = [existingDonationId, nonExistingDonationId];
+
+      await expect(service.matchAll(donationIds)).rejects.toThrow(
+        'One or more donationIds do not exist',
+      );
     });
   });
 

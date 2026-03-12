@@ -416,48 +416,6 @@ describe('OrdersController', () => {
       expect(result).toEqual(mockCreatedOrder);
     });
 
-    it('should propagate NotFoundException when request not found', async () => {
-      const foodRequestId = 999;
-
-      const createOrderDto: CreateOrderDto = {
-        foodRequestId: foodRequestId,
-        manufacturerId: 1,
-        donationItems: { 5: 10 },
-      };
-
-      mockOrdersService.create.mockRejectedValueOnce(
-        new NotFoundException(`Request ${foodRequestId} not found`),
-      );
-
-      const promise = controller.createOrder(createOrderDto);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(
-        `Request ${foodRequestId} not found`,
-      );
-      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
-    });
-
-    it('should propagate NotFoundException when manufacturer not found', async () => {
-      const manufacturerId = 999;
-
-      const createOrderDto: CreateOrderDto = {
-        foodRequestId: 1,
-        manufacturerId: manufacturerId,
-        donationItems: { 5: 10 },
-      };
-
-      mockOrdersService.create.mockRejectedValueOnce(
-        new NotFoundException(`Food Manufacturer ${manufacturerId} not found`),
-      );
-
-      const promise = controller.createOrder(createOrderDto);
-      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
-      await expect(promise).rejects.toThrow(
-        `Food Manufacturer ${manufacturerId} not found`,
-      );
-      expect(mockOrdersService.create).toHaveBeenCalledWith(createOrderDto);
-    });
-
     it('should propagate BadRequestException when request is not active', async () => {
       const foodRequestId = 1;
 

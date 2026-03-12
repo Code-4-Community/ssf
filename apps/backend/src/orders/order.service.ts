@@ -91,30 +91,18 @@ export class OrdersService {
 
     const request = await this.requestsService.findOne(requestId);
 
-    if (!request) {
-      throw new NotFoundException(`Request ${requestId} not found`);
-    }
-
     if (request.status != FoodRequestStatus.ACTIVE) {
       throw new BadRequestException(`Request ${requestId} is not active`);
     }
 
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId: manufacturerId },
-      relations: ['donations'],
-    });
-
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${manufacturerId} not found`,
-      );
-    }
-
-    const fmDonationIds = manufacturer.donations.map((d) => d.donationId);
+    const fmDonations = await this.manufacturerService.getFMDonations(
+      manufacturerId,
+    );
+    const fmDonationIds = fmDonations.map((d) => d.donationId);
     const fmDonationSet = new Set(fmDonationIds);
 
     const donationItemIds = Object.keys(orderData.donationItems).map(Number);
-    const donationItems = await this.donationItemsService.getAll(
+    const donationItems = await this.donationItemsService.getByIds(
       donationItemIds,
     );
 
@@ -167,7 +155,7 @@ export class OrdersService {
       donationItems: orderData.donationItems,
     });
 
-    await this.donationItemsService.setDonationItemQuantities(
+    await this.donationItemsService.setReservedQuantities(
       orderData.donationItems,
     );
 

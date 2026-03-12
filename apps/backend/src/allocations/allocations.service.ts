@@ -32,21 +32,19 @@ export class AllocationsService {
 
     validateId(orderId, 'Order');
 
-    const allocations: Allocation[] = [];
+    const allocations = Object.entries(donationItems).map(
+      ([itemIdStr, quantity]) => {
+        const itemId = Number(itemIdStr);
 
-    for (const [itemIdStr, quantity] of Object.entries(donationItems)) {
-      const itemId = Number(itemIdStr);
+        validateId(itemId, 'Item');
 
-      validateId(itemId, 'Item');
-
-      const allocation = this.repo.create({
-        orderId,
-        itemId,
-        allocatedQuantity: quantity,
-      });
-
-      allocations.push(allocation);
-    }
+        return this.repo.create({
+          orderId,
+          itemId,
+          allocatedQuantity: quantity,
+        });
+      },
+    );
 
     return await this.repo.save(allocations);
   }

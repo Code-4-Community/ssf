@@ -109,7 +109,7 @@ export class OrdersController {
     schema: {
       type: 'object',
       properties: {
-        requestId: { type: 'integer', example: 1 },
+        foodRequestId: { type: 'integer', example: 1 },
         manufacturerId: { type: 'integer', example: 1 },
         donationItems: {
           type: 'object',

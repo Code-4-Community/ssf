@@ -57,13 +57,11 @@ describe('DonationsController', () => {
     it('should call donationService.matchAll with donationIds', async () => {
       const donationIds = [1, 2, 3];
 
-      mockDonationService.matchAll.mockResolvedValue(undefined);
+      mockDonationService.matchAll.mockResolvedValue();
 
-      const result = await controller.matchAllDonations(donationIds);
+      await controller.matchAllDonations({ donationIds });
 
       expect(mockDonationService.matchAll).toHaveBeenCalledWith(donationIds);
-
-      expect(result).toBeUndefined();
     });
   });
 });

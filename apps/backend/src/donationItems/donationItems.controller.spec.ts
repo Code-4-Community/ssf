@@ -93,41 +93,38 @@ describe('DonationItemsController', () => {
     });
   });
 
-  describe('getAllDonationItems', () => {
-    it('should call service.getAll with donationItemIds and return donation items', async () => {
+  describe('getByIds', () => {
+    it('should call service.getByIds with donationItemIds and return donation items', async () => {
       const donationItemIds = [1, 2];
       const mockItems = [
         { itemId: 1, itemName: 'Rice' },
         { itemId: 2, itemName: 'Beans' },
       ] as Partial<DonationItem>[];
 
-      mockDonationItemsService.getAll.mockResolvedValue(
+      mockDonationItemsService.getByIds.mockResolvedValue(
         mockItems as DonationItem[],
       );
 
-      const result = await controller.getAllDonationItems(donationItemIds);
+      const result = await controller.getByIds(donationItemIds);
 
-      expect(mockDonationItemsService.getAll).toHaveBeenCalledWith(
+      expect(mockDonationItemsService.getByIds).toHaveBeenCalledWith(
         donationItemIds,
       );
       expect(result).toEqual(mockItems);
     });
   });
 
-  describe('setDonationItemQuantities', () => {
-    it('should call service.setDonationItemQuantities with the body', async () => {
+  describe('setReservedQuantities', () => {
+    it('should call service.setReservedQuantities with the body', async () => {
       const body: Record<number, number> = { 1: 10, 2: 20 };
 
-      mockDonationItemsService.setDonationItemQuantities.mockResolvedValue(
-        undefined,
-      );
+      mockDonationItemsService.setReservedQuantities.mockResolvedValue();
 
-      const result = await controller.setDonationItemQuantities(body);
+      await controller.setReservedQuantities(body);
 
       expect(
-        mockDonationItemsService.setDonationItemQuantities,
+        mockDonationItemsService.setReservedQuantities,
       ).toHaveBeenCalledWith(body);
-      expect(result).toBeUndefined();
     });
   });
 });

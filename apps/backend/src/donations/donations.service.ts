@@ -102,10 +102,14 @@ export class DonationService {
   }
 
   async matchAll(donationIds: number[]): Promise<void> {
-    await this.repo.update(
+    const result = await this.repo.update(
       { donationId: In(donationIds) },
       { status: DonationStatus.MATCHED },
     );
+
+    if (result.affected !== donationIds.length) {
+      throw new NotFoundException('One or more donationIds do not exist');
+    }
   }
 
   async handleRecurringDonations(): Promise<void> {

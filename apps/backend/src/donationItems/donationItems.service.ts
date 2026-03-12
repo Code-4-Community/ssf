@@ -28,7 +28,7 @@ export class DonationItemsService {
     return this.repo.find({ where: { donation: { donationId } } });
   }
 
-  async getAll(donationItemIds: number[]): Promise<DonationItem[]> {
+  async getByIds(donationItemIds: number[]): Promise<DonationItem[]> {
     return this.repo.find({
       where: {
         itemId: In(donationItemIds),
@@ -118,10 +118,8 @@ export class DonationItemsService {
     return this.repo.save(donationItem);
   }
 
-  async setDonationItemQuantities(
-    donationItems: Record<number, number>,
-  ): Promise<void> {
-    for (const [itemId, quantity] of Object.entries(donationItems)) {
+  async setReservedQuantities(body: Record<number, number>): Promise<void> {
+    for (const [itemId, quantity] of Object.entries(body)) {
       const id = Number(itemId);
 
       validateId(id, 'Item');
