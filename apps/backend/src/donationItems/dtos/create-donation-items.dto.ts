@@ -10,7 +10,7 @@ import {
   IsOptional,
   IsInt,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { FoodType } from '../types';
 
 export class CreateDonationItemDto {
@@ -19,21 +19,30 @@ export class CreateDonationItemDto {
   @Length(1, 255)
   itemName!: string;
 
-  @IsInt()
-  @Min(1)
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt({ message: 'Quantity must be an integer value' })
+  @Min(1, { message: 'Quantity must be at least 1' })
   quantity!: number;
 
   @IsInt()
   @Min(0)
   reservedQuantity!: number;
 
-  @IsNumber()
-  @Min(0.01)
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'Oz per item must have at most 2 decimal places' },
+  )
+  @Min(0.01, { message: 'Oz per item must be at least 0.01' })
   @IsOptional()
   ozPerItem?: number;
 
-  @IsNumber()
-  @Min(0.01)
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'Estimated value must have at most 2 decimal places' },
+  )
+  @Min(0.01, { message: 'Estimated value must be at least 0.01' })
   @IsOptional()
   estimatedValue?: number;
 

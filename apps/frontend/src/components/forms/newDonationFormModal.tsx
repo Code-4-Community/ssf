@@ -444,16 +444,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
                             }
-                            onBlur={(e) => {
-                              if (!e.target.value) return;
-                              const value = Math.max(
-                                1,
-                                Math.floor(Number(e.target.value) || 1),
-                              );
-                              handleChange(row.id, 'numItems', String(value));
-                            }}
                           />
                         </Table.Cell>
+
                         <Table.Cell>
                           <Input
                             _placeholder={placeholderStyles}
@@ -466,14 +459,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
                             }
-                            onBlur={(e) => {
-                              if (!e.target.value) return;
-                              const value = Math.max(
-                                0.01,
-                                Number(e.target.value) || 0.01,
-                              );
-                              handleChange(row.id, 'ozPerItem', String(value));
-                            }}
                           />
                         </Table.Cell>
 
@@ -493,18 +478,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 e.target.value,
                               )
                             }
-                            onBlur={(e) => {
-                              if (!e.target.value) return;
-                              const value = Math.max(
-                                0.01,
-                                Number(e.target.value) || 0.01,
-                              );
-                              handleChange(
-                                row.id,
-                                'valuePerItem',
-                                value.toFixed(2),
-                              );
-                            }}
                           />
                         </Table.Cell>
 
@@ -713,7 +686,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                   {(repeatInterval !== RecurrenceEnum.WEEKLY ||
                     Object.values(repeatOn).some(Boolean)) && (
                     <Text color="neutral.700" fontStyle="italic" mt={2}>
-                      Next Donation reminder scheduled for{' '}
+                      Next donation reminder scheduled for{' '}
                       {getNextDonationDateDisplay()}
                     </Text>
                   )}
