@@ -1,7 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { VolunteersController } from './volunteers.controller';
-import { UsersController } from '../users/users.controller';
-import { UsersService } from '../users/users.service';
 import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -156,8 +153,8 @@ describe('VolunteersController', () => {
 
       expect(result).toEqual(updatedUser);
       expect(result.pantries).toHaveLength(2);
-      expect(result.pantries![0].pantryId).toBe(1);
-      expect(result.pantries![1].pantryId).toBe(3);
+      expect(result.pantries?.[0].pantryId).toBe(1);
+      expect(result.pantries?.[1].pantryId).toBe(3);
       expect(
         mockVolunteersService.assignPantriesToVolunteer,
       ).toHaveBeenCalledWith(3, pantryIds);
