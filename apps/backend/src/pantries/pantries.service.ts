@@ -110,11 +110,21 @@ export class PantriesService {
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
 
-    const message = emailTemplates.pantryFmApplicationSubmitted();
+    const pantryMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
+      name: pantryContact.firstName,
+    });
+
+    await this.emailsService.sendEmails(
+      [pantryContact.email],
+      pantryMessage.subject,
+      pantryMessage.bodyHTML,
+    );
+
+    const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
     await this.emailsService.sendEmails(
       [SSF_PARTNER_EMAIL],
-      message.subject,
-      message.bodyHTML,
+      adminMessage.subject,
+      adminMessage.bodyHTML,
     );
   }
 

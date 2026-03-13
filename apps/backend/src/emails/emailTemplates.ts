@@ -48,11 +48,13 @@ export const emailTemplates = {
         increase access to safe food for individuals with dietary restrictions.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
     `,
-    additionalContent: EMAIL_REDIRECT_URL + '/login',
   }),
 
-  pantryFmApplicationSubmitted: (): EmailTemplate => ({
+  pantryFmApplicationSubmittedToAdmin: (): EmailTemplate => ({
     subject: 'New Partner Application Submitted',
     bodyHTML: `
       <p>Hi,</p>
@@ -61,8 +63,24 @@ export const emailTemplates = {
         Please log in to the dashboard to review and take action. 
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        To review this application, please enter the admin pantry approval dashboard: <a href="${EMAIL_REDIRECT_URL}/approve-pantries">${EMAIL_REDIRECT_URL}/approve-pantries</a>
+      </p>
     `,
-    additionalContent: EMAIL_REDIRECT_URL + '/approve-pantries',
+  }),
+
+  pantryFmApplicationSubmittedToUser: (params: {
+    name: string;
+  }): EmailTemplate => ({
+    subject: 'Your Application Has Been Submitted',
+    bodyHTML: `
+      <p>Hi ${params.name},</p>
+      <p>
+        Thank you for your interest in partnering with Securing Safe Food! 
+        Your application has been successfully submitted and is currently under review. We will notify you via email once a decision has been made.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
   }),
 
   pantrySubmitsFoodRequest: (params: {

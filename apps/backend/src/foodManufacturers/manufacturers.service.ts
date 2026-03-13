@@ -118,12 +118,22 @@ export class FoodManufacturersService {
 
     await this.repo.save(foodManufacturer);
 
-    // TODO: Change receiver if deemed that they shouldn't receive an email on submisssion
-    const message = emailTemplates.pantryFmApplicationSubmitted();
+    const manufacturerMessage =
+      emailTemplates.pantryFmApplicationSubmittedToUser({
+        name: foodManufacturerContact.firstName,
+      });
+
+    await this.emailsService.sendEmails(
+      [foodManufacturerContact.email],
+      manufacturerMessage.subject,
+      manufacturerMessage.bodyHTML,
+    );
+
+    const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
     await this.emailsService.sendEmails(
       [SSF_PARTNER_EMAIL],
-      message.subject,
-      message.bodyHTML,
+      adminMessage.subject,
+      adminMessage.bodyHTML,
     );
   }
 
