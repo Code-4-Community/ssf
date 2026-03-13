@@ -12,7 +12,7 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodType } from '../donationItems/types';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
@@ -394,7 +394,7 @@ describe('OrdersController', () => {
       const createOrderDto = {
         foodRequestId: 1,
         manufacturerId: 1,
-        donationItems: {
+        itemAllocations: {
           5: 10,
           8: 3,
           12: 7,
@@ -422,7 +422,7 @@ describe('OrdersController', () => {
       const createOrderDto: CreateOrderDto = {
         foodRequestId: foodRequestId,
         manufacturerId: 1,
-        donationItems: { 5: 10 },
+        itemAllocations: { 5: 10 },
       };
 
       mockOrdersService.create.mockRejectedValueOnce(
@@ -441,7 +441,7 @@ describe('OrdersController', () => {
       const createOrderDto: CreateOrderDto = {
         foodRequestId: 1,
         manufacturerId: 1,
-        donationItems: { 5: 10 },
+        itemAllocations: { 5: 10 },
       };
 
       mockOrdersService.create.mockRejectedValueOnce(
@@ -464,7 +464,7 @@ describe('OrdersController', () => {
       const createOrderDto: CreateOrderDto = {
         foodRequestId: 1,
         manufacturerId: 1,
-        donationItems: { [donationItemId]: 100 },
+        itemAllocations: { [donationItemId]: 100 },
       };
 
       mockOrdersService.create.mockRejectedValueOnce(

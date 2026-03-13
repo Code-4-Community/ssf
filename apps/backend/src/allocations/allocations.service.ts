@@ -28,7 +28,7 @@ export class AllocationsService {
     body: CreateMultipleAllocationsDto,
   ): Promise<Allocation[]> {
     const orderId = body.orderId;
-    const donationItems = body.donationItems;
+    const donationItems = body.itemAllocations;
 
     validateId(orderId, 'Order');
 
@@ -46,6 +46,6 @@ export class AllocationsService {
       },
     );
 
-    return await this.repo.save(allocations);
+    return this.repo.save(allocations);
   }
 }

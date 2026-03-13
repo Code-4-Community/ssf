@@ -8,5 +8,5 @@ export class CreateOrderDto {
   manufacturerId!: number;
 
   @IsObject()
-  donationItems!: Record<number, number>;
+  itemAllocations!: Record<number, number>;
 }

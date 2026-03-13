@@ -692,7 +692,7 @@ describe('OrdersService', () => {
       validCreateOrderDto = {
         foodRequestId: 1,
         manufacturerId: 1,
-        donationItems: {
+        itemAllocations: {
           1: 10,
           2: 3,
         },
@@ -729,7 +729,7 @@ describe('OrdersService', () => {
         where: { orderId: createdOrder.orderId },
       });
       expect(allocations.length).toBe(
-        Object.keys(validCreateOrderDto.donationItems).length,
+        Object.keys(validCreateOrderDto.itemAllocations).length,
       );
       expect(allocations.map((a) => a.itemId)).toEqual(
         expect.arrayContaining([1, 2]),
@@ -777,7 +777,7 @@ describe('OrdersService', () => {
     it('should throw BadRequestException if allocated quantity exceeds remaining', async () => {
       const donationItemId = 2;
 
-      validCreateOrderDto.donationItems = { [donationItemId]: 500 };
+      validCreateOrderDto.itemAllocations = { [donationItemId]: 500 };
       await expect(service.create(validCreateOrderDto)).rejects.toThrow(
         BadRequestException,
       );
@@ -787,9 +787,23 @@ describe('OrdersService', () => {
     });
 
     it('should throw Error if donation is not associated with manufacturer', async () => {
-      validCreateOrderDto.donationItems = { 7: 2 };
+      validCreateOrderDto.itemAllocations = { 7: 2 };
       await expect(service.create(validCreateOrderDto)).rejects.toThrow(
         BadRequestException,
+      );
+      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+        `Donation is not associated with the current food manufacturer`,
+      );
+    });
+
+    it('should throw Error if donation item not found', async () => {
+      const invalidDonationItemId = 999;
+      validCreateOrderDto.itemAllocations = { [invalidDonationItemId]: 2 };
+      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+        `Couldn't find donation item ${invalidDonationItemId}`,
       );
     });
   });

@@ -36,7 +36,6 @@ import { Donation } from '../donations/donations.entity';
     forwardRef(() => RequestsModule),
     ManufacturerModule,
     DonationItemsModule,
-    AllocationModule,
     DonationModule,
   ],
   controllers: [OrdersController],

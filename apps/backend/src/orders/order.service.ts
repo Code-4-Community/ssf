@@ -27,8 +27,6 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
-    @InjectRepository(FoodManufacturer)
-    private manufacturerRepo: Repository<FoodManufacturer>,
     private requestsService: RequestsService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
@@ -98,10 +96,9 @@ export class OrdersService {
     const fmDonations = await this.manufacturerService.getFMDonations(
       manufacturerId,
     );
-    const fmDonationIds = fmDonations.map((d) => d.donationId);
-    const fmDonationSet = new Set(fmDonationIds);
+    const fmDonationSet = new Set(fmDonations.map((d) => d.donationId));
 
-    const donationItemIds = Object.keys(orderData.donationItems).map(Number);
+    const donationItemIds = Object.keys(orderData.itemAllocations).map(Number);
     const donationItems = await this.donationItemsService.getByIds(
       donationItemIds,
     );
@@ -109,12 +106,10 @@ export class OrdersService {
     // All donations associated with the given donation items
     const associatedDonations =
       await this.donationItemsService.getAssociatedDonations(donationItemIds);
-    const associatedDonationDonationIds = associatedDonations.map(
-      (d) => d.donationId,
-    );
+    const associatedDonationIds = associatedDonations.map((d) => d.donationId);
 
     // True if there is an associated donation that does not belong to the current FM
-    const invalidDonation = associatedDonationDonationIds.find(
+    const invalidDonation = associatedDonationIds.find(
       (id) => !fmDonationSet.has(id),
     );
 
@@ -124,9 +119,11 @@ export class OrdersService {
       );
     }
 
-    for (const [itemId, quantity] of Object.entries(orderData.donationItems)) {
+    for (const [itemId, quantity] of Object.entries(
+      orderData.itemAllocations,
+    )) {
       const id = Number(itemId);
-      const count = Number(quantity);
+      const allocatedQuantity = Number(quantity);
       validateId(id, 'Donation Item');
 
       const donationItem = donationItems.find((d) => d.itemId === id);
@@ -135,7 +132,10 @@ export class OrdersService {
         throw new NotFoundException(`Couldn't find donation item ${id} `);
       }
 
-      if (count > donationItem.quantity - donationItem.reservedQuantity) {
+      if (
+        allocatedQuantity >
+        donationItem.quantity - donationItem.reservedQuantity
+      ) {
         throw new BadRequestException(
           `Donation item ${id} allocated quantity exceeds remaining quantity`,
         );
@@ -152,14 +152,14 @@ export class OrdersService {
 
     await this.allocationsService.createMultiple({
       orderId: savedOrder.orderId,
-      donationItems: orderData.donationItems,
+      itemAllocations: orderData.itemAllocations,
     });
 
     await this.donationItemsService.setReservedQuantities(
-      orderData.donationItems,
+      orderData.itemAllocations,
     );
 
-    await this.donationService.matchAll(associatedDonationDonationIds);
+    await this.donationService.matchAll(associatedDonationIds);
 
     return savedOrder;
   }

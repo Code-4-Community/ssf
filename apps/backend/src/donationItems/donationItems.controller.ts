@@ -8,6 +8,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
@@ -29,16 +30,25 @@ export class DonationItemsController {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
 
+  // Called like: /donation-items/associated-donations?donationItemIds=1,2,3
   @Get('/associated-donations')
   async getDonationsFromDonationItemIds(
-    @Query('donationItemIds') donationItemIds: number[],
+    @Query(
+      'donationItemIds',
+      new ParseArrayPipe({ items: Number, separator: ',' }),
+    )
+    donationItemIds: number[],
   ): Promise<Donation[]> {
     return this.donationItemsService.getAssociatedDonations(donationItemIds);
   }
 
-  @Get('/all')
+  @Get('/getByIds')
   async getByIds(
-    @Query('donationItemIds') donationItemIds: number[],
+    @Query(
+      'donationItemIds',
+      new ParseArrayPipe({ items: Number, separator: ',' }),
+    )
+    donationItemIds: number[],
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getByIds(donationItemIds);
   }

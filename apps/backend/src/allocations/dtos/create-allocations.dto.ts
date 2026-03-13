@@ -5,5 +5,5 @@ export class CreateMultipleAllocationsDto {
   orderId!: number;
 
   @IsObject()
-  donationItems!: Record<number, number>;
+  itemAllocations!: Record<number, number>;
 }

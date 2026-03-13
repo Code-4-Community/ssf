@@ -102,14 +102,25 @@ export class DonationService {
   }
 
   async matchAll(donationIds: number[]): Promise<void> {
-    const result = await this.repo.update(
+    const donations = await this.repo.find({
+      where: { donationId: In(donationIds) },
+      select: ['donationId'],
+    });
+
+    const foundIds = donations.map((d) => d.donationId);
+
+    const missingIds = donationIds.filter((id) => !foundIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donations not found for ids: ${missingIds.join(', ')}`,
+      );
+    }
+
+    await this.repo.update(
       { donationId: In(donationIds) },
       { status: DonationStatus.MATCHED },
     );
-
-    if (result.affected !== donationIds.length) {
-      throw new NotFoundException('One or more donationIds do not exist');
-    }
   }
 
   async handleRecurringDonations(): Promise<void> {
