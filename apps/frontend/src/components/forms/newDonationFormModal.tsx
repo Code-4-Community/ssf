@@ -20,6 +20,7 @@ import ApiClient from '@api/apiClient';
 import {
   DayOfWeek,
   FoodType,
+  FoodTypes,
   RecurrenceEnum,
   RepeatOnState,
 } from '../../types/types';
@@ -415,8 +416,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 handleChange(row.id, 'foodType', e.target.value)
                               }
                             >
-                              {Object.values(FoodType).map((type) => (
-                                <option key={type} value={type}>
+                              {FoodTypes.map((type) => (
+                                <option
+                                  key={type}
+                                  value={type}
+                                  style={{
+                                    color: 'var(--chakra-colors-neutral-800)',
+                                  }}
+                                >
                                   {type}
                                 </option>
                               ))}
@@ -432,6 +439,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             placeholder="Enter #"
                             type="number"
                             min={1}
+                            step={1}
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -445,7 +453,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
-                            min={1}
+                            min={0.01}
+                            step={0.01}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -459,7 +468,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter $"
                             type="number"
-                            min={1}
+                            min={0.01}
+                            step={0.01}
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
@@ -516,6 +526,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             setRepeatEvery(e.value)
                           }
                           min={1}
+                          step={1}
+                          onBlur={() => {
+                            const value = Math.max(
+                              1,
+                              Math.floor(Number(repeatEvery) || 1),
+                            );
+                            setRepeatEvery(String(value));
+                          }}
                         >
                           <NumberInput.Input />
                           <NumberInput.Control />
@@ -531,11 +549,17 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           >
                             {(Object.values(RecurrenceEnum) as RecurrenceEnum[])
                               .filter((v) => v !== RecurrenceEnum.NONE)
-                              .map((v) => (
-                                <option key={v} value={v}>
-                                  {RECURRENCE_LABELS[v]}
-                                </option>
-                              ))}
+                              .map((v) =>
+                                repeatEvery === '1' ? (
+                                  <option key={v} value={v}>
+                                    {RECURRENCE_LABELS[v]}
+                                  </option>
+                                ) : (
+                                  <option key={v} value={v}>
+                                    {RECURRENCE_LABELS[v]}s
+                                  </option>
+                                ),
+                              )}
                           </NativeSelect.Field>
                           <NativeSelectIndicator />
                         </NativeSelect.Root>
@@ -631,6 +655,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           setEndsAfter(e.value)
                         }
                         min={1}
+                        step={1}
+                        onBlur={() => {
+                          const value = Math.max(
+                            1,
+                            Math.floor(Number(endsAfter) || 1),
+                          );
+                          setEndsAfter(String(value));
+                        }}
                       >
                         <Flex position="relative" align="center">
                           <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
@@ -643,9 +675,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             fontSize="sm"
                             pointerEvents="none"
                           >
-                            {parseInt(endsAfter) > 1
-                              ? 'Occurrences'
-                              : 'Occurrence'}
+                            {parseInt(endsAfter) > 1 ? 'Reminders' : 'Reminder'}
                           </Text>
                           <NumberInput.Control />
                         </Flex>
@@ -656,7 +686,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                   {(repeatInterval !== RecurrenceEnum.WEEKLY ||
                     Object.values(repeatOn).some(Boolean)) && (
                     <Text color="neutral.700" fontStyle="italic" mt={2}>
-                      Next Donation scheduled for {getNextDonationDateDisplay()}
+                      Next donation reminder scheduled for{' '}
+                      {getNextDonationDateDisplay()}
                     </Text>
                   )}
                 </Box>
