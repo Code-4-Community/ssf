@@ -56,24 +56,8 @@ export class PantriesService {
     pantryIds?: number[],
     years?: number[],
   ): Promise<PantryStats[]> {
-    // Make all the total calculations
-    // Coalesce to account for nulls when there are no orders or no items in an order
-    const ordersSubquery = years?.length
-      ? `COALESCE((
-            SELECT SUM(o2.shipping_cost)
-            FROM orders o2
-            JOIN food_requests r2 ON o2.request_id = r2.request_id
-            WHERE r2.pantry_id = request.pantry_id
-              AND EXTRACT(YEAR FROM o2.created_at) IN (:...years)
-          ), 0)`
-      : `COALESCE((
-            SELECT SUM(o2.shipping_cost)
-            FROM orders o2
-            JOIN food_requests r2 ON o2.request_id = r2.request_id
-            WHERE r2.pantry_id = request.pantry_id
-          ), 0)`;
-
-    const qb = this.orderRepo
+    // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, totalFoodRescueItems)
+    const itemsQb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
       .leftJoin('order.allocations', 'allocation')
@@ -88,29 +72,56 @@ export class PantriesService {
         'COALESCE(SUM(COALESCE(item.estimatedValue, 0) * allocation.allocatedQuantity), 0)',
         'totalDonatedFoodValue',
       )
-      .addSelect(ordersSubquery, 'totalShippingCost')
       .addSelect(
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
         'totalFoodRescueItems',
       )
       .groupBy('request.pantryId');
 
-    if (pantryIds && pantryIds.length > 0) {
-      qb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
+    if (pantryIds?.length) {
+      itemsQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
     }
-    if (years && years.length > 0) {
-      qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
+    if (years?.length) {
+      itemsQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
       });
     }
 
-    const rows = await qb.getRawMany();
+    // Query 2: aggregate shipping cost per pantry (no allocation join, so no double counting)
+    const shippingQb = this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoin('order.request', 'request')
+      .select('request.pantryId', 'pantryId')
+      .addSelect('COALESCE(SUM(order.shippingCost), 0)', 'totalShippingCost')
+      .groupBy('request.pantryId');
 
-    return rows.map((row) => {
+    if (pantryIds?.length) {
+      shippingQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
+    }
+    if (years?.length) {
+      shippingQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
+        years,
+      });
+    }
+
+    const [itemRows, shippingRows] = await Promise.all([
+      itemsQb.getRawMany(),
+      shippingQb.getRawMany(),
+    ]);
+
+    // Efficiently merge the two query results
+    const shippingMap = new Map(
+      shippingRows.map((r) => [
+        Number(r.pantryId),
+        Number(r.totalShippingCost),
+      ]),
+    );
+
+    return itemRows.map((row) => {
       const totalItems = Number(row.totalItems);
       const totalOz = Number(row.totalOz);
       const totalDonatedFoodValue = Number(row.totalDonatedFoodValue);
-      const totalShippingCost = Number(row.totalShippingCost);
+      const totalShippingCost = shippingMap.get(Number(row.pantryId)) ?? 0;
       const totalFoodRescueItems = Number(row.totalFoodRescueItems);
 
       return {

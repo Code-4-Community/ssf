@@ -431,7 +431,9 @@ describe('PantriesService', () => {
     });
 
     it('returns nothing for an invalid pantry name', async () => {
-      expect(service.getPantryStats(['Invalid Pantry Name'])).rejects.toThrow(
+      await expect(
+        service.getPantryStats(['Invalid Pantry Name']),
+      ).rejects.toThrow(
         new NotFoundException(`Pantries not found: Invalid Pantry Name`),
       );
     });
