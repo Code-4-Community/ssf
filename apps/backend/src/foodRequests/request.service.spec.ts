@@ -11,6 +11,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { NotFoundException } from '@nestjs/common';
+import { EmailsService } from '../emails/email.service';
 
 jest.setTimeout(60000);
 
@@ -25,6 +26,7 @@ describe('RequestsService', () => {
     const module = await Test.createTestingModule({
       providers: [
         RequestsService,
+        EmailsService,
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
@@ -44,6 +46,12 @@ describe('RequestsService', () => {
         {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();

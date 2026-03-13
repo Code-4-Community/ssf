@@ -201,7 +201,10 @@ export class RequestsService {
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
-    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    const pantry = await this.pantryRepo.findOne({
+      where: { pantryId },
+      relations: ['pantryUser', 'volunteers'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
@@ -214,16 +217,18 @@ export class RequestsService {
     });
 
     if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      const volunteers = pantry.volunteers || [];
+      const volunteerEmails = volunteers.map((v) => v.email);
+
+      const message = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry.pantryName,
+        volunteerName: pantry.pantryUser.firstName,
+      });
+
       await this.emailsService.sendEmails(
-        [foodRequest.pantry.pantryUser.email],
-        emailTemplates.pantrySubmitsFoodRequest({
-          pantryName: foodRequest.pantry.pantryName,
-          volunteerName: foodRequest.pantry.pantryUser.firstName,
-        }).subject,
-        emailTemplates.pantrySubmitsFoodRequest({
-          pantryName: foodRequest.pantry.pantryName,
-          volunteerName: foodRequest.pantry.pantryUser.firstName,
-        }).bodyHTML,
+        volunteerEmails,
+        message.subject,
+        message.bodyHTML,
       );
     }
 

@@ -16,8 +16,6 @@ export class UsersService {
     private repo: Repository<User>,
 
     private authService: AuthService,
-
-    @Inject(EmailsService)
     private emailsService: EmailsService,
   ) {}
 
@@ -70,8 +68,12 @@ export class UsersService {
 
     // Send welcome email to new volunteers
     if (role === Role.VOLUNTEER) {
-      const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
-      await this.emailsService.sendEmails([email], subject, bodyHTML);
+      const message = emailTemplates.volunteerAccountCreated();
+      await this.emailsService.sendEmails(
+        [email],
+        message.subject,
+        message.bodyHTML,
+      );
     }
 
     return user;

@@ -4,6 +4,10 @@ export type EmailTemplate = {
   additionalContent?: string;
 };
 
+export const EMAIL_REDIRECT_URL = 'localhost:4200';
+// TODO: Change this before production to be the actual ssf email
+export const SSF_PARTNER_EMAIL = 'example@gmail.com';
+
 export const emailTemplates = {
   pantryFmApplicationApproved: (params: { name: string }): EmailTemplate => ({
     subject: 'Your Securing Safe Food Account Has Been Approved',
@@ -45,7 +49,7 @@ export const emailTemplates = {
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
-    additionalContent: 'localhost:4200/',
+    additionalContent: EMAIL_REDIRECT_URL + '/login',
   }),
 
   pantryFmApplicationSubmitted: (): EmailTemplate => ({
@@ -58,7 +62,7 @@ export const emailTemplates = {
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
-    additionalContent: 'localhost:4200/',
+    additionalContent: EMAIL_REDIRECT_URL + '/approve-pantries',
   }),
 
   pantrySubmitsFoodRequest: (params: {

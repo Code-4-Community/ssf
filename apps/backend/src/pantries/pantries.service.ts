@@ -14,7 +14,7 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
-import { emailTemplates } from '../emails/emailTemplates';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
 
 @Injectable()
@@ -111,10 +111,11 @@ export class PantriesService {
     await this.repo.save(pantry);
 
     if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      const message = emailTemplates.pantryFmApplicationSubmitted();
       await this.emailsService.sendEmails(
-        [pantryContact.email],
-        emailTemplates.pantryFmApplicationSubmitted().subject,
-        emailTemplates.pantryFmApplicationSubmitted().bodyHTML,
+        [SSF_PARTNER_EMAIL],
+        message.subject,
+        message.bodyHTML,
       );
     }
   }
@@ -143,14 +144,14 @@ export class PantriesService {
     });
 
     if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newPantryUser.firstName,
+      });
+
       await this.emailsService.sendEmails(
         [newPantryUser.email],
-        emailTemplates.pantryFmApplicationApproved({
-          name: newPantryUser.firstName,
-        }).subject,
-        emailTemplates.pantryFmApplicationApproved({
-          name: newPantryUser.firstName,
-        }).bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     }
   }

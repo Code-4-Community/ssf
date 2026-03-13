@@ -8,6 +8,7 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { UsersService } from '../users/users.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { AuthService } from '../auth/auth.service';
+import { EmailsService } from '../emails/email.service';
 
 jest.setTimeout(60000);
 
@@ -25,6 +26,7 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
+        EmailsService,
         {
           provide: AuthService,
           useValue: {},
@@ -36,6 +38,12 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();

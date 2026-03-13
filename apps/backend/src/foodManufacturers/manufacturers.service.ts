@@ -10,7 +10,7 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
-import { emailTemplates } from '../emails/emailTemplates';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
 
 @Injectable()
@@ -120,10 +120,11 @@ export class FoodManufacturersService {
 
     // TODO: Change receiver if deemed that they shouldn't receive an email on submisssion
     if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      const message = emailTemplates.pantryFmApplicationSubmitted();
       await this.emailsService.sendEmails(
-        [foodManufacturer.foodManufacturerRepresentative.email],
-        emailTemplates.pantryFmApplicationSubmitted().subject,
-        emailTemplates.pantryFmApplicationSubmitted().bodyHTML,
+        [SSF_PARTNER_EMAIL],
+        message.subject,
+        message.bodyHTML,
       );
     }
   }
@@ -133,6 +134,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
     });
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
@@ -151,14 +153,14 @@ export class FoodManufacturersService {
     });
 
     if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newFoodManufacturer.firstName,
+      });
+
       await this.emailsService.sendEmails(
         [newFoodManufacturer.email],
-        emailTemplates.pantryFmApplicationApproved({
-          name: newFoodManufacturer.firstName,
-        }).subject,
-        emailTemplates.pantryFmApplicationApproved({
-          name: newFoodManufacturer.firstName,
-        }).bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     }
   }
