@@ -119,14 +119,12 @@ export class FoodManufacturersService {
     await this.repo.save(foodManufacturer);
 
     // TODO: Change receiver if deemed that they shouldn't receive an email on submisssion
-    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
-      const message = emailTemplates.pantryFmApplicationSubmitted();
-      await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
-        message.subject,
-        message.bodyHTML,
-      );
-    }
+    const message = emailTemplates.pantryFmApplicationSubmitted();
+    await this.emailsService.sendEmails(
+      [SSF_PARTNER_EMAIL],
+      message.subject,
+      message.bodyHTML,
+    );
   }
 
   async approve(id: number) {
@@ -152,17 +150,15 @@ export class FoodManufacturersService {
       foodManufacturerRepresentative: newFoodManufacturer,
     });
 
-    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
-      const message = emailTemplates.pantryFmApplicationApproved({
-        name: newFoodManufacturer.firstName,
-      });
+    const message = emailTemplates.pantryFmApplicationApproved({
+      name: newFoodManufacturer.firstName,
+    });
 
-      await this.emailsService.sendEmails(
-        [newFoodManufacturer.email],
-        message.subject,
-        message.bodyHTML,
-      );
-    }
+    await this.emailsService.sendEmails(
+      [newFoodManufacturer.email],
+      message.subject,
+      message.bodyHTML,
+    );
   }
 
   async deny(id: number) {

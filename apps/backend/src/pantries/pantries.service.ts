@@ -110,14 +110,12 @@ export class PantriesService {
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
 
-    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
-      const message = emailTemplates.pantryFmApplicationSubmitted();
-      await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
-        message.subject,
-        message.bodyHTML,
-      );
-    }
+    const message = emailTemplates.pantryFmApplicationSubmitted();
+    await this.emailsService.sendEmails(
+      [SSF_PARTNER_EMAIL],
+      message.subject,
+      message.bodyHTML,
+    );
   }
 
   async approve(id: number) {
@@ -143,17 +141,15 @@ export class PantriesService {
       pantryUser: newPantryUser,
     });
 
-    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
-      const message = emailTemplates.pantryFmApplicationApproved({
-        name: newPantryUser.firstName,
-      });
+    const message = emailTemplates.pantryFmApplicationApproved({
+      name: newPantryUser.firstName,
+    });
 
-      await this.emailsService.sendEmails(
-        [newPantryUser.email],
-        message.subject,
-        message.bodyHTML,
-      );
-    }
+    await this.emailsService.sendEmails(
+      [newPantryUser.email],
+      message.subject,
+      message.bodyHTML,
+    );
   }
 
   async deny(id: number) {

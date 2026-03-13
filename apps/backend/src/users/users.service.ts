@@ -23,7 +23,7 @@ export class UsersService {
     const { email, firstName, lastName, phone, role } = createUserDto;
     const emailsEnabled = process.env.SEND_AUTOMATED_EMAILS === 'true';
 
-    // Just save to DB if emails are disabled
+    // Just save to DB if emails are disabled (no Cognito creation)
     if (!emailsEnabled) {
       const user = this.repo.create({
         role,

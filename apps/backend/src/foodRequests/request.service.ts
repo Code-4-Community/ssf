@@ -216,21 +216,19 @@ export class RequestsService {
       additionalInformation,
     });
 
-    if (process.env.SEND_AUTOMATED_EMAILS === 'true') {
-      const volunteers = pantry.volunteers || [];
-      const volunteerEmails = volunteers.map((v) => v.email);
+    const volunteers = pantry.volunteers || [];
+    const volunteerEmails = volunteers.map((v) => v.email);
 
-      const message = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry.pantryName,
-        volunteerName: pantry.pantryUser.firstName,
-      });
+    const message = emailTemplates.pantrySubmitsFoodRequest({
+      pantryName: pantry.pantryName,
+      volunteerName: pantry.pantryUser.firstName,
+    });
 
-      await this.emailsService.sendEmails(
-        volunteerEmails,
-        message.subject,
-        message.bodyHTML,
-      );
-    }
+    await this.emailsService.sendEmails(
+      volunteerEmails,
+      message.subject,
+      message.bodyHTML,
+    );
 
     return await this.repo.save(foodRequest);
   }
