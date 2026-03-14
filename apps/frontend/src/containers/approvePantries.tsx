@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Center,
   Table,
@@ -7,25 +8,19 @@ import {
   NativeSelect,
   NativeSelectIndicator,
 } from '@chakra-ui/react';
-import PantryApplicationModal from '@components/forms/pantryApplicationModal';
 import ApiClient from '@api/apiClient';
 import { Pantry } from 'types/types';
 import { formatDate } from '@utils/utils';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const ApprovePantries: React.FC = () => {
+  const navigate = useNavigate();
   const [pendingPantries, setPendingPantries] = useState<Pantry[]>([]);
   const [sortedPantries, setSortedPantries] = useState<Pantry[]>([]);
   const [sort, setSort] = useState<string>('');
-  const [openPantry, setOpenPantry] = useState<Pantry | null>(null);
-
-  const fetchPantries = async () => {
-    try {
-      const data = await ApiClient.getAllPendingPantries();
-      setPendingPantries(data);
-    } catch (err) {
-      alert(err);
-    }
-  };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [alertState, setAlertMessage] = useAlert();
 
   const updatePantry = async (
     pantryId: number,
@@ -34,14 +29,23 @@ const ApprovePantries: React.FC = () => {
     try {
       await ApiClient.updatePantry(pantryId, decision);
       setPendingPantries((prev) => prev.filter((p) => p.pantryId !== pantryId));
-    } catch (error) {
-      alert(`Error ${decision} pantry: ` + error);
+    } catch {
+      setAlertMessage(`Error ${decision} pantry`);
     }
   };
 
   useEffect(() => {
+    const fetchPantries = async () => {
+      try {
+        const data = await ApiClient.getAllPendingPantries();
+        setPendingPantries(data);
+      } catch {
+        setAlertMessage('Error fetching pantries');
+      }
+    };
+
     fetchPantries();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     const sorted = [...pendingPantries];
@@ -65,8 +69,31 @@ const ApprovePantries: React.FC = () => {
     setSortedPantries(sorted);
   }, [sort, pendingPantries]);
 
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const name = searchParams.get('name');
+
+    if (action && name) {
+      const message =
+        action === 'approved'
+          ? `${name} - Application Accepted`
+          : `${name} - Application Rejected`;
+
+      setAlertMessage(message);
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, setAlertMessage]);
+
   return (
     <Center flexDirection="column" p={4}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       <NativeSelect.Root width="40%" mb={4}>
         <NativeSelect.Field
           placeholder="Sort By"
@@ -91,7 +118,9 @@ const ApprovePantries: React.FC = () => {
                   bg="transparent"
                   color="cyan"
                   fontWeight="600"
-                  onClick={() => setOpenPantry(pantry)}
+                  onClick={() =>
+                    navigate(`/pantry-application-details/${pantry.pantryId}`)
+                  }
                 >
                   <Link>{pantry.pantryName}</Link>
                 </Button>
@@ -117,13 +146,6 @@ const ApprovePantries: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openPantry && (
-            <PantryApplicationModal
-              pantry={openPantry}
-              isOpen={openPantry !== null}
-              onClose={() => setOpenPantry(null)}
-            />
-          )}
         </Table.Body>
       </Table.Root>
     </Center>
