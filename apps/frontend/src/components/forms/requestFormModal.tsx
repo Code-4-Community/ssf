@@ -50,16 +50,18 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
 
   useEffect(() => {
-    if (isOpen && previousRequest) {
-      setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
-      setRequestedSize(previousRequest.requestedSize || '');
-      setAdditionalNotes(previousRequest.additionalInformation || '');
-    } else {
-      setSelectedFoodTypes([]);
-      setRequestedSize('');
-      setAdditionalNotes('');
+    if (isOpen) {
+      if (previousRequest) {
+        setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
+        setRequestedSize(previousRequest.requestedSize || '');
+        setAdditionalNotes(previousRequest.additionalInformation || '');
+      } else {
+        setSelectedFoodTypes([]);
+        setRequestedSize('');
+        setAdditionalNotes('');
+      }
+      setAlert({ isError: true, message: '' });
     }
-    setAlert({ isError: true, message: '' });
   }, [isOpen, previousRequest]);
 
   const handleSubmit = async () => {
