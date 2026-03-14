@@ -1,0 +1,278 @@
+import React, { useState } from 'react';
+import {
+  Flex,
+  Button,
+  Textarea,
+  Text,
+  Dialog,
+  Box,
+  Field,
+  CloseButton,
+  Input,
+  FileUpload,
+  Icon,
+} from '@chakra-ui/react';
+import { Upload } from 'lucide-react';
+import { ConfirmDeliveryDto } from 'types/types';
+import apiClient from '@api/apiClient';
+import { FloatingAlert } from '@components/floatingAlert';
+
+interface OrderReceivedActionModalProps {
+  orderId: number;
+  orderCreatedAt: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  onError: () => void;
+}
+
+const MAX_FILES = 10;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
+  orderId,
+  orderCreatedAt,
+  isOpen,
+  onClose,
+  onSuccess,
+  onError,
+}) => {
+  const [alert, setAlert] = useState<{
+    isError: boolean;
+    message: string;
+  }>({
+    isError: true,
+    message: '',
+  });
+  const [feedback, setFeedback] = useState<string>('');
+  const [dateReceived, setDateReceived] = useState<string>('');
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [invalidPhotoExists, setInvalidPhotoExists] = useState<boolean>(false);
+
+  const isFormValid = dateReceived !== '' && !invalidPhotoExists;
+
+  const minDate = new Date(orderCreatedAt).toISOString().split('T')[0];
+
+  const resetForm = () => {
+    setFeedback('');
+    setDateReceived('');
+    setPhotos([]);
+    setInvalidPhotoExists(false);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (new Date(dateReceived) < new Date(orderCreatedAt)) {
+        setAlert({
+          isError: true,
+          message:
+            'Date received cannot be earlier than the order creation date',
+        });
+        return;
+      }
+
+      const dto: ConfirmDeliveryDto = {
+        dateReceived: new Date(dateReceived).toISOString(),
+        feedback: feedback,
+      };
+
+      await apiClient.confirmOrderDelivery(orderId, dto, photos);
+
+      resetForm();
+      onSuccess();
+      onClose();
+    } catch (err) {
+      resetForm();
+      onError();
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog.Root
+      open={isOpen}
+      size="xl"
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) {
+          resetForm();
+          onClose();
+        }
+      }}
+      closeOnInteractOutside
+    >
+      {alert && (
+        <FloatingAlert
+          message={alert.message}
+          status={alert.isError ? 'error' : 'info'}
+          timeout={6000}
+        />
+      )}
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW={650}>
+          <Dialog.Header pb={0} mt={2}>
+            <Dialog.Title
+              color="black"
+              fontSize="lg"
+              fontWeight={700}
+              fontFamily="inter"
+            >
+              Action Required
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <Text
+              mb={5}
+              color="neutral.800"
+              textStyle="p2"
+              pt={0}
+              mt={2}
+              textAlign={'left'}
+            >
+              As this order arrives, please confirm the donation receipt and
+              delivery of the order by filling out the details below.
+            </Text>
+            <Box>
+              <Field.Root required mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Date Received
+                  </Text>
+                </Field.Label>
+                <Input
+                  type="date"
+                  textStyle="p2"
+                  w="full"
+                  bg="white"
+                  borderColor="neutral.100"
+                  color="neutral.700"
+                  borderWidth="1px"
+                  borderRadius="4px"
+                  min={minDate}
+                  onChange={(e) => setDateReceived(e.target.value)}
+                  value={dateReceived}
+                />
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Feedback
+                  </Text>
+                </Field.Label>
+                <Textarea
+                  pl={2.5}
+                  size="lg"
+                  textStyle="p2"
+                  color="neutral.800"
+                  borderColor="neutral.100"
+                  minH={150}
+                  value={feedback}
+                  onChange={(e) => {
+                    const inputText = e.target.value;
+                    const words = inputText.trim().split(/\s+/);
+
+                    if (words.length <= 250) {
+                      setFeedback(e.target.value);
+                    } else {
+                      setAlert({
+                        isError: true,
+                        message: 'Exceeded word limit',
+                      });
+                    }
+                  }}
+                />
+
+                <Field.HelperText color="neutral.600">
+                  Max 250 words
+                </Field.HelperText>
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Photos
+                  </Text>
+                </Field.Label>
+                <FileUpload.Root
+                  accept={['image/png', 'image/jpeg', 'image/jpg']}
+                  alignItems="stretch"
+                  maxFiles={MAX_FILES}
+                  onFileChange={(e: { acceptedFiles?: File[] }) => {
+                    const files: File[] = e.acceptedFiles ?? [];
+                    const oversized = files.find(
+                      (file) => file.size > MAX_FILE_SIZE,
+                    );
+                    if (oversized) {
+                      setAlert({
+                        isError: true,
+                        message: `${oversized.name} exceeds the 5MB size limit`,
+                      });
+                      setInvalidPhotoExists(true);
+                      return;
+                    } else {
+                      setInvalidPhotoExists(false);
+                    }
+
+                    setPhotos(files);
+                  }}
+                >
+                  <FileUpload.HiddenInput />
+                  <FileUpload.Dropzone
+                    borderColor="neutral.100"
+                    borderRadius="4px"
+                    borderStyle="solid"
+                    borderWidth="1px"
+                    minH="150px"
+                    cursor="pointer"
+                  >
+                    <Icon size="md" color="fg.muted">
+                      <Upload />
+                    </Icon>
+                    <FileUpload.DropzoneContent>
+                      <Box textStyle="p2" fontWeight={600}>
+                        Click or drag and drop here to upload
+                      </Box>
+                      <Box textStyle="p2" color="neutral.800">
+                        .png, .jpg up to 5MB
+                      </Box>
+                    </FileUpload.DropzoneContent>
+                  </FileUpload.Dropzone>
+                  <FileUpload.List clearable />
+                </FileUpload.Root>
+              </Field.Root>
+
+              <Flex justifyContent="flex-end" mt={4} gap={2}>
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    onClose();
+                  }}
+                  bg={'white'}
+                  color={'black'}
+                  borderColor="neutral.100"
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  onClick={handleSubmit}
+                  bg={isFormValid ? 'blue.hover' : 'neutral.400'}
+                  color={'white'}
+                  disabled={!isFormValid}
+                >
+                  Continue
+                </Button>
+              </Flex>
+            </Box>
+          </Dialog.Body>
+          <Dialog.CloseTrigger asChild>
+            <CloseButton size="lg" />
+          </Dialog.CloseTrigger>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
+  );
+};
+
+export default OrderReceivedActionModal;
