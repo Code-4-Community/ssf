@@ -5,6 +5,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { NavigateFunction } from 'react-router-dom';
 import {
   User,
   Order,
@@ -21,7 +22,9 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  Assignments,
   FoodRequestSummaryDto,
+  PantryWithUser,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -29,7 +32,11 @@ const defaultBaseUrl =
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
-  private accessToken: string | undefined;
+  private navigate: NavigateFunction | null = null;
+
+  public setNavigate(navigate: NavigateFunction): void {
+    this.navigate = navigate;
+  }
 
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
@@ -53,7 +60,11 @@ export class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 403) {
-          window.location.replace('/unauthorized');
+          if (this.navigate) {
+            this.navigate('/unauthorized');
+          } else {
+            window.location.replace('/unauthorized');
+          }
         }
         return Promise.reject(error);
       },
@@ -146,7 +157,7 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
-  public async getAllPendingPantries(): Promise<Pantry[]> {
+  public async getAllPendingPantries(): Promise<PantryWithUser[]> {
     return this.axiosInstance
       .get('/api/pantries/pending')
       .then((response) => response.data);
@@ -158,8 +169,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getPantry(pantryId: number): Promise<Pantry> {
-    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  public async getPantry(pantryId: number): Promise<PantryWithUser> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<PantryWithUser>;
   }
 
   public async postPantry(
@@ -176,8 +187,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getVolunteers(): Promise<User[]> {
-    return this.get('/api/volunteers/') as Promise<User[]>;
+  public async getVolunteers(): Promise<Assignments[]> {
+    return this.get('/api/volunteers') as Promise<Assignments[]>;
+  }
+
+  public async getVolunteerPantries(userId: number): Promise<Pantry[]> {
+    return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
   }
 
   public async updateUserVolunteerRole(
@@ -198,9 +213,9 @@ export class ApiClient {
   public async getDonationItemsByDonationId(
     donationId: number,
   ): Promise<DonationItem[]> {
-    return this.get(
-      `/api/donation-items/get-donation-items/${donationId}`,
-    ) as Promise<DonationItem[]>;
+    return this.get(`/api/donation-items/${donationId}/all`) as Promise<
+      DonationItem[]
+    >;
   }
 
   public async getManufacturerFromOrder(
@@ -291,7 +306,11 @@ export class ApiClient {
 
       if (response.status === 200) {
         alert('Delivery confirmation submitted successfully');
-        window.location.href = '/request-form';
+        if (this.navigate) {
+          this.navigate('/request-form');
+        } else {
+          window.location.href = '/request-form';
+        }
       } else {
         alert(`Failed to submit: ${response.statusText}`);
       }
@@ -302,6 +321,11 @@ export class ApiClient {
 
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
+    return data as number;
+  }
+
+  public async getMyId(): Promise<number> {
+    const data = await this.get('/api/users/my-id');
     return data as number;
   }
 }

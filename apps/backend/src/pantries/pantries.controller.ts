@@ -27,6 +27,7 @@ import {
 } from './types';
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { EmailsService } from '../emails/email.service';
 import { SendEmailDTO } from '../emails/dto/send-email.dto';
 import { Public } from '../auth/public.decorator';
@@ -63,6 +64,15 @@ export class PantriesController {
     return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
 
+  @CheckOwnership({
+    idParam: 'pantryId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(PantriesService).findOne(entityId),
+        (pantry: Pantry) => [pantry.pantryUser.id],
+      );
+    },
+  })
   @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:pantryId')
   async getPantry(
