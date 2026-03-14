@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './users.entity';
@@ -6,6 +6,8 @@ import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { emailTemplates } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class UsersService {
@@ -14,11 +16,27 @@ export class UsersService {
     private repo: Repository<User>,
 
     private authService: AuthService,
+    private emailsService: EmailsService,
   ) {}
 
   async create(createUserDto: userSchemaDto): Promise<User> {
     const { email, firstName, lastName, phone, role } = createUserDto;
+    const emailsEnabled = process.env.SEND_AUTOMATED_EMAILS === 'true';
 
+    // Just save to DB if emails are disabled (no Cognito creation)
+    if (!emailsEnabled) {
+      const user = this.repo.create({
+        role,
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
+      return this.repo.save(user);
+    }
+
+    // Pantry and food manufacturer users must already exist in the DB
+    // (created during application) before a Cognito account is made
     if (role === Role.PANTRY || role === Role.FOODMANUFACTURER) {
       const existingUser = await this.repo.findOneBy({ email });
       if (!existingUser) {
@@ -32,6 +50,7 @@ export class UsersService {
       return this.repo.save(existingUser);
     }
 
+    // All other roles (e.g. VOLUNTEER): create Cognito user and save to DB
     const userCognitoSub = await this.authService.adminCreateUser({
       firstName,
       lastName,
@@ -45,7 +64,19 @@ export class UsersService {
       phone,
       userCognitoSub,
     });
-    return this.repo.save(user);
+    await this.repo.save(user);
+
+    // Send welcome email to new volunteers
+    if (role === Role.VOLUNTEER) {
+      const message = emailTemplates.volunteerAccountCreated();
+      await this.emailsService.sendEmails(
+        [email],
+        message.subject,
+        message.bodyHTML,
+      );
+    }
+
+    return user;
   }
 
   async findOne(id: number): Promise<User> {

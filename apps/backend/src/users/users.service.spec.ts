@@ -11,6 +11,7 @@ import { BadRequestException } from '@nestjs/common';
 import { PantriesService } from '../pantries/pantries.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { AuthService } from '../auth/auth.service';
+import { EmailsService } from '../emails/email.service';
 
 const mockUserRepository = mock<Repository<User>>();
 const mockPantriesService = mock<PantriesService>();
@@ -40,6 +41,7 @@ describe('UsersService', () => {
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
+        EmailsService,
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
@@ -51,6 +53,12 @@ describe('UsersService', () => {
         {
           provide: AuthService,
           useValue: mockAuthService,
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();

@@ -10,6 +10,8 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -18,6 +20,7 @@ export class FoodManufacturersService {
     private repo: Repository<FoodManufacturer>,
 
     private usersService: UsersService,
+    private emailsService: EmailsService,
 
     @InjectRepository(Donation)
     private donationsRepo: Repository<Donation>,
@@ -114,6 +117,24 @@ export class FoodManufacturersService {
       foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
+
+    const manufacturerMessage =
+      emailTemplates.pantryFmApplicationSubmittedToUser({
+        name: foodManufacturerContact.firstName,
+      });
+
+    await this.emailsService.sendEmails(
+      [foodManufacturerContact.email],
+      manufacturerMessage.subject,
+      manufacturerMessage.bodyHTML,
+    );
+
+    const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
+    await this.emailsService.sendEmails(
+      [SSF_PARTNER_EMAIL],
+      adminMessage.subject,
+      adminMessage.bodyHTML,
+    );
   }
 
   async approve(id: number) {
@@ -121,16 +142,14 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
     });
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
     const createUserDto: userSchemaDto = {
-      email: foodManufacturer.foodManufacturerRepresentative.email,
-      firstName: foodManufacturer.foodManufacturerRepresentative.firstName,
-      lastName: foodManufacturer.foodManufacturerRepresentative.lastName,
-      phone: foodManufacturer.foodManufacturerRepresentative.phone,
+      ...foodManufacturer.foodManufacturerRepresentative,
       role: Role.FOODMANUFACTURER,
     };
 
@@ -140,6 +159,16 @@ export class FoodManufacturersService {
       status: ApplicationStatus.APPROVED,
       foodManufacturerRepresentative: newFoodManufacturer,
     });
+
+    const message = emailTemplates.pantryFmApplicationApproved({
+      name: newFoodManufacturer.firstName,
+    });
+
+    await this.emailsService.sendEmails(
+      [newFoodManufacturer.email],
+      message.subject,
+      message.bodyHTML,
+    );
   }
 
   async deny(id: number) {

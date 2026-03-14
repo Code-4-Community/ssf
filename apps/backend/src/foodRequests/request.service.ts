@@ -15,6 +15,8 @@ import {
 } from './dtos/matching.dto';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class RequestsService {
@@ -26,6 +28,7 @@ export class RequestsService {
     private foodManufacturerRepo: Repository<FoodManufacturer>,
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -198,7 +201,10 @@ export class RequestsService {
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
-    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    const pantry = await this.pantryRepo.findOne({
+      where: { pantryId },
+      relations: ['pantryUser', 'volunteers'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
@@ -209,6 +215,20 @@ export class RequestsService {
       requestedFoodTypes,
       additionalInformation,
     });
+
+    const volunteers = pantry.volunteers || [];
+    const volunteerEmails = volunteers.map((v) => v.email);
+
+    const message = emailTemplates.pantrySubmitsFoodRequest({
+      pantryName: pantry.pantryName,
+      volunteerName: pantry.pantryUser.firstName,
+    });
+
+    await this.emailsService.sendEmails(
+      volunteerEmails,
+      message.subject,
+      message.bodyHTML,
+    );
 
     return await this.repo.save(foodRequest);
   }
