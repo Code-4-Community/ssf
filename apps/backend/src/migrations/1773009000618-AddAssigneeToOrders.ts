@@ -4,7 +4,7 @@ export class AddAssigneeToOrders1773009000618 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE orders
-      ADD COLUMN assignee_id INT,
+      ADD COLUMN assignee_id INT NOT NULL,
       ADD CONSTRAINT fk_assignee_id
         FOREIGN KEY (assignee_id) REFERENCES users(user_id) ON DELETE SET NULL
     `);

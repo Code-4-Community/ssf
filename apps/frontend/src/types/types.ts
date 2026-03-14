@@ -365,7 +365,7 @@ export interface OrderSummary {
     id: number;
     firstName: string;
     lastName: string;
-  } | null;
+  };
 }
 
 export enum ApplicationStatus {

@@ -97,7 +97,10 @@ export class Order {
   })
   shippingCost!: number | null;
 
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'assignee_id', referencedColumnName: 'id' })
-  assignee!: User | null;
+  @ManyToOne(() => User, { nullable: false })
+  @JoinColumn({ name: 'assignee_id', referencedColumnName: 'userId' })
+  assignee!: User;
+
+  @Column({ name: 'assignee_id' })
+  assigneeId!: number;
 }

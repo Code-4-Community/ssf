@@ -664,25 +664,21 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         alignItems="center"
                         justifyContent="center"
                       >
-                        {order.assignee ? (
-                          <Box
-                            key={index}
-                            borderRadius="full"
-                            bg={order.assigneeColor || 'gray'}
-                            width="33px"
-                            height="33px"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            color="white"
-                            p={2}
-                          >
-                            {order.assignee?.firstName.charAt(0).toUpperCase()}
-                            {order.assignee?.lastName.charAt(0).toUpperCase()}
-                          </Box>
-                        ) : (
-                          <Box>No Assignees</Box>
-                        )}
+                        <Box
+                          key={index}
+                          borderRadius="full"
+                          bg={order.assigneeColor || 'gray'}
+                          width="33px"
+                          height="33px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          p={2}
+                        >
+                          {order.assignee?.firstName.charAt(0).toUpperCase()}
+                          {order.assignee?.lastName.charAt(0).toUpperCase()}
+                        </Box>
                       </Box>
                     </Table.Cell>
                     <Table.Cell
