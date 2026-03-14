@@ -341,6 +341,11 @@ export interface OrderSummary {
       }[];
     };
   };
+  assignee: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export enum ApplicationStatus {
