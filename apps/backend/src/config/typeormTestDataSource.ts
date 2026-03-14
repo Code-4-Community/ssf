@@ -3,7 +3,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { PluralNamingStrategy } from '../strategies/plural-naming.strategy';
 import { Order } from '../orders/order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { Donation } from '../donations/donations.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequest } from '../foodRequests/request.entity';

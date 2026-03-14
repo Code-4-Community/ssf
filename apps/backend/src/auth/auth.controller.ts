@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { VerifyUserDto } from './dtos/verify-user.dto';
 import { DeleteUserDto } from './dtos/delete-user.dto';
-import { User } from '../users/user.entity';
+import { User } from '../users/users.entity';
 import { SignInResponseDto } from './dtos/sign-in-response.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { ConfirmPasswordDto } from './dtos/confirm-password.dto';

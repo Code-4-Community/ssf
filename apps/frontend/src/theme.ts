@@ -53,6 +53,13 @@ const textStyles = defineTextStyles({
       fontWeight: '400',
     },
   },
+  p3: {
+    value: {
+      fontFamily: 'inter',
+      fontSize: '12px',
+      fontWeight: '400',
+    },
+  },
 });
 
 const customConfig = defineConfig({
