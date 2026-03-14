@@ -124,9 +124,7 @@ export class FoodManufacturersService {
   async approve(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.repo.findOne({
-      where: { foodManufacturerId: id },
-    });
+    const foodManufacturer = await this.findOne(id);
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
@@ -156,9 +154,7 @@ export class FoodManufacturersService {
   async deny(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.repo.findOne({
-      where: { foodManufacturerId: id },
-    });
+    const foodManufacturer = await this.findOne(id);
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
