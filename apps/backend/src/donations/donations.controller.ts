@@ -85,4 +85,11 @@ export class DonationsController {
     }
     return updatedDonation;
   }
+
+  @Patch('/match-all')
+  async matchAllDonations(
+    @Body() body: { donationIds: number[] },
+  ): Promise<void> {
+    await this.donationService.matchAll(body.donationIds);
+  }
 }

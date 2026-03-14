@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
@@ -26,6 +26,28 @@ export class DonationItemsService {
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
     return this.repo.find({ where: { donation: { donationId } } });
+  }
+
+  async getByIds(donationItemIds: number[]): Promise<DonationItem[]> {
+    return this.repo.find({
+      where: {
+        itemId: In(donationItemIds),
+      },
+    });
+  }
+
+  async getAssociatedDonations(donationItemIds: number[]): Promise<Donation[]> {
+    const items = await this.repo.find({
+      where: { itemId: In(donationItemIds) },
+      relations: ['donation'],
+    });
+
+    const donations = items.map((i) => i.donation);
+
+    // Ensure no duplicates
+    return Array.from(
+      new Map(donations.map((d) => [d.donationId, d])).values(),
+    );
   }
 
   async create(
@@ -94,5 +116,15 @@ export class DonationItemsService {
     }
     donationItem.quantity -= 1;
     return this.repo.save(donationItem);
+  }
+
+  async setReservedQuantities(body: Record<number, number>): Promise<void> {
+    for (const [itemId, quantity] of Object.entries(body)) {
+      const id = Number(itemId);
+
+      validateId(id, 'Item');
+
+      await this.repo.increment({ itemId: id }, 'reservedQuantity', quantity);
+    }
   }
 }

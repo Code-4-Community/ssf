@@ -7,6 +7,8 @@ import {
   Patch,
   UseGuards,
   ParseIntPipe,
+  Query,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { DonationItemsService } from './donationItems.service';
@@ -14,6 +16,7 @@ import { DonationItem } from './donationItems.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { FoodType } from './types';
 import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
+import { Donation } from '../donations/donations.entity';
 
 @Controller('donation-items')
 @UseGuards(AuthGuard('jwt'))
@@ -25,6 +28,29 @@ export class DonationItemsController {
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
+  }
+
+  // Called like: /donation-items/associated-donations?donationItemIds=1,2,3
+  @Get('/associated-donations')
+  async getDonationsFromDonationItemIds(
+    @Query(
+      'donationItemIds',
+      new ParseArrayPipe({ items: Number, separator: ',' }),
+    )
+    donationItemIds: number[],
+  ): Promise<Donation[]> {
+    return this.donationItemsService.getAssociatedDonations(donationItemIds);
+  }
+
+  @Get('/getByIds')
+  async getByIds(
+    @Query(
+      'donationItemIds',
+      new ParseArrayPipe({ items: Number, separator: ',' }),
+    )
+    donationItemIds: number[],
+  ): Promise<DonationItem[]> {
+    return this.donationItemsService.getByIds(donationItemIds);
   }
 
   @Post('/create-multiple')
@@ -72,5 +98,12 @@ export class DonationItemsController {
     @Param('itemId', ParseIntPipe) itemId: number,
   ): Promise<DonationItem> {
     return this.donationItemsService.updateDonationItemQuantity(itemId);
+  }
+
+  @Patch('/set-quantities')
+  async setReservedQuantities(
+    @Body() body: Record<number, number>,
+  ): Promise<void> {
+    return this.donationItemsService.setReservedQuantities(body);
   }
 }

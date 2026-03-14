@@ -15,6 +15,12 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { FoodRequestStatus } from '../foodRequests/types';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
+import { DonationService } from '../donations/donations.service';
 
 @Injectable()
 export class OrdersService {
@@ -22,6 +28,10 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     private requestsService: RequestsService,
+    private manufacturerService: FoodManufacturersService,
+    private donationItemsService: DonationItemsService,
+    private allocationsService: AllocationsService,
+    private donationService: DonationService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -68,6 +78,90 @@ export class OrdersService {
     return this.repo.find({
       where: { status: OrderStatus.DELIVERED },
     });
+  }
+
+  async create(orderData: CreateOrderDto): Promise<Order> {
+    const requestId = orderData.foodRequestId;
+    const manufacturerId = orderData.manufacturerId;
+
+    validateId(manufacturerId, 'Food Manufacturer');
+    validateId(requestId, 'Request');
+
+    const request = await this.requestsService.findOne(requestId);
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(`Request ${requestId} is not active`);
+    }
+
+    const fmDonations = await this.manufacturerService.getFMDonations(
+      manufacturerId,
+    );
+    const fmDonationSet = new Set(fmDonations.map((d) => d.donationId));
+
+    const donationItemIds = Object.keys(orderData.itemAllocations).map(Number);
+    const donationItems = await this.donationItemsService.getByIds(
+      donationItemIds,
+    );
+
+    // All donations associated with the given donation items
+    const associatedDonations =
+      await this.donationItemsService.getAssociatedDonations(donationItemIds);
+    const associatedDonationIds = associatedDonations.map((d) => d.donationId);
+
+    // True if there is an associated donation that does not belong to the current FM
+    const invalidDonation = associatedDonationIds.find(
+      (id) => !fmDonationSet.has(id),
+    );
+
+    if (invalidDonation) {
+      throw new BadRequestException(
+        `Donation is not associated with the current food manufacturer`,
+      );
+    }
+
+    for (const [itemId, quantity] of Object.entries(
+      orderData.itemAllocations,
+    )) {
+      const id = Number(itemId);
+      const allocatedQuantity = Number(quantity);
+      validateId(id, 'Donation Item');
+
+      const donationItem = donationItems.find((d) => d.itemId === id);
+
+      if (!donationItem) {
+        throw new NotFoundException(`Couldn't find donation item ${id} `);
+      }
+
+      if (
+        allocatedQuantity >
+        donationItem.quantity - donationItem.reservedQuantity
+      ) {
+        throw new BadRequestException(
+          `Donation item ${id} allocated quantity exceeds remaining quantity`,
+        );
+      }
+    }
+
+    const order = this.repo.create({
+      requestId: requestId,
+      foodManufacturerId: manufacturerId,
+      status: OrderStatus.PENDING,
+    });
+
+    const savedOrder = await this.repo.save(order);
+
+    await this.allocationsService.createMultiple({
+      orderId: savedOrder.orderId,
+      itemAllocations: orderData.itemAllocations,
+    });
+
+    await this.donationItemsService.setReservedQuantities(
+      orderData.itemAllocations,
+    );
+
+    await this.donationService.matchAll(associatedDonationIds);
+
+    return savedOrder;
   }
 
   async findOne(orderId: number): Promise<Order> {
