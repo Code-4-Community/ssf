@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 const ResetPasswordModal: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -18,7 +19,7 @@ const ResetPasswordModal: React.FC = () => {
   const [step, setStep] = useState<'reset' | 'new'>('reset');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   const navigate = useNavigate();
 
@@ -26,16 +27,16 @@ const ResetPasswordModal: React.FC = () => {
     try {
       await resetPassword({ username: email });
       setStep('new');
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlertMessage('Failed to send verification code');
     }
   };
 
   const handleResendCode = async () => {
     try {
       await resetPassword({ username: email });
-    } catch (error) {
-      setAlertMessage('Failed to send verification code: ' + error);
+    } catch {
+      setAlertMessage('Failed to send verification code');
     }
   };
 
@@ -57,8 +58,8 @@ const ResetPasswordModal: React.FC = () => {
         newPassword: password,
       });
       navigate('/login');
-    } catch (error) {
-      setAlertMessage('Failed to set new password: ' + error);
+    } catch {
+      setAlertMessage('Failed to set new password');
     }
   };
 
@@ -92,8 +93,13 @@ const ResetPasswordModal: React.FC = () => {
       borderRadius="xl"
       boxShadow="xl"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <VStack gap={5} align="stretch">
         <Box mb={4}>

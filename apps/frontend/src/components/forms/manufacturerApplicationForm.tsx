@@ -20,8 +20,9 @@ import {
   ActionFunctionArgs,
   Form,
   redirect,
+  useActionData,
 } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { TagGroup } from '@components/forms/tagGroup';
 import { ManufacturerApplicationDto } from '../../types/types';
@@ -33,6 +34,8 @@ import {
   DonateWastedFood,
   ManufacturerAttribute,
 } from '../../types/manufacturerEnums';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 const ManufacturerApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
@@ -44,6 +47,8 @@ const ManufacturerApplicationForm: React.FC = () => {
   const [facilityFreeAllergens, setFacilityFreeAllergens] = useState<
     Allergen[]
   >([]);
+  const [alertState, setAlertMessage] = useAlert();
+  const actionData = useActionData() as { error?: string } | undefined;
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -68,9 +73,23 @@ const ManufacturerApplicationForm: React.FC = () => {
     fontWeight: '600',
   };
 
+  useEffect(() => {
+    if (actionData?.error) {
+      setAlertMessage(actionData.error);
+    }
+  }, [actionData, setAlertMessage]);
+
   return (
     <Box width="100%" mx="11em" my="4em">
       <Box as="section" mb="2.75em">
+        {alertState && (
+          <FloatingAlert
+            key={alertState.id}
+            message={alertState.message}
+            status="error"
+            timeout={6000}
+          />
+        )}
         <Heading textStyle="h1" fontWeight="normal" mb=".5em">
           Partner Manufacturer Application
         </Heading>
@@ -699,28 +718,27 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
   });
 
   const data = Object.fromEntries(manufacturerApplicationData);
-  let submissionSuccessful = false;
 
-  await ApiClient.postManufacturer(data as ManufacturerApplicationDto).then(
-    () => (submissionSuccessful = true),
-    (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        alert(
+  try {
+    await ApiClient.postManufacturer(data as ManufacturerApplicationDto);
+    return redirect('/application-submitted');
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+      return {
+        error:
           'Form submission failed with the following errors: \n\n' +
-            // Creates a bullet-point list of the errors
-            // returned from the backend
-            error.response?.data?.message
-              .map((line: string) => '- ' + line)
-              .join('\n'),
-        );
-      } else {
-        alert('Form submission failed; please try again');
-        console.log(error);
-      }
-    },
-  );
-
-  return submissionSuccessful ? redirect('/application-submitted') : null;
+          // Creates a bullet-point list of the errors
+          // returned from the backend
+          error.response?.data?.message
+            .map((line: string) => '- ' + line)
+            .join('\n'),
+      };
+    } else {
+      return {
+        error: 'Form submission failed; please try again',
+      };
+    }
+  }
 };
 
 export default ManufacturerApplicationForm;
