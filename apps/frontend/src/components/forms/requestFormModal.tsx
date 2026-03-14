@@ -40,9 +40,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
   const [alert, setAlert] = useState<{
+    key: number;
     isError: boolean;
     message: string;
   }>({
+    key: 0,
     isError: true,
     message: '',
   });
@@ -72,11 +74,19 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setAlert({ isError: false, message: 'Request Submitted' });
+      setAlert((prev) => ({
+        key: prev.key + 1,
+        isError: false,
+        message: 'Request submitted',
+      }));
       onClose();
       onSuccess();
     } catch {
-      setAlert({ isError: true, message: 'Request could not be submitted.' });
+      setAlert((prev) => ({
+        key: prev.key + 1,
+        isError: true,
+        message: 'Request could not be submitted.',
+      }));
     }
   };
 
@@ -90,10 +100,20 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       closeOnInteractOutside
     >
       {alert.message && alert.isError && (
-        <FloatingAlert message={alert.message} status="error" timeout={6000} />
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       {alert.message && !alert.isError && (
-        <FloatingAlert message={alert.message} status="info" timeout={6000} />
+        <FloatingAlert
+          key={alert.key}
+          message={alert.message}
+          status="info"
+          timeout={6000}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
@@ -272,10 +292,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setAlert({
+                      setAlert((prev) => ({
+                        key: prev.key + 1,
                         isError: true,
                         message: 'Exceeded word limit',
-                      });
+                      }));
                     }
                   }}
                 />
