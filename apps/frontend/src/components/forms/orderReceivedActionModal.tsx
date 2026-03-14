@@ -19,6 +19,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 
 interface OrderReceivedActionModalProps {
   orderId: number;
+  orderCreatedAt: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -30,6 +31,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   orderId,
+  orderCreatedAt,
   isOpen,
   onClose,
   onSuccess,
@@ -49,14 +51,26 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
   const isFormValid = dateReceived !== '' && !invalidPhotoExists;
 
+  const minDate = new Date(orderCreatedAt).toISOString().split('T')[0];
+
   const resetForm = () => {
     setFeedback('');
     setDateReceived('');
     setPhotos([]);
+    setInvalidPhotoExists(false);
   };
 
   const handleSubmit = async () => {
     try {
+      if (new Date(dateReceived) < new Date(orderCreatedAt)) {
+        setAlert({
+          isError: true,
+          message:
+            'Date received cannot be earlier than the order creation date',
+        });
+        return;
+      }
+
       const dto: ConfirmDeliveryDto = {
         dateReceived: new Date(dateReceived).toISOString(),
         feedback: feedback,
@@ -79,7 +93,10 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       open={isOpen}
       size="xl"
       onOpenChange={(e: { open: boolean }) => {
-        if (!e.open) onClose();
+        if (!e.open) {
+          resetForm();
+          onClose();
+        }
       }}
       closeOnInteractOutside
     >
@@ -131,6 +148,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   color="neutral.700"
                   borderWidth="1px"
                   borderRadius="4px"
+                  min={minDate}
                   onChange={(e) => setDateReceived(e.target.value)}
                   value={dateReceived}
                 />
@@ -226,7 +244,10 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
               <Flex justifyContent="flex-end" mt={4} gap={2}>
                 <Button
-                  onClick={onClose}
+                  onClick={() => {
+                    resetForm();
+                    onClose();
+                  }}
                   bg={'white'}
                   color={'black'}
                   borderColor="neutral.100"

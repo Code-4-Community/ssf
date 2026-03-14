@@ -39,10 +39,8 @@ const PantryOrderManagement: React.FC = () => {
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
-  // State to hold selected order for action modal
-  const [selectedActionOrderId, setSelectedActionOrderId] = useState<
-    number | null
-  >(null);
+  const [selectedActionOrder, setSelectedActionOrder] =
+    useState<OrderWithColor | null>(null);
 
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
@@ -178,7 +176,7 @@ const PantryOrderManagement: React.FC = () => {
               status={status}
               colors={STATUS_COLORS.get(status)!}
               onOrderSelect={setSelectedOrderId}
-              onOrderSelectForAction={setSelectedActionOrderId}
+              onOrderSelectForAction={setSelectedActionOrder}
               totalOrders={totalFiltered}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
@@ -202,24 +200,27 @@ const PantryOrderManagement: React.FC = () => {
         onClose={() => setSelectedOrderId(null)}
       />
 
-      <OrderReceivedActionModal
-        orderId={selectedActionOrderId!}
-        isOpen={!!selectedActionOrderId}
-        onClose={() => setSelectedActionOrderId(null)}
-        onSuccess={() => {
-          fetchOrders();
-          setAlert({
-            isError: false,
-            message: 'Delivery Confirmed',
-          });
-        }}
-        onError={() => {
-          setAlert({
-            isError: true,
-            message: 'Delivery could not be confirmed.',
-          });
-        }}
-      />
+      {selectedActionOrder && (
+        <OrderReceivedActionModal
+          orderId={selectedActionOrder.orderId}
+          orderCreatedAt={selectedActionOrder.createdAt}
+          isOpen={true}
+          onClose={() => setSelectedActionOrder(null)}
+          onSuccess={() => {
+            fetchOrders();
+            setAlert({
+              isError: false,
+              message: 'Delivery Confirmed',
+            });
+          }}
+          onError={() => {
+            setAlert({
+              isError: true,
+              message: 'Delivery could not be confirmed.',
+            });
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -229,7 +230,7 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: [string, string];
   onOrderSelect: (orderId: number | null) => void;
-  onOrderSelectForAction: (orderId: number | null) => void;
+  onOrderSelectForAction: (order: OrderWithColor | null) => void;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -522,7 +523,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           variant="plain"
                           fontWeight="400"
                           textDecoration="underline"
-                          onClick={() => onOrderSelectForAction(order.orderId)}
+                          onClick={() => onOrderSelectForAction(order)}
                         >
                           Complete Required Action
                         </Button>
