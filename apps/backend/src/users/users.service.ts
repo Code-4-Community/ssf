@@ -8,7 +8,7 @@ import { In, Repository } from 'typeorm';
 import { User } from './users.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
-import { updateUserInfoDto } from './dtos/update-user-info.dto';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 
@@ -63,7 +63,7 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, dto: updateUserInfoDto): Promise<User> {
+  async update(id: number, dto: UpdateUserInfoDto): Promise<User> {
     validateId(id, 'User');
 
     const { firstName, lastName, phone } = dto;

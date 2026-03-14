@@ -5,7 +5,7 @@ import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
-import { updateUserInfoDto } from './dtos/update-user-info.dto';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { BadRequestException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
@@ -90,7 +90,7 @@ describe('UsersController', () => {
       };
       mockUserService.update.mockResolvedValue(updatedUser as User);
 
-      const updateUserSchema: updateUserInfoDto = {
+      const updateUserSchema: UpdateUserInfoDto = {
         firstName: 'UpdatedFirstName',
         lastName: 'UpdatedLastName',
         phone: '777-777-7777',
@@ -108,7 +108,7 @@ describe('UsersController', () => {
         ),
       );
 
-      const updateUserSchema: updateUserInfoDto = {};
+      const updateUserSchema: UpdateUserInfoDto = {};
 
       await expect(controller.updateInfo(1, updateUserSchema)).rejects.toThrow(
         new BadRequestException(

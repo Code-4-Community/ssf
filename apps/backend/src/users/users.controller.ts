@@ -8,11 +8,12 @@ import {
   Body,
   Patch,
   Req,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { userSchemaDto } from './dtos/userSchema.dto';
-import { updateUserInfoDto } from './dtos/update-user-info.dto';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -40,7 +41,8 @@ export class UsersController {
   @Patch('/:id')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: updateUserInfoDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    dto: UpdateUserInfoDto,
   ): Promise<User> {
     return this.usersService.update(id, dto);
   }
