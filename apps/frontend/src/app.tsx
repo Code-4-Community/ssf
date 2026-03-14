@@ -10,6 +10,7 @@ import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
+import PantryApplicationDetails from '@containers/pantryApplicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
 import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import AdminDonation from '@containers/adminDonation';
@@ -146,6 +147,30 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/approve-pantries',
+        element: (
+          <ProtectedRoute>
+            <ApprovePantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/pantry-application-details/:applicationId',
+        element: (
+          <ProtectedRoute>
+            <PantryApplicationDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin-donation',
+        element: (
+          <ProtectedRoute>
+            <AdminDonation />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/volunteer-management',
         element: (
           <ProtectedRoute>
@@ -166,22 +191,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PantryOrderManagement />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/approve-pantries',
-        element: (
-          <ProtectedRoute>
-            <ApprovePantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/admin-donation',
-        element: (
-          <ProtectedRoute>
-            <AdminDonation />
           </ProtectedRoute>
         ),
       },

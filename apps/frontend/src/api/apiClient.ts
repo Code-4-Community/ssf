@@ -27,6 +27,7 @@ import {
   Assignments,
   FoodRequestSummaryDto,
   OrderWithoutFoodManufacturer,
+  PantryWithUser,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -159,7 +160,7 @@ export class ApiClient {
     return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
   }
 
-  public async getAllPendingPantries(): Promise<Pantry[]> {
+  public async getAllPendingPantries(): Promise<PantryWithUser[]> {
     return this.axiosInstance
       .get('/api/pantries/pending')
       .then((response) => response.data);
@@ -179,8 +180,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getPantry(pantryId: number): Promise<Pantry> {
-    return this.get(`/api/pantries/${pantryId}`) as Promise<Pantry>;
+  public async getPantry(pantryId: number): Promise<PantryWithUser> {
+    return this.get(`/api/pantries/${pantryId}`) as Promise<PantryWithUser>;
   }
 
   public async postPantry(
@@ -223,9 +224,9 @@ export class ApiClient {
   public async getDonationItemsByDonationId(
     donationId: number,
   ): Promise<DonationItem[]> {
-    return this.get(
-      `/api/donation-items/get-donation-items/${donationId}`,
-    ) as Promise<DonationItem[]>;
+    return this.get(`/api/donation-items/${donationId}/all`) as Promise<
+      DonationItem[]
+    >;
   }
 
   public async getManufacturerFromOrder(
