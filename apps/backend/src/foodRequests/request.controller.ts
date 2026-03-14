@@ -41,6 +41,7 @@ export class RequestsController {
     return this.requestsService.find(pantryId);
   }
 
+  @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
     @Param('requestId', ParseIntPipe) requestId: number,

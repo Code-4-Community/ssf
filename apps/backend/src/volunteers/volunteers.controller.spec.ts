@@ -1,13 +1,12 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { VolunteersController } from './volunteers.controller';
-import { UsersController } from '../users/users.controller';
-import { UsersService } from '../users/users.service';
 import { User } from '../users/users.entity';
 import { Role } from '../users/types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockVolunteersService = mock<VolunteersService>();
 
@@ -156,11 +155,35 @@ describe('VolunteersController', () => {
 
       expect(result).toEqual(updatedUser);
       expect(result.pantries).toHaveLength(2);
-      expect(result.pantries![0].pantryId).toBe(1);
-      expect(result.pantries![1].pantryId).toBe(3);
+      expect(result.pantries?.[0].pantryId).toBe(1);
+      expect(result.pantries?.[1].pantryId).toBe(3);
       expect(
         mockVolunteersService.assignPantriesToVolunteer,
       ).toHaveBeenCalledWith(3, pantryIds);
+    });
+  });
+
+  describe('GET /me/assigned-requests', () => {
+    it('returns assigned requests when req.currentUser is present', async () => {
+      const req: AuthenticatedRequest = {
+        user: { id: 1 },
+      } as AuthenticatedRequest;
+      const foodRequests: Partial<FoodRequest>[] = [
+        { requestId: 10 },
+        { requestId: 5 },
+      ];
+      mockVolunteersService.findRequestsByVolunteer.mockResolvedValueOnce(
+        foodRequests as FoodRequest[],
+      );
+
+      const result = await controller.getAssignedRequests(
+        req as AuthenticatedRequest,
+      );
+
+      expect(result).toEqual(foodRequests);
+      expect(
+        mockVolunteersService.findRequestsByVolunteer,
+      ).toHaveBeenCalledWith(1);
     });
   });
 });
