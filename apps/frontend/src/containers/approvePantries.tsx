@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   Table,
   Button,
@@ -21,6 +21,8 @@ import {
   CircleCheck,
   Funnel,
 } from 'lucide-react';
+import { useAlert } from '../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const ApprovePantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
@@ -28,21 +30,14 @@ const ApprovePantries: React.FC = () => {
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const fetchPantries = async () => {
-    try {
-      const data = await ApiClient.getAllPendingPantries();
-      setPantries(data);
-    } catch (error) {
-      alert('Error fetching unapproved pantries: ' + error);
-    }
-  };
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     const fetchPantries = async () => {
       try {
         const data = await ApiClient.getAllPendingPantries();
-        setPendingPantries(data);
+        setPantries(data);
       } catch {
         setAlertMessage('Error fetching pantries');
       }
@@ -120,6 +115,14 @@ const ApprovePantries: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Application Review
       </Heading>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       {filteredPantries.length === 0 ? (
         <Box
           display="flex"
@@ -305,7 +308,7 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/application-details/${pantry.pantryId}`}
+                      href={`/pantry-application-details/${pantry.pantryId}`}
                     >
                       View Details
                     </Link>
