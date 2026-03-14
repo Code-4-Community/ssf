@@ -31,7 +31,6 @@ export class OrdersService {
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
       .leftJoin('request.pantry', 'pantry')
-      .leftJoin('pantry.volunteers', 'volunteers')
       .leftJoin('order.assignee', 'assignee')
       .select([
         'order.orderId',
@@ -41,9 +40,6 @@ export class OrdersService {
         'order.deliveredAt',
         'request.pantryId',
         'pantry.pantryName',
-        'volunteers.id',
-        'volunteers.firstName',
-        'volunteers.lastName',
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',

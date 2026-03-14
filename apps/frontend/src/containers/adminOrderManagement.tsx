@@ -120,14 +120,6 @@ const AdminOrderManagement: React.FC = () => {
           const status = order.status;
 
           const orderWithColor: OrderWithColor = { ...order };
-          if (
-            order.request.pantry.volunteers &&
-            order.request.pantry.volunteers.length > 0
-          ) {
-            orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
-            counters[status]++;
-          }
           grouped[status].push(orderWithColor);
         }
 
@@ -613,7 +605,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             <Table.Body>
               {orders.map((order, index) => {
                 const pantry = order.request.pantry;
-                const volunteers = pantry.volunteers || [];
 
                 return (
                   <Table.Row
@@ -708,9 +699,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       {...tableCellStyles}
                       textAlign="left"
                       bg="#FAFAFA"
-                    >
-                      {/* TODO: IMPLEMENT WHAT GOES HERE */}
-                    </Table.Cell>
+                    ></Table.Cell>
                   </Table.Row>
                 );
               })}
