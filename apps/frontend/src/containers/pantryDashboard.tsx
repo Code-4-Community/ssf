@@ -12,12 +12,12 @@ import {
 } from '@chakra-ui/react';
 import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Pantry } from 'types/types';
+import { PantryWithUser } from 'types/types';
 import ApiClient from '@api/apiClient';
 
 const PantryDashboard: React.FC = () => {
   const [pantryId, setPantryId] = useState<number | null>(null);
-  const [pantry, setPantry] = useState<Pantry | null>(null);
+  const [pantry, setPantry] = useState<PantryWithUser | null>(null);
 
   useEffect(() => {
     const fetchPantryId = async () => {
