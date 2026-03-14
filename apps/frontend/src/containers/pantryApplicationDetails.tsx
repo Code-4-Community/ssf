@@ -270,12 +270,7 @@ const PantryApplicationDetails: React.FC = () => {
                 <Text {...fieldContentStyles}>{pantryUser.email}</Text>
               </GridItem>
               <GridItem>
-                <Heading
-                  textStyle="p2"
-                  fontWeight={600}
-                  color="neutral.800"
-                  mb={2}
-                >
+                <Heading {...sectionHeaderStyles} mb={2}>
                   Shipping Address
                 </Heading>
                 <Text {...fieldContentStyles}>
@@ -322,7 +317,7 @@ const PantryApplicationDetails: React.FC = () => {
               application.restrictions.length > 0 ? (
                 <TagGroup values={application.restrictions} />
               ) : (
-                <Text textStyle="p2">None</Text>
+                <Text {...fieldContentStyles}>None</Text>
               )}
             </Box>
 
@@ -399,7 +394,7 @@ const PantryApplicationDetails: React.FC = () => {
               {application.activities && application.activities.length > 0 ? (
                 <TagGroup values={application.activities} />
               ) : (
-                <Text textStyle="p2">None</Text>
+                <Text {...fieldContentStyles}>None</Text>
               )}
             </Box>
 
