@@ -4,16 +4,16 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Put,
   Post,
-  BadRequestException,
   Body,
+  Patch,
   Req,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
-import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -38,15 +38,13 @@ export class UsersController {
     return this.usersService.remove(userId);
   }
 
-  @Put('/:id/role')
-  async updateRole(
+  @Patch('/:id')
+  async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    dto: UpdateUserInfoDto,
   ): Promise<User> {
-    if (!Object.values(Role).includes(role as Role)) {
-      throw new BadRequestException('Invalid role');
-    }
-    return this.usersService.update(id, { role: role as Role });
+    return this.usersService.update(id, dto);
   }
 
   @Post('/')
