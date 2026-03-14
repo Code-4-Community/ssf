@@ -25,6 +25,7 @@ import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -51,7 +52,7 @@ const AdminOrderManagement: React.FC = () => {
     },
   );
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   // State to hold filter state per status
   type FilterState = {
@@ -139,13 +140,13 @@ const AdminOrderManagement: React.FC = () => {
           [OrderStatus.DELIVERED]: 1,
         };
         setCurrentPages(initialPages);
-      } catch (error) {
-        setAlertMessage('Error fetching orders: ' + error);
+      } catch {
+        setAlertMessage('Error fetching orders');
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [setAlertMessage]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
@@ -165,8 +166,13 @@ const AdminOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
 
       {Object.values(OrderStatus).map((status) => {
@@ -629,7 +635,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       </Button>
                       {selectedOrderId === order.orderId && (
                         <OrderDetailsModal
-                          order={order}
+                          orderId={order.orderId}
                           isOpen={true}
                           onClose={() => onOrderSelect(null)}
                         />

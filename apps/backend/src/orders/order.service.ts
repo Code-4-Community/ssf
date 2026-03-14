@@ -8,10 +8,11 @@ import { Repository, In } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
-import { validateId } from '../utils/validation.utils';
+import { sanitizeUrl, validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { OrderDetailsDto } from './dtos/order-details.dto';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
 
@@ -80,6 +81,37 @@ export class OrdersService {
     return order;
   }
 
+  async findOrderDetails(orderId: number): Promise<OrderDetailsDto> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: {
+        allocations: {
+          item: true,
+        },
+        foodManufacturer: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    return {
+      orderId: order.orderId,
+      status: order.status,
+      foodManufacturerName: order.foodManufacturer.foodManufacturerName,
+      trackingLink: order.trackingLink,
+      items: order.allocations.map((allocation) => ({
+        id: allocation.item.itemId,
+        name: allocation.item.itemName,
+        quantity: allocation.allocatedQuantity,
+        foodType: allocation.item.foodType,
+      })),
+    };
+  }
+
   async findOrderByRequest(requestId: number): Promise<Order> {
     validateId(requestId, 'Request');
 
@@ -113,18 +145,50 @@ export class OrdersService {
     return pantry;
   }
 
-  async findOrderFoodRequest(orderId: number): Promise<FoodRequest> {
+  async findOrderFoodRequest(orderId: number): Promise<FoodRequestSummaryDto> {
     validateId(orderId, 'Order');
 
     const order = await this.repo.findOne({
       where: { orderId },
-      relations: ['request'],
+      relations: {
+        request: {
+          pantry: true,
+        },
+      },
+      select: {
+        request: {
+          requestId: true,
+          pantryId: true,
+          requestedSize: true,
+          requestedFoodTypes: true,
+          additionalInformation: true,
+          requestedAt: true,
+          status: true,
+          pantry: {
+            pantryName: true,
+          },
+        },
+      },
     });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
-    return order.request;
+
+    return {
+      requestId: order.request.requestId,
+      pantryId: order.request.pantryId,
+      pantryName: order.request.pantry.pantryName,
+
+      requestedSize: order.request.requestedSize,
+      requestedFoodTypes: order.request.requestedFoodTypes,
+
+      additionalInformation: order.request.additionalInformation ?? null,
+
+      requestedAt: order.request.requestedAt,
+
+      status: order.request.status,
+    };
   }
 
   async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
@@ -217,6 +281,16 @@ export class OrdersService {
       throw new BadRequestException(
         'At least one of tracking link or shipping cost must be provided',
       );
+    }
+
+    if (dto.trackingLink) {
+      const sanitized = sanitizeUrl(dto.trackingLink);
+      if (!sanitized) {
+        throw new BadRequestException(
+          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
+        );
+      }
+      dto.trackingLink = sanitized;
     }
 
     const order = await this.repo.findOneBy({ orderId });

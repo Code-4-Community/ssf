@@ -57,20 +57,20 @@ We have a few environment variables that we utilize to access several AWS servic
    - There, you can validate the information in `auth/aws_exports.ts` (the `userPoolClientId`), as well as copy the client secret into your env file
 
 5. Creating a new user within AWS Cognito
-   There are 2 ways you can create a new user in AWS Cognito. The simplest, is through loading the up, going to the landing page, and creating a new account there. If you choose to do it alternatively through the console, follow these steps:
+   There are 2 ways you can create a new user in AWS Cognito. The simplest, is through loading the app, going to the signup page, and creating a new account there. If you choose to do it alternatively through the console, follow these steps:
    - Navigate to AWS Cognito
-   - Make sure you are on "United States (N. Virginia) as your region
+   - Make sure you are on "United States (N. Virginia)" as your region
    - Go into User pools and click on the one that says "ssf"
    - Go to Users
-   - If you do not already see your email there, create a new User, setting an email in password (this will be what you login with on the frontend)
+   - If you do not already see your email there, create a new User, setting an email and password (this will be what you login with on the frontend)
    - Click 'Create User'
-   - Load up the app, and go to the landing page
+   - Load up the app, and go to the login page
    - Verify you are able to login with these new credentials you created
 
 ### Running backend tests
 
 1. Create a **separate** Postgres database (for example `securing-safe-food-test`).
 2. Add a `DATABASE_NAME_TEST` entry (and optionally `DATABASE_HOST/PORT/USERNAME/PASSWORD`) to your `.env` so the test data source can connect to that database.
-3. Run the backend test suite with `npx jest`.
+3. Run the backend test suite with `yarn test`. **NOTE**: `npx jest` will not work because our tests need to run sequentially. Having them run in parallel will result in tests interfering with each other, and then failing. `yarn test` ensures each test suite finishes before moving onto the next
 
 Each spec builds up the database and tables, tears it all down, and runs all the migrations on each tests. This ensures that we always have the most up to date data that we test with.

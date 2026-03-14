@@ -5,12 +5,16 @@ import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus } from './types';
 import { Pantry } from '../pantries/pantries.entity';
+import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { RequestsService } from '../foodRequests/request.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -43,6 +47,14 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
       ],
     }).compile();
@@ -131,6 +143,62 @@ describe('OrdersService', () => {
         'Westside Community Kitchen',
       );
       expect(orders[0].status).toBe(OrderStatus.DELIVERED);
+    });
+  });
+
+  describe('findOrderDetails', () => {
+    it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
+      const orderId = 1;
+
+      const result = await service.findOrderDetails(orderId);
+
+      const expected: OrderDetailsDto = {
+        orderId: 1,
+        status: OrderStatus.DELIVERED,
+        foodManufacturerName: 'FoodCorp Industries',
+        trackingLink: 'https://www.samplelink.com/samplelink',
+        items: [
+          {
+            id: 1,
+            foodType: FoodType.SEED_BUTTERS,
+            name: 'Peanut Butter (16oz)',
+            quantity: 10,
+          },
+          {
+            id: 2,
+            foodType: FoodType.GLUTEN_FREE_BREAD,
+            name: 'Whole Wheat Bread',
+            quantity: 25,
+          },
+          {
+            id: 3,
+            foodType: FoodType.REFRIGERATED_MEALS,
+            name: 'Canned Green Beans',
+            quantity: 5,
+          },
+        ],
+      };
+
+      expect(result).toMatchObject({
+        orderId: expected.orderId,
+        status: expected.status,
+        foodManufacturerName: expected.foodManufacturerName,
+        trackingLink: expected.trackingLink,
+      });
+
+      expect(result.items).toHaveLength(expected.items.length);
+      expect(result.items).toEqual(expect.arrayContaining(expected.items));
+    });
+
+    it('throws NotFoundException when order does not exist', async () => {
+      const missingOrderId = 99999999;
+
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
+        `Order ${missingOrderId} not found`,
+      );
     });
   });
 
@@ -290,7 +358,7 @@ describe('OrdersService', () => {
   describe('updateTrackingCostInfo', () => {
     it('throws when order is non-existent', async () => {
       const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'test',
+        trackingLink: 'www.test.com',
         shippingCost: 5.99,
       };
 
@@ -307,7 +375,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('updates tracking link for shipped order', async () => {
+    it('sanitizes and updates tracking link for shipped order', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'samplelink.com',
       };
@@ -316,7 +384,7 @@ describe('OrdersService', () => {
 
       const order = await service.findOne(3);
       expect(order.trackingLink).toBeDefined();
-      expect(order.trackingLink).toEqual('samplelink.com');
+      expect(order.trackingLink).toEqual('https://samplelink.com/');
     });
 
     it('updates shipping cost for shipped order', async () => {
@@ -331,7 +399,7 @@ describe('OrdersService', () => {
       expect(order.shippingCost).toEqual('12.99');
     });
 
-    it('updates both shipping cost and tracking link', async () => {
+    it('updates both shipping cost and tracking link (sanitized)', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'testtracking.com',
         shippingCost: 7.5,
@@ -340,7 +408,7 @@ describe('OrdersService', () => {
       await service.updateTrackingCostInfo(3, trackingCostDto);
 
       const order = await service.findOne(3);
-      expect(order.trackingLink).toEqual('testtracking.com');
+      expect(order.trackingLink).toEqual('https://testtracking.com/');
       expect(order.shippingCost).toEqual('7.50');
     });
 
@@ -380,6 +448,21 @@ describe('OrdersService', () => {
       ).rejects.toThrow(
         new BadRequestException(
           'Must provide both tracking link and shipping cost on initial assignment',
+        ),
+      );
+    });
+
+    it('throws when tracking link is invalid', async () => {
+      const trackingCostDto: TrackingCostDto = {
+        trackingLink: `javascript:alert("you've been hacked!")`,
+        shippingCost: 7.5,
+      };
+
+      await expect(
+        service.updateTrackingCostInfo(3, trackingCostDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
         ),
       );
     });

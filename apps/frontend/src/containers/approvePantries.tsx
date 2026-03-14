@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Table,
   Button,
@@ -38,8 +39,17 @@ const ApprovePantries: React.FC = () => {
   };
 
   useEffect(() => {
+    const fetchPantries = async () => {
+      try {
+        const data = await ApiClient.getAllPendingPantries();
+        setPendingPantries(data);
+      } catch {
+        setAlertMessage('Error fetching pantries');
+      }
+    };
+
     fetchPantries();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -89,6 +99,21 @@ const ApprovePantries: React.FC = () => {
     fontWeight: '600',
     fontSize: 'sm',
   };
+
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const name = searchParams.get('name');
+
+    if (action && name) {
+      const message =
+        action === 'approved'
+          ? `${name} - Application Accepted`
+          : `${name} - Application Rejected`;
+
+      setAlertMessage(message);
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, setAlertMessage]);
 
   return (
     <Box p={12}>

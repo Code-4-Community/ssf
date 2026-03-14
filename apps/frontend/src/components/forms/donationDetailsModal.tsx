@@ -11,6 +11,7 @@ import ApiClient from '@api/apiClient';
 import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -25,7 +26,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 }) => {
   const [items, setItems] = useState<DonationItem[]>([]);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   const donationId = donation.donationId;
 
@@ -39,13 +40,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         );
 
         setItems(itemsData);
-      } catch (err) {
-        setAlertMessage('Error fetching donation details: ' + err);
+      } catch {
+        setAlertMessage('Error fetching donation details');
       }
     };
 
     fetchData();
-  }, [isOpen, donationId]);
+  }, [isOpen, donationId, setAlertMessage]);
 
   // Group items by food type
   const groupedItems = items.reduce((acc, item) => {
@@ -63,8 +64,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       closeOnInteractOutside
       scrollBehavior="inside"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Portal>
         <Dialog.Backdrop bg="blackAlpha.300" />
