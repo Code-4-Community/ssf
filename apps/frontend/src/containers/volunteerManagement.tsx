@@ -17,13 +17,14 @@ import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
   const pageSize = 8;
@@ -35,13 +36,13 @@ const VolunteerManagement: React.FC = () => {
       try {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
-      } catch (error) {
-        setAlertMessage('Error fetching volunteers: ' + error);
+      } catch {
+        setAlertMessage('Error fetching volunteers');
       }
     };
 
     fetchVolunteers();
-  }, [alertMessage]);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -68,9 +69,10 @@ const VolunteerManagement: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Volunteer Management
       </Text>
-      {alertMessage && (
+      {alertState && (
         <FloatingAlert
-          message={alertMessage}
+          key={alertState.id}
+          message={alertState.message}
           status={submitSuccess ? 'info' : 'error'}
           timeout={6000}
         />

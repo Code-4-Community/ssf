@@ -20,8 +20,9 @@ import {
   ActionFunctionArgs,
   Form,
   redirect,
+  useActionData,
 } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
@@ -29,6 +30,8 @@ import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
@@ -79,6 +82,8 @@ const PantryApplicationForm: React.FC = () => {
     boolean | null
   >();
   const [otherEmailContact, setOtherEmailContact] = useState<boolean>(false);
+  const [alertState, setAlertMessage] = useAlert();
+  const actionData = useActionData() as { error?: string } | undefined;
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -103,9 +108,23 @@ const PantryApplicationForm: React.FC = () => {
     fontWeight: '600',
   };
 
+  useEffect(() => {
+    if (actionData?.error) {
+      setAlertMessage(actionData.error);
+    }
+  }, [actionData, setAlertMessage]);
+
   return (
     <Box width="100%" mx="11em" my="4em">
       <Box as="section" mb="2.75em">
+        {alertState && (
+          <FloatingAlert
+            key={alertState.id}
+            message={alertState.message}
+            status="error"
+            timeout={6000}
+          />
+        )}
         <Heading textStyle="h1" fontWeight="normal" mb=".5em">
           Partner Pantry Application
         </Heading>
@@ -1189,27 +1208,26 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   const data = Object.fromEntries(pantryApplicationData);
 
-  let submissionSuccessful = false;
-
-  await ApiClient.postPantry(data as PantryApplicationDto).then(
-    () => (submissionSuccessful = true),
-    (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        alert(
+  try {
+    await ApiClient.postPantry(data as PantryApplicationDto);
+    return redirect('/application-submitted');
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+      return {
+        error:
           'Form submission failed with the following errors: \n\n' +
-            // Creates a bullet-point list of the errors
-            // returned from the backend
-            error.response?.data?.message
-              .map((line: string) => '- ' + line)
-              .join('\n'),
-        );
-      } else {
-        alert('Form submission failed; please try again');
-      }
-    },
-  );
-
-  return submissionSuccessful ? redirect('/application-submitted') : null;
+          // Creates a bullet-point list of the errors
+          // returned from the backend
+          error.response?.data?.message
+            .map((line: string) => '- ' + line)
+            .join('\n'),
+      };
+    } else {
+      return {
+        error: 'Form submission failed; please try again',
+      };
+    }
+  }
 };
 
 export default PantryApplicationForm;
