@@ -26,6 +26,7 @@ import {
 import { Minus } from 'lucide-react';
 import { generateNextDonationDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -83,7 +84,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     Sunday: false,
   });
   const [endsAfter, setEndsAfter] = useState('1');
-  const [alertMessage, setAlertMessage] = useState<string>('');
+
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalOz, setTotalOz] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
+  const [alertState, setAlertMessage] = useAlert();
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
     const updatedRows = rows.map((row) =>
@@ -174,7 +179,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
 
     try {
       const donationResponse = await ApiClient.postDonation(donation_body);
-      console.log('Submitted donation');
       const donationId = donationResponse?.donationId;
 
       if (donationId) {
@@ -208,8 +212,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       } else {
         setAlertMessage('Failed to submit donation');
       }
-    } catch (error) {
-      setAlertMessage('Error submitting new donation: ' + error);
+    } catch {
+      setAlertMessage('Error submitting new donation');
     }
   };
 
@@ -231,10 +235,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
+      {alertState && (
         <FloatingAlert
-          key={alertMessage + Date.now()}
-          message={alertMessage}
+          key={alertState.id}
+          message={alertState.message}
           status="error"
           timeout={6000}
         />
