@@ -109,11 +109,20 @@ export class OrdersController {
     schema: {
       type: 'object',
       properties: {
-        foodRequestId: { type: 'integer', example: 1 },
-        manufacturerId: { type: 'integer', example: 1 },
-        donationItems: {
+        foodRequestId: {
+          type: 'integer',
+          description: 'ID of the associated request this order is related to',
+          example: 1,
+        },
+        manufacturerId: {
+          type: 'integer',
+          description: 'Food manufacturer ID of the FM fulfilling the order',
+          example: 1,
+        },
+        itemAllocations: {
           type: 'object',
-          description: 'Map of donationItemId -> quantity',
+          description:
+            'Map of donationItemId -> quantity to allocate, donation items and their quantity to allocate for this order',
           additionalProperties: {
             type: 'integer',
             example: 10,

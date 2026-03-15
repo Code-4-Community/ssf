@@ -5,8 +5,6 @@ import { DonationItem } from './donationItems.entity';
 import { mock } from 'jest-mock-extended';
 import { FoodType } from './types';
 import { CreateMultipleDonationItemsDto } from './dtos/create-donation-items.dto';
-import { Donation } from '../donations/donations.entity';
-import { DonationStatus } from '../donations/types';
 
 const mockDonationItemsService = mock<DonationItemsService>();
 
@@ -70,26 +68,22 @@ describe('DonationItemsController', () => {
     });
   });
 
-  describe('getDonationsFromDonationItemIds', () => {
-    it('should call service.getAssociatedDonations with donationItemIds and return donations', async () => {
+  describe('getAssociatedDonationIds', () => {
+    it('should call service.getAssociatedDonationIds with donationItemIds and return donation id list', async () => {
       const donationItemIds = [1, 2, 3];
-      const mockDonations = [
-        { donationId: 1, status: DonationStatus.AVAILABLE },
-        { donationId: 2, status: DonationStatus.FULFILLED },
-      ] as Partial<Donation>[];
+      const mockDonationsids = [1, 2];
+      const mockDonationsidsSet = new Set(mockDonationsids);
 
-      mockDonationItemsService.getAssociatedDonations.mockResolvedValue(
-        mockDonations as Donation[],
+      mockDonationItemsService.getAssociatedDonationIds.mockResolvedValue(
+        mockDonationsidsSet,
       );
 
-      const result = await controller.getDonationsFromDonationItemIds(
-        donationItemIds,
-      );
+      const result = await controller.getAssociatedDonationIds(donationItemIds);
 
       expect(
-        mockDonationItemsService.getAssociatedDonations,
+        mockDonationItemsService.getAssociatedDonationIds,
       ).toHaveBeenCalledWith(donationItemIds);
-      expect(result).toEqual(mockDonations);
+      expect(result).toEqual(mockDonationsidsSet);
     });
   });
 
@@ -111,20 +105,6 @@ describe('DonationItemsController', () => {
         donationItemIds,
       );
       expect(result).toEqual(mockItems);
-    });
-  });
-
-  describe('setReservedQuantities', () => {
-    it('should call service.setReservedQuantities with the body', async () => {
-      const body: Record<number, number> = { 1: 10, 2: 20 };
-
-      mockDonationItemsService.setReservedQuantities.mockResolvedValue();
-
-      await controller.setReservedQuantities(body);
-
-      expect(
-        mockDonationItemsService.setReservedQuantities,
-      ).toHaveBeenCalledWith(body);
     });
   });
 });

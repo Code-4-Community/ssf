@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Allocation } from '../allocations/allocations.entity';
 import { CreateMultipleAllocationsDto } from './dtos/create-allocations.dto';
 import { validateId } from '../utils/validation.utils';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class AllocationsService {
   constructor(
     @InjectRepository(Allocation) private repo: Repository<Allocation>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
   ) {}
 
   async getAllAllocationsByOrder(
@@ -26,26 +29,35 @@ export class AllocationsService {
 
   async createMultiple(
     body: CreateMultipleAllocationsDto,
+    manager?: EntityManager,
   ): Promise<Allocation[]> {
+    const repo = manager ? manager.getRepository(Allocation) : this.repo;
+    const itemRepo = manager
+      ? manager.getRepository(DonationItem)
+      : this.donationItemRepo;
+
     const orderId = body.orderId;
-    const donationItems = body.itemAllocations;
+    const itemAllocations = body.itemAllocations;
 
     validateId(orderId, 'Order');
 
-    const allocations = Object.entries(donationItems).map(
-      ([itemIdStr, quantity]) => {
-        const itemId = Number(itemIdStr);
+    const allocations: Allocation[] = [];
 
-        validateId(itemId, 'Donation Item');
+    for (const [itemIdStr, quantity] of Object.entries(itemAllocations)) {
+      const itemId = Number(itemIdStr);
+      validateId(itemId, 'Donation Item');
 
-        return this.repo.create({
+      allocations.push(
+        repo.create({
           orderId,
           itemId,
           allocatedQuantity: quantity,
-        });
-      },
-    );
+        }),
+      );
 
-    return this.repo.save(allocations);
+      await itemRepo.increment({ itemId }, 'reservedQuantity', quantity);
+    }
+
+    return repo.save(allocations);
   }
 }

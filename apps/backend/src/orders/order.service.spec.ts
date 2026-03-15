@@ -26,6 +26,7 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { DonationStatus } from '../donations/types';
+import { DataSource } from 'typeorm';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -52,6 +53,10 @@ describe('OrdersService', () => {
         AllocationsService,
         UsersService,
         DonationService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),
@@ -782,28 +787,18 @@ describe('OrdersService', () => {
         BadRequestException,
       );
       await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        `Donation item ${donationItemId} allocated quantity exceeds remaining quantity`,
+        `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
       );
     });
 
     it('should throw Error if donation is not associated with manufacturer', async () => {
-      validCreateOrderDto.itemAllocations = { 7: 2 };
+      const donationItemId = 7;
+      validCreateOrderDto.itemAllocations = { [donationItemId]: 2 };
       await expect(service.create(validCreateOrderDto)).rejects.toThrow(
         BadRequestException,
       );
       await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        `Donation is not associated with the current food manufacturer`,
-      );
-    });
-
-    it('should throw Error if donation item not found', async () => {
-      const invalidDonationItemId = 999;
-      validCreateOrderDto.itemAllocations = { [invalidDonationItemId]: 2 };
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        `Couldn't find donation item ${invalidDonationItemId}`,
+        `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
       );
     });
   });

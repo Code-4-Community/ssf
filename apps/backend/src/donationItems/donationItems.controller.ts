@@ -30,16 +30,16 @@ export class DonationItemsController {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
 
-  // Called like: /donation-items/associated-donations?donationItemIds=1,2,3
-  @Get('/associated-donations')
-  async getDonationsFromDonationItemIds(
+  // Called like: /donation-items/associated-donationIds?donationItemIds=1,2,3
+  @Get('/associated-donationIds')
+  async getAssociatedDonationIds(
     @Query(
       'donationItemIds',
       new ParseArrayPipe({ items: Number, separator: ',' }),
     )
     donationItemIds: number[],
-  ): Promise<Donation[]> {
-    return this.donationItemsService.getAssociatedDonations(donationItemIds);
+  ): Promise<Set<number>> {
+    return this.donationItemsService.getAssociatedDonationIds(donationItemIds);
   }
 
   @Get('/getByIds')
@@ -98,12 +98,5 @@ export class DonationItemsController {
     @Param('itemId', ParseIntPipe) itemId: number,
   ): Promise<DonationItem> {
     return this.donationItemsService.updateDonationItemQuantity(itemId);
-  }
-
-  @Patch('/set-quantities')
-  async setReservedQuantities(
-    @Body() body: Record<number, number>,
-  ): Promise<void> {
-    return this.donationItemsService.setReservedQuantities(body);
   }
 }

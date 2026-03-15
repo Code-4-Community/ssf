@@ -19,7 +19,7 @@ export class AllocationsController {
           type: 'integer',
           example: 1,
         },
-        donationItems: {
+        itemAllocations: {
           type: 'object',
           description: 'Map of donationItemId -> quantity',
           additionalProperties: {

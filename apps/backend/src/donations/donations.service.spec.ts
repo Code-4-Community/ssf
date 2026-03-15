@@ -163,7 +163,7 @@ describe('DonationService', () => {
       const donationIds = [existingDonationId, nonExistingDonationId];
 
       await expect(service.matchAll(donationIds)).rejects.toThrow(
-        `Donations not found for ids: ${nonExistingDonationId}`,
+        `Donations not found for ID(s): ${nonExistingDonationId}`,
       );
     });
   });

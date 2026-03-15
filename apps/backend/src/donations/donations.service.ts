@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
@@ -101,8 +101,15 @@ export class DonationService {
     return this.repo.save(donation);
   }
 
-  async matchAll(donationIds: number[]): Promise<void> {
-    const donations = await this.repo.find({
+  async matchAll(
+    donationIds: number[],
+    manager?: EntityManager,
+  ): Promise<void> {
+    donationIds.forEach((id) => validateId(id, 'Donation'));
+
+    const repo = manager ? manager.getRepository(Donation) : this.repo;
+
+    const donations = await repo.find({
       where: { donationId: In(donationIds) },
       select: ['donationId'],
     });
@@ -113,11 +120,11 @@ export class DonationService {
 
     if (missingIds.length > 0) {
       throw new NotFoundException(
-        `Donations not found for ids: ${missingIds.join(', ')}`,
+        `Donations not found for ID(s): ${missingIds.join(', ')}`,
       );
     }
 
-    await this.repo.update(
+    await repo.update(
       { donationId: In(donationIds) },
       { status: DonationStatus.MATCHED },
     );
