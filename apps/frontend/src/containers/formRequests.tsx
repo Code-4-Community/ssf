@@ -20,6 +20,7 @@ import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -35,7 +36,7 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequest | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   const pageSize = 10;
 
@@ -52,13 +53,13 @@ const FormRequests: React.FC = () => {
         if (sortedData.length > 0) {
           setPreviousRequest(sortedData[0]);
         }
-      } catch (error) {
-        setAlertMessage('Error fetching requests: ' + error);
+      } catch {
+        setAlertMessage('Error fetching requests');
       }
     } else {
       setAlertMessage('No pantry associated with this account.');
     }
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchRequests();
@@ -74,8 +75,13 @@ const FormRequests: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Food Request Management
       </Text>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <HStack gap={3} my={5}>
         <Button
