@@ -21,7 +21,6 @@ import { FoodManufacturersService } from '../foodManufacturers/manufacturers.ser
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
-import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class OrdersService {
