@@ -29,7 +29,7 @@ import { Donation } from '../donations/donations.entity';
       Allocation,
       Donation,
     ]),
-    AllocationModule,
+    forwardRef(() => AllocationModule),
     forwardRef(() => AuthModule),
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
