@@ -53,6 +53,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
   const minDate = new Date(orderCreatedAt).toISOString().split('T')[0];
 
+  const today = new Date().toISOString().split('T')[0];
+
   const resetForm = () => {
     setFeedback('');
     setDateReceived('');
@@ -67,6 +69,17 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
           isError: true,
           message:
             'Date received cannot be earlier than the order creation date',
+        });
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (new Date(dateReceived) > today) {
+        setAlert({
+          isError: true,
+          message: 'Date received cannot be in the future',
         });
         return;
       }
@@ -149,6 +162,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   borderWidth="1px"
                   borderRadius="4px"
                   min={minDate}
+                  max={today}
                   onChange={(e) => setDateReceived(e.target.value)}
                   value={dateReceived}
                 />
