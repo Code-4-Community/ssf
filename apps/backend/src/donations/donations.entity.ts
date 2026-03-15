@@ -36,15 +36,6 @@ export class Donation {
   })
   status!: DonationStatus;
 
-  @Column({ name: 'total_items', type: 'int', nullable: true })
-  totalItems!: number | null;
-
-  @Column({ name: 'total_oz', type: 'numeric', nullable: true })
-  totalOz!: number | null;
-
-  @Column({ name: 'total_estimated_value', type: 'numeric', nullable: true })
-  totalEstimatedValue!: number | null;
-
   @Column({
     name: 'recurrence',
     type: 'enum',
