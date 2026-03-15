@@ -11,29 +11,6 @@ const mockDonationItemsService = mock<DonationItemsService>();
 describe('DonationItemsController', () => {
   let controller: DonationItemsController;
 
-  const mockDonationItemsCreateData: Partial<DonationItem>[] = [
-    {
-      itemId: 1,
-      donationId: 1,
-      itemName: 'Canned Beans',
-      quantity: 100,
-      reservedQuantity: 0,
-      ozPerItem: 15,
-      estimatedValue: 200,
-      foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-    },
-    {
-      itemId: 2,
-      donationId: 1,
-      itemName: 'Rice',
-      quantity: 50,
-      reservedQuantity: 0,
-      ozPerItem: 20,
-      estimatedValue: 150,
-      foodType: FoodType.GLUTEN_FREE_BAKING_PANCAKE_MIXES,
-    },
-  ];
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DonationItemsController],
