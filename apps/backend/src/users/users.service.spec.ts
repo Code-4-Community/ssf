@@ -12,11 +12,12 @@ import { PantriesService } from '../pantries/pantries.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 const mockUserRepository = mock<Repository<User>>();
 const mockPantriesService = mock<PantriesService>();
 const mockAuthService = mock<AuthService>();
-
+const mockEmailsService = mock<EmailsService>();
 const mockUser: Partial<User> = {
   id: 1,
   email: 'test@example.com',
@@ -56,9 +57,7 @@ describe('UsersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
       ],
     }).compile();
@@ -84,6 +83,33 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
+    it('should send a welcome email when creating a volunteer', async () => {
+      const createUserDto: userSchemaDto = {
+        email: 'volunteer@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        phone: '9876543210',
+        role: Role.VOLUNTEER,
+      };
+
+      const createdUser = {
+        ...createUserDto,
+        id: 2,
+        userCognitoSub: 'mock-sub',
+      } as User;
+      mockUserRepository.create.mockReturnValue(createdUser);
+      mockUserRepository.save.mockResolvedValue(createdUser);
+
+      await service.create(createUserDto);
+      const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [createUserDto.email],
+        subject,
+        bodyHTML,
+      );
+    });
+
     it('should create a new user with auto-generated ID', async () => {
       const createUserDto: userSchemaDto = {
         email: 'newuser@example.com',
