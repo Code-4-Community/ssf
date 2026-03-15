@@ -53,6 +53,20 @@ const RECURRENCE_LABELS: Record<RecurrenceEnum, string> = {
   [RecurrenceEnum.YEARLY]: 'Year',
 };
 
+// Max 2 decimal places, positive
+const isValidDecimal = (val: string): boolean =>
+  val !== '' && /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0;
+
+// Positive integer only
+const isValidPositiveInt = (val: string): boolean =>
+  val !== '' && /^\d+$/.test(val) && parseInt(val) > 0;
+
+const isRequiredFieldsFilled = (rows: DonationRow[]): boolean =>
+  rows.every(
+    (row) =>
+      row.foodItem.trim() !== '' && row.foodType !== '' && row.numItems !== '',
+  );
+
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
   isOpen,
@@ -86,9 +100,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   });
   const [endsAfter, setEndsAfter] = useState('1');
 
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalOz, setTotalOz] = useState(0);
-  const [totalValue, setTotalValue] = useState(0);
   const [alertState, setAlertMessage] = useAlert();
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
@@ -149,15 +160,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     return `${selected.slice(0, 4).join(', ')} + ${selected.length - 4}`;
   };
 
-  const handleSubmit = async () => {
-    const hasEmpty = rows.some(
-      (row) => !row.foodItem || !row.foodType || !row.numItems,
-    );
-    if (hasEmpty) {
-      setAlertMessage('Please fill in all fields before submitting.');
-      return;
-    }
-
+  const validateAndSubmit = async () => {
+    // Recurring: weekly day selection
     if (
       isRecurring &&
       repeatInterval === RecurrenceEnum.WEEKLY &&
@@ -165,6 +169,31 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     ) {
       setAlertMessage('Please select at least one day for weekly recurrence.');
       return;
+    }
+
+    // Per-row field validation
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowLabel = rows.length > 1 ? ` (row ${i + 1})` : '';
+
+      if (!isValidPositiveInt(row.numItems)) {
+        setAlertMessage(`Quantity${rowLabel} must be a positive whole number.`);
+        return;
+      }
+
+      if (row.ozPerItem !== '' && !isValidDecimal(row.ozPerItem)) {
+        setAlertMessage(
+          `Oz. per item${rowLabel} must be a positive number with at most 2 decimal places.`,
+        );
+        return;
+      }
+
+      if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
+        setAlertMessage(
+          `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`,
+        );
+        return;
+      }
     }
 
     const donation_body = {
@@ -187,8 +216,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           itemName: row.foodItem,
           quantity: parseInt(row.numItems),
           reservedQuantity: 0,
-          ozPerItem: parseFloat(row.ozPerItem),
-          estimatedValue: parseFloat(row.valuePerItem),
+          ozPerItem:
+            row.ozPerItem !== '' ? parseFloat(row.ozPerItem) : undefined,
+          estimatedValue:
+            row.valuePerItem !== '' ? parseFloat(row.valuePerItem) : undefined,
           foodType: row.foodType as FoodType,
           foodRescue: row.foodRescue,
         }));
@@ -218,6 +249,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
+  const isSubmitDisabled = !isRequiredFieldsFilled(rows);
   const isRepeatOnDisabled = repeatInterval !== RecurrenceEnum.WEEKLY;
 
   const placeholderStyles = {
@@ -422,9 +454,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
-                            type="number"
-                            min={1}
-                            step={1}
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -437,9 +466,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
-                            type="number"
-                            min={0.01}
-                            step={0.01}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -452,9 +478,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter $"
-                            type="number"
-                            min={0.01}
-                            step={0.01}
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
@@ -690,9 +713,11 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 </Button>
                 <Button
                   backgroundColor="blue.ssf"
-                  onClick={handleSubmit}
+                  onClick={validateAndSubmit}
                   size="md"
                   fontWeight={600}
+                  disabled={isSubmitDisabled}
+                  _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
                 >
                   Submit Donation
                 </Button>
