@@ -12,19 +12,15 @@ import {
   ManufacturerAttribute,
 } from './manufacturerEnums';
 
-// Note: The API calls as currently written do not
-// return a pantry's SSF representative or pantry
-// representative, or their IDs, as part of the
-// Pantry data
 export interface Pantry {
   pantryId: number;
   pantryName: string;
-  shippingAddressLine1: string;
-  shippingAddressLine2?: string;
-  shippingAddressCity: string;
-  shippingAddressState: string;
-  shippingAddressZip: string;
-  shippingAddressCountry?: string;
+  shipmentAddressLine1: string;
+  shipmentAddressLine2?: string;
+  shipmentAddressCity: string;
+  shipmentAddressState: string;
+  shipmentAddressZip: string;
+  shipmentAddressCountry?: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
@@ -49,7 +45,6 @@ export interface Pantry {
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
-  pantryUser?: User;
   status: ApplicationStatus;
   dateApplied: string;
   activities: Activity[];
@@ -57,6 +52,10 @@ export interface Pantry {
   itemsInStock: string;
   needMoreOptions: string;
   volunteers?: User[];
+}
+
+export interface PantryWithUser extends Pantry {
+  pantryUser: User;
 }
 
 export interface PantryApplicationDto {
@@ -71,12 +70,12 @@ export interface PantryApplicationDto {
   secondaryContactEmail?: string;
   secondaryContactPhone?: string;
   pantryName: string;
-  shippingAddressLine1: string;
-  shippingAddressLine2?: string;
-  shippingAddressCity: string;
-  shippingAddressState: string;
-  shippingAddressZip: string;
-  shippingAddressCountry?: string;
+  shipmentAddressLine1: string;
+  shipmentAddressLine2?: string;
+  shipmentAddressCity: string;
+  shipmentAddressState: string;
+  shipmentAddressZip: string;
+  shipmentAddressCountry?: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
@@ -125,9 +124,6 @@ export interface Donation {
   donationId: number;
   dateDonated: string;
   status: DonationStatus;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
   recurrence: RecurrenceEnum;
   recurrenceFreq?: number;
@@ -360,6 +356,20 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export interface PantryStats {
+  pantryId: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+}
+
+// Make TotalStats interface just not include pantryId
+export type TotalStats = Omit<PantryStats, 'pantryId'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 

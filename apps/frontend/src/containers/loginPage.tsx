@@ -15,6 +15,7 @@ import {
 import loginBackground from '../assets/login_background.png';
 import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 type Step = 'login' | 'new-password';
 
@@ -27,7 +28,7 @@ const LoginPage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [step, setStep] = useState<Step>('login');
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,8 +46,8 @@ const LoginPage: React.FC = () => {
       } else {
         navigate(from, { replace: true });
       }
-    } catch (error) {
-      setAlertMessage('Login failed: ' + error);
+    } catch {
+      setAlertMessage('Login failed');
     }
   };
 
@@ -66,8 +67,8 @@ const LoginPage: React.FC = () => {
       // Wait for auth session to establish
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
-    } catch (error) {
-      setAlertMessage('Failed to set new password: ' + error);
+    } catch {
+      setAlertMessage('Failed to set new password');
     }
   };
 
@@ -96,8 +97,13 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Box
         maxW="500px"

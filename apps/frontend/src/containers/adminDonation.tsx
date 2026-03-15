@@ -16,6 +16,7 @@ import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -29,19 +30,19 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     const fetchDonations = async () => {
       try {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
-      } catch (error) {
-        setAlertMessage('Error fetching donations: ' + error);
+      } catch {
+        setAlertMessage('Error fetching donations');
       }
     };
     fetchDonations();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -102,8 +103,13 @@ const AdminDonation: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Donation Management
       </Heading>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">

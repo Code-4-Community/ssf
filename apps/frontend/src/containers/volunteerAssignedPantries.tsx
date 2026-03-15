@@ -16,6 +16,7 @@ import { Pantry } from 'types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
 
 const AssignedPantries: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const AssignedPantries: React.FC = () => {
     new Set(),
   );
   const [pantrySearch, setPantrySearch] = useState('');
-  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     const fetchAssignedPantries = async () => {
@@ -50,7 +51,7 @@ const AssignedPantries: React.FC = () => {
     };
 
     fetchAssignedPantries();
-  }, []);
+  }, [setAlertMessage]);
 
   const isRefrigeratorFriendly = (pantry: Pantry): boolean => {
     return (
@@ -111,8 +112,13 @@ const AssignedPantries: React.FC = () => {
 
   return (
     <Box p={12}>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
 
       <Heading textStyle="h1" color="gray.light" mb={6}>

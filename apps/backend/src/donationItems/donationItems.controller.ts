@@ -23,8 +23,8 @@ import { Donation } from '../donations/donations.entity';
 export class DonationItemsController {
   constructor(private donationItemsService: DonationItemsService) {}
 
-  @Get('/get-donation-items/:donationId')
-  async getAllDonationIdItems(
+  @Get('/:donationId/all')
+  async getAllDonationItemsForDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
