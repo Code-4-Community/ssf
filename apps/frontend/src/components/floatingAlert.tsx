@@ -49,7 +49,7 @@ export function FloatingAlert({
       p={2}
     >
       <Alert.Indicator />
-      <Alert.Title textStyle="p2" fontWeight={500}>
+      <Alert.Title textStyle="p2" fontWeight={500} whiteSpace="pre-line">
         {message}
       </Alert.Title>
     </Alert.Root>

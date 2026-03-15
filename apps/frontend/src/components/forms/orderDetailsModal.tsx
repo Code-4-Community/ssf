@@ -21,6 +21,7 @@ import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -38,7 +39,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   );
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     if (isOpen) {
@@ -48,14 +49,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             orderId,
           );
           setFoodRequest(foodRequestData);
-        } catch (error) {
-          setAlertMessage('Error fetching food request details:' + error);
+        } catch {
+          setAlertMessage('Error fetching food request details');
         }
       };
 
       fetchRequestData();
     }
-  }, [isOpen, orderId]);
+  }, [isOpen, orderId, setAlertMessage]);
 
   useEffect(() => {
     if (isOpen) {
@@ -63,14 +64,14 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         try {
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
-        } catch (error) {
-          setAlertMessage('Error fetching order details:' + error);
+        } catch {
+          setAlertMessage('Error fetching order details');
         }
       };
 
       fetchOrderDetails();
     }
-  }, [isOpen, orderId]);
+  }, [isOpen, orderId, setAlertMessage]);
 
   const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
     orderDetails?.items,
@@ -99,8 +100,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
       )}
       <Dialog.Backdrop />
       <Dialog.Positioner>
