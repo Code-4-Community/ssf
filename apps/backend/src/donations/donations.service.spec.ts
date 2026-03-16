@@ -833,7 +833,7 @@ describe('DonationService', () => {
           items: validItems,
         }),
       ).rejects.toThrow(
-        new NotFoundException('Food manufacturer with ID 99999 not found'),
+        new NotFoundException('Food manufacturer 99999 not found'),
       );
     });
 
