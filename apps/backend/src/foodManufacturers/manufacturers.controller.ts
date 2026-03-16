@@ -15,6 +15,9 @@ import { ApiBody } from '@nestjs/swagger';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
 import { Donation } from '../donations/donations.entity';
 import { Public } from '../auth/public.decorator';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -165,6 +168,19 @@ export class FoodManufacturersController {
     foodManufacturerData: FoodManufacturerApplicationDto,
   ): Promise<void> {
     return this.foodManufacturersService.addFoodManufacturer(
+      foodManufacturerData,
+    );
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @Patch('/:manufacturerId/update-application')
+  async updateFoodManufacturerApplication(
+    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+    @Body(new ValidationPipe())
+    foodManufacturerData: UpdateFoodManufacturerApplicationDto,
+  ): Promise<void> {
+    return this.foodManufacturersService.updateFoodManufacturerApplication(
+      manufacturerId,
       foodManufacturerData,
     );
   }

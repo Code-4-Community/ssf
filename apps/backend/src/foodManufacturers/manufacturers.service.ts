@@ -10,6 +10,7 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -114,6 +115,27 @@ export class FoodManufacturersService {
       foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
+  }
+
+  async updateFoodManufacturerApplication(
+    manufacturerId: number,
+    foodManufacturerData: UpdateFoodManufacturerApplicationDto,
+  ) {
+    validateId(manufacturerId, 'Food Manufacturer');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: manufacturerId },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${manufacturerId} not found`,
+      );
+    }
+
+    Object.assign(manufacturer, foodManufacturerData);
+
+    await this.repo.save(manufacturer);
   }
 
   async approve(id: number) {
