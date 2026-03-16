@@ -267,12 +267,32 @@ export interface CreateFoodRequestBody {
   additionalInformation?: string;
 }
 
-export interface CreateMultipleDonationItemsBody {
-  donationId: number;
+export interface CreateDonationDto {
+  foodManufacturerId: number;
+  recurrenceFreq?: number;
+  recurrence: RecurrenceEnum;
+  repeatOnDays?: RepeatOnState;
+  occurrencesRemaining?: number;
+}
+
+export interface CreateDonationItemDto {
+  itemName: string;
+  quantity: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodType: FoodType;
+  foodRescue?: boolean;
+}
+
+export interface CreateDonationBody {
+  foodManufacturerId: number;
+  recurrenceFreq?: number;
+  recurrence: RecurrenceEnum;
+  repeatOnDays?: RepeatOnState;
+  occurrencesRemaining?: number;
   items: {
     itemName: string;
     quantity: number;
-    reservedQuantity: number;
     ozPerItem?: number;
     estimatedValue?: number;
     foodType: FoodType;

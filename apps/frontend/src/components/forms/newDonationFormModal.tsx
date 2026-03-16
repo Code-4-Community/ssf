@@ -18,6 +18,8 @@ import {
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import {
+  CreateDonationBody,
+  CreateDonationDto,
   DayOfWeek,
   FoodType,
   RecurrenceEnum,
@@ -166,52 +168,45 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    const donation_body = {
+    const donationBody: CreateDonationBody = {
       foodManufacturerId: 1,
-      recurrenceFreq: isRecurring ? parseInt(repeatEvery) : null,
+      recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
         isRecurring && repeatInterval === RecurrenceEnum.WEEKLY
           ? repeatOn
-          : null,
-      occurrencesRemaining: isRecurring ? parseInt(endsAfter) : null,
+          : undefined,
+      occurrencesRemaining: isRecurring ? parseInt(endsAfter) : undefined,
+      items: rows.map((row) => ({
+        itemName: row.foodItem,
+        quantity: parseInt(row.numItems),
+        ozPerItem: row.ozPerItem ? parseFloat(row.ozPerItem) : undefined,
+        estimatedValue: row.valuePerItem
+          ? parseFloat(row.valuePerItem)
+          : undefined,
+        foodType: row.foodType as FoodType,
+        foodRescue: row.foodRescue || undefined,
+      })),
     };
 
     try {
-      const donationResponse = await ApiClient.postDonation(donation_body);
-      const donationId = donationResponse?.donationId;
+      await ApiClient.postDonation(donationBody);
+      onDonationSuccess();
 
-      if (donationId) {
-        const items = rows.map((row) => ({
-          itemName: row.foodItem,
-          quantity: parseInt(row.numItems),
-          reservedQuantity: 0,
-          ozPerItem: parseFloat(row.ozPerItem),
-          estimatedValue: parseFloat(row.valuePerItem),
-          foodType: row.foodType as FoodType,
-          foodRescue: row.foodRescue,
-        }));
-
-        await ApiClient.postMultipleDonationItems({ donationId, items });
-        onDonationSuccess();
-
-        setRows([
-          {
-            id: 1,
-            foodItem: '',
-            foodType: '',
-            numItems: '',
-            ozPerItem: '',
-            valuePerItem: '',
-            foodRescue: false,
-          },
-        ]);
-        setIsRecurring(false);
-        setRepeatInterval(RecurrenceEnum.NONE);
-        onClose();
-      } else {
-        setAlertMessage('Failed to submit donation');
-      }
+      setRows([
+        {
+          id: 1,
+          foodItem: '',
+          foodType: '',
+          numItems: '',
+          ozPerItem: '',
+          valuePerItem: '',
+          foodRescue: false,
+        },
+      ]);
+      setIsRecurring(false);
+      setRepeatInterval(RecurrenceEnum.NONE);
+      onClose();
     } catch {
       setAlertMessage('Error submitting new donation');
     }

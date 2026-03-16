@@ -1,16 +1,18 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class DonationService {
@@ -18,8 +20,11 @@ export class DonationService {
 
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private dataSource: DataSource,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -84,7 +89,31 @@ export class DonationService {
       occurrencesRemaining: donationData.occurrencesRemaining,
     });
 
-    return this.repo.save(donation);
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        const savedDonation = await manager.save(Donation, donation);
+
+        const donationItems = donationData.items.map((item) =>
+          manager.create(DonationItem, {
+            donation: savedDonation,
+            itemName: item.itemName,
+            quantity: item.quantity,
+            ozPerItem: item.ozPerItem,
+            estimatedValue: item.estimatedValue,
+            foodType: item.foodType,
+            foodRescue: item.foodRescue,
+          }),
+        );
+
+        await manager.save(DonationItem, donationItems);
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to create donation, no changes were saved',
+      );
+    }
+
+    return donation;
   }
 
   async fulfill(donationId: number): Promise<Donation> {

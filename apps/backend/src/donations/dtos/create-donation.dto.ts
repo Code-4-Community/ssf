@@ -1,4 +1,6 @@
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
@@ -11,6 +13,7 @@ import {
   registerDecorator,
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
+import { CreateDonationItemDto } from '../../donationItems/dtos/create-donation-items.dto';
 import { Type } from 'class-transformer';
 
 function AtLeastOneDaySelected() {
@@ -83,4 +86,10 @@ export class CreateDonationDto {
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   occurrencesRemaining?: number;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateDonationItemDto)
+  items!: CreateDonationItemDto[];
 }

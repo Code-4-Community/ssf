@@ -6,6 +6,15 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { FoodType } from '../donationItems/types';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { DataSource } from 'typeorm';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 
 jest.setTimeout(60000);
 
@@ -94,6 +103,7 @@ describe('DonationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
+        DonationItemsService,
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
@@ -101,6 +111,14 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
@@ -763,6 +781,111 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('create', () => {
+    const validItems = [
+      {
+        itemName: 'Canned Beans',
+        quantity: 10,
+        ozPerItem: 15.5,
+        estimatedValue: 2.99,
+        foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+        foodRescue: false,
+      },
+      {
+        itemName: 'Canned Corn',
+        quantity: 5,
+        ozPerItem: 12,
+        estimatedValue: 1.99,
+        foodType: FoodType.GRANOLA,
+        foodRescue: true,
+      },
+    ];
+
+    it('successfully creates a donation with items', async () => {
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.NONE,
+        items: validItems,
+      });
+
+      expect(donation).toBeDefined();
+      expect(donation.donationId).toBeDefined();
+
+      const items = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(items).toHaveLength(2);
+      expect(
+        items.every((item: any) => item.donation_id === donation.donationId),
+      ).toBe(true);
+    });
+
+    it('throws when foodManufacturerId does not exist', async () => {
+      expect(
+        service.create({
+          foodManufacturerId: 99999,
+          recurrence: RecurrenceEnum.NONE,
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new NotFoundException('Food manufacturer with ID 99999 not found'),
+      );
+    });
+
+    it('throws when recurrence is not NONE but recurrenceFreq is missing', async () => {
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.WEEKLY,
+          repeatOnDays: {
+            Sunday: false,
+            Monday: true,
+            Tuesday: false,
+            Wednesday: false,
+            Thursday: false,
+            Friday: false,
+            Saturday: false,
+          },
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'recurrenceFreq is required for recurring donations',
+        ),
+      );
+
+      const donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+    });
+
+    it('rolls back donation when a donation item fails to save', async () => {
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.NONE,
+          items: [
+            ...validItems,
+            {
+              itemName: 'a'.repeat(1000),
+              quantity: 5,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+              foodRescue: false,
+            },
+          ],
+        }),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to create donation, no changes were saved',
+        ),
+      );
+
+      const donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
     });
   });
 });
