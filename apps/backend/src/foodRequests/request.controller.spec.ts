@@ -93,7 +93,7 @@ describe('RequestsController', () => {
 
   describe('GET /:pantryId/all', () => {
     it('should call requestsService.find and return all food requests for a specific pantry', async () => {
-      const foodRequest1s: Partial<FoodRequest>[] = [
+      const foodRequests: Partial<FoodRequest>[] = [
         foodRequest1,
         {
           requestId: 2,
@@ -103,12 +103,12 @@ describe('RequestsController', () => {
       const pantryId = 1;
 
       mockRequestsService.find.mockResolvedValueOnce(
-        foodRequest1s as FoodRequest[],
+        foodRequests as FoodRequest[],
       );
 
       const result = await controller.getAllPantryRequests(pantryId);
 
-      expect(result).toEqual(foodRequest1s);
+      expect(result).toEqual(foodRequests);
       expect(mockRequestsService.find).toHaveBeenCalledWith(pantryId);
     });
   });

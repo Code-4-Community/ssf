@@ -139,7 +139,7 @@ describe('DonationService', () => {
       expect(result.foodManufacturer).toBeDefined();
     });
 
-    it('should throw NotFoundException for non-existent request', async () => {
+    it('should throw NotFoundException for non-existent donation', async () => {
       await expect(service.findOne(999)).rejects.toThrow(
         new NotFoundException('Donation 999 not found'),
       );

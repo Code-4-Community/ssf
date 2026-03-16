@@ -80,7 +80,7 @@ describe('DonationsController', () => {
   });
 
   describe('POST /create', () => {
-    it('should call requestsService.create and return the created food request', async () => {
+    it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
         foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
@@ -88,7 +88,7 @@ describe('DonationsController', () => {
         occurrencesRemaining: 2,
       };
 
-      const createdRequest: Partial<Donation> = {
+      const createdDonation: Partial<Donation> = {
         donationId: 1,
         ...createBody,
         dateDonated: new Date(),
@@ -96,14 +96,14 @@ describe('DonationsController', () => {
       };
 
       mockDonationService.create.mockResolvedValueOnce(
-        createdRequest as Donation,
+        createdDonation as Donation,
       );
 
       const result = await controller.createDonation(
         createBody as CreateDonationDto,
       );
 
-      expect(result).toEqual(createdRequest);
+      expect(result).toEqual(createdDonation);
       expect(mockDonationService.create).toHaveBeenCalledWith(createBody);
     });
   });
