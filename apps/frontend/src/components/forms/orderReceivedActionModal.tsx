@@ -16,6 +16,7 @@ import { Upload } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
 import apiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../../hooks/alert';
 
 interface OrderReceivedActionModalProps {
   orderId: number;
@@ -37,13 +38,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   onSuccess,
   onError,
 }) => {
-  const [alert, setAlert] = useState<{
-    isError: boolean;
-    message: string;
-  }>({
-    isError: true,
-    message: '',
-  });
+  const [alertState, setAlertMessage] = useAlert();
   const [feedback, setFeedback] = useState<string>('');
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
@@ -65,11 +60,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const handleSubmit = async () => {
     try {
       if (new Date(dateReceived) < new Date(orderCreatedAt)) {
-        setAlert({
-          isError: true,
-          message:
-            'Date received cannot be earlier than the order creation date',
-        });
+        setAlertMessage(
+          'Date received cannot be earlier than the order creation date',
+        );
         return;
       }
 
@@ -77,10 +70,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       today.setHours(0, 0, 0, 0);
 
       if (new Date(dateReceived) > today) {
-        setAlert({
-          isError: true,
-          message: 'Date received cannot be in the future',
-        });
+        setAlertMessage('Date received cannot be in the future');
         return;
       }
 
@@ -113,10 +103,11 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          message={alert.message}
-          status={alert.isError ? 'error' : 'info'}
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
           timeout={6000}
         />
       )}
@@ -189,10 +180,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     if (words.length <= 250) {
                       setFeedback(e.target.value);
                     } else {
-                      setAlert({
-                        isError: true,
-                        message: 'Exceeded word limit',
-                      });
+                      setAlertMessage('Exceeded word limit');
                     }
                   }}
                 />
@@ -218,10 +206,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                       (file) => file.size > MAX_FILE_SIZE,
                     );
                     if (oversized) {
-                      setAlert({
-                        isError: true,
-                        message: `${oversized.name} exceeds the 5MB size limit`,
-                      });
+                      setAlertMessage(
+                        `${oversized.name} exceeds the 5MB size limit`,
+                      );
                       setInvalidPhotoExists(true);
                       return;
                     } else {

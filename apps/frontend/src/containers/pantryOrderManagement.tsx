@@ -22,6 +22,7 @@ import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 type OrderWithColor = OrderWithoutFoodManufacturer & { assigneeColor?: string };
 const MAX_PER_STATUS = 5;
@@ -51,13 +52,9 @@ const PantryOrderManagement: React.FC = () => {
     },
   );
 
-  const [alert, setAlert] = useState<{
-    isError: boolean;
-    message: string;
-  }>({
-    isError: true,
-    message: '',
-  });
+  const [isAlertError, setIsAlertError] = useState<boolean>(false);
+
+  const [alertState, setAlertMessage] = useAlert();
 
   // State to hold filter state per status
   type FilterState = {
@@ -117,7 +114,8 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch (error) {
-      setAlert({ isError: true, message: 'Error fetching orders: ' + error });
+      setIsAlertError(true);
+      setAlertMessage('Error fetching orders: ' + error);
     }
   };
 
@@ -143,10 +141,11 @@ const PantryOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {alert && (
+      {alertState && (
         <FloatingAlert
-          message={alert.message}
-          status={alert.isError ? 'error' : 'info'}
+          key={alertState.id}
+          message={alertState.message}
+          status={isAlertError ? 'error' : 'info'}
           timeout={6000}
         />
       )}
@@ -208,16 +207,12 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => setSelectedActionOrder(null)}
           onSuccess={() => {
             fetchOrders();
-            setAlert({
-              isError: false,
-              message: 'Delivery Confirmed',
-            });
+            setIsAlertError(false);
+            setAlertMessage('Delivery Confirmed');
           }}
           onError={() => {
-            setAlert({
-              isError: true,
-              message: 'Delivery could not be confirmed.',
-            });
+            setIsAlertError(true);
+            setAlertMessage('Delivery could not be confirmed.');
           }}
         />
       )}
