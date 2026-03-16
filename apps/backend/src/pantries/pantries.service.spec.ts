@@ -27,6 +27,7 @@ import { Donation } from '../donations/donations.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { User } from '../users/users.entity';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 jest.setTimeout(60000);
 
@@ -283,6 +284,57 @@ describe('PantriesService', () => {
       expect(saved?.status).toBe(ApplicationStatus.PENDING);
       expect(saved?.secondaryContactFirstName).toBe('Sarah');
       expect(saved?.shipmentAddressLine2).toBe('Suite 200');
+    });
+  });
+
+  describe('updatePantryApplication', () => {
+    it('updates an existing pantry successfully', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'John',
+        secondaryContactLastName: 'Doe',
+        refrigeratedDonation: RefrigeratedDonation.YES,
+        reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
+        newsletterSubscription: true,
+        itemsInStock: 'Canned beans, rice',
+      };
+
+      await service.updatePantryApplication(1, dto);
+
+      const updated = await service.findOne(1);
+      expect(updated.secondaryContactFirstName).toBe('John');
+      expect(updated.secondaryContactLastName).toBe('Doe');
+      expect(updated.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
+      expect(updated.reserveFoodForAllergic).toBe(ReserveFoodForAllergic.SOME);
+      expect(updated.newsletterSubscription).toBe(true);
+      expect(updated.itemsInStock).toBe('Canned beans, rice');
+    });
+
+    it('throws NotFoundException when pantry does not exist', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(9999, dto)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
+      );
+    });
+
+    it('updates only the provided fields and keeps others intact', async () => {
+      const original = await service.findOne(2);
+
+      const dto: UpdatePantryApplicationDto = {
+        itemsInStock: 'Rice and beans',
+      };
+
+      await service.updatePantryApplication(2, dto);
+
+      const updated = await service.findOne(2);
+
+      expect(updated.itemsInStock).toBe('Rice and beans');
+      expect(updated.pantryName).toBe(original.pantryName);
+      expect(updated.secondaryContactEmail).toBe(
+        original.secondaryContactEmail,
+      );
     });
   });
 

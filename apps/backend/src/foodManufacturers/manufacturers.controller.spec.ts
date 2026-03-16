@@ -7,6 +7,7 @@ import { Allergen, DonateWastedFood } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { Donation } from '../donations/donations.entity';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -131,6 +132,49 @@ describe('FoodManufacturersController', () => {
       expect(mockManufacturersService.addFoodManufacturer).toHaveBeenCalledWith(
         mockApplicationData,
       );
+    });
+  });
+
+  describe('PATCH /:manufacturerId/update-application', () => {
+    it('should update a food manufacturer application', async () => {
+      const manufacturerId = 1;
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Bob',
+        secondaryContactLastName: 'Smith',
+        secondaryContactEmail: 'bob.smith@example.com',
+        productsGlutenFree: false,
+        inKindDonations: true,
+        donateWastedFood: DonateWastedFood.ALWAYS,
+        additionalComments: 'Updated application notes.',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue();
+
+      await controller.updateFoodManufacturerApplication(
+        manufacturerId,
+        mockUpdateData,
+      );
+
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData);
+    });
+
+    it('should throw error if manufacturer does not exist', async () => {
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'John',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockRejectedValueOnce(
+        new Error('Food Manufacturer 999 not found'),
+      );
+
+      await expect(
+        controller.updateFoodManufacturerApplication(999, mockUpdateData),
+      ).rejects.toThrow();
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(999, mockUpdateData);
     });
   });
 

@@ -20,6 +20,7 @@ import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
 import { User } from '../users/users.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -224,6 +225,50 @@ describe('PantriesController', () => {
       );
     });
   });
+
+  describe('PATCH /:pantryId/update-application', () => {
+    it('should update a pantry application', async () => {
+      const pantryId = 1;
+
+      const mockUpdateData: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'John',
+        secondaryContactLastName: 'Doe',
+        secondaryContactEmail: 'john.doe@example.com',
+        refrigeratedDonation: RefrigeratedDonation.NO,
+        reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+        newsletterSubscription: false,
+        itemsInStock: 'Canned beans, rice',
+      };
+
+      mockPantriesService.updatePantryApplication.mockResolvedValue();
+
+      await controller.updatePantryApplication(pantryId, mockUpdateData);
+
+      expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
+        pantryId,
+        mockUpdateData,
+      );
+    });
+
+    it('should throw error if pantry does not exist', async () => {
+      const mockUpdateData: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'John',
+      };
+
+      mockPantriesService.updatePantryApplication.mockRejectedValueOnce(
+        new Error('Pantry 999 not found'),
+      );
+
+      await expect(
+        controller.updatePantryApplication(999, mockUpdateData),
+      ).rejects.toThrow();
+      expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
+        999,
+        mockUpdateData,
+      );
+    });
+  });
+
   describe('getOrders', () => {
     it('should return orders for a pantry', async () => {
       const pantryId = 24;
