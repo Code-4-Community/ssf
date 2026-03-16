@@ -44,7 +44,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   const [activeTab, setActiveTab] = useState(tabs[0].label);
 
   return (
-    <Box w="100%" p={8}>
+    <Box w="100%">
       <Box
         display="flex"
         alignItems="stretch"
