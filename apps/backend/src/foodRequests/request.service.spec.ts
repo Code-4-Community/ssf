@@ -72,6 +72,23 @@ describe('RequestsService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('getAll', () => {
+    it('should return all requests with request details, pantryId, and pantryName', async () => {
+      const result = await service.getAll();
+      expect(result).toHaveLength(4);
+      result.forEach((r) => {
+        expect(r.requestId).toBeDefined();
+        expect(r.requestedSize).toBeDefined();
+        expect(r.requestedFoodTypes).toBeDefined();
+        expect(r.additionalInformation).toBeDefined();
+        expect(r.requestedAt).toBeDefined();
+        expect(r.status).toBeDefined();
+        expect(r.pantry.pantryId).toBeDefined();
+        expect(r.pantry.pantryName).toBeDefined();
+      });
+    });
+  });
+
   describe('findOne', () => {
     it('should return a food request with the corresponding id', async () => {
       const requestId = 1;

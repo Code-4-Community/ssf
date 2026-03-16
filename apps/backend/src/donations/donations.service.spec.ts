@@ -6,6 +6,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { NotFoundException } from '@nestjs/common';
 
 jest.setTimeout(60000);
 
@@ -129,7 +130,34 @@ describe('DonationService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getDonationCount', () => {
+  describe('findOne', () => {
+    it('should return a donation with the corresponding id', async () => {
+      const donationId = 1;
+      const result = await service.findOne(donationId);
+      expect(result).toBeDefined();
+      expect(result.donationId).toBe(donationId);
+      expect(result.foodManufacturer).toBeDefined();
+    });
+
+    it('should throw NotFoundException for non-existent request', async () => {
+      await expect(service.findOne(999)).rejects.toThrow(
+        new NotFoundException('Donation 999 not found'),
+      );
+    });
+  });
+
+  describe('getAll', () => {
+    it('returns all donations in the database with food manufacturer relation', async () => {
+      const donations = await service.getAll();
+      expect(donations).toHaveLength(4);
+
+      donations.forEach((d) => {
+        expect(d.foodManufacturer).toBeDefined();
+      });
+    });
+  });
+
+  describe('getNumberOfDonations', () => {
     it('returns total number of donations in the database', async () => {
       const donationCount = await service.getNumberOfDonations();
       expect(donationCount).toEqual(4);
