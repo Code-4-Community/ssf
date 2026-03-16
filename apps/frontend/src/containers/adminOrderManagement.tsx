@@ -20,7 +20,7 @@ import {
   CircleCheck,
   Search,
 } from 'lucide-react';
-import { capitalize, formatDate } from '@utils/utils';
+import { capitalize, formatDate, getInitials } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
@@ -95,7 +95,7 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'cyan', 'blue.ssf'];
+  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
   useEffect(() => {
     // Fetch all orders on component mount and sorts them into their appropriate status lists
@@ -684,8 +684,10 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                             p={2}
                           >
                             {/* TODO: Change logic later to only get one volunteer */}
-                            {volunteers[0].firstName.charAt(0).toUpperCase()}
-                            {volunteers[0].lastName.charAt(0).toUpperCase()}
+                            {getInitials(
+                              volunteers[0].firstName,
+                              volunteers[0].lastName,
+                            )}
                           </Box>
                         ) : (
                           <Box>No Assignees</Box>

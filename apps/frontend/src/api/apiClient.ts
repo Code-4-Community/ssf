@@ -25,6 +25,7 @@ import {
   Assignments,
   FoodRequestSummaryDto,
   PantryWithUser,
+  UpdateProfileFields,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -153,10 +154,6 @@ export class ApiClient {
     return this.axiosInstance.post(`/api/users`, data);
   }
 
-  public async getPantrySSFRep(pantryId: number): Promise<User> {
-    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
-  }
-
   public async getAllPendingPantries(): Promise<PantryWithUser[]> {
     return this.axiosInstance
       .get('/api/pantries/pending')
@@ -195,11 +192,11 @@ export class ApiClient {
     return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
   }
 
-  public async updateUserVolunteerRole(
+  public async updateUser(
     userId: number,
-    body: { role: string },
-  ): Promise<void> {
-    await this.axiosInstance.put(`/api/users/${userId}/role`, body);
+    fields: UpdateProfileFields,
+  ): Promise<User> {
+    return this.axiosInstance.patch(`/api/users/${userId}`, fields);
   }
 
   public async getFoodRequest(requestId: number): Promise<FoodRequest> {
@@ -324,9 +321,9 @@ export class ApiClient {
     return data as number;
   }
 
-  public async getMyId(): Promise<number> {
-    const data = await this.get('/api/users/my-id');
-    return data as number;
+  public async getMe(): Promise<User> {
+    const data = await this.get('/api/users/me');
+    return data as User;
   }
 }
 

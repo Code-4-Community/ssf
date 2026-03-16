@@ -170,6 +170,10 @@ export interface User {
   pantries?: Pantry[];
 }
 
+export type UpdateProfileFields = Partial<
+  Pick<User, 'firstName' | 'lastName' | 'phone'>
+>;
+
 export interface UserDto {
   email: string;
   firstName: string;

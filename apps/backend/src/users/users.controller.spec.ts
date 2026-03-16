@@ -47,13 +47,18 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('GET /my-id', () => {
-    it('should return the current user id', () => {
-      const req = { user: { id: 1 } } as AuthenticatedRequest;
+  describe('GET /me', () => {
+    it('should return the current user', async () => {
+      const req = {
+        user: {
+          id: 1,
+        },
+      } as AuthenticatedRequest;
 
-      const result = controller.getCurrentUserId(req);
+      mockUserService.findOne.mockResolvedValueOnce(mockUser1 as User);
+      const result = await controller.getCurrentUser(req);
 
-      expect(result).toBe(1);
+      expect(result).toEqual(mockUser1);
     });
   });
 
