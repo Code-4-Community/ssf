@@ -28,6 +28,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId },
+      relations: ['foodManufacturerRepresentative'],
     });
 
     if (!foodManufacturer) {
@@ -121,6 +122,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
     });
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
@@ -147,6 +149,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
     });
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
