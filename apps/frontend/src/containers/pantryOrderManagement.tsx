@@ -499,8 +499,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRightColor="neutral.100"
                     >
                       {formatDate(order.createdAt)}-
-                      {order.deliveredAt &&
-                        formatDate(new Date(order.deliveredAt).toISOString())}
+                      {order.deliveredAt && formatDate(order.deliveredAt)}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

@@ -206,39 +206,13 @@ export interface FoodRequestSummaryDto {
   status: FoodRequestStatus;
 }
 
-export interface Order {
-  orderId: number;
-  request: FoodRequest;
-  requestId: number;
+export interface Order extends OrderWithoutFoodManufacturer {
   foodManufacturer: FoodManufacturer;
-  foodManufacturerId: number;
-  status: OrderStatus;
-  createdAt: string;
-  shippedAt?: Date;
-  deliveredAt?: Date;
-  allocations: Allocation[];
-  trackingLink?: string;
-  shippingCost?: number;
-  dateReceived?: string;
-  feedback?: string;
-  photos?: string[];
 }
 
-export interface OrderWithoutFoodManufacturer {
-  orderId: number;
+export interface OrderWithoutFoodManufacturer extends OrderWithoutRelations {
   request: FoodRequest;
-  requestId: number;
-  foodManufacturerId: number;
-  status: OrderStatus;
-  createdAt: string;
-  shippedAt?: Date;
-  deliveredAt?: Date;
   allocations: Allocation[];
-  trackingLink?: string;
-  shippingCost?: number;
-  dateReceived?: string;
-  feedback?: string;
-  photos?: string[];
 }
 
 export interface OrderWithoutRelations {
@@ -247,8 +221,8 @@ export interface OrderWithoutRelations {
   foodManufacturerId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt?: Date;
-  deliveredAt?: Date;
+  shippedAt?: string;
+  deliveredAt?: string;
   trackingLink?: string;
   shippingCost?: number;
   dateReceived?: string;

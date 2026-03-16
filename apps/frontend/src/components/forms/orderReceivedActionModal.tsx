@@ -43,6 +43,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [invalidPhotoExists, setInvalidPhotoExists] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const isFormValid = dateReceived !== '' && !invalidPhotoExists;
 
@@ -206,8 +207,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                       (file) => file.size > MAX_FILE_SIZE,
                     );
                     if (oversized) {
-                      setAlertMessage(
-                        `${oversized.name} exceeds the 5MB size limit`,
+                      setErrorMessage(
+                        `${oversized.name} exceeds the 5MB size limit.`,
                       );
                       setInvalidPhotoExists(true);
                       return;
@@ -239,6 +240,11 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                       </Box>
                     </FileUpload.DropzoneContent>
                   </FileUpload.Dropzone>
+                  {invalidPhotoExists && (
+                    <Text color="red" textStyle="p2" mt={1}>
+                      {errorMessage}
+                    </Text>
+                  )}
                   <FileUpload.List clearable />
                 </FileUpload.Root>
               </Field.Root>
