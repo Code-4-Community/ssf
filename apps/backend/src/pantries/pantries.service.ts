@@ -333,9 +333,9 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
 
-    if (pantry?.pantryUser.id !== currentUserId) {
+    if (pantry.pantryUser.id !== currentUserId) {
       throw new BadRequestException(
-        `User ${currentUserId} is not allowed to edit pantry ${pantryId}`,
+        `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
       );
     }
 

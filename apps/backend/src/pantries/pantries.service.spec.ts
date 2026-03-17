@@ -347,7 +347,7 @@ describe('PantriesService', () => {
         service.updatePantryApplication(1, dto, invalidUserId),
       ).rejects.toThrow(
         new BadRequestException(
-          `User ${invalidUserId} is not allowed to edit pantry 1`,
+          `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
         ),
       );
     });

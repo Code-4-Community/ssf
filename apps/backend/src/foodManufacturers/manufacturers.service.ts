@@ -142,9 +142,9 @@ export class FoodManufacturersService {
       );
     }
 
-    if (manufacturer?.foodManufacturerRepresentative.id !== currentUserId) {
+    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
       throw new BadRequestException(
-        `User ${currentUserId} is not allowed to edit manufacturer ${manufacturerId}`,
+        `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
       );
     }
 
