@@ -41,8 +41,7 @@ export class UsersController {
   @Patch('/:id')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    dto: UpdateUserInfoDto,
+    @Body() dto: UpdateUserInfoDto,
   ): Promise<User> {
     return this.usersService.update(id, dto);
   }
