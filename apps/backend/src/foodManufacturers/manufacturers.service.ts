@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -33,6 +34,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerId },
+      relations: ['foodManufacturerRepresentative'],
     });
 
     if (!foodManufacturer) {
@@ -154,11 +156,12 @@ export class FoodManufacturersService {
   async approve(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.repo.findOne({
-      where: { foodManufacturerId: id },
-    });
-    if (!foodManufacturer) {
-      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    const foodManufacturer = await this.findOne(id);
+
+    if (foodManufacturer.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot approve a Food Manufacturer with status: ${foodManufacturer.status}`,
+      );
     }
 
     const createUserDto: userSchemaDto = {
@@ -180,11 +183,12 @@ export class FoodManufacturersService {
   async deny(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.repo.findOne({
-      where: { foodManufacturerId: id },
-    });
-    if (!foodManufacturer) {
-      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    const foodManufacturer = await this.findOne(id);
+
+    if (foodManufacturer.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot deny a Food Manufacturer with status: ${foodManufacturer.status}`,
+      );
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
