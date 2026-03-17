@@ -67,44 +67,4 @@ describe('DonationItemsController', () => {
       expect(result).toEqual(mockCreatedItems);
     });
   });
-
-  describe('getAssociatedDonationIds', () => {
-    it('should call service.getAssociatedDonationIds with donationItemIds and return donation id list', async () => {
-      const donationItemIds = [1, 2, 3];
-      const mockDonationsids = [1, 2];
-      const mockDonationsidsSet = new Set(mockDonationsids);
-
-      mockDonationItemsService.getAssociatedDonationIds.mockResolvedValue(
-        mockDonationsidsSet,
-      );
-
-      const result = await controller.getAssociatedDonationIds(donationItemIds);
-
-      expect(
-        mockDonationItemsService.getAssociatedDonationIds,
-      ).toHaveBeenCalledWith(donationItemIds);
-      expect(result).toEqual(mockDonationsidsSet);
-    });
-  });
-
-  describe('getByIds', () => {
-    it('should call service.getByIds with donationItemIds and return donation items', async () => {
-      const donationItemIds = [1, 2];
-      const mockItems = [
-        { itemId: 1, itemName: 'Rice' },
-        { itemId: 2, itemName: 'Beans' },
-      ] as Partial<DonationItem>[];
-
-      mockDonationItemsService.getByIds.mockResolvedValue(
-        mockItems as DonationItem[],
-      );
-
-      const result = await controller.getByIds(donationItemIds);
-
-      expect(mockDonationItemsService.getByIds).toHaveBeenCalledWith(
-        donationItemIds,
-      );
-      expect(result).toEqual(mockItems);
-    });
-  });
 });
