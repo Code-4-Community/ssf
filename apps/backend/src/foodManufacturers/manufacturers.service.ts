@@ -125,9 +125,6 @@ export class FoodManufacturersService {
     validateId(id, 'Food Manufacturer');
 
     const foodManufacturer = await this.findOne(id);
-    if (!foodManufacturer) {
-      throw new NotFoundException(`Food Manufacturer ${id} not found`);
-    }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
       throw new ConflictException(
@@ -155,9 +152,6 @@ export class FoodManufacturersService {
     validateId(id, 'Food Manufacturer');
 
     const foodManufacturer = await this.findOne(id);
-    if (!foodManufacturer) {
-      throw new NotFoundException(`Food Manufacturer ${id} not found`);
-    }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
       throw new ConflictException(
