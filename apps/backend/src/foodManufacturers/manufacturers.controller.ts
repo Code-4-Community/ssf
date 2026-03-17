@@ -173,12 +173,12 @@ export class FoodManufacturersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @Patch('/:manufacturerId/update-application')
+  @Patch('/:manufacturerId/application')
   async updateFoodManufacturerApplication(
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
     @Body(new ValidationPipe())
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
-  ): Promise<void> {
+  ): Promise<FoodManufacturer> {
     return this.foodManufacturersService.updateFoodManufacturerApplication(
       manufacturerId,
       foodManufacturerData,

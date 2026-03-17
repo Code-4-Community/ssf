@@ -8,6 +8,7 @@ import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
+import { NotFoundException } from '@nestjs/common';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -148,9 +149,11 @@ describe('FoodManufacturersController', () => {
         additionalComments: 'Updated application notes.',
       };
 
-      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue();
+      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue(
+        mockManufacturer1 as FoodManufacturer,
+      );
 
-      await controller.updateFoodManufacturerApplication(
+      const result = await controller.updateFoodManufacturerApplication(
         manufacturerId,
         mockUpdateData,
       );
@@ -158,6 +161,8 @@ describe('FoodManufacturersController', () => {
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
       ).toHaveBeenCalledWith(manufacturerId, mockUpdateData);
+
+      expect(result).toEqual(mockManufacturer1);
     });
 
     it('should throw error if manufacturer does not exist', async () => {
@@ -166,7 +171,7 @@ describe('FoodManufacturersController', () => {
       };
 
       mockManufacturersService.updateFoodManufacturerApplication.mockRejectedValueOnce(
-        new Error('Food Manufacturer 999 not found'),
+        new NotFoundException('Food Manufacturer 999 not found'),
       );
 
       await expect(

@@ -322,7 +322,7 @@ export class PantriesService {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.repo.findOne({
-      where: { pantryId: pantryId },
+      where: { pantryId },
     });
 
     if (!pantry) {
@@ -331,7 +331,7 @@ export class PantriesService {
 
     Object.assign(pantry, pantryData);
 
-    await this.repo.save(pantry);
+    return await this.repo.save(pantry);
   }
 
   async approve(id: number) {

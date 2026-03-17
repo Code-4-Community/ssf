@@ -346,12 +346,12 @@ export class PantriesController {
   }
 
   @Roles(Role.PANTRY)
-  @Patch('/:pantryId/update-application')
+  @Patch('/:pantryId/update')
   async updatePantryApplication(
     @Param('pantryId', ParseIntPipe) pantryId: number,
     @Body(new ValidationPipe())
     pantryData: UpdatePantryApplicationDto,
-  ): Promise<void> {
+  ): Promise<Pantry> {
     return this.pantriesService.updatePantryApplication(pantryId, pantryData);
   }
 

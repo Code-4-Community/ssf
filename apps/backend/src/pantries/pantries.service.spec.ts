@@ -298,15 +298,16 @@ describe('PantriesService', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      await service.updatePantryApplication(1, dto);
+      const updatedPantry = await service.updatePantryApplication(1, dto);
 
-      const updated = await service.findOne(1);
-      expect(updated.secondaryContactFirstName).toBe('John');
-      expect(updated.secondaryContactLastName).toBe('Doe');
-      expect(updated.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
-      expect(updated.reserveFoodForAllergic).toBe(ReserveFoodForAllergic.SOME);
-      expect(updated.newsletterSubscription).toBe(true);
-      expect(updated.itemsInStock).toBe('Canned beans, rice');
+      expect(updatedPantry.secondaryContactFirstName).toBe('John');
+      expect(updatedPantry.secondaryContactLastName).toBe('Doe');
+      expect(updatedPantry.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
+      expect(updatedPantry.reserveFoodForAllergic).toBe(
+        ReserveFoodForAllergic.SOME,
+      );
+      expect(updatedPantry.newsletterSubscription).toBe(true);
+      expect(updatedPantry.itemsInStock).toBe('Canned beans, rice');
     });
 
     it('throws NotFoundException when pantry does not exist', async () => {
@@ -326,9 +327,7 @@ describe('PantriesService', () => {
         itemsInStock: 'Rice and beans',
       };
 
-      await service.updatePantryApplication(2, dto);
-
-      const updated = await service.findOne(2);
+      const updated = await service.updatePantryApplication(2, dto);
 
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);

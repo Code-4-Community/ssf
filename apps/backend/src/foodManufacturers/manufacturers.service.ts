@@ -135,7 +135,7 @@ export class FoodManufacturersService {
 
     Object.assign(manufacturer, foodManufacturerData);
 
-    await this.repo.save(manufacturer);
+    return await this.repo.save(manufacturer);
   }
 
   async approve(id: number) {
