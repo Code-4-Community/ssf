@@ -39,3 +39,17 @@ export enum ReserveFoodForAllergic {
   SOME = 'Some',
   NO = 'No',
 }
+
+export type PantryStats = {
+  pantryId: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+};
+
+// Make new type that is just a list of PantryStats with pantryId omitted
+export type TotalStats = Omit<PantryStats, 'pantryId'>;
