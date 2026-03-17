@@ -193,11 +193,13 @@ const PantryOrderManagement: React.FC = () => {
         );
       })}
 
-      <OrderDetailsModal
-        orderId={selectedOrderId!}
-        isOpen={!!selectedOrderId}
-        onClose={() => setSelectedOrderId(null)}
-      />
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={!!selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
+      )}
 
       {selectedActionOrder && (
         <OrderReceivedActionModal
