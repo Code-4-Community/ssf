@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
 import { Repository } from 'typeorm';
@@ -120,16 +124,25 @@ export class FoodManufacturersService {
   async updateFoodManufacturerApplication(
     manufacturerId: number,
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
+    currentUserId: number,
   ) {
     validateId(manufacturerId, 'Food Manufacturer');
+    validateId(currentUserId, 'User');
 
     const manufacturer = await this.repo.findOne({
       where: { foodManufacturerId: manufacturerId },
+      relations: ['foodManufacturerRepresentative'],
     });
 
     if (!manufacturer) {
       throw new NotFoundException(
         `Food Manufacturer ${manufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer?.foodManufacturerRepresentative.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit manufacturer ${manufacturerId}`,
       );
     }
 

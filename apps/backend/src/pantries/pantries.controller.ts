@@ -348,11 +348,16 @@ export class PantriesController {
   @Roles(Role.PANTRY)
   @Patch('/:pantryId/update')
   async updatePantryApplication(
+    @Req() req: AuthenticatedRequest,
     @Param('pantryId', ParseIntPipe) pantryId: number,
     @Body(new ValidationPipe())
     pantryData: UpdatePantryApplicationDto,
   ): Promise<Pantry> {
-    return this.pantriesService.updatePantryApplication(pantryId, pantryData);
+    return this.pantriesService.updatePantryApplication(
+      pantryId,
+      pantryData,
+      req.user.id,
+    );
   }
 
   @Roles(Role.ADMIN)

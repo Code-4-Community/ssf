@@ -226,7 +226,9 @@ describe('PantriesController', () => {
     });
   });
 
-  describe('PATCH /:pantryId/update-application', () => {
+  describe('PATCH /:pantryId/application', () => {
+    const req = { user: { id: 1 } };
+
     it('should update a pantry application', async () => {
       const pantryId = 1;
 
@@ -245,6 +247,7 @@ describe('PantriesController', () => {
       );
 
       const result = await controller.updatePantryApplication(
+        req as AuthenticatedRequest,
         pantryId,
         mockUpdateData,
       );
@@ -252,6 +255,7 @@ describe('PantriesController', () => {
       expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
         pantryId,
         mockUpdateData,
+        1,
       );
 
       expect(result).toEqual(mockPantry);
@@ -267,11 +271,16 @@ describe('PantriesController', () => {
       );
 
       await expect(
-        controller.updatePantryApplication(999, mockUpdateData),
+        controller.updatePantryApplication(
+          req as AuthenticatedRequest,
+          999,
+          mockUpdateData,
+        ),
       ).rejects.toThrow();
       expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
         999,
         mockUpdateData,
+        1,
       );
     });
   });

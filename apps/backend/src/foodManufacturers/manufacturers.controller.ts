@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   ValidationPipe,
 } from '@nestjs/common';
 import { FoodManufacturersService } from './manufacturers.service';
@@ -18,6 +19,7 @@ import { Public } from '../auth/public.decorator';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -175,6 +177,7 @@ export class FoodManufacturersController {
   @Roles(Role.FOODMANUFACTURER)
   @Patch('/:manufacturerId/application')
   async updateFoodManufacturerApplication(
+    @Req() req: AuthenticatedRequest,
     @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
     @Body(new ValidationPipe())
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
@@ -182,6 +185,7 @@ export class FoodManufacturersController {
     return this.foodManufacturersService.updateFoodManufacturerApplication(
       manufacturerId,
       foodManufacturerData,
+      req.user.id,
     );
   }
 

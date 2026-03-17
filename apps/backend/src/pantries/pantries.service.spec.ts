@@ -298,7 +298,7 @@ describe('PantriesService', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      const updatedPantry = await service.updatePantryApplication(1, dto);
+      const updatedPantry = await service.updatePantryApplication(1, dto, 10);
 
       expect(updatedPantry.secondaryContactFirstName).toBe('John');
       expect(updatedPantry.secondaryContactLastName).toBe('Doe');
@@ -315,9 +315,9 @@ describe('PantriesService', () => {
         secondaryContactFirstName: 'Jane',
       };
 
-      await expect(service.updatePantryApplication(9999, dto)).rejects.toThrow(
-        new NotFoundException('Pantry 9999 not found'),
-      );
+      await expect(
+        service.updatePantryApplication(9999, dto, 1),
+      ).rejects.toThrow(new NotFoundException('Pantry 9999 not found'));
     });
 
     it('updates only the provided fields and keeps others intact', async () => {
@@ -327,12 +327,28 @@ describe('PantriesService', () => {
         itemsInStock: 'Rice and beans',
       };
 
-      const updated = await service.updatePantryApplication(2, dto);
+      const updated = await service.updatePantryApplication(2, dto, 11);
 
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
         original.secondaryContactEmail,
+      );
+    });
+
+    it('throws BadRequestException when user is not authorized to update pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        itemsInStock: 'Rice and beans',
+      };
+
+      const invalidUserId = 999;
+
+      await expect(
+        service.updatePantryApplication(1, dto, invalidUserId),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `User ${invalidUserId} is not allowed to edit pantry 1`,
+        ),
       );
     });
   });

@@ -318,15 +318,24 @@ export class PantriesService {
   async updatePantryApplication(
     pantryId: number,
     pantryData: UpdatePantryApplicationDto,
+    currentUserId: number,
   ) {
     validateId(pantryId, 'Pantry');
+    validateId(currentUserId, 'User');
 
     const pantry = await this.repo.findOne({
       where: { pantryId },
+      relations: ['pantryUser'],
     });
 
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    if (pantry?.pantryUser.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit pantry ${pantryId}`,
+      );
     }
 
     Object.assign(pantry, pantryData);

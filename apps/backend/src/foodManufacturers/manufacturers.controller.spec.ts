@@ -9,6 +9,7 @@ import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.
 import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -136,7 +137,9 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('PATCH /:manufacturerId/update-application', () => {
+  describe('PATCH /:manufacturerId/application', () => {
+    const req = { user: { id: 1 } };
+
     it('should update a food manufacturer application', async () => {
       const manufacturerId = 1;
       const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
@@ -154,13 +157,14 @@ describe('FoodManufacturersController', () => {
       );
 
       const result = await controller.updateFoodManufacturerApplication(
+        req as AuthenticatedRequest,
         manufacturerId,
         mockUpdateData,
       );
 
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData);
+      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 1);
 
       expect(result).toEqual(mockManufacturer1);
     });
@@ -175,11 +179,15 @@ describe('FoodManufacturersController', () => {
       );
 
       await expect(
-        controller.updateFoodManufacturerApplication(999, mockUpdateData),
+        controller.updateFoodManufacturerApplication(
+          req as AuthenticatedRequest,
+          999,
+          mockUpdateData,
+        ),
       ).rejects.toThrow();
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(999, mockUpdateData);
+      ).toHaveBeenCalledWith(999, mockUpdateData, 1);
     });
   });
 
