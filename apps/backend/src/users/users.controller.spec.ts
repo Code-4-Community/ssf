@@ -1,12 +1,12 @@
-import { BadRequestException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
+import { BadRequestException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockUserService = mock<UsersService>();
@@ -84,24 +84,42 @@ describe('UsersController', () => {
     });
   });
 
-  describe('PUT /:id/role', () => {
-    it('should update user role with valid role', async () => {
-      const updatedUser = { ...mockUser1, role: Role.ADMIN };
+  describe('PATCH /:id', () => {
+    it('should update user info with valid information', async () => {
+      const updatedUser = {
+        ...mockUser1,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
       mockUserService.update.mockResolvedValue(updatedUser as User);
 
-      const result = await controller.updateRole(1, Role.ADMIN);
+      const updateUserSchema: UpdateUserInfoDto = {
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
+      const result = await controller.updateInfo(1, updateUserSchema);
 
       expect(result).toEqual(updatedUser);
-      expect(mockUserService.update).toHaveBeenCalledWith(1, {
-        role: Role.ADMIN,
-      });
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
     });
 
-    it('should throw BadRequestException for invalid role', async () => {
-      await expect(
-        controller.updateRole(1, 'invalid_role' as Role),
-      ).rejects.toThrow(BadRequestException);
-      expect(mockUserService.update).not.toHaveBeenCalled();
+    it('should throw BadRequestException when DTO is empty', async () => {
+      mockUserService.update.mockRejectedValue(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
+
+      const updateUserSchema: UpdateUserInfoDto = {};
+
+      await expect(controller.updateInfo(1, updateUserSchema)).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
     });
   });
 
