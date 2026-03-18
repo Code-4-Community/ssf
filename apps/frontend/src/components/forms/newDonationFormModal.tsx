@@ -53,19 +53,38 @@ const RECURRENCE_LABELS: Record<RecurrenceEnum, string> = {
   [RecurrenceEnum.YEARLY]: 'Year',
 };
 
-// Max 2 decimal places, positive
 const isValidDecimal = (val: string): boolean =>
   val !== '' && /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0;
 
-// Positive integer only
 const isValidPositiveInt = (val: string): boolean =>
   val !== '' && /^\d+$/.test(val) && parseInt(val) > 0;
 
-const isRequiredFieldsFilled = (rows: DonationRow[]): boolean =>
-  rows.every(
-    (row) =>
-      row.foodItem.trim() !== '' && row.foodType !== '' && row.numItems !== '',
-  );
+const getFirstValidationError = (rows: DonationRow[]): string | null => {
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowLabel = rows.length > 1 ? ` (row ${i + 1})` : '';
+
+    if (row.foodItem.trim() === '') {
+      return `Food item${rowLabel} is required.`;
+    }
+    if (row.foodType === '') {
+      return `Food type${rowLabel} is required.`;
+    }
+    if (row.numItems === '') {
+      return `Quantity${rowLabel} is required.`;
+    }
+    if (!isValidPositiveInt(row.numItems)) {
+      return `Quantity${rowLabel} must be a positive whole number.`;
+    }
+    if (row.ozPerItem !== '' && !isValidDecimal(row.ozPerItem)) {
+      return `Oz. per item${rowLabel} must be a positive number with at most 2 decimal places.`;
+    }
+    if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
+      return `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`;
+    }
+  }
+  return null;
+};
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
@@ -171,31 +190,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    // Per-row field validation
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const rowLabel = rows.length > 1 ? ` (row ${i + 1})` : '';
-
-      if (!isValidPositiveInt(row.numItems)) {
-        setAlertMessage(`Quantity${rowLabel} must be a positive whole number.`);
-        return;
-      }
-
-      if (row.ozPerItem !== '' && !isValidDecimal(row.ozPerItem)) {
-        setAlertMessage(
-          `Oz. per item${rowLabel} must be a positive number with at most 2 decimal places.`,
-        );
-        return;
-      }
-
-      if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
-        setAlertMessage(
-          `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`,
-        );
-        return;
-      }
-    }
-
     const donation_body = {
       foodManufacturerId: 1,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : null,
@@ -249,7 +243,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
-  const isSubmitDisabled = !isRequiredFieldsFilled(rows);
+  const firstValidationError = getFirstValidationError(rows);
+  const isSubmitDisabled = firstValidationError !== null;
   const isRepeatOnDisabled = repeatInterval !== RecurrenceEnum.WEEKLY;
 
   const placeholderStyles = {
@@ -701,7 +696,18 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 </Box>
               )}
 
-              <Flex justifyContent="flex-end" gap={3} mt={6} pt={4}>
+              <Flex
+                justifyContent="flex-end"
+                gap={3}
+                mt={6}
+                pt={4}
+                align="center"
+              >
+                {isSubmitDisabled && (
+                  <Text fontSize="sm" color="red" fontStyle="italic">
+                    {firstValidationError}
+                  </Text>
+                )}
                 <Button
                   variant="outline"
                   color="gray.700"
