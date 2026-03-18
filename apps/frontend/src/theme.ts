@@ -67,7 +67,10 @@ const customConfig = defineConfig({
     textStyles,
     tokens: {
       colors: {
-        white: { value: '#fff' },
+        white: {
+          value: '#fff',
+          core: { value: '#FEFEFE' },
+        },
         black: { value: '#000' },
         blue: {
           ssf: { value: '#2B5061' },

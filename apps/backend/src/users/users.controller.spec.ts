@@ -98,9 +98,9 @@ describe('UsersController', () => {
     });
 
     it('should throw BadRequestException for invalid role', async () => {
-      await expect(controller.updateRole(1, 'invalid_role')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.updateRole(1, 'invalid_role' as Role),
+      ).rejects.toThrow(BadRequestException);
       expect(mockUserService.update).not.toHaveBeenCalled();
     });
   });

@@ -15,7 +15,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
   initials,
   avatarBg,
 }) => (
-  <VStack alignItems="center" mt={16} mb={10} p={10}>
+  <VStack alignItems="center" mt={8} mb={6} p={10}>
     <Box
       p={5}
       borderRadius="full"
@@ -51,6 +51,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
       px={8}
       bg="red"
       size="sm"
+      color="white.core"
       onClick={() => {
         // TODO: add functionality
       }}

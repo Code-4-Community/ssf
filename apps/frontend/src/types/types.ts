@@ -162,7 +162,7 @@ export enum FoodType {
 
 export interface User {
   id: number;
-  role: string;
+  role: Role;
   firstName: string;
   lastName: string;
   email: string;

@@ -66,7 +66,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               onValueChange={(e: { value: string }) => setActiveTab(e.value)}
               variant="line"
             >
-              <HStack justify="space-between" mb={6}>
+              <HStack justify="space-between" my={4}>
                 <Tabs.List>
                   {tabs.map((tab) => (
                     <Tabs.Trigger
@@ -93,7 +93,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
             </Tabs.Root>
           ) : (
             <>
-              <HStack justify="space-between" mb={6} mx={2}>
+              <HStack justify="space-between" my={4} mx={2}>
                 <Text textStyle="p" fontWeight={600}>
                   Account Details
                 </Text>

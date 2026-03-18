@@ -69,7 +69,7 @@ const ProfilePage: React.FC = () => {
   }
 
   const { firstName, lastName, email, phone } = profile;
-  const role = profile.role as Role;
+  const role = profile.role;
   const config = ROLE_CONFIG[role];
 
   const leftPanel = (

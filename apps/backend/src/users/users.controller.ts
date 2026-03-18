@@ -41,12 +41,12 @@ export class UsersController {
   @Put('/:id/role')
   async updateRole(
     @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string,
+    @Body('role') role: Role,
   ): Promise<User> {
-    if (!Object.values(Role).includes(role as Role)) {
+    if (!Object.values(Role).includes(role)) {
       throw new BadRequestException('Invalid role');
     }
-    return this.usersService.update(id, { role: role as Role });
+    return this.usersService.update(id, { role });
   }
 
   @Post('/')
