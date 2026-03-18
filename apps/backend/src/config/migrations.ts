@@ -34,6 +34,7 @@ import { DonationItemFoodTypeNotNull1771524930613 } from '../migrations/17715249
 import { MoveRequestFieldsToOrders1770571145350 } from '../migrations/1770571145350-MoveRequestFieldsToOrders';
 import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
 import { AddAssigneeToOrders1773009000618 } from '../migrations/1773009000618-AddAssigneeToOrders';
+import { DropDonationTotalColumns1772241115031 } from '../migrations/1772241115031-DropDonationTotalColumns';
 import { FixTrackingLinks1773041840374 } from '../migrations/1773041840374-FixTrackingLinks';
 import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
 
@@ -74,6 +75,7 @@ const schemaMigrations = [
   MoveRequestFieldsToOrders1770571145350,
   RenameDonationMatchingStatus1771260403657,
   AddAssigneeToOrders1773009000618,
+  DropDonationTotalColumns1772241115031,
   FixTrackingLinks1773041840374,
   CleanupRequestsAndAllocations1771821377918,
 ];
