@@ -115,7 +115,7 @@ const PantryOrderManagement: React.FC = () => {
       setCurrentPages(initialPages);
     } catch (error) {
       setIsAlertError(true);
-      setAlertMessage('Error fetching orders: ' + error);
+      setAlertMessage('Failed to fetch orders');
     }
   };
 
@@ -196,7 +196,7 @@ const PantryOrderManagement: React.FC = () => {
       {selectedOrderId && (
         <OrderDetailsModal
           orderId={selectedOrderId}
-          isOpen={!!selectedOrderId}
+          isOpen={true}
           onClose={() => setSelectedOrderId(null)}
         />
       )}
@@ -500,7 +500,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {formatDate(order.createdAt)}-
+                      {formatDate(order.createdAt)} -{' '}
                       {order.deliveredAt && formatDate(order.deliveredAt)}
                     </Table.Cell>
                     <Table.Cell
