@@ -596,11 +596,45 @@ describe('PantriesService', () => {
     });
 
     it('should return empty volunteers array when pantry has no volunteers', async () => {
+      await service.addPantry({
+        contactFirstName: 'Test',
+        contactLastName: 'Pantry',
+        contactEmail: 'test.novolunteers@example.com',
+        contactPhone: '555-000-9999',
+        hasEmailContact: false,
+        pantryName: 'No Volunteer Pantry',
+        shipmentAddressLine1: '1 Test St',
+        shipmentAddressCity: 'Boston',
+        shipmentAddressState: 'MA',
+        shipmentAddressZip: '02101',
+        mailingAddressLine1: '1 Test St',
+        mailingAddressCity: 'Boston',
+        mailingAddressState: 'MA',
+        mailingAddressZip: '02101',
+        allergenClients: 'none',
+        restrictions: ['none'],
+        refrigeratedDonation: RefrigeratedDonation.NO,
+        acceptFoodDeliveries: false,
+        reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+        dedicatedAllergyFriendly: false,
+        activities: [Activity.CREATE_LABELED_SHELF],
+        itemsInStock: 'none',
+        needMoreOptions: 'none',
+      } as PantryApplicationDto);
+
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'No Volunteer Pantry' },
+      });
+      await testDataSource.getRepository(Pantry).update(saved!.pantryId, {
+        status: ApplicationStatus.APPROVED,
+      });
+
       const result = await service.getApprovedPantriesWithVolunteers();
       const pantryWithNoVolunteers = result.find(
-        (p) => p.volunteers.length === 0,
+        (p) => p.pantryName === 'No Volunteer Pantry',
       );
       expect(pantryWithNoVolunteers).toBeDefined();
+      expect(pantryWithNoVolunteers?.volunteers).toEqual([]);
     });
 
     it('should return empty array when no approved pantries exist', async () => {
