@@ -745,7 +745,11 @@ describe('OrdersService', () => {
       if (!donationItem1 || !donationItem2)
         throw new Error('Missing dummy donation items');
 
-      const createdOrder = await service.create(validCreateOrderDto);
+      const createdOrder = await service.create(
+        validCreateOrderDto.foodRequestId,
+        validCreateOrderDto.manufacturerId,
+        validCreateOrderDto.itemAllocations,
+      );
 
       expect(createdOrder).toBeDefined();
       expect(createdOrder.orderId).toBeDefined();
@@ -796,10 +800,20 @@ describe('OrdersService', () => {
       await requestRepo.save(request);
 
       validCreateOrderDto.foodRequestId = 2;
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(
         `Request ${validCreateOrderDto.foodRequestId} is not active`,
       );
     });
@@ -808,10 +822,20 @@ describe('OrdersService', () => {
       const donationItemId = 2;
 
       validCreateOrderDto.itemAllocations = { [donationItemId]: 500 };
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(
         `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
       );
     });
@@ -819,10 +843,20 @@ describe('OrdersService', () => {
     it('should throw Error if donation is not associated with manufacturer', async () => {
       const donationItemId = 7;
       validCreateOrderDto.itemAllocations = { [donationItemId]: 2 };
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.create(validCreateOrderDto)).rejects.toThrow(
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          validCreateOrderDto.itemAllocations,
+        ),
+      ).rejects.toThrow(
         `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
       );
     });

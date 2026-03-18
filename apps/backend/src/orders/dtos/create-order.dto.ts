@@ -1,15 +1,16 @@
-import { IsNotEmptyObject, IsNumber, IsObject, Min } from 'class-validator';
+import { IsInt, IsNotEmptyObject, IsObject, Min } from 'class-validator';
 
 export class CreateOrderDto {
-  @IsNumber()
+  @IsInt()
   @Min(1)
   foodRequestId!: number;
 
+  @IsInt()
   @Min(1)
-  @IsNumber()
   manufacturerId!: number;
 
+  // This object is not fully validated, the validation is handled in the controller where the DTO is used.
   @IsObject()
   @IsNotEmptyObject()
-  itemAllocations!: Record<number, number>;
+  itemAllocations!: Record<string, number>;
 }

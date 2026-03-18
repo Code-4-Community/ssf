@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Allocation } from '../allocations/allocations.entity';
-import { CreateMultipleAllocationsDto } from './dtos/create-allocations.dto';
 import { validateId } from '../utils/validation.utils';
 import { DonationItem } from '../donationItems/donationItems.entity';
 
@@ -28,16 +27,14 @@ export class AllocationsService {
   }
 
   async createMultiple(
-    body: CreateMultipleAllocationsDto,
+    orderId: number,
+    itemAllocations: Record<number, number>,
     manager?: EntityManager,
   ): Promise<Allocation[]> {
     const repo = manager ? manager.getRepository(Allocation) : this.repo;
     const itemRepo = manager
       ? manager.getRepository(DonationItem)
       : this.donationItemRepo;
-
-    const orderId = body.orderId;
-    const itemAllocations = body.itemAllocations;
 
     validateId(orderId, 'Order');
 

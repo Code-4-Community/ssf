@@ -92,12 +92,12 @@ export class OrdersService {
   7. Update the reserved quantity for each allocated donation item.
   8. Identify all unique donations associated with the allocated donation items and set their status to matched.
   */
-  async create(orderData: CreateOrderDto): Promise<Order> {
+  async create(
+    requestId: number,
+    manufacturerId: number,
+    itemAllocations: Record<number, number>,
+  ): Promise<Order> {
     return this.dataSource.transaction(async (manager) => {
-      const requestId = orderData.foodRequestId;
-      const manufacturerId = orderData.manufacturerId;
-      const itemAllocations = orderData.itemAllocations;
-
       validateId(manufacturerId, 'Food Manufacturer');
       validateId(requestId, 'Request');
 
@@ -137,8 +137,6 @@ export class OrdersService {
         const id = donationItem.itemId;
         const quantityToAllocate = itemAllocations[id];
 
-        if (quantityToAllocate === undefined) continue;
-
         if (
           quantityToAllocate >
           donationItem.quantity - donationItem.reservedQuantity
@@ -158,10 +156,9 @@ export class OrdersService {
       const savedOrder = await manager.save(order);
 
       await this.allocationsService.createMultiple(
-        {
-          orderId: savedOrder.orderId,
-          itemAllocations: itemAllocations,
-        },
+        savedOrder.orderId,
+        itemAllocations,
+
         manager,
       );
 
