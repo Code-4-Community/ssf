@@ -20,7 +20,7 @@ export interface Pantry {
   shipmentAddressCity: string;
   shipmentAddressState: string;
   shipmentAddressZip: string;
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
@@ -91,7 +91,7 @@ export interface PantryApplicationDto {
   reservationExplanation?: string;
   dedicatedAllergyFriendly: boolean;
   clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
+  identifyAllergensConfidence?: AllergensConfidence | null;
   serveAllergicChildren?: ServeAllergicChildren;
   activities: Activity[];
   activitiesComments?: string;
@@ -124,9 +124,6 @@ export interface Donation {
   donationId: number;
   dateDonated: string;
   status: DonationStatus;
-  totalItems: number;
-  totalOz: number;
-  totalEstimatedValue: number;
   foodManufacturer?: FoodManufacturer;
   recurrence: RecurrenceEnum;
   recurrenceFreq?: number;
@@ -359,6 +356,20 @@ export type DayOfWeek =
   | 'Sunday';
 
 export type RepeatOnState = Record<DayOfWeek, boolean>;
+
+export interface PantryStats {
+  pantryId: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+}
+
+// Make TotalStats interface just not include pantryId
+export type TotalStats = Omit<PantryStats, 'pantryId'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 

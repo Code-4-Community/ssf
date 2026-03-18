@@ -8,19 +8,19 @@ export interface ApprovedPantryResponse {
   shipmentAddressLine1: string;
   shipmentAddressCity: string;
   shipmentAddressState: string;
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry: string;
   shipmentAddressZip: string;
   allergenClients: string;
   restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
   reserveFoodForAllergic: ReserveFoodForAllergic;
-  reservationExplanation?: string;
+  reservationExplanation?: string | null;
   dedicatedAllergyFriendly: boolean;
-  clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
-  serveAllergicChildren?: ServeAllergicChildren;
+  clientVisitFrequency?: ClientVisitFrequency | null;
+  identifyAllergensConfidence?: AllergensConfidence | null;
+  serveAllergicChildren?: ServeAllergicChildren | null;
   activities: Activity[];
-  activitiesComments?: string;
+  activitiesComments?: string | null;
   itemsInStock: string;
   needMoreOptions: string;
   newsletterSubscription: boolean;
@@ -75,3 +75,17 @@ export enum ReserveFoodForAllergic {
   SOME = 'Some',
   NO = 'No',
 }
+
+export type PantryStats = {
+  pantryId: number;
+  totalItems: number;
+  totalOz: number;
+  totalLbs: number;
+  totalDonatedFoodValue: number;
+  totalShippingCost: number;
+  totalValue: number;
+  percentageFoodRescueItems: number;
+};
+
+// Make new type that is just a list of PantryStats with pantryId omitted
+export type TotalStats = Omit<PantryStats, 'pantryId'>;

@@ -1,5 +1,5 @@
 import { OwnershipGuard } from './ownership.guard';
-import { OwnershipConfig, OwnerIdResolver } from './ownership.decorator';
+import { OwnershipConfig } from './ownership.decorator';
 import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
