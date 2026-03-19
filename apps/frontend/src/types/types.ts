@@ -310,8 +310,8 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  PENDING = 'pending',
   SHIPPED = 'shipped',
+  PENDING = 'pending',
   DELIVERED = 'delivered',
 }
 

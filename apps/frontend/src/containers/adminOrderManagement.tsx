@@ -35,8 +35,8 @@ const AdminOrderManagement: React.FC = () => {
   const [statusOrders, setStatusOrders] = useState<
     Record<OrderStatus, OrderWithColor[]>
   >({
-    [OrderStatus.PENDING]: [],
     [OrderStatus.SHIPPED]: [],
+    [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
   });
 
@@ -46,8 +46,8 @@ const AdminOrderManagement: React.FC = () => {
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
-      [OrderStatus.PENDING]: 1,
       [OrderStatus.SHIPPED]: 1,
+      [OrderStatus.PENDING]: 1,
       [OrderStatus.DELIVERED]: 1,
     },
   );
@@ -69,12 +69,12 @@ const AdminOrderManagement: React.FC = () => {
   const [filterStates, setFilterStates] = useState<
     Record<OrderStatus, FilterState>
   >({
-    [OrderStatus.PENDING]: {
+    [OrderStatus.SHIPPED]: {
       selectedPantries: [],
       searchPantry: '',
       sortAsc: true,
     },
-    [OrderStatus.SHIPPED]: {
+    [OrderStatus.PENDING]: {
       selectedPantries: [],
       searchPantry: '',
       sortAsc: true,
@@ -88,8 +88,8 @@ const AdminOrderManagement: React.FC = () => {
 
   // Color mapping for statuses, the first color is background, the second is color for status text
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.PENDING, ['yellow.200', 'yellow.hover']],
-    [OrderStatus.SHIPPED, ['blue.200', 'blue.core']],
+    [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
+    [OrderStatus.PENDING, ['blue.200', 'blue.core']],
     [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
   ]);
 
@@ -104,15 +104,15 @@ const AdminOrderManagement: React.FC = () => {
         const data = await ApiClient.getAllOrders();
 
         const grouped: Record<OrderStatus, OrderWithColor[]> = {
-          [OrderStatus.PENDING]: [],
           [OrderStatus.SHIPPED]: [],
+          [OrderStatus.PENDING]: [],
           [OrderStatus.DELIVERED]: [],
         };
 
         // Use a status specific counter for assignee color assignment
         const counters: Record<OrderStatus, number> = {
-          [OrderStatus.PENDING]: 0,
           [OrderStatus.SHIPPED]: 0,
+          [OrderStatus.PENDING]: 0,
           [OrderStatus.DELIVERED]: 0,
         };
 
@@ -135,8 +135,8 @@ const AdminOrderManagement: React.FC = () => {
 
         // Initialize current page for each status
         const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.PENDING]: 1,
           [OrderStatus.SHIPPED]: 1,
+          [OrderStatus.PENDING]: 1,
           [OrderStatus.DELIVERED]: 1,
         };
         setCurrentPages(initialPages);
