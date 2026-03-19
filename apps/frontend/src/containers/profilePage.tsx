@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Box, Center, Heading, Spinner, Text } from '@chakra-ui/react';
 import ApiClient from '../api/apiClient';
 import { Role, UpdateProfileFields, User } from '../types/types';
-import ProfileLeftPanel from '@components/profile/profileLeftPanel';
+import ProfileLeftPanel from '@components/forms/profileLeftPanel';
+import ProfileAccountInfo from '@components/forms/profileAccountInfo';
 import { getInitials } from '@utils/utils';
-import ProfileAccountInfo from '@components/profile/profileAccountInfo';
-import ProfileLayout from '@components/profile/profileLayout';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 
@@ -16,16 +15,9 @@ const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
   [Role.FOODMANUFACTURER]: { label: 'Food Manufacturer', avatarBg: 'teal.ssf' },
 };
 
-const ApplicationTabPlaceholder: React.FC = () => (
-  <Center h="40" color="neutral.700" fontSize="sm">
-    Application details coming soon.
-  </Center>
-);
-
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
@@ -43,7 +35,11 @@ const ProfilePage: React.FC = () => {
   }, [setAlertMessage]);
 
   const handleSave = async (fields: UpdateProfileFields) => {
-    if (!profile) return;
+    if (!profile) {
+      setAlertMessage('Profile not found.');
+      return;
+    }
+
     try {
       const updated: User = await ApiClient.updateUser(profile.id, fields);
       setProfile(updated);
@@ -68,43 +64,9 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  const { firstName, lastName, email, phone } = profile;
-  const role = profile.role;
+  const { firstName, lastName, email, phone, role } = profile;
   const config = ROLE_CONFIG[role];
-
-  const leftPanel = (
-    <ProfileLeftPanel
-      name={`${firstName} ${lastName}`}
-      roleLabel={config.label}
-      initials={getInitials(firstName, lastName)}
-      avatarBg={config.avatarBg}
-    />
-  );
-
-  const accountTab = {
-    label: 'Account',
-    showEdit: true,
-    content: (
-      <ProfileAccountInfo
-        firstName={firstName}
-        lastName={lastName}
-        email={email}
-        phoneNumber={phone}
-        onSave={handleSave}
-        isEditing={isEditing}
-        onEditToggle={() => setIsEditing((e) => !e)}
-      />
-    ),
-  };
-
-  // TODO: add application tab content
-  const tabs =
-    role === Role.PANTRY || role === Role.FOODMANUFACTURER
-      ? [
-          accountTab,
-          { label: 'Application', content: <ApplicationTabPlaceholder /> },
-        ]
-      : [accountTab];
+  const hasTabs = role === Role.PANTRY || role === Role.FOODMANUFACTURER;
 
   return (
     <Box width="100%" p={8}>
@@ -119,12 +81,39 @@ const ProfilePage: React.FC = () => {
       <Heading textStyle="h1" fontWeight="normal" color="gray.light" mb={6}>
         Profile
       </Heading>
-      <ProfileLayout
-        leftPanel={leftPanel}
-        tabs={tabs}
-        isEditing={isEditing}
-        onEditToggle={() => setIsEditing((e) => !e)}
-      />
+
+      <Box
+        display="flex"
+        alignItems="stretch"
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor="neutral.100"
+        overflow="hidden"
+        w="100%"
+        bg="neutral.50"
+      >
+        <Box flexShrink={0}>
+          <ProfileLeftPanel
+            name={`${firstName} ${lastName}`}
+            roleLabel={config.label}
+            initials={getInitials(firstName, lastName)}
+            avatarBg={config.avatarBg}
+          />
+        </Box>
+
+        <Box w="1px" bg="neutral.100" flexShrink={0} />
+
+        <Box p={8} flex={1} bg="white" minW={0}>
+          <ProfileAccountInfo
+            firstName={firstName}
+            lastName={lastName}
+            email={email}
+            phoneNumber={phone}
+            showTabs={hasTabs}
+            onSave={handleSave}
+          />
+        </Box>
+      </Box>
     </Box>
   );
 };

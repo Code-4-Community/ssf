@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, SimpleGrid, Input, Button, HStack } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  SimpleGrid,
+  Input,
+  Button,
+  HStack,
+  Tabs,
+} from '@chakra-ui/react';
+import { Pencil } from 'lucide-react';
 import { UpdateProfileFields } from 'types/types';
 
-interface AccountInfoSectionProps {
+interface ProfileAccountInfoProps {
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
+  showTabs: boolean;
   onSave: (fields: UpdateProfileFields) => Promise<void>;
-  isEditing: boolean;
-  onEditToggle: () => void;
 }
 
 interface ProfileFieldProps {
@@ -21,7 +29,7 @@ interface ProfileFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const headerStyles = {
+const labelStyles = {
   fontSize: '14px',
   fontWeight: 600,
   fontFamily: 'inter',
@@ -37,7 +45,7 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
   onChange,
 }) => (
   <Box>
-    <Text {...headerStyles} mb={1}>
+    <Text {...labelStyles} mb={1}>
       {label}
     </Text>
     {isEditing && !readOnly ? (
@@ -58,15 +66,15 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
   </Box>
 );
 
-const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
+const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
   firstName,
   lastName,
   email,
   phoneNumber,
+  showTabs,
   onSave,
-  isEditing,
-  onEditToggle,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ firstName, lastName, phoneNumber });
 
@@ -79,7 +87,7 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
 
   const handleCancel = () => {
     setForm({ firstName, lastName, phoneNumber });
-    onEditToggle();
+    setIsEditing(false);
   };
 
   const handleSave = async () => {
@@ -89,19 +97,37 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
     if (form.phoneNumber !== phoneNumber) changed.phone = form.phoneNumber;
 
     if (Object.keys(changed).length === 0) {
-      onEditToggle();
+      setIsEditing(false);
       return;
     }
 
     setIsSaving(true);
     await onSave(changed);
     setIsSaving(false);
-    onEditToggle();
+    setIsEditing(false);
   };
 
-  return (
+  const editButton = (
+    <HStack
+      gap={1}
+      color="neutral.700"
+      textStyle="p2"
+      fontWeight={600}
+      cursor="pointer"
+      pb={2}
+      _hover={{ color: 'neutral.900' }}
+      onClick={() => setIsEditing((e) => !e)}
+    >
+      <Pencil size={14} />
+      <Text fontWeight={600} fontFamily="ibm">
+        {isEditing ? 'Editing' : 'Edit'}
+      </Text>
+    </HStack>
+  );
+
+  const fields = (
     <Box>
-      <SimpleGrid mx={2} columns={2} gapY={12}>
+      <SimpleGrid columns={2} gapY={12}>
         <ProfileField
           label="First Name"
           name="firstName"
@@ -134,14 +160,7 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
       </SimpleGrid>
 
       {isEditing && (
-        <HStack
-          justify="flex-end"
-          gap={3}
-          mt={24}
-          mb={4}
-          fontWeight={600}
-          mr={2}
-        >
+        <HStack justify="flex-end" gap={3} mt={24}>
           <Button
             variant="outline"
             size="sm"
@@ -149,6 +168,7 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
             onClick={handleCancel}
             disabled={isSaving}
             borderColor="neutral.200"
+            fontWeight={600}
           >
             Cancel
           </Button>
@@ -160,6 +180,7 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
             px={7}
             onClick={handleSave}
             loading={isSaving}
+            fontWeight={600}
           >
             Save Changes
           </Button>
@@ -167,6 +188,58 @@ const ProfileAccountInfo: React.FC<AccountInfoSectionProps> = ({
       )}
     </Box>
   );
+
+  if (showTabs) {
+    return (
+      <Tabs.Root defaultValue="Account" variant="line" mx={2}>
+        <HStack justify="space-between" mb={8}>
+          <Tabs.List>
+            <Tabs.Trigger
+              value="Account"
+              color="neutral.800"
+              textStyle="p2"
+              borderBottom="1px solid"
+              borderColor="neutral.100"
+              _selected={{ borderColor: 'neutral.700' }}
+            >
+              Account
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="Application"
+              color="neutral.800"
+              textStyle="p2"
+              borderBottom="1px solid"
+              borderColor="neutral.100"
+              _selected={{ borderColor: 'neutral.700' }}
+            >
+              Application
+            </Tabs.Trigger>
+          </Tabs.List>
+          {editButton}
+        </HStack>
+
+        <Tabs.Content value="Account">{fields}</Tabs.Content>
+        <Tabs.Content value="Application">
+          {/* TODO: add application tab content */}
+          <Box color="neutral.700" fontSize="sm">
+            Application details coming soon.
+          </Box>
+        </Tabs.Content>
+      </Tabs.Root>
+    );
+  } else {
+    return (
+      <Box mx={2}>
+        <HStack justify="space-between" my={4}>
+          <Text textStyle="p" fontWeight={600} mb={4}>
+            Account Details
+          </Text>
+          {editButton}
+        </HStack>
+        {fields}
+      </Box>
+    );
+  }
 };
 
 export default ProfileAccountInfo;
