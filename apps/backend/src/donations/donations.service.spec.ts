@@ -158,6 +158,11 @@ describe('DonationService', () => {
       donations.forEach((d) => {
         expect(d.foodManufacturer).toBeDefined();
       });
+
+      const firstDonation = donations[0];
+      expect(firstDonation.status).toBe(DonationStatus.MATCHED);
+      expect(firstDonation.foodManufacturer.foodManufacturerId).toBe(2);
+      expect(firstDonation.recurrence).toBe(RecurrenceEnum.NONE);
     });
   });
 
