@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,7 +11,7 @@ import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { DonationItem } from '../donationItems/donationItems.entity';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 
 @Injectable()
 export class DonationService {
@@ -20,10 +19,9 @@ export class DonationService {
 
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private donationItemsService: DonationItemsService,
     private dataSource: DataSource,
   ) {}
 
@@ -79,43 +77,27 @@ export class DonationService {
       );
     }
 
-    const donation = this.repo.create({
-      foodManufacturer: manufacturer,
-      dateDonated: new Date(),
-      status: DonationStatus.AVAILABLE,
-      recurrence: donationData.recurrence,
-      recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: nextDonationDates,
-      occurrencesRemaining: donationData.occurrencesRemaining,
-    });
-
-    try {
-      await this.dataSource.transaction(async (manager) => {
-        const savedDonation = await manager.save(Donation, donation);
-
-        const donationItems = donationData.items.map((item) =>
-          manager.create(DonationItem, {
-            donation: savedDonation,
-            itemName: item.itemName,
-            quantity: item.quantity,
-            ozPerItem: item.ozPerItem,
-            estimatedValue: item.estimatedValue,
-            foodType: item.foodType,
-            foodRescue: item.foodRescue,
-          }),
-        );
-
-        await manager.save(DonationItem, donationItems);
-
-        Object.assign(donation, savedDonation);
+    return this.dataSource.transaction(async (manager) => {
+      const donation = manager.create(Donation, {
+        foodManufacturer: manufacturer,
+        dateDonated: new Date(),
+        status: DonationStatus.AVAILABLE,
+        recurrence: donationData.recurrence,
+        recurrenceFreq: donationData.recurrenceFreq,
+        nextDonationDates,
+        occurrencesRemaining: donationData.occurrencesRemaining,
       });
-    } catch {
-      throw new InternalServerErrorException(
-        'Failed to create donation, no changes were saved',
-      );
-    }
 
-    return donation;
+      const savedDonation = await manager.save(Donation, donation);
+
+      await this.donationItemsService.createMultiple(
+        savedDonation,
+        donationData.items,
+        manager,
+      );
+
+      return savedDonation;
+    });
   }
 
   async fulfill(donationId: number): Promise<Donation> {

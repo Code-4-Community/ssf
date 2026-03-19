@@ -7,11 +7,13 @@ import { AuthModule } from '../auth/auth.module';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationsSchedulerService } from './donations.scheduler';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { DonationItemsModule } from '../donationItems/donationItems.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Donation, FoodManufacturer, DonationItem]),
     AuthModule,
+    DonationItemsModule,
   ],
   controllers: [DonationsController],
   providers: [DonationService, DonationsSchedulerService],

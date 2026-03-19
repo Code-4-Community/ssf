@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
+import { CreateDonationItemDto } from '../donations/dtos/create-donation.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -15,7 +16,6 @@ export class DonationItemsService {
 
   async findOne(itemId: number): Promise<DonationItem> {
     validateId(itemId, 'Donation Item');
-
     const donationItem = await this.repo.findOneBy({ itemId });
     if (!donationItem) {
       throw new NotFoundException(`Donation item ${itemId} not found`);
@@ -51,5 +51,25 @@ export class DonationItemsService {
     });
 
     return this.repo.save(donationItem);
+  }
+
+  async createMultiple(
+    savedDonation: Donation,
+    items: CreateDonationItemDto[],
+    manager: EntityManager,
+  ): Promise<DonationItem[]> {
+    const donationItems = items.map((item) =>
+      manager.create(DonationItem, {
+        donation: savedDonation,
+        itemName: item.itemName,
+        quantity: item.quantity,
+        reservedQuantity: 0,
+        ozPerItem: item.ozPerItem,
+        estimatedValue: item.estimatedValue,
+        foodType: item.foodType,
+        foodRescue: item.foodRescue,
+      }),
+    );
+    return manager.save(DonationItem, donationItems);
   }
 }

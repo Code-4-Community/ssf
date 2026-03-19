@@ -6,6 +6,7 @@ import { Donation } from '../donations/donations.entity';
 import { FoodType } from './types';
 import { NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { CreateDonationItemDto } from '../donations/dtos/create-donation.dto';
 
 jest.setTimeout(60000);
 
@@ -145,6 +146,144 @@ describe('DonationItemsService', () => {
           FoodType.DRIED_BEANS,
         ),
       ).rejects.toThrow(new NotFoundException('Donation not found'));
+    });
+  });
+
+  describe('createMultiple', () => {
+    const validItems: CreateDonationItemDto[] = [
+      {
+        itemName: 'Canned Beans',
+        quantity: 10,
+        ozPerItem: 15.5,
+        estimatedValue: 2.99,
+        foodType: FoodType.DRIED_BEANS,
+        foodRescue: false,
+      },
+      {
+        itemName: 'Rice Bag',
+        quantity: 5,
+        ozPerItem: 32,
+        estimatedValue: 4.99,
+        foodType: FoodType.GRANOLA,
+        foodRescue: true,
+      },
+    ];
+
+    async function getSeedDonation(): Promise<Donation> {
+      const donationId = await getSeedDonationId();
+      return testDataSource
+        .getRepository(Donation)
+        .findOneByOrFail({ donationId });
+    }
+
+    it('creates all items and returns them with generated ids', async () => {
+      const donation = await getSeedDonation();
+      const manager = testDataSource.createEntityManager();
+
+      const result = await service.createMultiple(
+        donation,
+        validItems,
+        manager,
+      );
+
+      expect(result).toHaveLength(2);
+      result.forEach((item) => expect(item.itemId).toBeDefined());
+    });
+
+    it('persists all items to the database linked to the correct donation', async () => {
+      const donation = await getSeedDonation();
+      const manager = testDataSource.createEntityManager();
+
+      await service.createMultiple(donation, validItems, manager);
+
+      const rows = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1 AND item_name IN ('Canned Beans', 'Rice Bag')`,
+        [donation.donationId],
+      );
+
+      expect(rows).toHaveLength(2);
+      rows.forEach((row: any) =>
+        expect(row.donation_id).toEqual(donation.donationId),
+      );
+    });
+
+    it('sets reservedQuantity to 0 for all items regardless of input', async () => {
+      const donation = await getSeedDonation();
+      const manager = testDataSource.createEntityManager();
+
+      const result = await service.createMultiple(
+        donation,
+        validItems,
+        manager,
+      );
+
+      result.forEach((item) => expect(item.reservedQuantity).toEqual(0));
+    });
+
+    it('creates items with optional fields omitted', async () => {
+      const donation = await getSeedDonation();
+      const manager = testDataSource.createEntityManager();
+
+      const minimalItems: CreateDonationItemDto[] = [
+        {
+          itemName: 'Plain Item',
+          quantity: 3,
+          foodType: FoodType.DRIED_BEANS,
+          foodRescue: true,
+        },
+      ];
+
+      const result = await service.createMultiple(
+        donation,
+        minimalItems,
+        manager,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].itemId).toBeDefined();
+      expect(result[0].ozPerItem).toBeNull();
+      expect(result[0].estimatedValue).toBeNull();
+    });
+
+    it('rolls back all items when one fails within a transaction', async () => {
+      const donation = await getSeedDonation();
+
+      const itemsBefore = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      const badItems: CreateDonationItemDto[] = [
+        ...validItems,
+        {
+          itemName: 'a'.repeat(1000),
+          quantity: 5,
+          foodType: FoodType.DRIED_BEANS,
+          foodRescue: false,
+        },
+      ];
+
+      await expect(
+        testDataSource.transaction(async (manager) => {
+          await service.createMultiple(donation, badItems, manager);
+        }),
+      ).rejects.toThrow();
+
+      const itemsAfter = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(itemsAfter).toHaveLength(itemsBefore.length);
+    });
+
+    it('returns empty array when given empty items list', async () => {
+      const donation = await getSeedDonation();
+      const manager = testDataSource.createEntityManager();
+
+      const result = await service.createMultiple(donation, [], manager);
+
+      expect(result).toHaveLength(0);
     });
   });
 });

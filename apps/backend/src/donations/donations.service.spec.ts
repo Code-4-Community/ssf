@@ -878,11 +878,7 @@ describe('DonationService', () => {
             },
           ],
         }),
-      ).rejects.toThrow(
-        new InternalServerErrorException(
-          'Failed to create donation, no changes were saved',
-        ),
-      );
+      ).rejects.toThrow();
 
       const donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
