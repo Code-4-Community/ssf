@@ -25,6 +25,12 @@ import {
 export class RequestsController {
   constructor(private requestsService: RequestsService) {}
 
+  @Roles(Role.ADMIN)
+  @Get()
+  async getAllFoodRequests(): Promise<FoodRequest[]> {
+    return this.requestsService.getAll();
+  }
+
   @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId')
   async getRequest(
