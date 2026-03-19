@@ -25,7 +25,7 @@ import {
 export class RequestsController {
   constructor(private requestsService: RequestsService) {}
 
-  @Roles(Role.PANTRY, Role.ADMIN)
+  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId')
   async getRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
