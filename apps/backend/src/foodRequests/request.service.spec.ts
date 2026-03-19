@@ -196,7 +196,7 @@ describe('RequestsService', () => {
   });
 
   describe('find', () => {
-    it('should return all food requests for a specific pantry', async () => {
+    it('should return all food requests for a specific pantry with pantry details', async () => {
       const pantryId = 1;
       const result = await service.find(pantryId);
 
@@ -206,6 +206,7 @@ describe('RequestsService', () => {
       result.forEach((request) => {
         expect(request.orders).toBeDefined();
       });
+      expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
     it('should return empty array for pantry with no requests', async () => {
