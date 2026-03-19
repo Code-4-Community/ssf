@@ -10,6 +10,7 @@ import {
   ButtonGroup,
   Checkbox,
   Input,
+  Link,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
@@ -625,21 +626,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      <Button
-                        variant="plain"
-                        fontWeight="400"
-                        textDecoration="underline"
+                      <Link
+                        textDecorationColor="black"
+                        variant="underline"
                         onClick={() => onOrderSelect(order.orderId)}
                       >
                         {order.orderId}
-                      </Button>
-                      {selectedOrderId === order.orderId && (
-                        <OrderDetailsModal
-                          orderId={order.orderId}
-                          isOpen={true}
-                          onClose={() => onOrderSelect(null)}
-                        />
-                      )}
+                      </Link>
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -652,8 +645,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         color={colors[1]}
                         display="inline-block"
                         fontWeight="500"
-                        my={2}
-                        py={1}
+                        fontSize="12px"
+                        my={3}
+                        py={0.5}
                         px={3}
                       >
                         {capitalize(order.status)}
@@ -721,6 +715,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   </Table.Row>
                 );
               })}
+              {selectedOrderId && (
+                <OrderDetailsModal
+                  orderId={selectedOrderId}
+                  isOpen={true}
+                  onClose={() => onOrderSelect(null)}
+                />
+              )}
             </Table.Body>
           </Table.Root>
 

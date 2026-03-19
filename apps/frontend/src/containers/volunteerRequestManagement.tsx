@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import {
   Box,
   Button,
@@ -7,85 +6,78 @@ import {
   Heading,
   Pagination,
   IconButton,
-  Checkbox,
   VStack,
   ButtonGroup,
+  Checkbox,
   Link,
 } from '@chakra-ui/react';
-import { Donation } from 'types/types';
-import DonationDetailsModal from '@components/forms/donationDetailsModal';
+import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
+import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useAlert } from '../hooks/alert';
+import { FoodRequest, FoodRequestStatus } from '../types/types';
+import RequestDetailsModal from '@components/forms/requestDetailsModal';
 
-const AdminDonation: React.FC = () => {
-  const [donations, setDonations] = useState<Donation[]>([]);
+const VolunteerRequestManagement: React.FC = () => {
+  const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
-    [],
-  );
-  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
+  const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
     null,
   );
 
-  const [alertState, setAlertMessage] = useAlert();
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   useEffect(() => {
-    const fetchDonations = async () => {
+    const fetchRequests = async () => {
       try {
-        const data = await ApiClient.getAllDonations();
-        setDonations(data);
-      } catch {
-        setAlertMessage('Error fetching donations');
+        const data = await ApiClient.getVolunteerAssignedRequests();
+        setRequests(data);
+      } catch (error) {
+        setAlertMessage('Error fetching requests' + error);
       }
     };
-    fetchDonations();
-  }, [setAlertMessage]);
+    fetchRequests();
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedManufacturers]);
+  }, [selectedPantries]);
 
-  const manufacturerOptions = [
+  const pantryOptions = [
     ...new Set(
-      donations
-        .map((d) => d.foodManufacturer?.foodManufacturerName)
+      requests
+        .map((r) => r.pantry?.pantryName)
         .filter((name): name is string => !!name),
     ),
   ].sort((a, b) => a.localeCompare(b));
 
-  const handleFilterChange = (manufacturer: string, checked: boolean) => {
+  const handleFilterChange = (pantry: string, checked: boolean) => {
     if (checked) {
-      setSelectedManufacturers([...selectedManufacturers, manufacturer]);
+      setSelectedPantries([...selectedPantries, pantry]);
     } else {
-      setSelectedManufacturers(
-        selectedManufacturers.filter((m) => m !== manufacturer),
-      );
+      setSelectedPantries(selectedPantries.filter((p) => p !== pantry));
     }
   };
 
-  const filteredDonations = donations
-    .filter((d) => {
+  const filteredRequests = requests
+    .filter((r) => {
       const matchesFilter =
-        selectedManufacturers.length === 0 ||
-        (d.foodManufacturer &&
-          selectedManufacturers.includes(
-            d.foodManufacturer?.foodManufacturerName,
-          ));
+        selectedPantries.length === 0 ||
+        (r.pantry && selectedPantries.includes(r.pantry?.pantryName));
       return matchesFilter;
     })
     .sort((a, b) =>
       sortAsc
-        ? a.dateDonated.localeCompare(b.dateDonated)
-        : b.dateDonated.localeCompare(a.dateDonated),
+        ? a.requestedAt.localeCompare(b.requestedAt)
+        : b.requestedAt.localeCompare(a.requestedAt),
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredDonations.length / itemsPerPage);
-  const paginatedDonations = filteredDonations.slice(
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const paginatedRequests = filteredRequests.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -99,18 +91,22 @@ const AdminDonation: React.FC = () => {
     fontSize: 'sm',
   };
 
+  const tableCellStyles = {
+    borderBottom: '1px solid',
+    borderColor: 'neutral.100',
+    color: 'black',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 'sm',
+    py: 0,
+  };
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
-        Donation Management
+        Food Request Management
       </Heading>
-      {alertState && (
-        <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status="error"
-          timeout={6000}
-        />
+      {alertMessage && (
+        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
@@ -157,19 +153,19 @@ const AdminDonation: React.FC = () => {
                 zIndex={20}
               >
                 <VStack align="stretch" gap={2}>
-                  {manufacturerOptions.map((manufacturer) => (
+                  {pantryOptions.map((pantry) => (
                     <Checkbox.Root
-                      key={manufacturer}
-                      checked={selectedManufacturers.includes(manufacturer)}
+                      key={pantry}
+                      checked={selectedPantries.includes(pantry)}
                       onCheckedChange={(e: { checked: boolean }) =>
-                        handleFilterChange(manufacturer, e.checked)
+                        handleFilterChange(pantry, e.checked)
                       }
                       color="black"
                       size="sm"
                     >
                       <Checkbox.HiddenInput />
                       <Checkbox.Control borderRadius="sm" />
-                      <Checkbox.Label>{manufacturer}</Checkbox.Label>
+                      <Checkbox.Label>{pantry}</Checkbox.Label>
                     </Checkbox.Root>
                   ))}
                 </VStack>
@@ -199,64 +195,116 @@ const AdminDonation: React.FC = () => {
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width="10%"
+              width="15%"
             >
-              Donation #
+              Request #
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width="65%"
+              width="15%"
             >
-              Manufacturer
+              Status
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              {...tableHeaderStyles}
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              width="20%"
+            >
+              Pantry
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
               textAlign="right"
-              width="25%"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              width="20%"
             >
-              Date Started
+              Date Requested
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              {...tableHeaderStyles}
+              textAlign="right"
+              width="30%"
+            >
+              Action Required
             </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {paginatedDonations.map((donation, index) => (
+          {paginatedRequests.map((request, index) => (
             <Table.Row
-              key={`${donation.donationId}-${index}`}
+              key={`${request.requestId}-${index}`}
               _hover={{ bg: 'gray.50' }}
             >
               <Table.Cell
-                textStyle="p2"
+                {...tableCellStyles}
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
-                py={0}
               >
                 <Link
                   textDecorationColor="black"
                   variant="underline"
-                  onClick={() => setSelectedDonation(donation)}
+                  onClick={() => setSelectedRequest(request)}
                 >
-                  {donation.donationId}
+                  {request.requestId}
                 </Link>
               </Table.Cell>
               <Table.Cell
-                textStyle="p2"
+                {...tableCellStyles}
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {donation.foodManufacturer?.foodManufacturerName}
+                <Box
+                  borderRadius="md"
+                  bg={
+                    request.status === FoodRequestStatus.ACTIVE
+                      ? 'teal.200'
+                      : 'neutral.300'
+                  }
+                  color={
+                    request.status === FoodRequestStatus.ACTIVE
+                      ? 'teal.hover'
+                      : 'black'
+                  }
+                  display="inline-block"
+                  fontWeight="500"
+                  fontSize="12px"
+                  my={3}
+                  py={0.5}
+                  px={3}
+                >
+                  {capitalize(request.status)}
+                </Box>
               </Table.Cell>
-              <Table.Cell textStyle="p2" textAlign="right" color="neutral.700">
-                {formatDate(donation.dateDonated)}
+              <Table.Cell
+                {...tableCellStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                {request.pantry.pantryName}
               </Table.Cell>
+              <Table.Cell
+                {...tableCellStyles}
+                textAlign="right"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                color="neutral.700"
+              >
+                {formatDate(request.requestedAt)}
+              </Table.Cell>
+              <Table.Cell {...tableCellStyles}>{/* TODO*/}</Table.Cell>
             </Table.Row>
           ))}
-          {selectedDonation && (
-            <DonationDetailsModal
-              donation={selectedDonation}
-              isOpen={selectedDonation !== null}
-              onClose={() => setSelectedDonation(null)}
+
+          {selectedRequest && (
+            <RequestDetailsModal
+              request={selectedRequest}
+              isOpen={selectedRequest !== null}
+              onClose={() => setSelectedRequest(null)}
+              pantryId={selectedRequest.pantryId}
             />
           )}
         </Table.Body>
@@ -264,7 +312,7 @@ const AdminDonation: React.FC = () => {
 
       {totalPages > 1 && (
         <Pagination.Root
-          count={filteredDonations.length}
+          count={filteredRequests.length}
           pageSize={itemsPerPage}
           page={currentPage}
           onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
@@ -312,4 +360,4 @@ const AdminDonation: React.FC = () => {
   );
 };
 
-export default AdminDonation;
+export default VolunteerRequestManagement;

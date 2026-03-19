@@ -29,6 +29,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 import AssignedPantries from '@containers/volunteerAssignedPantries';
+import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import ProfilePage from '@containers/profilePage';
 
 Amplify.configure(CognitoAuthConfig);
@@ -204,6 +205,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AssignedPantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-request-management',
+        element: (
+          <ProtectedRoute>
+            <VolunteerRequestManagement />
           </ProtectedRoute>
         ),
       },

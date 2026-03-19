@@ -22,9 +22,9 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
-  Assignments,
   FoodRequestSummaryDto,
   PantryWithUser,
+  Assignments,
   UpdateProfileFields,
 } from 'types/types';
 
@@ -288,6 +288,11 @@ export class ApiClient {
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
     const data = await this.get(`/api/requests/${pantryId}/all`);
+    return data as FoodRequest[];
+  }
+
+  public async getVolunteerAssignedRequests(): Promise<FoodRequest[]> {
+    const data = await this.get(`/api/volunteers/me/assigned-requests`);
     return data as FoodRequest[];
   }
 
