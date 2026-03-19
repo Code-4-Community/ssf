@@ -7,14 +7,16 @@ import {
   IsNumber,
   IsObject,
   IsOptional,
+  IsString,
+  Length,
   Min,
   ValidateIf,
   ValidateNested,
   registerDecorator,
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
-import { CreateDonationItemDto } from '../../donationItems/dtos/create-donation-items.dto';
 import { Type } from 'class-transformer';
+import { FoodType } from '../../donationItems/types';
 
 function AtLeastOneDaySelected() {
   return function (object: object, propertyName: string) {
@@ -25,6 +27,9 @@ function AtLeastOneDaySelected() {
       validator: {
         validate(value: Record<string, any>) {
           return !!value && Object.values(value).some((v) => v === true);
+        },
+        defaultMessage() {
+          return 'At least one day must be selected for weekly recurrence';
         },
       },
     });
@@ -61,6 +66,33 @@ export class RepeatOnDaysDto {
   Sunday?: boolean;
 }
 
+export class CreateDonationItemDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  itemName!: string;
+
+  @IsNumber()
+  @Min(1)
+  quantity!: number;
+
+  @IsNumber()
+  @Min(0.01)
+  @IsOptional()
+  ozPerItem?: number;
+
+  @IsNumber()
+  @Min(0.01)
+  @IsOptional()
+  estimatedValue?: number;
+
+  @IsEnum(FoodType)
+  foodType!: FoodType;
+
+  @IsBoolean()
+  foodRescue!: boolean;
+}
+
 export class CreateDonationDto {
   @IsNumber()
   @Min(1)
@@ -71,6 +103,7 @@ export class CreateDonationDto {
   recurrence!: RecurrenceEnum;
 
   @IsNumber()
+  @IsOptional()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   recurrenceFreq?: number;
@@ -83,6 +116,7 @@ export class CreateDonationDto {
   repeatOnDays?: RepeatOnDaysDto;
 
   @IsNumber()
+  @IsOptional()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   occurrencesRemaining?: number;

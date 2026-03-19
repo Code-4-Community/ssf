@@ -18,7 +18,6 @@ import {
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import {
-  CreateDonationBody,
   CreateDonationDto,
   DayOfWeek,
   FoodType,
@@ -168,7 +167,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       return;
     }
 
-    const donationBody: CreateDonationBody = {
+    const donationBody: CreateDonationDto = {
       foodManufacturerId: 1,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
@@ -185,7 +184,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           ? parseFloat(row.valuePerItem)
           : undefined,
         foodType: row.foodType as FoodType,
-        foodRescue: row.foodRescue || undefined,
+        foodRescue: row.foodRescue,
       })),
     };
 

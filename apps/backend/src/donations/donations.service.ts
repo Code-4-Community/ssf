@@ -106,6 +106,8 @@ export class DonationService {
         );
 
         await manager.save(DonationItem, donationItems);
+
+        Object.assign(donation, savedDonation);
       });
     } catch {
       throw new InternalServerErrorException(

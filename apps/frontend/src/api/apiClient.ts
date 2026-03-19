@@ -24,7 +24,6 @@ import {
   Assignments,
   FoodRequestSummaryDto,
   PantryWithUser,
-  CreateDonationBody,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -119,16 +118,6 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
-  }
-
-  public async updateDonationItemQuantity(
-    itemId: number,
-    body?: unknown,
-  ): Promise<DonationItem> {
-    return this.patch(
-      `/api/donation-items/update-quantity/${itemId}`,
-      body,
-    ) as Promise<DonationItem>;
   }
 
   private async delete(path: string): Promise<unknown> {

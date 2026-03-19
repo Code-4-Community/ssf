@@ -147,22 +147,4 @@ describe('DonationItemsService', () => {
       ).rejects.toThrow(new NotFoundException('Donation not found'));
     });
   });
-
-  describe('updateDonationItemQuantity', () => {
-    it('decrements quantity by 1', async () => {
-      const result = await testDataSource.query(
-        `SELECT item_id, quantity FROM donation_items WHERE item_name = 'Peanut Butter (16oz)' LIMIT 1`,
-      );
-      const { item_id: itemId, quantity } = result[0];
-
-      const updated = await service.updateDonationItemQuantity(itemId);
-      expect(updated.quantity).toEqual(quantity - 1);
-    });
-
-    it('throws NotFoundException when item does not exist', async () => {
-      await expect(service.updateDonationItemQuantity(99999)).rejects.toThrow(
-        new NotFoundException(`Donation item 99999 not found`),
-      );
-    });
-  });
 });

@@ -140,7 +140,7 @@ export interface DonationItem {
   ozPerItem?: number;
   estimatedValue?: number;
   foodType: FoodType;
-  foodRescue?: boolean;
+  foodRescue: boolean;
 }
 
 export enum FoodType {
@@ -273,6 +273,7 @@ export interface CreateDonationDto {
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
   occurrencesRemaining?: number;
+  items: CreateDonationItemDto[];
 }
 
 export interface CreateDonationItemDto {
@@ -281,23 +282,7 @@ export interface CreateDonationItemDto {
   ozPerItem?: number;
   estimatedValue?: number;
   foodType: FoodType;
-  foodRescue?: boolean;
-}
-
-export interface CreateDonationBody {
-  foodManufacturerId: number;
-  recurrenceFreq?: number;
-  recurrence: RecurrenceEnum;
-  repeatOnDays?: RepeatOnState;
-  occurrencesRemaining?: number;
-  items: {
-    itemName: string;
-    quantity: number;
-    ozPerItem?: number;
-    estimatedValue?: number;
-    foodType: FoodType;
-    foodRescue?: boolean;
-  }[];
+  foodRescue: boolean;
 }
 
 export interface Allocation {

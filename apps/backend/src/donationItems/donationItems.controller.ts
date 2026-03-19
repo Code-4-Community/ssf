@@ -21,11 +21,4 @@ export class DonationItemsController {
   ): Promise<DonationItem[]> {
     return this.donationItemsService.getAllDonationItems(donationId);
   }
-
-  @Patch('/update-quantity/:itemId')
-  async updateDonationItemQuantity(
-    @Param('itemId', ParseIntPipe) itemId: number,
-  ): Promise<DonationItem> {
-    return this.donationItemsService.updateDonationItemQuantity(itemId);
-  }
 }
