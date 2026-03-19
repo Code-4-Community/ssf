@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { RecurrenceEnum, DayOfWeek } from './types';
+import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { NotFoundException } from '@nestjs/common';
@@ -136,7 +136,11 @@ describe('DonationService', () => {
       const result = await service.findOne(donationId);
       expect(result).toBeDefined();
       expect(result.donationId).toBe(donationId);
-      expect(result.foodManufacturer).toBeDefined();
+      expect(result.foodManufacturer.foodManufacturerName).toBe(
+        'FoodCorp Industries',
+      );
+      expect(result.status).toBe(DonationStatus.AVAILABLE);
+      expect(result.recurrence).toBe(RecurrenceEnum.NONE);
     });
 
     it('should throw NotFoundException for non-existent donation', async () => {

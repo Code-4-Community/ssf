@@ -86,6 +86,21 @@ describe('RequestsService', () => {
         expect(r.pantry.pantryId).toBeDefined();
         expect(r.pantry.pantryName).toBeDefined();
       });
+
+      const sorted = [...result].sort((a, b) => a.requestId - b.requestId);
+      const firstRequest = sorted[0];
+      expect(firstRequest.requestedSize).toBe(RequestSize.LARGE);
+      expect(firstRequest.requestedFoodTypes).toEqual([
+        FoodType.SEED_BUTTERS,
+        FoodType.GLUTEN_FREE_BREAD,
+        FoodType.DRIED_BEANS,
+        FoodType.DAIRY_FREE_ALTERNATIVES,
+      ]);
+      expect(firstRequest.additionalInformation).toBe(
+        'We have 150 families to serve this week. Need extra allergen-free options.',
+      );
+      expect(firstRequest.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(firstRequest.pantry.pantryId).toBe(1);
     });
   });
 
