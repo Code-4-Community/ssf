@@ -7,6 +7,7 @@ import {
   Pagination,
   IconButton,
   ButtonGroup,
+  Link,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
@@ -286,14 +287,13 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
                   >
-                    <Button
-                      variant="plain"
-                      fontWeight="400"
-                      textDecoration="underline"
+                    <Link
+                      textDecorationColor="black"
+                      variant="underline"
                       onClick={() => onDonationSelect(donation.donationId)}
                     >
                       {donation.donationId}
-                    </Button>
+                    </Link>
                     {selectedDonationId === donation.donationId && (
                       <DonationDetailsModal
                         donation={donation}

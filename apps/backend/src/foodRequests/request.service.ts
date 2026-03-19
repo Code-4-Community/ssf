@@ -235,7 +235,7 @@ export class RequestsService {
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['orders'],
+      relations: ['orders', 'pantry'],
     });
   }
 
