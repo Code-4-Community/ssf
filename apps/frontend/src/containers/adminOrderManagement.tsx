@@ -95,7 +95,7 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'cyan', 'blue.ssf'];
+  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.core', 'blue.ssf'];
 
   useEffect(() => {
     // Fetch all orders on component mount and sorts them into their appropriate status lists

@@ -82,7 +82,6 @@ const customConfig = defineConfig({
           hover: { value: '#9C5D00' },
           200: { value: '#FEECD1' },
         },
-        cyan: { value: '#2795A5' },
         neutral: {
           50: { value: '#FAFAFA' },
           100: { value: '#E7E7E7' },
@@ -103,6 +102,7 @@ const customConfig = defineConfig({
           200: { value: '#D4EAED' },
           400: { value: '#A9D5DB' },
           hover: { value: '#19717D' },
+          core: { value: '#2795A5' },
         },
       },
       fonts: {
