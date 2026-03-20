@@ -38,7 +38,7 @@ export class DonationService {
     return donation;
   }
 
-  async getAll() {
+  async getAll(): Promise<Donation[]> {
     return this.repo.find({
       relations: ['foodManufacturer'],
     });
