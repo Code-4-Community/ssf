@@ -14,12 +14,26 @@ import {
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { Pantry } from '../pantries/pantries.entity';
 
 const mockRequestsService = mock<RequestsService>();
 
-const foodRequest: Partial<FoodRequest> = {
+const foodRequest1: Partial<FoodRequest> = {
   requestId: 1,
   pantryId: 1,
+  pantry: {
+    pantryId: 1,
+    pantryName: 'Test Pantry 1',
+  } as Pantry,
+};
+
+const foodRequest2: Partial<FoodRequest> = {
+  requestId: 2,
+  pantryId: 2,
+  pantry: {
+    pantryId: 2,
+    pantryName: 'Test Pantry 2',
+  } as Pantry,
 };
 
 describe('RequestsController', () => {
@@ -48,25 +62,39 @@ describe('RequestsController', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('GET /', () => {
+    it('should call requestsService.getAll and return array of food requests', async () => {
+      mockRequestsService.getAll.mockResolvedValueOnce([
+        foodRequest1,
+        foodRequest2,
+      ] as FoodRequest[]);
+
+      const result = await controller.getAllFoodRequests();
+
+      expect(result).toEqual([foodRequest1, foodRequest2]);
+      expect(mockRequestsService.getAll).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /:requestId', () => {
     it('should call requestsService.findOne and return a specific food request', async () => {
       const requestId = 1;
 
       mockRequestsService.findOne.mockResolvedValueOnce(
-        foodRequest as FoodRequest,
+        foodRequest1 as FoodRequest,
       );
 
       const result = await controller.getRequest(requestId);
 
-      expect(result).toEqual(foodRequest);
+      expect(result).toEqual(foodRequest1);
       expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
     });
   });
 
-  describe('GET /get-all-requests/:pantryId', () => {
+  describe('GET /:pantryId/all', () => {
     it('should call requestsService.find and return all food requests for a specific pantry', async () => {
       const foodRequests: Partial<FoodRequest>[] = [
-        foodRequest,
+        foodRequest1,
         {
           requestId: 2,
           pantryId: 1,

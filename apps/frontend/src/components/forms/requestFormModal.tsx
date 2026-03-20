@@ -20,6 +20,7 @@ import { ChevronDownIcon } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
 import apiClient from '@api/apiClient';
 import { TagGroup } from './tagGroup';
+import { useAlert } from '../../hooks/alert';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequest;
@@ -39,28 +40,26 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-  const [alert, setAlert] = useState<{
-    key: number;
-    isError: boolean;
-    message: string;
-  }>({
-    key: 0,
-    isError: true,
-    message: '',
-  });
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
 
   const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
 
   useEffect(() => {
-    if (isOpen && previousRequest) {
-      setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
-      setRequestedSize(previousRequest.requestedSize || '');
-      setAdditionalNotes(
-        previousRequest.additionalInformation ||
-          'No additional information supplied',
-      );
+    if (isOpen) {
+      if (previousRequest) {
+        setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
+        setRequestedSize(previousRequest.requestedSize || '');
+        setAdditionalNotes(previousRequest.additionalInformation || '');
+      } else {
+        setSelectedFoodTypes([]);
+        setRequestedSize('');
+        setAdditionalNotes('');
+      }
+      setErrorMessage('');
+      setSuccessMessage('');
     }
-  }, [isOpen, previousRequest]);
+  }, [isOpen, previousRequest, setErrorMessage, setSuccessMessage]);
 
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
@@ -72,19 +71,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setAlert((prev) => ({
-        key: prev.key + 1,
-        isError: false,
-        message: 'Request submitted',
-      }));
+      setSuccessMessage('Request submitted');
       onClose();
       onSuccess();
     } catch {
-      setAlert((prev) => ({
-        key: prev.key + 1,
-        isError: true,
-        message: 'Request could not be submitted.',
-      }));
+      setErrorMessage('Request could not be submitted.');
     }
   };
 
@@ -97,18 +88,18 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {alert.message && alert.isError && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
           status="error"
           timeout={6000}
         />
       )}
-      {alert.message && !alert.isError && (
+      {successAlertState && (
         <FloatingAlert
-          key={alert.key}
-          message={alert.message}
+          key={successAlertState.id}
+          message={successAlertState.message}
           status="info"
           timeout={6000}
         />
@@ -290,11 +281,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setAlert((prev) => ({
-                        key: prev.key + 1,
-                        isError: true,
-                        message: 'Exceeded word limit',
-                      }));
+                      setErrorMessage('Exceeded word limit');
                     }
                   }}
                 />
