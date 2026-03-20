@@ -45,6 +45,23 @@ export class RequestsService {
     return request;
   }
 
+  async getAll(): Promise<FoodRequest[]> {
+    return this.repo
+      .createQueryBuilder('request')
+      .leftJoin('request.pantry', 'pantry')
+      .select([
+        'request.requestId',
+        'request.requestedSize',
+        'request.requestedFoodTypes',
+        'request.additionalInformation',
+        'request.requestedAt',
+        'request.status',
+        'pantry.pantryId',
+        'pantry.pantryName',
+      ])
+      .getMany();
+  }
+
   async getOrderDetails(requestId: number): Promise<OrderDetailsDto[]> {
     validateId(requestId, 'Request');
 
@@ -239,7 +256,7 @@ export class RequestsService {
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['orders'],
+      relations: ['orders', 'pantry'],
     });
   }
 

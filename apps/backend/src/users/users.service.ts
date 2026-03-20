@@ -1,9 +1,14 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './users.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
+import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { emailTemplates } from '../emails/emailTemplates';
@@ -14,7 +19,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
-
     private authService: AuthService,
     private emailsService: EmailsService,
   ) {}
@@ -90,8 +94,20 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, attrs: Partial<User>) {
+  async update(id: number, dto: UpdateUserInfoDto): Promise<User> {
     validateId(id, 'User');
+
+    const { firstName, lastName, phone } = dto;
+
+    if (
+      firstName === undefined &&
+      lastName === undefined &&
+      phone === undefined
+    ) {
+      throw new BadRequestException(
+        'At least one field must be provided to update',
+      );
+    }
 
     const user = await this.findOne(id);
 
@@ -99,7 +115,9 @@ export class UsersService {
       throw new NotFoundException(`User ${id} not found`);
     }
 
-    Object.assign(user, attrs);
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
 
     return this.repo.save(user);
   }

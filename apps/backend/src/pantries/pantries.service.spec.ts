@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Pantry } from './pantries.entity';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import {
   ClientVisitFrequency,
@@ -91,6 +95,7 @@ const mockEmailsService = mock<EmailsService>();
 
 describe('PantriesService', () => {
   let service: PantriesService;
+  let testModule: TestingModule;
 
   beforeAll(async () => {
     mockEmailsService.sendEmails.mockResolvedValue(undefined);
@@ -101,7 +106,7 @@ describe('PantriesService', () => {
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
 
-    const module: TestingModule = await Test.createTestingModule({
+    testModule = await Test.createTestingModule({
       providers: [
         PantriesService,
         OrdersService,
@@ -151,7 +156,7 @@ describe('PantriesService', () => {
       ],
     }).compile();
 
-    service = module.get<PantriesService>(PantriesService);
+    service = testModule.get<PantriesService>(PantriesService);
   });
 
   beforeEach(async () => {
@@ -234,6 +239,18 @@ describe('PantriesService', () => {
       expect(pantry.status).toBe(ApplicationStatus.APPROVED);
     });
 
+    it('throws ConflictException when approving an already approved manufacturer', async () => {
+      const beforeCount = await testDataSource.getRepository(User).count();
+
+      await expect(service.approve(1)).rejects.toThrow(
+        new ConflictException('Cannot approve a pantry with status: approved'),
+      );
+
+      const afterCount = await testDataSource.getRepository(User).count();
+      expect(afterCount).toBe(beforeCount);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
     it('throws when approving non-existent', async () => {
       await expect(service.approve(9999)).rejects.toThrow(
         new NotFoundException('Pantry 9999 not found'),
@@ -248,6 +265,15 @@ describe('PantriesService', () => {
       await service.deny(6);
       const pantryAfter = await service.findOne(6);
       expect(pantryAfter.status).toBe(ApplicationStatus.DENIED);
+    });
+
+    it('throws ConflictException when denying an already approved pantry', async () => {
+      // Pantry 1 ('Community Food Pantry Downtown') has status 'approved' in dummy data
+      await expect(service.deny(1)).rejects.toThrow(
+        new ConflictException('Cannot deny a pantry with status: approved'),
+      );
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
     it('throws when denying non-existent', async () => {

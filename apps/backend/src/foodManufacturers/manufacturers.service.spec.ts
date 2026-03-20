@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FoodManufacturersService } from './manufacturers.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
@@ -43,6 +43,7 @@ const mockEmailsService = mock<EmailsService>();
 
 describe('FoodManufacturersService', () => {
   let service: FoodManufacturersService;
+  let testModule: TestingModule;
 
   beforeAll(async () => {
     mockEmailsService.sendEmails.mockResolvedValue(undefined);
@@ -53,7 +54,7 @@ describe('FoodManufacturersService', () => {
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
 
-    const module: TestingModule = await Test.createTestingModule({
+    testModule = await Test.createTestingModule({
       providers: [
         FoodManufacturersService,
         UsersService,
@@ -100,7 +101,9 @@ describe('FoodManufacturersService', () => {
       ],
     }).compile();
 
-    service = module.get<FoodManufacturersService>(FoodManufacturersService);
+    service = testModule.get<FoodManufacturersService>(
+      FoodManufacturersService,
+    );
   });
 
   beforeEach(async () => {
@@ -189,6 +192,20 @@ describe('FoodManufacturersService', () => {
       expect(approved.status).toBe(ApplicationStatus.APPROVED);
     });
 
+    it('throws ConflictException when approving an already approved manufacturer', async () => {
+      const beforeUserCount = await testDataSource.getRepository(User).count();
+
+      await expect(service.approve(1)).rejects.toThrow(
+        new ConflictException(
+          'Cannot approve a Food Manufacturer with status: approved',
+        ),
+      );
+
+      const afterUserCount = await testDataSource.getRepository(User).count();
+      expect(afterUserCount).toBe(beforeUserCount);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
     it('throws when approving non-existent manufacturer', async () => {
       await expect(service.approve(9999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 9999 not found'),
@@ -205,6 +222,17 @@ describe('FoodManufacturersService', () => {
 
       const denied = await service.findOne(id);
       expect(denied.status).toBe(ApplicationStatus.DENIED);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('throws ConflictException when denying an already approved manufacturer', async () => {
+      // FM 1 ('FoodCorp Industries') has status 'approved' in dummy data
+      await expect(service.deny(1)).rejects.toThrow(
+        new ConflictException(
+          'Cannot deny a Food Manufacturer with status: approved',
+        ),
+      );
+
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 

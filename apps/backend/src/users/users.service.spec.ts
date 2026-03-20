@@ -199,7 +199,7 @@ describe('UsersService', () => {
 
   describe('update', () => {
     it('should update user attributes', async () => {
-      const updateData = { firstName: 'Updated', role: Role.ADMIN };
+      const updateData = { firstName: 'Updated' };
       const updatedUser = { ...mockUser, ...updateData };
 
       mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
