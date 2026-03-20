@@ -22,7 +22,11 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  ConfirmDeliveryDto,
+  OrderWithoutRelations,
+  Assignments,
   FoodRequestSummaryDto,
+  OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
 } from 'types/types';
@@ -169,6 +173,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getPantryOrders(
+    pantryId: number,
+  ): Promise<OrderWithoutFoodManufacturer[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/${pantryId}/orders`)
+      .then((response) => response.data);
+  }
+
   public async getPantry(pantryId: number): Promise<PantryWithUser> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<PantryWithUser>;
   }
@@ -224,6 +236,32 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async confirmOrderDelivery(
+    orderId: number,
+    dto: ConfirmDeliveryDto,
+    photos: File[],
+  ): Promise<OrderWithoutRelations> {
+    const formData = new FormData();
+
+    // DTO fields
+    formData.append('dateReceived', dto.dateReceived);
+    if (dto.feedback) {
+      formData.append('feedback', dto.feedback);
+    }
+
+    // files (must be key = "photos")
+    for (const file of photos) {
+      formData.append('photos', file);
+    }
+
+    const { data } = await this.axiosInstance.patch(
+      `/api/orders/${orderId}/confirm-delivery`,
+      formData,
+    );
+
+    return data;
   }
 
   public async postManufacturer(
