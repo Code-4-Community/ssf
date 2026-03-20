@@ -5,7 +5,6 @@ import {
   Get,
   Patch,
   Param,
-  NotFoundException,
   ParseIntPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
@@ -76,10 +75,6 @@ export class DonationsController {
   async fulfillDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
-    const updatedDonation = await this.donationService.fulfill(donationId);
-    if (!updatedDonation) {
-      throw new NotFoundException('Donation not found');
-    }
-    return updatedDonation;
+    return this.donationService.fulfill(donationId);
   }
 }
