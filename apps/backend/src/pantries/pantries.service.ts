@@ -18,6 +18,7 @@ import { Role } from '../users/types';
 import { PantryStats, TotalStats } from './types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 @Injectable()
 export class PantriesService {
@@ -313,6 +314,34 @@ export class PantriesService {
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
+  }
+
+  async updatePantryApplication(
+    pantryId: number,
+    pantryData: UpdatePantryApplicationDto,
+    currentUserId: number,
+  ) {
+    validateId(pantryId, 'Pantry');
+    validateId(currentUserId, 'User');
+
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['pantryUser'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    if (pantry.pantryUser.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
+      );
+    }
+
+    Object.assign(pantry, pantryData);
+
+    return await this.repo.save(pantry);
   }
 
   async approve(id: number) {

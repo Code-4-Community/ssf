@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   ConflictException,
@@ -14,6 +15,7 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -119,6 +121,36 @@ export class FoodManufacturersService {
       foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
+  }
+
+  async updateFoodManufacturerApplication(
+    manufacturerId: number,
+    foodManufacturerData: UpdateFoodManufacturerApplicationDto,
+    currentUserId: number,
+  ) {
+    validateId(manufacturerId, 'Food Manufacturer');
+    validateId(currentUserId, 'User');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: manufacturerId },
+      relations: ['foodManufacturerRepresentative'],
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${manufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
+      );
+    }
+
+    Object.assign(manufacturer, foodManufacturerData);
+
+    return await this.repo.save(manufacturer);
   }
 
   async approve(id: number) {
