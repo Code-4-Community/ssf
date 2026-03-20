@@ -103,11 +103,39 @@ describe('UsersService', () => {
       await service.create(createUserDto);
       const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
 
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [createUserDto.email],
         subject,
         bodyHTML,
       );
+    });
+
+    it('should still save user to database if email send fails', async () => {
+      const createUserDto: userSchemaDto = {
+        email: 'volunteer@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        phone: '9876543210',
+        role: Role.VOLUNTEER,
+      };
+
+      const createdUser = {
+        ...createUserDto,
+        id: 2,
+        userCognitoSub: 'mock-sub',
+      } as User;
+      mockUserRepository.create.mockReturnValue(createdUser);
+      mockUserRepository.save.mockResolvedValue(createdUser);
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        'Email failed',
+      );
+
+      expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
     });
 
     it('should create a new user with auto-generated ID', async () => {

@@ -215,11 +215,23 @@ describe('PantriesService', () => {
 
       await service.approve(5);
 
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [pantry.pantryUser.email],
         subject,
         bodyHTML,
       );
+    });
+
+    it('should still update pantry status to approved if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.approve(5)).rejects.toThrow('Email failed');
+
+      const pantry = await service.findOne(5);
+      expect(pantry.status).toBe(ApplicationStatus.APPROVED);
     });
 
     it('throws when approving non-existent', async () => {
@@ -295,6 +307,21 @@ describe('PantriesService', () => {
       expect(saved?.status).toBe(ApplicationStatus.PENDING);
       expect(saved?.secondaryContactFirstName).toBe('Sarah');
       expect(saved?.shipmentAddressLine2).toBe('Suite 200');
+    });
+
+    it('should still save pantry to database if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.addPantry(dto)).rejects.toThrow('Email failed');
+
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'Test Pantry' },
+        relations: ['pantryUser'],
+      });
+      expect(saved).toBeDefined();
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
     });
 
     it('sends confirmation email to applicant and notification email to admin', async () => {

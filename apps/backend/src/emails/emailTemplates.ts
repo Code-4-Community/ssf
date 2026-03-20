@@ -85,11 +85,10 @@ export const emailTemplates = {
 
   pantrySubmitsFoodRequest: (params: {
     pantryName: string;
-    volunteerName: string;
   }): EmailTemplate => ({
     subject: `${params.pantryName} Request Requires Your Review`,
     bodyHTML: `
-      <p>Hi ${params.volunteerName},</p>
+      <p>Hi,</p>
       <p>
         A new food request has been submitted by ${params.pantryName}. 
         Please log on to the SSF platform to review these request details and begin coordination when ready.

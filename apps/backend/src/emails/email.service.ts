@@ -31,15 +31,19 @@ export class EmailsService {
     bodyHTML: string,
     attachments?: EmailAttachment[],
   ): Promise<unknown> {
-    if (process.env.SEND_AUTOMATED_EMAILS === 'false') {
-      this.logger.warn('Automated emails are disabled. Email not sent.');
-      return Promise.resolve();
+    if (
+      process.env.SEND_AUTOMATED_EMAILS &&
+      process.env.SEND_AUTOMATED_EMAILS === 'true' &&
+      recipientEmails.length > 0
+    ) {
+      return this.amazonSESWrapper.sendEmails(
+        recipientEmails,
+        subject,
+        bodyHTML,
+        attachments,
+      );
     }
-    return this.amazonSESWrapper.sendEmails(
-      recipientEmails,
-      subject,
-      bodyHTML,
-      attachments,
-    );
+    this.logger.warn('Automated emails are disabled. Email not sent.');
+    return Promise.resolve();
   }
 }

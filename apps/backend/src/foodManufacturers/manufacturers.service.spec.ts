@@ -168,11 +168,25 @@ describe('FoodManufacturersService', () => {
 
       await service.approve(id);
 
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [manufacturer.foodManufacturerRepresentative.email],
         subject,
         bodyHTML,
       );
+    });
+
+    it('should still update manufacturer status to approved if email send fails', async () => {
+      const pending = await service.getPendingManufacturers();
+      const id = pending[0].foodManufacturerId;
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.approve(id)).rejects.toThrow('Email failed');
+
+      const approved = await service.findOne(id);
+      expect(approved.status).toBe(ApplicationStatus.APPROVED);
     });
 
     it('throws when approving non-existent manufacturer', async () => {
@@ -191,6 +205,7 @@ describe('FoodManufacturersService', () => {
 
       const denied = await service.findOne(id);
       expect(denied.status).toBe(ApplicationStatus.DENIED);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
     it('throws when denying non-existent manufacturer', async () => {
@@ -244,6 +259,25 @@ describe('FoodManufacturersService', () => {
       expect(saved?.status).toBe(ApplicationStatus.PENDING);
       expect(saved?.secondaryContactFirstName).toBe('Sarah');
       expect(saved?.manufacturerAttribute).toBe(ManufacturerAttribute.ORGANIC);
+    });
+
+    it('should still save manufacturer to database if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.addFoodManufacturer(dto)).rejects.toThrow(
+        'Email failed',
+      );
+
+      const saved = await testDataSource
+        .getRepository(FoodManufacturer)
+        .findOne({
+          where: { foodManufacturerName: 'Test Manufacturer' },
+          relations: ['foodManufacturerRepresentative'],
+        });
+      expect(saved).toBeDefined();
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
     });
 
     it('sends confirmation email to applicant and notification email to admin', async () => {

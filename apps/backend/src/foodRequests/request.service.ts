@@ -216,12 +216,13 @@ export class RequestsService {
       additionalInformation,
     });
 
+    await this.repo.save(foodRequest);
+
     const volunteers = pantry.volunteers || [];
     const volunteerEmails = volunteers.map((v) => v.email);
 
     const message = emailTemplates.pantrySubmitsFoodRequest({
       pantryName: pantry.pantryName,
-      volunteerName: pantry.pantryUser.firstName,
     });
 
     await this.emailsService.sendEmails(
@@ -230,7 +231,7 @@ export class RequestsService {
       message.bodyHTML,
     );
 
-    return await this.repo.save(foodRequest);
+    return foodRequest;
   }
 
   async find(pantryId: number) {

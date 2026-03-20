@@ -209,15 +209,56 @@ describe('RequestsService', () => {
 
       const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry!.pantryName,
-        volunteerName: pantry!.pantryUser.firstName,
       });
       const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
 
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         volunteerEmails,
         subject,
         bodyHTML,
       );
+    });
+
+    it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
+      // Harbor Community Center - no volunteers assigned
+      const pantryId = 5;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId },
+        relations: ['pantryUser', 'volunteers'],
+      });
+
+      await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+
+      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry!.pantryName,
+      });
+      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+
+      expect(volunteerEmails).toEqual([]);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        volunteerEmails,
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('should still save food request to database if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      const pantryId = 1;
+      await expect(
+        service.create(pantryId, RequestSize.MEDIUM, [FoodType.DRIED_BEANS]),
+      ).rejects.toThrow('Email failed');
+
+      const requests = await service.find(pantryId);
+      expect(requests.length).toBe(3);
     });
 
     it('should throw NotFoundException for non-existent pantry', async () => {
