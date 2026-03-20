@@ -14,12 +14,14 @@ import {
   Checkbox,
   Menu,
   NumberInput,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import {
   DayOfWeek,
   FoodType,
+  FoodTypes,
   RecurrenceEnum,
   RepeatOnState,
 } from '../../types/types';
@@ -50,6 +52,53 @@ const RECURRENCE_LABELS: Record<RecurrenceEnum, string> = {
   [RecurrenceEnum.WEEKLY]: 'Week',
   [RecurrenceEnum.MONTHLY]: 'Month',
   [RecurrenceEnum.YEARLY]: 'Year',
+};
+
+// Ensure valid decimals and positive integers for input validation
+const isValidDecimal = (val: string): boolean =>
+  val !== '' && /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0;
+const isValidPositiveInt = (val: string): boolean =>
+  val !== '' && /^\d+$/.test(val) && parseInt(val) > 0;
+
+// Displays appropriate tooltip if necessary
+const getFirstValidationError = (
+  rows: DonationRow[],
+  isRecurring: boolean,
+  repeatEvery: string,
+  endsAfter: string,
+): string | null => {
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowLabel = rows.length > 1 ? ` (row ${i + 1})` : '';
+
+    if (row.foodItem.trim() === '') {
+      return `Food item${rowLabel} is required.`;
+    }
+    if (row.foodType === '') {
+      return `Food type${rowLabel} is required.`;
+    }
+    if (row.numItems === '') {
+      return `Quantity${rowLabel} is required.`;
+    }
+    if (!isValidPositiveInt(row.numItems)) {
+      return `Quantity${rowLabel} must be a positive whole number.`;
+    }
+    if (row.ozPerItem !== '' && !isValidDecimal(row.ozPerItem)) {
+      return `Oz. per item${rowLabel} must be a positive number with at most 2 decimal places.`;
+    }
+    if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
+      return `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`;
+    }
+  }
+  if (isRecurring) {
+    if (!isValidPositiveInt(repeatEvery)) {
+      return 'Repeat every must be a positive whole number.';
+    }
+    if (!isValidPositiveInt(endsAfter)) {
+      return 'Ends after must be a positive whole number.';
+    }
+  }
+  return null;
 };
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
@@ -85,9 +134,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   });
   const [endsAfter, setEndsAfter] = useState('1');
 
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalOz, setTotalOz] = useState(0);
-  const [totalValue, setTotalValue] = useState(0);
   const [alertState, setAlertMessage] = useAlert();
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
@@ -148,15 +194,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     return `${selected.slice(0, 4).join(', ')} + ${selected.length - 4}`;
   };
 
-  const handleSubmit = async () => {
-    const hasEmpty = rows.some(
-      (row) => !row.foodItem || !row.foodType || !row.numItems,
-    );
-    if (hasEmpty) {
-      setAlertMessage('Please fill in all fields before submitting.');
-      return;
-    }
-
+  const validateAndSubmit = async () => {
+    // Recurring: weekly day selection
     if (
       isRecurring &&
       repeatInterval === RecurrenceEnum.WEEKLY &&
@@ -186,8 +225,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           itemName: row.foodItem,
           quantity: parseInt(row.numItems),
           reservedQuantity: 0,
-          ozPerItem: parseFloat(row.ozPerItem),
-          estimatedValue: parseFloat(row.valuePerItem),
+          ozPerItem:
+            row.ozPerItem !== '' ? parseFloat(row.ozPerItem) : undefined,
+          estimatedValue:
+            row.valuePerItem !== '' ? parseFloat(row.valuePerItem) : undefined,
           foodType: row.foodType as FoodType,
           foodRescue: row.foodRescue,
         }));
@@ -217,6 +258,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
+  const firstValidationError = getFirstValidationError(
+    rows,
+    isRecurring,
+    repeatEvery,
+    endsAfter,
+  );
+  const isSubmitDisabled = firstValidationError !== null;
   const isRepeatOnDisabled = repeatInterval !== RecurrenceEnum.WEEKLY;
 
   const placeholderStyles = {
@@ -400,8 +448,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 handleChange(row.id, 'foodType', e.target.value)
                               }
                             >
-                              {Object.values(FoodType).map((type) => (
-                                <option key={type} value={type}>
+                              {FoodTypes.map((type) => (
+                                <option
+                                  key={type}
+                                  value={type}
+                                  style={{
+                                    color: 'var(--chakra-colors-neutral-800)',
+                                  }}
+                                >
                                   {type}
                                 </option>
                               ))}
@@ -415,8 +469,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
-                            type="number"
-                            min={1}
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -429,8 +481,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
-                            type="number"
-                            min={1}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -443,8 +493,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter $"
-                            type="number"
-                            min={1}
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
@@ -501,6 +549,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             setRepeatEvery(e.value)
                           }
                           min={1}
+                          step={1}
+                          onBlur={() => {
+                            const value = Math.max(
+                              1,
+                              Math.floor(Number(repeatEvery) || 1),
+                            );
+                            setRepeatEvery(String(value));
+                          }}
                         >
                           <NumberInput.Input />
                           <NumberInput.Control />
@@ -516,11 +572,17 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           >
                             {(Object.values(RecurrenceEnum) as RecurrenceEnum[])
                               .filter((v) => v !== RecurrenceEnum.NONE)
-                              .map((v) => (
-                                <option key={v} value={v}>
-                                  {RECURRENCE_LABELS[v]}
-                                </option>
-                              ))}
+                              .map((v) =>
+                                repeatEvery === '1' ? (
+                                  <option key={v} value={v}>
+                                    {RECURRENCE_LABELS[v]}
+                                  </option>
+                                ) : (
+                                  <option key={v} value={v}>
+                                    {RECURRENCE_LABELS[v]}s
+                                  </option>
+                                ),
+                              )}
                           </NativeSelect.Field>
                           <NativeSelectIndicator />
                         </NativeSelect.Root>
@@ -616,6 +678,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           setEndsAfter(e.value)
                         }
                         min={1}
+                        step={1}
+                        onBlur={() => {
+                          const value = Math.max(
+                            1,
+                            Math.floor(Number(endsAfter) || 1),
+                          );
+                          setEndsAfter(String(value));
+                        }}
                       >
                         <Flex position="relative" align="center">
                           <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
@@ -628,9 +698,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             fontSize="sm"
                             pointerEvents="none"
                           >
-                            {parseInt(endsAfter) > 1
-                              ? 'Occurrences'
-                              : 'Occurrence'}
+                            {parseInt(endsAfter) > 1 ? 'Reminders' : 'Reminder'}
                           </Text>
                           <NumberInput.Control />
                         </Flex>
@@ -641,13 +709,20 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                   {(repeatInterval !== RecurrenceEnum.WEEKLY ||
                     Object.values(repeatOn).some(Boolean)) && (
                     <Text color="neutral.700" fontStyle="italic" mt={2}>
-                      Next Donation scheduled for {getNextDonationDateDisplay()}
+                      Next donation reminder scheduled for{' '}
+                      {getNextDonationDateDisplay()}
                     </Text>
                   )}
                 </Box>
               )}
 
-              <Flex justifyContent="flex-end" gap={3} mt={6} pt={4}>
+              <Flex
+                justifyContent="flex-end"
+                gap={3}
+                mt={6}
+                pt={4}
+                align="center"
+              >
                 <Button
                   variant="outline"
                   color="gray.700"
@@ -657,14 +732,30 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 >
                   Cancel
                 </Button>
-                <Button
-                  backgroundColor="blue.ssf"
-                  onClick={handleSubmit}
-                  size="md"
-                  fontWeight={600}
-                >
-                  Submit Donation
-                </Button>
+                <Tooltip.Root disabled={!isSubmitDisabled} openDelay={0}>
+                  <Tooltip.Trigger asChild>
+                    <Box display="inline-block">
+                      <Button
+                        backgroundColor="blue.ssf"
+                        onClick={validateAndSubmit}
+                        size="md"
+                        fontWeight={600}
+                        disabled={isSubmitDisabled}
+                        _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
+                        pointerEvents={isSubmitDisabled ? 'none' : 'auto'}
+                      >
+                        Submit Donation
+                      </Button>
+                    </Box>
+                  </Tooltip.Trigger>
+                  <Portal>
+                    <Tooltip.Positioner>
+                      <Tooltip.Content>
+                        {firstValidationError ?? ''}
+                      </Tooltip.Content>
+                    </Tooltip.Positioner>
+                  </Portal>
+                </Tooltip.Root>
               </Flex>
             </Dialog.Body>
           </Dialog.Content>
