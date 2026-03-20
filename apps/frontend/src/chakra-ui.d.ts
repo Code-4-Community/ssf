@@ -74,6 +74,12 @@ declare module '@chakra-ui/react' {
   export interface NativeSelectFieldProps
     extends ComponentPropsLenientChildren {}
 
+  // Tooltip components
+  export interface TooltipTriggerProps extends ComponentPropsLenientChildren {}
+  export interface TooltipPositionerProps
+    extends ComponentPropsLenientChildren {}
+  export interface TooltipContentProps extends ComponentPropsLenientChildren {}
+
   // Common components
   export interface ButtonProps extends ComponentPropsStrictChildren {}
   export interface IconButtonProps extends ComponentPropsStrictChildren {}

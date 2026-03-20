@@ -14,6 +14,7 @@ import {
   Checkbox,
   Menu,
   NumberInput,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
@@ -59,7 +60,12 @@ const isValidDecimal = (val: string): boolean =>
 const isValidPositiveInt = (val: string): boolean =>
   val !== '' && /^\d+$/.test(val) && parseInt(val) > 0;
 
-const getFirstValidationError = (rows: DonationRow[]): string | null => {
+const getFirstValidationError = (
+  rows: DonationRow[],
+  isRecurring: boolean,
+  repeatEvery: string,
+  endsAfter: string,
+): string | null => {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const rowLabel = rows.length > 1 ? ` (row ${i + 1})` : '';
@@ -81,6 +87,14 @@ const getFirstValidationError = (rows: DonationRow[]): string | null => {
     }
     if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
       return `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`;
+    }
+  }
+  if (isRecurring) {
+    if (!isValidPositiveInt(repeatEvery)) {
+      return 'Repeat every must be a positive whole number.';
+    }
+    if (!isValidPositiveInt(endsAfter)) {
+      return 'Ends after must be a positive whole number.';
     }
   }
   return null;
@@ -243,7 +257,12 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
   };
 
-  const firstValidationError = getFirstValidationError(rows);
+  const firstValidationError = getFirstValidationError(
+    rows,
+    isRecurring,
+    repeatEvery,
+    endsAfter,
+  );
   const isSubmitDisabled = firstValidationError !== null;
   const isRepeatOnDisabled = repeatInterval !== RecurrenceEnum.WEEKLY;
 
@@ -703,11 +722,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 pt={4}
                 align="center"
               >
-                {isSubmitDisabled && (
-                  <Text fontSize="sm" color="red" fontStyle="italic">
-                    {firstValidationError}
-                  </Text>
-                )}
                 <Button
                   variant="outline"
                   color="gray.700"
@@ -717,16 +731,30 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                 >
                   Cancel
                 </Button>
-                <Button
-                  backgroundColor="blue.ssf"
-                  onClick={validateAndSubmit}
-                  size="md"
-                  fontWeight={600}
-                  disabled={isSubmitDisabled}
-                  _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                >
-                  Submit Donation
-                </Button>
+                <Tooltip.Root disabled={!isSubmitDisabled} openDelay={0}>
+                  <Tooltip.Trigger asChild>
+                    <Box display="inline-block">
+                      <Button
+                        backgroundColor="blue.ssf"
+                        onClick={validateAndSubmit}
+                        size="md"
+                        fontWeight={600}
+                        disabled={isSubmitDisabled}
+                        _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
+                        pointerEvents={isSubmitDisabled ? 'none' : 'auto'}
+                      >
+                        Submit Donation
+                      </Button>
+                    </Box>
+                  </Tooltip.Trigger>
+                  <Portal>
+                    <Tooltip.Positioner>
+                      <Tooltip.Content>
+                        {firstValidationError ?? ''}
+                      </Tooltip.Content>
+                    </Tooltip.Positioner>
+                  </Portal>
+                </Tooltip.Root>
               </Flex>
             </Dialog.Body>
           </Dialog.Content>
