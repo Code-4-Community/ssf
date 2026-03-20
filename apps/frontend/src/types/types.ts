@@ -91,7 +91,7 @@ export interface PantryApplicationDto {
   reservationExplanation?: string;
   dedicatedAllergyFriendly: boolean;
   clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence | null;
+  identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
   activities: Activity[];
   activitiesComments?: string;

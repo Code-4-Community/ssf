@@ -115,7 +115,7 @@ export class PantryApplicationDto {
   @IsString()
   @MaxLength(255)
   @IsNotEmpty()
-  shipmentAddressCountry!: string;
+  shipmentAddressCountry?: string;
 
   @IsString()
   @IsNotEmpty()

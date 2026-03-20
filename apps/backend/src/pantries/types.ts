@@ -1,35 +1,14 @@
 export interface ApprovedPantryResponse {
   pantryId: number;
   pantryName: string;
-  contactFirstName: string;
-  contactLastName: string;
-  contactEmail: string;
-  contactPhone: string;
-  shipmentAddressLine1: string;
-  shipmentAddressCity: string;
-  shipmentAddressState: string;
-  shipmentAddressCountry: string;
-  shipmentAddressZip: string;
-  allergenClients: string;
-  restrictions: string[];
   refrigeratedDonation: RefrigeratedDonation;
-  reserveFoodForAllergic: ReserveFoodForAllergic;
-  reservationExplanation?: string | null;
-  dedicatedAllergyFriendly: boolean;
-  clientVisitFrequency?: ClientVisitFrequency | null;
-  identifyAllergensConfidence?: AllergensConfidence | null;
-  serveAllergicChildren?: ServeAllergicChildren | null;
-  activities: Activity[];
-  activitiesComments?: string | null;
-  itemsInStock: string;
-  needMoreOptions: string;
-  newsletterSubscription: boolean;
   volunteers: AssignedVolunteer[];
 }
 
 export interface AssignedVolunteer {
   userId: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
 }

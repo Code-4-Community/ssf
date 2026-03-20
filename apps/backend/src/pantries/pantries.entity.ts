@@ -49,8 +49,9 @@ export class Pantry {
     name: 'shipment_address_country',
     type: 'varchar',
     length: 255,
+    nullable: true,
   })
-  shipmentAddressCountry!: string;
+  shipmentAddressCountry!: string | null;
 
   @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
   mailingAddressLine1!: string;

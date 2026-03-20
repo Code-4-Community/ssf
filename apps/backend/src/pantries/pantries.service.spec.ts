@@ -588,7 +588,8 @@ describe('PantriesService', () => {
         expect(p.volunteers).toBeDefined();
         p.volunteers.forEach((v) => {
           expect(v.userId).toBeDefined();
-          expect(v.name).toBeDefined();
+          expect(v.firstName).toBeDefined();
+          expect(v.lastName).toBeDefined();
           expect(v.email).toBeDefined();
           expect(v.phone).toBeDefined();
         });
@@ -643,6 +644,46 @@ describe('PantriesService', () => {
       );
       const result = await service.getApprovedPantriesWithVolunteers();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('updatePantryVolunteers', () => {
+    const getVolunteerId = async (email: string) =>
+      (
+        await testDataSource.query(
+          `SELECT user_id FROM users WHERE email = $1 LIMIT 1`,
+          [email],
+        )
+      )[0].user_id;
+
+    it('replaces volunteer set', async () => {
+      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
+      await service.updatePantryVolunteers(1, [williamId]);
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantry?.volunteers).toHaveLength(1);
+      expect(pantry?.volunteers?.[0].id).toBe(williamId);
+    });
+
+    it('throws NotFoundException when pantry not found', async () => {
+      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
+      await expect(
+        service.updatePantryVolunteers(9999, [williamId]),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when volunteer id does not exist', async () => {
+      await expect(service.updatePantryVolunteers(1, [99999])).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('throws BadRequestException when user is not a volunteer', async () => {
+      const adminId = Number(await getVolunteerId('john.smith@ssf.org'));
+      await expect(
+        service.updatePantryVolunteers(1, [adminId]),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

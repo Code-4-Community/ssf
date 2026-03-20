@@ -262,52 +262,19 @@ describe('PantriesController', () => {
         {
           pantryId: 1,
           pantryName: 'Community Food Pantry',
-
-          contactFirstName: 'John',
-          contactLastName: 'Smith',
-          contactEmail: 'john.smith@example.com',
-          contactPhone: '(508) 508-6789',
-
-          shipmentAddressLine1: '123 Main Street',
-          shipmentAddressCity: 'Boston',
-          shipmentAddressState: 'MA',
-          shipmentAddressZip: '02101',
-          shipmentAddressCountry: 'United States',
-
-          allergenClients: '10 to 20',
-          restrictions: ['Peanuts', 'Dairy'],
-
           refrigeratedDonation: RefrigeratedDonation.YES,
-          reserveFoodForAllergic: ReserveFoodForAllergic.YES,
-          reservationExplanation:
-            'We regularly serve clients with severe allergies.',
-
-          dedicatedAllergyFriendly: true,
-
-          clientVisitFrequency: ClientVisitFrequency.FEW_TIMES_A_MONTH,
-          identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
-          serveAllergicChildren: ServeAllergicChildren.YES_MANY,
-
-          activities: [
-            Activity.POST_RESOURCE_FLYERS,
-            Activity.CREATE_LABELED_SHELF,
-          ],
-          activitiesComments: 'Weekly food distribution events',
-
-          itemsInStock: 'Canned goods, rice, pasta',
-          needMoreOptions: 'Gluten-free and nut-free items',
-
-          newsletterSubscription: true,
           volunteers: [
             {
               userId: 10,
-              name: 'Alice Johnson',
+              firstName: 'Alice',
+              lastName: 'Johnson',
               email: 'alice.johnson@example.com',
               phone: '(617) 555-0100',
             },
             {
               userId: 11,
-              name: 'Bob Williams',
+              firstName: 'Bob',
+              lastName: 'Williams',
               email: 'bob.williams@example.com',
               phone: '(617) 555-0101',
             },

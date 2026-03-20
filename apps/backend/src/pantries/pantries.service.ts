@@ -284,7 +284,7 @@ export class PantriesService {
     pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
     pantry.shipmentAddressState = pantryData.shipmentAddressState;
     pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
-    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? null;
 
     // mailing address information
     pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
@@ -372,35 +372,13 @@ export class PantriesService {
     return pantries.map((pantry) => ({
       pantryId: pantry.pantryId,
       pantryName: pantry.pantryName,
-      contactFirstName: pantry.pantryUser.firstName,
-      contactLastName: pantry.pantryUser.lastName,
-      contactEmail: pantry.pantryUser.email,
-      contactPhone: pantry.pantryUser.phone,
-      shipmentAddressLine1: pantry.shipmentAddressLine1,
-      shipmentAddressCity: pantry.shipmentAddressCity,
-      shipmentAddressState: pantry.shipmentAddressState,
-      shipmentAddressCountry: pantry.shipmentAddressCountry,
-      shipmentAddressZip: pantry.shipmentAddressZip,
-      allergenClients: pantry.allergenClients,
-      restrictions: pantry.restrictions,
       refrigeratedDonation: pantry.refrigeratedDonation,
-      reserveFoodForAllergic: pantry.reserveFoodForAllergic,
-      reservationExplanation: pantry.reservationExplanation,
-      dedicatedAllergyFriendly: pantry.dedicatedAllergyFriendly,
-      clientVisitFrequency: pantry.clientVisitFrequency,
-      identifyAllergensConfidence: pantry.identifyAllergensConfidence,
-      serveAllergicChildren: pantry.serveAllergicChildren,
-      activities: pantry.activities,
-      activitiesComments: pantry.activitiesComments,
-      itemsInStock: pantry.itemsInStock,
-      needMoreOptions: pantry.needMoreOptions,
-      newsletterSubscription: pantry.newsletterSubscription ?? false,
       volunteers: (pantry.volunteers || []).map((volunteer) => ({
         userId: volunteer.id,
-        name: `${volunteer.firstName} ${volunteer.lastName}`,
+        firstName: volunteer.firstName,
+        lastName: volunteer.lastName,
         email: volunteer.email,
         phone: volunteer.phone,
-        role: volunteer.role,
       })),
     }));
   }
