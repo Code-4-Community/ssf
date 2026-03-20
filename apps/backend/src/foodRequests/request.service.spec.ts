@@ -72,6 +72,38 @@ describe('RequestsService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('getAll', () => {
+    it('should return all requests with request details, pantryId, and pantryName', async () => {
+      const result = await service.getAll();
+      expect(result).toHaveLength(4);
+      result.forEach((r) => {
+        expect(r.requestId).toBeDefined();
+        expect(r.requestedSize).toBeDefined();
+        expect(r.requestedFoodTypes).toBeDefined();
+        expect(r.additionalInformation).toBeDefined();
+        expect(r.requestedAt).toBeDefined();
+        expect(r.status).toBeDefined();
+        expect(r.pantry.pantryId).toBeDefined();
+        expect(r.pantry.pantryName).toBeDefined();
+      });
+
+      const sorted = [...result].sort((a, b) => a.requestId - b.requestId);
+      const firstRequest = sorted[0];
+      expect(firstRequest.requestedSize).toBe(RequestSize.LARGE);
+      expect(firstRequest.requestedFoodTypes).toEqual([
+        FoodType.SEED_BUTTERS,
+        FoodType.GLUTEN_FREE_BREAD,
+        FoodType.DRIED_BEANS,
+        FoodType.DAIRY_FREE_ALTERNATIVES,
+      ]);
+      expect(firstRequest.additionalInformation).toBe(
+        'We have 150 families to serve this week. Need extra allergen-free options.',
+      );
+      expect(firstRequest.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(firstRequest.pantry.pantryId).toBe(1);
+    });
+  });
+
   describe('findOne', () => {
     it('should return a food request with the corresponding id', async () => {
       const requestId = 1;
@@ -196,7 +228,7 @@ describe('RequestsService', () => {
   });
 
   describe('find', () => {
-    it('should return all food requests for a specific pantry', async () => {
+    it('should return all food requests for a specific pantry with pantry details', async () => {
       const pantryId = 1;
       const result = await service.find(pantryId);
 
@@ -206,6 +238,7 @@ describe('RequestsService', () => {
       result.forEach((request) => {
         expect(request.orders).toBeDefined();
       });
+      expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
     it('should return empty array for pantry with no requests', async () => {
