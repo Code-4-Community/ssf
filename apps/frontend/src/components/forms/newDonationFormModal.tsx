@@ -54,12 +54,13 @@ const RECURRENCE_LABELS: Record<RecurrenceEnum, string> = {
   [RecurrenceEnum.YEARLY]: 'Year',
 };
 
+// Ensure valid decimals and positive integers for input validation
 const isValidDecimal = (val: string): boolean =>
   val !== '' && /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0;
-
 const isValidPositiveInt = (val: string): boolean =>
   val !== '' && /^\d+$/.test(val) && parseInt(val) > 0;
 
+// Displays appropriate tooltip if necessary
 const getFirstValidationError = (
   rows: DonationRow[],
   isRecurring: boolean,
