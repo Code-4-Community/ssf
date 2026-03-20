@@ -7,6 +7,7 @@ import ProfileAccountInfo from '@components/forms/profileAccountInfo';
 import { getInitials } from '@utils/utils';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import axios from 'axios';
 
 const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
   [Role.ADMIN]: { label: 'Admin', avatarBg: 'yellow.ssf' },
@@ -37,15 +38,27 @@ const ProfilePage: React.FC = () => {
   const handleSave = async (fields: UpdateProfileFields) => {
     if (!profile) {
       setAlertMessage('Profile not found.');
-      return;
+      return false;
     }
 
     try {
       const updated: User = await ApiClient.updateUser(profile.id, fields);
       setProfile(updated);
-    } catch {
-      setAlertMessage('Profile unable to be edited. Please try again later.');
+      return true;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error?.response?.status;
+        if (status === 400 || status === 404) {
+          setAlertMessage(error.response?.data?.message);
+        } else {
+          setAlertMessage(
+            'Profile unable to be edited. Please try again later.',
+          );
+        }
+      }
     }
+
+    return false;
   };
 
   if (isLoading) {
@@ -64,7 +77,7 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  const { firstName, lastName, email, phone, role } = profile;
+  const { firstName, lastName, role } = profile;
   const config = ROLE_CONFIG[role];
   const hasTabs = role === Role.PANTRY || role === Role.FOODMANUFACTURER;
 
@@ -105,10 +118,7 @@ const ProfilePage: React.FC = () => {
 
         <Box p={8} flex={1} bg="white" minW={0}>
           <ProfileAccountInfo
-            firstName={firstName}
-            lastName={lastName}
-            email={email}
-            phoneNumber={phone}
+            profile={profile}
             showTabs={hasTabs}
             onSave={handleSave}
           />

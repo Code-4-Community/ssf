@@ -9,25 +9,28 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 import { Pencil } from 'lucide-react';
-import { UpdateProfileFields } from 'types/types';
+import { UpdateProfileFields, User } from 'types/types';
 
 interface ProfileAccountInfoProps {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
+  profile: User;
   showTabs: boolean;
-  onSave: (fields: UpdateProfileFields) => Promise<void>;
+  onSave: (fields: UpdateProfileFields) => Promise<boolean>;
 }
 
-interface ProfileFieldProps {
-  label: string;
-  value: string;
-  name: string;
-  isEditing: boolean;
-  readOnly?: boolean;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+type ProfileFieldProps =
+  | {
+      label: string;
+      value: string;
+      readOnly: true;
+    }
+  | {
+      label: string;
+      value: string;
+      readOnly?: false;
+      name: string;
+      isEditing: boolean;
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    };
 
 const labelStyles = {
   fontSize: '14px',
@@ -36,23 +39,16 @@ const labelStyles = {
   color: 'neutral.800',
 };
 
-const ProfileField: React.FC<ProfileFieldProps> = ({
-  label,
-  value,
-  name,
-  isEditing,
-  readOnly = false,
-  onChange,
-}) => (
+const ProfileField: React.FC<ProfileFieldProps> = (props) => (
   <Box>
     <Text {...labelStyles} mb={1}>
-      {label}
+      {props.label}
     </Text>
-    {isEditing && !readOnly ? (
+    {!props.readOnly && props.isEditing ? (
       <Input
-        name={name}
-        value={value}
-        onChange={onChange}
+        name={props.name}
+        value={props.value}
+        onChange={props.onChange}
         size="sm"
         borderRadius="md"
         width="3/4"
@@ -60,33 +56,31 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
       />
     ) : (
       <Text color="neutral.800" textStyle="p2">
-        {value}
+        {props.value}
       </Text>
     )}
   </Box>
 );
 
 const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
-  firstName,
-  lastName,
-  email,
-  phoneNumber,
+  profile,
   showTabs,
   onSave,
 }) => {
+  const { firstName, lastName, email, phone } = profile;
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState({ firstName, lastName, phoneNumber });
+  const [form, setForm] = useState({ firstName, lastName, phone });
 
   useEffect(() => {
-    setForm({ firstName, lastName, phoneNumber });
-  }, [firstName, lastName, phoneNumber]);
+    setForm({ firstName, lastName, phone });
+  }, [firstName, lastName, phone]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleCancel = () => {
-    setForm({ firstName, lastName, phoneNumber });
+    setForm({ firstName, lastName, phone });
     setIsEditing(false);
   };
 
@@ -94,7 +88,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
     const changed: UpdateProfileFields = {};
     if (form.firstName !== firstName) changed.firstName = form.firstName;
     if (form.lastName !== lastName) changed.lastName = form.lastName;
-    if (form.phoneNumber !== phoneNumber) changed.phone = form.phoneNumber;
+    if (form.phone !== phone) changed.phone = form.phone;
 
     if (Object.keys(changed).length === 0) {
       setIsEditing(false);
@@ -102,9 +96,9 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
     }
 
     setIsSaving(true);
-    await onSave(changed);
+    const success = await onSave(changed);
     setIsSaving(false);
-    setIsEditing(false);
+    if (success) setIsEditing(false);
   };
 
   const editButton = (
@@ -131,29 +125,22 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
         <ProfileField
           label="First Name"
           name="firstName"
-          value={isEditing ? form.firstName : firstName}
+          value={form.firstName}
           isEditing={isEditing}
           onChange={handleChange}
         />
         <ProfileField
           label="Last Name"
           name="lastName"
-          value={isEditing ? form.lastName : lastName}
+          value={form.lastName}
           isEditing={isEditing}
           onChange={handleChange}
         />
-        <ProfileField
-          label="Email Address"
-          name="email"
-          value={email}
-          isEditing={isEditing}
-          readOnly
-          onChange={handleChange}
-        />
+        <ProfileField label="Email Address" value={email} readOnly />
         <ProfileField
           label="Phone Number"
-          name="phoneNumber"
-          value={isEditing ? form.phoneNumber : phoneNumber}
+          name="phone"
+          value={form.phone}
           isEditing={isEditing}
           onChange={handleChange}
         />

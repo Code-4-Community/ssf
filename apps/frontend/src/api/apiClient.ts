@@ -196,7 +196,9 @@ export class ApiClient {
     userId: number,
     fields: UpdateProfileFields,
   ): Promise<User> {
-    return this.axiosInstance.patch(`/api/users/${userId}`, fields);
+    return this.axiosInstance
+      .patch(`/api/users/${userId}`, fields)
+      .then((response) => response.data);
   }
 
   public async getFoodRequest(requestId: number): Promise<FoodRequest> {
