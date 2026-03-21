@@ -2,7 +2,6 @@ import {
   Controller,
   Param,
   Get,
-  Patch,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
