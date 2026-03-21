@@ -17,7 +17,6 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
-  CreateMultipleDonationItemsBody,
   ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
@@ -91,14 +90,6 @@ export class ApiClient {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
-  public async postMultipleDonationItems(
-    body: CreateMultipleDonationItemsBody,
-  ): Promise<DonationItem[]> {
-    return this.post('/api/donation-items/create-multiple', body) as Promise<
-      DonationItem[]
-    >;
-  }
-
   private async patch(path: string, body: unknown): Promise<unknown> {
     return this.axiosInstance
       .patch(path, body)
@@ -127,16 +118,6 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
-  }
-
-  public async updateDonationItemQuantity(
-    itemId: number,
-    body?: unknown,
-  ): Promise<DonationItem> {
-    return this.patch(
-      `/api/donation-items/update-quantity/${itemId}`,
-      body,
-    ) as Promise<DonationItem>;
   }
 
   private async delete(path: string): Promise<unknown> {

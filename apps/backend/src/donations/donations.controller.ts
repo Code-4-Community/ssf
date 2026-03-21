@@ -12,6 +12,7 @@ import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
+import { FoodType } from '../donationItems/types';
 
 @Controller('donations')
 export class DonationsController {
@@ -61,6 +62,21 @@ export class DonationsController {
           },
         },
         occurrencesRemaining: { type: 'integer', example: 2, nullable: true },
+        items: {
+          type: 'object',
+          properties: {
+            itemName: { type: 'string', example: 'Canned Beans' },
+            quantity: { type: 'integer', example: 1 },
+            ozPerItem: { type: 'number', example: 0.01, nullable: true },
+            estimatedValue: { type: 'number', example: 0.01, nullable: true },
+            foodType: {
+              type: 'enum',
+              enum: Object.values(FoodType),
+              example: FoodType.QUINOA,
+            },
+            foodRescue: { type: 'boolean', example: false, nullable: true },
+          },
+        },
       },
     },
   })

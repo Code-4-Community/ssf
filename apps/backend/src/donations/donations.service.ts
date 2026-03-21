@@ -5,12 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 
 @Injectable()
 export class DonationService {
@@ -20,6 +21,8 @@ export class DonationService {
     @InjectRepository(Donation) private repo: Repository<Donation>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private donationItemsService: DonationItemsService,
+    private dataSource: DataSource,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -74,17 +77,27 @@ export class DonationService {
       );
     }
 
-    const donation = this.repo.create({
-      foodManufacturer: manufacturer,
-      dateDonated: new Date(),
-      status: DonationStatus.AVAILABLE,
-      recurrence: donationData.recurrence,
-      recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: nextDonationDates,
-      occurrencesRemaining: donationData.occurrencesRemaining,
-    });
+    return this.dataSource.transaction(async (manager) => {
+      const donation = manager.create(Donation, {
+        foodManufacturer: manufacturer,
+        dateDonated: new Date(),
+        status: DonationStatus.AVAILABLE,
+        recurrence: donationData.recurrence,
+        recurrenceFreq: donationData.recurrenceFreq,
+        nextDonationDates,
+        occurrencesRemaining: donationData.occurrencesRemaining,
+      });
 
-    return this.repo.save(donation);
+      const savedDonation = await manager.save(Donation, donation);
+
+      await this.donationItemsService.createMultiple(
+        savedDonation,
+        donationData.items,
+        manager,
+      );
+
+      return savedDonation;
+    });
   }
 
   async fulfill(donationId: number): Promise<Donation> {
