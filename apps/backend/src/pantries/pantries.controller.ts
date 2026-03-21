@@ -75,6 +75,12 @@ export class PantriesController {
     return this.pantriesService.getPendingPantries();
   }
 
+  @Roles(Role.ADMIN)
+  @Get('/approved-names')
+  async getApprovedPantryNames(): Promise<string[]> {
+    return this.pantriesService.getApprovedPantryNames();
+  }
+
   @CheckOwnership({
     idParam: 'pantryId',
     resolver: async ({ entityId, services }) => {
