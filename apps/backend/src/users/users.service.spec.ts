@@ -1,4 +1,8 @@
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
@@ -106,7 +110,9 @@ describe('UsersService', () => {
       );
 
       await expect(service.create(createUserDto)).rejects.toThrow(
-        'Email failed',
+        new InternalServerErrorException(
+          'Failed to send account created notification email to volunteer',
+        ),
       );
 
       const saved = await testDataSource

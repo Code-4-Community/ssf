@@ -5,6 +5,7 @@ import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
@@ -233,7 +234,11 @@ describe('PantriesService', () => {
         new Error('Email failed'),
       );
 
-      await expect(service.approve(5)).rejects.toThrow('Email failed');
+      await expect(service.approve(5)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry account approved notification email to representative',
+        ),
+      );
 
       const pantry = await service.findOne(5);
       expect(pantry.status).toBe(ApplicationStatus.APPROVED);
@@ -335,12 +340,35 @@ describe('PantriesService', () => {
       expect(saved?.shipmentAddressLine2).toBe('Suite 200');
     });
 
-    it('should still save pantry to database if email send fails', async () => {
+    it('should still save pantry to database if representative email send fails', async () => {
       mockEmailsService.sendEmails.mockRejectedValueOnce(
         new Error('Email failed'),
       );
 
-      await expect(service.addPantry(dto)).rejects.toThrow('Email failed');
+      await expect(service.addPantry(dto)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry application submitted confirmation email to representative',
+        ),
+      );
+
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'Test Pantry' },
+        relations: ['pantryUser'],
+      });
+      expect(saved).toBeDefined();
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
+    });
+
+    it('should still save pantry to database if admin notification email send fails', async () => {
+      mockEmailsService.sendEmails
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Email failed'));
+
+      await expect(service.addPantry(dto)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new pantry application notification email to SSF',
+        ),
+      );
 
       const saved = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryName: 'Test Pantry' },

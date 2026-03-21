@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FoodManufacturersService } from './manufacturers.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
@@ -186,7 +190,11 @@ describe('FoodManufacturersService', () => {
         new Error('Email failed'),
       );
 
-      await expect(service.approve(id)).rejects.toThrow('Email failed');
+      await expect(service.approve(id)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send food manufacturer account approved notification email to representative',
+        ),
+      );
 
       const approved = await service.findOne(id);
       expect(approved.status).toBe(ApplicationStatus.APPROVED);
@@ -289,13 +297,36 @@ describe('FoodManufacturersService', () => {
       expect(saved?.manufacturerAttribute).toBe(ManufacturerAttribute.ORGANIC);
     });
 
-    it('should still save manufacturer to database if email send fails', async () => {
+    it('should still save manufacturer to database if representative email send fails', async () => {
       mockEmailsService.sendEmails.mockRejectedValueOnce(
         new Error('Email failed'),
       );
 
       await expect(service.addFoodManufacturer(dto)).rejects.toThrow(
-        'Email failed',
+        new InternalServerErrorException(
+          'Failed to send food manufacturer application submitted confirmation email to representative',
+        ),
+      );
+
+      const saved = await testDataSource
+        .getRepository(FoodManufacturer)
+        .findOne({
+          where: { foodManufacturerName: 'Test Manufacturer' },
+          relations: ['foodManufacturerRepresentative'],
+        });
+      expect(saved).toBeDefined();
+      expect(saved?.status).toBe(ApplicationStatus.PENDING);
+    });
+
+    it('should still save manufacturer to database if admin notification email send fails', async () => {
+      mockEmailsService.sendEmails
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Email failed'));
+
+      await expect(service.addFoodManufacturer(dto)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new food manufacturer application notification email to SSF',
+        ),
       );
 
       const saved = await testDataSource

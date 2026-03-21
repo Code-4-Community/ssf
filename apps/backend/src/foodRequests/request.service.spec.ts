@@ -10,7 +10,10 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates } from '../emails/emailTemplates';
@@ -287,7 +290,11 @@ describe('RequestsService', () => {
       const pantryId = 1;
       await expect(
         service.create(pantryId, RequestSize.MEDIUM, [FoodType.DRIED_BEANS]),
-      ).rejects.toThrow('Email failed');
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new food request notification email to volunteers',
+        ),
+      );
 
       const requests = await service.find(pantryId);
       expect(requests.length).toBe(3);

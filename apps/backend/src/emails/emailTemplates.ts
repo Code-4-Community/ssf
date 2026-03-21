@@ -94,7 +94,7 @@ export const emailTemplates = {
         Please log on to the SSF platform to review these request details and begin coordination when ready.
       </p>
       <p>
-        Thank you for your continued support of our network and mission!.
+        Thank you for your continued support of our network and mission!
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),

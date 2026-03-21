@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -123,23 +124,35 @@ export class FoodManufacturersService {
 
     await this.repo.save(foodManufacturer);
 
-    const manufacturerMessage =
-      emailTemplates.pantryFmApplicationSubmittedToUser({
-        name: foodManufacturerContact.firstName,
-      });
+    try {
+      const manufacturerMessage =
+        emailTemplates.pantryFmApplicationSubmittedToUser({
+          name: foodManufacturerContact.firstName,
+        });
 
-    await this.emailsService.sendEmails(
-      [foodManufacturerContact.email],
-      manufacturerMessage.subject,
-      manufacturerMessage.bodyHTML,
-    );
+      await this.emailsService.sendEmails(
+        [foodManufacturerContact.email],
+        manufacturerMessage.subject,
+        manufacturerMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send food manufacturer application submitted confirmation email to representative',
+      );
+    }
 
-    const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
-    await this.emailsService.sendEmails(
-      [SSF_PARTNER_EMAIL],
-      adminMessage.subject,
-      adminMessage.bodyHTML,
-    );
+    try {
+      const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
+      await this.emailsService.sendEmails(
+        [SSF_PARTNER_EMAIL],
+        adminMessage.subject,
+        adminMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new food manufacturer application notification email to SSF',
+      );
+    }
   }
 
   async approve(id: number) {
@@ -171,15 +184,21 @@ export class FoodManufacturersService {
       foodManufacturerRepresentative: newFoodManufacturer,
     });
 
-    const message = emailTemplates.pantryFmApplicationApproved({
-      name: newFoodManufacturer.firstName,
-    });
+    try {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newFoodManufacturer.firstName,
+      });
 
-    await this.emailsService.sendEmails(
-      [newFoodManufacturer.email],
-      message.subject,
-      message.bodyHTML,
-    );
+      await this.emailsService.sendEmails(
+        [newFoodManufacturer.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to send food manufacturer account approved notification email to representative',
+      );
+    }
   }
 
   async deny(id: number) {

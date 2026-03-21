@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -72,12 +73,18 @@ export class UsersService {
 
     // Send welcome email to new volunteers
     if (role === Role.VOLUNTEER) {
-      const message = emailTemplates.volunteerAccountCreated();
-      await this.emailsService.sendEmails(
-        [email],
-        message.subject,
-        message.bodyHTML,
-      );
+      try {
+        const message = emailTemplates.volunteerAccountCreated();
+        await this.emailsService.sendEmails(
+          [email],
+          message.subject,
+          message.bodyHTML,
+        );
+      } catch (error) {
+        throw new InternalServerErrorException(
+          'Failed to send account created notification email to volunteer',
+        );
+      }
     }
 
     return user;

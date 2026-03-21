@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
@@ -235,18 +239,24 @@ export class RequestsService {
 
     await this.repo.save(foodRequest);
 
-    const volunteers = pantry.volunteers || [];
-    const volunteerEmails = volunteers.map((v) => v.email);
+    try {
+      const volunteers = pantry.volunteers || [];
+      const volunteerEmails = volunteers.map((v) => v.email);
 
-    const message = emailTemplates.pantrySubmitsFoodRequest({
-      pantryName: pantry.pantryName,
-    });
+      const message = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry.pantryName,
+      });
 
-    await this.emailsService.sendEmails(
-      volunteerEmails,
-      message.subject,
-      message.bodyHTML,
-    );
+      await this.emailsService.sendEmails(
+        volunteerEmails,
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new food request notification email to volunteers',
+      );
+    }
 
     return foodRequest;
   }
