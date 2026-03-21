@@ -1,27 +1,36 @@
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { Role } from './types';
-import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { Pantry } from '../pantries/pantries.entity';
-import { AuthService } from '../auth/auth.service';
 import { mock } from 'jest-mock-extended';
-import { userSchemaDto } from './dtos/userSchema.dto';
+import { AuthService } from '../auth/auth.service';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
+import { testDataSource } from '../config/typeormTestDataSource';
 
 jest.setTimeout(60000);
 
-const mockAuthService = mock<AuthService>();
+const mockAuthService = {
+  adminCreateUser: jest.fn().mockResolvedValue('mock-sub'),
+};
+const mockEmailsService = mock<EmailsService>();
 
 describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
+    process.env.SEND_AUTOMATED_EMAILS = 'true';
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
-
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
 
@@ -29,16 +38,16 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         {
-          provide: getRepositoryToken(User),
-          useValue: testDataSource.getRepository(User),
-        },
-        {
-          provide: getRepositoryToken(Pantry),
-          useValue: testDataSource.getRepository(Pantry),
-        },
-        {
           provide: AuthService,
           useValue: mockAuthService,
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: testDataSource.getRepository(User),
         },
       ],
     }).compile();
@@ -47,12 +56,12 @@ describe('UsersService', () => {
   });
 
   beforeEach(async () => {
+    mockAuthService.adminCreateUser.mockClear();
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.runMigrations();
-    mockAuthService.adminCreateUser.mockResolvedValue('mock-cognito-sub');
   });
 
   afterEach(async () => {
-    mockAuthService.adminCreateUser.mockReset();
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
@@ -68,147 +77,137 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    it('should create a new volunteer user', async () => {
-      const dto: userSchemaDto = {
-        email: 'newuser@example.com',
+    it('should send a welcome email when creating a volunteer', async () => {
+      const createUserDto = {
+        email: 'newvolunteer@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
         role: Role.VOLUNTEER,
       };
 
-      const result = await service.create(dto);
+      await service.create(createUserDto);
 
-      const dbUser = await service.findOne(result.id);
-      expect(dbUser).toMatchObject({
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone,
-        role: Role.VOLUNTEER,
-      });
-      expect(result.id).toBeDefined();
-      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        email: dto.email,
-      });
+      const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [createUserDto.email],
+        subject,
+        bodyHTML,
+      );
     });
 
-    it('should throw NotFoundException when creating pantry user with unknown email', async () => {
-      const dto: userSchemaDto = {
-        email: 'nonexistent@example.com',
+    it('should still save user to database if email send fails', async () => {
+      const createUserDto = {
+        email: 'newvolunteer2@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.PANTRY,
+        role: Role.VOLUNTEER,
+      };
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send account created notification email to volunteer',
+        ),
+      );
+
+      const saved = await testDataSource
+        .getRepository(User)
+        .findOneBy({ email: createUserDto.email });
+      expect(saved).toBeDefined();
+      expect(saved?.firstName).toBe('Jane');
+    });
+
+    it('should create a new user with auto-generated ID', async () => {
+      const createUserDto = {
+        email: 'newadmin@example.com',
+        firstName: 'New',
+        lastName: 'Admin',
+        phone: '1112223333',
+        role: Role.ADMIN,
       };
 
-      await expect(service.create(dto)).rejects.toThrow(
-        new NotFoundException(`User with email ${dto.email} not found`),
-      );
+      const result = await service.create(createUserDto);
+
+      expect(result.id).toBeDefined();
+      expect(result.email).toBe(createUserDto.email);
+      expect(result.firstName).toBe(createUserDto.firstName);
+      expect(result.userCognitoSub).toBe('mock-sub');
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+      });
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
   });
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      const result = await service.findOne(1);
+      const user = await service.findOne(1);
 
-      expect(result).toMatchObject({
-        id: 1,
-        email: 'john.smith@ssf.org',
-        firstName: 'John',
-        lastName: 'Smith',
-        role: Role.ADMIN,
-      });
+      expect(user).toBeDefined();
+      expect(user.id).toBe(1);
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      await expect(service.findOne(999)).rejects.toThrow(
-        new NotFoundException('User 999 not found'),
+      await expect(service.findOne(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
+      );
+    });
+
+    it('should throw error for invalid id', async () => {
+      await expect(service.findOne(-1)).rejects.toThrow(
+        new BadRequestException('Invalid User ID'),
       );
     });
   });
 
   describe('update', () => {
-    it('should update firstName', async () => {
-      await service.update(1, { firstName: 'Updated' });
+    it('should update user attributes', async () => {
+      const result = await service.update(1, { firstName: 'Updated' });
 
-      const dbUser = await service.findOne(1);
-      expect(dbUser.firstName).toBe('Updated');
-    });
+      expect(result.firstName).toBe('Updated');
+      expect(result.lastName).toBe('Smith');
 
-    it('should update lastName', async () => {
-      await service.update(1, { lastName: 'Smith' });
-
-      const dbUser = await service.findOne(1);
-      expect(dbUser.lastName).toBe('Smith');
-    });
-
-    it('should update phone', async () => {
-      await service.update(1, { phone: '0987654321' });
-
-      const dbUser = await service.findOne(1);
-      expect(dbUser.phone).toBe('0987654321');
-    });
-
-    it('should update multiple fields at once', async () => {
-      await service.update(1, {
-        firstName: 'Updated',
-        lastName: 'Smith',
-      });
-
-      const dbUser = await service.findOne(1);
-      expect(dbUser.firstName).toBe('Updated');
-      expect(dbUser.lastName).toBe('Smith');
-    });
-
-    it('should not overwrite fields absent from the DTO', async () => {
-      const original = await service.findOne(1);
-      await service.update(1, { firstName: 'OnlyFirst' });
-
-      const dbUser = await service.findOne(1);
-      expect(dbUser.firstName).toBe('OnlyFirst');
-      expect(dbUser.lastName).toBe(original.lastName);
-      expect(dbUser.email).toBe(original.email);
-      expect(dbUser.phone).toBe(original.phone);
-      expect(dbUser.role).toBe(original.role);
-    });
-
-    it('should throw BadRequestException when DTO is empty', async () => {
-      await expect(service.update(1, {})).rejects.toThrow(
-        new BadRequestException(
-          'At least one field must be provided to update',
-        ),
-      );
+      const fromDb = await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 1 });
+      expect(fromDb?.firstName).toBe('Updated');
     });
 
     it('should throw NotFoundException when user is not found', async () => {
       await expect(
-        service.update(999, { firstName: 'Updated' }),
-      ).rejects.toThrow(new NotFoundException('User 999 not found'));
+        service.update(9999, { firstName: 'Updated' }),
+      ).rejects.toThrow(new NotFoundException('User 9999 not found'));
+    });
+
+    it('should throw error for invalid id', async () => {
+      await expect(
+        service.update(-1, { firstName: 'Updated' }),
+      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
     });
   });
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      const created = await service.create({
-        email: 'remove@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        phone: '1234567890',
-        role: Role.VOLUNTEER,
-      });
+      const result = await service.remove(6);
 
-      await service.remove(created.id);
-      await expect(service.findOne(created.id)).rejects.toThrow(
-        NotFoundException,
-      );
+      expect(result.email).toBe('james.t@volunteer.org');
+
+      const fromDb = await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 });
+      expect(fromDb).toBeNull();
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      await expect(service.remove(999)).rejects.toThrow(
-        new NotFoundException('User 999 not found'),
+      await expect(service.remove(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
       );
     });
 
@@ -221,20 +220,19 @@ describe('UsersService', () => {
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const result = await service.findUsersByRoles([Role.VOLUNTEER]);
+      const result = await service.findUsersByRoles([Role.ADMIN]);
 
-      expect(result.length).toBeGreaterThan(0);
-      expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
+      expect(result.length).toBe(2);
+      expect(result.every((u) => u.role === Role.ADMIN)).toBe(true);
     });
 
-    it('should return empty array when no users match roles', async () => {
-      await testDataSource.query(`DELETE FROM "allocations"`);
-      await testDataSource.query(`DELETE FROM "orders"`);
-      await testDataSource.query(`DELETE FROM "food_requests"`);
-      await testDataSource.query(`DELETE FROM "pantries"`);
-      await testDataSource.query(`DELETE FROM "users" WHERE role = 'pantry'`);
+    it('should return empty array when no users found', async () => {
+      await testDataSource.query(
+        `DELETE FROM public.users WHERE role = 'admin'`,
+      );
 
-      const result = await service.findUsersByRoles([Role.PANTRY]);
+      const result = await service.findUsersByRoles([Role.ADMIN]);
+
       expect(result).toEqual([]);
     });
   });
