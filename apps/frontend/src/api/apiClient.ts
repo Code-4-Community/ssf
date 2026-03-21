@@ -25,6 +25,8 @@ import {
   FoodRequestSummaryDto,
   PantryWithUser,
   Assignments,
+  PantryStats,
+  TotalStats,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -177,6 +179,34 @@ export class ApiClient {
     data: PantryApplicationDto,
   ): Promise<AxiosResponse<void>> {
     return this.axiosInstance.post(`/api/pantries`, data);
+  }
+
+  public async getPantryStats(params?: {
+    pantryNames?: string[];
+    page?: number;
+  }): Promise<PantryStats[]> {
+    return this.axiosInstance
+      .get('/api/pantries/stats-by-pantry', {
+        params: {
+          ...(params?.pantryNames?.length && {
+            pantryNames: params.pantryNames,
+          }),
+          ...(params?.page && { page: params.page }),
+        },
+      })
+      .then((response) => response.data);
+  }
+
+  public async getTotalStats(): Promise<TotalStats> {
+    return this.axiosInstance
+      .get('/api/pantries/total-stats')
+      .then((response) => response.data);
+  }
+
+  public async getApprovedPantryNames(): Promise<string[]> {
+    return this.axiosInstance
+      .get('/api/pantries/approved-names')
+      .then((response) => response.data);
   }
 
   public async getFoodRequestFromOrder(

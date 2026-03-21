@@ -108,6 +108,29 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('getApprovedPantryNames', () => {
+    it('should return an array of approved pantry names', async () => {
+      const mockNames = ['Pantry A', 'Pantry B'];
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce(
+        mockNames,
+      );
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual(mockNames);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
+
+    it('should return an empty array if no approved pantries exist', async () => {
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce([]);
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual([]);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
+  });
+
   describe('getPendingPantries', () => {
     it('should return an array of pending pantries', async () => {
       mockPantriesService.getPendingPantries.mockResolvedValueOnce([
@@ -275,6 +298,7 @@ describe('PantriesController', () => {
       const mockStats: PantryStats[] = [
         {
           pantryId: 1,
+          pantryName: 'Community Food Pantry Downtown',
           totalItems: 100,
           totalOz: 1600,
           totalLbs: 100,
@@ -308,6 +332,21 @@ describe('PantriesController', () => {
         pantryNames,
         years,
         page,
+      );
+    });
+
+    it('should propagate NotFoundException when a non-approved pantry name is queried', async () => {
+      mockPantriesService.getPantryStats.mockRejectedValueOnce(
+        new Error('Pantries not found: Riverside Food Assistance'),
+      );
+
+      await expect(
+        controller.getPantryStats(['Riverside Food Assistance']),
+      ).rejects.toThrow('Pantries not found: Riverside Food Assistance');
+      expect(mockPantriesService.getPantryStats).toHaveBeenCalledWith(
+        ['Riverside Food Assistance'],
+        undefined,
+        1,
       );
     });
   });
