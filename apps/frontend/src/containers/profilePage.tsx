@@ -35,7 +35,7 @@ const ProfilePage: React.FC = () => {
     fetchProfile();
   }, [setAlertMessage]);
 
-  const handleSave = async (fields: UpdateProfileFields) => {
+  const handleSave = async (fields: UpdateProfileFields): Promise<boolean> => {
     if (!profile) {
       setAlertMessage('Profile not found.');
       return false;
@@ -47,7 +47,7 @@ const ProfilePage: React.FC = () => {
       return true;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const status = error?.response?.status;
+        const status = error.response?.status;
         if (status === 400 || status === 404) {
           setAlertMessage(error.response?.data?.message);
         } else {
@@ -55,10 +55,11 @@ const ProfilePage: React.FC = () => {
             'Profile unable to be edited. Please try again later.',
           );
         }
+      } else {
+        setAlertMessage('An unexpected error occurred. Please try again.');
       }
+      return false;
     }
-
-    return false;
   };
 
   if (isLoading) {

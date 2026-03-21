@@ -21,12 +21,10 @@ type ProfileFieldProps =
   | {
       label: string;
       value: string;
-      readOnly: true;
     }
   | {
       label: string;
       value: string;
-      readOnly?: false;
       name: string;
       isEditing: boolean;
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -44,7 +42,7 @@ const ProfileField: React.FC<ProfileFieldProps> = (props) => (
     <Text {...labelStyles} mb={1}>
       {props.label}
     </Text>
-    {!props.readOnly && props.isEditing ? (
+    {'name' in props && props.isEditing ? (
       <Input
         name={props.name}
         value={props.value}
@@ -136,7 +134,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
           isEditing={isEditing}
           onChange={handleChange}
         />
-        <ProfileField label="Email Address" value={email} readOnly />
+        <ProfileField label="Email Address" value={email} />
         <ProfileField
           label="Phone Number"
           name="phone"
