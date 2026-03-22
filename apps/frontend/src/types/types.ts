@@ -252,7 +252,25 @@ export interface OrderDetails {
 export interface FoodManufacturer {
   foodManufacturerId: number;
   foodManufacturerName: string;
-  foodManufacturerRepresentative?: User;
+  foodManufacturerWebsite: string;
+  foodManufacturerRepresentative: User;
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  unlistedProductAllergens: Allergen[];
+  facilityFreeAllergens: Allergen[];
+  productsGlutenFree: boolean;
+  productsContainSulfites: boolean;
+  productsSustainableExplanation: string;
+  inKindDonations: boolean;
+  donateWastedFood: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: boolean;
+  donations: Donation[];
+  status: ApplicationStatus;
+  dateApplied: string;
 }
 
 export interface ManufacturerApplicationDto {
