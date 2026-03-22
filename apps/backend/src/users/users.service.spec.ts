@@ -77,7 +77,7 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    it('should send a welcome email when creating a volunteer', async () => {
+    it('should send email, create cognito user, and save to DB for volunteer', async () => {
       const createUserDto = {
         email: 'newvolunteer@example.com',
         firstName: 'Jane',
@@ -86,7 +86,7 @@ describe('UsersService', () => {
         role: Role.VOLUNTEER,
       };
 
-      await service.create(createUserDto);
+      const result = await service.create(createUserDto);
 
       const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
@@ -95,9 +95,22 @@ describe('UsersService', () => {
         subject,
         bodyHTML,
       );
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+      });
+      expect(result.id).toBeDefined();
+      expect(result.userCognitoSub).toBe('mock-sub');
+
+      const saved = await testDataSource
+        .getRepository(User)
+        .findOneBy({ email: createUserDto.email });
+      expect(saved).toBeDefined();
+      expect(saved?.userCognitoSub).toBe('mock-sub');
     });
 
-    it('should still save user to database if email send fails', async () => {
+    it('should not create cognito user or save to DB if email fails', async () => {
       const createUserDto = {
         email: 'newvolunteer2@example.com',
         firstName: 'Jane',
@@ -115,14 +128,37 @@ describe('UsersService', () => {
         ),
       );
 
+      expect(mockAuthService.adminCreateUser).not.toHaveBeenCalled();
+
       const saved = await testDataSource
         .getRepository(User)
         .findOneBy({ email: createUserDto.email });
-      expect(saved).toBeDefined();
-      expect(saved?.firstName).toBe('Jane');
+      expect(saved).toBeNull();
     });
 
-    it('should create a new user with auto-generated ID', async () => {
+    it('should not save to DB if cognito creation fails after email succeeds', async () => {
+      const createUserDto = {
+        email: 'newvolunteer3@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        phone: '9876543210',
+        role: Role.VOLUNTEER,
+      };
+      mockAuthService.adminCreateUser.mockRejectedValueOnce(
+        new Error('Cognito failed'),
+      );
+
+      await expect(service.create(createUserDto)).rejects.toThrow();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+
+      const saved = await testDataSource
+        .getRepository(User)
+        .findOneBy({ email: createUserDto.email });
+      expect(saved).toBeNull();
+    });
+
+    it('should create a new user with auto-generated ID for admin (no email sent)', async () => {
       const createUserDto = {
         email: 'newadmin@example.com',
         firstName: 'New',

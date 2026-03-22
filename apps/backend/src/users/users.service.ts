@@ -55,22 +55,6 @@ export class UsersService {
       return this.repo.save(existingUser);
     }
 
-    // All other roles (e.g. VOLUNTEER): create Cognito user and save to DB
-    const userCognitoSub = await this.authService.adminCreateUser({
-      firstName,
-      lastName,
-      email,
-    });
-    const user = this.repo.create({
-      role,
-      firstName,
-      lastName,
-      email,
-      phone,
-      userCognitoSub,
-    });
-    await this.repo.save(user);
-
     // Send welcome email to new volunteers
     if (role === Role.VOLUNTEER) {
       try {
@@ -86,6 +70,23 @@ export class UsersService {
         );
       }
     }
+
+    // Create Cognito user and save to DB
+    const userCognitoSub = await this.authService.adminCreateUser({
+      firstName,
+      lastName,
+      email,
+    });
+    const user = this.repo.create({
+      role,
+      firstName,
+      lastName,
+      email,
+      phone,
+      userCognitoSub,
+    });
+
+    await this.repo.save(user);
 
     return user;
   }
