@@ -37,6 +37,7 @@ import { DropDonationTotalColumns1772241115031 } from '../migrations/17722411150
 import { FixTrackingLinks1773041840374 } from '../migrations/1773041840374-FixTrackingLinks';
 import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
 import { MakeFoodRescueRequired1773889925002 } from '../migrations/1773889925002-MakeFoodRescueRequired.ts';
+import { AddDonationItemConfirmation1774140453305 } from '../migrations/1774140453305-AddDonationItemConfirmation';
 
 const schemaMigrations = [
   User1725726359198,
@@ -78,6 +79,7 @@ const schemaMigrations = [
   FixTrackingLinks1773041840374,
   CleanupRequestsAndAllocations1771821377918,
   MakeFoodRescueRequired1773889925002,
+  AddDonationItemConfirmation1774140453305,
 ];
 
 export default schemaMigrations;
