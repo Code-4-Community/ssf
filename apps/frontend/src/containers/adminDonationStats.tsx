@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ArrowDownUp,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Funnel,
   Search,
 } from 'lucide-react';
@@ -27,27 +27,47 @@ const AdminDonationStats: React.FC = () => {
   const [pantryStats, setPantryStats] = useState<PantryStats[]>([]);
   const [totalStats, setTotalStats] = useState<TotalStats | null>(null);
   const [pantryNameOptions, setPantryNameOptions] = useState<string[]>([]);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
+  const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [searchPantry, setSearchPantry] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isYearFilterOpen, setIsYearFilterOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
-    Promise.all([ApiClient.getApprovedPantryNames(), ApiClient.getTotalStats()])
-      .then(([names, stats]) => {
+    Promise.all([
+      ApiClient.getApprovedPantryNames(),
+      ApiClient.getAvailableYears(),
+    ])
+      .then(([names, years]) => {
         setPantryNameOptions(names);
-        setTotalStats(stats);
+        setAvailableYears(years);
+        setSelectedYears(years);
       })
       .catch(() => setAlertMessage('Error fetching pantry data'));
   }, [setAlertMessage]);
 
   useEffect(() => {
+    const allSelected =
+      selectedYears.length === 0 ||
+      selectedYears.length === availableYears.length;
+    ApiClient.getTotalStats(allSelected ? undefined : selectedYears)
+      .then(setTotalStats)
+      .catch(() => setAlertMessage('Error fetching total stats'));
+  }, [selectedYears, availableYears, setAlertMessage]);
+
+  useEffect(() => {
     const fetchStats = async () => {
       try {
+        const allSelected =
+          selectedYears.length === 0 ||
+          selectedYears.length === availableYears.length;
         const stats = await ApiClient.getPantryStats({
           pantryNames: selectedPantries.length ? selectedPantries : undefined,
+          years: allSelected ? undefined : selectedYears,
           page: currentPage,
         });
         setPantryStats(stats);
@@ -56,7 +76,13 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchStats();
-  }, [selectedPantries, currentPage, setAlertMessage]);
+  }, [
+    selectedPantries,
+    selectedYears,
+    availableYears,
+    currentPage,
+    setAlertMessage,
+  ]);
 
   const handleFilterChange = (name: string, checked: boolean) => {
     setCurrentPage(1);
@@ -66,6 +92,22 @@ const AdminDonationStats: React.FC = () => {
       setSelectedPantries(selectedPantries.filter((n) => n !== name));
     }
   };
+
+  const handleYearFilterChange = (year: number, checked: boolean) => {
+    setCurrentPage(1);
+    if (checked) {
+      setSelectedYears([...selectedYears, year]);
+    } else {
+      setSelectedYears(selectedYears.filter((y) => y !== year));
+    }
+  };
+
+  const allYearsSelected =
+    availableYears.length > 0 && selectedYears.length === availableYears.length;
+  const yearButtonLabel =
+    allYearsSelected || selectedYears.length === 0
+      ? 'All Available Years'
+      : [...selectedYears].sort((a, b) => a - b).join(', ');
 
   const itemsPerPage = 10;
   const totalCount =
@@ -97,11 +139,11 @@ const AdminDonationStats: React.FC = () => {
         />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
-        <Box position="relative">
+        <Box position="relative" color="neutral.800">
           <Button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             variant="outline"
-            color="neutral.600"
+            color="neutral.800"
             border="1px solid"
             borderColor="neutral.200"
             size="sm"
@@ -191,6 +233,98 @@ const AdminDonationStats: React.FC = () => {
                         <Checkbox.HiddenInput />
                         <Checkbox.Control borderRadius="sm" />
                         <Checkbox.Label>{name}</Checkbox.Label>
+                      </Checkbox.Root>
+                    ))}
+                </VStack>
+              </Box>
+            </>
+          )}
+        </Box>
+        <Box position="relative">
+          <Button
+            onClick={() => setIsYearFilterOpen(!isYearFilterOpen)}
+            variant="outline"
+            color="neutral.800"
+            border="1px solid"
+            borderColor="neutral.200"
+            size="sm"
+            p={3}
+            fontFamily="ibm"
+            fontWeight="semibold"
+            maxW="220px"
+          >
+            <Box
+              as="span"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+            >
+              {yearButtonLabel}
+            </Box>
+            <ChevronDown size={14} />
+          </Button>
+
+          {isYearFilterOpen && (
+            <>
+              <Box
+                position="fixed"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                onClick={() => setIsYearFilterOpen(false)}
+                zIndex={10}
+              />
+              <Box
+                position="absolute"
+                top="100%"
+                left={0}
+                mt={2}
+                bg="white"
+                border="1px solid"
+                borderColor="gray.200"
+                borderRadius="md"
+                boxShadow="lg"
+                p={4}
+                minW="275px"
+                maxH="200px"
+                overflowY="auto"
+                zIndex={20}
+              >
+                <VStack
+                  align="stretch"
+                  fontSize="12px"
+                  fontFamily="Inter"
+                  color="neutral.800"
+                  fontWeight="500"
+                  gap={2}
+                >
+                  <Checkbox.Root
+                    checked={allYearsSelected}
+                    onCheckedChange={(e: { checked: boolean }) => {
+                      setCurrentPage(1);
+                      setSelectedYears(e.checked ? [...availableYears] : []);
+                    }}
+                    size="md"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control borderRadius="sm" />
+                    <Checkbox.Label>All Available Years</Checkbox.Label>
+                  </Checkbox.Root>
+                  {[...availableYears]
+                    .sort((a, b) => a - b)
+                    .map((year) => (
+                      <Checkbox.Root
+                        key={year}
+                        checked={selectedYears.includes(year)}
+                        onCheckedChange={(e: { checked: boolean }) =>
+                          handleYearFilterChange(year, !!e.checked)
+                        }
+                        size="md"
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control borderRadius="sm" />
+                        <Checkbox.Label>{year}</Checkbox.Label>
                       </Checkbox.Root>
                     ))}
                 </VStack>

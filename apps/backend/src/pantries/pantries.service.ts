@@ -286,6 +286,32 @@ export class PantriesService {
     return pantries.map((p) => p.pantryName);
   }
 
+  async getAvailableYears(): Promise<number[]> {
+    const approvedPantries = await this.repo.find({
+      select: ['pantryId'],
+      where: { status: ApplicationStatus.APPROVED },
+    });
+
+    if (approvedPantries.length === 0) {
+      return [];
+    }
+
+    const approvedPantryIds = approvedPantries.map((p) => p.pantryId);
+
+    const rows = await this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoin('order.request', 'request')
+      .select('EXTRACT(YEAR FROM order.createdAt)::int', 'year')
+      .where('request.pantryId IN (:...pantryIds)', {
+        pantryIds: approvedPantryIds,
+      })
+      .groupBy('EXTRACT(YEAR FROM order.createdAt)::int')
+      .orderBy('"year"', 'DESC')
+      .getRawMany();
+
+    return rows.map((r) => Number(r.year));
+  }
+
   async addPantry(pantryData: PantryApplicationDto) {
     const pantryContact: User = new User();
     const pantry: Pantry = new Pantry();

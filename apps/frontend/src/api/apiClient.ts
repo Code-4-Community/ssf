@@ -183,6 +183,7 @@ export class ApiClient {
 
   public async getPantryStats(params?: {
     pantryNames?: string[];
+    years?: number[];
     page?: number;
   }): Promise<PantryStats[]> {
     return this.axiosInstance
@@ -191,21 +192,32 @@ export class ApiClient {
           ...(params?.pantryNames?.length && {
             pantryNames: params.pantryNames,
           }),
+          ...(params?.years?.length && { years: params.years }),
           ...(params?.page && { page: params.page }),
         },
       })
       .then((response) => response.data);
   }
 
-  public async getTotalStats(): Promise<TotalStats> {
+  public async getTotalStats(years?: number[]): Promise<TotalStats> {
     return this.axiosInstance
-      .get('/api/pantries/total-stats')
+      .get('/api/pantries/total-stats', {
+        params: {
+          ...(years?.length && { years }),
+        },
+      })
       .then((response) => response.data);
   }
 
   public async getApprovedPantryNames(): Promise<string[]> {
     return this.axiosInstance
       .get('/api/pantries/approved-names')
+      .then((response) => response.data);
+  }
+
+  public async getAvailableYears(): Promise<number[]> {
+    return this.axiosInstance
+      .get('/api/pantries/available-years')
       .then((response) => response.data);
   }
 

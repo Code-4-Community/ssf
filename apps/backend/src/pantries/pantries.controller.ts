@@ -81,6 +81,12 @@ export class PantriesController {
     return this.pantriesService.getApprovedPantryNames();
   }
 
+  @Roles(Role.ADMIN)
+  @Get('/available-years')
+  async getAvailableYears(): Promise<number[]> {
+    return this.pantriesService.getAvailableYears();
+  }
+
   @CheckOwnership({
     idParam: 'pantryId',
     resolver: async ({ entityId, services }) => {

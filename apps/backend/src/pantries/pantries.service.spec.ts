@@ -602,6 +602,58 @@ describe('PantriesService', () => {
     });
   });
 
+  describe('getAvailableYears', () => {
+    it('returns years from approved pantry orders sorted descending', async () => {
+      await testDataSource.query(
+        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([2024]);
+    });
+
+    it('returns multiple years sorted descending', async () => {
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2025-01-01 00:00:00'
+        WHERE order_id = (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2024-01-01 00:00:00'
+        WHERE order_id != (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([2025, 2024]);
+    });
+
+    it('returns empty array when no approved pantries exist', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([]);
+    });
+
+    it('excludes years from non-approved pantry orders', async () => {
+      await testDataSource.query(
+        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
+      );
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([]);
+    });
+  });
+
   describe('findByIds', () => {
     it('findByIds success', async () => {
       const found = await service.findByIds([1, 2]);
