@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository, In, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
@@ -15,6 +15,12 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { FoodRequestStatus } from '../foodRequests/types';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
+import { DonationService } from '../donations/donations.service';
 
 @Injectable()
 export class OrdersService {
@@ -22,6 +28,11 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     private requestsService: RequestsService,
+    private manufacturerService: FoodManufacturersService,
+    private donationItemsService: DonationItemsService,
+    private allocationsService: AllocationsService,
+    private donationService: DonationService,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   // TODO: when order is created, set FM
@@ -67,6 +78,101 @@ export class OrdersService {
   async getPastOrders() {
     return this.repo.find({
       where: { status: OrderStatus.DELIVERED },
+    });
+  }
+
+  /*
+  This create method follows these high level steps:
+  1. Validate the request status is active before allowing order creation.
+  2. Ensure all donation items belong to the specified manufacturer.
+  3. Validate allocated quantities do not exceed the remaining quantity (quantity - reserved_quantity).
+  4. Create the order with status pending.
+  5. Associate the order with the provided request and manufacturer.
+  6. Create allocation records for each donation item included in the order.
+  7. Update the reserved quantity for each allocated donation item.
+  8. Identify all unique donations associated with the allocated donation items and set their status to matched.
+  */
+  async create(
+    requestId: number,
+    manufacturerId: number,
+    itemAllocations: Record<number, number>,
+  ): Promise<Order> {
+    return this.dataSource.transaction(async (manager) => {
+      validateId(manufacturerId, 'Food Manufacturer');
+      validateId(requestId, 'Request');
+
+      const request = await this.requestsService.findOne(requestId);
+
+      if (request.status !== FoodRequestStatus.ACTIVE) {
+        throw new BadRequestException(`Request ${requestId} is not active`);
+      }
+
+      const fmDonations = await this.manufacturerService.getFMDonations(
+        manufacturerId,
+      );
+      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
+
+      const donationItemIds = Object.keys(itemAllocations).map(Number);
+      const donationItems = await this.donationItemsService.getByIds(
+        donationItemIds,
+      );
+
+      const invalidItems = donationItems.filter(
+        (item) => !fmDonationIdSet.has(item.donationId),
+      );
+
+      if (invalidItems.length > 0) {
+        const messages = invalidItems.map(
+          (item) =>
+            `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
+        );
+        throw new BadRequestException(
+          `The following donation items are not associated with the current food manufacturer: ${messages.join(
+            ', ',
+          )}`,
+        );
+      }
+
+      for (const donationItem of donationItems) {
+        const id = donationItem.itemId;
+        const quantityToAllocate = itemAllocations[id];
+
+        if (
+          quantityToAllocate >
+          donationItem.quantity - donationItem.reservedQuantity
+        ) {
+          throw new BadRequestException(
+            `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+          );
+        }
+      }
+
+      const order = manager.create(Order, {
+        requestId: requestId,
+        foodManufacturerId: manufacturerId,
+        status: OrderStatus.PENDING,
+      });
+
+      const savedOrder = await manager.save(order);
+
+      await this.allocationsService.createMultiple(
+        savedOrder.orderId,
+        itemAllocations,
+
+        manager,
+      );
+
+      const associatedDonationIdsSet =
+        await this.donationItemsService.getAssociatedDonationIds(
+          donationItemIds,
+        );
+
+      await this.donationService.matchAll(
+        Array.from(associatedDonationIdsSet),
+        manager,
+      );
+
+      return savedOrder;
     });
   }
 

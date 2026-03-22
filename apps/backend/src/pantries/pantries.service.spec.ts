@@ -27,6 +27,9 @@ import { Donation } from '../donations/donations.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { User } from '../users/users.entity';
+import { AllocationsService } from '../allocations/allocations.service';
+import { Allocation } from '../allocations/allocations.entity';
+import { DataSource } from 'typeorm';
 
 jest.setTimeout(60000);
 
@@ -77,6 +80,7 @@ describe('PantriesService', () => {
         DonationItemsService,
         DonationService,
         FoodManufacturersService,
+        AllocationsService,
         {
           provide: AuthService,
           useValue: {
@@ -110,6 +114,14 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();

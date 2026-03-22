@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
+  Post,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -28,6 +29,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { CreateOrderDto } from './dtos/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -113,6 +115,66 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {
     return this.allocationsService.getAllAllocationsByOrder(orderId);
+  }
+
+  @Post('/create')
+  @ApiBody({
+    description: 'Details for creating a order',
+    schema: {
+      type: 'object',
+      properties: {
+        foodRequestId: {
+          type: 'integer',
+          description: 'ID of the associated request this order is related to',
+          example: 1,
+        },
+        manufacturerId: {
+          type: 'integer',
+          description: 'Food manufacturer ID of the FM fulfilling the order',
+          example: 1,
+        },
+        itemAllocations: {
+          type: 'object',
+          description:
+            'Map of donationItemId -> quantity to allocate, donation items and their quantity to allocate for this order',
+          additionalProperties: {
+            type: 'integer',
+            example: 10,
+          },
+          example: {
+            '5': 10,
+            '8': 3,
+            '12': 7,
+          },
+        },
+      },
+    },
+  })
+  async createOrder(
+    @Body(new ValidationPipe())
+    orderData: CreateOrderDto,
+  ): Promise<Order> {
+    const parsedAllocations: Record<number, number> = {};
+
+    for (const [key, value] of Object.entries(orderData.itemAllocations)) {
+      const itemId = Number(key);
+
+      if (!Number.isInteger(itemId) || itemId < 1) {
+        throw new BadRequestException(`Invalid item ID: ${key}`);
+      }
+
+      if (!Number.isInteger(value) || value < 1) {
+        throw new BadRequestException(`Invalid quantity for item ${key}`);
+      }
+
+      parsedAllocations[itemId] = value;
+    }
+
+    return this.ordersService.create(
+      orderData.foodRequestId,
+      orderData.manufacturerId,
+      parsedAllocations,
+    );
   }
 
   @Patch('/update-status/:orderId')

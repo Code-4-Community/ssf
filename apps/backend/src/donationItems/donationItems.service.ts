@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
@@ -26,6 +26,49 @@ export class DonationItemsService {
   async getAllDonationItems(donationId: number): Promise<DonationItem[]> {
     validateId(donationId, 'Donation');
     return this.repo.find({ where: { donation: { donationId } } });
+  }
+
+  async getByIds(donationItemIds: number[]): Promise<DonationItem[]> {
+    donationItemIds.forEach((id) => validateId(id, 'Donation Item'));
+
+    const items = await this.repo.find({
+      where: { itemId: In(donationItemIds) },
+    });
+
+    const foundIds = new Set(items.map((item) => item.itemId));
+
+    const missingIds = donationItemIds.filter((id) => !foundIds.has(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donation items not found for ID(s): ${missingIds.join(', ')}`,
+      );
+    }
+
+    return items;
+  }
+
+  async getAssociatedDonationIds(
+    donationItemIds: number[],
+  ): Promise<Set<number>> {
+    donationItemIds.forEach((id) => validateId(id, 'Donation Item'));
+
+    const items = await this.repo.find({
+      where: { itemId: In(donationItemIds) },
+      select: ['itemId', 'donationId'],
+    });
+
+    const foundIds = new Set(items.map((i) => i.itemId));
+
+    const missingIds = donationItemIds.filter((id) => !foundIds.has(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donation items not found for ID(s): ${missingIds.join(', ')}`,
+      );
+    }
+
+    return new Set(items.map((i) => i.donationId));
   }
 
   async create(

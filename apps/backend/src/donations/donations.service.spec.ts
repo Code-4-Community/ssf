@@ -173,6 +173,38 @@ describe('DonationService', () => {
     });
   });
 
+  describe('matchAll', () => {
+    it('updates all given donations to have status MATCHED', async () => {
+      const donationId1 = 1;
+      const donationId2 = 2;
+      const donationIds = [donationId1, donationId2];
+
+      const donation1 = await service.findOne(donationId1);
+      const donation2 = await service.findOne(donationId2);
+      expect(donation1.status).toEqual(DonationStatus.AVAILABLE);
+      expect(donation2.status).toEqual(DonationStatus.MATCHED);
+
+      await service.matchAll(donationIds);
+
+      const updatedDonation1 = await service.findOne(donationId1);
+      const updatedDonation2 = await service.findOne(donationId2);
+
+      expect(updatedDonation1.status).toEqual(DonationStatus.MATCHED);
+      expect(updatedDonation2.status).toEqual(DonationStatus.MATCHED);
+    });
+
+    it('throws an error if one or more donationIds do not exist', async () => {
+      const existingDonationId = 1;
+      const nonExistingDonationId = 999;
+
+      const donationIds = [existingDonationId, nonExistingDonationId];
+
+      await expect(service.matchAll(donationIds)).rejects.toThrow(
+        `Donations not found for ID(s): ${nonExistingDonationId}`,
+      );
+    });
+  });
+
   describe('handleRecurringDonations', () => {
     describe('no-op cases', () => {
       it('skips donation with no nextDonationDates', async () => {
