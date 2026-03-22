@@ -31,6 +31,7 @@ import { submitManufacturerApplicationForm } from '@components/forms/manufacture
 import AssignedPantries from '@containers/volunteerAssignedPantries';
 import ApproveFoodManufacturers from '@containers/approveFoodManufacturers';
 import FoodManufacturerApplicationDetails from '@containers/foodManufacturerApplicationDetails';
+import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -213,6 +214,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AssignedPantries />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-request-management',
+        element: (
+          <ProtectedRoute>
+            <VolunteerRequestManagement />
           </ProtectedRoute>
         ),
       },

@@ -1,52 +1,40 @@
-import { NotFoundException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { Role } from './types';
-import { mock } from 'jest-mock-extended';
-import { In } from 'typeorm';
-import { BadRequestException } from '@nestjs/common';
-import { PantriesService } from '../pantries/pantries.service';
-import { userSchemaDto } from './dtos/userSchema.dto';
+import { testDataSource } from '../config/typeormTestDataSource';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Pantry } from '../pantries/pantries.entity';
 import { AuthService } from '../auth/auth.service';
+import { mock } from 'jest-mock-extended';
+import { userSchemaDto } from './dtos/userSchema.dto';
 
-const mockUserRepository = mock<Repository<User>>();
-const mockPantriesService = mock<PantriesService>();
+jest.setTimeout(60000);
+
 const mockAuthService = mock<AuthService>();
-
-const mockUser: Partial<User> = {
-  id: 1,
-  email: 'test@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  phone: '1234567890',
-  role: Role.VOLUNTEER,
-};
 
 describe('UsersService', () => {
   let service: UsersService;
 
   beforeAll(async () => {
-    mockUserRepository.create.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.findOneBy.mockReset();
-    mockUserRepository.find.mockReset();
-    mockUserRepository.remove.mockReset();
-    mockPantriesService.findByIds.mockReset();
-    mockAuthService.adminCreateUser.mockResolvedValue('mock-sub');
+    if (!testDataSource.isInitialized) {
+      await testDataSource.initialize();
+    }
 
-    const module = await Test.createTestingModule({
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockUserRepository,
+          useValue: testDataSource.getRepository(User),
         },
         {
-          provide: PantriesService,
-          useValue: mockPantriesService,
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
         },
         {
           provide: AuthService,
@@ -58,17 +46,21 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
   });
 
-  beforeEach(() => {
-    mockUserRepository.create.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.findOneBy.mockReset();
-    mockUserRepository.find.mockReset();
-    mockUserRepository.remove.mockReset();
-    mockPantriesService.findByIds.mockReset();
+  beforeEach(async () => {
+    await testDataSource.runMigrations();
+    mockAuthService.adminCreateUser.mockResolvedValue('mock-cognito-sub');
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  afterEach(async () => {
+    mockAuthService.adminCreateUser.mockReset();
+    await testDataSource.query(`DROP SCHEMA public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
+  });
+
+  afterAll(async () => {
+    if (testDataSource.isInitialized) {
+      await testDataSource.destroy();
+    }
   });
 
   it('should be defined', () => {
@@ -76,110 +68,145 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    it('should create a new user with auto-generated ID', async () => {
-      const createUserDto: userSchemaDto = {
+    it('should create a new volunteer user', async () => {
+      const dto: userSchemaDto = {
         email: 'newuser@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         phone: '9876543210',
-        role: Role.ADMIN,
+        role: Role.VOLUNTEER,
       };
 
-      const createdUser = {
-        ...createUserDto,
-        id: 1,
-        userCognitoSub: 'mock-sub',
-      } as User;
-      mockUserRepository.create.mockReturnValue(createdUser);
-      mockUserRepository.save.mockResolvedValue(createdUser);
+      const result = await service.create(dto);
 
-      const result = await service.create(createUserDto);
-
-      expect(result).toEqual(createdUser);
-      expect(mockUserRepository.create).toHaveBeenCalledWith({
-        role: createUserDto.role,
-        firstName: createUserDto.firstName,
-        lastName: createUserDto.lastName,
-        email: createUserDto.email,
-        phone: createUserDto.phone,
-        userCognitoSub: 'mock-sub',
+      const dbUser = await service.findOne(result.id);
+      expect(dbUser).toMatchObject({
+        email: dto.email,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        role: Role.VOLUNTEER,
       });
-      expect(mockUserRepository.save).toHaveBeenCalledWith(createdUser);
+      expect(result.id).toBeDefined();
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+      });
+    });
+
+    it('should throw NotFoundException when creating pantry user with unknown email', async () => {
+      const dto: userSchemaDto = {
+        email: 'nonexistent@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        phone: '9876543210',
+        role: Role.PANTRY,
+      };
+
+      await expect(service.create(dto)).rejects.toThrow(
+        new NotFoundException(`User with email ${dto.email} not found`),
+      );
     });
   });
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-
       const result = await service.findOne(1);
 
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      expect(result).toMatchObject({
+        id: 1,
+        email: 'john.smith@ssf.org',
+        firstName: 'John',
+        lastName: 'Smith',
+        role: Role.ADMIN,
+      });
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(service.findOne(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
       );
     });
-
-    it('should throw error for invalid id', async () => {
-      await expect(service.findOne(-1)).rejects.toThrow(
-        new BadRequestException('Invalid User ID'),
-      );
-
-      expect(mockUserRepository.findOneBy).not.toHaveBeenCalled();
-    });
   });
 
   describe('update', () => {
-    it('should update user attributes', async () => {
-      const updateData = { firstName: 'Updated', role: Role.ADMIN };
-      const updatedUser = { ...mockUser, ...updateData };
+    it('should update firstName', async () => {
+      await service.update(1, { firstName: 'Updated' });
 
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-      mockUserRepository.save.mockResolvedValue(updatedUser as User);
+      const dbUser = await service.findOne(1);
+      expect(dbUser.firstName).toBe('Updated');
+    });
 
-      const result = await service.update(1, updateData);
+    it('should update lastName', async () => {
+      await service.update(1, { lastName: 'Smith' });
 
-      expect(result).toEqual(updatedUser);
-      expect(mockUserRepository.save).toHaveBeenCalledWith(updatedUser);
+      const dbUser = await service.findOne(1);
+      expect(dbUser.lastName).toBe('Smith');
+    });
+
+    it('should update phone', async () => {
+      await service.update(1, { phone: '0987654321' });
+
+      const dbUser = await service.findOne(1);
+      expect(dbUser.phone).toBe('0987654321');
+    });
+
+    it('should update multiple fields at once', async () => {
+      await service.update(1, {
+        firstName: 'Updated',
+        lastName: 'Smith',
+      });
+
+      const dbUser = await service.findOne(1);
+      expect(dbUser.firstName).toBe('Updated');
+      expect(dbUser.lastName).toBe('Smith');
+    });
+
+    it('should not overwrite fields absent from the DTO', async () => {
+      const original = await service.findOne(1);
+      await service.update(1, { firstName: 'OnlyFirst' });
+
+      const dbUser = await service.findOne(1);
+      expect(dbUser.firstName).toBe('OnlyFirst');
+      expect(dbUser.lastName).toBe(original.lastName);
+      expect(dbUser.email).toBe(original.email);
+      expect(dbUser.phone).toBe(original.phone);
+      expect(dbUser.role).toBe(original.role);
+    });
+
+    it('should throw BadRequestException when DTO is empty', async () => {
+      await expect(service.update(1, {})).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(
         service.update(999, { firstName: 'Updated' }),
       ).rejects.toThrow(new NotFoundException('User 999 not found'));
-    });
-
-    it('should throw error for invalid id', async () => {
-      await expect(
-        service.update(-1, { firstName: 'Updated' }),
-      ).rejects.toThrow(new BadRequestException('Invalid User ID'));
-
-      expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
   });
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUser as User);
-      mockUserRepository.remove.mockResolvedValue(mockUser as User);
+      const created = await service.create({
+        email: 'remove@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '1234567890',
+        role: Role.VOLUNTEER,
+      });
 
-      const result = await service.remove(1);
-
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.remove).toHaveBeenCalledWith(mockUser);
+      await service.remove(created.id);
+      await expect(service.findOne(created.id)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
-
       await expect(service.remove(999)).rejects.toThrow(
         new NotFoundException('User 999 not found'),
       );
@@ -189,32 +216,25 @@ describe('UsersService', () => {
       await expect(service.remove(-1)).rejects.toThrow(
         new BadRequestException('Invalid User ID'),
       );
-
-      expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });
   });
 
   describe('findUsersByRoles', () => {
     it('should return users by roles', async () => {
-      const roles = [Role.ADMIN, Role.VOLUNTEER];
-      const users = [mockUser];
-      mockUserRepository.find.mockResolvedValue(users as User[]);
+      const result = await service.findUsersByRoles([Role.VOLUNTEER]);
 
-      const result = await service.findUsersByRoles(roles);
-
-      expect(result).toEqual(users);
-      expect(mockUserRepository.find).toHaveBeenCalledWith({
-        where: { role: In(roles) },
-        relations: ['pantries'],
-      });
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
     });
 
-    it('should return empty array when no users found', async () => {
-      const roles = [Role.ADMIN];
-      mockUserRepository.find.mockResolvedValue([]);
+    it('should return empty array when no users match roles', async () => {
+      await testDataSource.query(`DELETE FROM "allocations"`);
+      await testDataSource.query(`DELETE FROM "orders"`);
+      await testDataSource.query(`DELETE FROM "food_requests"`);
+      await testDataSource.query(`DELETE FROM "pantries"`);
+      await testDataSource.query(`DELETE FROM "users" WHERE role = 'pantry'`);
 
-      const result = await service.findUsersByRoles(roles);
-
+      const result = await service.findUsersByRoles([Role.PANTRY]);
       expect(result).toEqual([]);
     });
   });

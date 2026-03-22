@@ -249,7 +249,7 @@ export interface FoodManufacturer {
   donateWastedFood: DonateWastedFood;
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription: boolean;
+  newsletterSubscription?: boolean;
   donations: Donation[];
   status: ApplicationStatus;
   dateApplied: string;

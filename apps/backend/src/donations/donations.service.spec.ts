@@ -3,9 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { RecurrenceEnum, DayOfWeek } from './types';
+import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { NotFoundException } from '@nestjs/common';
 
 jest.setTimeout(60000);
 
@@ -129,7 +130,43 @@ describe('DonationService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getDonationCount', () => {
+  describe('findOne', () => {
+    it('should return a donation with the corresponding id', async () => {
+      const donationId = 1;
+      const result = await service.findOne(donationId);
+      expect(result).toBeDefined();
+      expect(result.donationId).toBe(donationId);
+      expect(result.foodManufacturer.foodManufacturerName).toBe(
+        'FoodCorp Industries',
+      );
+      expect(result.status).toBe(DonationStatus.AVAILABLE);
+      expect(result.recurrence).toBe(RecurrenceEnum.NONE);
+    });
+
+    it('should throw NotFoundException for non-existent donation', async () => {
+      await expect(service.findOne(999)).rejects.toThrow(
+        new NotFoundException('Donation 999 not found'),
+      );
+    });
+  });
+
+  describe('getAll', () => {
+    it('returns all donations in the database with food manufacturer relation', async () => {
+      const donations = await service.getAll();
+      expect(donations).toHaveLength(4);
+
+      donations.forEach((d) => {
+        expect(d.foodManufacturer).toBeDefined();
+      });
+
+      const firstDonation = donations[0];
+      expect(firstDonation.status).toBe(DonationStatus.MATCHED);
+      expect(firstDonation.foodManufacturer.foodManufacturerId).toBe(2);
+      expect(firstDonation.recurrence).toBe(RecurrenceEnum.NONE);
+    });
+  });
+
+  describe('getNumberOfDonations', () => {
     it('returns total number of donations in the database', async () => {
       const donationCount = await service.getNumberOfDonations();
       expect(donationCount).toEqual(4);

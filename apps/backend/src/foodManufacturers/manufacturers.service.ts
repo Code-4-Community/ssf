@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
 import { Repository } from 'typeorm';
@@ -124,8 +128,15 @@ export class FoodManufacturersService {
       where: { foodManufacturerId: id },
       relations: ['foodManufacturerRepresentative'],
     });
+
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
+
+    if (foodManufacturer.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot approve a Food Manufacturer with status: ${foodManufacturer.status}`,
+      );
     }
 
     const createUserDto: userSchemaDto = {
@@ -151,8 +162,15 @@ export class FoodManufacturersService {
       where: { foodManufacturerId: id },
       relations: ['foodManufacturerRepresentative'],
     });
+
     if (!foodManufacturer) {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
+
+    if (foodManufacturer.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot deny a Food Manufacturer with status: ${foodManufacturer.status}`,
+      );
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
