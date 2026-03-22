@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   ParseIntPipe,
+  Put,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -76,5 +78,12 @@ export class DonationsController {
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.fulfill(donationId);
+  }
+
+  @Delete('/:donationId')
+  async deleteDonation(
+    @Param('donationId', ParseIntPipe) donationId: number,
+  ): Promise<void> {
+    return this.donationService.delete(donationId);
   }
 }

@@ -313,4 +313,20 @@ export class DonationService {
     }
     return dates;
   }
+
+  async delete(donationId: number): Promise<void> {
+    const donation = await this.repo.findOne({
+      where: { donationId },
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.AVAILABLE) {
+      throw new BadRequestException(`Only available donations can be deleted`);
+    }
+
+    await this.repo.delete(donationId);
+  }
 }

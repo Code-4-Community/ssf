@@ -120,4 +120,15 @@ describe('DonationsController', () => {
       expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
     });
   });
+
+  describe('DELETE /:donationId', () => {
+    it('should call donationService.delete with the correct id', async () => {
+      const donationId = 1;
+
+      await controller.deleteDonation(donationId);
+
+      expect(mockDonationService.delete).toHaveBeenCalledWith(donationId);
+      expect(mockDonationService.delete).toHaveBeenCalledTimes(1);
+    });
+  });
 });

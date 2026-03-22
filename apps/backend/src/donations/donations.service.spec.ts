@@ -7,6 +7,9 @@ import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { NotFoundException } from '@nestjs/common';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 jest.setTimeout(60000);
 
@@ -83,6 +86,7 @@ const TODAYOfWeek = (iso: string): DayOfWeek => {
 
 describe('DonationService', () => {
   let service: DonationService;
+  let donationItemService: DonationItemsService;
 
   beforeAll(async () => {
     if (!testDataSource.isInitialized) {
@@ -95,6 +99,7 @@ describe('DonationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
+        DonationItemsService,
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
@@ -103,10 +108,20 @@ describe('DonationService', () => {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
         },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
       ],
     }).compile();
 
     service = module.get<DonationService>(DonationService);
+    donationItemService =
+      module.get<DonationItemsService>(DonationItemsService);
   });
 
   beforeEach(async () => {
@@ -800,6 +815,49 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete an available donation and associated donation items', async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+
+      const donationId = 3;
+
+      const donationBefore = await service.findOne(donationId);
+      expect(donationBefore).toBeDefined();
+      expect(donationBefore.status).toBe(DonationStatus.AVAILABLE);
+
+      await service.delete(donationId);
+
+      await expect(service.findOne(donationId)).rejects.toThrow(
+        `Donation ${donationId} not found`,
+      );
+
+      const items = await donationItemService.getAllDonationItems(donationId);
+      expect(items).toHaveLength(0);
+
+      const allocations = await allocationRepo.find({
+        where: {
+          item: { donation: { donationId } },
+        },
+      });
+      expect(allocations).toHaveLength(0);
+    });
+
+    it('should throw NotFoundException if donation does not exist', async () => {
+      await expect(service.delete(9999)).rejects.toThrow(
+        `Donation 9999 not found`,
+      );
+    });
+
+    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+      // donation with status MATCHED
+      const donationId = 2;
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        'Only available donations can be deleted',
+      );
     });
   });
 });
