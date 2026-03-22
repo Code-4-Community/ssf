@@ -164,6 +164,12 @@ export class OrdersController {
         throw new BadRequestException(`Invalid item ID: ${key}`);
       }
 
+      if (typeof value !== 'number') {
+        throw new BadRequestException(
+          `Quantity for item ${key} must be of type number`,
+        );
+      }
+
       if (!Number.isInteger(value) || value < 1) {
         throw new BadRequestException(`Invalid quantity for item ${key}`);
       }

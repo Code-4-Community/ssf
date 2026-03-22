@@ -432,6 +432,18 @@ describe('OrdersController', () => {
       );
     });
 
+    it('should throw BadRequestException for invalid item quantity type', async () => {
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        itemAllocations: { 5: '10' },
+      };
+
+      await expect(controller.createOrder(createOrderDto)).rejects.toThrow(
+        new BadRequestException('Quantity for item 5 must be of type number'),
+      );
+    });
+
     it('should throw BadRequestException for quantity invalid quantity', async () => {
       const createOrderDto: CreateOrderDto = {
         foodRequestId: 1,
