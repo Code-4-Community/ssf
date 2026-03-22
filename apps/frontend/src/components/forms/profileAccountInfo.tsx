@@ -183,7 +183,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
               value="Account"
               color="neutral.800"
               textStyle="p2"
-              borderBottom="1px solid"
+              borderBottom="0.5px solid"
               borderColor="neutral.100"
               _selected={{ borderColor: 'neutral.700' }}
             >
@@ -193,7 +193,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
               value="Application"
               color="neutral.800"
               textStyle="p2"
-              borderBottom="1px solid"
+              borderBottom="0.5px solid"
               borderColor="neutral.100"
               _selected={{ borderColor: 'neutral.700' }}
             >

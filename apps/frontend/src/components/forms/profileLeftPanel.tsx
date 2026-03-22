@@ -17,7 +17,8 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
 }) => (
   <VStack alignItems="center" mt={8} mb={6} p={10}>
     <Box
-      p={5}
+      w={24}
+      h={24}
       borderRadius="full"
       bg={avatarBg}
       display="flex"
