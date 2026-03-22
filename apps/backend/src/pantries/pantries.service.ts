@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -19,6 +20,8 @@ import { ApprovedPantryResponse } from './types';
 import { PantryStats, TotalStats } from './types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class PantriesService {
@@ -28,6 +31,9 @@ export class PantriesService {
 
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+
+    @Inject(forwardRef(() => EmailsService))
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -314,6 +320,35 @@ export class PantriesService {
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
+
+    try {
+      const pantryMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
+        name: pantryContact.firstName,
+      });
+
+      await this.emailsService.sendEmails(
+        [pantryContact.email],
+        pantryMessage.subject,
+        pantryMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send pantry application submitted confirmation email to representative',
+      );
+    }
+
+    try {
+      const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
+      await this.emailsService.sendEmails(
+        [SSF_PARTNER_EMAIL],
+        adminMessage.subject,
+        adminMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new pantry application notification email to SSF',
+      );
+    }
   }
 
   async approve(id: number) {
@@ -344,6 +379,22 @@ export class PantriesService {
       status: ApplicationStatus.APPROVED,
       pantryUser: newPantryUser,
     });
+
+    try {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newPantryUser.firstName,
+      });
+
+      await this.emailsService.sendEmails(
+        [newPantryUser.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send pantry account approved notification email to representative',
+      );
+    }
   }
 
   async deny(id: number) {
