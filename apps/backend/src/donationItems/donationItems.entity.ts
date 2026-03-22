@@ -50,4 +50,7 @@ export class DonationItem {
 
   @Column({ name: 'food_rescue', type: 'boolean', nullable: true })
   foodRescue!: boolean | null;
+
+  @Column({ name: 'details_confirmed', type: 'boolean' })
+  detailsConfirmed!: boolean;
 }
