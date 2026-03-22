@@ -24,10 +24,13 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
 const AdminDonationStats: React.FC = () => {
+  // Individual and combined pantry stats to be displayed
   const [pantryStats, setPantryStats] = useState<PantryStats[]>([]);
-  const [totalStats, setTotalStats] = useState<TotalStats | null>(null);
+  const [totalStats, setTotalStats] = useState<TotalStats>();
+  // Names and years of all approved pantries, used for filters
   const [pantryNameOptions, setPantryNameOptions] = useState<string[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  // Filtering state management
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [searchPantry, setSearchPantry] = useState('');
@@ -38,26 +41,29 @@ const AdminDonationStats: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
-    Promise.all([
-      ApiClient.getApprovedPantryNames(),
-      ApiClient.getAvailableYears(),
-    ])
-      .then(([names, years]) => {
-        setPantryNameOptions(names);
+    ApiClient.getApprovedPantryNames()
+      .then(setPantryNameOptions)
+      .catch(() => setAlertMessage('Error fetching pantry names'));
+
+    ApiClient.getAvailableYears()
+      .then((years) => {
         setAvailableYears(years);
+        // On page load, set all years to selected
         setSelectedYears(years);
       })
-      .catch(() => setAlertMessage('Error fetching pantry data'));
-  }, [setAlertMessage]);
+      .catch(() => setAlertMessage('Error fetching available years'));
+  }, []);
 
   useEffect(() => {
+    // Default show all selected
     const allSelected =
       selectedYears.length === 0 ||
       selectedYears.length === availableYears.length;
+
     ApiClient.getTotalStats(allSelected ? undefined : selectedYears)
       .then(setTotalStats)
       .catch(() => setAlertMessage('Error fetching total stats'));
-  }, [selectedYears, availableYears, setAlertMessage]);
+  }, [selectedYears, availableYears]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -76,15 +82,10 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchStats();
-  }, [
-    selectedPantries,
-    selectedYears,
-    availableYears,
-    currentPage,
-    setAlertMessage,
-  ]);
+  }, [selectedPantries, selectedYears, availableYears, currentPage]);
 
-  const handleFilterChange = (name: string, checked: boolean) => {
+  const handlePantryNameFilterChange = (name: string, checked: boolean) => {
+    // For simplicity, reset the page
     setCurrentPage(1);
     if (checked) {
       setSelectedPantries([...selectedPantries, name]);
@@ -94,6 +95,7 @@ const AdminDonationStats: React.FC = () => {
   };
 
   const handleYearFilterChange = (year: number, checked: boolean) => {
+    // For simplicity, reset the page
     setCurrentPage(1);
     if (checked) {
       setSelectedYears([...selectedYears, year]);
@@ -104,9 +106,11 @@ const AdminDonationStats: React.FC = () => {
 
   const allYearsSelected =
     availableYears.length > 0 && selectedYears.length === availableYears.length;
+
+  // Default All Available Data, otherwise display as many years as possible in ascending order
   const yearButtonLabel =
     allYearsSelected || selectedYears.length === 0
-      ? 'All Available Years'
+      ? 'All Available Data'
       : [...selectedYears].sort((a, b) => a - b).join(', ');
 
   const itemsPerPage = 10;
@@ -226,7 +230,7 @@ const AdminDonationStats: React.FC = () => {
                         key={name}
                         checked={selectedPantries.includes(name)}
                         onCheckedChange={(e: { checked: boolean }) =>
-                          handleFilterChange(name, !!e.checked)
+                          handlePantryNameFilterChange(name, !!e.checked)
                         }
                         size="md"
                       >
@@ -309,24 +313,22 @@ const AdminDonationStats: React.FC = () => {
                   >
                     <Checkbox.HiddenInput />
                     <Checkbox.Control borderRadius="sm" />
-                    <Checkbox.Label>All Available Years</Checkbox.Label>
+                    <Checkbox.Label>All Available Data</Checkbox.Label>
                   </Checkbox.Root>
-                  {[...availableYears]
-                    .sort((a, b) => a - b)
-                    .map((year) => (
-                      <Checkbox.Root
-                        key={year}
-                        checked={selectedYears.includes(year)}
-                        onCheckedChange={(e: { checked: boolean }) =>
-                          handleYearFilterChange(year, !!e.checked)
-                        }
-                        size="md"
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control borderRadius="sm" />
-                        <Checkbox.Label>{year}</Checkbox.Label>
-                      </Checkbox.Root>
-                    ))}
+                  {[...availableYears].map((year) => (
+                    <Checkbox.Root
+                      key={year}
+                      checked={selectedYears.includes(year)}
+                      onCheckedChange={(e: { checked: boolean }) =>
+                        handleYearFilterChange(year, !!e.checked)
+                      }
+                      size="md"
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control borderRadius="sm" />
+                      <Checkbox.Label>{year}</Checkbox.Label>
+                    </Checkbox.Root>
+                  ))}
                 </VStack>
               </Box>
             </>
@@ -414,7 +416,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                {totalStats.totalOz}
+                {totalStats.totalOz.toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -422,7 +424,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                {totalStats.totalLbs}
+                {totalStats.totalLbs.toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -467,14 +469,14 @@ const AdminDonationStats: React.FC = () => {
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {stat.totalOz}
+                {stat.totalOz.toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
-                {stat.totalLbs}
+                {stat.totalLbs.toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
