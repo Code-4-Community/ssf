@@ -23,6 +23,11 @@ const Homepage: React.FC = () => {
           Site Navigation
         </Heading>
 
+        <Box w="full" textAlign="center">
+          <Link color="teal.500">
+            <RouterLink to="/profile">Profile View</RouterLink>
+          </Link>
+        </Box>
         <Box w="full">
           <Heading as="h3" size="md" mb={3} textAlign="center">
             Pantry View
@@ -47,6 +52,13 @@ const Homepage: React.FC = () => {
               <Link asChild color="teal.500">
                 <RouterLink to="/pantry-application">
                   Pantry Application
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/pantry-order-management">
+                  Pantry Order Management
                 </RouterLink>
               </Link>
             </ListItem>
@@ -96,6 +108,13 @@ const Homepage: React.FC = () => {
               <Link asChild color="teal.500">
                 <RouterLink to="/volunteer-assigned-pantries">
                   Assigned Pantries
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-request-management">
+                  Food Request Management
                 </RouterLink>
               </Link>
             </ListItem>

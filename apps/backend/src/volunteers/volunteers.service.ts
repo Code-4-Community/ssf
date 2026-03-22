@@ -8,6 +8,8 @@ import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
 import { Assignments } from './types';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { RequestsService } from '../foodRequests/request.service';
 
 @Injectable()
 export class VolunteersService {
@@ -16,6 +18,7 @@ export class VolunteersService {
     private repo: Repository<User>,
     private usersService: UsersService,
     private pantriesService: PantriesService,
+    private requestsService: RequestsService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -72,5 +75,18 @@ export class VolunteersService {
 
     volunteer.pantries = [...existingPantries, ...newPantries];
     return this.repo.save(volunteer);
+  }
+
+  async findRequestsByVolunteer(volunteerId: number): Promise<FoodRequest[]> {
+    validateId(volunteerId, 'Volunteer');
+
+    const pantries = await this.getVolunteerPantries(volunteerId);
+    const pantryIds = pantries.map((p) => p.pantryId);
+
+    const requestArrays = await Promise.all(
+      pantryIds.map((id) => this.requestsService.find(id)),
+    );
+
+    return requestArrays.flat();
   }
 }
