@@ -167,13 +167,17 @@ export enum FoodType {
 
 export interface User {
   id: number;
-  role: string;
+  role: Role;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   pantries?: Pantry[];
 }
+
+export type UpdateProfileFields = Partial<
+  Pick<User, 'firstName' | 'lastName' | 'phone'>
+>;
 
 export interface UserDto {
   email: string;
