@@ -24,6 +24,7 @@ import {
   FoodRequestSummaryDto,
   PantryWithUser,
   Assignments,
+  CreateDonationDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -80,7 +81,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postDonation(body: unknown): Promise<Donation> {
+  public async postDonation(body: CreateDonationDto): Promise<Donation> {
     return this.post('/api/donations/create', body) as Promise<Donation>;
   }
 

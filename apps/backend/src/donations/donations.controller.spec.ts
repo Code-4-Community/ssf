@@ -79,7 +79,7 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('POST /create', () => {
+  describe('POST /', () => {
     it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
         foodManufacturerId: 1,

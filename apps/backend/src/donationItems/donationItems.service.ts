@@ -16,6 +16,7 @@ export class DonationItemsService {
 
   async findOne(itemId: number): Promise<DonationItem> {
     validateId(itemId, 'Donation Item');
+
     const donationItem = await this.repo.findOneBy({ itemId });
     if (!donationItem) {
       throw new NotFoundException(`Donation item ${itemId} not found`);

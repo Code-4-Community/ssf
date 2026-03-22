@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsObject,
@@ -72,7 +73,7 @@ export class CreateDonationItemDto {
   @Length(1, 255)
   itemName!: string;
 
-  @IsNumber()
+  @IsInt()
   @Min(1)
   quantity!: number;
 
@@ -94,7 +95,7 @@ export class CreateDonationItemDto {
 }
 
 export class CreateDonationDto {
-  @IsNumber()
+  @IsInt()
   @Min(1)
   foodManufacturerId!: number;
 
@@ -102,8 +103,7 @@ export class CreateDonationDto {
   @IsEnum(RecurrenceEnum)
   recurrence!: RecurrenceEnum;
 
-  @IsNumber()
-  @IsOptional()
+  @IsInt()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   recurrenceFreq?: number;
@@ -115,8 +115,7 @@ export class CreateDonationDto {
   @ValidateIf((o) => o.recurrence === RecurrenceEnum.WEEKLY)
   repeatOnDays?: RepeatOnDaysDto;
 
-  @IsNumber()
-  @IsOptional()
+  @IsInt()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   occurrencesRemaining?: number;
