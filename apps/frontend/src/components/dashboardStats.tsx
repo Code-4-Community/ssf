@@ -6,7 +6,7 @@ type DashboardStatsProps = {
 
 // Called like: <DashboardStats stats={{ 'Food Requests': '1200', 'Orders': '50', 'Items Received': '1000', 'Value Received': '$40',}}></DashboardStats>
 export function DashboardStats({ stats }: DashboardStatsProps) {
-  const colors = ['blue.core', 'red', 'yellow.hover', 'teal.core'];
+  const colors = ['blue.core', 'red', 'yellow.hover', 'teal.ssf'];
 
   return (
     <SimpleGrid columns={Object.keys(stats).length} gap={6} mx={8} my={4}>
