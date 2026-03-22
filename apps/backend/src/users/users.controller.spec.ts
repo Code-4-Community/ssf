@@ -6,7 +6,6 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
-import { Pantry } from '../pantries/pantries.entity';
 import { BadRequestException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 

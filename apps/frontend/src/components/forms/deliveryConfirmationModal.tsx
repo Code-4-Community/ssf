@@ -156,7 +156,6 @@ export const submitDeliveryConfirmationFormModal: ActionFunction = async ({
   const form = await request.formData();
   const confirmDeliveryData = new FormData();
 
-  const pantryId = form.get('pantryId') as string;
   const requestId = form.get('requestId') as string;
   confirmDeliveryData.append('requestId', requestId);
 

@@ -8,7 +8,6 @@ import {
   Body,
   Patch,
   Req,
-  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';

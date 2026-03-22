@@ -85,9 +85,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   });
   const [endsAfter, setEndsAfter] = useState('1');
 
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalOz, setTotalOz] = useState(0);
-  const [totalValue, setTotalValue] = useState(0);
   const [alertState, setAlertMessage] = useAlert();
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
