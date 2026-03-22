@@ -15,6 +15,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { EmailsService } from '../emails/email.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -36,6 +37,13 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         RequestsService,
+        EmailsService,
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
+        },
         {
           provide: getRepositoryToken(Order),
           useValue: testDataSource.getRepository(Order),

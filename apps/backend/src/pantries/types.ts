@@ -1,3 +1,18 @@
+export interface ApprovedPantryResponse {
+  pantryId: number;
+  pantryName: string;
+  refrigeratedDonation: RefrigeratedDonation;
+  volunteers: AssignedVolunteer[];
+}
+
+export interface AssignedVolunteer {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
 export enum RefrigeratedDonation {
   YES = 'Yes, always',
   NO = 'No',

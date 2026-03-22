@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -14,6 +16,9 @@ import { ApplicationStatus } from '../shared/types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
 import { Donation } from '../donations/donations.entity';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -22,6 +27,7 @@ export class FoodManufacturersService {
     private repo: Repository<FoodManufacturer>,
 
     private usersService: UsersService,
+    private emailsService: EmailsService,
 
     @InjectRepository(Donation)
     private donationsRepo: Repository<Donation>,
@@ -119,12 +125,78 @@ export class FoodManufacturersService {
       foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
+
+    try {
+      const manufacturerMessage =
+        emailTemplates.pantryFmApplicationSubmittedToUser({
+          name: foodManufacturerContact.firstName,
+        });
+
+      await this.emailsService.sendEmails(
+        [foodManufacturerContact.email],
+        manufacturerMessage.subject,
+        manufacturerMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send food manufacturer application submitted confirmation email to representative',
+      );
+    }
+
+    try {
+      const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
+      await this.emailsService.sendEmails(
+        [SSF_PARTNER_EMAIL],
+        adminMessage.subject,
+        adminMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new food manufacturer application notification email to SSF',
+      );
+    }
+  }
+
+  async updateFoodManufacturerApplication(
+    manufacturerId: number,
+    foodManufacturerData: UpdateFoodManufacturerApplicationDto,
+    currentUserId: number,
+  ) {
+    validateId(manufacturerId, 'Food Manufacturer');
+    validateId(currentUserId, 'User');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: manufacturerId },
+      relations: ['foodManufacturerRepresentative'],
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${manufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
+      );
+    }
+
+    Object.assign(manufacturer, foodManufacturerData);
+
+    return await this.repo.save(manufacturer);
   }
 
   async approve(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.findOne(id);
+    const foodManufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
+    });
+    if (!foodManufacturer) {
+      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
       throw new ConflictException(
@@ -133,10 +205,7 @@ export class FoodManufacturersService {
     }
 
     const createUserDto: userSchemaDto = {
-      email: foodManufacturer.foodManufacturerRepresentative.email,
-      firstName: foodManufacturer.foodManufacturerRepresentative.firstName,
-      lastName: foodManufacturer.foodManufacturerRepresentative.lastName,
-      phone: foodManufacturer.foodManufacturerRepresentative.phone,
+      ...foodManufacturer.foodManufacturerRepresentative,
       role: Role.FOODMANUFACTURER,
     };
 
@@ -146,6 +215,22 @@ export class FoodManufacturersService {
       status: ApplicationStatus.APPROVED,
       foodManufacturerRepresentative: newFoodManufacturer,
     });
+
+    try {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newFoodManufacturer.firstName,
+      });
+
+      await this.emailsService.sendEmails(
+        [newFoodManufacturer.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to send food manufacturer account approved notification email to representative',
+      );
+    }
   }
 
   async deny(id: number) {

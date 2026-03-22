@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -15,9 +16,13 @@ import { validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
+import { ApprovedPantryResponse } from './types';
 import { PantryStats, TotalStats } from './types';
 import { userSchemaDto } from '../users/dtos/userSchema.dto';
 import { UsersService } from '../users/users.service';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
+import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
+import { EmailsService } from '../emails/email.service';
 
 @Injectable()
 export class PantriesService {
@@ -27,6 +32,9 @@ export class PantriesService {
 
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+
+    @Inject(forwardRef(() => EmailsService))
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -371,6 +379,63 @@ export class PantriesService {
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
+
+    try {
+      const pantryMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
+        name: pantryContact.firstName,
+      });
+
+      await this.emailsService.sendEmails(
+        [pantryContact.email],
+        pantryMessage.subject,
+        pantryMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send pantry application submitted confirmation email to representative',
+      );
+    }
+
+    try {
+      const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
+      await this.emailsService.sendEmails(
+        [SSF_PARTNER_EMAIL],
+        adminMessage.subject,
+        adminMessage.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new pantry application notification email to SSF',
+      );
+    }
+  }
+
+  async updatePantryApplication(
+    pantryId: number,
+    pantryData: UpdatePantryApplicationDto,
+    currentUserId: number,
+  ) {
+    validateId(pantryId, 'Pantry');
+    validateId(currentUserId, 'User');
+
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['pantryUser'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    if (pantry.pantryUser.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
+      );
+    }
+
+    Object.assign(pantry, pantryData);
+
+    return await this.repo.save(pantry);
   }
 
   async approve(id: number) {
@@ -401,6 +466,22 @@ export class PantriesService {
       status: ApplicationStatus.APPROVED,
       pantryUser: newPantryUser,
     });
+
+    try {
+      const message = emailTemplates.pantryFmApplicationApproved({
+        name: newPantryUser.firstName,
+      });
+
+      await this.emailsService.sendEmails(
+        [newPantryUser.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send pantry account approved notification email to representative',
+      );
+    }
   }
 
   async deny(id: number) {
@@ -418,6 +499,64 @@ export class PantriesService {
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
+  }
+
+  async getApprovedPantriesWithVolunteers(): Promise<ApprovedPantryResponse[]> {
+    const pantries = await this.repo.find({
+      where: { status: ApplicationStatus.APPROVED },
+      relations: ['volunteers', 'pantryUser'],
+    });
+
+    return pantries.map((pantry) => ({
+      pantryId: pantry.pantryId,
+      pantryName: pantry.pantryName,
+      refrigeratedDonation: pantry.refrigeratedDonation,
+      volunteers: (pantry.volunteers || []).map((volunteer) => ({
+        userId: volunteer.id,
+        firstName: volunteer.firstName,
+        lastName: volunteer.lastName,
+        email: volunteer.email,
+        phone: volunteer.phone,
+      })),
+    }));
+  }
+
+  async updatePantryVolunteers(
+    pantryId: number,
+    volunteerIds: number[],
+  ): Promise<void> {
+    validateId(pantryId, 'Pantry');
+    volunteerIds.forEach((id) => validateId(id, 'Volunteer'));
+
+    const pantry = await this.repo.findOne({
+      where: { pantryId },
+      relations: ['volunteers'],
+    });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
+    }
+
+    const users = await Promise.all(
+      volunteerIds.map((id) => this.usersService.findOne(id)),
+    );
+
+    if (users.length !== volunteerIds.length) {
+      throw new NotFoundException('One or more users not found');
+    }
+
+    const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
+
+    if (nonVolunteers.length > 0) {
+      throw new BadRequestException(
+        `Users ${nonVolunteers
+          .map((user) => user.id)
+          .join(', ')} are not volunteers`,
+      );
+    }
+
+    pantry.volunteers = users;
+    await this.repo.save(pantry);
   }
 
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {
