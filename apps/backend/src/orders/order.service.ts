@@ -97,7 +97,7 @@ export class OrdersService {
     manufacturerId: number,
     itemAllocations: Record<number, number>,
   ): Promise<Order> {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async (transactionManager) => {
       validateId(manufacturerId, 'Food Manufacturer');
       validateId(requestId, 'Request');
 
@@ -147,19 +147,18 @@ export class OrdersService {
         }
       }
 
-      const order = manager.create(Order, {
+      const order = transactionManager.create(Order, {
         requestId: requestId,
         foodManufacturerId: manufacturerId,
         status: OrderStatus.PENDING,
       });
 
-      const savedOrder = await manager.save(order);
+      const savedOrder = await transactionManager.save(order);
 
       await this.allocationsService.createMultiple(
         savedOrder.orderId,
         itemAllocations,
-
-        manager,
+        transactionManager,
       );
 
       const associatedDonationIdsSet =
@@ -169,7 +168,7 @@ export class OrdersService {
 
       await this.donationService.matchAll(
         Array.from(associatedDonationIdsSet),
-        manager,
+        transactionManager,
       );
 
       return savedOrder;

@@ -100,11 +100,13 @@ export class DonationService {
 
   async matchAll(
     donationIds: number[],
-    manager?: EntityManager,
+    transactionManager?: EntityManager,
   ): Promise<void> {
     donationIds.forEach((id) => validateId(id, 'Donation'));
 
-    const repo = manager ? manager.getRepository(Donation) : this.repo;
+    const repo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : this.repo;
 
     const donations = await repo.find({
       where: { donationId: In(donationIds) },

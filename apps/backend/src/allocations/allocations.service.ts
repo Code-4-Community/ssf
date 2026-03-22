@@ -29,11 +29,13 @@ export class AllocationsService {
   async createMultiple(
     orderId: number,
     itemAllocations: Record<number, number>,
-    manager?: EntityManager,
+    transactionManager?: EntityManager,
   ): Promise<Allocation[]> {
-    const repo = manager ? manager.getRepository(Allocation) : this.repo;
-    const itemRepo = manager
-      ? manager.getRepository(DonationItem)
+    const repo = transactionManager
+      ? transactionManager.getRepository(Allocation)
+      : this.repo;
+    const itemRepo = transactionManager
+      ? transactionManager.getRepository(DonationItem)
       : this.donationItemRepo;
 
     validateId(orderId, 'Order');
