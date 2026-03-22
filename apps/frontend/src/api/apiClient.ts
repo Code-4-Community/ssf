@@ -22,9 +22,13 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  ConfirmDeliveryDto,
+  OrderWithoutRelations,
   FoodRequestSummaryDto,
+  OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
+  UpdateProfileFields,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -153,10 +157,6 @@ export class ApiClient {
     return this.axiosInstance.post(`/api/users`, data);
   }
 
-  public async getPantrySSFRep(pantryId: number): Promise<User> {
-    return this.get(`/api/pantries/${pantryId}/ssf-contact`) as Promise<User>;
-  }
-
   public async getAllPendingPantries(): Promise<PantryWithUser[]> {
     return this.axiosInstance
       .get('/api/pantries/pending')
@@ -166,6 +166,14 @@ export class ApiClient {
   public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/pantry`)
+      .then((response) => response.data);
+  }
+
+  public async getPantryOrders(
+    pantryId: number,
+  ): Promise<OrderWithoutFoodManufacturer[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/${pantryId}/orders`)
       .then((response) => response.data);
   }
 
@@ -195,11 +203,13 @@ export class ApiClient {
     return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
   }
 
-  public async updateUserVolunteerRole(
+  public async updateUser(
     userId: number,
-    body: { role: string },
-  ): Promise<void> {
-    await this.axiosInstance.put(`/api/users/${userId}/role`, body);
+    fields: UpdateProfileFields,
+  ): Promise<User> {
+    return this.axiosInstance
+      .patch(`/api/users/${userId}`, fields)
+      .then((response) => response.data);
   }
 
   public async getFoodRequest(requestId: number): Promise<FoodRequest> {
@@ -224,6 +234,32 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async confirmOrderDelivery(
+    orderId: number,
+    dto: ConfirmDeliveryDto,
+    photos: File[],
+  ): Promise<OrderWithoutRelations> {
+    const formData = new FormData();
+
+    // DTO fields
+    formData.append('dateReceived', dto.dateReceived);
+    if (dto.feedback) {
+      formData.append('feedback', dto.feedback);
+    }
+
+    // files (must be key = "photos")
+    for (const file of photos) {
+      formData.append('photos', file);
+    }
+
+    const { data } = await this.axiosInstance.patch(
+      `/api/orders/${orderId}/confirm-delivery`,
+      formData,
+    );
+
+    return data;
   }
 
   public async postManufacturer(
@@ -299,39 +335,14 @@ export class ApiClient {
     return data as FoodRequest[];
   }
 
-  public async confirmDelivery(
-    requestId: number,
-    data: FormData,
-  ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        if (this.navigate) {
-          this.navigate('/request-form');
-        } else {
-          window.location.href = '/request-form';
-        }
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
-  }
-
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
     return data as number;
   }
 
-  public async getMyId(): Promise<number> {
-    const data = await this.get('/api/users/my-id');
-    return data as number;
+  public async getMe(): Promise<User> {
+    const data = await this.get('/api/users/me');
+    return data as User;
   }
 }
 

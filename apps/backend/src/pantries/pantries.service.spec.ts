@@ -688,4 +688,114 @@ describe('PantriesService', () => {
       );
     });
   });
+
+  describe('getApprovedPantriesWithVolunteers', () => {
+    it('should return approved pantries with mapped volunteer info', async () => {
+      const result = await service.getApprovedPantriesWithVolunteers();
+
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((p) => p.pantryId)).toBe(true);
+      expect(result.every((p) => p.pantryName)).toBe(true);
+      result.forEach((p) => {
+        expect(p.volunteers).toBeDefined();
+        p.volunteers.forEach((v) => {
+          expect(v.userId).toBeDefined();
+          expect(v.firstName).toBeDefined();
+          expect(v.lastName).toBeDefined();
+          expect(v.email).toBeDefined();
+          expect(v.phone).toBeDefined();
+        });
+      });
+    });
+
+    it('should return empty volunteers array when pantry has no volunteers', async () => {
+      await service.addPantry({
+        contactFirstName: 'Test',
+        contactLastName: 'Pantry',
+        contactEmail: 'test.novolunteers@example.com',
+        contactPhone: '555-000-9999',
+        hasEmailContact: false,
+        pantryName: 'No Volunteer Pantry',
+        shipmentAddressLine1: '1 Test St',
+        shipmentAddressCity: 'Boston',
+        shipmentAddressState: 'MA',
+        shipmentAddressZip: '02101',
+        mailingAddressLine1: '1 Test St',
+        mailingAddressCity: 'Boston',
+        mailingAddressState: 'MA',
+        mailingAddressZip: '02101',
+        allergenClients: 'none',
+        restrictions: ['none'],
+        refrigeratedDonation: RefrigeratedDonation.NO,
+        acceptFoodDeliveries: false,
+        reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+        dedicatedAllergyFriendly: false,
+        activities: [Activity.CREATE_LABELED_SHELF],
+        itemsInStock: 'none',
+        needMoreOptions: 'none',
+      } as PantryApplicationDto);
+
+      const saved = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryName: 'No Volunteer Pantry' },
+      });
+      await testDataSource.getRepository(Pantry).update(saved!.pantryId, {
+        status: ApplicationStatus.APPROVED,
+      });
+
+      const result = await service.getApprovedPantriesWithVolunteers();
+      const pantryWithNoVolunteers = result.find(
+        (p) => p.pantryName === 'No Volunteer Pantry',
+      );
+      expect(pantryWithNoVolunteers).toBeDefined();
+      expect(pantryWithNoVolunteers?.volunteers).toEqual([]);
+    });
+
+    it('should return empty array when no approved pantries exist', async () => {
+      await testDataSource.query(
+        `UPDATE pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+      const result = await service.getApprovedPantriesWithVolunteers();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('updatePantryVolunteers', () => {
+    const getVolunteerId = async (email: string) =>
+      (
+        await testDataSource.query(
+          `SELECT user_id FROM users WHERE email = $1 LIMIT 1`,
+          [email],
+        )
+      )[0].user_id;
+
+    it('replaces volunteer set', async () => {
+      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
+      await service.updatePantryVolunteers(1, [williamId]);
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantry?.volunteers).toHaveLength(1);
+      expect(pantry?.volunteers?.[0].id).toBe(williamId);
+    });
+
+    it('throws NotFoundException when pantry not found', async () => {
+      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
+      await expect(
+        service.updatePantryVolunteers(9999, [williamId]),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when volunteer id does not exist', async () => {
+      await expect(service.updatePantryVolunteers(1, [99999])).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('throws BadRequestException when user is not a volunteer', async () => {
+      const adminId = Number(await getVolunteerId('john.smith@ssf.org'));
+      await expect(
+        service.updatePantryVolunteers(1, [adminId]),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
 });

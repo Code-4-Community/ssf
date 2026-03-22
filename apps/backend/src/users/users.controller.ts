@@ -8,7 +8,6 @@ import {
   Body,
   Patch,
   Req,
-  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
@@ -23,9 +22,9 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('/my-id')
-  getCurrentUserId(@Req() req: AuthenticatedRequest): number {
-    return req.user.id;
+  @Get('/me')
+  getCurrentUser(@Req() req: AuthenticatedRequest): Promise<User> {
+    return this.usersService.findOne(req.user.id);
   }
 
   @Get('/:id')
