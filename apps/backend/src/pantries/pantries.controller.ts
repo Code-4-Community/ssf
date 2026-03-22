@@ -5,15 +5,16 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Put,
   Post,
   Query,
   Req,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Pantry } from './pantries.entity';
 import { PantriesService } from './pantries.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
-import { ValidationPipe } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import {
@@ -24,6 +25,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  ApprovedPantryResponse,
   TotalStats,
 } from './types';
 import { Order } from '../orders/order.entity';
@@ -73,6 +75,12 @@ export class PantriesController {
   @Get('/pending')
   async getPendingPantries(): Promise<Pantry[]> {
     return this.pantriesService.getPendingPantries();
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('/approved')
+  async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.pantriesService.getApprovedPantriesWithVolunteers();
   }
 
   @CheckOwnership({
@@ -370,5 +378,14 @@ export class PantriesController {
       bodyHtml,
       attachments,
     );
+  }
+
+  @Roles(Role.ADMIN)
+  @Put('/:pantryId/volunteers')
+  async updatePantryVolunteers(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Body('volunteerIds') volunteerIds: number[],
+  ): Promise<void> {
+    return this.pantriesService.updatePantryVolunteers(pantryId, volunteerIds);
   }
 }
