@@ -78,7 +78,9 @@ export class DonationService {
     }
 
     return this.dataSource.transaction(async (manager) => {
-      const donation = manager.create(Donation, {
+      const repo = manager ? manager.getRepository(Donation) : this.repo;
+
+      const donation = repo.create({
         foodManufacturer: manufacturer,
         dateDonated: new Date(),
         status: DonationStatus.AVAILABLE,
@@ -88,7 +90,7 @@ export class DonationService {
         occurrencesRemaining: donationData.occurrencesRemaining,
       });
 
-      const savedDonation = await manager.save(Donation, donation);
+      const savedDonation = await repo.save(donation);
 
       await this.donationItemsService.createMultiple(
         savedDonation,

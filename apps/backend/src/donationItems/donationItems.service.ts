@@ -59,8 +59,10 @@ export class DonationItemsService {
     items: CreateDonationItemDto[],
     manager: EntityManager,
   ): Promise<DonationItem[]> {
+    const repo = manager.getRepository(DonationItem);
+
     const donationItems = items.map((item) =>
-      manager.create(DonationItem, {
+      repo.create({
         donation: savedDonation,
         itemName: item.itemName,
         quantity: item.quantity,
