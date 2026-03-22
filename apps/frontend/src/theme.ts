@@ -67,7 +67,10 @@ const customConfig = defineConfig({
     textStyles,
     tokens: {
       colors: {
-        white: { value: '#fff' },
+        white: {
+          value: '#fff',
+          core: { value: '#FEFEFE' },
+        },
         black: { value: '#000' },
         blue: {
           ssf: { value: '#2B5061' },
@@ -75,6 +78,7 @@ const customConfig = defineConfig({
           hover: { value: '#213C4A' },
           100: { value: '#bee3f8' },
           200: { value: '#D5DCDF' },
+          400: { value: '#AAB8BF' },
         },
         red: { value: '#CC3538' },
         yellow: {
@@ -98,6 +102,7 @@ const customConfig = defineConfig({
           dark: { value: '#111' },
         },
         teal: {
+          ssf: { value: '#2795A5' },
           100: { value: '#E9F4F6' },
           200: { value: '#D4EAED' },
           400: { value: '#A9D5DB' },

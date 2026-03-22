@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -164,16 +165,35 @@ export class OrdersController {
     },
   })
   @UseInterceptors(
-    FilesInterceptor('photos', 10, { storage: multer.memoryStorage() }),
+    FilesInterceptor('photos', 10, {
+      storage: multer.memoryStorage(),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5 MB in bytes
+      },
+    }),
   )
   async confirmDelivery(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
   ): Promise<Order> {
-    const uploadedPhotoUrls =
-      photos && photos.length > 0 ? await this.awsS3Service.upload(photos) : [];
-
-    return this.ordersService.confirmDelivery(orderId, body, uploadedPhotoUrls);
+    try {
+      const uploadedPhotoUrls =
+        photos && photos.length > 0
+          ? await this.awsS3Service.upload(photos)
+          : [];
+      return this.ordersService.confirmDelivery(
+        orderId,
+        body,
+        uploadedPhotoUrls,
+      );
+    } catch (err: any) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        throw new PayloadTooLargeException(
+          'Each photo must be 5 MB or smaller',
+        );
+      }
+      throw err;
+    }
   }
 }
