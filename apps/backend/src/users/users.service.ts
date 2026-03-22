@@ -55,22 +55,6 @@ export class UsersService {
       return this.repo.save(existingUser);
     }
 
-    // Send welcome email to new volunteers
-    if (role === Role.VOLUNTEER) {
-      try {
-        const message = emailTemplates.volunteerAccountCreated();
-        await this.emailsService.sendEmails(
-          [email],
-          message.subject,
-          message.bodyHTML,
-        );
-      } catch (error) {
-        throw new InternalServerErrorException(
-          'Failed to send account created notification email to volunteer',
-        );
-      }
-    }
-
     // Create Cognito user and save to DB
     const userCognitoSub = await this.authService.adminCreateUser({
       firstName,
@@ -87,6 +71,22 @@ export class UsersService {
     });
 
     await this.repo.save(user);
+
+    // Send welcome email to new volunteers (only after successful creation)
+    if (role === Role.VOLUNTEER) {
+      try {
+        const message = emailTemplates.volunteerAccountCreated();
+        await this.emailsService.sendEmails(
+          [email],
+          message.subject,
+          message.bodyHTML,
+        );
+      } catch (error) {
+        throw new InternalServerErrorException(
+          'Failed to send account created notification email to volunteer',
+        );
+      }
+    }
 
     return user;
   }

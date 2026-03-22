@@ -110,7 +110,7 @@ describe('UsersService', () => {
       expect(saved?.userCognitoSub).toBe('mock-sub');
     });
 
-    it('should not create cognito user or save to DB if email fails', async () => {
+    it('should save to cognito and DB but throw if email fails', async () => {
       const createUserDto = {
         email: 'newvolunteer2@example.com',
         firstName: 'Jane',
@@ -128,15 +128,16 @@ describe('UsersService', () => {
         ),
       );
 
-      expect(mockAuthService.adminCreateUser).not.toHaveBeenCalled();
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledTimes(1);
 
       const saved = await testDataSource
         .getRepository(User)
         .findOneBy({ email: createUserDto.email });
-      expect(saved).toBeNull();
+      expect(saved).toBeDefined();
+      expect(saved?.userCognitoSub).toBe('mock-sub');
     });
 
-    it('should not save to DB if cognito creation fails after email succeeds', async () => {
+    it('should not save to DB or send email if cognito creation fails', async () => {
       const createUserDto = {
         email: 'newvolunteer3@example.com',
         firstName: 'Jane',
@@ -150,7 +151,7 @@ describe('UsersService', () => {
 
       await expect(service.create(createUserDto)).rejects.toThrow();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
 
       const saved = await testDataSource
         .getRepository(User)
