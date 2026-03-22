@@ -24,7 +24,6 @@ import {
   OrderDetails,
   ConfirmDeliveryDto,
   OrderWithoutRelations,
-  Assignments,
   FoodRequestSummaryDto,
   OrderWithoutFoodManufacturer,
   PantryWithUser,
@@ -334,31 +333,6 @@ export class ApiClient {
   public async getVolunteerAssignedRequests(): Promise<FoodRequest[]> {
     const data = await this.get(`/api/volunteers/me/assigned-requests`);
     return data as FoodRequest[];
-  }
-
-  public async confirmDelivery(
-    requestId: number,
-    data: FormData,
-  ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        if (this.navigate) {
-          this.navigate('/request-form');
-        } else {
-          window.location.href = '/request-form';
-        }
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
   }
 
   public async getCurrentUserPantryId(): Promise<number> {

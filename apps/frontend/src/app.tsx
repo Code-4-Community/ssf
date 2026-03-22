@@ -195,7 +195,7 @@ const router = createBrowserRouter([
             <PantryOrderManagement />
           </ProtectedRoute>
         ),
-      }
+      },
       {
         path: '/profile',
         element: (

@@ -519,6 +519,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           variant="plain"
                           fontWeight="400"
                           textDecoration="underline"
+                          color="neutral.700"
                           onClick={() => onOrderSelectForAction(order)}
                         >
                           Complete Required Action
