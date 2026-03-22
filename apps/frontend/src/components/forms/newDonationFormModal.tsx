@@ -15,13 +15,13 @@ import {
   Menu,
   NumberInput,
   Tooltip,
+  InputGroup,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import ApiClient from '@api/apiClient';
 import {
   DayOfWeek,
   FoodType,
-  FoodTypes,
   RecurrenceEnum,
   RepeatOnState,
 } from '../../types/types';
@@ -448,7 +448,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                                 handleChange(row.id, 'foodType', e.target.value)
                               }
                             >
-                              {FoodTypes.map((type) => (
+                              {Object.values(FoodType).map((type) => (
                                 <option
                                   key={type}
                                   value={type}
@@ -469,6 +469,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
+                            type="number"
+                            min={0}
+                            step={1}
                             value={row.numItems}
                             onChange={(e) =>
                               handleChange(row.id, 'numItems', e.target.value)
@@ -481,6 +484,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter #"
+                            type="number"
+                            min={0}
+                            step={0.01}
                             value={row.ozPerItem}
                             onChange={(e) =>
                               handleChange(row.id, 'ozPerItem', e.target.value)
@@ -493,6 +499,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             _placeholder={placeholderStyles}
                             color="neutral.800"
                             placeholder="Enter $"
+                            type="number"
+                            min={0}
+                            step={0.01}
                             value={row.valuePerItem}
                             onChange={(e) =>
                               handleChange(
