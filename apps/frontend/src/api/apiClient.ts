@@ -22,7 +22,10 @@ import {
   OrderSummary,
   UserDto,
   OrderDetails,
+  ConfirmDeliveryDto,
+  OrderWithoutRelations,
   FoodRequestSummaryDto,
+  OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
   UpdateProfileFields,
@@ -166,6 +169,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getPantryOrders(
+    pantryId: number,
+  ): Promise<OrderWithoutFoodManufacturer[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/${pantryId}/orders`)
+      .then((response) => response.data);
+  }
+
   public async getPantry(pantryId: number): Promise<PantryWithUser> {
     return this.get(`/api/pantries/${pantryId}`) as Promise<PantryWithUser>;
   }
@@ -223,6 +234,32 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
+  }
+
+  public async confirmOrderDelivery(
+    orderId: number,
+    dto: ConfirmDeliveryDto,
+    photos: File[],
+  ): Promise<OrderWithoutRelations> {
+    const formData = new FormData();
+
+    // DTO fields
+    formData.append('dateReceived', dto.dateReceived);
+    if (dto.feedback) {
+      formData.append('feedback', dto.feedback);
+    }
+
+    // files (must be key = "photos")
+    for (const file of photos) {
+      formData.append('photos', file);
+    }
+
+    const { data } = await this.axiosInstance.patch(
+      `/api/orders/${orderId}/confirm-delivery`,
+      formData,
+    );
+
+    return data;
   }
 
   public async postManufacturer(
@@ -296,31 +333,6 @@ export class ApiClient {
   public async getVolunteerAssignedRequests(): Promise<FoodRequest[]> {
     const data = await this.get(`/api/volunteers/me/assigned-requests`);
     return data as FoodRequest[];
-  }
-
-  public async confirmDelivery(
-    requestId: number,
-    data: FormData,
-  ): Promise<void> {
-    try {
-      const response = await this.axiosInstance.post(
-        `/api/requests/${requestId}/confirm-delivery`,
-        data,
-      );
-
-      if (response.status === 200) {
-        alert('Delivery confirmation submitted successfully');
-        if (this.navigate) {
-          this.navigate('/request-form');
-        } else {
-          window.location.href = '/request-form';
-        }
-      } else {
-        alert(`Failed to submit: ${response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error submitting delivery confirmation: ${error}`);
-    }
   }
 
   public async getCurrentUserPantryId(): Promise<number> {
