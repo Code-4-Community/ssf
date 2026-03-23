@@ -673,8 +673,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           color="white"
                           p={2}
                         >
-                          {order.assignee?.firstName.charAt(0).toUpperCase()}
-                          {order.assignee?.lastName.charAt(0).toUpperCase()}
+                          {order.assignee.firstName.charAt(0).toUpperCase()}
+                          {order.assignee.lastName.charAt(0).toUpperCase()}
                         </Box>
                       </Box>
                     </Table.Cell>

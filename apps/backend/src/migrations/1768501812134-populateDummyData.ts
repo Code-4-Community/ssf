@@ -492,7 +492,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
     await queryRunner.query(`
       INSERT INTO public.orders (
         request_id, pantry_id, shipped_by, status, created_at,
-        shipped_at, delivered_at, assignee_id
+        shipped_at, delivered_at
       ) VALUES
       (
         (SELECT request_id FROM public.food_requests 
@@ -504,8 +504,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'delivered',
         '2024-01-16 09:00:00',
         '2024-01-17 08:00:00',
-        '2024-01-18 14:30:00',
-        (SELECT user_id FROM public.users WHERE email = 'james.t@volunteer.org' LIMIT 1)
+        '2024-01-18 14:30:00'
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -517,8 +516,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'delivered',
         '2024-01-21 10:00:00',
         '2024-01-22 09:00:00',
-        '2024-01-23 10:00:00',
-        (SELECT user_id FROM public.users WHERE email = 'maria.g@volunteer.org' LIMIT 1)
+        '2024-01-23 10:00:00'
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -530,8 +528,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'shipped',
         '2024-02-02 11:00:00',
         '2024-02-03 08:00:00',
-        NULL,
-        (SELECT user_id FROM public.users WHERE email = 'william.m@volunteer.org' LIMIT 1)
+        NULL
       ),
       (
         (SELECT request_id FROM public.food_requests 
@@ -543,8 +540,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         'pending',
         '2024-02-03 12:00:00',
         NULL,
-        NULL,
-        (SELECT user_id FROM public.users WHERE email = 'patricia.j@volunteer.org' LIMIT 1)
+        NULL
       )
     `);
 

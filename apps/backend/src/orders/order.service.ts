@@ -29,9 +29,9 @@ export class OrdersService {
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')
-      .leftJoin('order.request', 'request')
-      .leftJoin('request.pantry', 'pantry')
-      .leftJoin('order.assignee', 'assignee')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
       .select([
         'order.orderId',
         'order.status',
