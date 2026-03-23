@@ -24,17 +24,14 @@ interface RequestDetailsModalProps {
   request: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
-  pantryId: number;
 }
 
 const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   request,
   isOpen,
   onClose,
-  pantryId,
 }) => {
   const [orderDetailsList, setOrderDetailsList] = useState<OrderDetails[]>([]);
-  const [pantryName, setPantryName] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const requestedSize = request.requestedSize;
@@ -60,17 +57,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     fetchRequestOrderDetails();
   }, [isOpen, request.requestId]);
 
-  useEffect(() => {
-    const fetchPantryData = async () => {
-      try {
-        const pantry = await apiClient.getPantry(pantryId);
-        setPantryName(pantry.pantryName);
-      } catch (error) {
-        console.error('Error fetching pantry data', error);
-      }
-    };
-    fetchPantryData();
-  }, [pantryId]);
+  const pantryName = request.pantry.pantryName;
 
   let currentOrder = null;
   if (orderDetailsList.length > 0) {
