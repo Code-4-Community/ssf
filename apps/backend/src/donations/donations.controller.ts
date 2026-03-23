@@ -14,6 +14,7 @@ import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 
 @Controller('donations')
 export class DonationsController {
@@ -78,6 +79,14 @@ export class DonationsController {
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.fulfill(donationId);
+  }
+
+  @Put('/:donationId/items')
+  async replaceDonationItems(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body() body: ReplaceDonationItemsDto,
+  ): Promise<Donation> {
+    return this.donationService.replaceDonationItems(donationId, body);
   }
 
   @Delete('/:donationId')

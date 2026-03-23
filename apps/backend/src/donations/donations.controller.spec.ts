@@ -5,6 +5,8 @@ import { mock } from 'jest-mock-extended';
 import { Donation } from './donations.entity';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 
 const mockDonationService = mock<DonationService>();
 
@@ -118,6 +120,43 @@ describe('DonationsController', () => {
 
       expect(result).toEqual(donation1);
       expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
+    });
+  });
+
+  describe('PUT /:donationId/items', () => {
+    it('should call donationService.replaceDonationItems and return updated donation', async () => {
+      const donationId = 1;
+
+      const replaceBody = {
+        items: [
+          { id: 1, itemName: 'Apples', quantity: 10, foodType: 'PRODUCE' },
+          { itemName: 'Oranges', quantity: 5, foodType: 'PRODUCE' },
+        ],
+      };
+
+      const updatedDonation: Partial<Donation> = {
+        donationId,
+        donationItems: [
+          { itemId: 1, itemName: 'Apples', quantity: 10 } as DonationItem,
+          { itemId: 2, itemName: 'Oranges', quantity: 5 } as DonationItem,
+        ],
+        status: DonationStatus.AVAILABLE,
+      };
+
+      mockDonationService.replaceDonationItems.mockResolvedValueOnce(
+        updatedDonation as Donation,
+      );
+
+      const result = await controller.replaceDonationItems(
+        donationId,
+        replaceBody as ReplaceDonationItemsDto,
+      );
+
+      expect(result).toEqual(updatedDonation);
+      expect(mockDonationService.replaceDonationItems).toHaveBeenCalledWith(
+        donationId,
+        replaceBody,
+      );
     });
   });
 

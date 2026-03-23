@@ -24,6 +24,7 @@ import { PantriesService } from '../pantries/pantries.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { DataSource } from 'typeorm';
 
 jest.setTimeout(60000);
 
@@ -101,6 +102,10 @@ describe('FoodManufacturersService', () => {
         {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();

@@ -25,5 +25,6 @@ import { AllocationModule } from '../allocations/allocations.module';
   ],
   controllers: [DonationsController],
   providers: [DonationService, DonationsSchedulerService],
+  exports: [DonationService],
 })
 export class DonationModule {}

@@ -10,6 +10,12 @@ import { NotFoundException } from '@nestjs/common';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { DataSource } from 'typeorm';
+import {
+  ReplaceDonationItemDto,
+  ReplaceDonationItemsDto,
+} from '../donationItems/dtos/create-donation-items.dto';
+import { FoodType } from '../donationItems/types';
 
 jest.setTimeout(60000);
 
@@ -115,6 +121,10 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
@@ -815,6 +825,81 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('replaceDonationItems', () => {
+    it('should replace donation items for an available donation', async () => {
+      const donationId = 1;
+
+      // (update item1, remove item2, remove item3, add item 4)
+      const body = {
+        items: [
+          {
+            id: 1,
+            itemName: 'Green Apples',
+            quantity: 15,
+          } as Partial<ReplaceDonationItemDto>,
+          {
+            itemName: 'Bananas',
+            quantity: 20,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          } as Partial<ReplaceDonationItemDto>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      const updatedDonation = await service.replaceDonationItems(
+        donationId,
+        body,
+      );
+
+      expect(updatedDonation).toBeDefined();
+      expect(updatedDonation.donationItems).toHaveLength(2);
+
+      const updatedItemNames = updatedDonation.donationItems.map(
+        (i) => i.itemName,
+      );
+      expect(updatedItemNames).toContain('Green Apples'); // updated
+      expect(updatedItemNames).toContain('Bananas'); // new
+      expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
+      expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
+    });
+
+    it('should throw NotFoundException if donation does not exist', async () => {
+      const body = { items: [] };
+      await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
+        `Donation 9999 not found`,
+      );
+    });
+
+    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+      // Donation with status MATCHED
+      const donationId = 2;
+
+      const body = { items: [] };
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow('Only available donations can be deleted');
+    });
+
+    it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
+      const donationId = 1;
+
+      const body = {
+        items: [
+          {
+            id: 9999,
+            itemName: 'Nonexistent',
+            quantity: 1,
+          } as Partial<DonationItem>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow(
+        `Donation item 9999 for Donation ${donationId} not found`,
+      );
     });
   });
 
