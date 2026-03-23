@@ -57,7 +57,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     fetchRequestOrderDetails();
   }, [isOpen, request.requestId]);
 
-  const pantryName = request.pantry?.pantryName ?? 'Unknown Pantry';
+  const pantryName = request.pantry.pantryName;
 
   let currentOrder = null;
   if (orderDetailsList.length > 0) {
