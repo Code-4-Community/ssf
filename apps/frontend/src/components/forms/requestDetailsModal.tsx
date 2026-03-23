@@ -24,7 +24,6 @@ interface RequestDetailsModalProps {
   request: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
-  pantryId: number;
 }
 
 const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({

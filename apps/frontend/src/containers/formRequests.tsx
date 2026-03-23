@@ -206,7 +206,6 @@ const FormRequests: React.FC = () => {
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId}
             />
           )}
         </Table.Body>
