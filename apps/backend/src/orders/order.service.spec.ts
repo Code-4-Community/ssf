@@ -27,6 +27,7 @@ import { DonationService } from '../donations/donations.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { DonationStatus } from '../donations/types';
 import { DataSource } from 'typeorm';
+import { EmailsService } from '../emails/email.service';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -53,9 +54,15 @@ describe('OrdersService', () => {
         AllocationsService,
         UsersService,
         DonationService,
+        EmailsService,
         {
           provide: DataSource,
           useValue: testDataSource,
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
         },
         {
           provide: getRepositoryToken(Order),

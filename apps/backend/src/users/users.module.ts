@@ -5,12 +5,14 @@ import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { PantriesModule } from '../pantries/pantries.module';
 import { AuthModule } from '../auth/auth.module';
+import { EmailsModule } from '../emails/email.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     forwardRef(() => PantriesModule),
     forwardRef(() => AuthModule),
+    EmailsModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -31,17 +31,15 @@ import {
 import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
-import { EmailsService } from '../emails/email.service';
-import { SendEmailDTO } from '../emails/dto/send-email.dto';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 @Controller('pantries')
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
     private ordersService: OrdersService,
-    private emailsService: EmailsService,
   ) {}
 
   @Roles(Role.ADMIN)
@@ -352,6 +350,21 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
+  @Roles(Role.PANTRY)
+  @Patch('/:pantryId/update')
+  async updatePantryApplication(
+    @Req() req: AuthenticatedRequest,
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Body(new ValidationPipe())
+    pantryData: UpdatePantryApplicationDto,
+  ): Promise<Pantry> {
+    return this.pantriesService.updatePantryApplication(
+      pantryId,
+      pantryData,
+      req.user.id,
+    );
+  }
+
   @Roles(Role.ADMIN)
   @Patch('/:pantryId/approve')
   async approvePantry(
@@ -366,18 +379,6 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<void> {
     return this.pantriesService.deny(pantryId);
-  }
-
-  @Post('/email')
-  async sendEmail(@Body() sendEmailDTO: SendEmailDTO): Promise<void> {
-    const { toEmails, subject, bodyHtml, attachments } = sendEmailDTO;
-
-    await this.emailsService.sendEmails(
-      toEmails,
-      subject,
-      bodyHtml,
-      attachments,
-    );
   }
 
   @Roles(Role.ADMIN)

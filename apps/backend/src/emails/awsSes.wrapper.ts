@@ -57,6 +57,9 @@ export class AmazonSESWrapper {
     const messageData = await new MailComposer(mailOptions).compile().build();
 
     const command = new SendEmailCommand({
+      Destination: {
+        ToAddresses: recipientEmails,
+      },
       Content: {
         Raw: {
           Data: messageData,

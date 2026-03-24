@@ -12,6 +12,7 @@ import { Order } from '../orders/order.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthService } from '../auth/auth.service';
+import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -38,6 +39,7 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
+        EmailsService,
         OrdersService,
         RequestsService,
         FoodManufacturersService,
@@ -85,6 +87,12 @@ describe('VolunteersService', () => {
         {
           provide: DataSource,
           useValue: testDataSource,
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          
         },
       ],
     }).compile();
