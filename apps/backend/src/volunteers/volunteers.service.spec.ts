@@ -92,7 +92,7 @@ describe('VolunteersService', () => {
           provide: EmailsService,
           useValue: {
             sendEmails: jest.fn().mockResolvedValue(undefined),
-          
+          },
         },
       ],
     }).compile();

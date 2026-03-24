@@ -63,6 +63,7 @@ describe('OrdersService', () => {
           provide: EmailsService,
           useValue: {
             sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
         },
         {
           provide: getRepositoryToken(Order),
