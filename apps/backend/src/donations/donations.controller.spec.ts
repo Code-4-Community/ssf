@@ -7,6 +7,7 @@ import { CreateDonationDto } from './dtos/create-donation.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { FoodType } from '../donationItems/types';
 
 const mockDonationService = mock<DonationService>();
 
@@ -129,8 +130,17 @@ describe('DonationsController', () => {
 
       const replaceBody = {
         items: [
-          { id: 1, itemName: 'Apples', quantity: 10, foodType: 'PRODUCE' },
-          { itemName: 'Oranges', quantity: 5, foodType: 'PRODUCE' },
+          {
+            id: 1,
+            itemName: 'Apples',
+            quantity: 10,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          },
+          {
+            itemName: 'Oranges',
+            quantity: 5,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          },
         ],
       };
 

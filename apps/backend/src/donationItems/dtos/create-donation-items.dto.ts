@@ -57,6 +57,7 @@ export class ReplaceDonationItemDto extends CreateDonationItemDto {
 }
 
 export class ReplaceDonationItemsDto {
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ReplaceDonationItemDto)
   items!: ReplaceDonationItemDto[];
