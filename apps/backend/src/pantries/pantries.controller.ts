@@ -33,6 +33,7 @@ import { OrdersService } from '../orders/order.service';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 @Controller('pantries')
 export class PantriesController {
@@ -347,6 +348,21 @@ export class PantriesController {
     pantryData: PantryApplicationDto,
   ): Promise<void> {
     return this.pantriesService.addPantry(pantryData);
+  }
+
+  @Roles(Role.PANTRY)
+  @Patch('/:pantryId/update')
+  async updatePantryApplication(
+    @Req() req: AuthenticatedRequest,
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Body(new ValidationPipe())
+    pantryData: UpdatePantryApplicationDto,
+  ): Promise<Pantry> {
+    return this.pantriesService.updatePantryApplication(
+      pantryId,
+      pantryData,
+      req.user.id,
+    );
   }
 
   @Roles(Role.ADMIN)
