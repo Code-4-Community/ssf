@@ -470,7 +470,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
-                            min={0}
+                            min={1}
                             step={1}
                             value={row.numItems}
                             onChange={(e) =>
@@ -485,7 +485,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter #"
                             type="number"
-                            min={0}
+                            min={0.01}
                             step={0.01}
                             value={row.ozPerItem}
                             onChange={(e) =>
@@ -500,7 +500,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                             color="neutral.800"
                             placeholder="Enter $"
                             type="number"
-                            min={0}
+                            min={0.01}
                             step={0.01}
                             value={row.valuePerItem}
                             onChange={(e) =>
@@ -559,13 +559,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                           }
                           min={1}
                           step={1}
-                          onBlur={() => {
-                            const value = Math.max(
-                              1,
-                              Math.floor(Number(repeatEvery) || 1),
-                            );
-                            setRepeatEvery(String(value));
-                          }}
                         >
                           <NumberInput.Input />
                           <NumberInput.Control />
@@ -688,13 +681,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         }
                         min={1}
                         step={1}
-                        onBlur={() => {
-                          const value = Math.max(
-                            1,
-                            Math.floor(Number(endsAfter) || 1),
-                          );
-                          setEndsAfter(String(value));
-                        }}
                       >
                         <Flex position="relative" align="center">
                           <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
