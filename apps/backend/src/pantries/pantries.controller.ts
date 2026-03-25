@@ -5,7 +5,6 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Put,
   Post,
   Query,
   Req,
@@ -382,11 +381,16 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @Put('/:pantryId/volunteers')
+  @Patch('/:pantryId/volunteers')
   async updatePantryVolunteers(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-    @Body('volunteerIds') volunteerIds: number[],
+    @Body('addVolunteerIds') addVolunteerIds: number[],
+    @Body('removeVolunteerIds') removeVolunteerIds: number[],
   ): Promise<void> {
-    return this.pantriesService.updatePantryVolunteers(pantryId, volunteerIds);
+    return this.pantriesService.updatePantryVolunteers(
+      pantryId,
+      addVolunteerIds,
+      removeVolunteerIds,
+    );
   }
 }

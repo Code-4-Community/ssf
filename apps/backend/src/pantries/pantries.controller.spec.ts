@@ -357,17 +357,23 @@ describe('PantriesController', () => {
   });
 
   describe('updatePantryVolunteers', () => {
-    it('should overwrite the set of volunteers assigned to a pantry', async () => {
+    it('should call pantriesService.updatePantryVolunteers with add and remove lists', async () => {
       const pantryId = 1;
-      const volunteerIds = [10, 11, 12];
+      const addVolunteerIds = [10, 11, 12];
+      const removeVolunteerIds = [1, 2];
 
       mockPantriesService.updatePantryVolunteers.mockResolvedValue(undefined);
 
-      await controller.updatePantryVolunteers(pantryId, volunteerIds);
+      await controller.updatePantryVolunteers(
+        pantryId,
+        addVolunteerIds,
+        removeVolunteerIds,
+      );
 
       expect(mockPantriesService.updatePantryVolunteers).toHaveBeenCalledWith(
         pantryId,
-        volunteerIds,
+        addVolunteerIds,
+        removeVolunteerIds,
       );
     });
   });

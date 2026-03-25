@@ -81,7 +81,7 @@ export class UsersService {
           message.subject,
           message.bodyHTML,
         );
-      } catch (error) {
+      } catch {
         throw new InternalServerErrorException(
           'Failed to send account created notification email to volunteer',
         );

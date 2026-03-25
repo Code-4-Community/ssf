@@ -805,7 +805,8 @@ describe('PantriesService', () => {
       const saved = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryName: 'No Volunteer Pantry' },
       });
-      await testDataSource.getRepository(Pantry).update(saved!.pantryId, {
+      if (!saved) throw new Error('Pantry not found after creation');
+      await testDataSource.getRepository(Pantry).update(saved.pantryId, {
         status: ApplicationStatus.APPROVED,
       });
 
@@ -827,42 +828,98 @@ describe('PantriesService', () => {
   });
 
   describe('updatePantryVolunteers', () => {
-    const getVolunteerId = async (email: string) =>
-      (
-        await testDataSource.query(
-          `SELECT user_id FROM users WHERE email = $1 LIMIT 1`,
-          [email],
-        )
-      )[0].user_id;
-
-    it('replaces volunteer set', async () => {
-      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
-      await service.updatePantryVolunteers(1, [williamId]);
+    it('adds volunteers to a pantry', async () => {
+      await service.updatePantryVolunteers(1, [7], []);
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      expect(pantry?.volunteers).toHaveLength(1);
-      expect(pantry?.volunteers?.[0].id).toBe(williamId);
+      expect(pantry?.volunteers?.map((v) => v.id)).toContain(7);
     });
 
-    it('throws NotFoundException when pantry not found', async () => {
-      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
+    it('removes volunteers from a pantry', async () => {
+      await service.updatePantryVolunteers(1, [], [6]);
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantry?.volunteers?.map((v) => v.id)).not.toContain(6);
+    });
+
+    it('adds and removes volunteers in a single request', async () => {
+      await service.updatePantryVolunteers(1, [8], [6, 9]);
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const ids = pantry?.volunteers?.map((v) => v.id);
+      expect(ids).toContain(8);
+      expect(ids).not.toContain(6);
+      expect(ids).not.toContain(9);
+    });
+
+    it('silently ignores adding an already-assigned volunteer', async () => {
+      await service.updatePantryVolunteers(1, [6], []);
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const ids = pantry?.volunteers?.map((v) => v.id);
+      expect(ids?.filter((id) => id === 6)).toHaveLength(1);
+    });
+
+    it('silently ignores removing a volunteer not assigned to the pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      await service.updatePantryVolunteers(1, [], [8]);
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
+    });
+
+    it('handles duplicate IDs in addVolunteerIds without constraint violation', async () => {
       await expect(
-        service.updatePantryVolunteers(9999, [williamId]),
-      ).rejects.toThrow(NotFoundException);
+        service.updatePantryVolunteers(1, [7, 7], []),
+      ).resolves.not.toThrow();
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const ids = pantry?.volunteers?.map((v) => v.id);
+      expect(ids?.filter((id) => id === 7)).toHaveLength(1);
     });
 
-    it('throws NotFoundException when volunteer id does not exist', async () => {
-      await expect(service.updatePantryVolunteers(1, [99999])).rejects.toThrow(
-        NotFoundException,
+    it('handles duplicate IDs in removeVolunteerIds', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, [], [6, 6]),
+      ).resolves.not.toThrow();
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantry?.volunteers?.map((v) => v.id)).not.toContain(6);
+    });
+
+    it('throws BadRequestException when same ID appears in both add and remove lists', async () => {
+      await expect(service.updatePantryVolunteers(1, [6], [6])).rejects.toThrow(
+        new BadRequestException(
+          'The following ID(s) appear in both the add and remove lists: 6',
+        ),
       );
     });
 
-    it('throws BadRequestException when user is not a volunteer', async () => {
-      const adminId = Number(await getVolunteerId('john.smith@ssf.org'));
+    it('throws NotFoundException when pantry not found', async () => {
       await expect(
-        service.updatePantryVolunteers(1, [adminId]),
-      ).rejects.toThrow(BadRequestException);
+        service.updatePantryVolunteers(9999, [6], []),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when volunteer ID does not exist', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, [99999], []),
+      ).rejects.toThrow(new NotFoundException('User 99999 not found'));
+    });
+
+    it('throws BadRequestException when user is not a volunteer', async () => {
+      await expect(service.updatePantryVolunteers(1, [1], [])).rejects.toThrow(
+        new BadRequestException('User(s) 1 are not volunteers'),
+      );
     });
   });
 });
