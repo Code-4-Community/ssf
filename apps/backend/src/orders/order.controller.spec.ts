@@ -401,6 +401,12 @@ describe('OrdersController', () => {
         },
       };
 
+      const itemAllocationsMap = new Map<number, number>([
+        [5, 10],
+        [8, 3],
+        [12, 7],
+      ]);
+
       const mockCreatedOrder: Partial<Order> = {
         orderId: 42,
         status: OrderStatus.PENDING,
@@ -415,7 +421,7 @@ describe('OrdersController', () => {
       expect(mockOrdersService.create).toHaveBeenCalledWith(
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
-        createOrderDto.itemAllocations,
+        itemAllocationsMap,
       );
       expect(result).toEqual(mockCreatedOrder);
     });
@@ -465,6 +471,8 @@ describe('OrdersController', () => {
         itemAllocations: { 5: 10 },
       };
 
+      const itemAllocationsMap = new Map<number, number>([[5, 10]]);
+
       mockOrdersService.create.mockRejectedValueOnce(
         new BadRequestException(`Request ${foodRequestId} is not active`),
       );
@@ -477,7 +485,7 @@ describe('OrdersController', () => {
       expect(mockOrdersService.create).toHaveBeenCalledWith(
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
-        createOrderDto.itemAllocations,
+        itemAllocationsMap,
       );
     });
 
@@ -487,6 +495,8 @@ describe('OrdersController', () => {
         manufacturerId: 1,
         itemAllocations: { 5: 10 },
       };
+
+      const itemAllocationsMap = new Map<number, number>([[5, 10]]);
 
       mockOrdersService.create.mockRejectedValueOnce(
         new BadRequestException(
@@ -502,7 +512,7 @@ describe('OrdersController', () => {
       expect(mockOrdersService.create).toHaveBeenCalledWith(
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
-        createOrderDto.itemAllocations,
+        itemAllocationsMap,
       );
     });
 
@@ -514,6 +524,10 @@ describe('OrdersController', () => {
         manufacturerId: 1,
         itemAllocations: { [donationItemId]: 100 },
       };
+
+      const itemAllocationsMap = new Map<number, number>([
+        [donationItemId, 100],
+      ]);
 
       mockOrdersService.create.mockRejectedValueOnce(
         new BadRequestException(
@@ -529,7 +543,7 @@ describe('OrdersController', () => {
       expect(mockOrdersService.create).toHaveBeenCalledWith(
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
-        createOrderDto.itemAllocations,
+        itemAllocationsMap,
       );
     });
   });

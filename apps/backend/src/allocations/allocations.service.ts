@@ -28,35 +28,41 @@ export class AllocationsService {
 
   async createMultiple(
     orderId: number,
-    itemAllocations: Record<number, number>,
+    itemAllocations: Map<number, number>,
     transactionManager?: EntityManager,
   ): Promise<Allocation[]> {
-    const repo = transactionManager
+    const allocationTransactionRepo = transactionManager
       ? transactionManager.getRepository(Allocation)
-      : this.repo;
-    const itemRepo = transactionManager
+      : undefined;
+    const itemTransactionRepo = transactionManager
       ? transactionManager.getRepository(DonationItem)
+      : undefined;
+    const targetAllocationRepo = allocationTransactionRepo
+      ? allocationTransactionRepo
+      : this.repo;
+    const targetItemRepo = itemTransactionRepo
+      ? itemTransactionRepo
       : this.donationItemRepo;
 
     validateId(orderId, 'Order');
 
     const allocations: Allocation[] = [];
 
-    for (const [itemIdStr, quantity] of Object.entries(itemAllocations)) {
+    for (const [itemIdStr, quantity] of itemAllocations) {
       const itemId = Number(itemIdStr);
       validateId(itemId, 'Donation Item');
 
       allocations.push(
-        repo.create({
+        targetAllocationRepo.create({
           orderId,
           itemId,
           allocatedQuantity: quantity,
         }),
       );
 
-      await itemRepo.increment({ itemId }, 'reservedQuantity', quantity);
+      await targetItemRepo.increment({ itemId }, 'reservedQuantity', quantity);
     }
 
-    return repo.save(allocations);
+    return targetAllocationRepo.save(allocations);
   }
 }

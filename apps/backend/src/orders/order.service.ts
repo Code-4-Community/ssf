@@ -15,12 +15,12 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
-import { CreateOrderDto } from './dtos/create-order.dto';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class OrdersService {
@@ -95,7 +95,7 @@ export class OrdersService {
   async create(
     requestId: number,
     manufacturerId: number,
-    itemAllocations: Record<number, number>,
+    itemAllocations: Map<number, number>,
   ): Promise<Order> {
     return this.dataSource.transaction(async (transactionManager) => {
       validateId(manufacturerId, 'Food Manufacturer');
@@ -107,12 +107,22 @@ export class OrdersService {
         throw new BadRequestException(`Request ${requestId} is not active`);
       }
 
+      const manufacturer = await this.manufacturerService.findOne(
+        manufacturerId,
+      );
+
+      if (manufacturer.status !== ApplicationStatus.APPROVED) {
+        throw new BadRequestException(
+          `Manufacturer ${manufacturerId} is not approved`,
+        );
+      }
+
       const fmDonations = await this.manufacturerService.getFMDonations(
         manufacturerId,
       );
       const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
 
-      const donationItemIds = Object.keys(itemAllocations).map(Number);
+      const donationItemIds = Array.from(itemAllocations.keys());
       const donationItems = await this.donationItemsService.getByIds(
         donationItemIds,
       );
@@ -135,10 +145,10 @@ export class OrdersService {
 
       for (const donationItem of donationItems) {
         const id = donationItem.itemId;
-        const quantityToAllocate = itemAllocations[id];
+        const quantityToAllocate = itemAllocations.get(id);
 
         if (
-          quantityToAllocate >
+          quantityToAllocate! >
           donationItem.quantity - donationItem.reservedQuantity
         ) {
           throw new BadRequestException(

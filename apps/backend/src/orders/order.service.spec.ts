@@ -725,7 +725,7 @@ describe('OrdersService', () => {
 
   describe('createOrder', () => {
     let validCreateOrderDto: CreateOrderDto;
-    let parsedAllocations: Record<number, number>;
+    let parsedAllocations: Map<number, number>;
 
     beforeEach(() => {
       validCreateOrderDto = {
@@ -737,10 +737,10 @@ describe('OrdersService', () => {
         },
       };
 
-      parsedAllocations = {
-        1: 10,
-        2: 3,
-      };
+      parsedAllocations = new Map<number, number>([
+        [1, 10],
+        [2, 3],
+      ]);
     });
 
     it('should create a new order successfully', async () => {
@@ -776,7 +776,7 @@ describe('OrdersService', () => {
       const allocations = await allocationRepo.find({
         where: { orderId: createdOrder.orderId },
       });
-      expect(allocations.length).toBe(Object.keys(parsedAllocations).length);
+      expect(allocations.length).toBe(parsedAllocations.size);
       expect(allocations.map((a) => a.itemId)).toEqual(
         expect.arrayContaining([1, 2]),
       );
@@ -830,10 +830,32 @@ describe('OrdersService', () => {
       );
     });
 
+    it('should throw BadRequestException if manufacturer is not approved', async () => {
+      validCreateOrderDto.foodRequestId = 1;
+      // Manufacturer that has status pending
+      validCreateOrderDto.manufacturerId = 3;
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+        ),
+      ).rejects.toThrow(
+        `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
+      );
+    });
+
     it('should throw BadRequestException if allocated quantity exceeds remaining', async () => {
       const donationItemId = 2;
 
-      parsedAllocations = { [donationItemId]: 500 };
+      parsedAllocations = new Map<number, number>([[donationItemId, 500]]);
       await expect(
         service.create(
           validCreateOrderDto.foodRequestId,
@@ -854,7 +876,7 @@ describe('OrdersService', () => {
 
     it('should throw Error if donation is not associated with manufacturer', async () => {
       const donationItemId = 7;
-      parsedAllocations = { [donationItemId]: 2 };
+      parsedAllocations = new Map<number, number>([[donationItemId, 2]]);
       await expect(
         service.create(
           validCreateOrderDto.foodRequestId,

@@ -155,7 +155,7 @@ export class OrdersController {
     @Body(new ValidationPipe())
     orderData: CreateOrderDto,
   ): Promise<Order> {
-    const parsedAllocations: Record<number, number> = {};
+    const parsedAllocations = new Map<number, number>();
 
     for (const [key, value] of Object.entries(orderData.itemAllocations)) {
       const itemId = Number(key);
@@ -174,7 +174,7 @@ export class OrdersController {
         throw new BadRequestException(`Invalid quantity for item ${key}`);
       }
 
-      parsedAllocations[itemId] = value;
+      parsedAllocations.set(itemId, value);
     }
 
     return this.ordersService.create(

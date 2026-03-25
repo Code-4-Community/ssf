@@ -104,11 +104,15 @@ export class DonationService {
   ): Promise<void> {
     donationIds.forEach((id) => validateId(id, 'Donation'));
 
-    const repo = transactionManager
+    const donationTransactionRepo = transactionManager
       ? transactionManager.getRepository(Donation)
+      : undefined;
+
+    const targetRepo = donationTransactionRepo
+      ? donationTransactionRepo
       : this.repo;
 
-    const donations = await repo.find({
+    const donations = await targetRepo.find({
       where: { donationId: In(donationIds) },
       select: ['donationId'],
     });
@@ -123,7 +127,7 @@ export class DonationService {
       );
     }
 
-    await repo.update(
+    await targetRepo.update(
       { donationId: In(donationIds) },
       { status: DonationStatus.MATCHED },
     );
