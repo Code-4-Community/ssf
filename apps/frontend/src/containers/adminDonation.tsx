@@ -276,11 +276,14 @@ const AdminDonation: React.FC = () => {
             mt={12}
             variant="outline"
             size="sm"
+            gap={2}
           >
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
+              disabled={currentPage === 1}
               _hover={{ color: 'black', cursor: 'pointer' }}
+              ml={2}
             >
               <ChevronLeft size={16} />
             </Pagination.PrevTrigger>
@@ -301,7 +304,9 @@ const AdminDonation: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
+              disabled={currentPage === totalPages}
               _hover={{ color: 'black', cursor: 'pointer' }}
+              ml={2}
             >
               <ChevronRight size={16} />
             </Pagination.NextTrigger>

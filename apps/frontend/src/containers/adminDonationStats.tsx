@@ -55,7 +55,9 @@ const AdminDonationStats: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Default show all selected
+    // Total stats only displayed on first page, so no need to do anything on page change
+    if (currentPage !== 1) return;
+
     const allSelected =
       selectedYears.length === 0 ||
       selectedYears.length === availableYears.length;
@@ -63,7 +65,7 @@ const AdminDonationStats: React.FC = () => {
     ApiClient.getTotalStats(allSelected ? undefined : selectedYears)
       .then(setTotalStats)
       .catch(() => setAlertMessage('Error fetching total stats'));
-  }, [selectedYears, availableYears]);
+  }, [selectedYears, availableYears, currentPage]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -119,6 +121,9 @@ const AdminDonationStats: React.FC = () => {
       ? selectedPantries.length
       : pantryNameOptions.length;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
+  // 9 pantries for the first page
+  const displayedStats =
+    currentPage === 1 ? pantryStats.slice(0, 9) : pantryStats;
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -392,7 +397,7 @@ const AdminDonationStats: React.FC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {totalStats && (
+          {currentPage === 1 && totalStats && (
             <Table.Row fontWeight="semibold">
               <Table.Cell
                 textStyle="p2"
@@ -447,7 +452,7 @@ const AdminDonationStats: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           )}
-          {pantryStats.map((stat) => (
+          {displayedStats.map((stat) => (
             <Table.Row key={stat.pantryId} _hover={{ bg: 'gray.50' }}>
               <Table.Cell
                 textStyle="p2"
@@ -514,10 +519,13 @@ const AdminDonationStats: React.FC = () => {
             mt={12}
             variant="outline"
             size="sm"
+            gap={4}
           >
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
+              disabled={currentPage === 1}
+              mr={2}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronLeft size={16} />
@@ -539,6 +547,8 @@ const AdminDonationStats: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
+              disabled={currentPage === totalPages}
+              ml={2}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronRight size={16} />

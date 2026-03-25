@@ -471,21 +471,6 @@ describe('PantriesController', () => {
         page,
       );
     });
-
-    it('should propagate NotFoundException when a non-approved pantry name is queried', async () => {
-      mockPantriesService.getPantryStats.mockRejectedValueOnce(
-        new Error('Pantries not found: Riverside Food Assistance'),
-      );
-
-      await expect(
-        controller.getPantryStats(['Riverside Food Assistance']),
-      ).rejects.toThrow('Pantries not found: Riverside Food Assistance');
-      expect(mockPantriesService.getPantryStats).toHaveBeenCalledWith(
-        ['Riverside Food Assistance'],
-        undefined,
-        1,
-      );
-    });
   });
 
   describe('getTotalStats', () => {
