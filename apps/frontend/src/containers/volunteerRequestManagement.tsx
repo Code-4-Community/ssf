@@ -304,7 +304,6 @@ const VolunteerRequestManagement: React.FC = () => {
               request={selectedRequest}
               isOpen={selectedRequest !== null}
               onClose={() => setSelectedRequest(null)}
-              pantryId={selectedRequest.pantryId}
             />
           )}
         </Table.Body>

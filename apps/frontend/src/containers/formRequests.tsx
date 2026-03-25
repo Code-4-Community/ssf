@@ -201,12 +201,11 @@ const FormRequests: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openReadOnlyRequest && pantryId && (
+          {openReadOnlyRequest && (
             <RequestDetailsModal
               request={openReadOnlyRequest}
               isOpen={openReadOnlyRequest !== null}
               onClose={() => setOpenReadOnlyRequest(null)}
-              pantryId={pantryId}
             />
           )}
         </Table.Body>
