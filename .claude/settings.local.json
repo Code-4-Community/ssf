@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npx nx:*)",
-      "Bash(sed -n '14,30p' apps/backend/src/volunteers/volunteers.service.ts)",
-      "Bash(sed -n '19,30p' apps/backend/src/orders/order.service.ts)"
-    ]
-  }
-}
