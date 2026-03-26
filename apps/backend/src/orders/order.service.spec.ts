@@ -37,7 +37,6 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         RequestsService,
-        EmailsService,
         {
           provide: EmailsService,
           useValue: {

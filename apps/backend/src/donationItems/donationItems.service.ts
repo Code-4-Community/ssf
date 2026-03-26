@@ -57,9 +57,9 @@ export class DonationItemsService {
   async createMultiple(
     savedDonation: Donation,
     items: CreateDonationItemDto[],
-    manager: EntityManager,
+    transactionManager: EntityManager,
   ): Promise<DonationItem[]> {
-    const repo = manager.getRepository(DonationItem);
+    const repo = transactionManager.getRepository(DonationItem);
 
     const donationItems = items.map((item) =>
       repo.create({
@@ -73,6 +73,6 @@ export class DonationItemsService {
         foodRescue: item.foodRescue,
       }),
     );
-    return manager.save(DonationItem, donationItems);
+    return repo.save(donationItems);
   }
 }

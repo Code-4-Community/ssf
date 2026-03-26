@@ -178,12 +178,12 @@ describe('DonationItemsService', () => {
 
     it('creates all items and returns them with generated ids', async () => {
       const donation = await getSeedDonation();
-      const manager = testDataSource.createEntityManager();
+      const transactionManager = testDataSource.createEntityManager();
 
       const result = await service.createMultiple(
         donation,
         validItems,
-        manager,
+        transactionManager,
       );
 
       expect(result).toHaveLength(2);
@@ -192,9 +192,9 @@ describe('DonationItemsService', () => {
 
     it('persists all items to the database linked to the correct donation', async () => {
       const donation = await getSeedDonation();
-      const manager = testDataSource.createEntityManager();
+      const transactionManager = testDataSource.createEntityManager();
 
-      await service.createMultiple(donation, validItems, manager);
+      await service.createMultiple(donation, validItems, transactionManager);
 
       const rows = await testDataSource.query(
         `SELECT * FROM donation_items WHERE donation_id = $1 AND item_name IN ('Canned Beans', 'Rice Bag')`,
@@ -209,12 +209,12 @@ describe('DonationItemsService', () => {
 
     it('sets reservedQuantity to 0 for all items regardless of input', async () => {
       const donation = await getSeedDonation();
-      const manager = testDataSource.createEntityManager();
+      const transactionManager = testDataSource.createEntityManager();
 
       const result = await service.createMultiple(
         donation,
         validItems,
-        manager,
+        transactionManager,
       );
 
       result.forEach((item) => expect(item.reservedQuantity).toEqual(0));
@@ -222,7 +222,7 @@ describe('DonationItemsService', () => {
 
     it('creates items with optional fields omitted', async () => {
       const donation = await getSeedDonation();
-      const manager = testDataSource.createEntityManager();
+      const transactionManager = testDataSource.createEntityManager();
 
       const minimalItems: CreateDonationItemDto[] = [
         {
@@ -236,7 +236,7 @@ describe('DonationItemsService', () => {
       const result = await service.createMultiple(
         donation,
         minimalItems,
-        manager,
+        transactionManager,
       );
 
       expect(result).toHaveLength(1);
@@ -264,8 +264,8 @@ describe('DonationItemsService', () => {
       ];
 
       await expect(
-        testDataSource.transaction(async (manager) => {
-          await service.createMultiple(donation, badItems, manager);
+        testDataSource.transaction(async (transactionManager) => {
+          await service.createMultiple(donation, badItems, transactionManager);
         }),
       ).rejects.toThrow();
 
@@ -279,9 +279,13 @@ describe('DonationItemsService', () => {
 
     it('returns empty array when given empty items list', async () => {
       const donation = await getSeedDonation();
-      const manager = testDataSource.createEntityManager();
+      const transactionManager = testDataSource.createEntityManager();
 
-      const result = await service.createMultiple(donation, [], manager);
+      const result = await service.createMultiple(
+        donation,
+        [],
+        transactionManager,
+      );
 
       expect(result).toHaveLength(0);
     });

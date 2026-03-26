@@ -86,13 +86,13 @@ export class ApiClient {
   }
 
   public async postDonation(body: CreateDonationDto): Promise<Donation> {
-    return this.post('/api/donations/create', body) as Promise<Donation>;
+    return this.post('/api/donations/', body) as Promise<Donation>;
   }
 
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
-    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+    return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
