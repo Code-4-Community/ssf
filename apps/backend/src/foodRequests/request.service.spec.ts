@@ -10,14 +10,24 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { EmailsService } from '../emails/email.service';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('RequestsService', () => {
   let service: RequestsService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -45,6 +55,10 @@ describe('RequestsService', () => {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -52,6 +66,7 @@ describe('RequestsService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -213,6 +228,76 @@ describe('RequestsService', () => {
         FoodType.NUT_FREE_GRANOLA_BARS,
       ]);
       expect(result.additionalInformation).toBeNull();
+    });
+
+    it('should send food request email to pantry volunteers', async () => {
+      const pantryId = 1;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId },
+        relations: ['pantryUser', 'volunteers'],
+      });
+
+      await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+
+      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry!.pantryName,
+      });
+      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        volunteerEmails,
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
+      // Harbor Community Center - no volunteers assigned
+      const pantryId = 5;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId },
+        relations: ['pantryUser', 'volunteers'],
+      });
+
+      await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+
+      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry!.pantryName,
+      });
+      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+
+      expect(volunteerEmails).toEqual([]);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        volunteerEmails,
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('should still save food request to database if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      const pantryId = 1;
+      await expect(
+        service.create(pantryId, RequestSize.MEDIUM, [FoodType.DRIED_BEANS]),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new food request notification email to volunteers',
+        ),
+      );
+
+      const requests = await service.find(pantryId);
+      expect(requests.length).toBe(3);
     });
 
     it('should throw NotFoundException for non-existent pantry', async () => {
