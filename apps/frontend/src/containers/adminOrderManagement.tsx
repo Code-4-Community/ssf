@@ -118,8 +118,14 @@ const AdminOrderManagement: React.FC = () => {
 
         for (const order of data) {
           const status = order.status;
-
           const orderWithColor: OrderWithColor = { ...order };
+
+          if (order.assignee) {
+            orderWithColor.assigneeColor =
+              ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
+            counters[status]++;
+          }
+
           grouped[status].push(orderWithColor);
         }
 

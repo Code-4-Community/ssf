@@ -105,6 +105,6 @@ export class Order {
   @JoinColumn({ name: 'assignee_id' })
   assignee!: User;
 
-  @Column({ name: 'assignee_id' })
+  @Column({ name: 'assignee_id', type: 'int' })
   assigneeId!: number;
 }
