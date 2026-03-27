@@ -6,6 +6,7 @@ import {
   Post,
   Body,
   ValidationPipe,
+  Patch,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -107,5 +108,12 @@ export class RequestsController {
       requestData.requestedFoodTypes,
       requestData.additionalInformation,
     );
+  }
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:requestId/close')
+  async closeRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId);
   }
 }
