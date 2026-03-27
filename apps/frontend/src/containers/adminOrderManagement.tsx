@@ -110,21 +110,13 @@ const AdminOrderManagement: React.FC = () => {
           [OrderStatus.DELIVERED]: [],
         };
 
-        // Use a status specific counter for assignee color assignment
-        const counters: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 0,
-          [OrderStatus.PENDING]: 0,
-          [OrderStatus.DELIVERED]: 0,
-        };
-
         for (const order of data) {
           const status = order.status;
           const orderWithColor: OrderWithColor = { ...order };
 
           if (order.assignee) {
             orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
-            counters[status]++;
+              ASSIGNEE_COLORS[order.assignee.id % ASSIGNEE_COLORS.length];
           }
 
           grouped[status].push(orderWithColor);
