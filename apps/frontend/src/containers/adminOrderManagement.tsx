@@ -110,25 +110,15 @@ const AdminOrderManagement: React.FC = () => {
           [OrderStatus.DELIVERED]: [],
         };
 
-        // Use a status specific counter for assignee color assignment
-        const counters: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 0,
-          [OrderStatus.PENDING]: 0,
-          [OrderStatus.DELIVERED]: 0,
-        };
-
         for (const order of data) {
           const status = order.status;
-
           const orderWithColor: OrderWithColor = { ...order };
-          if (
-            order.request.pantry.volunteers &&
-            order.request.pantry.volunteers.length > 0
-          ) {
+
+          if (order.assignee) {
             orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[counters[status] % ASSIGNEE_COLORS.length];
-            counters[status]++;
+              ASSIGNEE_COLORS[order.assignee.id % ASSIGNEE_COLORS.length];
           }
+
           grouped[status].push(orderWithColor);
         }
 
@@ -614,7 +604,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             <Table.Body>
               {orders.map((order, index) => {
                 const pantry = order.request.pantry;
-                const volunteers = pantry.volunteers || [];
 
                 return (
                   <Table.Row
@@ -664,28 +653,21 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         alignItems="center"
                         justifyContent="center"
                       >
-                        {volunteers && volunteers.length > 0 ? (
-                          <Box
-                            key={index}
-                            borderRadius="full"
-                            bg={order.assigneeColor || 'gray'}
-                            width="33px"
-                            height="33px"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            color="white"
-                            p={2}
-                          >
-                            {/* TODO: Change logic later to only get one volunteer */}
-                            {getInitials(
-                              volunteers[0].firstName,
-                              volunteers[0].lastName,
-                            )}
-                          </Box>
-                        ) : (
-                          <Box>No Assignees</Box>
-                        )}
+                        <Box
+                          key={index}
+                          borderRadius="full"
+                          bg={order.assigneeColor || 'gray'}
+                          width="33px"
+                          height="33px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          p={2}
+                        >
+                          {order.assignee.firstName.charAt(0).toUpperCase()}
+                          {order.assignee.lastName.charAt(0).toUpperCase()}
+                        </Box>
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -708,10 +690,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="left"
-                      color="neutral.700"
-                    >
-                      {/* TODO: IMPLEMENT WHAT GOES HERE */}
-                    </Table.Cell>
+                      bg="#FAFAFA"
+                    ></Table.Cell>
                   </Table.Row>
                 );
               })}
