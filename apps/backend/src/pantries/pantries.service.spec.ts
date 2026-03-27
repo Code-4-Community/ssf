@@ -506,19 +506,16 @@ describe('PantriesService', () => {
       expect(stats.percentageFoodRescueItems).toBe(0);
     });
 
-    it('returns zeroed stats for a pantry with no orders (Riverside Food Assistance)', async () => {
-      const stats = (
-        await service.getPantryStats(['Riverside Food Assistance'])
-      )[0];
+    it('throws NotFoundException for a non-approved (denied) pantry', async () => {
+      await expect(
+        service.getPantryStats(['Riverside Food Assistance']),
+      ).rejects.toThrow(NotFoundException);
+    });
 
-      expect(stats.pantryId).toBe(4);
-      expect(stats.totalItems).toBe(0);
-      expect(stats.totalOz).toBe(0);
-      expect(stats.totalLbs).toBe(0);
-      expect(stats.totalDonatedFoodValue).toBe(0);
-      expect(stats.totalShippingCost).toBe(0);
-      expect(stats.totalValue).toBe(0);
-      expect(stats.percentageFoodRescueItems).toBe(0);
+    it('throws NotFoundException for a non-approved (pending) pantry', async () => {
+      await expect(
+        service.getPantryStats(['Harbor Community Center']),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('respects year filter and returns zeros for a non-matching year', async () => {
@@ -579,6 +576,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 10; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
 
       const page1 = await service.getPantryStats(undefined, undefined, 1);
       expect(page1.length).toBe(10);
@@ -606,9 +606,13 @@ describe('PantriesService', () => {
       expect(community?.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
     });
 
-    it('returns proper array for no pantryNames given', async () => {
+    it('returns only approved pantries when no names given', async () => {
       const stats = await service.getPantryStats();
-      expect(stats.length).toBe(6);
+      expect(stats.length).toBe(3);
+      const names = stats.map((s) => s.pantryName);
+      expect(names).not.toContain('Riverside Food Assistance');
+      expect(names).not.toContain('Harbor Community Center');
+      expect(names).not.toContain('Southside Pantry Network');
     });
 
     it('returns nothing for an invalid pantry name', async () => {
@@ -628,9 +632,13 @@ describe('PantriesService', () => {
     });
 
     it('validates all names before paginating — throws if any name is invalid regardless of page', async () => {
+      // Create 12 valid approved pantries so we have enough to paginate
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const validNames = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -649,6 +657,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -662,6 +673,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -675,6 +689,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -688,6 +705,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -701,6 +721,27 @@ describe('PantriesService', () => {
       const page1Ids = new Set(page1.map((s) => s.pantryId));
       const overlap = page2.filter((s) => page1Ids.has(s.pantryId));
       expect(overlap.length).toBe(0);
+    });
+  });
+
+  describe('getApprovedPantryNames', () => {
+    it('returns the 3 approved pantry names from seed data', async () => {
+      const names = await service.getApprovedPantryNames();
+
+      expect(names).toHaveLength(3);
+      expect(names).toContain('Community Food Pantry Downtown');
+      expect(names).toContain('Westside Community Kitchen');
+      expect(names).toContain('North End Food Bank');
+    });
+
+    it('returns an empty array when no pantries are approved', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const names = await service.getApprovedPantryNames();
+
+      expect(names).toEqual([]);
     });
   });
 
@@ -725,6 +766,72 @@ describe('PantriesService', () => {
       expect(totalEmpty.totalShippingCost).toBe(0);
       expect(totalEmpty.totalValue).toBe(0);
       expect(totalEmpty.percentageFoodRescueItems).toBe(0);
+    });
+
+    it('returns all zeros when no approved pantries exist', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+      const total = await service.getTotalStats();
+      expect(total.totalItems).toBe(0);
+      expect(total.totalOz).toBe(0);
+      expect(total.totalLbs).toBe(0);
+      expect(total.totalDonatedFoodValue).toBe(0);
+      expect(total.totalShippingCost).toBe(0);
+      expect(total.totalValue).toBe(0);
+      expect(total.percentageFoodRescueItems).toBe(0);
+    });
+  });
+
+  describe('getAvailableYears', () => {
+    it('returns years from approved pantry orders sorted descending', async () => {
+      await testDataSource.query(
+        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([2024]);
+    });
+
+    it('returns multiple years sorted descending', async () => {
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2025-01-01 00:00:00'
+        WHERE order_id = (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2024-01-01 00:00:00'
+        WHERE order_id != (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([2025, 2024]);
+    });
+
+    it('returns empty array when no approved pantries exist', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([]);
+    });
+
+    it('excludes years from non-approved pantry orders', async () => {
+      await testDataSource.query(
+        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
+      );
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const years = await service.getAvailableYears();
+
+      expect(years).toEqual([]);
     });
   });
 

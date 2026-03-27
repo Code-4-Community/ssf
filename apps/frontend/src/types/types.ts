@@ -382,6 +382,7 @@ export type RepeatOnState = Record<DayOfWeek, boolean>;
 
 export interface PantryStats {
   pantryId: number;
+  pantryName: string;
   totalItems: number;
   totalOz: number;
   totalLbs: number;
@@ -391,8 +392,7 @@ export interface PantryStats {
   percentageFoodRescueItems: number;
 }
 
-// Make TotalStats interface just not include pantryId
-export type TotalStats = Omit<PantryStats, 'pantryId'>;
+export type TotalStats = Omit<PantryStats, 'pantryId' | 'pantryName'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 
