@@ -15,12 +15,18 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { Donation } from '../donations/donations.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { DonationStatus } from '../donations/types';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
   ) {}
 
@@ -288,56 +294,67 @@ export class OrdersService {
 
   async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
     validateId(orderId, 'Order');
-    if (!dto.trackingLink && !dto.shippingCost) {
+
+    const sanitized = sanitizeUrl(dto.trackingLink);
+    if (!sanitized) {
       throw new BadRequestException(
-        'At least one of tracking link or shipping cost must be provided',
+        'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
       );
     }
-
-    if (dto.trackingLink) {
-      const sanitized = sanitizeUrl(dto.trackingLink);
-      if (!sanitized) {
-        throw new BadRequestException(
-          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-        );
-      }
-      dto.trackingLink = sanitized;
-    }
+    dto.trackingLink = sanitized;
 
     const order = await this.repo.findOneBy({ orderId });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
-
-    if (isFirstTimeSetting && (!dto.trackingLink || !dto.shippingCost)) {
-      throw new BadRequestException(
-        'Must provide both tracking link and shipping cost on initial assignment',
-      );
-    }
-
-    if (
-      order.status !== OrderStatus.SHIPPED &&
-      order.status !== OrderStatus.PENDING
-    ) {
+    if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
         'Can only update tracking info for pending or shipped orders',
       );
     }
 
-    if (dto.trackingLink) order.trackingLink = dto.trackingLink;
-    if (dto.shippingCost) order.shippingCost = dto.shippingCost;
+    order.trackingLink = dto.trackingLink;
+    order.shippingCost = dto.shippingCost;
 
-    if (
-      order.status === OrderStatus.PENDING &&
-      order.trackingLink &&
-      order.shippingCost
-    ) {
-      order.status = OrderStatus.SHIPPED;
-      order.shippedAt = new Date();
-    }
+    order.status = OrderStatus.SHIPPED;
+    order.shippedAt = new Date();
 
     await this.repo.save(order);
+
+    await this.checkAndFulfillDonations(orderId);
+  }
+
+  private async checkAndFulfillDonations(orderId: number): Promise<void> {
+    const affectedDonations = await this.donationItemRepo
+      .createQueryBuilder('item')
+      .innerJoin('item.allocations', 'allocation')
+      .where('allocation.orderId = :orderId', { orderId })
+      .select('DISTINCT item.donationId', 'donationId')
+      .getRawMany<{ donationId: number }>();
+
+    for (const { donationId } of affectedDonations) {
+      const items = await this.donationItemRepo.find({
+        where: { donationId },
+        relations: { allocations: { order: true } },
+      });
+
+      const allItemsFulfilled = items.every(
+        (item) =>
+          item.detailsConfirmed && item.reservedQuantity === item.quantity,
+      );
+      if (!allItemsFulfilled) continue;
+
+      const hasPendingOrder = items.some((item) =>
+        item.allocations.some(
+          (allocation) => allocation.order.status === OrderStatus.PENDING,
+        ),
+      );
+      if (hasPendingOrder) continue;
+
+      await this.donationRepo.update(donationId, {
+        status: DonationStatus.FULFILLED,
+      });
+    }
   }
 }

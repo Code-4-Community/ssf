@@ -1,12 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
 
 jest.setTimeout(60000);
 
@@ -27,6 +31,50 @@ const daysFromNow = (numDays: number): Date => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+
+// Insert a donation with MATCHED status, returns its generated ID
+async function insertMatchedDonation(): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donations
+      (food_manufacturer_id, status, recurrence, recurrence_freq,
+       next_donation_dates, occurrences_remaining)
+     VALUES (
+       (SELECT food_manufacturer_id FROM food_manufacturers
+        WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
+       'matched', 'none', NULL, NULL, NULL
+     )
+     RETURNING donation_id`,
+  );
+  return result[0].donation_id;
+}
+
+// Insert a donation item for a given donation, returns its generated ID
+async function insertDonationItem(
+  donationId: number,
+  qty: number,
+  reserved: number,
+): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donation_items
+      (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+     RETURNING item_id`,
+    [donationId, qty, reserved],
+  );
+  return result[0].item_id;
+}
+
+// Insert an allocation linking an existing order to a donation item
+async function insertAllocation(
+  orderId: number,
+  itemId: number,
+): Promise<void> {
+  await testDataSource.query(
+    `INSERT INTO allocations (order_id, item_id, allocated_quantity)
+     VALUES ($1, $2, 1)`,
+    [orderId, itemId],
+  );
+}
 
 // insert a minimal donation and return its generated ID
 async function insertDonation(overrides: {
@@ -95,6 +143,7 @@ describe('DonationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
+        DonationItemsService,
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
@@ -102,6 +151,14 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
@@ -800,6 +857,211 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('confirmDonationItemDetails', () => {
+    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+      itemId,
+      ozPerItem: 5.0,
+      estimatedValue: 10.0,
+      foodRescue: true,
+    });
+
+    it('throws NotFoundException when donation does not exist', async () => {
+      await expect(
+        service.confirmDonationItemDetails(9999, [makeDto(1)]),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
+    });
+
+    it('throws BadRequestException when donation status is not MATCHED', async () => {
+      // Donation 1 has status 'available'
+      await expect(
+        service.confirmDonationItemDetails(1, [makeDto(1)]),
+      ).rejects.toThrow(
+        new BadRequestException("Donation status must be 'Matched'"),
+      );
+    });
+
+    it('throws BadRequestException when an item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+
+      // Item 1 belongs to donation 1, not the new donation
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(1)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('updates fields and sets detailsConfirmed to true for a single item', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const dto: ConfirmDonationItemDetailsDto = {
+        itemId,
+        ozPerItem: 8.5,
+        estimatedValue: 12.0,
+        foodRescue: false,
+      };
+
+      await service.confirmDonationItemDetails(donationId, [dto]);
+
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(8.5);
+      expect(Number(item?.estimatedValue)).toBe(12.0);
+      expect(item?.foodRescue).toBe(false);
+      expect(item?.detailsConfirmed).toBe(true);
+    });
+
+    it('updates multiple items in a single call', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 5);
+      const itemId2 = await insertDonationItem(donationId, 20, 10);
+
+      await service.confirmDonationItemDetails(donationId, [
+        {
+          itemId: itemId1,
+          ozPerItem: 4.0,
+          estimatedValue: 8.0,
+          foodRescue: true,
+        },
+        {
+          itemId: itemId2,
+          ozPerItem: 6.0,
+          estimatedValue: 14.0,
+          foodRescue: false,
+        },
+      ]);
+
+      const item1 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId1 });
+      const item2 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId2 });
+
+      expect(Number(item1?.ozPerItem)).toBe(4.0);
+      expect(item1?.foodRescue).toBe(true);
+      expect(item1?.detailsConfirmed).toBe(true);
+
+      expect(Number(item2?.ozPerItem)).toBe(6.0);
+      expect(item2?.foodRescue).toBe(false);
+      expect(item2?.detailsConfirmed).toBe(true);
+    });
+
+    it('rolls back all updates when one item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      // Second dto references item 1 which belongs to donation 1, not ours
+      await expect(
+        service.confirmDonationItemDetails(donationId, [
+          makeDto(itemId),
+          makeDto(1),
+        ]),
+      ).rejects.toThrow(BadRequestException);
+
+      // The first item should not have been updated due to rollback
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(item?.detailsConfirmed).toBe(false);
+      expect(item?.ozPerItem).toBeNull();
+    });
+
+    it('does not fulfill donation when only a subset of items are confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 10);
+      const itemId2 = await insertDonationItem(donationId, 10, 10);
+
+      // Only confirm itemId1 — itemId2 stays detailsConfirmed=false
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId1)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.MATCHED);
+
+      // Verify itemId2 is still unconfirmed
+      const item2 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId2 });
+      expect(item2?.detailsConfirmed).toBe(false);
+    });
+
+    it('does not fulfill donation when reservedQuantity does not equal quantity', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('does not fulfill donation when a pending order is associated', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      // Order 4 is pending in the seed data
+      await insertAllocation(4, itemId);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no orders', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('sets donation to FULFILLED when all orders associated are non-pending', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      // Order 1 is delivered, so should not block fulfillment
+      await insertAllocation(1, itemId);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('sets donation to FULFILLED with multiple items all fully reserved and confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 10);
+      const itemId2 = await insertDonationItem(donationId, 20, 20);
+
+      await service.confirmDonationItemDetails(donationId, [
+        makeDto(itemId1),
+        makeDto(itemId2),
+      ]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('returns the donation after updating items', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      const result = await service.confirmDonationItemDetails(donationId, [
+        makeDto(itemId),
+      ]);
+
+      expect(result).toBeDefined();
+      expect(result.donationId).toBe(donationId);
     });
   });
 });
