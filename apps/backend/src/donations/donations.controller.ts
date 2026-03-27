@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   ParseIntPipe,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
 
 @Controller('donations')
 export class DonationsController {
@@ -76,5 +78,14 @@ export class DonationsController {
     @Param('donationId', ParseIntPipe) donationId: number,
   ): Promise<Donation> {
     return this.donationService.fulfill(donationId);
+  }
+
+  @Patch('/:donationId/item-details')
+  async confirmDonationItemDetails(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body(new ParseArrayPipe({ items: ConfirmDonationItemDetailsDto }))
+    body: ConfirmDonationItemDetailsDto[],
+  ): Promise<Donation> {
+    return this.donationService.confirmDonationItemDetails(donationId, body);
   }
 }

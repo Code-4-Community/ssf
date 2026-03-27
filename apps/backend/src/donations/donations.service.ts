@@ -4,13 +4,17 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { OrderStatus } from '../orders/types';
 
 @Injectable()
 export class DonationService {
@@ -20,6 +24,10 @@ export class DonationService {
     @InjectRepository(Donation) private repo: Repository<Donation>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    @InjectRepository(DonationItem)
+    private donationItemsRepo: Repository<DonationItem>,
+    private donationItemsService: DonationItemsService,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -312,5 +320,71 @@ export class DonationService {
       dates.push(nextDate.toISOString());
     }
     return dates;
+  }
+
+  async confirmDonationItemDetails(
+    donationId: number,
+    body: ConfirmDonationItemDetailsDto[],
+  ): Promise<Donation> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.repo.findOneBy({ donationId });
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.MATCHED) {
+      throw new BadRequestException("Donation status must be 'Matched'");
+    }
+
+    const donationItems = await this.donationItemsService.getAllDonationItems(
+      donationId,
+    );
+    const validItemIds = new Set(donationItems.map((item) => item.itemId));
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const repo = transactionManager.getRepository(DonationItem);
+
+      for (const dto of body) {
+        if (!validItemIds.has(dto.itemId)) {
+          throw new BadRequestException(
+            `Donation item ${dto.itemId} does not belong to donation ${donationId}`,
+          );
+        }
+
+        await repo.update(dto.itemId, {
+          ozPerItem: dto.ozPerItem,
+          estimatedValue: dto.estimatedValue,
+          foodRescue: dto.foodRescue,
+          detailsConfirmed: true,
+        });
+      }
+    });
+
+    await this.checkAndFulfillDonation(donationId);
+
+    return donation;
+  }
+
+  private async checkAndFulfillDonation(donationId: number): Promise<void> {
+    const items = await this.donationItemsRepo.find({
+      where: { donationId },
+      relations: { allocations: { order: true } },
+    });
+
+    const allItemsFulfilled = items.every(
+      (item) =>
+        item.detailsConfirmed && item.reservedQuantity === item.quantity,
+    );
+    if (!allItemsFulfilled) return;
+
+    const hasPendingOrder = items.some((item) =>
+      item.allocations.some(
+        (allocation) => allocation.order.status === OrderStatus.PENDING,
+      ),
+    );
+    if (hasPendingOrder) return;
+
+    await this.repo.update(donationId, { status: DonationStatus.FULFILLED });
   }
 }

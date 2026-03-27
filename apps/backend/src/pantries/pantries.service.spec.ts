@@ -19,6 +19,7 @@ import {
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { DataSource } from 'typeorm';
 import { Order } from '../orders/order.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
@@ -154,6 +155,10 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
