@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
+import { CreateDonationItemDto } from '../donations/dtos/create-donation.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -32,7 +33,6 @@ export class DonationItemsService {
     donationId: number,
     itemName: string,
     quantity: number,
-    reservedQuantity: number,
     ozPerItem: number,
     estimatedValue: number,
     foodType: FoodType,
@@ -45,7 +45,7 @@ export class DonationItemsService {
       donation,
       itemName,
       quantity,
-      reservedQuantity,
+      reservedQuantity: 0,
       ozPerItem,
       estimatedValue,
       foodType,
@@ -54,45 +54,25 @@ export class DonationItemsService {
     return this.repo.save(donationItem);
   }
 
-  async createMultipleDonationItems(
-    donationId: number,
-    items: {
-      itemName: string;
-      quantity: number;
-      reservedQuantity: number;
-      ozPerItem?: number;
-      estimatedValue?: number;
-      foodType: FoodType;
-    }[],
+  async createMultiple(
+    savedDonation: Donation,
+    items: CreateDonationItemDto[],
+    transactionManager: EntityManager,
   ): Promise<DonationItem[]> {
-    validateId(donationId, 'Donation');
-
-    const donation = await this.donationRepo.findOneBy({ donationId });
-    if (!donation) throw new NotFoundException('Donation not found');
+    const repo = transactionManager.getRepository(DonationItem);
 
     const donationItems = items.map((item) =>
-      this.repo.create({
-        donation,
+      repo.create({
+        donation: savedDonation,
         itemName: item.itemName,
         quantity: item.quantity,
-        reservedQuantity: item.reservedQuantity,
+        reservedQuantity: 0,
         ozPerItem: item.ozPerItem,
         estimatedValue: item.estimatedValue,
         foodType: item.foodType,
+        foodRescue: item.foodRescue,
       }),
     );
-
-    return this.repo.save(donationItems);
-  }
-
-  async updateDonationItemQuantity(itemId: number): Promise<DonationItem> {
-    validateId(itemId, 'Donation Item');
-
-    const donationItem = await this.repo.findOneBy({ itemId });
-    if (!donationItem) {
-      throw new NotFoundException(`Donation item ${itemId} not found`);
-    }
-    donationItem.quantity -= 1;
-    return this.repo.save(donationItem);
+    return repo.save(donationItems);
   }
 }

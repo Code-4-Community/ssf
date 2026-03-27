@@ -37,6 +37,7 @@ import { AddAssigneeToOrders1773009000618 } from '../migrations/1773009000618-Ad
 import { DropDonationTotalColumns1772241115031 } from '../migrations/1772241115031-DropDonationTotalColumns';
 import { FixTrackingLinks1773041840374 } from '../migrations/1773041840374-FixTrackingLinks';
 import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
+import { MakeFoodRescueRequired1773889925002 } from '../migrations/1773889925002-MakeFoodRescueRequired.ts';
 import { AddDonationItemConfirmation1774140453305 } from '../migrations/1774140453305-AddDonationItemConfirmation';
 
 const schemaMigrations = [
@@ -79,6 +80,7 @@ const schemaMigrations = [
   DropDonationTotalColumns1772241115031,
   FixTrackingLinks1773041840374,
   CleanupRequestsAndAllocations1771821377918,
+  MakeFoodRescueRequired1773889925002,
   AddDonationItemConfirmation1774140453305,
 ];
 

@@ -1,10 +1,15 @@
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
+  IsString,
+  Length,
   Min,
   ValidateIf,
   ValidateNested,
@@ -12,6 +17,7 @@ import {
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
+import { FoodType } from '../../donationItems/types';
 
 function AtLeastOneDaySelected() {
   return function (object: object, propertyName: string) {
@@ -22,6 +28,9 @@ function AtLeastOneDaySelected() {
       validator: {
         validate(value: Record<string, any>) {
           return !!value && Object.values(value).some((v) => v === true);
+        },
+        defaultMessage() {
+          return 'At least one day must be selected for weekly recurrence';
         },
       },
     });
@@ -58,8 +67,35 @@ export class RepeatOnDaysDto {
   Sunday?: boolean;
 }
 
-export class CreateDonationDto {
+export class CreateDonationItemDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 255)
+  itemName!: string;
+
+  @IsInt()
+  @Min(1)
+  quantity!: number;
+
   @IsNumber()
+  @Min(0.01)
+  @IsOptional()
+  ozPerItem?: number;
+
+  @IsNumber()
+  @Min(0.01)
+  @IsOptional()
+  estimatedValue?: number;
+
+  @IsEnum(FoodType)
+  foodType!: FoodType;
+
+  @IsBoolean()
+  foodRescue!: boolean;
+}
+
+export class CreateDonationDto {
+  @IsInt()
   @Min(1)
   foodManufacturerId!: number;
 
@@ -67,7 +103,7 @@ export class CreateDonationDto {
   @IsEnum(RecurrenceEnum)
   recurrence!: RecurrenceEnum;
 
-  @IsNumber()
+  @IsInt()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   recurrenceFreq?: number;
@@ -79,8 +115,14 @@ export class CreateDonationDto {
   @ValidateIf((o) => o.recurrence === RecurrenceEnum.WEEKLY)
   repeatOnDays?: RepeatOnDaysDto;
 
-  @IsNumber()
+  @IsInt()
   @ValidateIf((o) => o.recurrence !== RecurrenceEnum.NONE)
   @Min(1)
   occurrencesRemaining?: number;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateDonationItemDto)
+  items!: CreateDonationItemDto[];
 }
