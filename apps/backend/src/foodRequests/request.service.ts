@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
@@ -15,6 +19,8 @@ import {
 } from './dtos/matching.dto';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class RequestsService {
@@ -26,6 +32,7 @@ export class RequestsService {
     private foodManufacturerRepo: Repository<FoodManufacturer>,
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -40,6 +47,23 @@ export class RequestsService {
       throw new NotFoundException(`Request ${requestId} not found`);
     }
     return request;
+  }
+
+  async getAll(): Promise<FoodRequest[]> {
+    return this.repo
+      .createQueryBuilder('request')
+      .leftJoin('request.pantry', 'pantry')
+      .select([
+        'request.requestId',
+        'request.requestedSize',
+        'request.requestedFoodTypes',
+        'request.additionalInformation',
+        'request.requestedAt',
+        'request.status',
+        'pantry.pantryId',
+        'pantry.pantryName',
+      ])
+      .getMany();
   }
 
   async getOrderDetails(requestId: number): Promise<OrderDetailsDto[]> {
@@ -198,7 +222,10 @@ export class RequestsService {
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
-    const pantry = await this.pantryRepo.findOneBy({ pantryId });
+    const pantry = await this.pantryRepo.findOne({
+      where: { pantryId },
+      relations: ['pantryUser', 'volunteers'],
+    });
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
@@ -210,7 +237,28 @@ export class RequestsService {
       additionalInformation,
     });
 
-    return await this.repo.save(foodRequest);
+    await this.repo.save(foodRequest);
+
+    try {
+      const volunteers = pantry.volunteers || [];
+      const volunteerEmails = volunteers.map((v) => v.email);
+
+      const message = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry.pantryName,
+      });
+
+      await this.emailsService.sendEmails(
+        volunteerEmails,
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to send new food request notification email to volunteers',
+      );
+    }
+
+    return foodRequest;
   }
 
   async find(pantryId: number) {
@@ -218,7 +266,7 @@ export class RequestsService {
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['orders'],
+      relations: ['orders', 'pantry'],
     });
   }
 

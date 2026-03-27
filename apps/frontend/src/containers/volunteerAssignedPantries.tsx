@@ -12,7 +12,7 @@ import {
   Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry } from 'types/types';
+import { Pantry, User } from 'types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
@@ -31,9 +31,11 @@ const AssignedPantries: React.FC = () => {
 
   useEffect(() => {
     const fetchAssignedPantries = async () => {
+      let user: User;
       let userId: number;
       try {
-        userId = await ApiClient.getMyId();
+        user = await ApiClient.getMe();
+        userId = user.id;
       } catch {
         setAlertMessage('Authentication error. Please log in and try again.');
         setIsLoading(false);

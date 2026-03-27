@@ -14,12 +14,14 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
+  ApprovedPantryResponse,
   TotalStats,
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
 import { User } from '../users/users.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -224,6 +226,66 @@ describe('PantriesController', () => {
       );
     });
   });
+
+  describe('PATCH /:pantryId/application', () => {
+    const req = { user: { id: 1 } };
+
+    it('should update a pantry application', async () => {
+      const pantryId = 1;
+
+      const mockUpdateData: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'John',
+        secondaryContactLastName: 'Doe',
+        secondaryContactEmail: 'john.doe@example.com',
+        refrigeratedDonation: RefrigeratedDonation.NO,
+        reserveFoodForAllergic: ReserveFoodForAllergic.NO,
+        newsletterSubscription: false,
+        itemsInStock: 'Canned beans, rice',
+      };
+
+      mockPantriesService.updatePantryApplication.mockResolvedValue(
+        mockPantry as Pantry,
+      );
+
+      const result = await controller.updatePantryApplication(
+        req as AuthenticatedRequest,
+        pantryId,
+        mockUpdateData,
+      );
+
+      expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
+        pantryId,
+        mockUpdateData,
+        1,
+      );
+
+      expect(result).toEqual(mockPantry);
+    });
+
+    it('should throw error if pantry does not exist', async () => {
+      const mockUpdateData: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'John',
+      };
+
+      mockPantriesService.updatePantryApplication.mockRejectedValueOnce(
+        new Error('Pantry 999 not found'),
+      );
+
+      await expect(
+        controller.updatePantryApplication(
+          req as AuthenticatedRequest,
+          999,
+          mockUpdateData,
+        ),
+      ).rejects.toThrow();
+      expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
+        999,
+        mockUpdateData,
+        1,
+      );
+    });
+  });
+
   describe('getOrders', () => {
     it('should return orders for a pantry', async () => {
       const pantryId = 24;
@@ -255,6 +317,60 @@ describe('PantriesController', () => {
     });
   });
 
+  describe('getApprovedPantries', () => {
+    it('should return approved pantries with volunteers', async () => {
+      const mockApprovedPantries: ApprovedPantryResponse[] = [
+        {
+          pantryId: 1,
+          pantryName: 'Community Food Pantry',
+          refrigeratedDonation: RefrigeratedDonation.YES,
+          volunteers: [
+            {
+              userId: 10,
+              firstName: 'Alice',
+              lastName: 'Johnson',
+              email: 'alice.johnson@example.com',
+              phone: '(617) 555-0100',
+            },
+            {
+              userId: 11,
+              firstName: 'Bob',
+              lastName: 'Williams',
+              email: 'bob.williams@example.com',
+              phone: '(617) 555-0101',
+            },
+          ],
+        },
+      ];
+
+      mockPantriesService.getApprovedPantriesWithVolunteers.mockResolvedValue(
+        mockApprovedPantries,
+      );
+
+      const result = await controller.getApprovedPantries();
+
+      expect(result).toEqual(mockApprovedPantries);
+      expect(
+        mockPantriesService.getApprovedPantriesWithVolunteers,
+      ).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('updatePantryVolunteers', () => {
+    it('should overwrite the set of volunteers assigned to a pantry', async () => {
+      const pantryId = 1;
+      const volunteerIds = [10, 11, 12];
+
+      mockPantriesService.updatePantryVolunteers.mockResolvedValue(undefined);
+
+      await controller.updatePantryVolunteers(pantryId, volunteerIds);
+
+      expect(mockPantriesService.updatePantryVolunteers).toHaveBeenCalledWith(
+        pantryId,
+        volunteerIds,
+      );
+    });
+  });
   describe('getCurrentUserPantryId', () => {
     it('returns pantryId for authenticated user', async () => {
       const req = { user: { id: 1 } };

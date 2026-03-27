@@ -7,6 +7,9 @@ import { Allergen, DonateWastedFood } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { Donation } from '../donations/donations.entity';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
+import { NotFoundException } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -131,6 +134,60 @@ describe('FoodManufacturersController', () => {
       expect(mockManufacturersService.addFoodManufacturer).toHaveBeenCalledWith(
         mockApplicationData,
       );
+    });
+  });
+
+  describe('PATCH /:manufacturerId/application', () => {
+    const req = { user: { id: 1 } };
+
+    it('should update a food manufacturer application', async () => {
+      const manufacturerId = 1;
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Bob',
+        secondaryContactLastName: 'Smith',
+        secondaryContactEmail: 'bob.smith@example.com',
+        productsGlutenFree: false,
+        inKindDonations: true,
+        donateWastedFood: DonateWastedFood.ALWAYS,
+        additionalComments: 'Updated application notes.',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue(
+        mockManufacturer1 as FoodManufacturer,
+      );
+
+      const result = await controller.updateFoodManufacturerApplication(
+        req as AuthenticatedRequest,
+        manufacturerId,
+        mockUpdateData,
+      );
+
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 1);
+
+      expect(result).toEqual(mockManufacturer1);
+    });
+
+    it('should throw error if manufacturer does not exist', async () => {
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'John',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockRejectedValueOnce(
+        new NotFoundException('Food Manufacturer 999 not found'),
+      );
+
+      await expect(
+        controller.updateFoodManufacturerApplication(
+          req as AuthenticatedRequest,
+          999,
+          mockUpdateData,
+        ),
+      ).rejects.toThrow();
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(999, mockUpdateData, 1);
     });
   });
 

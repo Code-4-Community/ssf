@@ -10,14 +10,24 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { EmailsService } from '../emails/email.service';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('RequestsService', () => {
   let service: RequestsService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -45,6 +55,10 @@ describe('RequestsService', () => {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -52,6 +66,7 @@ describe('RequestsService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -70,6 +85,38 @@ describe('RequestsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getAll', () => {
+    it('should return all requests with request details, pantryId, and pantryName', async () => {
+      const result = await service.getAll();
+      expect(result).toHaveLength(4);
+      result.forEach((r) => {
+        expect(r.requestId).toBeDefined();
+        expect(r.requestedSize).toBeDefined();
+        expect(r.requestedFoodTypes).toBeDefined();
+        expect(r.additionalInformation).toBeDefined();
+        expect(r.requestedAt).toBeDefined();
+        expect(r.status).toBeDefined();
+        expect(r.pantry.pantryId).toBeDefined();
+        expect(r.pantry.pantryName).toBeDefined();
+      });
+
+      const sorted = [...result].sort((a, b) => a.requestId - b.requestId);
+      const firstRequest = sorted[0];
+      expect(firstRequest.requestedSize).toBe(RequestSize.LARGE);
+      expect(firstRequest.requestedFoodTypes).toEqual([
+        FoodType.SEED_BUTTERS,
+        FoodType.GLUTEN_FREE_BREAD,
+        FoodType.DRIED_BEANS,
+        FoodType.DAIRY_FREE_ALTERNATIVES,
+      ]);
+      expect(firstRequest.additionalInformation).toBe(
+        'We have 150 families to serve this week. Need extra allergen-free options.',
+      );
+      expect(firstRequest.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(firstRequest.pantry.pantryId).toBe(1);
+    });
   });
 
   describe('findOne', () => {
@@ -183,6 +230,76 @@ describe('RequestsService', () => {
       expect(result.additionalInformation).toBeNull();
     });
 
+    it('should send food request email to pantry volunteers', async () => {
+      const pantryId = 1;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId },
+        relations: ['pantryUser', 'volunteers'],
+      });
+
+      await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+
+      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry!.pantryName,
+      });
+      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        volunteerEmails,
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
+      // Harbor Community Center - no volunteers assigned
+      const pantryId = 5;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId },
+        relations: ['pantryUser', 'volunteers'],
+      });
+
+      await service.create(pantryId, RequestSize.MEDIUM, [
+        FoodType.DRIED_BEANS,
+        FoodType.REFRIGERATED_MEALS,
+      ]);
+
+      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+        pantryName: pantry!.pantryName,
+      });
+      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+
+      expect(volunteerEmails).toEqual([]);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        volunteerEmails,
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('should still save food request to database if email send fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      const pantryId = 1;
+      await expect(
+        service.create(pantryId, RequestSize.MEDIUM, [FoodType.DRIED_BEANS]),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new food request notification email to volunteers',
+        ),
+      );
+
+      const requests = await service.find(pantryId);
+      expect(requests.length).toBe(3);
+    });
+
     it('should throw NotFoundException for non-existent pantry', async () => {
       await expect(
         service.create(
@@ -196,7 +313,7 @@ describe('RequestsService', () => {
   });
 
   describe('find', () => {
-    it('should return all food requests for a specific pantry', async () => {
+    it('should return all food requests for a specific pantry with pantry details', async () => {
       const pantryId = 1;
       const result = await service.find(pantryId);
 
@@ -206,6 +323,7 @@ describe('RequestsService', () => {
       result.forEach((request) => {
         expect(request.orders).toBeDefined();
       });
+      expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
     it('should return empty array for pantry with no requests', async () => {

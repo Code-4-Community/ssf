@@ -6,7 +6,6 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
-import { Pantry } from '../pantries/pantries.entity';
 import { BadRequestException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 
@@ -48,13 +47,18 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('GET /my-id', () => {
-    it('should return the current user id', () => {
-      const req = { user: { id: 1 } } as AuthenticatedRequest;
+  describe('GET /me', () => {
+    it('should return the current user', async () => {
+      const req = {
+        user: {
+          id: 1,
+        },
+      } as AuthenticatedRequest;
 
-      const result = controller.getCurrentUserId(req);
+      mockUserService.findOne.mockResolvedValueOnce(mockUser1 as User);
+      const result = await controller.getCurrentUser(req);
 
-      expect(result).toBe(1);
+      expect(result).toEqual(mockUser1);
     });
   });
 
