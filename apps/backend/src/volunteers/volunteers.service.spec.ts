@@ -19,6 +19,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
+import { DataSource } from 'typeorm';
 
 jest.setTimeout(60000);
 
@@ -81,6 +82,10 @@ describe('VolunteersService', () => {
           useValue: {
             sendEmails: jest.fn().mockResolvedValue(undefined),
           },
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();

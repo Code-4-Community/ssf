@@ -4,13 +4,15 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class DonationService {
@@ -18,8 +20,11 @@ export class DonationService {
 
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
+    @InjectRepository(DonationItem)
+    private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -312,5 +317,101 @@ export class DonationService {
       dates.push(nextDate.toISOString());
     }
     return dates;
+  }
+
+  async replaceDonationItems(
+    donationId: number,
+    body: ReplaceDonationItemsDto,
+  ): Promise<Donation> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.repo.findOne({
+      where: { donationId },
+      relations: ['donationItems'],
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.AVAILABLE) {
+      throw new BadRequestException(`Only available donations can be updated`);
+    }
+
+    const existingItems = donation.donationItems || [];
+    const incomingItems = body.items || [];
+
+    const existingMap = new Map(
+      existingItems.map((item) => [item.itemId, item]),
+    );
+
+    const incomingIds = new Set(
+      incomingItems.filter((i) => i.id).map((i) => i.id),
+    );
+
+    const itemsToDelete = existingItems.filter(
+      (item) => !incomingIds.has(item.itemId),
+    );
+
+    const itemsToSave = incomingItems.map((donationItem) => {
+      if (donationItem.id) {
+        const existing = existingMap.get(donationItem.id);
+
+        if (!existing) {
+          throw new NotFoundException(
+            `Donation item ${donationItem.id} for Donation ${donationId} not found`,
+          );
+        }
+
+        return this.donationItemsRepo.merge(existing, donationItem);
+      }
+
+      return this.donationItemsRepo.create({
+        ...donationItem,
+        donation,
+      });
+    });
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      if (itemsToDelete.length > 0) {
+        await transactionManager.remove(itemsToDelete);
+      }
+
+      if (itemsToSave.length > 0) {
+        await transactionManager.save(itemsToSave);
+      }
+    });
+
+    const updatedDonation = await this.repo.findOne({
+      where: { donationId },
+      relations: ['donationItems'],
+    });
+
+    // This should never happen since we already check if the donationId has a donation previously.
+    if (!updatedDonation) {
+      throw new NotFoundException(
+        `Donation ${donationId} not found after update`,
+      );
+    }
+
+    return updatedDonation;
+  }
+
+  async delete(donationId: number): Promise<void> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.repo.findOne({
+      where: { donationId },
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.AVAILABLE) {
+      throw new BadRequestException(`Only available donations can be deleted`);
+    }
+
+    await this.repo.delete(donationId);
   }
 }

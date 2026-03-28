@@ -23,7 +23,9 @@ export class Allocation {
   @Column({ name: 'item_id', type: 'int' })
   itemId!: number;
 
-  @ManyToOne(() => DonationItem, (item) => item.allocations)
+  @ManyToOne(() => DonationItem, (item) => item.allocations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'item_id' })
   item!: DonationItem;
 
