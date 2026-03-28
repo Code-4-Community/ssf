@@ -62,5 +62,5 @@ export class Donation {
   occurrencesRemaining!: number | null;
 
   @OneToMany(() => DonationItem, (item) => item.donation)
-  donationItems!: DonationItem[] | null;
+  donationItems!: DonationItem[];
 }

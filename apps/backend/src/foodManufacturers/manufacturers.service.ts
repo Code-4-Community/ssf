@@ -25,6 +25,7 @@ import {
   DonationOrderDetailsDto,
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
+import { DonationStatus } from '../donations/types';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -90,7 +91,9 @@ export class FoodManufacturersService {
       .where('donation.food_manufacturer_id = :foodManufacturerId', {
         foodManufacturerId,
       })
-      .andWhere(`donation.status = 'matched'`)
+      .andWhere(`donation.status = :status`, {
+        status: DonationStatus.MATCHED,
+      })
       .getMany();
 
     return donations.map((donation) => {
