@@ -332,7 +332,7 @@ export class PantriesService {
         pantryMessage.subject,
         pantryMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry application submitted confirmation email to representative',
       );
@@ -345,7 +345,7 @@ export class PantriesService {
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new pantry application notification email to SSF',
       );
@@ -419,7 +419,7 @@ export class PantriesService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry account approved notification email to representative',
       );
@@ -465,10 +465,25 @@ export class PantriesService {
 
   async updatePantryVolunteers(
     pantryId: number,
-    volunteerIds: number[],
+    addVolunteerIds: number[],
+    removeVolunteerIds: number[],
   ): Promise<void> {
     validateId(pantryId, 'Pantry');
-    volunteerIds.forEach((id) => validateId(id, 'Volunteer'));
+
+    const overlap = addVolunteerIds.filter((id) =>
+      removeVolunteerIds.includes(id),
+    );
+    if (overlap.length > 0) {
+      throw new BadRequestException(
+        `The following ID(s) appear in both the add and remove lists: ${overlap.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    const uniqueAddIds = [...new Set(addVolunteerIds)];
+    const allVolunteerIds = [...uniqueAddIds, ...removeVolunteerIds];
+    allVolunteerIds.forEach((id) => validateId(id, 'Volunteer'));
 
     const pantry = await this.repo.findOne({
       where: { pantryId },
@@ -480,24 +495,32 @@ export class PantriesService {
     }
 
     const users = await Promise.all(
-      volunteerIds.map((id) => this.usersService.findOne(id)),
+      allVolunteerIds.map((id) => this.usersService.findOne(id)),
     );
-
-    if (users.length !== volunteerIds.length) {
-      throw new NotFoundException('One or more users not found');
-    }
 
     const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
 
     if (nonVolunteers.length > 0) {
       throw new BadRequestException(
-        `Users ${nonVolunteers
+        `User(s) ${nonVolunteers
           .map((user) => user.id)
           .join(', ')} are not volunteers`,
       );
     }
 
-    pantry.volunteers = users;
+    const usersToAdd = users.filter((u) => uniqueAddIds.includes(u.id));
+
+    const currentVolunteers = pantry.volunteers ?? [];
+    const filteredVolunteers = currentVolunteers.filter(
+      (v) => !removeVolunteerIds.includes(v.id),
+    );
+
+    const existingVolunteerIds = new Set(filteredVolunteers.map((v) => v.id));
+    const volunteersToAdd = usersToAdd.filter(
+      (u) => !existingVolunteerIds.has(u.id),
+    );
+
+    pantry.volunteers = [...filteredVolunteers, ...volunteersToAdd];
     await this.repo.save(pantry);
   }
 
