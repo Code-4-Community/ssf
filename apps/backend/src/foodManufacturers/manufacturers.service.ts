@@ -19,6 +19,13 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
+import {
+  DonationDetailsDto,
+  DonationItemWithAllocatedQuantityDto,
+  DonationOrderDetailsDto,
+} from './dtos/donation-details-dto';
+import { OrderStatus } from '../orders/types';
+import { DonationStatus } from '../donations/types';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -49,11 +56,16 @@ export class FoodManufacturersService {
     return foodManufacturer;
   }
 
-  async getFMDonations(foodManufacturerId: number): Promise<Donation[]> {
+  async getFMDonations(
+    foodManufacturerId: number,
+    currentUserId: number,
+  ): Promise<DonationDetailsDto[]> {
     validateId(foodManufacturerId, 'Food Manufacturer');
+    validateId(currentUserId, 'User');
 
     const manufacturer = await this.repo.findOne({
       where: { foodManufacturerId },
+      relations: ['foodManufacturerRepresentative'],
     });
 
     if (!manufacturer) {
@@ -62,9 +74,69 @@ export class FoodManufacturersService {
       );
     }
 
-    return this.donationsRepo.find({
-      where: { foodManufacturer: { foodManufacturerId } },
-      relations: ['foodManufacturer'],
+    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
+      );
+    }
+
+    const donations = await this.donationsRepo
+      .createQueryBuilder('donation')
+      .leftJoinAndSelect('donation.foodManufacturer', 'foodManufacturer')
+      .leftJoinAndSelect('donation.donationItems', 'donationItem')
+      .leftJoinAndSelect('donationItem.allocations', 'allocation')
+      .leftJoinAndSelect('allocation.order', 'order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .where('donation.food_manufacturer_id = :foodManufacturerId', {
+        foodManufacturerId,
+      })
+      .andWhere(`donation.status = :status`, {
+        status: DonationStatus.MATCHED,
+      })
+      .getMany();
+
+    return donations.map((donation) => {
+      const orderMap = new Map<number, DonationOrderDetailsDto>();
+
+      const relevantDonationItems: DonationItemWithAllocatedQuantityDto[] = [];
+
+      donation.donationItems?.forEach((item) => {
+        const pendingAllocations = item.allocations.filter(
+          (a) => a.order.status === OrderStatus.PENDING,
+        );
+
+        if (pendingAllocations.length === 0) return;
+
+        if (!item.detailsConfirmed) {
+          relevantDonationItems.push({
+            itemId: item.itemId,
+            itemName: item.itemName,
+            foodType: item.foodType,
+            allocatedQuantity: pendingAllocations.reduce(
+              (sum, a) => sum + a.allocatedQuantity,
+              0,
+            ),
+          });
+        }
+
+        pendingAllocations.forEach((a) => {
+          const order = a.order;
+          if (!orderMap.has(order.orderId)) {
+            orderMap.set(order.orderId, {
+              orderId: order.orderId,
+              pantryId: order.request.pantry.pantryId,
+              pantryName: order.request.pantry.pantryName,
+            });
+          }
+        });
+      });
+
+      return {
+        donation,
+        associatedPendingOrders: Array.from(orderMap.values()),
+        relevantDonationItems,
+      };
     });
   }
 
@@ -137,7 +209,7 @@ export class FoodManufacturersService {
         manufacturerMessage.subject,
         manufacturerMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send food manufacturer application submitted confirmation email to representative',
       );
@@ -150,7 +222,7 @@ export class FoodManufacturersService {
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new food manufacturer application notification email to SSF',
       );
