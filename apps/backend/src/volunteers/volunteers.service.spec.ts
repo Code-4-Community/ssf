@@ -139,7 +139,8 @@ describe('VolunteersService', () => {
 
   describe('getVolunteersAndPantryAssignments', () => {
     it('returns an empty array when there are no volunteers', async () => {
-      // Delete all users with role 'volunteer' (CASCADE will handle related data)
+      await testDataSource.query(`DELETE FROM allocations`);
+      await testDataSource.query(`DELETE FROM orders`);
       await testDataSource.query(
         `DELETE FROM "users" WHERE role = 'volunteer'`,
       );
