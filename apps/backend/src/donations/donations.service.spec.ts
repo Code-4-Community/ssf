@@ -879,7 +879,7 @@ describe('DonationService', () => {
       const body = { items: [] };
       await expect(
         service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow('Only available donations can be deleted');
+      ).rejects.toThrow('Only available donations can be updated');
     });
 
     it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
