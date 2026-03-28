@@ -335,7 +335,7 @@ export class DonationService {
     }
 
     if (donation.status !== DonationStatus.AVAILABLE) {
-      throw new BadRequestException(`Only available donations can be deleted`);
+      throw new BadRequestException(`Only available donations can be updated`);
     }
 
     const existingItems = donation.donationItems || [];
