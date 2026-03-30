@@ -434,7 +434,7 @@ describe('OrdersService', () => {
         service.updateTrackingCostInfo(orderId, trackingCostDto),
       ).rejects.toThrow(
         new BadRequestException(
-          'Can only update tracking info for pending or shipped orders',
+          'Can only update tracking info for pending orders',
         ),
       );
     });

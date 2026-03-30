@@ -310,7 +310,7 @@ export class OrdersService {
 
     if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
-        'Can only update tracking info for pending or shipped orders',
+        'Can only update tracking info for pending orders',
       );
     }
 
