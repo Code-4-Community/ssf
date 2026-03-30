@@ -29,6 +29,8 @@ import PantryOrderManagement from '@containers/pantryOrderManagement';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 import AssignedPantries from '@containers/volunteerAssignedPantries';
+import ApproveFoodManufacturers from '@containers/approveFoodManufacturers';
+import FoodManufacturerApplicationDetails from '@containers/foodManufacturerApplicationDetails';
 import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import ProfilePage from '@containers/profilePage';
 
@@ -157,10 +159,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/approve-food-manufacturers',
+        element: (
+          <ProtectedRoute>
+            <ApproveFoodManufacturers />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/pantry-application-details/:applicationId',
         element: (
           <ProtectedRoute>
             <PantryApplicationDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/food-manufacturer-application-details/:applicationId',
+        element: (
+          <ProtectedRoute>
+            <FoodManufacturerApplicationDetails />
           </ProtectedRoute>
         ),
       },
