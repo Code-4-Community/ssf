@@ -33,6 +33,10 @@ declare module '@chakra-ui/react' {
     extends ComponentPropsStrictChildren {}
   export interface MenuRadioItemProps extends ComponentPropsLenientChildren {}
 
+  // FileUpload components
+  export interface FileUploadDropzoneProps
+    extends ComponentPropsLenientChildren {}
+
   // Dialog components
   export interface DialogCloseTriggerProps
     extends ComponentPropsStrictChildren {}
@@ -73,6 +77,12 @@ declare module '@chakra-ui/react' {
   // Native Select components
   export interface NativeSelectFieldProps
     extends ComponentPropsLenientChildren {}
+
+  // Tooltip components
+  export interface TooltipTriggerProps extends ComponentPropsLenientChildren {}
+  export interface TooltipPositionerProps
+    extends ComponentPropsLenientChildren {}
+  export interface TooltipContentProps extends ComponentPropsLenientChildren {}
 
   // Common components
   export interface ButtonProps extends ComponentPropsStrictChildren {}

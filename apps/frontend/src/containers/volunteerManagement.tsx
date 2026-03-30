@@ -18,6 +18,7 @@ import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { getInitials } from '@utils/utils';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -162,8 +163,7 @@ const VolunteerManagement: React.FC = () => {
                       color="white"
                       p={2}
                     >
-                      {volunteer.firstName.charAt(0).toUpperCase()}
-                      {volunteer.lastName.charAt(0).toUpperCase()}
+                      {getInitials(volunteer.firstName, volunteer.lastName)}
                     </Box>
                     {volunteer.firstName} {volunteer.lastName}
                   </Box>

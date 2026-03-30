@@ -12,6 +12,7 @@ import { Order } from '../orders/order.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthService } from '../auth/auth.service';
+import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -35,6 +36,7 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
+        EmailsService,
         OrdersService,
         RequestsService,
         FoodManufacturersService,
@@ -73,6 +75,12 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();
@@ -126,7 +134,8 @@ describe('VolunteersService', () => {
 
   describe('getVolunteersAndPantryAssignments', () => {
     it('returns an empty array when there are no volunteers', async () => {
-      // Delete all users with role 'volunteer' (CASCADE will handle related data)
+      await testDataSource.query(`DELETE FROM allocations`);
+      await testDataSource.query(`DELETE FROM orders`);
       await testDataSource.query(
         `DELETE FROM "users" WHERE role = 'volunteer'`,
       );

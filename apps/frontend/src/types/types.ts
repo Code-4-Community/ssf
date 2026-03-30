@@ -54,6 +54,11 @@ export interface Pantry {
   volunteers?: User[];
 }
 
+export interface ConfirmDeliveryDto {
+  dateReceived: string;
+  feedback?: string;
+}
+
 export interface PantryWithUser extends Pantry {
   pantryUser: User;
 }
@@ -162,13 +167,17 @@ export enum FoodType {
 
 export interface User {
   id: number;
-  role: string;
+  role: Role;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   pantries?: Pantry[];
 }
+
+export type UpdateProfileFields = Partial<
+  Pick<User, 'firstName' | 'lastName' | 'phone'>
+>;
 
 export interface UserDto {
   email: string;
@@ -201,19 +210,28 @@ export interface FoodRequestSummaryDto {
   status: FoodRequestStatus;
 }
 
-export interface Order {
-  orderId: number;
-  request: FoodRequest;
-  requestId: number;
+export interface Order extends OrderWithoutFoodManufacturer {
   foodManufacturer: FoodManufacturer;
+}
+
+export interface OrderWithoutFoodManufacturer extends OrderWithoutRelations {
+  request: FoodRequest;
+  allocations: Allocation[];
+}
+
+export interface OrderWithoutRelations {
+  orderId: number;
+  requestId: number;
   foodManufacturerId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt?: Date;
-  deliveredAt?: Date;
-  allocations: Allocation[];
+  shippedAt?: string;
+  deliveredAt?: string;
   trackingLink?: string;
   shippingCost?: number;
+  dateReceived?: string;
+  feedback?: string;
+  photos?: string[];
 }
 
 export interface OrderItemDetails {
@@ -314,8 +332,8 @@ export enum Role {
 }
 
 export enum OrderStatus {
-  PENDING = 'pending',
   SHIPPED = 'shipped',
+  PENDING = 'pending',
   DELIVERED = 'delivered',
 }
 
@@ -355,6 +373,11 @@ export interface OrderSummary {
         lastName: string;
       }[];
     };
+  };
+  assignee: {
+    id: number;
+    firstName: string;
+    lastName: string;
   };
 }
 

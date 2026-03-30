@@ -8,30 +8,26 @@ import {
   IconButton,
   VStack,
   ButtonGroup,
-  Checkbox,
-  Input,
-  Link,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
   ChevronRight,
   ChevronLeft,
-  Funnel,
   Mail,
   CircleCheck,
-  Search,
 } from 'lucide-react';
-import { capitalize, formatDate, getInitials } from '@utils/utils';
+import { capitalize, formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
+import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
-// Extending the OrderSummary type to include assignee color for display
-type OrderWithColor = OrderSummary & { assigneeColor?: string };
+type OrderWithColor = OrderWithoutFoodManufacturer & { assigneeColor?: string };
+const MAX_PER_STATUS = 5;
 
-const AdminOrderManagement: React.FC = () => {
+const PantryOrderManagement: React.FC = () => {
   // State to hold orders grouped by status
   const [statusOrders, setStatusOrders] = useState<
     Record<OrderStatus, OrderWithColor[]>
@@ -44,6 +40,9 @@ const AdminOrderManagement: React.FC = () => {
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
+  const [selectedActionOrder, setSelectedActionOrder] =
+    useState<OrderWithColor | null>(null);
+
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
@@ -53,36 +52,28 @@ const AdminOrderManagement: React.FC = () => {
     },
   );
 
+  const [isAlertError, setIsAlertError] = useState<boolean>(false);
+
   const [alertState, setAlertMessage] = useAlert();
 
   // State to hold filter state per status
   type FilterState = {
-    selectedPantries: string[];
-    searchPantry: string;
     sortAsc: boolean;
   };
 
   // Record to store the filter state for each status
-  // selectedPantries represents the pantries selected in the filter
-  // searchPantry is the current search input for pantry filtering
   // sortAsc indicates whether the sorting is ascending (oldest first) or descending (newest first)
   // We store all these here to determine what orders to display for each status
   const [filterStates, setFilterStates] = useState<
     Record<OrderStatus, FilterState>
   >({
     [OrderStatus.SHIPPED]: {
-      selectedPantries: [],
-      searchPantry: '',
       sortAsc: true,
     },
     [OrderStatus.PENDING]: {
-      selectedPantries: [],
-      searchPantry: '',
       sortAsc: true,
     },
     [OrderStatus.DELIVERED]: {
-      selectedPantries: [],
-      searchPantry: '',
       sortAsc: true,
     },
   });
@@ -94,50 +85,43 @@ const AdminOrderManagement: React.FC = () => {
     [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
   ]);
 
-  const MAX_PER_STATUS = 5;
+  const fetchOrders = async () => {
+    try {
+      const pantryId = await ApiClient.getCurrentUserPantryId();
+      const data = await ApiClient.getPantryOrders(pantryId);
 
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
+      const grouped: Record<OrderStatus, OrderWithColor[]> = {
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.DELIVERED]: [],
+      };
+
+      for (const order of data) {
+        const status = order.status;
+
+        const orderWithColor: OrderWithColor = { ...order };
+
+        grouped[status].push(orderWithColor);
+      }
+
+      setStatusOrders(grouped);
+
+      // Initialize current page for each status
+      const initialPages: Record<OrderStatus, number> = {
+        [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.PENDING]: 1,
+        [OrderStatus.DELIVERED]: 1,
+      };
+      setCurrentPages(initialPages);
+    } catch (error) {
+      setIsAlertError(true);
+      setAlertMessage('Failed to fetch orders');
+    }
+  };
 
   useEffect(() => {
-    // Fetch all orders on component mount and sorts them into their appropriate status lists
-    const fetchOrders = async () => {
-      try {
-        const data = await ApiClient.getAllOrders();
-
-        const grouped: Record<OrderStatus, OrderWithColor[]> = {
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.DELIVERED]: [],
-        };
-
-        for (const order of data) {
-          const status = order.status;
-          const orderWithColor: OrderWithColor = { ...order };
-
-          if (order.assignee) {
-            orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[order.assignee.id % ASSIGNEE_COLORS.length];
-          }
-
-          grouped[status].push(orderWithColor);
-        }
-
-        setStatusOrders(grouped);
-
-        // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.DELIVERED]: 1,
-        };
-        setCurrentPages(initialPages);
-      } catch {
-        setAlertMessage('Error fetching orders');
-      }
-    };
-
     fetchOrders();
-  }, [setAlertMessage]);
+  }, []);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
@@ -161,7 +145,7 @@ const AdminOrderManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={isAlertError ? 'error' : 'info'}
           timeout={6000}
         />
       )}
@@ -170,25 +154,12 @@ const AdminOrderManagement: React.FC = () => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
-        // Get pantry options through all orders in the status
-        const pantryOptions = [
-          ...new Set(allOrders.map((o) => o.request.pantry.pantryName)),
-        ].sort((a, b) => a.localeCompare(b));
-
         // Apply filters and sorting to all orders
-        const filteredOrders = allOrders
-          .filter(
-            (o) =>
-              filterState.selectedPantries.length === 0 ||
-              filterState.selectedPantries.includes(
-                o.request.pantry.pantryName,
-              ),
-          )
-          .sort((a, b) =>
-            filterState.sortAsc
-              ? a.createdAt.localeCompare(b.createdAt)
-              : b.createdAt.localeCompare(a.createdAt),
-          );
+        const filteredOrders = allOrders.sort((a, b) =>
+          filterState.sortAsc
+            ? a.createdAt.localeCompare(b.createdAt)
+            : b.createdAt.localeCompare(a.createdAt),
+        );
 
         const totalFiltered = filteredOrders.length;
         const currentPage = currentPages[status] || 1;
@@ -203,25 +174,17 @@ const AdminOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={STATUS_COLORS.get(status)!}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
+              onOrderSelectForAction={setSelectedActionOrder}
               totalOrders={totalFiltered}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
-              pantryOptions={pantryOptions}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
                 // Update filter state for the specific status
                 setFilterStates((prev) => {
-                  const prevSelected = prev[status]?.selectedPantries || [];
-                  const prevKey = [...prevSelected].sort().join(',');
-                  const newKey = [...newState.selectedPantries]
-                    .sort()
-                    .join(',');
-                  // Reset page if selected pantries changed
-                  if (prevKey !== newKey) {
-                    resetPageForStatus(status);
-                  }
+                  const prevSort = prev[status]?.sortAsc;
+                  if (prevSort !== newState.sortAsc) resetPageForStatus(status);
                   return { ...prev, [status]: newState };
                 })
               }
@@ -229,6 +192,32 @@ const AdminOrderManagement: React.FC = () => {
           </Box>
         );
       })}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={true}
+          onClose={() => setSelectedOrderId(null)}
+        />
+      )}
+
+      {selectedActionOrder && (
+        <OrderReceivedActionModal
+          orderId={selectedActionOrder.orderId}
+          orderCreatedAt={selectedActionOrder.createdAt}
+          isOpen={true}
+          onClose={() => setSelectedActionOrder(null)}
+          onSuccess={() => {
+            fetchOrders();
+            setIsAlertError(false);
+            setAlertMessage('Delivery Confirmed');
+          }}
+          onError={() => {
+            setIsAlertError(true);
+            setAlertMessage('Delivery could not be confirmed.');
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -236,23 +225,16 @@ const AdminOrderManagement: React.FC = () => {
 interface OrderStatusSectionProps {
   orders: OrderWithColor[];
   status: OrderStatus;
-  colors: string[];
+  colors: [string, string];
   onOrderSelect: (orderId: number | null) => void;
-  selectedOrderId: number | null;
+  onOrderSelectForAction: (order: OrderWithColor | null) => void;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
-  pantryOptions: string[];
   filterState: {
-    selectedPantries: string[];
-    searchPantry: string;
     sortAsc: boolean;
   };
-  onFilterChange: (newState: {
-    selectedPantries: string[];
-    searchPantry: string;
-    sortAsc: boolean;
-  }) => void;
+  onFilterChange: (newState: { sortAsc: boolean }) => void;
 }
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
@@ -260,26 +242,16 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
-  selectedOrderId,
+  onOrderSelectForAction,
   totalOrders,
   currentPage,
   onPageChange,
-  pantryOptions,
   filterState,
   onFilterChange,
 }) => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
-
-  const handleFilterChange = (pantry: string, checked: boolean) => {
-    const newSelected = checked
-      ? [...filterState.selectedPantries, pantry]
-      : filterState.selectedPantries.filter((p) => p !== pantry);
-    onFilterChange({ ...filterState, selectedPantries: newSelected });
-  };
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -356,120 +328,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             fontFamily="'Inter', sans-serif"
             gap={3}
           >
-            <Box position="relative">
-              <Button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                variant="outline"
-                color="neutral.800"
-                fontWeight="semibold"
-                border="1px solid"
-                borderColor="neutral.200"
-                size="sm"
-                p={3}
-              >
-                <Funnel />
-                Filter
-              </Button>
-
-              {isFilterOpen && (
-                <>
-                  <Box
-                    position="fixed"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    onClick={() => setIsFilterOpen(false)}
-                    zIndex={10}
-                  />
-                  <Box
-                    position="absolute"
-                    top="100%"
-                    right={0}
-                    mt={2}
-                    bg="white"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    borderRadius="md"
-                    boxShadow="lg"
-                    p={4}
-                    minW="275px"
-                    maxH="200px"
-                    overflowY="auto"
-                    zIndex={20}
-                  >
-                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
-                      <Search
-                        size={18}
-                        color="#B8B8B8"
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: 8,
-                          transform: 'translateY(-50%)',
-                        }}
-                      />
-                      <Input
-                        placeholder="Search"
-                        color={
-                          filterState.searchPantry
-                            ? 'neutral.800'
-                            : 'neutral.300'
-                        }
-                        value={filterState.searchPantry}
-                        onChange={(e) =>
-                          onFilterChange({
-                            ...filterState,
-                            searchPantry: e.target.value,
-                          })
-                        }
-                        fontSize="sm"
-                        pl="30px"
-                        border="none"
-                        bg="transparent"
-                        _focus={{
-                          boxShadow: 'none',
-                          border: 'none',
-                          outline: 'none',
-                        }}
-                      />
-                    </Box>
-                    <VStack
-                      align="stretch"
-                      fontSize="12px"
-                      fontFamily="Inter"
-                      color="neutral.800"
-                      fontWeight="500"
-                      gap={2}
-                    >
-                      {pantryOptions
-                        .filter((pantry) =>
-                          pantry
-                            .toLowerCase()
-                            .includes(filterState.searchPantry.toLowerCase()),
-                        )
-                        .map((pantry) => (
-                          <Checkbox.Root
-                            key={pantry}
-                            checked={filterState.selectedPantries.includes(
-                              pantry,
-                            )}
-                            onCheckedChange={(e: { checked: boolean }) =>
-                              handleFilterChange(pantry, !!e.checked)
-                            }
-                            size="md"
-                          >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control borderRadius="sm" />
-                            <Checkbox.Label>{pantry}</Checkbox.Label>
-                          </Checkbox.Root>
-                        ))}
-                    </VStack>
-                  </Box>
-                </>
-              )}
-            </Box>
-
             <Box position="relative">
               <Button
                 onClick={() => setIsSortOpen(!isSortOpen)}
@@ -572,17 +430,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
                   width="7%"
-                  textAlign="center"
                 >
                   Assignee
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="30%"
-                >
-                  Pantry
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
@@ -602,26 +451,22 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {orders.map((order, index) => {
-                const pantry = order.request.pantry;
-
+              {orders.map((order) => {
                 return (
-                  <Table.Row
-                    key={`${order.orderId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
-                  >
+                  <Table.Row key={order.orderId} _hover={{ bg: 'gray.50' }}>
                     <Table.Cell
                       {...tableCellStyles}
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      <Link
-                        textDecorationColor="black"
-                        variant="underline"
+                      <Button
+                        variant="plain"
+                        fontWeight="400"
+                        textDecoration="underline"
                         onClick={() => onOrderSelect(order.orderId)}
                       >
                         {order.orderId}
-                      </Link>
+                      </Button>
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -634,9 +479,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         color={colors[1]}
                         display="inline-block"
                         fontWeight="500"
-                        fontSize="12px"
-                        my={3}
-                        py={0.5}
+                        my={2}
+                        py={1}
                         px={3}
                       >
                         {capitalize(order.status)}
@@ -647,35 +491,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      <Box
-                        direction="row"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Box
-                          key={index}
-                          borderRadius="full"
-                          bg={order.assigneeColor || 'gray'}
-                          width="33px"
-                          height="33px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          color="white"
-                          p={2}
-                        >
-                          {order.assignee.firstName.charAt(0).toUpperCase()}
-                          {order.assignee.lastName.charAt(0).toUpperCase()}
-                        </Box>
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      {pantry.pantryName}
+                      {/* TODO: Add assignee column handling */}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -684,24 +500,35 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {formatDate(order.createdAt)}-
+                      {formatDate(order.createdAt)} -{' '}
                       {order.deliveredAt && formatDate(order.deliveredAt)}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
-                      textAlign="left"
-                      bg="#FAFAFA"
-                    ></Table.Cell>
+                      textAlign="right"
+                      color="neutral.700"
+                      bgColor={
+                        order.status !== OrderStatus.SHIPPED
+                          ? 'neutral.50'
+                          : 'white'
+                      }
+                      pr={0}
+                    >
+                      {order.status === OrderStatus.SHIPPED && (
+                        <Button
+                          variant="plain"
+                          fontWeight="400"
+                          textDecoration="underline"
+                          color="neutral.700"
+                          onClick={() => onOrderSelectForAction(order)}
+                        >
+                          Complete Required Action
+                        </Button>
+                      )}
+                    </Table.Cell>
                   </Table.Row>
                 );
               })}
-              {selectedOrderId && (
-                <OrderDetailsModal
-                  orderId={selectedOrderId}
-                  isOpen={true}
-                  onClose={() => onOrderSelect(null)}
-                />
-              )}
             </Table.Body>
           </Table.Root>
 
@@ -769,4 +596,4 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   );
 };
 
-export default AdminOrderManagement;
+export default PantryOrderManagement;

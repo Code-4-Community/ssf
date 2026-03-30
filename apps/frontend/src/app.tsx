@@ -5,7 +5,6 @@ import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
 import Orders from '@containers/orders';
 import PantryDashboard from '@containers/pantryDashboard';
-import { submitDeliveryConfirmationFormModal } from '@components/forms/deliveryConfirmationModal';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
@@ -26,12 +25,14 @@ import ForgotPasswordPage from '@containers/forgotPasswordPage';
 import ProtectedRoute from '@components/protectedRoute';
 import Unauthorized from '@containers/unauthorized';
 import { Authenticator } from '@aws-amplify/ui-react';
+import PantryOrderManagement from '@containers/pantryOrderManagement';
 import FoodManufacturerApplication from '@containers/foodManufacturerApplication';
 import { submitManufacturerApplicationForm } from '@components/forms/manufacturerApplicationForm';
 import AssignedPantries from '@containers/volunteerAssignedPantries';
 import ApproveFoodManufacturers from '@containers/approveFoodManufacturers';
 import FoodManufacturerApplicationDetails from '@containers/foodManufacturerApplicationDetails';
 import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
+import ProfilePage from '@containers/profilePage';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -206,8 +207,20 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/confirm-delivery',
-        action: submitDeliveryConfirmationFormModal,
+        path: '/pantry-order-management',
+        element: (
+          <ProtectedRoute>
+            <PantryOrderManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/profile',
+        element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/volunteer-assigned-pantries',
