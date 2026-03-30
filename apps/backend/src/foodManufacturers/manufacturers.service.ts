@@ -306,7 +306,14 @@ export class FoodManufacturersService {
   async deny(id: number) {
     validateId(id, 'Food Manufacturer');
 
-    const foodManufacturer = await this.findOne(id);
+    const foodManufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: id },
+      relations: ['foodManufacturerRepresentative'],
+    });
+
+    if (!foodManufacturer) {
+      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
 
     if (foodManufacturer.status !== ApplicationStatus.PENDING) {
       throw new ConflictException(
