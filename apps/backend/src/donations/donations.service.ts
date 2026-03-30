@@ -373,12 +373,14 @@ export class DonationService {
     });
 
     await this.dataSource.transaction(async (transactionManager) => {
+      const repo = transactionManager.getRepository(DonationItem);
+
       if (itemsToDelete.length > 0) {
-        await transactionManager.remove(itemsToDelete);
+        await repo.remove(itemsToDelete);
       }
 
       if (itemsToSave.length > 0) {
-        await transactionManager.save(itemsToSave);
+        await repo.save(itemsToSave);
       }
     });
 
@@ -387,14 +389,7 @@ export class DonationService {
       relations: ['donationItems'],
     });
 
-    // This should never happen since we already check if the donationId has a donation previously.
-    if (!updatedDonation) {
-      throw new NotFoundException(
-        `Donation ${donationId} not found after update`,
-      );
-    }
-
-    return updatedDonation;
+    return updatedDonation!;
   }
 
   async delete(donationId: number): Promise<void> {
