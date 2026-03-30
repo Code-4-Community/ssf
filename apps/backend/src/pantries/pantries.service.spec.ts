@@ -829,7 +829,10 @@ describe('PantriesService', () => {
 
   describe('updatePantryVolunteers', () => {
     it('adds volunteers to a pantry', async () => {
-      await service.updatePantryVolunteers(1, [7], []);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [7],
+        removeVolunteerIds: [],
+      });
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
@@ -837,7 +840,10 @@ describe('PantriesService', () => {
     });
 
     it('removes volunteers from a pantry', async () => {
-      await service.updatePantryVolunteers(1, [], [6]);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [6],
+      });
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
@@ -845,7 +851,10 @@ describe('PantriesService', () => {
     });
 
     it('adds and removes volunteers in a single request', async () => {
-      await service.updatePantryVolunteers(1, [8], [6, 9]);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [8],
+        removeVolunteerIds: [6, 9],
+      });
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
@@ -856,7 +865,10 @@ describe('PantriesService', () => {
     });
 
     it('silently ignores adding an already-assigned volunteer', async () => {
-      await service.updatePantryVolunteers(1, [6], []);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [6],
+        removeVolunteerIds: [],
+      });
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
@@ -868,36 +880,45 @@ describe('PantriesService', () => {
       const pantryBefore = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      await service.updatePantryVolunteers(1, [], [8]);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [8],
+      });
       const pantryAfter = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
 
-    it('handles duplicate IDs in addVolunteerIds without constraint violation', async () => {
+    it('throws BadRequestException for duplicate IDs in addVolunteerIds', async () => {
       await expect(
-        service.updatePantryVolunteers(1, [7, 7], []),
-      ).resolves.not.toThrow();
-      const pantry = await testDataSource
-        .getRepository(Pantry)
-        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      const ids = pantry?.volunteers?.map((v) => v.id);
-      expect(ids?.filter((id) => id === 7)).toHaveLength(1);
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [7, 7],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('addVolunteerIds contains duplicate values'),
+      );
     });
 
-    it('handles duplicate IDs in removeVolunteerIds', async () => {
+    it('throws BadRequestException for duplicate IDs in removeVolunteerIds', async () => {
       await expect(
-        service.updatePantryVolunteers(1, [], [6, 6]),
-      ).resolves.not.toThrow();
-      const pantry = await testDataSource
-        .getRepository(Pantry)
-        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      expect(pantry?.volunteers?.map((v) => v.id)).not.toContain(6);
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [],
+          removeVolunteerIds: [6, 6],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('removeVolunteerIds contains duplicate values'),
+      );
     });
 
     it('throws BadRequestException when same ID appears in both add and remove lists', async () => {
-      await expect(service.updatePantryVolunteers(1, [6], [6])).rejects.toThrow(
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [6],
+        }),
+      ).rejects.toThrow(
         new BadRequestException(
           'The following ID(s) appear in both the add and remove lists: 6',
         ),
@@ -906,20 +927,67 @@ describe('PantriesService', () => {
 
     it('throws NotFoundException when pantry not found', async () => {
       await expect(
-        service.updatePantryVolunteers(9999, [6], []),
+        service.updatePantryVolunteers(9999, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('throws NotFoundException when volunteer ID does not exist', async () => {
       await expect(
-        service.updatePantryVolunteers(1, [99999], []),
-      ).rejects.toThrow(new NotFoundException('User 99999 not found'));
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [99999],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
+    });
+
+    it('throws NotFoundException when some volunteer IDs do not exist', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [7, 99999],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
     });
 
     it('throws BadRequestException when user is not a volunteer', async () => {
-      await expect(service.updatePantryVolunteers(1, [1], [])).rejects.toThrow(
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [1],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(
         new BadRequestException('User(s) 1 are not volunteers'),
       );
+    });
+
+    it('throws BadRequestException when some users are not volunteers in a mixed list', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [6, 1],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('User(s) 1 are not volunteers'),
+      );
+    });
+
+    it('handles pantry with empty volunteers array', async () => {
+      const pantryId = 4;
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers).toHaveLength(0);
+      await service.updatePantryVolunteers(pantryId, {
+        addVolunteerIds: [7],
+        removeVolunteerIds: [],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId }, relations: ['volunteers'] });
+      expect(pantryAfter?.volunteers?.map((v) => v.id)).toContain(7);
     });
   });
 });

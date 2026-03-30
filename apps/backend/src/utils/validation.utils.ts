@@ -39,3 +39,7 @@ export function sanitizeUrl(url: string): string | null {
     return null;
   }
 }
+
+export function hasDuplicates(arr: number[]): boolean {
+  return new Set(arr).size !== arr.length;
+}

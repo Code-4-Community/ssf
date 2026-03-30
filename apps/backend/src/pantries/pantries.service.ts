@@ -12,7 +12,7 @@ import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { Order } from '../orders/order.entity';
 import { User } from '../users/users.entity';
-import { validateId } from '../utils/validation.utils';
+import { hasDuplicates, validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
@@ -23,6 +23,7 @@ import { UsersService } from '../users/users.service';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
+import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Injectable()
 export class PantriesService {
@@ -465,14 +466,27 @@ export class PantriesService {
 
   async updatePantryVolunteers(
     pantryId: number,
-    addVolunteerIds: number[],
-    removeVolunteerIds: number[],
+    body: UpdatePantryVolunteersDto,
   ): Promise<void> {
+    const { addVolunteerIds = [], removeVolunteerIds = [] } = body;
     validateId(pantryId, 'Pantry');
 
-    const overlap = addVolunteerIds.filter((id) =>
-      removeVolunteerIds.includes(id),
-    );
+    if (hasDuplicates(addVolunteerIds)) {
+      throw new BadRequestException(
+        'addVolunteerIds contains duplicate values',
+      );
+    }
+
+    if (hasDuplicates(removeVolunteerIds)) {
+      throw new BadRequestException(
+        'removeVolunteerIds contains duplicate values',
+      );
+    }
+
+    const addSet = new Set(addVolunteerIds);
+    const removeSet = new Set(removeVolunteerIds);
+
+    const overlap = [...addSet].filter((id) => removeSet.has(id));
     if (overlap.length > 0) {
       throw new BadRequestException(
         `The following ID(s) appear in both the add and remove lists: ${overlap.join(
@@ -481,8 +495,7 @@ export class PantriesService {
       );
     }
 
-    const uniqueAddIds = [...new Set(addVolunteerIds)];
-    const allVolunteerIds = [...uniqueAddIds, ...removeVolunteerIds];
+    const allVolunteerIds = [...addSet, ...removeSet];
     allVolunteerIds.forEach((id) => validateId(id, 'Volunteer'));
 
     const pantry = await this.repo.findOne({
@@ -494,11 +507,12 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const users = await Promise.all(
-      allVolunteerIds.map((id) => this.usersService.findOne(id)),
-    );
+    const users = await this.usersService.findByIds(allVolunteerIds);
+    const usersToAdd = users.filter((u) => addSet.has(u.id));
 
-    const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
+    const nonVolunteers = usersToAdd.filter(
+      (user) => user.role !== Role.VOLUNTEER,
+    );
 
     if (nonVolunteers.length > 0) {
       throw new BadRequestException(
@@ -508,11 +522,9 @@ export class PantriesService {
       );
     }
 
-    const usersToAdd = users.filter((u) => uniqueAddIds.includes(u.id));
-
     const currentVolunteers = pantry.volunteers ?? [];
     const filteredVolunteers = currentVolunteers.filter(
-      (v) => !removeVolunteerIds.includes(v.id),
+      (v) => !removeSet.has(v.id),
     );
 
     const existingVolunteerIds = new Set(filteredVolunteers.map((v) => v.id));

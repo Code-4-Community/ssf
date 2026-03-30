@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -33,6 +34,7 @@ import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
+import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Controller('pantries')
 export class PantriesController {
@@ -384,13 +386,18 @@ export class PantriesController {
   @Patch('/:pantryId/volunteers')
   async updatePantryVolunteers(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-    @Body('addVolunteerIds') addVolunteerIds: number[],
-    @Body('removeVolunteerIds') removeVolunteerIds: number[],
+    @Body(new ValidationPipe())
+    body: UpdatePantryVolunteersDto,
   ): Promise<void> {
-    return this.pantriesService.updatePantryVolunteers(
-      pantryId,
-      addVolunteerIds,
-      removeVolunteerIds,
-    );
+    const { addVolunteerIds, removeVolunteerIds } = body;
+    if (
+      (!addVolunteerIds || addVolunteerIds.length === 0) &&
+      (!removeVolunteerIds || removeVolunteerIds.length === 0)
+    ) {
+      throw new BadRequestException(
+        'At least one of addVolunteerIds or removeVolunteerIds must be provided',
+      );
+    }
+    return this.pantriesService.updatePantryVolunteers(pantryId, body);
   }
 }

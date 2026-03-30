@@ -102,6 +102,20 @@ export class UsersService {
     return user;
   }
 
+  async findByIds(userIds: number[]): Promise<User[]> {
+    userIds.forEach((id) => validateId(id, 'User'));
+
+    const users = await this.repo.findBy({ id: In(userIds) });
+
+    if (users.length !== userIds.length) {
+      const foundIds = users.map((u) => u.id);
+      const missingIds = userIds.filter((id) => !foundIds.includes(id));
+      throw new NotFoundException(`Users not found: ${missingIds.join(', ')}`);
+    }
+
+    return users;
+  }
+
   async update(id: number, dto: UpdateUserInfoDto): Promise<User> {
     validateId(id, 'User');
 
