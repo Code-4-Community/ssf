@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { User } from './users.entity';
 import { Role } from './types';
 import { validateId } from '../utils/validation.utils';
@@ -14,12 +14,21 @@ import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { emailTemplates } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Order } from '../orders/order.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
+    @InjectRepository(FoodRequest)
+    private foodRequestRepo: Repository<FoodRequest>,
+    @InjectRepository(Order)
+    private orderRepo: Repository<Order>,
+    @InjectRepository(Donation)
+    private donationRepo: Repository<Donation>,
     private authService: AuthService,
     private emailsService: EmailsService,
   ) {}
@@ -155,5 +164,40 @@ export class UsersService {
       throw new NotFoundException(`User with cognitoId ${cognitoId} not found`);
     }
     return user;
+  }
+
+  async getMonthlyAggregatedStats() {
+    const now = new Date();
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    const [foodRequestsCount, ordersCount, donationsCount, volunteersCount] =
+      await Promise.all([
+        this.foodRequestRepo.count({
+          where: { requestedAt: Between(startMonth, endMonth) },
+        }),
+        this.orderRepo.count({
+          where: { createdAt: Between(startMonth, endMonth) },
+        }),
+        this.donationRepo.count({
+          where: { dateDonated: Between(startMonth, endMonth) },
+        }),
+        this.repo.count({ where: { role: Role.VOLUNTEER } }),
+      ]);
+
+    return {
+      'Food Requests': foodRequestsCount.toString(),
+      Orders: ordersCount.toString(),
+      Donations: donationsCount.toString(),
+      Volunteers: volunteersCount.toString(),
+    };
   }
 }

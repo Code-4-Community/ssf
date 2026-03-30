@@ -13,6 +13,17 @@ import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 import { testDataSource } from '../config/typeormTestDataSource';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Order } from '../orders/order.entity';
+import { Donation } from '../donations/donations.entity';
+import { RequestsService } from '../foodRequests/request.service';
+import { OrdersService } from '../orders/order.service';
+import { DonationService } from '../donations/donations.service';
+import { RecurrenceEnum } from '../donations/types';
+import { CreateDonationDto } from '../donations/dtos/create-donation.dto';
+import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 jest.setTimeout(60000);
 
@@ -23,6 +34,8 @@ const mockEmailsService = mock<EmailsService>();
 
 describe('UsersService', () => {
   let service: UsersService;
+  let foodRequestService: RequestsService;
+  let donationService: DonationService;
 
   beforeAll(async () => {
     process.env.SEND_AUTOMATED_EMAILS = 'true';
@@ -37,6 +50,9 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
+        RequestsService,
+        OrdersService,
+        DonationService,
         {
           provide: AuthService,
           useValue: mockAuthService,
@@ -46,13 +62,39 @@ describe('UsersService', () => {
           useValue: mockEmailsService,
         },
         {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
+        },
+        {
           provide: getRepositoryToken(User),
           useValue: testDataSource.getRepository(User),
+        },
+        {
+          provide: getRepositoryToken(FoodRequest),
+          useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: testDataSource.getRepository(Order),
+        },
+        {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+    foodRequestService = module.get<RequestsService>(RequestsService);
+    donationService = module.get<DonationService>(DonationService);
   });
 
   beforeEach(async () => {
@@ -276,6 +318,41 @@ describe('UsersService', () => {
       const result = await service.findUsersByRoles([Role.ADMIN]);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getMonthlyAggregatedStats', () => {
+    it('should return correct aggregated counts for the current month', async () => {
+      const foodRequestRepo = testDataSource.getRepository(FoodRequest);
+
+      const now = new Date();
+
+      const createDonationBody: Partial<CreateDonationDto> = {
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 3,
+        occurrencesRemaining: 2,
+      };
+
+      await donationService.create(createDonationBody as CreateDonationDto);
+
+      // updating existing request to have a current month requested at date
+      const existingRequest = await foodRequestService.findOne(1);
+      existingRequest.requestedAt = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        5,
+      );
+      await foodRequestRepo.save(existingRequest);
+
+      const stats = await service.getMonthlyAggregatedStats();
+
+      expect(stats).toEqual({
+        'Food Requests': '1',
+        Orders: '0',
+        Donations: '1',
+        Volunteers: '4',
+      });
     });
   });
 });
