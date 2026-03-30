@@ -498,8 +498,8 @@ describe('FoodManufacturersService', () => {
       )[0].request_id;
 
       const newOrder = await testDataSource.query(
-        `INSERT INTO public.orders (request_id, food_manufacturer_id, status, created_at)
-        VALUES ($1, $2, 'pending', NOW()) RETURNING order_id`,
+        `INSERT INTO public.orders (request_id, food_manufacturer_id, status, created_at, assignee_id)
+        VALUES ($1, $2, 'pending', NOW(), 1) RETURNING order_id`,
         [requestId, fmId2],
       );
 
