@@ -32,7 +32,6 @@ const daysFromNow = (numDays: number): Date => {
   return date;
 };
 
-// Insert a donation with MATCHED status, returns its generated ID
 async function insertMatchedDonation(): Promise<number> {
   const result = await testDataSource.query(
     `INSERT INTO donations
@@ -48,7 +47,6 @@ async function insertMatchedDonation(): Promise<number> {
   return result[0].donation_id;
 }
 
-// Insert a donation item for a given donation, returns its generated ID
 async function insertDonationItem(
   donationId: number,
   qty: number,
@@ -64,7 +62,6 @@ async function insertDonationItem(
   return result[0].item_id;
 }
 
-// Insert an allocation linking an existing order to a donation item
 async function insertAllocation(
   orderId: number,
   itemId: number,
