@@ -26,7 +26,6 @@ import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
 import { FoodType } from '../donationItems/types';
-import { DonationStatus } from '../donations/types';
 
 jest.setTimeout(60000);
 
@@ -387,9 +386,12 @@ describe('FoodManufacturersService', () => {
       );
     });
 
-    it('returns empty array when manufacturer has no matched donations', async () => {
+    it('returns donations with empty payload for unmatched donations', async () => {
       const result = await service.getFMDonations(fmId1, fmRepId1);
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(2);
+      expect(result[0].donation.donationId).toBe(1);
+      expect(result[0].associatedPendingOrders).toEqual([]);
+      expect(result[0].relevantDonationItems).toEqual([]);
     });
 
     it('returns matched donations with empty orders and items when no pending orders exist', async () => {
@@ -401,7 +403,7 @@ describe('FoodManufacturersService', () => {
 
       const result = await service.getFMDonations(fmId1, fmRepId1);
 
-      expect(result).toHaveLength(1);
+      expect(result).toHaveLength(2);
       expect(result[0].associatedPendingOrders).toEqual([]);
       expect(result[0].relevantDonationItems).toEqual([]);
     });
@@ -413,11 +415,16 @@ describe('FoodManufacturersService', () => {
       );
 
       const result = await service.getFMDonations(fmId1, fmRepId1);
+      const donation = result.find(
+        (d) => d.donation.donationId === fulfilledDonationId,
+      );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].associatedPendingOrders).toHaveLength(1);
+      expect(donation).toBeDefined();
+      if (!donation) throw new Error('Missing donation test object');
 
-      const order = result[0].associatedPendingOrders[0];
+      expect(donation.associatedPendingOrders).toHaveLength(1);
+
+      const order = donation.associatedPendingOrders[0];
       expect(order.pantryName).toBe('Community Food Pantry Downtown');
       expect(order.pantryId).toBe(1);
       expect(order.orderId).toBeDefined();
@@ -430,9 +437,15 @@ describe('FoodManufacturersService', () => {
       );
 
       const result = await service.getFMDonations(fmId1, fmRepId1);
+      const donation = result.find(
+        (d) => d.donation.donationId === fulfilledDonationId,
+      );
 
-      expect(result[0].relevantDonationItems).toHaveLength(1);
-      const item = result[0].relevantDonationItems[0];
+      expect(donation).toBeDefined();
+      if (!donation) throw new Error('Missing donation test object');
+
+      expect(donation.relevantDonationItems).toHaveLength(1);
+      const item = donation.relevantDonationItems[0];
       expect(item.itemName).toBe('Cereal Boxes');
       expect(item.allocatedQuantity).toBe(75);
       expect(item.foodType).toBe(FoodType.GLUTEN_FREE_BREAD);
@@ -502,19 +515,6 @@ describe('FoodManufacturersService', () => {
         (i) => i.itemName === 'Almond Milk',
       );
       expect(almond?.allocatedQuantity).toBe(15); // 10 + 5
-    });
-
-    it('only returns matched donations, not available or fulfilled ones', async () => {
-      await testDataSource.query(
-        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
-        [fulfilledDonationId],
-      );
-
-      const result = await service.getFMDonations(fmId1, fmRepId1);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].donation.donationId).toBe(fulfilledDonationId);
-      expect(result[0].donation.status).toBe(DonationStatus.MATCHED);
     });
   });
 });

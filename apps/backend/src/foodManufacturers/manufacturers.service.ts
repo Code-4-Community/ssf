@@ -91,46 +91,44 @@ export class FoodManufacturersService {
       .where('donation.food_manufacturer_id = :foodManufacturerId', {
         foodManufacturerId,
       })
-      .andWhere(`donation.status = :status`, {
-        status: DonationStatus.MATCHED,
-      })
       .getMany();
 
     return donations.map((donation) => {
       const orderMap = new Map<number, DonationOrderDetailsDto>();
-
       const relevantDonationItems: DonationItemWithAllocatedQuantityDto[] = [];
 
-      donation.donationItems?.forEach((item) => {
-        const pendingAllocations = item.allocations.filter(
-          (a) => a.order.status === OrderStatus.PENDING,
-        );
+      if (donation.status === DonationStatus.MATCHED) {
+        donation.donationItems?.forEach((item) => {
+          const pendingAllocations = item.allocations.filter(
+            (a) => a.order.status === OrderStatus.PENDING,
+          );
 
-        if (pendingAllocations.length === 0) return;
+          if (pendingAllocations.length === 0) return;
 
-        if (!item.detailsConfirmed) {
-          relevantDonationItems.push({
-            itemId: item.itemId,
-            itemName: item.itemName,
-            foodType: item.foodType,
-            allocatedQuantity: pendingAllocations.reduce(
-              (sum, a) => sum + a.allocatedQuantity,
-              0,
-            ),
-          });
-        }
-
-        pendingAllocations.forEach((a) => {
-          const order = a.order;
-          if (!orderMap.has(order.orderId)) {
-            orderMap.set(order.orderId, {
-              orderId: order.orderId,
-              pantryId: order.request.pantry.pantryId,
-              pantryName: order.request.pantry.pantryName,
+          if (!item.detailsConfirmed) {
+            relevantDonationItems.push({
+              itemId: item.itemId,
+              itemName: item.itemName,
+              foodType: item.foodType,
+              allocatedQuantity: pendingAllocations.reduce(
+                (sum, a) => sum + a.allocatedQuantity,
+                0,
+              ),
             });
           }
+
+          pendingAllocations.forEach((a) => {
+            const order = a.order;
+            if (!orderMap.has(order.orderId)) {
+              orderMap.set(order.orderId, {
+                orderId: order.orderId,
+                pantryId: order.request.pantry.pantryId,
+                pantryName: order.request.pantry.pantryName,
+              });
+            }
+          });
         });
-      });
+      }
 
       return {
         donation,
