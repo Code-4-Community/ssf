@@ -107,4 +107,10 @@ export class Order {
 
   @Column({ name: 'assignee_id', type: 'int' })
   assigneeId!: number;
+
+  @Column({ name: 'confirm_donation_receipt', type: 'boolean' })
+  confirmDonationReceipt!: boolean;
+
+  @Column({ name: 'notify_pantry', type: 'boolean' })
+  notifyPantry!: boolean;
 }

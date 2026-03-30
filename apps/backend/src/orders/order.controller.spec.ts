@@ -5,7 +5,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { Order } from './order.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
@@ -16,6 +16,7 @@ import { BadRequestException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -384,6 +385,37 @@ describe('OrdersController', () => {
       expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
         orderId,
         dto,
+      );
+    });
+  });
+
+  describe('completeVolunteerAction', () => {
+    it('should call ordersService.completeVolunteerAction with correct parameters', async () => {
+      const orderId = 1;
+      const action = VolunteerAction.CONFIRM_DONATION_RECEIPT;
+      const req = { user: { id: 1 } };
+
+      await controller.completeVolunteerAction(
+        req as AuthenticatedRequest,
+        orderId,
+        action,
+      );
+
+      expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
+        orderId,
+        1,
+        action,
+      );
+    });
+  });
+
+  describe('getAllOrdersForVolunteer', () => {
+    it('should call ordersService.getAllOrdersForVolunteer with user id', async () => {
+      const req = { user: { id: 1 } };
+      await controller.getAllOrdersForVolunteer(req as AuthenticatedRequest);
+
+      expect(mockOrdersService.getAllOrdersForVolunteer).toHaveBeenCalledWith(
+        1,
       );
     });
   });

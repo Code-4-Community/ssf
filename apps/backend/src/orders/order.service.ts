@@ -9,7 +9,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -56,6 +56,51 @@ export class OrdersService {
     }
 
     return qb.getMany();
+  }
+
+  async getAllOrdersForVolunteer(volunteerId: number) {
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'order.confirmDonationReceipt',
+        'order.notifyPantry',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .getMany();
+
+    return orders.map((o) => {
+      const isAssignedToVolunteer = o.assignee.id === volunteerId;
+
+      const requiredActions = isAssignedToVolunteer
+        ? {
+            confirmDonationReceipt: o.confirmDonationReceipt,
+            notifyPantry: o.notifyPantry,
+          }
+        : null;
+
+      return {
+        orderId: o.orderId,
+        status: o.status,
+        createdAt: o.createdAt,
+        shippedAt: o.shippedAt,
+        deliveredAt: o.deliveredAt,
+        pantryName: o.request.pantry.pantryName,
+        assignee: o.assignee,
+        requiredActions,
+      };
+    });
   }
 
   async getCurrentOrders() {
@@ -339,5 +384,39 @@ export class OrdersService {
     }
 
     await this.repo.save(order);
+  }
+
+  async completeVolunteerAction(
+    orderId: number,
+    volunteerId: number,
+    action: VolunteerAction,
+  ) {
+    if (!Object.values(VolunteerAction).includes(action)) {
+      throw new BadRequestException(`Invalid volunteer action: ${action}`);
+    }
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['assignee'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.assignee.id !== volunteerId) {
+      throw new BadRequestException(
+        `User ${volunteerId} not assigned to this order`,
+      );
+    }
+
+    if (order[action]) {
+      throw new BadRequestException(`Action ${action} already completed`);
+    }
+
+    order[action] = true;
+
+    return this.repo.save(order);
   }
 }

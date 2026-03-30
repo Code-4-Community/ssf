@@ -11,6 +11,7 @@ import {
   UploadedFiles,
   UseInterceptors,
   PayloadTooLargeException,
+  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -18,7 +19,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AllocationsService } from '../allocations/allocations.service';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
@@ -29,6 +30,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('orders')
 export class OrdersController {
@@ -50,6 +52,11 @@ export class OrdersController {
       pantryNames = [pantryNames];
     }
     return this.ordersService.getAll({ status, pantryNames });
+  }
+
+  @Get('/all-for-volunteer')
+  async getAllOrdersForVolunteer(@Req() req: AuthenticatedRequest) {
+    return this.ordersService.getAllOrdersForVolunteer(req.user.id);
   }
 
   @Get('/get-current-orders')
@@ -187,13 +194,29 @@ export class OrdersController {
         body,
         uploadedPhotoUrls,
       );
-    } catch (err: any) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        throw new PayloadTooLargeException(
-          'Each photo must be 5 MB or smaller',
-        );
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'code' in err) {
+        const e = err as { code: string };
+        if (e.code === 'LIMIT_FILE_SIZE') {
+          throw new PayloadTooLargeException(
+            'Each photo must be 5 MB or smaller',
+          );
+        }
       }
       throw err;
     }
+  }
+
+  @Patch('/:orderId/complete-action')
+  async completeVolunteerAction(
+    @Req() req: AuthenticatedRequest,
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body('action') action: VolunteerAction,
+  ) {
+    return this.ordersService.completeVolunteerAction(
+      orderId,
+      req.user.id,
+      action,
+    );
   }
 }

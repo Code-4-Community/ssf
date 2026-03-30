@@ -685,4 +685,38 @@ describe('OrdersService', () => {
       );
     });
   });
+
+  describe('getAllOrdersForVolunteer', () => {
+    it('should return all orders for a volunteer with required actions for assigned orders', async () => {
+      const volunteerId = 6;
+      const result = await service.getAllOrdersForVolunteer(volunteerId);
+
+      expect(result).toHaveLength(4);
+
+      const assignedOrder = result.find((o) => o.assignee.id === volunteerId);
+      expect(assignedOrder?.requiredActions).toEqual({
+        confirmDonationReceipt: false,
+        notifyPantry: false,
+      });
+
+      const notAssignedOrder = result.find(
+        (o) => o.assignee.id !== volunteerId,
+      );
+      expect(notAssignedOrder?.requiredActions).toBeNull();
+    });
+
+    it('should map the rest of the data correctly', async () => {
+      const volunteerId = 6;
+      const result = await service.getAllOrdersForVolunteer(volunteerId);
+      const firstOrder = result[0];
+
+      expect(firstOrder.orderId).toBe(4);
+      expect(firstOrder.status).toBe(OrderStatus.PENDING);
+      expect(firstOrder).toHaveProperty('createdAt');
+      expect(firstOrder).toHaveProperty('shippedAt');
+      expect(firstOrder).toHaveProperty('deliveredAt');
+      expect(firstOrder.pantryName).toBe('Community Food Pantry Downtown');
+      expect(firstOrder.assignee.id).toBe(volunteerId);
+    });
+  });
 });
