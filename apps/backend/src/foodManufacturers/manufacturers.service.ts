@@ -257,6 +257,14 @@ export class FoodManufacturersService {
   async getStats(id: number) {
     validateId(id, 'Food Manufacturer');
 
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: id },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
+
     const result = await this.repo
       .createQueryBuilder('fm')
       .leftJoin('fm.donations', 'd')
