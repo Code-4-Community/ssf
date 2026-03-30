@@ -253,4 +253,28 @@ export class FoodManufacturersService {
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
   }
+
+  async getStats(id: number) {
+    validateId(id, 'Food Manufacturer');
+
+    const result = await this.repo
+      .createQueryBuilder('fm')
+      .leftJoin('fm.donations', 'd')
+      .leftJoin('d.donationItems', 'di')
+      .where('fm.foodManufacturerId = :id', { id })
+      .select([
+        'COUNT(DISTINCT d.donationId) AS donations',
+        'COALESCE(SUM(di.estimatedValue), 0) AS totalValue',
+        'COALESCE(SUM(di.quantity), 0) AS totalItems',
+        'COALESCE(SUM(di.quantity * di.ozPerItem) / 16.0, 0) AS totalLbs',
+      ])
+      .getRawOne();
+
+    return {
+      Donations: String(result?.donations ?? 0),
+      'Value Donated': `$${Number(result?.totalvalue ?? 0)}`,
+      'Items Donated': String(result?.totalitems ?? 0),
+      'lbs Donated': `${Number(result?.totallbs ?? 0)}`,
+    };
+  }
 }

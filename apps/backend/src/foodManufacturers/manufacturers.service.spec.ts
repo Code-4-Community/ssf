@@ -382,4 +382,17 @@ describe('FoodManufacturersService', () => {
       );
     });
   });
+
+  describe('getStats', () => {
+    it('returns proper stats for manufacturer', async () => {
+      const manufacturerId = 1;
+
+      const result = await service.getStats(manufacturerId);
+
+      expect(result['Donations']).toBe('2');
+      expect(result['Value Donated']).toBe('$15.5');
+      expect(result['Items Donated']).toBe('225');
+      expect(result['lbs Donated']).toBe('225.03125');
+    });
+  });
 });
