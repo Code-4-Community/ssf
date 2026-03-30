@@ -31,6 +31,8 @@ import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 
 @Controller('orders')
 export class OrdersController {
@@ -54,6 +56,7 @@ export class OrdersController {
     return this.ordersService.getAll({ status, pantryNames });
   }
 
+  @Roles(Role.VOLUNTEER)
   @Get('/all-for-volunteer')
   async getAllOrdersForVolunteer(@Req() req: AuthenticatedRequest) {
     return this.ordersService.getAllOrdersForVolunteer(req.user.id);
@@ -207,6 +210,7 @@ export class OrdersController {
     }
   }
 
+  @Roles(Role.VOLUNTEER)
   @Patch('/:orderId/complete-action')
   async completeVolunteerAction(
     @Req() req: AuthenticatedRequest,

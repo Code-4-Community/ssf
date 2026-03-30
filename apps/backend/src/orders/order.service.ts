@@ -81,14 +81,11 @@ export class OrdersService {
       .getMany();
 
     return orders.map((o) => {
-      const isAssignedToVolunteer = o.assignee.id === volunteerId;
-
-      const requiredActions = isAssignedToVolunteer
-        ? {
-            confirmDonationReceipt: o.confirmDonationReceipt,
-            notifyPantry: o.notifyPantry,
-          }
-        : null;
+      const { assignee, confirmDonationReceipt, notifyPantry } = o;
+      const requiredActions =
+        assignee.id === volunteerId
+          ? { confirmDonationReceipt, notifyPantry }
+          : null;
 
       return {
         orderId: o.orderId,
@@ -407,12 +404,14 @@ export class OrdersService {
 
     if (order.assignee.id !== volunteerId) {
       throw new BadRequestException(
-        `User ${volunteerId} not assigned to this order`,
+        `User ${volunteerId} not assigned to Order ${orderId}`,
       );
     }
 
     if (order[action]) {
-      throw new BadRequestException(`Action ${action} already completed`);
+      throw new BadRequestException(
+        `Action ${action} already completed for Order ${orderId}`,
+      );
     }
 
     order[action] = true;

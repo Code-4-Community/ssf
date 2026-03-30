@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -717,6 +717,75 @@ describe('OrdersService', () => {
       expect(firstOrder).toHaveProperty('deliveredAt');
       expect(firstOrder.pantryName).toBe('Community Food Pantry Downtown');
       expect(firstOrder.assignee.id).toBe(volunteerId);
+    });
+  });
+
+  describe('completeVolunteerAction', () => {
+    it('should successfully complete confirmDonationReceipt', async () => {
+      const volunteerId = 7;
+      const orderId = 2;
+      const result = await service.completeVolunteerAction(
+        orderId,
+        volunteerId,
+        VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      );
+
+      expect(result.confirmDonationReceipt).toBe(true);
+    });
+
+    it('should successfully complete notifyPantry', async () => {
+      const volunteerId = 8;
+      const orderId = 3;
+      const result = await service.completeVolunteerAction(
+        orderId,
+        volunteerId,
+        VolunteerAction.NOTIFY_PANTRY,
+      );
+
+      expect(result.notifyPantry).toBe(true);
+    });
+
+    it('throws when order is non-existent', async () => {
+      const orderId = 999;
+      await expect(
+        service.completeVolunteerAction(
+          orderId,
+          7,
+          VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        ),
+      ).rejects.toThrow(new NotFoundException(`Order ${orderId} not found`));
+    });
+
+    it('throws when user is not assigned to order', async () => {
+      const volunteerId = 7;
+      const orderId = 1;
+      await expect(
+        service.completeVolunteerAction(
+          orderId,
+          volunteerId,
+          VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `User ${volunteerId} not assigned to Order ${orderId}`,
+        ),
+      );
+    });
+
+    it('throws when action is already completed', async () => {
+      const volunteerId = 7;
+      const orderId = 2;
+      const action = VolunteerAction.NOTIFY_PANTRY;
+      await testDataSource.query(
+        `UPDATE orders SET notify_pantry = true WHERE order_id = ${orderId}`,
+      );
+      await expect(
+        service.completeVolunteerAction(orderId, volunteerId, action),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Action ${action} already completed for Order ${orderId}`,
+        ),
+      );
     });
   });
 });
