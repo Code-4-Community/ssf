@@ -149,7 +149,6 @@ const AdminDonationStats: React.FC = () => {
   // For zeros mode, paginate the pantry name list locally
   const startIdx = (currentPage - 1) * itemsPerPage;
   const zeroPagedNames = pantryList.slice(startIdx, startIdx + itemsPerPage);
-  const displayedZeroNames = zeroPagedNames;
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -479,7 +478,7 @@ const AdminDonationStats: React.FC = () => {
             </Table.Row>
           )}
           {zerosMode
-            ? displayedZeroNames.map((name) => (
+            ? zeroPagedNames.map((name) => (
                 <Table.Row key={name} _hover={{ bg: 'gray.50' }}>
                   <Table.Cell
                     textStyle="p2"
