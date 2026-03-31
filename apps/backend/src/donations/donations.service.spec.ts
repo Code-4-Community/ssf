@@ -876,7 +876,9 @@ describe('DonationService', () => {
       await expect(
         service.confirmDonationItemDetails(1, [makeDto(1)]),
       ).rejects.toThrow(
-        new BadRequestException("Donation status must be 'Matched'"),
+        new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        ),
       );
     });
 
@@ -961,7 +963,11 @@ describe('DonationService', () => {
           makeDto(itemId),
           makeDto(1),
         ]),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to donation ${donationId}`,
+        ),
+      );
 
       // The first item should not have been updated due to rollback
       const item = await testDataSource
@@ -971,24 +977,22 @@ describe('DonationService', () => {
       expect(item?.ozPerItem).toBeNull();
     });
 
-    it('does not fulfill donation when only a subset of items are confirmed', async () => {
+    it('throws BadRequestException when only a subset of items are confirmed', async () => {
       const donationId = await insertMatchedDonation();
       const itemId1 = await insertDonationItem(donationId, 10, 10);
       const itemId2 = await insertDonationItem(donationId, 10, 10);
 
       // Only confirm itemId1 — itemId2 stays detailsConfirmed=false
-      await service.confirmDonationItemDetails(donationId, [makeDto(itemId1)]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.MATCHED);
-
-      // Verify itemId2 is still unconfirmed
-      const item2 = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId: itemId2 });
-      expect(item2?.detailsConfirmed).toBe(false);
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(itemId1)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `The following donation items have not been confirmed: ${itemId2}`,
+        ),
+      );
     });
 
+    // Reserved quantity is the amount already taken for other orders, whereas quantity was the original amount donated
     it('does not fulfill donation when reservedQuantity does not equal quantity', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 5);

@@ -9,6 +9,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
+import { isDonationFulfillable } from '../utils/donation.utils';
 import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -339,18 +340,7 @@ export class OrdersService {
         relations: { allocations: { order: true } },
       });
 
-      const allItemsFulfilled = items.every(
-        (item) =>
-          item.detailsConfirmed && item.reservedQuantity === item.quantity,
-      );
-      if (!allItemsFulfilled) continue;
-
-      const hasPendingOrder = items.some((item) =>
-        item.allocations.some(
-          (allocation) => allocation.order.status === OrderStatus.PENDING,
-        ),
-      );
-      if (hasPendingOrder) continue;
+      if (!isDonationFulfillable(items)) continue;
 
       await this.donationRepo.update(donationId, {
         status: DonationStatus.FULFILLED,

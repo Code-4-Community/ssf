@@ -8,13 +8,13 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
+import { isDonationFulfillable } from '../utils/donation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
-import { OrderStatus } from '../orders/types';
 
 @Injectable()
 export class DonationService {
@@ -334,7 +334,9 @@ export class DonationService {
     }
 
     if (donation.status !== DonationStatus.MATCHED) {
-      throw new BadRequestException("Donation status must be 'Matched'");
+      throw new BadRequestException(
+        `Donation status must be ${DonationStatus.MATCHED}`,
+      );
     }
 
     const donationItems = await this.donationItemsService.getAllDonationItems(
@@ -361,6 +363,18 @@ export class DonationService {
       }
     });
 
+    const updatedItemIDs = new Set(body.map((dto) => dto.itemId));
+    const unconfirmedItems = donationItems.filter(
+      (item) => !item.detailsConfirmed && !updatedItemIDs.has(item.itemId),
+    );
+    if (unconfirmedItems.length > 0) {
+      throw new BadRequestException(
+        `The following donation items have not been confirmed: ${unconfirmedItems
+          .map((i) => i.itemId)
+          .join(', ')}`,
+      );
+    }
+
     await this.checkAndFulfillDonation(donationId);
 
     return donation;
@@ -372,18 +386,7 @@ export class DonationService {
       relations: { allocations: { order: true } },
     });
 
-    const allItemsFulfilled = items.every(
-      (item) =>
-        item.detailsConfirmed && item.reservedQuantity === item.quantity,
-    );
-    if (!allItemsFulfilled) return;
-
-    const hasPendingOrder = items.some((item) =>
-      item.allocations.some(
-        (allocation) => allocation.order.status === OrderStatus.PENDING,
-      ),
-    );
-    if (hasPendingOrder) return;
+    if (!isDonationFulfillable(items)) return;
 
     await this.repo.update(donationId, { status: DonationStatus.FULFILLED });
   }
