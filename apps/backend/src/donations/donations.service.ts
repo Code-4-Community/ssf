@@ -13,6 +13,7 @@ import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Injectable()
 export class DonationService {
@@ -20,6 +21,8 @@ export class DonationService {
 
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
+    @InjectRepository(Allocation)
+    private allocationRepo: Repository<Allocation>,
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
@@ -397,6 +400,7 @@ export class DonationService {
 
     const donation = await this.repo.findOne({
       where: { donationId },
+      relations: ['donationItems'],
     });
 
     if (!donation) {
@@ -405,6 +409,30 @@ export class DonationService {
 
     if (donation.status !== DonationStatus.AVAILABLE) {
       throw new BadRequestException(`Only available donations can be deleted`);
+    }
+
+    const hasReservedItems = donation.donationItems?.some(
+      (item) => item.reservedQuantity > 0,
+    );
+
+    if (hasReservedItems) {
+      throw new BadRequestException(
+        `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
+      );
+    }
+
+    const hasAllocations = await this.allocationRepo.exists({
+      where: {
+        item: {
+          donation: { donationId },
+        },
+      },
+    });
+
+    if (hasAllocations) {
+      throw new BadRequestException(
+        `Cannot delete donation ${donationId} with existing allocations`,
+      );
     }
 
     await this.repo.delete(donationId);

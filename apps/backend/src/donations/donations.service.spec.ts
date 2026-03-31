@@ -107,6 +107,10 @@ describe('DonationService', () => {
         DonationService,
         DonationItemsService,
         {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
+        {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
         },
@@ -117,10 +121,6 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
-        },
-        {
-          provide: getRepositoryToken(Allocation),
-          useValue: testDataSource.getRepository(Allocation),
         },
         {
           provide: DataSource,
