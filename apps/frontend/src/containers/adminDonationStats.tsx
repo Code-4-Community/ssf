@@ -41,38 +41,60 @@ const AdminDonationStats: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
-    ApiClient.getApprovedPantryNames()
-      .then(setPantryNameOptions)
-      .catch(() => setAlertMessage('Error fetching pantry names'));
+    const fetchInitialData = async () => {
+      try {
+        const names = await ApiClient.getApprovedPantryNames();
+        if (names) setPantryNameOptions(names);
+      } catch {
+        setAlertMessage('Error fetching pantry names');
+      }
 
-    ApiClient.getAvailableYears()
-      .then((years) => {
-        setAvailableYears(years);
-        // On page load, set all years to selected
-        setSelectedYears(years);
-      })
-      .catch(() => setAlertMessage('Error fetching available years'));
+      try {
+        const years = await ApiClient.getAvailableYears();
+        if (years) {
+          setAvailableYears(years);
+          setSelectedYears(years);
+        }
+      } catch {
+        setAlertMessage('Error fetching available years');
+      }
+    };
+    fetchInitialData();
   }, []);
 
   useEffect(() => {
     // Total stats only displayed on first page, so no need to do anything on page change
     if (currentPage !== 1) return;
 
-    const allSelected =
-      selectedYears.length === 0 ||
-      selectedYears.length === availableYears.length;
+    // If years are available but none are selected, the user has explicitly deselected all — show nothing
+    if (availableYears.length > 0 && selectedYears.length === 0) {
+      setTotalStats(undefined);
+      return;
+    }
 
-    ApiClient.getTotalStats(allSelected ? undefined : selectedYears)
-      .then(setTotalStats)
-      .catch(() => setAlertMessage('Error fetching total stats'));
+    const fetchTotalStats = async () => {
+      const allSelected = selectedYears.length === availableYears.length;
+      try {
+        const stats = await ApiClient.getTotalStats(
+          allSelected ? undefined : selectedYears,
+        );
+        if (stats) setTotalStats(stats);
+      } catch {
+        setAlertMessage('Error fetching total stats');
+      }
+    };
+    fetchTotalStats();
   }, [selectedYears, availableYears, currentPage]);
 
   useEffect(() => {
     const fetchStats = async () => {
+      // If years are available but none are selected, show zeros — don't fetch
+      if (availableYears.length > 0 && selectedYears.length === 0) {
+        setPantryStats([]);
+        return;
+      }
       try {
-        const allSelected =
-          selectedYears.length === 0 ||
-          selectedYears.length === availableYears.length;
+        const allSelected = selectedYears.length === availableYears.length;
         const stats = await ApiClient.getPantryStats({
           pantryNames: selectedPantries.length ? selectedPantries : undefined,
           years: allSelected ? undefined : selectedYears,
@@ -115,15 +137,24 @@ const AdminDonationStats: React.FC = () => {
       ? 'All Available Data'
       : [...selectedYears].sort((a, b) => a - b).join(', ');
 
+  const zerosMode = availableYears.length > 0 && selectedYears.length === 0;
+
   const itemsPerPage = 10;
-  const totalCount =
-    selectedPantries.length > 0
-      ? selectedPantries.length
-      : pantryNameOptions.length;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  // 9 pantries for the first page
+  const pantryList =
+    selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
+  const totalCount = pantryList.length;
+  const totalPages = Math.ceil((totalCount + 1) / itemsPerPage);
+  // 9 pantries for the first page (All Pantries row takes one slot)
   const displayedStats =
     currentPage === 1 ? pantryStats.slice(0, itemsPerPage - 1) : pantryStats;
+
+  // For zeros mode, paginate the pantry name list locally
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const zeroPagedNames = pantryList.slice(startIdx, startIdx + itemsPerPage);
+  const displayedZeroNames =
+    currentPage === 1
+      ? zeroPagedNames.slice(0, itemsPerPage - 1)
+      : zeroPagedNames;
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -194,7 +225,7 @@ const AdminDonationStats: React.FC = () => {
                 <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                   <Search
                     size={18}
-                    color="#B8B8B8"
+                    color="var(--chakra-colors-neutral-300)"
                     style={{
                       position: 'absolute',
                       top: '50%',
@@ -397,7 +428,7 @@ const AdminDonationStats: React.FC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {currentPage === 1 && totalStats && (
+          {currentPage === 1 && (
             <Table.Row fontWeight="semibold">
               <Table.Cell
                 textStyle="p2"
@@ -413,7 +444,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                {totalStats.totalItems}
+                {totalStats?.totalItems ?? 0}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -421,7 +452,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                {totalStats.totalOz.toFixed(2)}
+                {(totalStats?.totalOz ?? 0).toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -429,7 +460,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                {totalStats.totalLbs.toFixed(2)}
+                {(totalStats?.totalLbs ?? 0).toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -437,7 +468,7 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                ${totalStats.totalDonatedFoodValue.toFixed(2)}
+                ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
               </Table.Cell>
               <Table.Cell
                 textStyle="p2"
@@ -445,63 +476,112 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
-                ${totalStats.totalShippingCost.toFixed(2)}
+                ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
               </Table.Cell>
               <Table.Cell textStyle="p2" bg="yellow.100">
-                ${totalStats.totalValue.toFixed(2)}
+                ${(totalStats?.totalValue ?? 0).toFixed(2)}
               </Table.Cell>
             </Table.Row>
           )}
-          {displayedStats.map((stat) => (
-            <Table.Row key={stat.pantryId} _hover={{ bg: 'gray.50' }}>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
-              >
-                {stat.pantryName}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalItems}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalOz.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalLbs.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalDonatedFoodValue.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalShippingCost.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell textStyle="p2">
-                ${stat.totalValue.toFixed(2)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {zerosMode
+            ? displayedZeroNames.map((name) => (
+                <Table.Row key={name} _hover={{ bg: 'gray.50' }}>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
+                  >
+                    {name}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    0
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    0.00
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    0.00
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    $0.00
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    $0.00
+                  </Table.Cell>
+                  <Table.Cell textStyle="p2">$0.00</Table.Cell>
+                </Table.Row>
+              ))
+            : displayedStats.map((stat) => (
+                <Table.Row key={stat.pantryId} _hover={{ bg: 'gray.50' }}>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
+                  >
+                    {stat.pantryName}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalItems}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalOz.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalLbs.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalDonatedFoodValue.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalShippingCost.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell textStyle="p2">
+                    ${stat.totalValue.toFixed(2)}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
         </Table.Body>
       </Table.Root>
 
@@ -521,37 +601,39 @@ const AdminDonationStats: React.FC = () => {
             size="sm"
             gap={4}
           >
-            <Pagination.PrevTrigger
-              color="neutral.800"
-              variant="outline"
-              disabled={currentPage === 1}
-              mr={2}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronLeft size={16} />
+            <Pagination.PrevTrigger asChild>
+              <IconButton
+                variant="ghost"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                ml={2}
+              >
+                <ChevronLeft />
+              </IconButton>
             </Pagination.PrevTrigger>
 
             <Pagination.Items
               render={(page) => (
                 <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
+                  variant={{ base: 'outline', _selected: 'outline' }}
+                  onClick={() => setCurrentPage(page.value)}
+                  mr={2}
                 >
                   {page.value}
                 </IconButton>
               )}
             />
 
-            <Pagination.NextTrigger
-              color="neutral.800"
-              variant="ghost"
-              disabled={currentPage === totalPages}
-              ml={2}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronRight size={16} />
+            <Pagination.NextTrigger asChild>
+              <IconButton
+                variant="ghost"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+              >
+                <ChevronRight />
+              </IconButton>
             </Pagination.NextTrigger>
           </ButtonGroup>
         </Pagination.Root>

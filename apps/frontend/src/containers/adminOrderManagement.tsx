@@ -411,7 +411,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
                         size={18}
-                        color="#B8B8B8"
+                        color="var(--chakra-colors-neutral-300)"
                         style={{
                           position: 'absolute',
                           top: '50%',
