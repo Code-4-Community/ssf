@@ -143,18 +143,13 @@ const AdminDonationStats: React.FC = () => {
   const pantryList =
     selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
   const totalCount = pantryList.length;
-  const totalPages = Math.ceil((totalCount + 1) / itemsPerPage);
-  // 9 pantries for the first page (All Pantries row takes one slot)
-  const displayedStats =
-    currentPage === 1 ? pantryStats.slice(0, itemsPerPage - 1) : pantryStats;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const displayedStats = pantryStats;
 
   // For zeros mode, paginate the pantry name list locally
   const startIdx = (currentPage - 1) * itemsPerPage;
   const zeroPagedNames = pantryList.slice(startIdx, startIdx + itemsPerPage);
-  const displayedZeroNames =
-    currentPage === 1
-      ? zeroPagedNames.slice(0, itemsPerPage - 1)
-      : zeroPagedNames;
+  const displayedZeroNames = zeroPagedNames;
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
