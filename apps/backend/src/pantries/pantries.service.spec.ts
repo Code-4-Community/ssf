@@ -471,7 +471,9 @@ describe('PantriesService', () => {
     it('throws NotFoundException for non-existent pantry names', async () => {
       await expect(
         service.getPantryStats(['Nonexistent Pantry']),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Nonexistent Pantry'),
+      );
     });
 
     it('throws NotFoundException when some provided pantry names do not exist', async () => {
@@ -480,7 +482,9 @@ describe('PantriesService', () => {
           'Community Food Pantry Downtown',
           'Fake Pantry',
         ]),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Fake Pantry'),
+      );
     });
 
     it('error message includes the missing pantry name', async () => {
@@ -509,13 +513,17 @@ describe('PantriesService', () => {
     it('throws NotFoundException for a non-approved (denied) pantry', async () => {
       await expect(
         service.getPantryStats(['Riverside Food Assistance']),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Riverside Food Assistance'),
+      );
     });
 
     it('throws NotFoundException for a non-approved (pending) pantry', async () => {
       await expect(
         service.getPantryStats(['Harbor Community Center']),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Harbor Community Center'),
+      );
     });
 
     it('respects year filter and returns zeros for a non-matching year', async () => {
@@ -956,12 +964,12 @@ describe('PantriesService', () => {
       const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
       await expect(
         service.updatePantryVolunteers(9999, [williamId]),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(new NotFoundException('Pantry with ID 9999 not found'));
     });
 
     it('throws NotFoundException when volunteer id does not exist', async () => {
       await expect(service.updatePantryVolunteers(1, [99999])).rejects.toThrow(
-        NotFoundException,
+        new NotFoundException('One or more users not found'),
       );
     });
 

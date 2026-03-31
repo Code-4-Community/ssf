@@ -123,7 +123,7 @@ const AdminDonationStats: React.FC = () => {
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   // 9 pantries for the first page
   const displayedStats =
-    currentPage === 1 ? pantryStats.slice(0, 9) : pantryStats;
+    currentPage === 1 ? pantryStats.slice(0, itemsPerPage - 1) : pantryStats;
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
