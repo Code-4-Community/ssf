@@ -40,6 +40,6 @@ export function sanitizeUrl(url: string): string | null {
   }
 }
 
-export function hasDuplicates(arr: number[]): boolean {
+export function hasDuplicates<T>(arr: T[]): boolean {
   return new Set(arr).size !== arr.length;
 }

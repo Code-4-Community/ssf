@@ -81,12 +81,20 @@ describe('sanitizeUrl', () => {
 });
 
 describe('hasDuplicates', () => {
-  it('returns true for array with duplicates', () => {
+  it('returns true for int array with duplicates', () => {
     expect(hasDuplicates([1, 1, 2])).toBeTruthy();
   });
 
-  it('returns false for array with no duplicates', () => {
+  it('returns false for int array with no duplicates', () => {
     expect(hasDuplicates([1, 2, 3])).toBeFalsy();
+  });
+
+  it('returns true for string array with duplicates', () => {
+    expect(hasDuplicates(['a', 'a', 'b'])).toBeTruthy();
+  });
+
+  it('returns false for string array with no duplicates', () => {
+    expect(hasDuplicates(['a', 'b', 'c'])).toBeFalsy();
   });
 
   it('returns false for empty array', () => {

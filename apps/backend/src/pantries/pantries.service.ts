@@ -487,16 +487,13 @@ export class PantriesService {
     const removeSet = new Set(removeVolunteerIds);
 
     const overlap = [...addSet].filter((id) => removeSet.has(id));
-    if (overlap.length > 0) {
+    if (overlap.length) {
       throw new BadRequestException(
         `The following ID(s) appear in both the add and remove lists: ${overlap.join(
           ', ',
         )}`,
       );
     }
-
-    const allVolunteerIds = [...addSet, ...removeSet];
-    allVolunteerIds.forEach((id) => validateId(id, 'Volunteer'));
 
     const pantry = await this.repo.findOne({
       where: { pantryId },
@@ -507,7 +504,9 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const users = await this.usersService.findByIds(allVolunteerIds);
+    const users = await this.usersService.findByIds(
+      new Set([...addSet, ...removeSet]),
+    );
     const usersToAdd = users.filter((u) => addSet.has(u.id));
 
     const nonVolunteers = usersToAdd.filter(
@@ -536,14 +535,15 @@ export class PantriesService {
     await this.repo.save(pantry);
   }
 
-  async findByIds(pantryIds: number[]): Promise<Pantry[]> {
-    pantryIds.forEach((id) => validateId(id, 'Pantry'));
+  async findByIds(pantryIds: Set<number>): Promise<Pantry[]> {
+    const pantryIdArray = Array.from(pantryIds);
+    pantryIdArray.forEach((id) => validateId(id, 'Pantry'));
 
-    const pantries = await this.repo.findBy({ pantryId: In(pantryIds) });
+    const pantries = await this.repo.findBy({ pantryId: In(pantryIdArray) });
 
-    if (pantries.length !== pantryIds.length) {
-      const foundIds = pantries.map((p) => p.pantryId);
-      const missingIds = pantryIds.filter((id) => !foundIds.includes(id));
+    if (pantries.length !== pantryIds.size) {
+      const foundIds = new Set(pantries.map((p) => p.pantryId));
+      const missingIds = pantryIdArray.filter((id) => !foundIds.has(id));
       throw new NotFoundException(
         `Pantries not found: ${missingIds.join(', ')}`,
       );

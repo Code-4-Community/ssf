@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -389,15 +388,6 @@ export class PantriesController {
     @Body(new ValidationPipe())
     body: UpdatePantryVolunteersDto,
   ): Promise<void> {
-    const { addVolunteerIds, removeVolunteerIds } = body;
-    if (
-      (!addVolunteerIds || addVolunteerIds.length === 0) &&
-      (!removeVolunteerIds || removeVolunteerIds.length === 0)
-    ) {
-      throw new BadRequestException(
-        'At least one of addVolunteerIds or removeVolunteerIds must be provided',
-      );
-    }
     return this.pantriesService.updatePantryVolunteers(pantryId, body);
   }
 }

@@ -22,7 +22,6 @@ import { ApplicationStatus } from '../shared/types';
 import { User } from '../users/users.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
-import { BadRequestException } from '@nestjs/common';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
@@ -373,14 +372,6 @@ describe('PantriesController', () => {
       expect(mockPantriesService.updatePantryVolunteers).toHaveBeenCalledWith(
         pantryId,
         { addVolunteerIds, removeVolunteerIds },
-      );
-    });
-
-    it('should throw BadRequestException if neither ID lists are given', async () => {
-      await expect(controller.updatePantryVolunteers(1, {})).rejects.toThrow(
-        new BadRequestException(
-          'At least one of addVolunteerIds or removeVolunteerIds must be provided',
-        ),
       );
     });
   });
