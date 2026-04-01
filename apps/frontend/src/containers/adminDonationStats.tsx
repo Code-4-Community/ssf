@@ -144,7 +144,6 @@ const AdminDonationStats: React.FC = () => {
     selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
   const totalCount = pantryList.length;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const displayedStats = pantryStats;
 
   // For zeros mode, paginate the pantry name list locally
   const startIdx = (currentPage - 1) * itemsPerPage;
@@ -526,7 +525,7 @@ const AdminDonationStats: React.FC = () => {
                   <Table.Cell textStyle="p2">$0.00</Table.Cell>
                 </Table.Row>
               ))
-            : displayedStats.map((stat) => (
+            : pantryStats.map((stat) => (
                 <Table.Row key={stat.pantryId} _hover={{ bg: 'gray.50' }}>
                   <Table.Cell
                     textStyle="p2"
