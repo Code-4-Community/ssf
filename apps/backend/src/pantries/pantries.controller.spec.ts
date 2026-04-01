@@ -374,6 +374,24 @@ describe('PantriesController', () => {
         { addVolunteerIds, removeVolunteerIds },
       );
     });
+
+    it('should no-op for empty add and remove lists', async () => {
+      const pantryId = 1;
+      const addVolunteerIds: number[] = [];
+      const removeVolunteerIds: number[] = [];
+
+      mockPantriesService.updatePantryVolunteers.mockResolvedValue(undefined);
+
+      await controller.updatePantryVolunteers(pantryId, {
+        addVolunteerIds,
+        removeVolunteerIds,
+      });
+
+      expect(mockPantriesService.updatePantryVolunteers).toHaveBeenCalledWith(
+        pantryId,
+        { addVolunteerIds, removeVolunteerIds },
+      );
+    });
   });
   describe('getCurrentUserPantryId', () => {
     it('returns pantryId for authenticated user', async () => {

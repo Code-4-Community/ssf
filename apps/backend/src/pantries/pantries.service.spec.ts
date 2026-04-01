@@ -934,15 +934,6 @@ describe('PantriesService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('throws NotFoundException when volunteer ID does not exist', async () => {
-      await expect(
-        service.updatePantryVolunteers(1, {
-          addVolunteerIds: [99999],
-          removeVolunteerIds: [],
-        }),
-      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
-    });
-
     it('throws NotFoundException when some volunteer IDs do not exist', async () => {
       await expect(
         service.updatePantryVolunteers(1, {
@@ -974,20 +965,18 @@ describe('PantriesService', () => {
       );
     });
 
-    it('handles pantry with empty volunteers array', async () => {
-      const pantryId = 4;
+    it('should no-op for empty add and remove lists', async () => {
       const pantryBefore = await testDataSource
         .getRepository(Pantry)
-        .findOne({ where: { pantryId }, relations: ['volunteers'] });
-      expect(pantryBefore?.volunteers).toHaveLength(0);
-      await service.updatePantryVolunteers(pantryId, {
-        addVolunteerIds: [7],
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
         removeVolunteerIds: [],
       });
       const pantryAfter = await testDataSource
         .getRepository(Pantry)
-        .findOne({ where: { pantryId }, relations: ['volunteers'] });
-      expect(pantryAfter?.volunteers?.map((v) => v.id)).toContain(7);
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
   });
 });
