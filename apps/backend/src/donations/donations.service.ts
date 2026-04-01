@@ -366,6 +366,7 @@ export class DonationService {
           );
         }
 
+        // Merge the incoming changes into the existing donation item entity by matching ids.
         return this.donationItemsRepo.merge(existing, donationItem);
       }
 

@@ -10,7 +10,7 @@ import { NotFoundException } from '@nestjs/common';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import {
   ReplaceDonationItemDto,
   ReplaceDonationItemsDto,
@@ -905,13 +905,21 @@ describe('DonationService', () => {
 
   describe('delete', () => {
     it('should delete an available donation and associated donation items', async () => {
-      const allocationRepo = testDataSource.getRepository(Allocation);
-
       const donationId = 3;
 
       const donationBefore = await service.findOne(donationId);
       expect(donationBefore).toBeDefined();
       expect(donationBefore.status).toBe(DonationStatus.AVAILABLE);
+
+      const itemsBefore = await donationItemService.getAllDonationItems(
+        donationId,
+      );
+
+      const itemIds = itemsBefore.map((item) => item.itemId);
+
+      await testDataSource
+        .getRepository(Allocation)
+        .delete(itemIds.length ? { itemId: In(itemIds) } : {});
 
       await service.delete(donationId);
 
@@ -921,13 +929,34 @@ describe('DonationService', () => {
 
       const items = await donationItemService.getAllDonationItems(donationId);
       expect(items).toHaveLength(0);
+    });
 
-      const allocations = await allocationRepo.find({
-        where: {
-          item: { donation: { donationId } },
-        },
-      });
-      expect(allocations).toHaveLength(0);
+    it('should throw BadRequestException if there are existing associated allocations', async () => {
+      const donationId = 3;
+
+      const donation = await service.findOne(donationId);
+      expect(donation).toBeDefined();
+      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        `Cannot delete donation ${donationId} with existing allocations`,
+      );
+    });
+
+    it('should throw BadRequestException if there is a donation item with reservedQuantity', async () => {
+      const donationId = 3;
+
+      const donation = await service.findOne(donationId);
+      expect(donation).toBeDefined();
+      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+      await testDataSource
+        .getRepository(DonationItem)
+        .update(7, { reservedQuantity: 1 });
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
+      );
     });
 
     it('should throw NotFoundException if donation does not exist', async () => {
