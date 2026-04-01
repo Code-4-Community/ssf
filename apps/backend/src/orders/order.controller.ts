@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   Post,
   PayloadTooLargeException,
+  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -31,6 +32,7 @@ import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('orders')
 export class OrdersController {
@@ -152,6 +154,7 @@ export class OrdersController {
     },
   })
   async createOrder(
+    @Req() req: AuthenticatedRequest,
     @Body(new ValidationPipe())
     orderData: CreateOrderDto,
   ): Promise<Order> {
@@ -181,6 +184,7 @@ export class OrdersController {
       orderData.foodRequestId,
       orderData.manufacturerId,
       parsedAllocations,
+      req.user.id,
     );
   }
 

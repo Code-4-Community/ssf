@@ -96,6 +96,7 @@ export class OrdersService {
     requestId: number,
     manufacturerId: number,
     itemAllocations: Map<number, number>,
+    userId: number,
   ): Promise<Order> {
     return this.dataSource.transaction(async (transactionManager) => {
       validateId(manufacturerId, 'Food Manufacturer');
@@ -119,8 +120,11 @@ export class OrdersService {
 
       const fmDonations = await this.manufacturerService.getFMDonations(
         manufacturerId,
+        userId,
       );
-      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
+      const fmDonationIdSet = new Set(
+        fmDonations.map((d) => d.donation.donationId),
+      );
 
       const donationItemIds = Array.from(itemAllocations.keys());
       const donationItems = await this.donationItemsService.getByIds(
@@ -145,10 +149,10 @@ export class OrdersService {
 
       for (const donationItem of donationItems) {
         const id = donationItem.itemId;
-        const quantityToAllocate = itemAllocations.get(id);
+        const quantityToAllocate = itemAllocations.get(id)!;
 
         if (
-          quantityToAllocate! >
+          quantityToAllocate >
           donationItem.quantity - donationItem.reservedQuantity
         ) {
           throw new BadRequestException(
@@ -161,6 +165,7 @@ export class OrdersService {
         requestId: requestId,
         foodManufacturerId: manufacturerId,
         status: OrderStatus.PENDING,
+        assigneeId: userId,
       });
 
       const savedOrder = await transactionManager.save(order);

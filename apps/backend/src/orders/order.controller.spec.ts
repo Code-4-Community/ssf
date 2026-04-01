@@ -17,6 +17,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -390,6 +391,8 @@ describe('OrdersController', () => {
   });
 
   describe('createOrder', () => {
+    const req = { user: { id: 1 } };
+
     it('should call ordersService.create and return the created order', async () => {
       const createOrderDto = {
         foodRequestId: 1,
@@ -416,12 +419,16 @@ describe('OrdersController', () => {
 
       mockOrdersService.create.mockResolvedValueOnce(mockCreatedOrder as Order);
 
-      const result = await controller.createOrder(createOrderDto);
+      const result = await controller.createOrder(
+        req as AuthenticatedRequest,
+        createOrderDto,
+      );
 
       expect(mockOrdersService.create).toHaveBeenCalledWith(
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
+        1,
       );
       expect(result).toEqual(mockCreatedOrder);
     });
@@ -433,9 +440,9 @@ describe('OrdersController', () => {
         itemAllocations: { abc: 10 },
       };
 
-      await expect(controller.createOrder(createOrderDto)).rejects.toThrow(
-        new BadRequestException('Invalid item ID: abc'),
-      );
+      await expect(
+        controller.createOrder(req as AuthenticatedRequest, createOrderDto),
+      ).rejects.toThrow(new BadRequestException('Invalid item ID: abc'));
     });
 
     it('should throw BadRequestException for invalid item quantity type', async () => {
@@ -445,7 +452,9 @@ describe('OrdersController', () => {
         itemAllocations: { 5: '10' },
       };
 
-      await expect(controller.createOrder(createOrderDto)).rejects.toThrow(
+      await expect(
+        controller.createOrder(req as AuthenticatedRequest, createOrderDto),
+      ).rejects.toThrow(
         new BadRequestException('Quantity for item 5 must be of type number'),
       );
     });
@@ -457,9 +466,21 @@ describe('OrdersController', () => {
         itemAllocations: { 5: 0 },
       };
 
-      await expect(controller.createOrder(createOrderDto)).rejects.toThrow(
-        new BadRequestException('Invalid quantity for item 5'),
-      );
+      await expect(
+        controller.createOrder(req as AuthenticatedRequest, createOrderDto),
+      ).rejects.toThrow(new BadRequestException('Invalid quantity for item 5'));
+    });
+
+    it('should throw BadRequestException for quantity invalid quantity (decimal)', async () => {
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        itemAllocations: { 5: 2.2 },
+      };
+
+      await expect(
+        controller.createOrder(req as AuthenticatedRequest, createOrderDto),
+      ).rejects.toThrow(new BadRequestException('Invalid quantity for item 5'));
     });
 
     it('should propagate BadRequestException when request is not active', async () => {
@@ -477,7 +498,10 @@ describe('OrdersController', () => {
         new BadRequestException(`Request ${foodRequestId} is not active`),
       );
 
-      const promise = controller.createOrder(createOrderDto);
+      const promise = controller.createOrder(
+        req as AuthenticatedRequest,
+        createOrderDto,
+      );
       await expect(promise).rejects.toBeInstanceOf(BadRequestException);
       await expect(promise).rejects.toThrow(
         `Request ${foodRequestId} is not active`,
@@ -486,6 +510,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
+        1,
       );
     });
 
@@ -504,7 +529,10 @@ describe('OrdersController', () => {
         ),
       );
 
-      const promise = controller.createOrder(createOrderDto);
+      const promise = controller.createOrder(
+        req as AuthenticatedRequest,
+        createOrderDto,
+      );
       await expect(promise).rejects.toThrow(BadRequestException);
       await expect(promise).rejects.toThrow(
         `Donation is not associated with the current food manufacturer`,
@@ -513,6 +541,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
+        1,
       );
     });
 
@@ -535,7 +564,10 @@ describe('OrdersController', () => {
         ),
       );
 
-      const promise = controller.createOrder(createOrderDto);
+      const promise = controller.createOrder(
+        req as AuthenticatedRequest,
+        createOrderDto,
+      );
       await expect(promise).rejects.toBeInstanceOf(BadRequestException);
       await expect(promise).rejects.toThrow(
         `Donation item ${donationItemId} allocated quantity exceeds remaining quantity`,
@@ -544,6 +576,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
+        1,
       );
     });
   });

@@ -748,6 +748,8 @@ describe('OrdersService', () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
       const donationRepo = testDataSource.getRepository(Donation);
 
+      parsedAllocations.set(9, 5);
+
       // Initial donation items
       const donationItem1 = await donationItemRepo.findOne({
         where: { itemId: 1 },
@@ -755,19 +757,28 @@ describe('OrdersService', () => {
       const donationItem2 = await donationItemRepo.findOne({
         where: { itemId: 2 },
       });
+      const donationItem3 = await donationItemRepo.findOne({
+        where: { itemId: 9 },
+      });
 
-      if (!donationItem1 || !donationItem2)
+      if (!donationItem1 || !donationItem2 || !donationItem3)
         throw new Error('Missing dummy donation items');
+
+      donationItem3.quantity = 100;
+
+      await donationItemRepo.save(donationItem3);
 
       const createdOrder = await service.create(
         validCreateOrderDto.foodRequestId,
         validCreateOrderDto.manufacturerId,
         parsedAllocations,
+        1,
       );
 
       expect(createdOrder).toBeDefined();
       expect(createdOrder.orderId).toBeDefined();
       expect(createdOrder.status).toEqual(OrderStatus.PENDING);
+      expect(createdOrder.assigneeId).toEqual(1);
       expect(createdOrder.foodManufacturerId).toEqual(
         validCreateOrderDto.manufacturerId,
       );
@@ -778,31 +789,46 @@ describe('OrdersService', () => {
       });
       expect(allocations.length).toBe(parsedAllocations.size);
       expect(allocations.map((a) => a.itemId)).toEqual(
-        expect.arrayContaining([1, 2]),
+        expect.arrayContaining([1, 2, 9]),
+      );
+      expect(allocations.map((a) => a.allocatedQuantity)).toEqual(
+        expect.arrayContaining([10, 3, 5]),
       );
 
-      const updatedDonation1 = await donationItemRepo.findOne({
+      const updatedDonationItem1 = await donationItemRepo.findOne({
         where: { itemId: 1 },
       });
-      const updatedDonation2 = await donationItemRepo.findOne({
+      const updatedDonationItem2 = await donationItemRepo.findOne({
         where: { itemId: 2 },
       });
+      const updatedDonationItem3 = await donationItemRepo.findOne({
+        where: { itemId: 9 },
+      });
 
-      expect(updatedDonation1!.reservedQuantity).toBe(
+      expect(updatedDonationItem1!.reservedQuantity).toBe(
         donationItem1.reservedQuantity + 10,
       );
-      expect(updatedDonation2!.reservedQuantity).toBe(
+      expect(updatedDonationItem2!.reservedQuantity).toBe(
         donationItem2.reservedQuantity + 3,
       );
+      expect(updatedDonationItem3!.reservedQuantity).toBe(
+        donationItem3.reservedQuantity + 5,
+      );
 
-      const matchedDonation = await donationRepo.findOne({
+      const matchedDonation1 = await donationRepo.findOne({
         where: { donationId: 1 },
       });
-      expect(matchedDonation?.status).toBe(DonationStatus.MATCHED);
+      expect(matchedDonation1?.status).toBe(DonationStatus.MATCHED);
+
+      const matchedDonation2 = await donationRepo.findOne({
+        where: { donationId: 2 },
+      });
+      expect(matchedDonation2?.status).toBe(DonationStatus.MATCHED);
     });
 
     it('should throw BadRequestException if request is not active', async () => {
       const requestRepo = testDataSource.getRepository(FoodRequest);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
 
       const request = await requestRepo.findOne({ where: { requestId: 2 } });
 
@@ -817,6 +843,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -824,13 +851,22 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(
         `Request ${validCreateOrderDto.foodRequestId} is not active`,
       );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
     it('should throw BadRequestException if manufacturer is not approved', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
       validCreateOrderDto.foodRequestId = 1;
       // Manufacturer that has status pending
       validCreateOrderDto.manufacturerId = 3;
@@ -839,6 +875,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -846,21 +883,63 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(
         `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
       );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
-    it('should throw BadRequestException if allocated quantity exceeds remaining', async () => {
-      const donationItemId = 2;
+    it('should throw NotFoundException if donation item does not exist', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
 
-      parsedAllocations = new Map<number, number>([[donationItemId, 500]]);
+      parsedAllocations.set(999, 1);
+
       await expect(
         service.create(
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
+        ),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          1,
+        ),
+      ).rejects.toThrow(`Donation items not found for ID(s): 999`);
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw BadRequestException if allocated quantity exceeds remaining', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const donationItemId = 2;
+
+      parsedAllocations = new Map<number, number>([
+        [donationItemId, 500],
+        [1, 10],
+      ]);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -868,20 +947,33 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(
         `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
       );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
     it('should throw Error if donation is not associated with manufacturer', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
       const donationItemId = 7;
-      parsedAllocations = new Map<number, number>([[donationItemId, 2]]);
+      parsedAllocations = new Map<number, number>([
+        [donationItemId, 2],
+        [1, 10],
+      ]);
       await expect(
         service.create(
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -889,10 +981,17 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
+          1,
         ),
       ).rejects.toThrow(
         `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
       );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
     });
   });
 });
