@@ -356,25 +356,27 @@ export class DonationService {
       (item) => !incomingIds.has(item.itemId),
     );
 
-    const itemsToSave = incomingItems.map((donationItem) => {
-      if (donationItem.id) {
-        const existing = existingMap.get(donationItem.id);
+    donation.donationItems = [];
 
+    for (const incoming of incomingItems) {
+      if (incoming.id) {
+        const existing = existingMap.get(incoming.id);
         if (!existing) {
           throw new NotFoundException(
-            `Donation item ${donationItem.id} for Donation ${donationId} not found`,
+            `Donation item ${incoming.id} for Donation ${donationId} not found`,
           );
         }
-
         // Merge the incoming changes into the existing donation item entity by matching ids.
-        return this.donationItemsRepo.merge(existing, donationItem);
+        donation.donationItems.push(
+          this.donationItemsRepo.merge(existing, incoming),
+        );
+      } else {
+        // Create new item and attach to donation
+        donation.donationItems.push(
+          this.donationItemsRepo.create({ ...incoming, donation }),
+        );
       }
-
-      return this.donationItemsRepo.create({
-        ...donationItem,
-        donation,
-      });
-    });
+    }
 
     await this.dataSource.transaction(async (transactionManager) => {
       const repo = transactionManager.getRepository(DonationItem);
@@ -383,17 +385,12 @@ export class DonationService {
         await repo.remove(itemsToDelete);
       }
 
-      if (itemsToSave.length > 0) {
-        await repo.save(itemsToSave);
+      if (donation.donationItems.length > 0) {
+        await repo.save(donation.donationItems);
       }
     });
 
-    const updatedDonation = await this.repo.findOne({
-      where: { donationId },
-      relations: ['donationItems'],
-    });
-
-    return updatedDonation!;
+    return donation;
   }
 
   async delete(donationId: number): Promise<void> {
