@@ -524,8 +524,20 @@ describe('FoodManufacturersService', () => {
 
       const result = await service.getStats(manufacturerId);
 
+      const expectedKeys = [
+        'Donations',
+        'Value Donated',
+        'Items Donated',
+        'lbs Donated',
+      ];
+      expect(Object.keys(result).sort()).toEqual(expectedKeys.sort());
+
+      Object.values(result).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
       expect(result['Donations']).toBe('2');
-      expect(result['Value Donated']).toBe('$15.5');
+      expect(result['Value Donated']).toBe('$925');
       expect(result['Items Donated']).toBe('225');
       expect(result['lbs Donated']).toBe('225.03125');
     });
