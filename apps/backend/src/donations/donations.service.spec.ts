@@ -8,7 +8,6 @@ import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
 
@@ -140,7 +139,6 @@ describe('DonationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
-        DonationItemsService,
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
@@ -890,7 +888,7 @@ describe('DonationService', () => {
         service.confirmDonationItemDetails(donationId, [makeDto(1)]),
       ).rejects.toThrow(
         new BadRequestException(
-          `Donation item 1 does not belong to donation ${donationId}`,
+          `Donation item 1 does not belong to Donation ${donationId}`,
         ),
       );
     });
@@ -965,7 +963,7 @@ describe('DonationService', () => {
         ]),
       ).rejects.toThrow(
         new BadRequestException(
-          `Donation item 1 does not belong to donation ${donationId}`,
+          `Donation item 1 does not belong to Donation ${donationId}`,
         ),
       );
 
@@ -977,22 +975,24 @@ describe('DonationService', () => {
       expect(item?.ozPerItem).toBeNull();
     });
 
-    it('throws BadRequestException when only a subset of items are confirmed', async () => {
+    it('throws BadRequestException when an item in the body is already confirmed', async () => {
       const donationId = await insertMatchedDonation();
-      const itemId1 = await insertDonationItem(donationId, 10, 10);
-      const itemId2 = await insertDonationItem(donationId, 10, 10);
+      const itemId = await insertDonationItem(donationId, 10, 10);
 
-      // Only confirm itemId1 — itemId2 stays detailsConfirmed=false
+      await testDataSource.query(
+        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
+        [itemId],
+      );
+
       await expect(
-        service.confirmDonationItemDetails(donationId, [makeDto(itemId1)]),
+        service.confirmDonationItemDetails(donationId, [makeDto(itemId)]),
       ).rejects.toThrow(
         new BadRequestException(
-          `The following donation items have not been confirmed: ${itemId2}`,
+          `Donation item ${itemId} has already been confirmed`,
         ),
       );
     });
 
-    // Reserved quantity is the amount already taken for other orders, whereas quantity was the original amount donated
     it('does not fulfill donation when reservedQuantity does not equal quantity', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 5);

@@ -13,7 +13,6 @@ import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
-import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
@@ -26,7 +25,6 @@ export class DonationService {
     private manufacturerRepo: Repository<FoodManufacturer>,
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
-    private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -339,18 +337,23 @@ export class DonationService {
       );
     }
 
-    const donationItems = await this.donationItemsService.getAllDonationItems(
-      donationId,
-    );
-    const validItemIds = new Set(donationItems.map((item) => item.itemId));
-
     await this.dataSource.transaction(async (transactionManager) => {
       const repo = transactionManager.getRepository(DonationItem);
 
       for (const dto of body) {
-        if (!validItemIds.has(dto.itemId)) {
+        const item = await repo.findOne({
+          where: { itemId: dto.itemId, donationId },
+        });
+
+        if (!item) {
           throw new BadRequestException(
-            `Donation item ${dto.itemId} does not belong to donation ${donationId}`,
+            `Donation item ${dto.itemId} does not belong to Donation ${donationId}`,
+          );
+        }
+
+        if (item.detailsConfirmed) {
+          throw new BadRequestException(
+            `Donation item ${dto.itemId} has already been confirmed`,
           );
         }
 
@@ -363,31 +366,24 @@ export class DonationService {
       }
     });
 
-    const updatedItemIDs = new Set(body.map((dto) => dto.itemId));
-    const unconfirmedItems = donationItems.filter(
-      (item) => !item.detailsConfirmed && !updatedItemIDs.has(item.itemId),
-    );
-    if (unconfirmedItems.length > 0) {
-      throw new BadRequestException(
-        `The following donation items have not been confirmed: ${unconfirmedItems
-          .map((i) => i.itemId)
-          .join(', ')}`,
-      );
+    const fulfilled = await this.checkAndFulfillDonation(donationId);
+    // Just change the status to reflect the change, rather than refetching
+    if (fulfilled) {
+      donation.status = DonationStatus.FULFILLED;
     }
-
-    await this.checkAndFulfillDonation(donationId);
 
     return donation;
   }
 
-  private async checkAndFulfillDonation(donationId: number): Promise<void> {
+  private async checkAndFulfillDonation(donationId: number): Promise<boolean> {
     const items = await this.donationItemsRepo.find({
       where: { donationId },
       relations: { allocations: { order: true } },
     });
 
-    if (!isDonationFulfillable(items)) return;
+    if (!isDonationFulfillable(items)) return false;
 
     await this.repo.update(donationId, { status: DonationStatus.FULFILLED });
+    return true;
   }
 }
