@@ -232,6 +232,11 @@ describe('UsersService', () => {
 
   describe('remove', () => {
     it('should remove a user by id', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE assignee_id = 6)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE assignee_id = 6`);
+
       const result = await service.remove(6);
 
       expect(result.email).toBe('james.t@volunteer.org');

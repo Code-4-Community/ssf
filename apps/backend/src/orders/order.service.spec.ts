@@ -578,7 +578,6 @@ describe('OrdersService', () => {
     it('should update order with delivery details and set status to delivered but request remains active', async () => {
       const orderRepo = testDataSource.getRepository(Order);
       const requestRepo = testDataSource.getRepository(FoodRequest);
-
       // Get an existing shipped order
       const existingShippedOrder = await orderRepo.findOne({
         where: { status: OrderStatus.SHIPPED },
@@ -594,6 +593,7 @@ describe('OrdersService', () => {
       const secondOrder = orderRepo.create({
         requestId: existingShippedOrder.requestId,
         foodManufacturerId: existingShippedOrder.foodManufacturerId,
+        assigneeId: existingShippedOrder.assigneeId,
         status: OrderStatus.SHIPPED,
         shippedAt: new Date(),
       });
