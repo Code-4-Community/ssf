@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { DonationStatus, RecurrenceEnum } from './types';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Entity('donations')
 export class Donation {
@@ -58,4 +60,7 @@ export class Donation {
 
   @Column({ name: 'occurrences_remaining', type: 'int', nullable: true })
   occurrencesRemaining!: number | null;
+
+  @OneToMany(() => DonationItem, (item) => item.donation)
+  donationItems!: DonationItem[];
 }
