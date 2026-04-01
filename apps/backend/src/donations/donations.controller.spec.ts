@@ -3,7 +3,10 @@ import { DonationsController } from './donations.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Donation } from './donations.entity';
-import { CreateDonationDto } from './dtos/create-donation.dto';
+import {
+  CreateDonationDto,
+  CreateDonationItemDto,
+} from './dtos/create-donation.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
 
 const mockDonationService = mock<DonationService>();
@@ -86,6 +89,14 @@ describe('DonationsController', () => {
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Item 1',
+          } as CreateDonationItemDto,
+          {
+            itemName: 'Item 2',
+          } as CreateDonationItemDto,
+        ] as CreateDonationItemDto[],
       };
 
       const createdDonation: Partial<Donation> = {

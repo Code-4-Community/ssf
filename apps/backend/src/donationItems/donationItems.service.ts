@@ -59,10 +59,10 @@ export class DonationItemsService {
     items: CreateDonationItemDto[],
     transactionManager: EntityManager,
   ): Promise<DonationItem[]> {
-    const repo = transactionManager.getRepository(DonationItem);
+    const transactionRepo = transactionManager.getRepository(DonationItem);
 
     const donationItems = items.map((item) =>
-      repo.create({
+      transactionRepo.create({
         donation: savedDonation,
         itemName: item.itemName,
         quantity: item.quantity,
@@ -73,6 +73,6 @@ export class DonationItemsService {
         foodRescue: item.foodRescue,
       }),
     );
-    return repo.save(donationItems);
+    return transactionRepo.save(donationItems);
   }
 }
