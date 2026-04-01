@@ -7,18 +7,13 @@ import { Pantry } from '../pantries/pantries.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { UsersService } from '../users/users.service';
 import { PantriesService } from '../pantries/pantries.service';
-import { OrdersService } from '../orders/order.service';
 import { Order } from '../orders/order.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationItemsService } from '../donationItems/donationItems.service';
-import { DonationService } from '../donations/donations.service';
-import { Donation } from '../donations/donations.entity';
 
 jest.setTimeout(60000);
 
@@ -36,16 +31,17 @@ describe('VolunteersService', () => {
         VolunteersService,
         UsersService,
         PantriesService,
-        EmailsService,
-        OrdersService,
         RequestsService,
-        FoodManufacturersService,
-        DonationItemsService,
-        DonationService,
         {
           provide: AuthService,
           useValue: {
             adminCreateUser: jest.fn().mockResolvedValue('test-sub'),
+          },
+        },
+        {
+          provide: EmailsService,
+          useValue: {
+            sendEmails: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -71,16 +67,6 @@ describe('VolunteersService', () => {
         {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
-        },
-        {
-          provide: getRepositoryToken(Donation),
-          useValue: testDataSource.getRepository(Donation),
-        },
-        {
-          provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
         },
       ],
     }).compile();

@@ -16,12 +16,6 @@ import { User } from '../users/users.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
-import { Pantry } from '../pantries/pantries.entity';
-import { Order } from '../orders/order.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
-import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationService } from '../donations/donations.service';
-import { PantriesService } from '../pantries/pantries.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
@@ -64,8 +58,6 @@ describe('FoodManufacturersService', () => {
       providers: [
         FoodManufacturersService,
         UsersService,
-        DonationService,
-        PantriesService,
         {
           provide: AuthService,
           useValue: {
@@ -87,22 +79,6 @@ describe('FoodManufacturersService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
-        },
-        {
-          provide: getRepositoryToken(Pantry),
-          useValue: testDataSource.getRepository(Pantry),
-        },
-        {
-          provide: getRepositoryToken(Order),
-          useValue: testDataSource.getRepository(Order),
-        },
-        {
-          provide: getRepositoryToken(FoodRequest),
-          useValue: testDataSource.getRepository(FoodRequest),
-        },
-        {
-          provide: getRepositoryToken(DonationItem),
-          useValue: testDataSource.getRepository(DonationItem),
         },
       ],
     }).compile();
