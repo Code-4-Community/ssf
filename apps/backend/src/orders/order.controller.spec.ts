@@ -391,7 +391,7 @@ describe('OrdersController', () => {
   });
 
   describe('createOrder', () => {
-    const req = { user: { id: 1 } };
+    const req = { user: { id: 3 } };
 
     it('should call ordersService.create and return the created order', async () => {
       const createOrderDto = {
@@ -428,7 +428,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
-        1,
+        3,
       );
       expect(result).toEqual(mockCreatedOrder);
     });
@@ -510,7 +510,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
-        1,
+        3,
       );
     });
 
@@ -541,7 +541,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
-        1,
+        3,
       );
     });
 
@@ -576,7 +576,7 @@ describe('OrdersController', () => {
         createOrderDto.foodRequestId,
         createOrderDto.manufacturerId,
         itemAllocationsMap,
-        1,
+        3,
       );
     });
   });

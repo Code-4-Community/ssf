@@ -726,6 +726,7 @@ describe('OrdersService', () => {
   describe('createOrder', () => {
     let validCreateOrderDto: CreateOrderDto;
     let parsedAllocations: Map<number, number>;
+    const userId = 3;
 
     beforeEach(() => {
       validCreateOrderDto = {
@@ -772,13 +773,13 @@ describe('OrdersService', () => {
         validCreateOrderDto.foodRequestId,
         validCreateOrderDto.manufacturerId,
         parsedAllocations,
-        1,
+        userId,
       );
 
       expect(createdOrder).toBeDefined();
       expect(createdOrder.orderId).toBeDefined();
       expect(createdOrder.status).toEqual(OrderStatus.PENDING);
-      expect(createdOrder.assigneeId).toEqual(1);
+      expect(createdOrder.assigneeId).toEqual(userId);
       expect(createdOrder.foodManufacturerId).toEqual(
         validCreateOrderDto.manufacturerId,
       );
@@ -843,7 +844,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -851,7 +852,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(
         `Request ${validCreateOrderDto.foodRequestId} is not active`,
@@ -875,7 +876,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -883,7 +884,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(
         `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
@@ -906,7 +907,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(NotFoundException);
       await expect(
@@ -914,7 +915,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(`Donation items not found for ID(s): 999`);
 
@@ -939,7 +940,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -947,7 +948,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(
         `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
@@ -973,7 +974,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(BadRequestException);
       await expect(
@@ -981,7 +982,7 @@ describe('OrdersService', () => {
           validCreateOrderDto.foodRequestId,
           validCreateOrderDto.manufacturerId,
           parsedAllocations,
-          1,
+          userId,
         ),
       ).rejects.toThrow(
         `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
