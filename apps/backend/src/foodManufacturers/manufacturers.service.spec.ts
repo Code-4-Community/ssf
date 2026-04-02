@@ -530,7 +530,7 @@ describe('FoodManufacturersService', () => {
         'Items Donated',
         'lbs Donated',
       ];
-      expect(Object.keys(result).sort()).toEqual(expectedKeys.sort());
+      expect(Object.keys(result)).toEqual(expectedKeys);
 
       Object.values(result).forEach((value) => {
         expect(typeof value).toBe('string');

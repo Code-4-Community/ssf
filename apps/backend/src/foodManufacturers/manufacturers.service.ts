@@ -26,6 +26,7 @@ import {
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
 import { DonationStatus } from '../donations/types';
+import { ManufacturerStatsDto } from './dtos/manufacturer-stats.dto';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -324,7 +325,7 @@ export class FoodManufacturersService {
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
   }
 
-  async getStats(id: number) {
+  async getStats(id: number): Promise<ManufacturerStatsDto> {
     validateId(id, 'Food Manufacturer');
 
     const manufacturer = await this.repo.findOne({
