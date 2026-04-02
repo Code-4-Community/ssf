@@ -702,7 +702,7 @@ describe('OrdersService', () => {
       const notAssignedOrder = result.find(
         (o) => o.assignee.id !== volunteerId,
       );
-      expect(notAssignedOrder?.requiredActions).toBeNull();
+      expect(notAssignedOrder?.requiredActions).toBeUndefined();
     });
 
     it('should map the rest of the data correctly', async () => {
@@ -722,25 +722,25 @@ describe('OrdersService', () => {
 
   describe('completeVolunteerAction', () => {
     it('should successfully complete confirmDonationReceipt', async () => {
-      const volunteerId = 7;
       const orderId = 2;
-      const result = await service.completeVolunteerAction(
-        orderId,
-        volunteerId,
-        VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      await testDataSource.query(
+        `UPDATE orders SET status = '${OrderStatus.PENDING}' WHERE order_id = ${orderId}`,
       );
+      const result = await service.completeVolunteerAction(orderId, {
+        action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      });
 
       expect(result.confirmDonationReceipt).toBe(true);
     });
 
     it('should successfully complete notifyPantry', async () => {
-      const volunteerId = 8;
       const orderId = 3;
-      const result = await service.completeVolunteerAction(
-        orderId,
-        volunteerId,
-        VolunteerAction.NOTIFY_PANTRY,
+      await testDataSource.query(
+        `UPDATE orders SET status = '${OrderStatus.PENDING}' WHERE order_id = ${orderId}`,
       );
+      const result = await service.completeVolunteerAction(orderId, {
+        action: VolunteerAction.NOTIFY_PANTRY,
+      });
 
       expect(result.notifyPantry).toBe(true);
     });
@@ -748,39 +748,35 @@ describe('OrdersService', () => {
     it('throws when order is non-existent', async () => {
       const orderId = 999;
       await expect(
-        service.completeVolunteerAction(
-          orderId,
-          7,
-          VolunteerAction.CONFIRM_DONATION_RECEIPT,
-        ),
+        service.completeVolunteerAction(orderId, {
+          action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        }),
       ).rejects.toThrow(new NotFoundException(`Order ${orderId} not found`));
     });
 
-    it('throws when user is not assigned to order', async () => {
-      const volunteerId = 7;
-      const orderId = 1;
+    it('throws when order is not pending', async () => {
+      const orderId = 2;
+      const order = await service.findOne(orderId);
+      expect(order.status).not.toBe(OrderStatus.PENDING);
       await expect(
-        service.completeVolunteerAction(
-          orderId,
-          volunteerId,
-          VolunteerAction.CONFIRM_DONATION_RECEIPT,
-        ),
+        service.completeVolunteerAction(orderId, {
+          action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        }),
       ).rejects.toThrow(
         new BadRequestException(
-          `User ${volunteerId} not assigned to Order ${orderId}`,
+          `Action ${VolunteerAction.CONFIRM_DONATION_RECEIPT} can only be completed for pending orders`,
         ),
       );
     });
 
     it('throws when action is already completed', async () => {
-      const volunteerId = 7;
       const orderId = 2;
       const action = VolunteerAction.NOTIFY_PANTRY;
       await testDataSource.query(
         `UPDATE orders SET notify_pantry = true WHERE order_id = ${orderId}`,
       );
       await expect(
-        service.completeVolunteerAction(orderId, volunteerId, action),
+        service.completeVolunteerAction(orderId, { action }),
       ).rejects.toThrow(
         new BadRequestException(
           `Action ${action} already completed for Order ${orderId}`,

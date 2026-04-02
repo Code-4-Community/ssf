@@ -16,7 +16,7 @@ import { BadRequestException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
-import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -393,29 +393,14 @@ describe('OrdersController', () => {
     it('should call ordersService.completeVolunteerAction with correct parameters', async () => {
       const orderId = 1;
       const action = VolunteerAction.CONFIRM_DONATION_RECEIPT;
-      const req = { user: { id: 1 } };
 
-      await controller.completeVolunteerAction(
-        req as AuthenticatedRequest,
-        orderId,
+      await controller.completeVolunteerAction(orderId, {
         action,
-      );
+      } as CompleteVolunteerActionDto);
 
       expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
         orderId,
-        1,
-        action,
-      );
-    });
-  });
-
-  describe('getAllOrdersForVolunteer', () => {
-    it('should call ordersService.getAllOrdersForVolunteer with user id', async () => {
-      const req = { user: { id: 1 } };
-      await controller.getAllOrdersForVolunteer(req as AuthenticatedRequest);
-
-      expect(mockOrdersService.getAllOrdersForVolunteer).toHaveBeenCalledWith(
-        1,
+        { action } as CompleteVolunteerActionDto,
       );
     });
   });

@@ -15,6 +15,7 @@ import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 
 @Injectable()
 export class OrdersService {
@@ -58,6 +59,8 @@ export class OrdersService {
     return qb.getMany();
   }
 
+  // returns ALL orders (not scoped to volunteer)
+  // for orders assigned to the given volunteer, includes requiredActions (otherwise undefined)
   async getAllOrdersForVolunteer(volunteerId: number) {
     const orders = await this.repo
       .createQueryBuilder('order')
@@ -85,7 +88,7 @@ export class OrdersService {
       const requiredActions =
         assignee.id === volunteerId
           ? { confirmDonationReceipt, notifyPantry }
-          : null;
+          : undefined;
 
       return {
         orderId: o.orderId,
@@ -385,9 +388,9 @@ export class OrdersService {
 
   async completeVolunteerAction(
     orderId: number,
-    volunteerId: number,
-    action: VolunteerAction,
+    body: CompleteVolunteerActionDto,
   ) {
+    const { action } = body;
     if (!Object.values(VolunteerAction).includes(action)) {
       throw new BadRequestException(`Invalid volunteer action: ${action}`);
     }
@@ -402,15 +405,15 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    if (order.assignee.id !== volunteerId) {
-      throw new BadRequestException(
-        `User ${volunteerId} not assigned to Order ${orderId}`,
-      );
-    }
-
     if (order[action]) {
       throw new BadRequestException(
         `Action ${action} already completed for Order ${orderId}`,
+      );
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(
+        `Action ${action} can only be completed for pending orders`,
       );
     }
 

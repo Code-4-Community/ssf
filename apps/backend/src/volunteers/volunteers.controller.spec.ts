@@ -7,8 +7,10 @@ import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { OrdersService } from '../orders/order.service';
 
 const mockVolunteersService = mock<VolunteersService>();
+const mockOrdersService = mock<OrdersService>();
 
 const mockVolunteer1: Partial<User> = {
   id: 1,
@@ -60,6 +62,10 @@ describe('VolunteersController', () => {
         {
           provide: VolunteersService,
           useValue: mockVolunteersService,
+        },
+        {
+          provide: OrdersService,
+          useValue: mockOrdersService,
         },
       ],
     }).compile();

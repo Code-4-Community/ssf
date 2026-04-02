@@ -11,7 +11,6 @@ import {
   UploadedFiles,
   UseInterceptors,
   PayloadTooLargeException,
-  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -19,7 +18,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AllocationsService } from '../allocations/allocations.service';
-import { OrderStatus, VolunteerAction } from './types';
+import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
@@ -29,8 +28,8 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 
@@ -54,12 +53,6 @@ export class OrdersController {
       pantryNames = [pantryNames];
     }
     return this.ordersService.getAll({ status, pantryNames });
-  }
-
-  @Roles(Role.VOLUNTEER)
-  @Get('/all-for-volunteer')
-  async getAllOrdersForVolunteer(@Req() req: AuthenticatedRequest) {
-    return this.ordersService.getAllOrdersForVolunteer(req.user.id);
   }
 
   @Get('/get-current-orders')
@@ -199,8 +192,7 @@ export class OrdersController {
       );
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'code' in err) {
-        const e = err as { code: string };
-        if (e.code === 'LIMIT_FILE_SIZE') {
+        if (err.code === 'LIMIT_FILE_SIZE') {
           throw new PayloadTooLargeException(
             'Each photo must be 5 MB or smaller',
           );
@@ -210,17 +202,19 @@ export class OrdersController {
     }
   }
 
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) => {
+      const order = await services.get(OrdersService).findOne(entityId);
+      return order ? [order.assigneeId] : null;
+    },
+  })
   @Roles(Role.VOLUNTEER)
   @Patch('/:orderId/complete-action')
   async completeVolunteerAction(
-    @Req() req: AuthenticatedRequest,
     @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('action') action: VolunteerAction,
+    @Body(new ValidationPipe()) body: CompleteVolunteerActionDto,
   ) {
-    return this.ordersService.completeVolunteerAction(
-      orderId,
-      req.user.id,
-      action,
-    );
+    return this.ordersService.completeVolunteerAction(orderId, body);
   }
 }
