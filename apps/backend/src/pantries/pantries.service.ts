@@ -518,19 +518,20 @@ export class PantriesService {
       );
     }
 
-    const usersToAdd = users.filter((u) => addSet.has(u.id));
+    const volunteersToAdd = users.filter((u) => addSet.has(u.id));
 
     const currentVolunteers = pantry.volunteers ?? [];
-    const filteredVolunteers = currentVolunteers.filter(
+    const volunteersToKeep = currentVolunteers.filter(
       (v) => !removeSet.has(v.id),
     );
 
-    const existingVolunteerIds = new Set(filteredVolunteers.map((v) => v.id));
-    const newVolunteers = usersToAdd.filter(
+    // filter out volunteers already in the DB to avoid duplicate insertions
+    const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
+    const newVolunteers = volunteersToAdd.filter(
       (u) => !existingVolunteerIds.has(u.id),
     );
 
-    pantry.volunteers = [...filteredVolunteers, ...newVolunteers];
+    pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
     await this.repo.save(pantry);
   }
 
