@@ -3,6 +3,7 @@ import { FoodManufacturersService } from './manufacturers.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
 import {
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
   NotFoundException,
@@ -24,6 +25,7 @@ import { PantriesService } from '../pantries/pantries.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { FoodType } from '../donationItems/types';
 
 jest.setTimeout(60000);
 
@@ -362,24 +364,157 @@ describe('FoodManufacturersService', () => {
   });
 
   describe('getFMDonations', () => {
-    it('returns donations for an existing manufacturer', async () => {
-      const donations = await service.getFMDonations(1);
-      expect(Array.isArray(donations)).toBe(true);
-    });
-
-    it('returns empty array for manufacturer with no donations', async () => {
-      await service.addFoodManufacturer(dto);
-      const saved = await testDataSource
-        .getRepository(FoodManufacturer)
-        .findOne({ where: { foodManufacturerName: 'Test Manufacturer' } });
-      const donations = await service.getFMDonations(saved!.foodManufacturerId);
-      expect(donations).toEqual([]);
-    });
+    const fmRepId1 = 3;
+    const fmRepId2 = 4;
+    const fmId1 = 1;
+    const fmId2 = 2;
+    const availableDonationId = 1;
+    const fulfilledDonationId = 4;
+    const matchingDonationId = 3;
 
     it('throws NotFoundException for non-existent manufacturer', async () => {
-      await expect(service.getFMDonations(9999)).rejects.toThrow(
+      await expect(service.getFMDonations(9999, fmRepId1)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 9999 not found'),
       );
+    });
+
+    it('throws BadRequestException when user is not the representative of the food manufacturer', async () => {
+      await expect(service.getFMDonations(fmId1, fmRepId2)).rejects.toThrow(
+        new BadRequestException(
+          `User ${fmRepId2} is not allowed to access donations for Food Manufacturer ${fmId1}`,
+        ),
+      );
+    });
+
+    it('returns donations with empty payload for unmatched donations', async () => {
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+      expect(result).toHaveLength(2);
+      expect(result[0].donation.donationId).toBe(1);
+      expect(result[0].associatedPendingOrders).toEqual([]);
+      expect(result[0].relevantDonationItems).toEqual([]);
+    });
+
+    it('returns matched donations with empty orders and items when no pending orders exist', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' 
+        WHERE donation_id = $1`,
+        [availableDonationId],
+      );
+
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].associatedPendingOrders).toEqual([]);
+      expect(result[0].relevantDonationItems).toEqual([]);
+    });
+
+    it('returns pending orders with correct pantry info for matched donations', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
+        [fulfilledDonationId],
+      );
+
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+      const donation = result.find(
+        (d) => d.donation.donationId === fulfilledDonationId,
+      );
+
+      expect(donation).toBeDefined();
+      if (!donation) throw new Error('Missing donation test object');
+
+      expect(donation.associatedPendingOrders).toHaveLength(1);
+
+      const order = donation.associatedPendingOrders[0];
+      expect(order.pantryName).toBe('Community Food Pantry Downtown');
+      expect(order.pantryId).toBe(1);
+      expect(order.orderId).toBeDefined();
+    });
+
+    it('returns unconfirmed donation items used in pending orders', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
+        [fulfilledDonationId],
+      );
+
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+      const donation = result.find(
+        (d) => d.donation.donationId === fulfilledDonationId,
+      );
+
+      expect(donation).toBeDefined();
+      if (!donation) throw new Error('Missing donation test object');
+
+      expect(donation.relevantDonationItems).toHaveLength(1);
+      const item = donation.relevantDonationItems[0];
+      expect(item.itemName).toBe('Cereal Boxes');
+      expect(item.allocatedQuantity).toBe(75);
+      expect(item.foodType).toBe(FoodType.GLUTEN_FREE_BREAD);
+    });
+
+    it('excludes donation items where detailsConfirmed is true', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
+        [fulfilledDonationId],
+      );
+
+      await testDataSource.query(
+        `UPDATE public.donation_items SET details_confirmed = true 
+        WHERE item_name = 'Cereal Boxes'`,
+      );
+
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+
+      expect(result[0].relevantDonationItems).toEqual([]);
+    });
+
+    it('excludes donation items not used in any pending order', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
+        [availableDonationId],
+      );
+
+      const result = await service.getFMDonations(fmId1, fmRepId1);
+
+      expect(result[0].relevantDonationItems).toEqual([]);
+    });
+
+    it('correctly sums allocatedQuantity across multiple pending orders for the same item', async () => {
+      await testDataSource.query(
+        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
+        [matchingDonationId],
+      );
+
+      const almondMilkItemId = (
+        await testDataSource.query(
+          `SELECT item_id FROM public.donation_items WHERE item_name = 'Almond Milk' ORDER BY item_id DESC LIMIT 1`,
+        )
+      )[0].item_id;
+
+      const requestId = (
+        await testDataSource.query(
+          `SELECT request_id FROM public.food_requests 
+          WHERE additional_information LIKE '%breakfast items%' LIMIT 1`,
+        )
+      )[0].request_id;
+
+      const newOrder = await testDataSource.query(
+        `INSERT INTO public.orders (request_id, food_manufacturer_id, status, created_at, assignee_id)
+        VALUES ($1, $2, 'pending', NOW(), 1) RETURNING order_id`,
+        [requestId, fmId2],
+      );
+
+      await testDataSource.query(
+        `INSERT INTO public.allocations (order_id, item_id, allocated_quantity)
+        VALUES ($1, $2, 5)`,
+        [newOrder[0].order_id, almondMilkItemId],
+      );
+
+      const result = await service.getFMDonations(fmId2, fmRepId2);
+
+      const almond = result[0].relevantDonationItems.find(
+        (i) => i.itemName === 'Almond Milk',
+      );
+      expect(almond?.allocatedQuantity).toBe(15); // 10 + 5
     });
   });
 });
