@@ -192,13 +192,15 @@ const VolunteerManagement: React.FC = () => {
             page={currentPage}
             onChange={(page: number) => setCurrentPage(page)}
           >
-            <ButtonGroup variant="outline" size="sm">
+            <ButtonGroup variant="outline" size="sm" gap={2}>
               <Pagination.PrevTrigger asChild>
                 <IconButton
                   variant="ghost"
+                  disabled={currentPage === 1}
                   onClick={() =>
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
+                  ml={2}
                 >
                   <ChevronLeft />
                 </IconButton>
@@ -209,6 +211,7 @@ const VolunteerManagement: React.FC = () => {
                   <IconButton
                     variant={{ base: 'outline', _selected: 'outline' }}
                     onClick={() => setCurrentPage(page.value)}
+                    mr={2}
                   >
                     {page.value}
                   </IconButton>
@@ -218,6 +221,10 @@ const VolunteerManagement: React.FC = () => {
               <Pagination.NextTrigger asChild>
                 <IconButton
                   variant="ghost"
+                  disabled={
+                    currentPage ===
+                    Math.ceil(filteredVolunteers.length / pageSize)
+                  }
                   onClick={() =>
                     setCurrentPage((prev) =>
                       Math.min(

@@ -269,7 +269,7 @@ const ApprovePantries: React.FC = () => {
               {paginatedPantries.map((pantry, index) => (
                 <Table.Row
                   key={`${pantry.pantryId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: 'neutral.50' }}
                 >
                   <Table.Cell
                     textStyle="p2"
@@ -332,11 +332,14 @@ const ApprovePantries: React.FC = () => {
                 mt={12}
                 variant="outline"
                 size="sm"
+                gap={2}
               >
                 <Pagination.PrevTrigger
                   color="neutral.800"
                   variant="outline"
+                  disabled={currentPage === 1}
                   _hover={{ color: 'black', cursor: 'pointer' }}
+                  ml={2}
                 >
                   <ChevronLeft size={16} />
                 </Pagination.PrevTrigger>
@@ -357,7 +360,9 @@ const ApprovePantries: React.FC = () => {
                 <Pagination.NextTrigger
                   color="neutral.800"
                   variant="ghost"
+                  disabled={currentPage === totalPages}
                   _hover={{ color: 'black', cursor: 'pointer' }}
+                  mr={2}
                 >
                   <ChevronRight size={16} />
                 </Pagination.NextTrigger>

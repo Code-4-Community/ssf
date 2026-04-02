@@ -32,6 +32,7 @@ import AssignedPantries from '@containers/volunteerAssignedPantries';
 import ApproveFoodManufacturers from '@containers/approveFoodManufacturers';
 import FoodManufacturerApplicationDetails from '@containers/foodManufacturerApplicationDetails';
 import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
+import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
 
 Amplify.configure(CognitoAuthConfig);
@@ -187,6 +188,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AdminDonation />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin-donation-stats',
+        element: (
+          <ProtectedRoute>
+            <AdminDonationStats />
           </ProtectedRoute>
         ),
       },

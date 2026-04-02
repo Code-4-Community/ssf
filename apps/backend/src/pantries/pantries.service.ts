@@ -51,7 +51,7 @@ export class PantriesService {
     return pantry;
   }
 
-  private readonly EMPTY_STATS: Omit<PantryStats, 'pantryId'> = {
+  private readonly EMPTY_STATS: Omit<PantryStats, 'pantryId' | 'pantryName'> = {
     totalItems: 0,
     totalOz: 0,
     totalLbs: 0,
@@ -62,9 +62,9 @@ export class PantriesService {
   };
 
   private async aggregateStats(
-    pantryIds?: number[],
+    pantryIds: number[],
     years?: number[],
-  ): Promise<PantryStats[]> {
+  ): Promise<Omit<PantryStats, 'pantryName'>[]> {
     // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, totalFoodRescueItems)
     const itemsQb = this.orderRepo
       .createQueryBuilder('order')
@@ -85,11 +85,9 @@ export class PantriesService {
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
         'totalFoodRescueItems',
       )
+      .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
-    if (pantryIds?.length) {
-      itemsQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
-    }
     if (years?.length) {
       itemsQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
@@ -102,11 +100,9 @@ export class PantriesService {
       .leftJoin('order.request', 'request')
       .select('request.pantryId', 'pantryId')
       .addSelect('COALESCE(SUM(order.shippingCost), 0)', 'totalShippingCost')
+      .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
-    if (pantryIds?.length) {
-      shippingQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
-    }
     if (years?.length) {
       shippingQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
@@ -145,7 +141,7 @@ export class PantriesService {
           totalItems > 0
             ? parseFloat(((totalFoodRescueItems / totalItems) * 100).toFixed(2))
             : 0,
-      } satisfies PantryStats;
+      } satisfies Omit<PantryStats, 'pantryName'>;
     });
   }
 
@@ -165,12 +161,19 @@ export class PantriesService {
         ? pantryNames
         : [pantryNames]
       : undefined;
+    const yearsArray = years
+      ? (Array.isArray(years) ? years : [years]).map(Number)
+      : undefined;
+
+    let paginated: { pantryId: number; pantryName: string }[];
 
     // If names were provided, validate ALL of them before paginating
     if (nameArray?.length) {
       const allMatched = await this.repo.find({
         select: ['pantryId', 'pantryName'],
-        where: { pantryName: In(nameArray) },
+        where: {
+          pantryName: In(nameArray),
+        },
         order: { pantryId: 'ASC' },
       });
 
@@ -183,34 +186,42 @@ export class PantriesService {
         );
       }
 
-      // Paginate the validated results in-memory
-      const paginated = allMatched.slice(
-        (page - 1) * PAGE_SIZE,
-        page * PAGE_SIZE,
-      );
-      if (paginated.length === 0) return [];
-
-      const pantryIds = paginated.map((p) => p.pantryId);
-      const yearsArray = years
-        ? (Array.isArray(years) ? years : [years]).map(Number)
-        : undefined;
-
-      const stats = await this.aggregateStats(pantryIds, yearsArray);
-      const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
-      return pantryIds.map(
-        (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
-      );
+      paginated = allMatched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    } else {
+      paginated = await this.repo.find({
+        select: ['pantryId', 'pantryName'],
+        order: { pantryId: 'ASC' },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      });
     }
 
-    // No names provided — paginate from the full table
+    if (paginated.length === 0) return [];
+
+    const pantryIds = paginated.map((p) => p.pantryId);
+    const stats = await this.aggregateStats(pantryIds, yearsArray);
+    const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
+
+    return paginated.map((p) => {
+      const stat = statsMap.get(p.pantryId);
+      return stat
+        ? { ...stat, pantryName: p.pantryName }
+        : {
+            pantryId: p.pantryId,
+            pantryName: p.pantryName,
+            ...this.EMPTY_STATS,
+          };
+    });
+  }
+
+  async getTotalStats(years?: number[]): Promise<TotalStats> {
     const pantries = await this.repo.find({
-      select: ['pantryId', 'pantryName'],
-      order: { pantryId: 'ASC' },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      select: ['pantryId'],
     });
 
-    if (pantries.length === 0) return [];
+    if (pantries.length === 0) {
+      return { ...this.EMPTY_STATS };
+    }
 
     const pantryIds = pantries.map((p) => p.pantryId);
     const yearsArray = years
@@ -218,18 +229,6 @@ export class PantriesService {
       : undefined;
 
     const stats = await this.aggregateStats(pantryIds, yearsArray);
-    const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
-    return pantryIds.map(
-      (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
-    );
-  }
-
-  async getTotalStats(years?: number[]): Promise<TotalStats> {
-    const yearsArray = years
-      ? (Array.isArray(years) ? years : [years]).map(Number)
-      : undefined;
-
-    const stats = await this.aggregateStats(undefined, yearsArray);
 
     const totalStats = { ...this.EMPTY_STATS };
     let totalFoodRescueItems = 0;
@@ -260,6 +259,40 @@ export class PantriesService {
       where: { status: ApplicationStatus.PENDING },
       relations: ['pantryUser'],
     });
+  }
+
+  async getApprovedPantryNames(): Promise<string[]> {
+    const pantries = await this.repo.find({
+      select: ['pantryName'],
+      where: { status: ApplicationStatus.APPROVED },
+    });
+    return pantries.map((p) => p.pantryName);
+  }
+
+  async getPantryOrderYears(): Promise<number[]> {
+    const approvedPantries = await this.repo.find({
+      select: ['pantryId'],
+      where: { status: ApplicationStatus.APPROVED },
+    });
+
+    if (approvedPantries.length === 0) {
+      return [];
+    }
+
+    const approvedPantryIds = approvedPantries.map((p) => p.pantryId);
+
+    const rows = await this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoin('order.request', 'request')
+      .select('EXTRACT(YEAR FROM order.createdAt)::int', 'year')
+      .where('request.pantryId IN (:...pantryIds)', {
+        pantryIds: approvedPantryIds,
+      })
+      .groupBy('EXTRACT(YEAR FROM order.createdAt)::int')
+      .orderBy('"year"', 'DESC')
+      .getRawMany();
+
+    return rows.map((r) => Number(r.year));
   }
 
   async addPantry(pantryData: PantryApplicationDto) {
