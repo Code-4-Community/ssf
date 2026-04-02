@@ -13,6 +13,7 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import {
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -574,6 +575,54 @@ describe('RequestsService', () => {
       await expect(service.getAvailableItems(1, 999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 999 not found'),
       );
+    });
+  });
+  describe('closeRequest', () => {
+    it('should close an active request', async () => {
+      const result = await service.closeRequest(3);
+
+      expect(result.status).toBe(FoodRequestStatus.CLOSED);
+
+      const fromDb = await service.findOne(3);
+      expect(fromDb.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
+    it('should throw BadRequestException when request is already closed', async () => {
+      await service.closeRequest(3);
+
+      await expect(service.closeRequest(3)).rejects.toThrow(
+        new BadRequestException('Cannot close a request with status: closed'),
+      );
+    });
+
+    it('should throw NotFoundException for non-existent request', async () => {
+      await expect(service.closeRequest(999)).rejects.toThrow(
+        new NotFoundException('Request 999 not found'),
+      );
+    });
+
+    it('should not modify associated order statuses when closed', async () => {
+      const ordersBefore = await testDataSource
+        .getRepository(Order)
+        .find({ where: { requestId: 3 } });
+
+      await service.closeRequest(3);
+
+      const ordersAfter = await testDataSource
+        .getRepository(Order)
+        .find({ where: { requestId: 3 } });
+
+      ordersAfter.forEach((order, i) => {
+        expect(order.status).toBe(ordersBefore[i].status);
+      });
+    });
+
+    it('should not reopen a closed request when updateRequestStatus is called', async () => {
+      await service.closeRequest(1);
+      await service.updateRequestStatus(1);
+
+      const fromDb = await service.findOne(1);
+      expect(fromDb.status).toBe(FoodRequestStatus.CLOSED);
     });
   });
 });
