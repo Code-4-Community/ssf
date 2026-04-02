@@ -943,18 +943,18 @@ describe('PantriesService', () => {
       ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
     });
 
-    it('throws BadRequestException when user is not a volunteer', async () => {
+    it('throws BadRequestException when some users to remove are not volunteers in a mixed list', async () => {
       await expect(
         service.updatePantryVolunteers(1, {
-          addVolunteerIds: [1],
-          removeVolunteerIds: [],
+          addVolunteerIds: [],
+          removeVolunteerIds: [1, 6],
         }),
       ).rejects.toThrow(
         new BadRequestException('User(s) 1 are not volunteers'),
       );
     });
 
-    it('throws BadRequestException when some users are not volunteers in a mixed list', async () => {
+    it('throws BadRequestException when some users to add are not volunteers in a mixed list', async () => {
       await expect(
         service.updatePantryVolunteers(1, {
           addVolunteerIds: [6, 1],

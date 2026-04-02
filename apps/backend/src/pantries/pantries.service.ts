@@ -469,7 +469,9 @@ export class PantriesService {
     body: UpdatePantryVolunteersDto,
   ): Promise<void> {
     const { addVolunteerIds = [], removeVolunteerIds = [] } = body;
+
     validateId(pantryId, 'Pantry');
+    if (addVolunteerIds.length === 0 && removeVolunteerIds.length === 0) return;
 
     if (hasDuplicates(addVolunteerIds)) {
       throw new BadRequestException(
@@ -506,12 +508,8 @@ export class PantriesService {
 
     const uniqueVolunteerIds = new Set([...addSet, ...removeSet]);
     const users = await this.usersService.findByIds([...uniqueVolunteerIds]);
-    const usersToAdd = users.filter((u) => addSet.has(u.id));
 
-    const nonVolunteers = usersToAdd.filter(
-      (user) => user.role !== Role.VOLUNTEER,
-    );
-
+    const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
     if (nonVolunteers.length > 0) {
       throw new BadRequestException(
         `User(s) ${nonVolunteers
@@ -520,17 +518,19 @@ export class PantriesService {
       );
     }
 
+    const usersToAdd = users.filter((u) => addSet.has(u.id));
+
     const currentVolunteers = pantry.volunteers ?? [];
     const filteredVolunteers = currentVolunteers.filter(
       (v) => !removeSet.has(v.id),
     );
 
     const existingVolunteerIds = new Set(filteredVolunteers.map((v) => v.id));
-    const volunteersToAdd = usersToAdd.filter(
+    const newVolunteers = usersToAdd.filter(
       (u) => !existingVolunteerIds.has(u.id),
     );
 
-    pantry.volunteers = [...filteredVolunteers, ...volunteersToAdd];
+    pantry.volunteers = [...filteredVolunteers, ...newVolunteers];
     await this.repo.save(pantry);
   }
 
