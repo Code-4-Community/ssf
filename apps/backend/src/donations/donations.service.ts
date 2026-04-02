@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
@@ -379,14 +379,30 @@ export class DonationService {
     }
 
     await this.dataSource.transaction(async (transactionManager) => {
-      const repo = transactionManager.getRepository(DonationItem);
+      const transactionRepo = transactionManager.getRepository(DonationItem);
+      const transactionAllocationRepo =
+        transactionManager.getRepository(Allocation);
 
       if (itemsToDelete.length > 0) {
-        await repo.remove(itemsToDelete);
+        const hasAllocations = await transactionAllocationRepo.exists({
+          where: {
+            item: {
+              itemId: In(itemsToDelete.map((i) => i.itemId)),
+            },
+          },
+        });
+
+        if (hasAllocations) {
+          throw new BadRequestException(
+            `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+          );
+        }
+
+        await transactionRepo.remove(itemsToDelete);
       }
 
       if (donation.donationItems.length > 0) {
-        await repo.save(donation.donationItems);
+        await transactionRepo.save(donation.donationItems);
       }
     });
 

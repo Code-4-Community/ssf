@@ -848,6 +848,9 @@ describe('DonationService', () => {
         ],
       } as ReplaceDonationItemsDto;
 
+      // manually removing allocations for deleted item ids
+      await service['allocationRepo'].delete({ itemId: In([2, 3]) });
+
       const updatedDonation = await service.replaceDonationItems(
         donationId,
         body,
@@ -863,6 +866,51 @@ describe('DonationService', () => {
       expect(updatedItemNames).toContain('Bananas'); // new
       expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
       expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
+    });
+
+    it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
+      const donationId = 1;
+
+      // (update item1, remove item2, remove item3, add item 4)
+      const body = {
+        items: [
+          {
+            id: 1,
+            itemName: 'Green Apples',
+            quantity: 15,
+          } as Partial<ReplaceDonationItemDto>,
+          {
+            itemName: 'Bananas',
+            quantity: 20,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          } as Partial<ReplaceDonationItemDto>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow(
+        `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+      );
+    });
+
+    it('should delete all donation items for an available donation when passed an empty array', async () => {
+      const donationId = 1;
+
+      const body = {
+        items: [],
+      } as ReplaceDonationItemsDto;
+
+      // manually removing allocations for deleted item ids
+      await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
+
+      const updatedDonation = await service.replaceDonationItems(
+        donationId,
+        body,
+      );
+
+      expect(updatedDonation).toBeDefined();
+      expect(updatedDonation.donationItems).toHaveLength(0);
     });
 
     it('should throw NotFoundException if donation does not exist', async () => {
