@@ -37,7 +37,6 @@ nx run-many -t serve -p frontend backend
 ```
 
 ## CI (GitHub Actions)
-
 On every push and pull request, GitHub Actions runs:
 
 Prettier - checks formatting
@@ -45,7 +44,7 @@ Backend tests - Jest test suite
 
 Local Commands
 Prettier:
-run yarn prettier:check to verify formatting locally
+run yarn prettier:check  to verify formatting locally
 run yarn prettier:write to fix formatting locally
 Backend tests:
 run 'npx jest` with test DB setup
