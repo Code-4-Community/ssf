@@ -110,24 +110,24 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('getAvailableYears', () => {
+  describe('getPantryOrderYears', () => {
     it('should return an array of years', async () => {
       const mockYears = [2025, 2024];
-      mockPantriesService.getAvailableYears.mockResolvedValueOnce(mockYears);
+      mockPantriesService.getPantryOrderYears.mockResolvedValueOnce(mockYears);
 
-      const result = await controller.getAvailableYears();
+      const result = await controller.getPantryOrderYears();
 
       expect(result).toEqual(mockYears);
-      expect(mockPantriesService.getAvailableYears).toHaveBeenCalled();
+      expect(mockPantriesService.getPantryOrderYears).toHaveBeenCalled();
     });
 
     it('should return an empty array when no approved pantry orders exist', async () => {
-      mockPantriesService.getAvailableYears.mockResolvedValueOnce([]);
+      mockPantriesService.getPantryOrderYears.mockResolvedValueOnce([]);
 
-      const result = await controller.getAvailableYears();
+      const result = await controller.getPantryOrderYears();
 
       expect(result).toEqual([]);
-      expect(mockPantriesService.getAvailableYears).toHaveBeenCalled();
+      expect(mockPantriesService.getPantryOrderYears).toHaveBeenCalled();
     });
   });
 

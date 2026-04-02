@@ -223,7 +223,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getAvailableYears(): Promise<number[]> {
+  public async getPantryOrderYears(): Promise<number[]> {
     return this.axiosInstance
       .get('/api/pantries/available-years-stats')
       .then((response) => response.data);

@@ -237,7 +237,7 @@ const VolunteerRequestManagement: React.FC = () => {
           {paginatedRequests.map((request, index) => (
             <Table.Row
               key={`${request.requestId}-${index}`}
-              _hover={{ bg: 'gray.50' }}
+              _hover={{ bg: 'neutral.50' }}
             >
               <Table.Cell
                 {...tableCellStyles}

@@ -269,7 +269,7 @@ const ApprovePantries: React.FC = () => {
               {paginatedPantries.map((pantry, index) => (
                 <Table.Row
                   key={`${pantry.pantryId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: 'neutral.50' }}
                 >
                   <Table.Cell
                     textStyle="p2"

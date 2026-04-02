@@ -269,7 +269,7 @@ export class PantriesService {
     return pantries.map((p) => p.pantryName);
   }
 
-  async getAvailableYears(): Promise<number[]> {
+  async getPantryOrderYears(): Promise<number[]> {
     const approvedPantries = await this.repo.find({
       select: ['pantryId'],
       where: { status: ApplicationStatus.APPROVED },

@@ -50,7 +50,7 @@ const AdminDonationStats: React.FC = () => {
       }
 
       try {
-        const years = await ApiClient.getAvailableYears();
+        const years = await ApiClient.getPantryOrderYears();
         if (years) {
           setAvailableYears(years);
           setSelectedYears(years);
@@ -478,7 +478,7 @@ const AdminDonationStats: React.FC = () => {
           )}
           {zerosMode
             ? zeroPagedNames.map((name) => (
-                <Table.Row key={name} _hover={{ bg: 'gray.50' }}>
+                <Table.Row key={name} _hover={{ bg: 'neutral.50' }}>
                   <Table.Cell
                     textStyle="p2"
                     borderRight="1px solid"
@@ -526,7 +526,7 @@ const AdminDonationStats: React.FC = () => {
                 </Table.Row>
               ))
             : pantryStats.map((stat) => (
-                <Table.Row key={stat.pantryId} _hover={{ bg: 'gray.50' }}>
+                <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
                   <Table.Cell
                     textStyle="p2"
                     borderRight="1px solid"

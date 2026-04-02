@@ -280,7 +280,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
               {donations.map((donation, index) => (
                 <Table.Row
                   key={`${donation.donationId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: 'neutral.50' }}
                 >
                   <Table.Cell
                     {...tableCellStyles}

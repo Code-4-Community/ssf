@@ -791,13 +791,13 @@ describe('PantriesService', () => {
     });
   });
 
-  describe('getAvailableYears', () => {
+  describe('getPantryOrderYears', () => {
     it('returns years from approved pantry orders sorted descending', async () => {
       await testDataSource.query(
         `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
       );
 
-      const years = await service.getAvailableYears();
+      const years = await service.getPantryOrderYears();
 
       expect(years).toEqual([2024]);
     });
@@ -814,7 +814,7 @@ describe('PantriesService', () => {
         WHERE order_id != (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
       `);
 
-      const years = await service.getAvailableYears();
+      const years = await service.getPantryOrderYears();
 
       expect(years).toEqual([2025, 2024]);
     });
@@ -824,7 +824,7 @@ describe('PantriesService', () => {
         `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
       );
 
-      const years = await service.getAvailableYears();
+      const years = await service.getPantryOrderYears();
 
       expect(years).toEqual([]);
     });
@@ -837,7 +837,7 @@ describe('PantriesService', () => {
         `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
       );
 
-      const years = await service.getAvailableYears();
+      const years = await service.getPantryOrderYears();
 
       expect(years).toEqual([]);
     });

@@ -83,8 +83,8 @@ export class PantriesController {
 
   @Roles(Role.ADMIN)
   @Get('/available-years-stats')
-  async getAvailableYears(): Promise<number[]> {
-    return this.pantriesService.getAvailableYears();
+  async getPantryOrderYears(): Promise<number[]> {
+    return this.pantriesService.getPantryOrderYears();
   }
 
   @Get('/approved')

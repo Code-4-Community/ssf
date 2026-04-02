@@ -619,7 +619,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                 return (
                   <Table.Row
                     key={`${order.orderId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: 'neutral.50' }}
                   >
                     <Table.Cell
                       {...tableCellStyles}
