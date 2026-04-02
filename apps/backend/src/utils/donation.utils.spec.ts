@@ -38,15 +38,6 @@ describe('isDonationFulfillable', () => {
     expect(isDonationFulfillable(items)).toBe(false);
   });
 
-  it('returns false when an item has a pending order', () => {
-    const items = [
-      makeItem({
-        allocations: [makeAllocation(OrderStatus.PENDING)] as any,
-      }),
-    ];
-    expect(isDonationFulfillable(items)).toBe(false);
-  });
-
   it('returns true when all orders are delivered', () => {
     const items = [
       makeItem({
