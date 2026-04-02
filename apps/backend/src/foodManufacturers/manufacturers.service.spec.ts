@@ -527,4 +527,35 @@ describe('FoodManufacturersService', () => {
       expect(almond?.allocatedQuantity).toBe(15); // 10 + 5
     });
   });
+
+  describe('getStats', () => {
+    it('returns proper stats for manufacturer', async () => {
+      const manufacturerId = 1;
+
+      const result = await service.getStats(manufacturerId);
+
+      const expectedKeys = [
+        'Donations',
+        'Value Donated',
+        'Items Donated',
+        'lbs Donated',
+      ];
+      expect(Object.keys(result)).toEqual(expectedKeys);
+
+      Object.values(result).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(result['Donations']).toBe('2');
+      expect(result['Value Donated']).toBe('$925');
+      expect(result['Items Donated']).toBe('225');
+      expect(result['lbs Donated']).toBe('225.03125');
+    });
+
+    it('throws NotFoundException for non-existent manufacturer', async () => {
+      await expect(service.getStats(9999)).rejects.toThrow(
+        new NotFoundException('Food Manufacturer 9999 not found'),
+      );
+    });
+  });
 });
