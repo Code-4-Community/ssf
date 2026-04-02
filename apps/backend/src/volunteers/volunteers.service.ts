@@ -64,7 +64,9 @@ export class VolunteersService {
   ): Promise<User> {
     const volunteer = await this.findOne(volunteerId);
 
-    const pantries = await this.pantriesService.findByIds(new Set(pantryIds));
+    const uniquePantryIds = new Set(pantryIds);
+
+    const pantries = await this.pantriesService.findByIds([...uniquePantryIds]);
     const existingPantries = volunteer.pantries || [];
     const existingPantryIds = new Set(existingPantries.map((p) => p.pantryId));
     const newPantries = pantries.filter(

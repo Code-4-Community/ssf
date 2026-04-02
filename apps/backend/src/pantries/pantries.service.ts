@@ -504,9 +504,8 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const users = await this.usersService.findByIds(
-      new Set([...addSet, ...removeSet]),
-    );
+    const uniqueVolunteerIds = new Set([...addSet, ...removeSet]);
+    const users = await this.usersService.findByIds([...uniqueVolunteerIds]);
     const usersToAdd = users.filter((u) => addSet.has(u.id));
 
     const nonVolunteers = usersToAdd.filter(
@@ -535,15 +534,15 @@ export class PantriesService {
     await this.repo.save(pantry);
   }
 
-  async findByIds(pantryIds: Set<number>): Promise<Pantry[]> {
-    const pantryIdArray = Array.from(pantryIds);
-    pantryIdArray.forEach((id) => validateId(id, 'Pantry'));
+  // given pantryIds should not have duplicates
+  async findByIds(pantryIds: number[]): Promise<Pantry[]> {
+    pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
-    const pantries = await this.repo.findBy({ pantryId: In(pantryIdArray) });
+    const pantries = await this.repo.findBy({ pantryId: In(pantryIds) });
 
-    if (pantries.length !== pantryIds.size) {
+    if (pantries.length !== pantryIds.length) {
       const foundIds = new Set(pantries.map((p) => p.pantryId));
-      const missingIds = pantryIdArray.filter((id) => !foundIds.has(id));
+      const missingIds = pantryIds.filter((id) => !foundIds.has(id));
       throw new NotFoundException(
         `Pantries not found: ${missingIds.join(', ')}`,
       );
