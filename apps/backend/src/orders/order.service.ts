@@ -9,7 +9,7 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { OrderStatus, VolunteerAction } from './types';
+import { OrderStatus } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -278,9 +278,7 @@ export class OrdersService {
       throw new BadRequestException('Invalid date format for dateReceived');
     }
 
-    const order = await this.repo.findOne({
-      where: { orderId },
-    });
+    const order = await this.repo.findOneBy({ orderId });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -391,15 +389,9 @@ export class OrdersService {
     body: CompleteVolunteerActionDto,
   ) {
     const { action } = body;
-    if (!Object.values(VolunteerAction).includes(action)) {
-      throw new BadRequestException(`Invalid volunteer action: ${action}`);
-    }
     validateId(orderId, 'Order');
 
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['assignee'],
-    });
+    const order = await this.repo.findOneBy({ orderId });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -411,9 +403,9 @@ export class OrdersService {
       );
     }
 
-    if (order.status !== OrderStatus.PENDING) {
+    if (order.status !== OrderStatus.SHIPPED) {
       throw new BadRequestException(
-        `Action ${action} can only be completed for pending orders`,
+        `Action ${action} can only be completed for shipped orders`,
       );
     }
 

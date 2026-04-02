@@ -724,7 +724,7 @@ describe('OrdersService', () => {
     it('should successfully complete confirmDonationReceipt', async () => {
       const orderId = 2;
       await testDataSource.query(
-        `UPDATE orders SET status = '${OrderStatus.PENDING}' WHERE order_id = ${orderId}`,
+        `UPDATE orders SET status = '${OrderStatus.SHIPPED}' WHERE order_id = ${orderId}`,
       );
       const result = await service.completeVolunteerAction(orderId, {
         action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
@@ -734,10 +734,7 @@ describe('OrdersService', () => {
     });
 
     it('should successfully complete notifyPantry', async () => {
-      const orderId = 3;
-      await testDataSource.query(
-        `UPDATE orders SET status = '${OrderStatus.PENDING}' WHERE order_id = ${orderId}`,
-      );
+      const orderId = 3; // shipped order
       const result = await service.completeVolunteerAction(orderId, {
         action: VolunteerAction.NOTIFY_PANTRY,
       });
@@ -764,7 +761,7 @@ describe('OrdersService', () => {
         }),
       ).rejects.toThrow(
         new BadRequestException(
-          `Action ${VolunteerAction.CONFIRM_DONATION_RECEIPT} can only be completed for pending orders`,
+          `Action ${VolunteerAction.CONFIRM_DONATION_RECEIPT} can only be completed for shipped orders`,
         ),
       );
     });

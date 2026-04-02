@@ -204,10 +204,11 @@ export class OrdersController {
 
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) => {
-      const order = await services.get(OrdersService).findOne(entityId);
-      return order ? [order.assigneeId] : null;
-    },
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(OrdersService).findOne(entityId),
+        (order: Order) => [order.assigneeId],
+      ),
   })
   @Roles(Role.VOLUNTEER)
   @Patch('/:orderId/complete-action')
