@@ -26,6 +26,7 @@ import {
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
 import { DonationStatus } from '../donations/types';
+import { ManufacturerStatsDto } from './dtos/manufacturer-stats.dto';
 
 @Injectable()
 export class FoodManufacturersService {
@@ -322,5 +323,37 @@ export class FoodManufacturersService {
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
+  }
+
+  async getStats(id: number): Promise<ManufacturerStatsDto> {
+    validateId(id, 'Food Manufacturer');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId: id },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(`Food Manufacturer ${id} not found`);
+    }
+
+    const result = await this.repo
+      .createQueryBuilder('fm')
+      .leftJoin('fm.donations', 'd')
+      .leftJoin('d.donationItems', 'di')
+      .where('fm.foodManufacturerId = :id', { id })
+      .select([
+        'COUNT(DISTINCT d.donationId) AS donations',
+        'COALESCE(SUM(di.estimatedValue * di.quantity), 0) AS totalValue',
+        'COALESCE(SUM(di.quantity), 0) AS totalItems',
+        'COALESCE(SUM(di.quantity * di.ozPerItem) / 16.0, 0) AS totalLbs',
+      ])
+      .getRawOne();
+
+    return {
+      Donations: String(result.donations),
+      'Value Donated': `$${Number(result.totalvalue)}`,
+      'Items Donated': String(result.totalitems),
+      'lbs Donated': `${Number(result.totallbs)}`,
+    };
   }
 }
