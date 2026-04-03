@@ -28,6 +28,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { DonationStatus } from '../donations/types';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
+import { Allocation } from '../allocations/allocations.entity';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);

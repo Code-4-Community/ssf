@@ -85,14 +85,14 @@ describe('VolunteersService', () => {
           useValue: testDataSource.getRepository(Allocation),
         },
         {
-          provide: DataSource,
-          useValue: testDataSource,
-        },
-        {
           provide: EmailsService,
           useValue: {
             sendEmails: jest.fn().mockResolvedValue(undefined),
           },
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
