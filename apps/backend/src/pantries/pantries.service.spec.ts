@@ -32,6 +32,9 @@ import { Donation } from '../donations/donations.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { User } from '../users/users.entity';
+import { AllocationsService } from '../allocations/allocations.service';
+import { Allocation } from '../allocations/allocations.entity';
+import { DataSource } from 'typeorm';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -119,6 +122,7 @@ describe('PantriesService', () => {
         DonationItemsService,
         DonationService,
         FoodManufacturersService,
+        AllocationsService,
         {
           provide: AuthService,
           useValue: {
