@@ -4,13 +4,16 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 @Injectable()
 export class DonationService {
@@ -18,8 +21,13 @@ export class DonationService {
 
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
+    @InjectRepository(Allocation)
+    private allocationRepo: Repository<Allocation>,
+    @InjectRepository(DonationItem)
+    private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -312,5 +320,135 @@ export class DonationService {
       dates.push(nextDate.toISOString());
     }
     return dates;
+  }
+
+  async replaceDonationItems(
+    donationId: number,
+    body: ReplaceDonationItemsDto,
+  ): Promise<Donation> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.repo.findOne({
+      where: { donationId },
+      relations: ['donationItems'],
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.AVAILABLE) {
+      throw new BadRequestException(`Only available donations can be updated`);
+    }
+
+    const existingItems = donation.donationItems || [];
+    const incomingItems = body.items || [];
+
+    const existingMap = new Map(
+      existingItems.map((item) => [item.itemId, item]),
+    );
+
+    const incomingIds = new Set(
+      incomingItems.filter((i) => i.id).map((i) => i.id),
+    );
+
+    const itemsToDelete = existingItems.filter(
+      (item) => !incomingIds.has(item.itemId),
+    );
+
+    donation.donationItems = [];
+
+    for (const incoming of incomingItems) {
+      if (incoming.id) {
+        const existing = existingMap.get(incoming.id);
+        if (!existing) {
+          throw new NotFoundException(
+            `Donation item ${incoming.id} for Donation ${donationId} not found`,
+          );
+        }
+        // Merge the incoming changes into the existing donation item entity by matching ids.
+        donation.donationItems.push(
+          this.donationItemsRepo.merge(existing, incoming),
+        );
+      } else {
+        // Create new item and attach to donation
+        donation.donationItems.push(
+          this.donationItemsRepo.create({ ...incoming, donation }),
+        );
+      }
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const transactionRepo = transactionManager.getRepository(DonationItem);
+      const transactionAllocationRepo =
+        transactionManager.getRepository(Allocation);
+
+      if (itemsToDelete.length > 0) {
+        const hasAllocations = await transactionAllocationRepo.exists({
+          where: {
+            item: {
+              itemId: In(itemsToDelete.map((i) => i.itemId)),
+            },
+          },
+        });
+
+        if (hasAllocations) {
+          throw new BadRequestException(
+            `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+          );
+        }
+
+        await transactionRepo.remove(itemsToDelete);
+      }
+
+      if (donation.donationItems.length > 0) {
+        await transactionRepo.save(donation.donationItems);
+      }
+    });
+
+    return donation;
+  }
+
+  async delete(donationId: number): Promise<void> {
+    validateId(donationId, 'Donation');
+
+    const donation = await this.repo.findOne({
+      where: { donationId },
+      relations: ['donationItems'],
+    });
+
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.AVAILABLE) {
+      throw new BadRequestException(`Only available donations can be deleted`);
+    }
+
+    const hasReservedItems = donation.donationItems?.some(
+      (item) => item.reservedQuantity > 0,
+    );
+
+    if (hasReservedItems) {
+      throw new BadRequestException(
+        `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
+      );
+    }
+
+    const hasAllocations = await this.allocationRepo.exists({
+      where: {
+        item: {
+          donation: { donationId },
+        },
+      },
+    });
+
+    if (hasAllocations) {
+      throw new BadRequestException(
+        `Cannot delete donation ${donationId} with existing allocations`,
+      );
+    }
+
+    await this.repo.delete(donationId);
   }
 }
