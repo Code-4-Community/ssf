@@ -533,18 +533,17 @@ export class PantriesService {
     }
     return pantry;
   }
+
   async getStats(id: number): Promise<PantryStatsDto> {
     validateId(id, 'Pantry');
 
-    const pantry = await this.repo.findOne({
-      where: { pantryId: id },
-    });
+    const pantry = await this.repo.findOneBy({ pantryId: id });
 
     if (!pantry) {
       throw new NotFoundException(`Pantry ${id} not found`);
     }
 
-    // Pantries use entity-class joins, as opposed to relations, so join through id comparison
+    // Pantry has no @OneToMany to FoodRequest, so use entity-class joins with explicit column conditions
     const result = await this.repo
       .createQueryBuilder('pantry')
       .leftJoin(FoodRequest, 'fr', 'fr.pantry_id = pantry.pantry_id')
@@ -553,18 +552,18 @@ export class PantriesService {
       .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
       .where('pantry.pantryId = :id', { id })
       .select([
-        'COUNT(DISTINCT fr.request_id) AS foodRequests',
+        'COUNT(DISTINCT fr.request_id) AS food_requests',
         'COUNT(DISTINCT o.order_id) AS orders',
-        'COALESCE(SUM(a.allocated_quantity), 0) AS totalItems',
-        'COALESCE(SUM(di.estimated_value * a.allocated_quantity), 0) AS totalValue',
+        'COALESCE(SUM(a.allocated_quantity), 0) AS total_items',
+        'COALESCE(SUM(di.estimated_value * a.allocated_quantity), 0) AS total_value',
       ])
       .getRawOne();
 
     return {
-      'Food Requests': String(result.foodrequests),
+      'Food Requests': String(result.food_requests),
       Orders: String(result.orders),
-      'Items Received': String(result.totalitems),
-      'Value Received': `$${Number(result.totalvalue)}`,
+      'Items Received': String(result.total_items),
+      'Value Received': `$${Number(result.total_value)}`,
     };
   }
 }

@@ -905,5 +905,15 @@ describe('PantriesService', () => {
         new NotFoundException('Pantry 9999 not found'),
       );
     });
+
+    it('returns zero stats for a pantry with no food requests or orders', async () => {
+      const pantryId = 5;
+      const result = await service.getStats(pantryId);
+
+      expect(result['Food Requests']).toBe('0');
+      expect(result['Orders']).toBe('0');
+      expect(result['Items Received']).toBe('0');
+      expect(result['Value Received']).toBe('$0');
+    });
   });
 });
