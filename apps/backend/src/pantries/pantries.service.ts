@@ -488,7 +488,7 @@ export class PantriesService {
     const addSet = new Set(addVolunteerIds);
     const removeSet = new Set(removeVolunteerIds);
 
-    const overlap = [...addSet].filter((id) => removeSet.has(id));
+    const overlap = addVolunteerIds.filter((id) => removeSet.has(id));
     if (overlap.length) {
       throw new BadRequestException(
         `The following ID(s) appear in both the add and remove lists: ${overlap.join(
@@ -506,7 +506,10 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const uniqueVolunteerIds = new Set([...addSet, ...removeSet]);
+    const uniqueVolunteerIds = new Set([
+      ...addVolunteerIds,
+      ...removeVolunteerIds,
+    ]);
     const users = await this.usersService.findByIds([...uniqueVolunteerIds]);
 
     const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
@@ -525,7 +528,7 @@ export class PantriesService {
       (v) => !removeSet.has(v.id),
     );
 
-    // filter out volunteers already in the DB to avoid duplicate insertions
+    // avoid re-adding volunteers already associated with the pantry
     const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
     const newVolunteers = volunteersToAdd.filter(
       (u) => !existingVolunteerIds.has(u.id),
