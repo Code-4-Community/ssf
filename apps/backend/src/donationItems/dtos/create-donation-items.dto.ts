@@ -59,3 +59,16 @@ export class CreateMultipleDonationItemsDto {
   @Type(() => CreateDonationItemDto)
   items!: CreateDonationItemDto[];
 }
+
+export class ReplaceDonationItemDto extends CreateDonationItemDto {
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+}
+
+export class ReplaceDonationItemsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReplaceDonationItemDto)
+  items!: ReplaceDonationItemDto[];
+}
