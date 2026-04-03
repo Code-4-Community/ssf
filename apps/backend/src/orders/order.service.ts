@@ -9,13 +9,13 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
-import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
+import { VolunteerOrder } from '../volunteers/types';
 
 @Injectable()
 export class OrdersService {
@@ -61,7 +61,9 @@ export class OrdersService {
 
   // returns ALL orders (not scoped to volunteer)
   // for orders assigned to the given volunteer, includes requiredActions (otherwise undefined)
-  async getAllOrdersForVolunteer(volunteerId: number) {
+  async getAllOrdersForVolunteer(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
     const orders = await this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
@@ -384,11 +386,7 @@ export class OrdersService {
     await this.repo.save(order);
   }
 
-  async completeVolunteerAction(
-    orderId: number,
-    body: CompleteVolunteerActionDto,
-  ) {
-    const { action } = body;
+  async completeVolunteerAction(orderId: number, action: VolunteerAction) {
     validateId(orderId, 'Order');
 
     const order = await this.repo.findOneBy({ orderId });

@@ -12,7 +12,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
-import { Assignments } from './types';
+import { Assignments, VolunteerOrder } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
@@ -64,7 +64,9 @@ export class VolunteersController {
   // only includes requiredActions for orders assigned to the requesting volunteer
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')
-  async getVolunteerOrders(@Param('id', ParseIntPipe) id: number) {
+  async getVolunteerOrders(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<VolunteerOrder[]> {
     return this.ordersService.getAllOrdersForVolunteer(id);
   }
 }

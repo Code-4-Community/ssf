@@ -392,16 +392,25 @@ describe('OrdersController', () => {
   describe('completeVolunteerAction', () => {
     it('should call ordersService.completeVolunteerAction with correct parameters', async () => {
       const orderId = 1;
-      const action = VolunteerAction.CONFIRM_DONATION_RECEIPT;
+      const dto: CompleteVolunteerActionDto = {
+        action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      };
 
-      await controller.completeVolunteerAction(orderId, {
-        action,
-      } as CompleteVolunteerActionDto);
+      const updatedOrder = {
+        ...mockOrders[0],
+        confirmDonationReceipt: true,
+      };
+      mockOrdersService.completeVolunteerAction.mockResolvedValueOnce(
+        updatedOrder as Order,
+      );
+
+      const result = await controller.completeVolunteerAction(orderId, dto);
 
       expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
         orderId,
-        { action } as CompleteVolunteerActionDto,
+        VolunteerAction.CONFIRM_DONATION_RECEIPT,
       );
+      expect(result).toEqual(updatedOrder);
     });
   });
 });

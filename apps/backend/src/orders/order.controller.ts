@@ -214,8 +214,8 @@ export class OrdersController {
   @Patch('/:orderId/complete-action')
   async completeVolunteerAction(
     @Param('orderId', ParseIntPipe) orderId: number,
-    @Body(new ValidationPipe()) body: CompleteVolunteerActionDto,
+    @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
   ) {
-    return this.ordersService.completeVolunteerAction(orderId, body);
+    return this.ordersService.completeVolunteerAction(orderId, dto.action);
   }
 }
