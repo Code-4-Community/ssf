@@ -24,6 +24,7 @@ import { CreateDonationDto } from '../donations/dtos/create-donation.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 jest.setTimeout(60000);
 
@@ -88,6 +89,10 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
         },
       ],
     }).compile();
