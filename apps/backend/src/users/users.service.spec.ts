@@ -347,10 +347,133 @@ describe('UsersService', () => {
 
       const stats = await service.getMonthlyAggregatedStats();
 
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ];
+
+      expect(Object.keys(stats)).toEqual(expectedKeys);
+
+      Object.values(stats).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
       expect(stats).toEqual({
         'Food Requests': '1',
         Orders: '0',
         Donations: '1',
+        Volunteers: '4',
+      });
+    });
+
+    it('should return correct aggregated counts for the current month with edge cases of start and end of month', async () => {
+      const foodRequestRepo = testDataSource.getRepository(FoodRequest);
+
+      const now = new Date();
+
+      const year = now.getFullYear();
+      const month = now.getMonth();
+
+      const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+
+      const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+      const existingRequest1 = await foodRequestService.findOne(1);
+      existingRequest1.requestedAt = endOfMonth;
+      await foodRequestRepo.save(existingRequest1);
+
+      const existingRequest2 = await foodRequestService.findOne(2);
+      existingRequest2.requestedAt = startOfMonth;
+      await foodRequestRepo.save(existingRequest2);
+
+      const stats = await service.getMonthlyAggregatedStats();
+
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ];
+
+      expect(Object.keys(stats)).toEqual(expectedKeys);
+
+      Object.values(stats).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(stats).toEqual({
+        'Food Requests': '2',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      });
+    });
+
+    it('should return just volunteer count if no other fields are relative to current month', async () => {
+      const stats = await service.getMonthlyAggregatedStats();
+
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ];
+
+      expect(Object.keys(stats)).toEqual(expectedKeys);
+
+      Object.values(stats).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(stats).toEqual({
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      });
+    });
+
+    it('should return correct aggregated counts for mixed month dataset', async () => {
+      const foodRequestRepo = testDataSource.getRepository(FoodRequest);
+
+      const now = new Date();
+
+      const year = now.getFullYear();
+      const month = now.getMonth();
+
+      const startOfCurrentMonth = new Date(year, month, 1, 0, 0, 0, 0);
+
+      const endOfNextMonth = new Date(year, month + 2, 0, 23, 59, 59, 999);
+
+      const existingRequest1 = await foodRequestService.findOne(1);
+      existingRequest1.requestedAt = endOfNextMonth;
+      await foodRequestRepo.save(existingRequest1);
+
+      const existingRequest2 = await foodRequestService.findOne(2);
+      existingRequest2.requestedAt = startOfCurrentMonth;
+      await foodRequestRepo.save(existingRequest2);
+
+      const stats = await service.getMonthlyAggregatedStats();
+
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ];
+
+      expect(Object.keys(stats)).toEqual(expectedKeys);
+
+      Object.values(stats).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(stats).toEqual({
+        'Food Requests': '1',
+        Orders: '0',
+        Donations: '0',
         Volunteers: '4',
       });
     });

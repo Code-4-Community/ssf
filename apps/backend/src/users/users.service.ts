@@ -17,6 +17,7 @@ import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
+import { AggregatedStatsDto } from './dtos/aggregated-stats.dto';
 
 @Injectable()
 export class UsersService {
@@ -166,7 +167,7 @@ export class UsersService {
     return user;
   }
 
-  async getMonthlyAggregatedStats() {
+  async getMonthlyAggregatedStats(): Promise<AggregatedStatsDto> {
     const now = new Date();
     const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endMonth = new Date(
