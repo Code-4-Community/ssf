@@ -11,6 +11,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import {
+  BadRequestException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -578,6 +579,136 @@ describe('RequestsService', () => {
     it('throws NotFoundException for non-existent manufacturer', async () => {
       await expect(service.getAvailableItems(1, 999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 999 not found'),
+      );
+    });
+  });
+
+  describe('updateRequest', () => {
+    it('should update request attributes', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      const result = await service.updateRequest(1, {
+        requestedSize: RequestSize.MEDIUM,
+      });
+
+      expect(result.requestedSize).toBe(RequestSize.MEDIUM);
+      expect(result.requestedFoodTypes).toEqual([
+        FoodType.SEED_BUTTERS,
+        FoodType.GLUTEN_FREE_BREAD,
+        FoodType.DRIED_BEANS,
+        FoodType.DAIRY_FREE_ALTERNATIVES,
+      ]);
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb?.requestedSize).toBe(RequestSize.MEDIUM);
+    });
+
+    it('should throw NotFoundException when request is not found', async () => {
+      await expect(
+        service.updateRequest(9999, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(new NotFoundException('Request 9999 not found'));
+    });
+
+    it('should update all request attributes when all fields are provided', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      const result = await service.updateRequest(1, {
+        requestedSize: RequestSize.SMALL,
+        requestedFoodTypes: [FoodType.GRANOLA],
+        additionalInformation: 'Updated information',
+      });
+
+      expect(result.requestedSize).toBe(RequestSize.SMALL);
+      expect(result.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(result.additionalInformation).toBe('Updated information');
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb?.requestedSize).toBe(RequestSize.SMALL);
+      expect(fromDb?.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(fromDb?.additionalInformation).toBe('Updated information');
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      await testDataSource.query(
+        `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
+      );
+
+      await expect(
+        service.updateRequest(1, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      await expect(
+        service.updateRequest(2, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be updated if it still has orders associated with it`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when all DTO fields are undefined', async () => {
+      await expect(service.updateRequest(1, {})).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update',
+        ),
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a request by id', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      await service.delete(1);
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb).toBeNull();
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      await testDataSource.query(
+        `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
+      );
+
+      await expect(service.delete(1)).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      await expect(service.delete(2)).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be deleted if it still has orders associated with it`,
+        ),
+      );
+    });
+
+    it('should throw NotFoundException when request is not found', async () => {
+      await expect(service.delete(9999)).rejects.toThrow(
+        new NotFoundException('Request 9999 not found'),
       );
     });
   });

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -21,6 +22,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 
 @Injectable()
 export class RequestsService {
@@ -299,5 +301,74 @@ export class RequestsService {
       : FoodRequestStatus.ACTIVE;
 
     await this.repo.save(request);
+  }
+
+  async updateRequest(
+    requestId: number,
+    dto: UpdateRequestDto,
+  ): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    const { requestedSize, requestedFoodTypes, additionalInformation } = dto;
+
+    if (
+      requestedSize == undefined &&
+      requestedFoodTypes == undefined &&
+      additionalInformation == undefined
+    ) {
+      throw new BadRequestException(
+        'At least one field must be provided to update',
+      );
+    }
+
+    const request = await this.findOne(requestId);
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be updated if it still has orders associated with it`,
+      );
+    }
+
+    if (requestedSize !== undefined) request.requestedSize = requestedSize;
+    if (requestedFoodTypes !== undefined)
+      request.requestedFoodTypes = requestedFoodTypes;
+    if (additionalInformation !== undefined)
+      request.additionalInformation = additionalInformation;
+
+    return this.repo.save(request);
+  }
+
+  async delete(requestId: number) {
+    validateId(requestId, 'Request');
+
+    const request = await this.findOne(requestId);
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be deleted if it still has orders associated with it`,
+      );
+    }
+
+    await this.repo.remove(request);
   }
 }

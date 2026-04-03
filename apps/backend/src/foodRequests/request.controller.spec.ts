@@ -3,11 +3,12 @@ import { RequestsController } from './request.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { FoodRequest } from './request.entity';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 import {
   DonationItemDetailsDto,
   MatchingItemsDto,
@@ -15,6 +16,7 @@ import {
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { BadRequestException } from '@nestjs/common';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -44,6 +46,8 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.getOrderDetails.mockReset();
+    mockRequestsService.updateRequest.mockReset();
+    mockRequestsService.delete.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RequestsController],
@@ -236,6 +240,118 @@ describe('RequestsController', () => {
       expect(mockRequestsService.getMatchingManufacturers).toHaveBeenCalledWith(
         requestId,
       );
+    });
+  });
+
+  describe('PATCH /:requestId', () => {
+    it('should update request with valid information', async () => {
+      const updatedRequest = {
+        ...foodRequest1,
+        requestedSize: RequestSize.MEDIUM,
+      };
+      mockRequestsService.updateRequest.mockResolvedValue(
+        updatedRequest as FoodRequest,
+      );
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+      const result = await controller.updateRequest(1, updateRequestDto);
+
+      expect(result).toEqual(updatedRequest);
+      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
+        1,
+        updateRequestDto,
+      );
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      mockRequestsService.updateRequest.mockRejectedValue(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+        ),
+      );
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+
+      await expect(
+        controller.updateRequest(1, updateRequestDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+        ),
+      );
+      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
+        1,
+        updateRequestDto,
+      );
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      mockRequestsService.updateRequest.mockRejectedValue(
+        new BadRequestException(
+          `Request 2 cannot be updated if it still has orders associated with it`,
+        ),
+      );
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+
+      await expect(
+        controller.updateRequest(2, updateRequestDto),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be updated if it still has orders associated with it`,
+        ),
+      );
+      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
+        2,
+        updateRequestDto,
+      );
+    });
+  });
+
+  describe('DELETE /:requestId', () => {
+    it('should delete a request by id', async () => {
+      mockRequestsService.delete.mockResolvedValue(undefined);
+
+      const result = await controller.deleteRequest(1);
+
+      expect(result).toBeUndefined();
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      mockRequestsService.delete.mockRejectedValue(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+        ),
+      );
+
+      await expect(controller.deleteRequest(1)).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+        ),
+      );
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      mockRequestsService.delete.mockRejectedValue(
+        new BadRequestException(
+          `Request 2 cannot be deleted if it still has orders associated with it`,
+        ),
+      );
+
+      await expect(controller.deleteRequest(2)).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be deleted if it still has orders associated with it`,
+        ),
+      );
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(2);
     });
   });
 
