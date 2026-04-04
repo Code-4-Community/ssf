@@ -19,6 +19,8 @@ import { Donation } from '../donations/donations.entity';
 import { DonationStatus } from '../donations/types';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { DonationService } from '../donations/donations.service';
+import { DataSource } from 'typeorm';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -41,6 +43,11 @@ describe('OrdersService', () => {
         OrdersService,
         RequestsService,
         EmailsService,
+        DonationService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: EmailsService,
           useValue: {

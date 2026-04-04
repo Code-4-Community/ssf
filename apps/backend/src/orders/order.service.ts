@@ -9,8 +9,8 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { isDonationFulfillable } from '../utils/donation.utils';
 import { OrderStatus } from './types';
+import { DonationService } from '../donations/donations.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -18,7 +18,6 @@ import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
 import { Donation } from '../donations/donations.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationStatus } from '../donations/types';
 
 @Injectable()
 export class OrdersService {
@@ -29,6 +28,7 @@ export class OrdersService {
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
+    private donationService: DonationService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -335,16 +335,10 @@ export class OrdersService {
       .getRawMany<{ donationId: number }>();
 
     for (const { donationId } of affectedDonations) {
-      const items = await this.donationItemRepo.find({
-        where: { donationId },
-        relations: { allocations: { order: true } },
-      });
-
-      if (!isDonationFulfillable(items)) continue;
-
-      await this.donationRepo.update(donationId, {
-        status: DonationStatus.FULFILLED,
-      });
+      const donation = await this.donationRepo.findOneBy({ donationId });
+      if (donation) {
+        await this.donationService.checkAndFulfillDonation(donation);
+      }
     }
   }
 }

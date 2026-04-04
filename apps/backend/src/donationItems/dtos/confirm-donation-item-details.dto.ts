@@ -1,7 +1,7 @@
-import { IsNumber, Min, IsBoolean } from 'class-validator';
+import { IsNumber, Min, IsBoolean, IsInt } from 'class-validator';
 
 export class ConfirmDonationItemDetailsDto {
-  @IsNumber()
+  @IsInt()
   itemId!: number;
 
   @IsNumber(

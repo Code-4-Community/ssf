@@ -1274,4 +1274,60 @@ describe('DonationService', () => {
       });
     });
   });
+
+  describe('checkAndFulfillDonation', () => {
+    async function insertConfirmedDonationItem(
+      donationId: number,
+      qty: number,
+      reserved: number,
+    ): Promise<number> {
+      const result = await testDataSource.query(
+        `INSERT INTO donation_items
+          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 'Granola', true)
+         RETURNING item_id`,
+        [donationId, qty, reserved],
+      );
+      return result[0].item_id;
+    }
+
+    it('returns donation unchanged when not all items are fulfilled', async () => {
+      const donationId = await insertMatchedDonation();
+      // reservedQuantity (5) != quantity (10), detailsConfirmed = false
+      await insertDonationItem(donationId, 10, 5);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('returns donation unchanged when there is a pending order', async () => {
+      const donationId = await insertMatchedDonation();
+      // fully reserved and confirmed, but order 4 is PENDING
+      const itemId = await insertConfirmedDonationItem(donationId, 10, 10);
+      await insertAllocation(4, itemId);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no pending orders', async () => {
+      const donationId = await insertMatchedDonation();
+      await insertConfirmedDonationItem(donationId, 10, 10);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.FULFILLED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+    });
+  });
 });

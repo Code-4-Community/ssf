@@ -5,11 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
-import { isDonationFulfillable } from '../utils/donation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
+import { OrderStatus } from '../orders/types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
@@ -341,11 +341,11 @@ export class DonationService {
       );
     }
 
-    await this.dataSource.transaction(async (transactionManager) => {
-      const repo = transactionManager.getRepository(DonationItem);
+    return this.dataSource.transaction(async (transactionManager) => {
+      const transactionRepo = transactionManager.getRepository(DonationItem);
 
       for (const dto of body) {
-        const item = await repo.findOne({
+        const item = await transactionRepo.findOne({
           where: { itemId: dto.itemId, donationId },
         });
 
@@ -361,34 +361,54 @@ export class DonationService {
           );
         }
 
-        await repo.update(dto.itemId, {
+        await transactionRepo.update(dto.itemId, {
           ozPerItem: dto.ozPerItem,
           estimatedValue: dto.estimatedValue,
           foodRescue: dto.foodRescue,
           detailsConfirmed: true,
         });
       }
+
+      return this.checkAndFulfillDonation(donation, transactionManager);
     });
-
-    const fulfilled = await this.checkAndFulfillDonation(donationId);
-    // Just change the status to reflect the change, rather than refetching
-    if (fulfilled) {
-      donation.status = DonationStatus.FULFILLED;
-    }
-
-    return donation;
   }
 
-  private async checkAndFulfillDonation(donationId: number): Promise<boolean> {
-    const items = await this.donationItemsRepo.find({
-      where: { donationId },
+  async checkAndFulfillDonation(
+    donation: Donation,
+    transactionManager?: EntityManager,
+  ): Promise<Donation> {
+    const itemRepo = transactionManager
+      ? transactionManager.getRepository(DonationItem)
+      : this.donationItemsRepo;
+    const donationRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : this.repo;
+
+    const items = await itemRepo.find({
+      where: { donationId: donation.donationId },
       relations: { allocations: { order: true } },
     });
 
-    if (!isDonationFulfillable(items)) return false;
+    const allItemsFulfilled = items.every(
+      (item) =>
+        item.detailsConfirmed && item.reservedQuantity === item.quantity,
+    );
 
-    await this.repo.update(donationId, { status: DonationStatus.FULFILLED });
-    return true;
+    if (!allItemsFulfilled) return donation;
+
+    const hasPendingOrder = items.some((item) =>
+      item.allocations.some(
+        (allocation) => allocation.order.status === OrderStatus.PENDING,
+      ),
+    );
+
+    if (hasPendingOrder) return donation;
+
+    await donationRepo.update(donation.donationId, {
+      status: DonationStatus.FULFILLED,
+    });
+    donation.status = DonationStatus.FULFILLED;
+    return donation;
   }
 
   async replaceDonationItems(

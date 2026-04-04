@@ -1,4 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { DonationModule } from '../donations/donations.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersController } from './order.controller';
 import { Order } from './order.entity';
@@ -27,6 +28,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     forwardRef(() => RequestsModule),
+    DonationModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
