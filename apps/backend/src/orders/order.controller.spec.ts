@@ -5,7 +5,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { Order } from './order.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
@@ -16,6 +16,7 @@ import { BadRequestException } from '@nestjs/common';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -385,6 +386,31 @@ describe('OrdersController', () => {
         orderId,
         dto,
       );
+    });
+  });
+
+  describe('completeVolunteerAction', () => {
+    it('should call ordersService.completeVolunteerAction with correct parameters', async () => {
+      const orderId = 1;
+      const dto: CompleteVolunteerActionDto = {
+        action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      };
+
+      const updatedOrder = {
+        ...mockOrders[0],
+        confirmDonationReceipt: true,
+      };
+      mockOrdersService.completeVolunteerAction.mockResolvedValueOnce(
+        updatedOrder as Order,
+      );
+
+      const result = await controller.completeVolunteerAction(orderId, dto);
+
+      expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
+        orderId,
+        VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      );
+      expect(result).toEqual(updatedOrder);
     });
   });
 });

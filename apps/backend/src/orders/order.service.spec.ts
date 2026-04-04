@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -687,6 +687,114 @@ describe('OrdersService', () => {
         ),
       ).rejects.toThrow(
         new BadRequestException('Can only confirm delivery for shipped orders'),
+      );
+    });
+  });
+
+  describe('getAllOrdersForVolunteer', () => {
+    it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
+      const volunteerId = 6;
+      const result = await service.getAllOrdersForVolunteer(volunteerId);
+
+      expect(result).toHaveLength(4);
+
+      const assignedOrder = result.find((o) => o.assignee.id === volunteerId);
+      expect(assignedOrder?.actionCompletion).toEqual({
+        confirmDonationReceipt: false,
+        notifyPantry: false,
+      });
+
+      const notAssignedOrder = result.find(
+        (o) => o.assignee.id !== volunteerId,
+      );
+      expect(notAssignedOrder?.actionCompletion).toBeUndefined();
+    });
+
+    it('should map the rest of the data correctly', async () => {
+      const volunteerId = 6;
+      const result = await service.getAllOrdersForVolunteer(volunteerId);
+      const firstOrder = result[0];
+
+      expect(firstOrder.orderId).toBe(4);
+      expect(firstOrder.status).toBe(OrderStatus.PENDING);
+      expect(firstOrder).toHaveProperty('createdAt');
+      expect(firstOrder).toHaveProperty('shippedAt');
+      expect(firstOrder).toHaveProperty('deliveredAt');
+      expect(firstOrder.pantryName).toBe('Community Food Pantry Downtown');
+      expect(firstOrder.assignee.id).toBe(volunteerId);
+    });
+  });
+
+  describe('completeVolunteerAction', () => {
+    it('should successfully complete confirmDonationReceipt', async () => {
+      const orderId = 2;
+      const order = await service.findOne(orderId);
+      expect(order.confirmDonationReceipt).toBe(false);
+      await testDataSource.query(
+        `UPDATE orders SET status = '${OrderStatus.SHIPPED}' WHERE order_id = ${orderId}`,
+      );
+
+      await service.completeVolunteerAction(
+        orderId,
+        VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      );
+
+      const updatedOrder = await service.findOne(orderId);
+      expect(updatedOrder.confirmDonationReceipt).toBe(true);
+    });
+
+    it('should successfully complete notifyPantry', async () => {
+      const orderId = 3; // shipped order
+      const order = await service.findOne(orderId);
+      expect(order.notifyPantry).toBe(false);
+
+      await service.completeVolunteerAction(
+        orderId,
+        VolunteerAction.NOTIFY_PANTRY,
+      );
+
+      const updatedOrder = await service.findOne(orderId);
+      expect(updatedOrder.notifyPantry).toBe(true);
+    });
+
+    it('throws when order is non-existent', async () => {
+      const orderId = 999;
+      await expect(
+        service.completeVolunteerAction(
+          orderId,
+          VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        ),
+      ).rejects.toThrow(new NotFoundException(`Order ${orderId} not found`));
+    });
+
+    it('throws when order is not shipped', async () => {
+      const orderId = 2;
+      const order = await service.findOne(orderId);
+      expect(order.status).not.toBe(OrderStatus.SHIPPED);
+      await expect(
+        service.completeVolunteerAction(
+          orderId,
+          VolunteerAction.CONFIRM_DONATION_RECEIPT,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Action ${VolunteerAction.CONFIRM_DONATION_RECEIPT} can only be completed for shipped orders`,
+        ),
+      );
+    });
+
+    it('throws when action is already completed', async () => {
+      const orderId = 2;
+      const action = VolunteerAction.NOTIFY_PANTRY;
+      await testDataSource.query(
+        `UPDATE orders SET notify_pantry = true WHERE order_id = ${orderId}`,
+      );
+      await expect(
+        service.completeVolunteerAction(orderId, action),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Action ${action} already completed for Order ${orderId}`,
+        ),
       );
     });
   });
