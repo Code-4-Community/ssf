@@ -534,13 +534,13 @@ export class PantriesService {
     return pantry;
   }
 
-  async getStats(id: number): Promise<PantryStatsDto> {
-    validateId(id, 'Pantry');
+  async getStats(pantryId: number): Promise<PantryStatsDto> {
+    validateId(pantryId, 'Pantry');
 
-    const pantry = await this.repo.findOneBy({ pantryId: id });
+    const pantry = await this.repo.findOneBy({ pantryId: pantryId });
 
     if (!pantry) {
-      throw new NotFoundException(`Pantry ${id} not found`);
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
 
     // Pantry has no @OneToMany to FoodRequest, so use entity-class joins with explicit column conditions
@@ -550,7 +550,7 @@ export class PantriesService {
       .leftJoin(Order, 'o', 'o.request_id = fr.request_id')
       .leftJoin(Allocation, 'a', 'a.order_id = o.order_id')
       .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
-      .where('pantry.pantryId = :id', { id })
+      .where('pantry.pantryId = :id', { pantryId })
       .select([
         'COUNT(DISTINCT fr.request_id) AS food_requests',
         'COUNT(DISTINCT o.order_id) AS orders',
