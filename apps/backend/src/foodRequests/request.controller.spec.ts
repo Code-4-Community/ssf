@@ -46,7 +46,7 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.getOrderDetails.mockReset();
-    mockRequestsService.updateRequest.mockReset();
+    mockRequestsService.update.mockReset();
     mockRequestsService.delete.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -249,7 +249,7 @@ describe('RequestsController', () => {
         ...foodRequest1,
         requestedSize: RequestSize.MEDIUM,
       };
-      mockRequestsService.updateRequest.mockResolvedValue(
+      mockRequestsService.update.mockResolvedValue(
         updatedRequest as FoodRequest,
       );
 
@@ -259,56 +259,8 @@ describe('RequestsController', () => {
       const result = await controller.updateRequest(1, updateRequestDto);
 
       expect(result).toEqual(updatedRequest);
-      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
+      expect(mockRequestsService.update).toHaveBeenCalledWith(
         1,
-        updateRequestDto,
-      );
-    });
-
-    it('should throw BadRequestException when request is not active', async () => {
-      mockRequestsService.updateRequest.mockRejectedValue(
-        new BadRequestException(
-          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
-        ),
-      );
-
-      const updateRequestDto: UpdateRequestDto = {
-        requestedSize: RequestSize.MEDIUM,
-      };
-
-      await expect(
-        controller.updateRequest(1, updateRequestDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
-        ),
-      );
-      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
-        1,
-        updateRequestDto,
-      );
-    });
-
-    it('should throw BadRequestException when request has orders', async () => {
-      mockRequestsService.updateRequest.mockRejectedValue(
-        new BadRequestException(
-          `Request 2 cannot be updated if it still has orders associated with it`,
-        ),
-      );
-
-      const updateRequestDto: UpdateRequestDto = {
-        requestedSize: RequestSize.MEDIUM,
-      };
-
-      await expect(
-        controller.updateRequest(2, updateRequestDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Request 2 cannot be updated if it still has orders associated with it`,
-        ),
-      );
-      expect(mockRequestsService.updateRequest).toHaveBeenCalledWith(
-        2,
         updateRequestDto,
       );
     });
@@ -322,36 +274,6 @@ describe('RequestsController', () => {
 
       expect(result).toBeUndefined();
       expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw BadRequestException when request is not active', async () => {
-      mockRequestsService.delete.mockRejectedValue(
-        new BadRequestException(
-          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
-        ),
-      );
-
-      await expect(controller.deleteRequest(1)).rejects.toThrow(
-        new BadRequestException(
-          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
-        ),
-      );
-      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw BadRequestException when request has orders', async () => {
-      mockRequestsService.delete.mockRejectedValue(
-        new BadRequestException(
-          `Request 2 cannot be deleted if it still has orders associated with it`,
-        ),
-      );
-
-      await expect(controller.deleteRequest(2)).rejects.toThrow(
-        new BadRequestException(
-          `Request 2 cannot be deleted if it still has orders associated with it`,
-        ),
-      );
-      expect(mockRequestsService.delete).toHaveBeenCalledWith(2);
     });
   });
 

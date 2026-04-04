@@ -115,9 +115,9 @@ export class RequestsController {
   @Patch('/:requestId')
   async updateRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-    @Body() body: UpdateRequestDto,
+    @Body(new ValidationPipe()) body: UpdateRequestDto,
   ): Promise<FoodRequest> {
-    return this.requestsService.updateRequest(requestId, body);
+    return this.requestsService.update(requestId, body);
   }
 
   @Delete('/:requestId')

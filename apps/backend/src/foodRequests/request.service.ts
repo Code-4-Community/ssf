@@ -303,25 +303,23 @@ export class RequestsService {
     await this.repo.save(request);
   }
 
-  async updateRequest(
-    requestId: number,
-    dto: UpdateRequestDto,
-  ): Promise<FoodRequest> {
+  async update(requestId: number, dto: UpdateRequestDto): Promise<FoodRequest> {
     validateId(requestId, 'Request');
 
-    const { requestedSize, requestedFoodTypes, additionalInformation } = dto;
-
     if (
-      requestedSize == undefined &&
-      requestedFoodTypes == undefined &&
-      additionalInformation == undefined
+      dto.requestedSize == undefined &&
+      dto.requestedFoodTypes == undefined &&
+      dto.additionalInformation == undefined
     ) {
       throw new BadRequestException(
-        'At least one field must be provided to update',
+        'At least one field must be provided to update request',
       );
     }
 
-    const request = await this.findOne(requestId);
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
 
     if (!request) {
       throw new NotFoundException(`Request ${requestId} not found`);
@@ -339,11 +337,7 @@ export class RequestsService {
       );
     }
 
-    if (requestedSize !== undefined) request.requestedSize = requestedSize;
-    if (requestedFoodTypes !== undefined)
-      request.requestedFoodTypes = requestedFoodTypes;
-    if (additionalInformation !== undefined)
-      request.additionalInformation = additionalInformation;
+    Object.assign(request, dto);
 
     return this.repo.save(request);
   }
@@ -351,7 +345,10 @@ export class RequestsService {
   async delete(requestId: number) {
     validateId(requestId, 'Request');
 
-    const request = await this.findOne(requestId);
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
 
     if (!request) {
       throw new NotFoundException(`Request ${requestId} not found`);

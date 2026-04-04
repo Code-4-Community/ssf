@@ -583,14 +583,14 @@ describe('RequestsService', () => {
     });
   });
 
-  describe('updateRequest', () => {
+  describe('update', () => {
     it('should update request attributes', async () => {
       await testDataSource.query(
         `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
       );
       await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
 
-      const result = await service.updateRequest(1, {
+      const result = await service.update(1, {
         requestedSize: RequestSize.MEDIUM,
       });
 
@@ -610,7 +610,7 @@ describe('RequestsService', () => {
 
     it('should throw NotFoundException when request is not found', async () => {
       await expect(
-        service.updateRequest(9999, { requestedSize: RequestSize.MEDIUM }),
+        service.update(9999, { requestedSize: RequestSize.MEDIUM }),
       ).rejects.toThrow(new NotFoundException('Request 9999 not found'));
     });
 
@@ -620,7 +620,7 @@ describe('RequestsService', () => {
       );
       await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
 
-      const result = await service.updateRequest(1, {
+      const result = await service.update(1, {
         requestedSize: RequestSize.SMALL,
         requestedFoodTypes: [FoodType.GRANOLA],
         additionalInformation: 'Updated information',
@@ -644,7 +644,7 @@ describe('RequestsService', () => {
       );
 
       await expect(
-        service.updateRequest(1, { requestedSize: RequestSize.MEDIUM }),
+        service.update(1, { requestedSize: RequestSize.MEDIUM }),
       ).rejects.toThrow(
         new BadRequestException(
           `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
@@ -654,7 +654,7 @@ describe('RequestsService', () => {
 
     it('should throw BadRequestException when request has orders', async () => {
       await expect(
-        service.updateRequest(2, { requestedSize: RequestSize.MEDIUM }),
+        service.update(2, { requestedSize: RequestSize.MEDIUM }),
       ).rejects.toThrow(
         new BadRequestException(
           `Request 2 cannot be updated if it still has orders associated with it`,
@@ -663,9 +663,9 @@ describe('RequestsService', () => {
     });
 
     it('should throw BadRequestException when all DTO fields are undefined', async () => {
-      await expect(service.updateRequest(1, {})).rejects.toThrow(
+      await expect(service.update(1, {})).rejects.toThrow(
         new BadRequestException(
-          'At least one field must be provided to update',
+          'At least one field must be provided to update request',
         ),
       );
     });
