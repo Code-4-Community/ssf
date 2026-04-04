@@ -25,6 +25,7 @@ import { PantriesService } from '../pantries/pantries.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DataSource } from 'typeorm';
 import { FoodType } from '../donationItems/types';
 import { Allocation } from '../allocations/allocations.entity';
@@ -67,7 +68,12 @@ describe('FoodManufacturersService', () => {
         FoodManufacturersService,
         UsersService,
         DonationService,
+        DonationItemsService,
         PantriesService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: AuthService,
           useValue: {

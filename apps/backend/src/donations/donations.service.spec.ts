@@ -6,9 +6,10 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
-import { DonationItemsService } from '../donationItems/donationItems.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
 import {
@@ -36,6 +37,47 @@ const daysFromNow = (numDays: number): Date => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+
+async function insertMatchedDonation(): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donations
+      (food_manufacturer_id, status, recurrence, recurrence_freq,
+       next_donation_dates, occurrences_remaining)
+     VALUES (
+       (SELECT food_manufacturer_id FROM food_manufacturers
+        WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
+       'matched', 'none', NULL, NULL, NULL
+     )
+     RETURNING donation_id`,
+  );
+  return result[0].donation_id;
+}
+
+async function insertDonationItem(
+  donationId: number,
+  qty: number,
+  reserved: number,
+): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donation_items
+      (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+     RETURNING item_id`,
+    [donationId, qty, reserved],
+  );
+  return result[0].item_id;
+}
+
+async function insertAllocation(
+  orderId: number,
+  itemId: number,
+): Promise<void> {
+  await testDataSource.query(
+    `INSERT INTO allocations (order_id, item_id, allocated_quantity)
+     VALUES ($1, $2, 1)`,
+    [orderId, itemId],
+  );
+}
 
 // insert a minimal donation and return its generated ID
 async function insertDonation(overrides: {
@@ -828,198 +870,464 @@ describe('DonationService', () => {
     });
   });
 
-  describe('replaceDonationItems', () => {
-    it('should replace donation items for an available donation', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([2, 3]) });
-
-      const updatedDonation = await service.replaceDonationItems(
-        donationId,
-        body,
-      );
-
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(2);
-
-      const updatedItemNames = updatedDonation.donationItems.map(
-        (i) => i.itemName,
-      );
-      expect(updatedItemNames).toContain('Green Apples'); // updated
-      expect(updatedItemNames).toContain('Bananas'); // new
-      expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
-      expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
+  describe('confirmDonationItemDetails', () => {
+    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+      itemId,
+      ozPerItem: 5.0,
+      estimatedValue: 10.0,
+      foodRescue: true,
     });
 
-    it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
+    it('throws NotFoundException when donation does not exist', async () => {
       await expect(
-        service.replaceDonationItems(donationId, body),
+        service.confirmDonationItemDetails(9999, [makeDto(1)]),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
+    });
+
+    it('throws BadRequestException when donation status is not MATCHED', async () => {
+      // Donation 1 has status 'available'
+      await expect(
+        service.confirmDonationItemDetails(1, [makeDto(1)]),
       ).rejects.toThrow(
-        `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+        new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        ),
       );
     });
 
-    it('should delete all donation items for an available donation when passed an empty array', async () => {
-      const donationId = 1;
+    it('throws BadRequestException when an item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
 
-      const body = {
-        items: [],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
-
-      const updatedDonation = await service.replaceDonationItems(
-        donationId,
-        body,
-      );
-
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(0);
-    });
-
-    it('should throw NotFoundException if donation does not exist', async () => {
-      const body = { items: [] };
-      await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
-        `Donation 9999 not found`,
-      );
-    });
-
-    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
-      // Donation with status MATCHED
-      const donationId = 2;
-
-      const body = { items: [] };
+      // Item 1 belongs to donation 1, not the new donation
       await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow('Only available donations can be updated');
-    });
-
-    it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
-      const donationId = 1;
-
-      const body = {
-        items: [
-          {
-            id: 9999,
-            itemName: 'Nonexistent',
-            quantity: 1,
-          } as Partial<DonationItem>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      await expect(
-        service.replaceDonationItems(donationId, body),
+        service.confirmDonationItemDetails(donationId, [makeDto(1)]),
       ).rejects.toThrow(
-        `Donation item 9999 for Donation ${donationId} not found`,
+        new BadRequestException(
+          `Donation item 1 does not belong to Donation ${donationId}`,
+        ),
       );
+    });
+
+    it('updates fields and sets detailsConfirmed to true for a single item', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const dto: ConfirmDonationItemDetailsDto = {
+        itemId,
+        ozPerItem: 8.5,
+        estimatedValue: 12.0,
+        foodRescue: false,
+      };
+
+      await service.confirmDonationItemDetails(donationId, [dto]);
+
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(8.5);
+      expect(Number(item?.estimatedValue)).toBe(12.0);
+      expect(item?.foodRescue).toBe(false);
+      expect(item?.detailsConfirmed).toBe(true);
+    });
+
+    it('updates multiple items in a single call', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 5);
+      const itemId2 = await insertDonationItem(donationId, 20, 10);
+
+      await service.confirmDonationItemDetails(donationId, [
+        {
+          itemId: itemId1,
+          ozPerItem: 4.0,
+          estimatedValue: 8.0,
+          foodRescue: true,
+        },
+        {
+          itemId: itemId2,
+          ozPerItem: 6.0,
+          estimatedValue: 14.0,
+          foodRescue: false,
+        },
+      ]);
+
+      const item1 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId1 });
+      const item2 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId2 });
+
+      expect(Number(item1?.ozPerItem)).toBe(4.0);
+      expect(item1?.foodRescue).toBe(true);
+      expect(item1?.detailsConfirmed).toBe(true);
+
+      expect(Number(item2?.ozPerItem)).toBe(6.0);
+      expect(item2?.foodRescue).toBe(false);
+      expect(item2?.detailsConfirmed).toBe(true);
+    });
+
+    it('rolls back all updates when one item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      // Second dto references item 1 which belongs to donation 1, not ours
+      await expect(
+        service.confirmDonationItemDetails(donationId, [
+          makeDto(itemId),
+          makeDto(1),
+        ]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to Donation ${donationId}`,
+        ),
+      );
+
+      // The first item should not have been updated due to rollback
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(item?.detailsConfirmed).toBe(false);
+      expect(item?.ozPerItem).toBeNull();
+    });
+
+    it('throws BadRequestException when an item in the body is already confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      await testDataSource.query(
+        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
+        [itemId],
+      );
+
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(itemId)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${itemId} has already been confirmed`,
+        ),
+      );
+    });
+
+    it('does not fulfill donation when reservedQuantity does not equal quantity', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('does not fulfill donation when a pending order is associated', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      // Order 4 is pending in the seed data
+      await insertAllocation(4, itemId);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no orders', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('sets donation to FULFILLED when all orders associated are non-pending', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      // Order 1 is delivered, so should not block fulfillment
+      await insertAllocation(1, itemId);
+
+      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('sets donation to FULFILLED with multiple items all fully reserved and confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 10);
+      const itemId2 = await insertDonationItem(donationId, 20, 20);
+
+      await service.confirmDonationItemDetails(donationId, [
+        makeDto(itemId1),
+        makeDto(itemId2),
+      ]);
+
+      const donation = await service.findOne(donationId);
+      expect(donation.status).toBe(DonationStatus.FULFILLED);
+    });
+
+    it('returns the donation after updating items', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      const result = await service.confirmDonationItemDetails(donationId, [
+        makeDto(itemId),
+      ]);
+
+      expect(result).toBeDefined();
+      expect(result.donationId).toBe(donationId);
+    });
+    describe('replaceDonationItems', () => {
+      it('should replace donation items for an available donation', async () => {
+        const donationId = 1;
+
+        // (update item1, remove item2, remove item3, add item 4)
+        const body = {
+          items: [
+            {
+              id: 1,
+              itemName: 'Green Apples',
+              quantity: 15,
+            } as Partial<ReplaceDonationItemDto>,
+            {
+              itemName: 'Bananas',
+              quantity: 20,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+            } as Partial<ReplaceDonationItemDto>,
+          ],
+        } as ReplaceDonationItemsDto;
+
+        // manually removing allocations for deleted item ids
+        await service['allocationRepo'].delete({ itemId: In([2, 3]) });
+
+        const updatedDonation = await service.replaceDonationItems(
+          donationId,
+          body,
+        );
+
+        expect(updatedDonation).toBeDefined();
+        expect(updatedDonation.donationItems).toHaveLength(2);
+
+        const updatedItemNames = updatedDonation.donationItems.map(
+          (i) => i.itemName,
+        );
+        expect(updatedItemNames).toContain('Green Apples'); // updated
+        expect(updatedItemNames).toContain('Bananas'); // new
+        expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
+        expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
+      });
+
+      it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
+        const donationId = 1;
+
+        // (update item1, remove item2, remove item3, add item 4)
+        const body = {
+          items: [
+            {
+              id: 1,
+              itemName: 'Green Apples',
+              quantity: 15,
+            } as Partial<ReplaceDonationItemDto>,
+            {
+              itemName: 'Bananas',
+              quantity: 20,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+            } as Partial<ReplaceDonationItemDto>,
+          ],
+        } as ReplaceDonationItemsDto;
+
+        await expect(
+          service.replaceDonationItems(donationId, body),
+        ).rejects.toThrow(
+          `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+        );
+      });
+
+      it('should delete all donation items for an available donation when passed an empty array', async () => {
+        const donationId = 1;
+
+        const body = {
+          items: [],
+        } as ReplaceDonationItemsDto;
+
+        // manually removing allocations for deleted item ids
+        await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
+
+        const updatedDonation = await service.replaceDonationItems(
+          donationId,
+          body,
+        );
+
+        expect(updatedDonation).toBeDefined();
+        expect(updatedDonation.donationItems).toHaveLength(0);
+      });
+
+      it('should throw NotFoundException if donation does not exist', async () => {
+        const body = { items: [] };
+        await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
+          `Donation 9999 not found`,
+        );
+      });
+
+      it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+        // Donation with status MATCHED
+        const donationId = 2;
+
+        const body = { items: [] };
+        await expect(
+          service.replaceDonationItems(donationId, body),
+        ).rejects.toThrow('Only available donations can be updated');
+      });
+
+      it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
+        const donationId = 1;
+
+        const body = {
+          items: [
+            {
+              id: 9999,
+              itemName: 'Nonexistent',
+              quantity: 1,
+            } as Partial<DonationItem>,
+          ],
+        } as ReplaceDonationItemsDto;
+
+        await expect(
+          service.replaceDonationItems(donationId, body),
+        ).rejects.toThrow(
+          `Donation item 9999 for Donation ${donationId} not found`,
+        );
+      });
+    });
+
+    describe('delete', () => {
+      it('should delete an available donation and associated donation items', async () => {
+        const donationId = 3;
+
+        const donationBefore = await service.findOne(donationId);
+        expect(donationBefore).toBeDefined();
+        expect(donationBefore.status).toBe(DonationStatus.AVAILABLE);
+
+        const itemsBefore = await donationItemService.getAllDonationItems(
+          donationId,
+        );
+
+        const itemIds = itemsBefore.map((item) => item.itemId);
+
+        await testDataSource
+          .getRepository(Allocation)
+          .delete(itemIds.length ? { itemId: In(itemIds) } : {});
+
+        await service.delete(donationId);
+
+        await expect(service.findOne(donationId)).rejects.toThrow(
+          `Donation ${donationId} not found`,
+        );
+
+        const items = await donationItemService.getAllDonationItems(donationId);
+        expect(items).toHaveLength(0);
+      });
+
+      it('should throw BadRequestException if there are existing associated allocations', async () => {
+        const donationId = 3;
+
+        const donation = await service.findOne(donationId);
+        expect(donation).toBeDefined();
+        expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+        await expect(service.delete(donationId)).rejects.toThrow(
+          `Cannot delete donation ${donationId} with existing allocations`,
+        );
+      });
+
+      it('should throw BadRequestException if there is a donation item with reservedQuantity', async () => {
+        const donationId = 3;
+
+        const donation = await service.findOne(donationId);
+        expect(donation).toBeDefined();
+        expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+        await testDataSource
+          .getRepository(DonationItem)
+          .update(7, { reservedQuantity: 1 });
+
+        await expect(service.delete(donationId)).rejects.toThrow(
+          `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
+        );
+      });
+
+      it('should throw NotFoundException if donation does not exist', async () => {
+        await expect(service.delete(9999)).rejects.toThrow(
+          `Donation 9999 not found`,
+        );
+      });
+
+      it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+        // donation with status MATCHED
+        const donationId = 2;
+
+        await expect(service.delete(donationId)).rejects.toThrow(
+          'Only available donations can be deleted',
+        );
+      });
     });
   });
 
-  describe('delete', () => {
-    it('should delete an available donation and associated donation items', async () => {
-      const donationId = 3;
-
-      const donationBefore = await service.findOne(donationId);
-      expect(donationBefore).toBeDefined();
-      expect(donationBefore.status).toBe(DonationStatus.AVAILABLE);
-
-      const itemsBefore = await donationItemService.getAllDonationItems(
-        donationId,
+  describe('checkAndFulfillDonation', () => {
+    async function insertConfirmedDonationItem(
+      donationId: number,
+      qty: number,
+      reserved: number,
+    ): Promise<number> {
+      const result = await testDataSource.query(
+        `INSERT INTO donation_items
+          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 'Granola', true)
+         RETURNING item_id`,
+        [donationId, qty, reserved],
       );
+      return result[0].item_id;
+    }
 
-      const itemIds = itemsBefore.map((item) => item.itemId);
-
-      await testDataSource
-        .getRepository(Allocation)
-        .delete(itemIds.length ? { itemId: In(itemIds) } : {});
-
-      await service.delete(donationId);
-
-      await expect(service.findOne(donationId)).rejects.toThrow(
-        `Donation ${donationId} not found`,
-      );
-
-      const items = await donationItemService.getAllDonationItems(donationId);
-      expect(items).toHaveLength(0);
-    });
-
-    it('should throw BadRequestException if there are existing associated allocations', async () => {
-      const donationId = 3;
+    it('returns donation unchanged when not all items are fulfilled', async () => {
+      const donationId = await insertMatchedDonation();
+      // reservedQuantity (5) != quantity (10), detailsConfirmed = false
+      await insertDonationItem(donationId, 10, 5);
 
       const donation = await service.findOne(donationId);
-      expect(donation).toBeDefined();
-      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+      const result = await service.checkAndFulfillDonation(donation);
 
-      await expect(service.delete(donationId)).rejects.toThrow(
-        `Cannot delete donation ${donationId} with existing allocations`,
-      );
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
     });
 
-    it('should throw BadRequestException if there is a donation item with reservedQuantity', async () => {
-      const donationId = 3;
+    it('returns donation unchanged when there is a pending order', async () => {
+      const donationId = await insertMatchedDonation();
+      // fully reserved and confirmed, but order 4 is PENDING
+      const itemId = await insertConfirmedDonationItem(donationId, 10, 10);
+      await insertAllocation(4, itemId);
 
       const donation = await service.findOne(donationId);
-      expect(donation).toBeDefined();
-      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+      const result = await service.checkAndFulfillDonation(donation);
 
-      await testDataSource
-        .getRepository(DonationItem)
-        .update(7, { reservedQuantity: 1 });
-
-      await expect(service.delete(donationId)).rejects.toThrow(
-        `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
-      );
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
     });
 
-    it('should throw NotFoundException if donation does not exist', async () => {
-      await expect(service.delete(9999)).rejects.toThrow(
-        `Donation 9999 not found`,
-      );
-    });
+    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no pending orders', async () => {
+      const donationId = await insertMatchedDonation();
+      await insertConfirmedDonationItem(donationId, 10, 10);
 
-    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
-      // donation with status MATCHED
-      const donationId = 2;
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
 
-      await expect(service.delete(donationId)).rejects.toThrow(
-        'Only available donations can be deleted',
-      );
+      expect(result.status).toBe(DonationStatus.FULFILLED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
     });
   });
 });

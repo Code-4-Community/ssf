@@ -45,6 +45,10 @@ describe('VolunteersService', () => {
         DonationItemsService,
         DonationService,
         {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
+        {
           provide: AuthService,
           useValue: {
             adminCreateUser: jest.fn().mockResolvedValue('test-sub'),

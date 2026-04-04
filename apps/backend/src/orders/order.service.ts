@@ -10,18 +10,25 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
 import { OrderStatus } from './types';
+import { DonationService } from '../donations/donations.service';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { Donation } from '../donations/donations.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
+    private donationService: DonationService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -288,56 +295,50 @@ export class OrdersService {
 
   async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
     validateId(orderId, 'Order');
-    if (!dto.trackingLink && !dto.shippingCost) {
+
+    const sanitized = sanitizeUrl(dto.trackingLink);
+    if (!sanitized) {
       throw new BadRequestException(
-        'At least one of tracking link or shipping cost must be provided',
+        'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
       );
     }
-
-    if (dto.trackingLink) {
-      const sanitized = sanitizeUrl(dto.trackingLink);
-      if (!sanitized) {
-        throw new BadRequestException(
-          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-        );
-      }
-      dto.trackingLink = sanitized;
-    }
+    dto.trackingLink = sanitized;
 
     const order = await this.repo.findOneBy({ orderId });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
-
-    if (isFirstTimeSetting && (!dto.trackingLink || !dto.shippingCost)) {
+    if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
-        'Must provide both tracking link and shipping cost on initial assignment',
+        'Can only update tracking info for pending orders',
       );
     }
 
-    if (
-      order.status !== OrderStatus.SHIPPED &&
-      order.status !== OrderStatus.PENDING
-    ) {
-      throw new BadRequestException(
-        'Can only update tracking info for pending or shipped orders',
-      );
-    }
+    order.trackingLink = dto.trackingLink;
+    order.shippingCost = dto.shippingCost;
 
-    if (dto.trackingLink) order.trackingLink = dto.trackingLink;
-    if (dto.shippingCost) order.shippingCost = dto.shippingCost;
-
-    if (
-      order.status === OrderStatus.PENDING &&
-      order.trackingLink &&
-      order.shippingCost
-    ) {
-      order.status = OrderStatus.SHIPPED;
-      order.shippedAt = new Date();
-    }
+    order.status = OrderStatus.SHIPPED;
+    order.shippedAt = new Date();
 
     await this.repo.save(order);
+
+    await this.checkAndFulfillDonations(orderId);
+  }
+
+  private async checkAndFulfillDonations(orderId: number): Promise<void> {
+    const affectedDonations = await this.donationItemRepo
+      .createQueryBuilder('item')
+      .innerJoin('item.allocations', 'allocation')
+      .where('allocation.orderId = :orderId', { orderId })
+      .select('DISTINCT item.donationId', 'donationId')
+      .getRawMany<{ donationId: number }>();
+
+    for (const { donationId } of affectedDonations) {
+      const donation = await this.donationRepo.findOneBy({ donationId });
+      if (donation) {
+        await this.donationService.checkAndFulfillDonation(donation);
+      }
+    }
   }
 }
