@@ -550,7 +550,7 @@ export class PantriesService {
       .leftJoin(Order, 'o', 'o.request_id = fr.request_id')
       .leftJoin(Allocation, 'a', 'a.order_id = o.order_id')
       .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
-      .where('pantry.pantryId = :id', { pantryId })
+      .where('pantry.pantryId = :pantryId', { pantryId })
       .select([
         'COUNT(DISTINCT fr.request_id) AS food_requests',
         'COUNT(DISTINCT o.order_id) AS orders',
