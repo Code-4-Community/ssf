@@ -18,6 +18,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { Donation } from '../donations/donations.entity';
 import { DonationStatus } from '../donations/types';
 import { EmailsService } from '../emails/email.service';
+import { Allocation } from '../allocations/allocations.entity';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -69,6 +70,10 @@ describe('OrdersService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
         },
       ],
     }).compile();

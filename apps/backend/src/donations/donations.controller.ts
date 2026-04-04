@@ -7,6 +7,8 @@ import {
   Param,
   ParseIntPipe,
   ParseArrayPipe,
+  Put,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -14,6 +16,7 @@ import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 
 @Controller('donations')
 export class DonationsController {
@@ -87,5 +90,20 @@ export class DonationsController {
     body: ConfirmDonationItemDetailsDto[],
   ): Promise<Donation> {
     return this.donationService.confirmDonationItemDetails(donationId, body);
+  }
+
+  @Put('/:donationId/items')
+  async replaceDonationItems(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body() body: ReplaceDonationItemsDto,
+  ): Promise<Donation> {
+    return this.donationService.replaceDonationItems(donationId, body);
+  }
+
+  @Delete('/:donationId')
+  async deleteDonation(
+    @Param('donationId', ParseIntPipe) donationId: number,
+  ): Promise<void> {
+    return this.donationService.delete(donationId);
   }
 }

@@ -18,7 +18,7 @@ export class DonationItem {
   @Column({ name: 'donation_id', type: 'int' })
   donationId!: number;
 
-  @ManyToOne(() => Donation, { nullable: false })
+  @ManyToOne(() => Donation, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'donation_id', referencedColumnName: 'donationId' })
   donation!: Donation;
 

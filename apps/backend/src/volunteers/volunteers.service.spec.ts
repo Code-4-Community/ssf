@@ -20,6 +20,7 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
 import { DataSource } from 'typeorm';
+import { Allocation } from '../allocations/allocations.entity';
 
 jest.setTimeout(60000);
 
@@ -82,10 +83,18 @@ describe('VolunteersService', () => {
           useValue: testDataSource.getRepository(Donation),
         },
         {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
+        {
           provide: EmailsService,
           useValue: {
             sendEmails: jest.fn().mockResolvedValue(undefined),
           },
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
