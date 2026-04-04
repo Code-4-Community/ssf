@@ -699,7 +699,7 @@ describe('OrdersService', () => {
       expect(result).toHaveLength(4);
 
       const assignedOrder = result.find((o) => o.assignee.id === volunteerId);
-      expect(assignedOrder?.requiredActions).toEqual({
+      expect(assignedOrder?.actionCompletion).toEqual({
         confirmDonationReceipt: false,
         notifyPantry: false,
       });
@@ -707,7 +707,7 @@ describe('OrdersService', () => {
       const notAssignedOrder = result.find(
         (o) => o.assignee.id !== volunteerId,
       );
-      expect(notAssignedOrder?.requiredActions).toBeUndefined();
+      expect(notAssignedOrder?.actionCompletion).toBeUndefined();
     });
 
     it('should map the rest of the data correctly', async () => {

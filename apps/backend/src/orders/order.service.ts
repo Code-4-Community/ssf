@@ -60,7 +60,7 @@ export class OrdersService {
   }
 
   // returns ALL orders (not scoped to volunteer)
-  // for orders assigned to the given volunteer, includes requiredActions (otherwise undefined)
+  // for orders assigned to the given volunteer, includes actionCompletion (otherwise undefined)
   async getAllOrdersForVolunteer(
     volunteerId: number,
   ): Promise<VolunteerOrder[]> {
@@ -87,7 +87,7 @@ export class OrdersService {
 
     return orders.map((o) => {
       const { assignee, confirmDonationReceipt, notifyPantry } = o;
-      const requiredActions =
+      const actionCompletion =
         assignee.id === volunteerId
           ? { confirmDonationReceipt, notifyPantry }
           : undefined;
@@ -100,7 +100,7 @@ export class OrdersService {
         deliveredAt: o.deliveredAt,
         pantryName: o.request.pantry.pantryName,
         assignee: o.assignee,
-        requiredActions,
+        actionCompletion,
       };
     });
   }

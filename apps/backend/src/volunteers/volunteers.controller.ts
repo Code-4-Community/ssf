@@ -61,7 +61,7 @@ export class VolunteersController {
   }
 
   // returns all orders globally
-  // only includes requiredActions for orders assigned to the requesting volunteer
+  // only includes actionCompletion for orders assigned to the requesting volunteer
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')
   async getVolunteerOrders(

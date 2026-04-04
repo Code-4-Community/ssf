@@ -108,9 +108,11 @@ export class Order {
   @Column({ name: 'assignee_id', type: 'int' })
   assigneeId!: number;
 
+  // represents whether or not the assigned volunteer has confirmed donation receipt
   @Column({ name: 'confirm_donation_receipt', type: 'boolean', default: false })
   confirmDonationReceipt!: boolean;
 
+  // represents whether or not the assigned volunteer has notified the pantry of delivery
   @Column({ name: 'notify_pantry', type: 'boolean', default: false })
   notifyPantry!: boolean;
 }

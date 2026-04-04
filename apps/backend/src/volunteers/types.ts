@@ -10,11 +10,17 @@ export type VolunteerOrder = {
   shippedAt: Date | null;
   deliveredAt: Date | null;
   pantryName: string;
-  assignee: User;
-  requiredActions: RequiredVolunteerAction | undefined;
+  assignee: OrderAssignee;
+  actionCompletion?: VolunteerActionCompletion;
 };
 
-export type RequiredVolunteerAction = {
+export type VolunteerActionCompletion = {
   confirmDonationReceipt: boolean;
   notifyPantry: boolean;
+};
+
+export type OrderAssignee = {
+  id: number;
+  firstName: string;
+  lastName: string;
 };
