@@ -30,9 +30,12 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 
 @Controller('orders')
 export class OrdersController {
@@ -268,13 +271,32 @@ export class OrdersController {
         body,
         uploadedPhotoUrls,
       );
-    } catch (err: any) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        throw new PayloadTooLargeException(
-          'Each photo must be 5 MB or smaller',
-        );
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'code' in err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          throw new PayloadTooLargeException(
+            'Each photo must be 5 MB or smaller',
+          );
+        }
       }
       throw err;
     }
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(OrdersService).findOne(entityId),
+        (order: Order) => [order.assigneeId],
+      ),
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/complete-action')
+  async completeVolunteerAction(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
+  ) {
+    return this.ordersService.completeVolunteerAction(orderId, dto.action);
   }
 }

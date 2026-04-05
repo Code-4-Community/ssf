@@ -7,6 +7,7 @@ import { VolunteersController } from './volunteers.controller';
 import { VolunteersService } from './volunteers.service';
 import { UsersModule } from '../users/users.module';
 import { RequestsModule } from '../foodRequests/request.module';
+import { OrdersModule } from '../orders/order.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RequestsModule } from '../foodRequests/request.module';
     forwardRef(() => PantriesModule),
     forwardRef(() => AuthModule),
     RequestsModule,
+    OrdersModule,
   ],
   controllers: [VolunteersController],
   providers: [VolunteersService],
