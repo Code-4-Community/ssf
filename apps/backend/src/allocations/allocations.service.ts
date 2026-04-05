@@ -26,6 +26,7 @@ export class AllocationsService {
     });
   }
 
+  // This function assumes that orderId and itemAllocations were already correctly validated (see call in create method of OrdersService)
   async createMultiple(
     orderId: number,
     itemAllocations: Map<number, number>,
@@ -48,8 +49,7 @@ export class AllocationsService {
 
     const allocations: Allocation[] = [];
 
-    for (const [itemIdStr, quantity] of itemAllocations) {
-      const itemId = Number(itemIdStr);
+    for (const [itemId, quantity] of itemAllocations) {
       validateId(itemId, 'Donation Item');
 
       allocations.push(

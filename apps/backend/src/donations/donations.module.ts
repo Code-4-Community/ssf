@@ -19,7 +19,7 @@ import { AllocationModule } from '../allocations/allocations.module';
       DonationItem,
       Allocation,
     ]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     DonationItemsModule,
     AllocationModule,
   ],

@@ -445,6 +445,20 @@ describe('OrdersController', () => {
       ).rejects.toThrow(new BadRequestException('Invalid item ID: abc'));
     });
 
+    it('should throw BadRequestException for duplicate item IDs', async () => {
+      const createOrderDto: CreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        itemAllocations: { '1': 2, '1.0': 3 },
+      };
+
+      await expect(
+        controller.createOrder(req as AuthenticatedRequest, createOrderDto),
+      ).rejects.toThrow(
+        new BadRequestException('Invalid duplicate item IDs for item: 1'),
+      );
+    });
+
     it('should throw BadRequestException for invalid item quantity type', async () => {
       const createOrderDto: CreateOrderDto = {
         foodRequestId: 1,

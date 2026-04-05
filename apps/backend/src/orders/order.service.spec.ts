@@ -20,7 +20,6 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UsersService } from '../users/users.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Donation } from '../donations/donations.entity';
-import { Allocation } from '../allocations/allocations.entity';
 import { User } from '../users/users.entity';
 import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';

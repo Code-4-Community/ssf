@@ -21,12 +21,14 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
 import { ApplicationStatus } from '../shared/types';
+import { Donation } from '../donations/donations.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     private requestsService: RequestsService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
@@ -84,9 +86,9 @@ export class OrdersService {
   /*
   This create method follows these high level steps:
   1. Validate the request status is active before allowing order creation.
-  2. Ensure all donation items belong to the specified manufacturer.
+  2. Ensure all donation items belong to the specified manufacturer and the manufacturer is approved.
   3. Validate allocated quantities do not exceed the remaining quantity (quantity - reserved_quantity).
-  4. Create the order with status pending.
+  4. Create the order with status pending and assigneeId as the given userId.
   5. Associate the order with the provided request and manufacturer.
   6. Create allocation records for each donation item included in the order.
   7. Update the reserved quantity for each allocated donation item.
@@ -118,13 +120,12 @@ export class OrdersService {
         );
       }
 
-      const fmDonations = await this.manufacturerService.getFMDonations(
-        manufacturerId,
-        userId,
-      );
-      const fmDonationIdSet = new Set(
-        fmDonations.map((d) => d.donation.donationId),
-      );
+      const fmDonations = await this.donationRepo.find({
+        where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
+        select: ['donationId'],
+      });
+
+      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
 
       const donationItemIds = Array.from(itemAllocations.keys());
       const donationItems = await this.donationItemsService.getByIds(
@@ -161,14 +162,16 @@ export class OrdersService {
         }
       }
 
-      const order = transactionManager.create(Order, {
+      const orderTransactionRepo = transactionManager.getRepository(Order);
+
+      const order = orderTransactionRepo.create({
         requestId: requestId,
         foodManufacturerId: manufacturerId,
         status: OrderStatus.PENDING,
         assigneeId: userId,
       });
 
-      const savedOrder = await transactionManager.save(order);
+      const savedOrder = await orderTransactionRepo.save(order);
 
       await this.allocationsService.createMultiple(
         savedOrder.orderId,

@@ -120,7 +120,7 @@ export class OrdersController {
     return this.allocationsService.getAllAllocationsByOrder(orderId);
   }
 
-  @Post('/create')
+  @Post('/')
   @ApiBody({
     description: 'Details for creating a order',
     schema: {
@@ -159,6 +159,7 @@ export class OrdersController {
     orderData: CreateOrderDto,
   ): Promise<Order> {
     const parsedAllocations = new Map<number, number>();
+    const seenIds = new Set<number>();
 
     for (const [key, value] of Object.entries(orderData.itemAllocations)) {
       const itemId = Number(key);
@@ -176,6 +177,14 @@ export class OrdersController {
       if (!Number.isInteger(value) || value < 1) {
         throw new BadRequestException(`Invalid quantity for item ${key}`);
       }
+
+      if (seenIds.has(itemId)) {
+        throw new BadRequestException(
+          `Invalid duplicate item IDs for item: ${itemId}`,
+        );
+      }
+
+      seenIds.add(itemId);
 
       parsedAllocations.set(itemId, value);
     }
