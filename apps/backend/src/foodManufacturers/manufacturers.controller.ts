@@ -19,7 +19,10 @@ import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { DonationDetailsDto } from './dtos/donation-details-dto';
+import {
+  DonationDetailsDto,
+  DonationReminderDto,
+} from './dtos/donation-details-dto';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -44,6 +47,18 @@ export class FoodManufacturersController {
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<DonationDetailsDto[]> {
     return this.foodManufacturersService.getFMDonations(
+      foodManufacturerId,
+      req.user.id,
+    );
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @Get('/:foodManufacturerId/next-two-donations')
+  async getNextTwoDonations(
+    @Req() req: AuthenticatedRequest,
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+  ): Promise<DonationReminderDto[]> {
+    return this.foodManufacturersService.getUpcomingDonationReminders(
       foodManufacturerId,
       req.user.id,
     );

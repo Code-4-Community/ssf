@@ -23,6 +23,7 @@ import {
   DonationDetailsDto,
   DonationItemWithAllocatedQuantityDto,
   DonationOrderDetailsDto,
+  DonationReminderDto,
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
 import { DonationStatus } from '../donations/types';
@@ -137,6 +138,50 @@ export class FoodManufacturersService {
         relevantDonationItems,
       };
     });
+  }
+
+  async getUpcomingDonationReminders(
+    foodManufacturerId: number,
+    currentUserId: number,
+  ): Promise<DonationReminderDto[]> {
+    validateId(foodManufacturerId, 'Food Manufacturer');
+    validateId(currentUserId, 'User');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerId },
+      relations: ['foodManufacturerRepresentative'],
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
+      throw new BadRequestException(
+        `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
+      );
+    }
+
+    const donations = await this.donationsRepo.find({
+      where: { foodManufacturer: { foodManufacturerId } },
+      relations: ['donationItems'],
+    });
+
+    const today = new Date();
+    const donationReminders: DonationReminderDto[] = donations.flatMap(
+      (donation) =>
+        (donation.nextDonationDates ?? [])
+          .filter((date) => date >= today)
+          .map((date) => ({ donation, reminderDate: date })),
+    );
+
+    donationReminders.sort(
+      (a, b) => a.reminderDate.getTime() - b.reminderDate.getTime(),
+    );
+
+    return donationReminders.slice(0, 2);
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {

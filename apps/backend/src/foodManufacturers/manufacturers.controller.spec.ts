@@ -10,7 +10,10 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { DonationDetailsDto } from './dtos/donation-details-dto';
+import {
+  DonationDetailsDto,
+  DonationReminderDto,
+} from './dtos/donation-details-dto';
 import { FoodType } from '../donationItems/types';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
@@ -142,6 +145,43 @@ describe('FoodManufacturersController', () => {
         1,
         1,
       );
+    });
+  });
+
+  describe('GET /:foodManufacturerId/next-two-donations', () => {
+    it('should return the next two upcoming donation reminders for a given food manufacturer', async () => {
+      const mockDonationReminders: DonationReminderDto[] = [
+        {
+          donation: {
+            donationId: 1,
+            foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+          } as Donation,
+          reminderDate: new Date('2024-07-01'),
+        },
+        {
+          donation: {
+            donationId: 2,
+            foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+          } as Donation,
+          reminderDate: new Date('2024-07-15'),
+        },
+      ];
+
+      const req = { user: { id: 1 } };
+
+      mockManufacturersService.getUpcomingDonationReminders.mockResolvedValue(
+        mockDonationReminders,
+      );
+
+      const result = await controller.getNextTwoDonations(
+        req as AuthenticatedRequest,
+        1,
+      );
+
+      expect(result).toBe(mockDonationReminders);
+      expect(
+        mockManufacturersService.getUpcomingDonationReminders,
+      ).toHaveBeenCalledWith(1, 1);
     });
   });
 
