@@ -83,6 +83,8 @@ describe('DonationItemsService', () => {
       const item = await service.findOne(itemId);
       expect(item).toBeDefined();
       expect(item.itemId).toEqual(itemId);
+      expect(item.itemName).toEqual('Peanut Butter (16oz)');
+      expect(Number(item.ozPerItem)).toEqual(16.0);
     });
 
     it('throws NotFoundException when item does not exist', async () => {
@@ -132,7 +134,13 @@ describe('DonationItemsService', () => {
 
       expect(item).toBeDefined();
       expect(item.itemId).toBeDefined();
+      expect(item.donationId).toEqual(donationId);
+      expect(item.itemName).toEqual('Canned Beans');
       expect(item.quantity).toEqual(10);
+      expect(item.reservedQuantity).toEqual(0);
+      expect(Number(item.ozPerItem)).toEqual(15.5);
+      expect(Number(item.estimatedValue)).toEqual(2.99);
+      expect(item.foodType).toEqual(FoodType.DRIED_BEANS);
     });
 
     it('throws NotFoundException when donation does not exist', async () => {
@@ -176,7 +184,7 @@ describe('DonationItemsService', () => {
         .findOneByOrFail({ donationId });
     }
 
-    it('creates all items and returns them with generated ids', async () => {
+    it('creates all items with correct fields persisted to the database', async () => {
       const donation = await getSeedDonation();
       const transactionManager = testDataSource.createEntityManager();
 
@@ -187,37 +195,28 @@ describe('DonationItemsService', () => {
       );
 
       expect(result).toHaveLength(2);
-      result.forEach((item) => expect(item.itemId).toBeDefined());
-    });
 
-    it('persists all items to the database linked to the correct donation', async () => {
-      const donation = await getSeedDonation();
-      const transactionManager = testDataSource.createEntityManager();
+      const [beans, rice] = result;
 
-      await service.createMultiple(donation, validItems, transactionManager);
+      expect(beans.itemId).toBeDefined();
+      expect(beans.donationId).toEqual(donation.donationId);
+      expect(beans.itemName).toEqual('Canned Beans');
+      expect(beans.quantity).toEqual(10);
+      expect(beans.reservedQuantity).toEqual(0);
+      expect(Number(beans.ozPerItem)).toEqual(15.5);
+      expect(Number(beans.estimatedValue)).toEqual(2.99);
+      expect(beans.foodType).toEqual(FoodType.DRIED_BEANS);
+      expect(beans.foodRescue).toEqual(false);
 
-      const rows = await testDataSource.query(
-        `SELECT * FROM donation_items WHERE donation_id = $1 AND item_name IN ('Canned Beans', 'Rice Bag')`,
-        [donation.donationId],
-      );
-
-      expect(rows).toHaveLength(2);
-      rows.forEach((row: any) =>
-        expect(row.donation_id).toEqual(donation.donationId),
-      );
-    });
-
-    it('sets reservedQuantity to 0 for all items regardless of input', async () => {
-      const donation = await getSeedDonation();
-      const transactionManager = testDataSource.createEntityManager();
-
-      const result = await service.createMultiple(
-        donation,
-        validItems,
-        transactionManager,
-      );
-
-      result.forEach((item) => expect(item.reservedQuantity).toEqual(0));
+      expect(rice.itemId).toBeDefined();
+      expect(rice.donationId).toEqual(donation.donationId);
+      expect(rice.itemName).toEqual('Rice Bag');
+      expect(rice.quantity).toEqual(5);
+      expect(rice.reservedQuantity).toEqual(0);
+      expect(Number(rice.ozPerItem)).toEqual(32);
+      expect(Number(rice.estimatedValue)).toEqual(4.99);
+      expect(rice.foodType).toEqual(FoodType.GRANOLA);
+      expect(rice.foodRescue).toEqual(true);
     });
 
     it('creates items with optional fields omitted', async () => {

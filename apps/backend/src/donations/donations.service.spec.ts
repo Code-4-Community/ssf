@@ -847,14 +847,72 @@ describe('DonationService', () => {
       expect(donation.donationId).toBeDefined();
 
       const items = await testDataSource.query(
-        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        `SELECT * FROM donation_items WHERE donation_id = $1 ORDER BY item_name`,
         [donation.donationId],
       );
 
       expect(items).toHaveLength(2);
-      expect(
-        items.every((item: any) => item.donation_id === donation.donationId),
-      ).toBe(true);
+
+      const [beans, corn] = items;
+
+      expect(beans.item_id).toBeDefined();
+      expect(beans.donation_id).toEqual(donation.donationId);
+      expect(beans.item_name).toEqual('Canned Beans');
+      expect(beans.quantity).toEqual(10);
+      expect(beans.reserved_quantity).toEqual(0);
+      expect(Number(beans.oz_per_item)).toEqual(15.5);
+      expect(Number(beans.estimated_value)).toEqual(2.99);
+      expect(beans.food_type).toEqual(FoodType.DAIRY_FREE_ALTERNATIVES);
+      expect(beans.food_rescue).toEqual(false);
+
+      expect(corn.item_id).toBeDefined();
+      expect(corn.donation_id).toEqual(donation.donationId);
+      expect(corn.item_name).toEqual('Canned Corn');
+      expect(corn.quantity).toEqual(5);
+      expect(corn.reserved_quantity).toEqual(0);
+      expect(Number(corn.oz_per_item)).toEqual(12);
+      expect(Number(corn.estimated_value)).toEqual(1.99);
+      expect(corn.food_type).toEqual(FoodType.GRANOLA);
+      expect(corn.food_rescue).toEqual(true);
+    });
+
+    it('populates nextDonationDates in the database for a recurring donation', async () => {
+      const before = new Date();
+      before.setHours(0, 0, 0, 0);
+
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 1,
+        occurrencesRemaining: 3,
+        items: validItems,
+      });
+
+      const rows = await testDataSource.query(
+        `SELECT next_donation_dates, occurrences_remaining, recurrence, recurrence_freq
+         FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(rows).toHaveLength(1);
+      const row = rows[0];
+
+      expect(row.recurrence).toEqual(RecurrenceEnum.MONTHLY);
+      expect(row.recurrence_freq).toEqual(1);
+      expect(row.occurrences_remaining).toEqual(3);
+
+      const dates: Date[] = row.next_donation_dates;
+      expect(dates).toHaveLength(1);
+
+      // Clip the before date if necessary
+      const expectedDate = new Date(before);
+      if (expectedDate.getDate() > 28) expectedDate.setDate(28);
+      expectedDate.setMonth(expectedDate.getMonth() + 1);
+
+      const actualDate = new Date(dates[0]);
+      expect(actualDate.getFullYear()).toEqual(expectedDate.getFullYear());
+      expect(actualDate.getMonth()).toEqual(expectedDate.getMonth());
+      expect(actualDate.getDate()).toEqual(expectedDate.getDate());
     });
 
     it('throws when foodManufacturerId does not exist', async () => {
@@ -870,6 +928,8 @@ describe('DonationService', () => {
     });
 
     it('throws when recurrence is not NONE but recurrenceFreq is missing', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
       await expect(
         service.create({
           foodManufacturerId: 1,
@@ -891,11 +951,14 @@ describe('DonationService', () => {
         ),
       );
 
-      const donations = await testDataSource.query(`SELECT * FROM donations`);
+      donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
     });
 
     it('rolls back donation when a donation item fails to save', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+
       await expect(
         service.create({
           foodManufacturerId: 1,
@@ -912,7 +975,7 @@ describe('DonationService', () => {
         }),
       ).rejects.toThrow();
 
-      const donations = await testDataSource.query(`SELECT * FROM donations`);
+      donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
     });
   });

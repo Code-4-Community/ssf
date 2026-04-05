@@ -77,12 +77,18 @@ export class CreateDonationItemDto {
   @Min(1)
   quantity!: number;
 
-  @IsNumber()
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'ozPerItem must have at most 2 decimal places' },
+  )
   @Min(0.01)
   @IsOptional()
   ozPerItem?: number;
 
-  @IsNumber()
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'estimatedValue must have at most 2 decimal places' },
+  )
   @Min(0.01)
   @IsOptional()
   estimatedValue?: number;
