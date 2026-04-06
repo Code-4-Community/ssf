@@ -3,8 +3,8 @@ import { FoodManufacturersService } from './manufacturers.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
 import {
-  BadRequestException,
   ConflictException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -389,9 +389,9 @@ describe('FoodManufacturersService', () => {
       );
     });
 
-    it('throws BadRequestException when user is not the representative of the food manufacturer', async () => {
+    it('throws ForbiddenException when user is not the representative of the food manufacturer', async () => {
       await expect(service.getFMDonations(fmId1, fmRepId2)).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           `User ${fmRepId2} is not allowed to access donations for Food Manufacturer ${fmId1}`,
         ),
       );
@@ -624,6 +624,30 @@ describe('FoodManufacturersService', () => {
       expect(result[0].donation.donationId).toBe(result[1].donation.donationId);
     });
 
+    it('only returns the next two reminders when more exist', async () => {
+      const futureDate1 = new Date();
+      futureDate1.setDate(futureDate1.getDate() + 30);
+      const futureDate2 = new Date();
+      futureDate2.setDate(futureDate2.getDate() + 60);
+      const futureDate3 = new Date();
+      futureDate3.setDate(futureDate3.getDate() + 90);
+
+      await testDataSource.query(
+        `INSERT INTO public.donations (food_manufacturer_id, recurrence, recurrence_freq, occurrences_remaining, next_donation_dates)
+        VALUES (1, $1, 1, 5, ARRAY[$2::timestamptz, $3::timestamptz, $4::timestamptz])`,
+        [
+          RecurrenceEnum.MONTHLY,
+          futureDate1.toISOString(),
+          futureDate2.toISOString(),
+          futureDate3.toISOString(),
+        ],
+      );
+
+      const result = await service.getUpcomingDonationReminders(1, 3);
+
+      expect(result).toHaveLength(2);
+    });
+
     it('throws NotFoundException for non-existent manufacturer', async () => {
       await expect(
         service.getUpcomingDonationReminders(9999, 3),
@@ -632,9 +656,9 @@ describe('FoodManufacturersService', () => {
       );
     });
 
-    it('throws BadRequestException when user is not the representative of the food manufacturer', async () => {
+    it('throws ForbiddenException when user is not the representative of the food manufacturer', async () => {
       await expect(service.getUpcomingDonationReminders(1, 4)).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           'User 4 is not allowed to access donations for Food Manufacturer 1',
         ),
       );

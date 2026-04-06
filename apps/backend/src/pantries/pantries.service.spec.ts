@@ -5,6 +5,7 @@ import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -460,7 +461,7 @@ describe('PantriesService', () => {
       );
     });
 
-    it('throws BadRequestException when user is not authorized to update pantry', async () => {
+    it('throws ForbiddenException when user is not authorized to update pantry', async () => {
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
@@ -470,7 +471,7 @@ describe('PantriesService', () => {
       await expect(
         service.updatePantryApplication(1, dto, invalidUserId),
       ).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
         ),
       );

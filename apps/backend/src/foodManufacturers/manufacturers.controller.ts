@@ -53,8 +53,8 @@ export class FoodManufacturersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @Get('/:foodManufacturerId/next-two-donations')
-  async getNextTwoDonations(
+  @Get('/:foodManufacturerId/next-two-reminders')
+  async getNextTwoDonationReminders(
     @Req() req: AuthenticatedRequest,
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<DonationReminderDto[]> {

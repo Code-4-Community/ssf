@@ -1,9 +1,9 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -77,7 +77,7 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
       );
     }
@@ -159,17 +159,17 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
       );
     }
 
     const donations = await this.donationsRepo.find({
       where: { foodManufacturer: { foodManufacturerId } },
-      relations: ['donationItems'],
     });
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const donationReminders: DonationReminderDto[] = donations.flatMap(
       (donation) =>
         (donation.nextDonationDates ?? [])
@@ -293,7 +293,7 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
       );
     }

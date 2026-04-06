@@ -148,7 +148,7 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('GET /:foodManufacturerId/next-two-donations', () => {
+  describe('GET /:foodManufacturerId/next-two-reminders', () => {
     it('should return the next two upcoming donation reminders for a given food manufacturer', async () => {
       const mockDonationReminders: DonationReminderDto[] = [
         {
@@ -173,12 +173,12 @@ describe('FoodManufacturersController', () => {
         mockDonationReminders,
       );
 
-      const result = await controller.getNextTwoDonations(
+      const result = await controller.getNextTwoDonationReminders(
         req as AuthenticatedRequest,
         1,
       );
 
-      expect(result).toBe(mockDonationReminders);
+      expect(result).toEqual(mockDonationReminders);
       expect(
         mockManufacturersService.getUpcomingDonationReminders,
       ).toHaveBeenCalledWith(1, 1);

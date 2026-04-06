@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -332,7 +333,7 @@ export class PantriesService {
         pantryMessage.subject,
         pantryMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry application submitted confirmation email to representative',
       );
@@ -345,7 +346,7 @@ export class PantriesService {
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new pantry application notification email to SSF',
       );
@@ -370,7 +371,7 @@ export class PantriesService {
     }
 
     if (pantry.pantryUser.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
       );
     }
@@ -419,7 +420,7 @@ export class PantriesService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry account approved notification email to representative',
       );
