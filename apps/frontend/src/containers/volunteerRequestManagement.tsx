@@ -17,6 +17,8 @@ import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
+import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -27,6 +29,11 @@ const VolunteerRequestManagement: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
     null,
   );
+
+  const [selectedActionOrder, setSelectedActionOrder] =
+    useState<FoodRequest | null>(null);
+  const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
+    useState<FoodRequest | null>(null);
 
   const [alertMessage, setAlertMessage] = useState<string>('');
 
@@ -295,7 +302,29 @@ const VolunteerRequestManagement: React.FC = () => {
               >
                 {formatDate(request.requestedAt)}
               </Table.Cell>
-              <Table.Cell {...tableCellStyles}>{/* TODO*/}</Table.Cell>
+              <Table.Cell
+                {...tableCellStyles}
+                bgColor={
+                  request.status !== FoodRequestStatus.ACTIVE
+                    ? 'neutral.50'
+                    : 'white'
+                }
+                textAlign="right"
+                color="neutral.700"
+                pr={0}
+              >
+                {request.status === FoodRequestStatus.ACTIVE && (
+                  <Button
+                    variant="plain"
+                    fontWeight="400"
+                    textDecoration="underline"
+                    color="neutral.700"
+                    onClick={() => setSelectedActionOrder(request)}
+                  >
+                    Complete Required Action
+                  </Button>
+                )}
+              </Table.Cell>
             </Table.Row>
           ))}
 
@@ -306,7 +335,28 @@ const VolunteerRequestManagement: React.FC = () => {
               onClose={() => setSelectedRequest(null)}
             />
           )}
+
+          {selectedActionOrder && (
+            <VolunteerRequestActionRequiredModal
+              isOpen={true}
+              onClose={() => setSelectedActionOrder(null)}
+              onCloseRequest={() => {
+                setSelectedCloseRequestAction(selectedActionOrder);
+                setSelectedActionOrder(null);
+              }}
+            />
+          )}
+
+          {selectedCloseRequestAction && (
+            <VolunteerCloseRequestActionModal
+              request={selectedCloseRequestAction}
+              isOpen={true}
+              onClose={() => setSelectedCloseRequestAction(null)}
+            ></VolunteerCloseRequestActionModal>
+          )}
         </Table.Body>
+
+        {}
       </Table.Root>
 
       {totalPages > 1 && (

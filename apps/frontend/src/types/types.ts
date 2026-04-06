@@ -349,6 +349,11 @@ export enum FoodRequestStatus {
   CLOSED = 'closed',
 }
 
+export enum VolunteerRequestAction {
+  CREATE_NEW_ORDER = 'createNewOrder',
+  CLOSE_REQUEST = 'closeRequest',
+}
+
 export enum DonationFrequency {
   YEARLY = 'yearly',
   BIWEEKLY = 'biweekly',
