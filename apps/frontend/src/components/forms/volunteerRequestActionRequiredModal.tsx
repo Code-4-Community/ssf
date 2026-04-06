@@ -5,11 +5,12 @@ interface VolunteerRequestActionRequiredModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCloseRequest: () => void;
+  onCreateOrder: () => void;
 }
 
 const VolunteerRequestActionRequiredModal: React.FC<
   VolunteerRequestActionRequiredModalProps
-> = ({ isOpen, onClose, onCloseRequest }) => {
+> = ({ isOpen, onClose, onCloseRequest, onCreateOrder }) => {
   const buttonStyles = {
     fontWeight: '600',
     fontSize: '14px',
@@ -50,6 +51,7 @@ const VolunteerRequestActionRequiredModal: React.FC<
                   borderWidth="1px"
                   bg="white"
                   {...buttonStyles}
+                  onClick={onCreateOrder}
                 >
                   Create New Order
                 </Button>

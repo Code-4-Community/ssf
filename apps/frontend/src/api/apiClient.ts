@@ -29,6 +29,8 @@ import {
   PantryWithUser,
   Assignments,
   UpdateProfileFields,
+  MatchingManufacturersDto,
+  MatchingItemsDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -369,6 +371,25 @@ export class ApiClient {
   public async getMe(): Promise<User> {
     const data = await this.get('/api/users/me');
     return data as User;
+  }
+
+  public async getMatchingManufacturers(
+    requestId: number,
+  ): Promise<MatchingManufacturersDto> {
+    return this.axiosInstance
+      .get(`/api/requests/${requestId}/matching-manufacturers`)
+      .then((response) => response.data);
+  }
+
+  public async getAvailableItemsForManufacturer(
+    requestId: number,
+    manufacturerId: number,
+  ): Promise<MatchingItemsDto> {
+    return this.axiosInstance
+      .get(
+        `/api/requests/${requestId}/matching-manufacturers/${manufacturerId}/available-items`,
+      )
+      .then((response) => response.data);
   }
 }
 

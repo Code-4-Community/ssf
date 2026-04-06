@@ -19,6 +19,7 @@ import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
+import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -30,9 +31,11 @@ const VolunteerRequestManagement: React.FC = () => {
     null,
   );
 
-  const [selectedActionOrder, setSelectedActionOrder] =
+  const [selectedActionRequest, setSelectedActionRequest] =
     useState<FoodRequest | null>(null);
   const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
+    useState<FoodRequest | null>(null);
+  const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequest | null>(null);
 
   const [alertMessage, setAlertMessage] = useState<string>('');
@@ -319,7 +322,7 @@ const VolunteerRequestManagement: React.FC = () => {
                     fontWeight="400"
                     textDecoration="underline"
                     color="neutral.700"
-                    onClick={() => setSelectedActionOrder(request)}
+                    onClick={() => setSelectedActionRequest(request)}
                   >
                     Complete Required Action
                   </Button>
@@ -336,13 +339,17 @@ const VolunteerRequestManagement: React.FC = () => {
             />
           )}
 
-          {selectedActionOrder && (
+          {selectedActionRequest && (
             <VolunteerRequestActionRequiredModal
               isOpen={true}
-              onClose={() => setSelectedActionOrder(null)}
+              onClose={() => setSelectedActionRequest(null)}
               onCloseRequest={() => {
-                setSelectedCloseRequestAction(selectedActionOrder);
-                setSelectedActionOrder(null);
+                setSelectedCloseRequestAction(selectedActionRequest);
+                setSelectedActionRequest(null);
+              }}
+              onCreateOrder={() => {
+                setSelectedCreateOrderRequest(selectedActionRequest);
+                setSelectedActionRequest(null);
               }}
             />
           )}
@@ -353,6 +360,14 @@ const VolunteerRequestManagement: React.FC = () => {
               isOpen={true}
               onClose={() => setSelectedCloseRequestAction(null)}
             ></VolunteerCloseRequestActionModal>
+          )}
+
+          {selectedCreateOrderRequest && (
+            <CreateNewOrderModal
+              request={selectedCreateOrderRequest}
+              isOpen={true}
+              onClose={() => setSelectedCreateOrderRequest(null)}
+            ></CreateNewOrderModal>
           )}
         </Table.Body>
 
