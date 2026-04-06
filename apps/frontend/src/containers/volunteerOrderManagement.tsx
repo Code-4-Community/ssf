@@ -11,6 +11,7 @@ import {
   Checkbox,
   Input,
   Link,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
@@ -20,7 +21,6 @@ import {
   Mail,
   CircleCheck,
   Search,
-  TriangleAlert,
 } from 'lucide-react';
 import { capitalize, formatDate, getInitials } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -211,7 +211,7 @@ const VolunteerOrderManagement: React.FC = () => {
     });
   };
 
-  if (isLoading) return null;
+  if (isLoading) return <Spinner />;
 
   return (
     <Box p={12}>
@@ -244,8 +244,10 @@ const VolunteerOrderManagement: React.FC = () => {
           )
           .sort((a, b) =>
             filterState.sortAsc
-              ? String(a.createdAt).localeCompare(String(b.createdAt))
-              : String(b.createdAt).localeCompare(String(a.createdAt)),
+              ? new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+              : new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
           );
 
         const totalFiltered = filteredOrders.length;
@@ -771,7 +773,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           variant="underline"
                           onClick={() => onOpenActionModal(order)}
                         >
-                          Completed Required Actions
+                          Complete Required Actions
                         </Link>
                       )}
                     </Table.Cell>

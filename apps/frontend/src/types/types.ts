@@ -252,9 +252,9 @@ export interface OrderDetails {
 export type VolunteerOrder = {
   orderId: number;
   status: OrderStatus;
-  createdAt: Date;
-  shippedAt: Date | null;
-  deliveredAt: Date | null;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;
