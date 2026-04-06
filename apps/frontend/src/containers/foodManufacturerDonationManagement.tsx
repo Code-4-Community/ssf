@@ -280,7 +280,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
               {donations.map((donation, index) => (
                 <Table.Row
                   key={`${donation.donationId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: 'neutral.50' }}
                 >
                   <Table.Cell
                     {...tableCellStyles}
@@ -353,11 +353,13 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
+                  gap={2}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === 1}
+                    ml={2}
                   >
                     <ChevronLeft
                       size={16}
@@ -384,6 +386,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === totalPages}
+                    mr={2}
                   >
                     <ChevronRight
                       size={16}

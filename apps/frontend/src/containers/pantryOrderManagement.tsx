@@ -453,7 +453,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             <Table.Body>
               {orders.map((order) => {
                 return (
-                  <Table.Row key={order.orderId} _hover={{ bg: 'gray.50' }}>
+                  <Table.Row key={order.orderId} _hover={{ bg: 'neutral.50' }}>
                     <Table.Cell
                       {...tableCellStyles}
                       borderRight="1px solid"
@@ -546,11 +546,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
+                  gap={2}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === 1}
+                    ml={2}
                   >
                     <ChevronLeft
                       size={16}
@@ -577,6 +579,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === totalPages}
+                    mr={2}
                   >
                     <ChevronRight
                       size={16}

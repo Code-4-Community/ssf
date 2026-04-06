@@ -84,6 +84,7 @@ const customConfig = defineConfig({
         yellow: {
           ssf: { value: '#F89E19' },
           hover: { value: '#9C5D00' },
+          100: { value: '#FEF5E8' },
           200: { value: '#FEECD1' },
         },
         neutral: {
