@@ -31,6 +31,7 @@ import {
   UpdateProfileFields,
   MatchingManufacturersDto,
   MatchingItemsDto,
+  CreateOrderDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -330,6 +331,10 @@ export class ApiClient {
       orderId,
       newStatus,
     });
+  }
+
+  public async createOrder(dto: CreateOrderDto): Promise<Order> {
+    return this.axiosInstance.post(`/api/orders`, dto);
   }
 
   public async updatePantry(

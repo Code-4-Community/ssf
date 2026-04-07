@@ -20,6 +20,7 @@ import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
+import { useAlert } from '../hooks/alert';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -38,7 +39,8 @@ const VolunteerRequestManagement: React.FC = () => {
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequest | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [alertState, setAlertMessage] = useAlert();
+  const [isAlertError, setIsAlertError] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -46,6 +48,7 @@ const VolunteerRequestManagement: React.FC = () => {
         const data = await ApiClient.getVolunteerAssignedRequests();
         setRequests(data);
       } catch (error) {
+        setIsAlertError(true);
         setAlertMessage('Error fetching requests' + error);
       }
     };
@@ -115,8 +118,13 @@ const VolunteerRequestManagement: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status={isAlertError ? 'error' : 'info'}
+          timeout={6000}
+        />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
@@ -367,6 +375,11 @@ const VolunteerRequestManagement: React.FC = () => {
               request={selectedCreateOrderRequest}
               isOpen={true}
               onClose={() => setSelectedCreateOrderRequest(null)}
+              onOrderCreate={() => {
+                setSelectedCreateOrderRequest(null);
+                setIsAlertError(false);
+                setAlertMessage('Order Created');
+              }}
             ></CreateNewOrderModal>
           )}
         </Table.Body>

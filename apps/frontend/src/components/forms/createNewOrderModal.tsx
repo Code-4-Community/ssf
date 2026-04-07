@@ -12,8 +12,10 @@ import {
   Flex,
   HStack,
   Badge,
+  Input,
 } from '@chakra-ui/react';
 import {
+  CreateOrderDto,
   DonationItemsGroupedByFoodType,
   FoodManufacturer,
   FoodRequest,
@@ -29,12 +31,14 @@ interface CreateNewOrderModalModalProps {
   request: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
+  onOrderCreate: () => void;
 }
 
 const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   request,
   isOpen,
   onClose,
+  onOrderCreate,
 }) => {
   const [alertState, setAlertMessage] = useAlert();
   const [selectedManufacturer, setSelectedManufacturer] =
@@ -44,6 +48,9 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   const [manufacturerItems, setManufacturerItems] =
     useState<MatchingItemsDto | null>(null);
   const [newOrderState, setNewOrderState] = useState<boolean>(false);
+  const [itemAllocations, setItemAllocations] = useState<
+    Record<number, number>
+  >({});
 
   useEffect(() => {
     const fetchManufacturers = async () => {
@@ -58,6 +65,22 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
     };
     fetchManufacturers();
   });
+
+  // Set Initial
+  useEffect(() => {
+    if (!manufacturerItems) return;
+
+    const initial: Record<number, number> = {};
+
+    [
+      ...manufacturerItems.matchingItems,
+      ...manufacturerItems.nonMatchingItems,
+    ].forEach((item) => {
+      initial[item.itemId] = item.availableQuantity;
+    });
+
+    setItemAllocations(initial);
+  }, [manufacturerItems]);
 
   // Collection for option group select element
   const manufacturerCollection = createListCollection({
@@ -114,6 +137,21 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       setManufacturerItems(data);
     } catch {
       setAlertMessage('Error fetching manufacturer items');
+    }
+  };
+
+  const onSubmitNewOrder = async () => {
+    const data = {
+      foodRequestId: request.requestId,
+      manufacturerId: selectedManufacturer?.foodManufacturerId,
+      itemAllocations: itemAllocations,
+    } as CreateOrderDto;
+
+    try {
+      await apiClient.createOrder(data);
+      onOrderCreate();
+    } catch {
+      setAlertMessage('Error creating new order');
     }
   };
 
@@ -315,6 +353,8 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                   color={'white'}
                   disabled={!selectedManufacturer}
                   onClick={() => setNewOrderState(true)}
+                  w="40%"
+                  ml="auto"
                 >
                   Select Manufacturer
                 </Button>
@@ -358,14 +398,30 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                 mx={3}
                               />
 
-                              <Text
-                                minW={5}
-                                py={2}
-                                textStyle="p2"
-                                color="neutral.800"
-                              >
-                                {item.availableQuantity}
-                              </Text>
+                              <Input
+                                type="number"
+                                _focusVisible={{
+                                  outline: 'none',
+                                }}
+                                border="none"
+                                value={itemAllocations[item.itemId]}
+                                min={1}
+                                max={item.availableQuantity}
+                                onChange={(e) => {
+                                  let value = Number(e.target.value);
+
+                                  // Limit value to be between 1 and availableQuantity
+                                  if (isNaN(value) || value < 1) value = 1;
+                                  if (value > item.availableQuantity)
+                                    value = item.availableQuantity;
+
+                                  setItemAllocations((prev) => ({
+                                    ...prev,
+                                    [item.itemId]: value,
+                                  }));
+                                }}
+                                w="80px"
+                              />
                             </Flex>
                           ))}
                         </Box>
@@ -382,7 +438,11 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                     fontWeight={600}
                     color="neutral.800"
                     variant="outline"
-                    onClick={() => setNewOrderState(false)}
+                    onClick={() => {
+                      setNewOrderState(false);
+                      setSelectedManufacturer(null);
+                      setManufacturerItems(null);
+                    }}
                   >
                     Back
                   </Button>
@@ -391,7 +451,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                     fontWeight={600}
                     bg={'#213C4A'}
                     color={'white'}
-                    //onClick={onCloseRequest}
+                    onClick={onSubmitNewOrder}
                   >
                     Continue
                   </Button>

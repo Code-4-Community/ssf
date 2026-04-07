@@ -128,6 +128,12 @@ export class MatchingItemsDto {
   nonMatchingItems!: DonationItemDetailsDto[];
 }
 
+export class CreateOrderDto {
+  foodRequestId!: number;
+  manufacturerId!: number;
+  itemAllocations!: Record<string, unknown>;
+}
+
 export class DonationItemDetailsDto {
   itemId!: number;
   itemName!: string;
