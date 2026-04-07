@@ -162,7 +162,6 @@ export class OrdersController {
     orderData: CreateOrderDto,
   ): Promise<Order> {
     const parsedAllocations = new Map<number, number>();
-    const seenIds = new Set<number>();
 
     for (const [key, value] of Object.entries(orderData.itemAllocations)) {
       const itemId = Number(key);
@@ -181,13 +180,11 @@ export class OrdersController {
         throw new BadRequestException(`Invalid quantity for item ${key}`);
       }
 
-      if (seenIds.has(itemId)) {
+      if (parsedAllocations.has(itemId)) {
         throw new BadRequestException(
           `Invalid duplicate item IDs for item: ${itemId}`,
         );
       }
-
-      seenIds.add(itemId);
 
       parsedAllocations.set(itemId, value);
     }
