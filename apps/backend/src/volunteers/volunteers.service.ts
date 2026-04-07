@@ -62,15 +62,15 @@ export class VolunteersService {
     volunteerId: number,
     pantryIds: number[],
   ): Promise<User> {
-    pantryIds.forEach((id) => validateId(id, 'Pantry'));
-
     const volunteer = await this.findOne(volunteerId);
 
-    const pantries = await this.pantriesService.findByIds(pantryIds);
+    const uniquePantryIds = new Set(pantryIds);
+
+    const pantries = await this.pantriesService.findByIds([...uniquePantryIds]);
     const existingPantries = volunteer.pantries || [];
-    const existingPantryIds = existingPantries.map((p) => p.pantryId);
+    const existingPantryIds = new Set(existingPantries.map((p) => p.pantryId));
     const newPantries = pantries.filter(
-      (p) => !existingPantryIds.includes(p.pantryId),
+      (p) => !existingPantryIds.has(p.pantryId),
     );
 
     volunteer.pantries = [...existingPantries, ...newPantries];

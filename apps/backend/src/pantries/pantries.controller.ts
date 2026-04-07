@@ -5,7 +5,6 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Put,
   Post,
   Query,
   Req,
@@ -34,6 +33,7 @@ import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
+import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Controller('pantries')
 export class PantriesController {
@@ -382,11 +382,12 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
-  @Put('/:pantryId/volunteers')
+  @Patch('/:pantryId/volunteers')
   async updatePantryVolunteers(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-    @Body('volunteerIds') volunteerIds: number[],
+    @Body(new ValidationPipe())
+    body: UpdatePantryVolunteersDto,
   ): Promise<void> {
-    return this.pantriesService.updatePantryVolunteers(pantryId, volunteerIds);
+    return this.pantriesService.updatePantryVolunteers(pantryId, body);
   }
 }
