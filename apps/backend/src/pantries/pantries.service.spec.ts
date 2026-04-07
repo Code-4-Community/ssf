@@ -829,28 +829,46 @@ describe('PantriesService', () => {
 
   describe('updatePantryVolunteers', () => {
     it('adds volunteers to a pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).not.toContain(7);
+
       await service.updatePantryVolunteers(1, {
         addVolunteerIds: [7],
         removeVolunteerIds: [],
       });
-      const pantry = await testDataSource
+      const pantryAfter = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      expect(pantry?.volunteers?.map((v) => v.id)).toContain(7);
+      expect(pantryAfter?.volunteers?.map((v) => v.id)).toContain(7);
     });
 
     it('removes volunteers from a pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).toContain(6);
+
       await service.updatePantryVolunteers(1, {
         addVolunteerIds: [],
         removeVolunteerIds: [6],
       });
-      const pantry = await testDataSource
+      const pantryAfter = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      expect(pantry?.volunteers?.map((v) => v.id)).not.toContain(6);
+      expect(pantryAfter?.volunteers?.map((v) => v.id)).not.toContain(6);
     });
 
     it('adds and removes volunteers in a single request', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const idsBefore = pantryBefore?.volunteers?.map((v) => v.id);
+      expect(idsBefore).not.toContain(8);
+      expect(idsBefore).toContain(6);
+      expect(idsBefore).toContain(9);
+
       await service.updatePantryVolunteers(1, {
         addVolunteerIds: [8],
         removeVolunteerIds: [6, 9],
@@ -858,21 +876,26 @@ describe('PantriesService', () => {
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      const ids = pantry?.volunteers?.map((v) => v.id);
-      expect(ids).toContain(8);
-      expect(ids).not.toContain(6);
-      expect(ids).not.toContain(9);
+      const idsAfter = pantry?.volunteers?.map((v) => v.id);
+      expect(idsAfter).toContain(8);
+      expect(idsAfter).not.toContain(6);
+      expect(idsAfter).not.toContain(9);
     });
 
     it('silently ignores adding an already-assigned volunteer', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).toContain(6);
+
       await service.updatePantryVolunteers(1, {
         addVolunteerIds: [6],
         removeVolunteerIds: [],
       });
-      const pantry = await testDataSource
+      const pantryAfter = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      const ids = pantry?.volunteers?.map((v) => v.id);
+      const ids = pantryAfter?.volunteers?.map((v) => v.id);
       expect(ids?.filter((id) => id === 6)).toHaveLength(1);
     });
 

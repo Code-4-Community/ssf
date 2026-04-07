@@ -102,6 +102,7 @@ export class UsersService {
     return user;
   }
 
+  // given userIds should not have duplicates
   async findByIds(userIds: number[]): Promise<User[]> {
     userIds.forEach((id) => validateId(id, 'User'));
 
