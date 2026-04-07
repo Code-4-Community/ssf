@@ -10,6 +10,8 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { DonationDetailsDto } from './dtos/donation-details-dto';
+import { FoodType } from '../donationItems/types';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
 
@@ -87,7 +89,7 @@ describe('FoodManufacturersController', () => {
   });
 
   describe('GET /:foodManufacturerId/donations', () => {
-    it('should return donations for a given food manufacturer', async () => {
+    it('should return donation details for a given food manufacturer', async () => {
       const mockDonations: Partial<Donation>[] = [
         {
           donationId: 1,
@@ -98,14 +100,48 @@ describe('FoodManufacturersController', () => {
           foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
         },
       ];
+      const mockDonationDetails: DonationDetailsDto[] = [
+        {
+          donation: mockDonations[0] as Donation,
+          associatedPendingOrders: [
+            {
+              orderId: 1,
+              pantryId: 2,
+              pantryName: 'Community Food Pantry',
+            },
+          ],
+          relevantDonationItems: [
+            {
+              itemId: 1,
+              itemName: 'Almond Breeze Almond Milk',
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+              allocatedQuantity: 10,
+            },
+          ],
+        },
+        {
+          donation: mockDonations[1] as Donation,
+          associatedPendingOrders: [],
+          relevantDonationItems: [],
+        },
+      ];
+
+      const req = { user: { id: 1 } };
+
       mockManufacturersService.getFMDonations.mockResolvedValue(
-        mockDonations as Donation[],
+        mockDonationDetails,
       );
 
-      const result = await controller.getFoodManufacturerDonations(1);
+      const result = await controller.getFoodManufacturerDonations(
+        req as AuthenticatedRequest,
+        1,
+      );
 
-      expect(result).toBe(mockDonations);
-      expect(mockManufacturersService.getFMDonations).toHaveBeenCalledWith(1);
+      expect(result).toBe(mockDonationDetails);
+      expect(mockManufacturersService.getFMDonations).toHaveBeenCalledWith(
+        1,
+        1,
+      );
     });
   });
 

@@ -7,8 +7,11 @@ import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { OrdersService } from '../orders/order.service';
+import { VolunteerOrder } from './types';
 
 const mockVolunteersService = mock<VolunteersService>();
+const mockOrdersService = mock<OrdersService>();
 
 const mockVolunteer1: Partial<User> = {
   id: 1,
@@ -60,6 +63,10 @@ describe('VolunteersController', () => {
         {
           provide: VolunteersService,
           useValue: mockVolunteersService,
+        },
+        {
+          provide: OrdersService,
+          useValue: mockOrdersService,
         },
       ],
     }).compile();
@@ -184,6 +191,26 @@ describe('VolunteersController', () => {
       expect(
         mockVolunteersService.findRequestsByVolunteer,
       ).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('GET /:id/orders', () => {
+    it('returns orders for a volunteer', async () => {
+      const assignee = { id: 1 } as User;
+      const orders: Partial<VolunteerOrder>[] = [
+        { orderId: 100, assignee },
+        { orderId: 101, assignee },
+      ];
+      mockOrdersService.getAllOrdersForVolunteer.mockResolvedValueOnce(
+        orders as VolunteerOrder[],
+      );
+
+      const result = await controller.getVolunteerOrders(assignee.id);
+
+      expect(result).toEqual(orders);
+      expect(mockOrdersService.getAllOrdersForVolunteer).toHaveBeenCalledWith(
+        assignee.id,
+      );
     });
   });
 });

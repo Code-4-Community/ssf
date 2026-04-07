@@ -9,12 +9,13 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { OrderStatus } from './types';
+import { OrderStatus, VolunteerAction } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { VolunteerOrder } from '../volunteers/types';
 
 @Injectable()
 export class OrdersService {
@@ -56,6 +57,52 @@ export class OrdersService {
     }
 
     return qb.getMany();
+  }
+
+  // returns ALL orders (not scoped to volunteer)
+  // for orders assigned to the given volunteer, includes actionCompletion (otherwise undefined)
+  async getAllOrdersForVolunteer(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'order.confirmDonationReceipt',
+        'order.notifyPantry',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .getMany();
+
+    return orders.map((o) => {
+      const { assignee, confirmDonationReceipt, notifyPantry } = o;
+      const actionCompletion =
+        assignee.id === volunteerId
+          ? { confirmDonationReceipt, notifyPantry }
+          : undefined;
+
+      return {
+        orderId: o.orderId,
+        status: o.status,
+        createdAt: o.createdAt,
+        shippedAt: o.shippedAt,
+        deliveredAt: o.deliveredAt,
+        pantryName: o.request.pantry.pantryName,
+        assignee: o.assignee,
+        actionCompletion,
+      };
+    });
   }
 
   async getCurrentOrders() {
@@ -233,9 +280,7 @@ export class OrdersService {
       throw new BadRequestException('Invalid date format for dateReceived');
     }
 
-    const order = await this.repo.findOne({
-      where: { orderId },
-    });
+    const order = await this.repo.findOneBy({ orderId });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -339,5 +384,31 @@ export class OrdersService {
     }
 
     await this.repo.save(order);
+  }
+
+  async completeVolunteerAction(orderId: number, action: VolunteerAction) {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order[action]) {
+      throw new BadRequestException(
+        `Action ${action} already completed for Order ${orderId}`,
+      );
+    }
+
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        `Action ${action} can only be completed for shipped orders`,
+      );
+    }
+
+    order[action] = true;
+
+    return this.repo.save(order);
   }
 }
