@@ -2,7 +2,12 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { sanitizeUrl, validateEnv, validateId } from './validation.utils';
+import {
+  hasDuplicates,
+  sanitizeUrl,
+  validateEnv,
+  validateId,
+} from './validation.utils';
 
 describe('validateId', () => {
   it('should not throw an error for a valid ID', () => {
@@ -72,5 +77,27 @@ describe('sanitizeUrl', () => {
     expect(sanitizeUrl('  https://www.tracking.com/test   ')).toBe(
       'https://www.tracking.com/test',
     );
+  });
+});
+
+describe('hasDuplicates', () => {
+  it('returns true for int array with duplicates', () => {
+    expect(hasDuplicates([1, 1, 2])).toBeTruthy();
+  });
+
+  it('returns false for int array with no duplicates', () => {
+    expect(hasDuplicates([1, 2, 3])).toBeFalsy();
+  });
+
+  it('returns true for string array with duplicates', () => {
+    expect(hasDuplicates(['a', 'a', 'b'])).toBeTruthy();
+  });
+
+  it('returns false for string array with no duplicates', () => {
+    expect(hasDuplicates(['a', 'b', 'c'])).toBeFalsy();
+  });
+
+  it('returns false for empty array', () => {
+    expect(hasDuplicates([])).toBeFalsy();
   });
 });
