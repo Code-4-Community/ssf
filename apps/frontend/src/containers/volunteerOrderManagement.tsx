@@ -77,6 +77,7 @@ const VolunteerOrderManagement: React.FC = () => {
   );
 
   const [alertState, setAlertMessage] = useAlert();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   type FilterState = {
     selectedPantries: string[];
@@ -119,6 +120,7 @@ const VolunteerOrderManagement: React.FC = () => {
       try {
         user = await ApiClient.getMe();
         userId = user.id;
+        setCurrentUser(user);
       } catch {
         setAlertMessage('Authentication error. Please log in and try again.');
         setIsLoading(false);
@@ -284,6 +286,7 @@ const VolunteerOrderManagement: React.FC = () => {
                 })
               }
               onOpenActionModal={setActionModalOrder}
+              currentUser={currentUser}
             />
           </Box>
         );
@@ -300,8 +303,6 @@ const VolunteerOrderManagement: React.FC = () => {
     </Box>
   );
 };
-
-// ─── Order Status Section ─────────────────────────────────────────────────────
 
 interface OrderStatusSectionProps {
   orders: VolunteerOrderWithColor[];
@@ -324,6 +325,7 @@ interface OrderStatusSectionProps {
     sortAsc: boolean;
   }) => void;
   onOpenActionModal: (order: VolunteerOrder) => void;
+  currentUser: User | null;
 }
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
@@ -339,6 +341,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   filterState,
   onFilterChange,
   onOpenActionModal,
+  currentUser,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -767,15 +770,18 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       bg="#FAFAFA"
                       pr={3}
                     >
-                      {needsAction && (
-                        <Link
-                          textDecorationColor="black"
-                          variant="underline"
-                          onClick={() => onOpenActionModal(order)}
-                        >
-                          Complete Required Actions
-                        </Link>
-                      )}
+                      {order.assignee?.id === currentUser?.id &&
+                        (needsAction ? (
+                          <Link
+                            textDecorationColor="black"
+                            variant="underline"
+                            onClick={() => onOpenActionModal(order)}
+                          >
+                            Complete Required Actions
+                          </Link>
+                        ) : (
+                          'No Action Required'
+                        ))}
                     </Table.Cell>
                   </Table.Row>
                 );

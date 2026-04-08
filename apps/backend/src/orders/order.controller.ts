@@ -83,7 +83,9 @@ export class OrdersController {
         (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },
+    bypassRoles: [Role.VOLUNTEER],
   })
+  @Roles(Role.VOLUNTEER, Role.PANTRY)
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
