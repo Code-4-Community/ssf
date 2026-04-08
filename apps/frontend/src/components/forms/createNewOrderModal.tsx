@@ -66,7 +66,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
     fetchManufacturers();
   });
 
-  // Set Initial
+  // Set initial itemAllocations to be equal to avaliable quantity left
   useEffect(() => {
     if (!manufacturerItems) return;
 
@@ -82,7 +82,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
     setItemAllocations(initial);
   }, [manufacturerItems]);
 
-  // Collection for option group select element
+  // Collection for option group select element to seperate by matching stock and non matching stock
   const manufacturerCollection = createListCollection({
     items: manufacturers
       ? [

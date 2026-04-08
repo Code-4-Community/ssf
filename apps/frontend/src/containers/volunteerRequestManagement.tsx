@@ -391,8 +391,6 @@ const VolunteerRequestManagement: React.FC = () => {
             ></CreateNewOrderModal>
           )}
         </Table.Body>
-
-        {}
       </Table.Root>
 
       {totalPages > 1 && (
