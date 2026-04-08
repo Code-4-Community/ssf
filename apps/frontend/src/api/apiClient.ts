@@ -98,6 +98,16 @@ export class ApiClient {
     return this.post('/api/requests/create', body) as Promise<FoodRequest>;
   }
 
+  public async closeFoodRequest(
+    requestId: number,
+    body?: unknown,
+  ): Promise<FoodRequest> {
+    return this.patch(
+      `/api/requests/${requestId}/close`,
+      body,
+    ) as Promise<FoodRequest>;
+  }
+
   public async postMultipleDonationItems(
     body: CreateMultipleDonationItemsBody,
   ): Promise<DonationItem[]> {
@@ -334,7 +344,7 @@ export class ApiClient {
   }
 
   public async createOrder(dto: CreateOrderDto): Promise<Order> {
-    return this.axiosInstance.post(`/api/orders`, dto);
+    return this.post(`/api/orders`, dto) as Promise<Order>;
   }
 
   public async updatePantry(
@@ -381,20 +391,18 @@ export class ApiClient {
   public async getMatchingManufacturers(
     requestId: number,
   ): Promise<MatchingManufacturersDto> {
-    return this.axiosInstance
-      .get(`/api/requests/${requestId}/matching-manufacturers`)
-      .then((response) => response.data);
+    return this.get(
+      `/api/requests/${requestId}/matching-manufacturers`,
+    ) as Promise<MatchingManufacturersDto>;
   }
 
   public async getAvailableItemsForManufacturer(
     requestId: number,
     manufacturerId: number,
   ): Promise<MatchingItemsDto> {
-    return this.axiosInstance
-      .get(
-        `/api/requests/${requestId}/matching-manufacturers/${manufacturerId}/available-items`,
-      )
-      .then((response) => response.data);
+    return this.get(
+      `/api/requests/${requestId}/matching-manufacturers/${manufacturerId}/available-items`,
+    ) as Promise<MatchingItemsDto>;
   }
 }
 

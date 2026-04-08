@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { FoodRequest } from 'types/types';
 import { formatDate } from '@utils/utils';
-import { ApiClient } from '@api/apiClient';
+import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 
@@ -18,17 +18,18 @@ interface CloseRequestActionModalProps {
   request: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
 const VolunteerCloseRequestActionModal: React.FC<
   CloseRequestActionModalProps
-> = ({ request, isOpen, onClose }) => {
+> = ({ request, isOpen, onClose, onSuccess }) => {
   const [alertState, setAlertMessage] = useAlert();
 
   const onCloseRequest = async () => {
     try {
-      // await ApiClient.closeRequest(request.requestId);
-      onClose();
+      await apiClient.closeFoodRequest(request.requestId);
+      onSuccess();
     } catch {
       setAlertMessage('Error completing action. Please try again.');
     }

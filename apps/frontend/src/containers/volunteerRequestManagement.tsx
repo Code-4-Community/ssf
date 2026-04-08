@@ -42,18 +42,19 @@ const VolunteerRequestManagement: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
   const [isAlertError, setIsAlertError] = useState<boolean>(true);
 
+  const fetchRequests = async () => {
+    try {
+      const data = await ApiClient.getVolunteerAssignedRequests();
+      setRequests(data);
+    } catch (error) {
+      setIsAlertError(true);
+      setAlertMessage('Error fetching requests' + error);
+    }
+  };
+
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await ApiClient.getVolunteerAssignedRequests();
-        setRequests(data);
-      } catch (error) {
-        setIsAlertError(true);
-        setAlertMessage('Error fetching requests' + error);
-      }
-    };
     fetchRequests();
-  }, []);
+  });
 
   useEffect(() => {
     setCurrentPage(1);
@@ -367,6 +368,12 @@ const VolunteerRequestManagement: React.FC = () => {
               request={selectedCloseRequestAction}
               isOpen={true}
               onClose={() => setSelectedCloseRequestAction(null)}
+              onSuccess={() => {
+                setSelectedCloseRequestAction(null);
+                setIsAlertError(false);
+                setAlertMessage('Request Closed');
+                fetchRequests();
+              }}
             ></VolunteerCloseRequestActionModal>
           )}
 
@@ -379,6 +386,7 @@ const VolunteerRequestManagement: React.FC = () => {
                 setSelectedCreateOrderRequest(null);
                 setIsAlertError(false);
                 setAlertMessage('Order Created');
+                fetchRequests();
               }}
             ></CreateNewOrderModal>
           )}

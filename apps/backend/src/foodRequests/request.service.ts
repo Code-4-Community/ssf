@@ -138,6 +138,7 @@ export class RequestsService {
         )`,
           { requestedFoodTypes },
         )
+        .andWhere('fm.status = :status', { status: 'approved' })
         .getRawAndEntities()
         .then(({ raw, entities }) =>
           entities.map((fm, i) => ({
