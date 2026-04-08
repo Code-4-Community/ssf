@@ -8,6 +8,7 @@ import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
+import { FoodRequestStatus } from './types';
 import {
   DonationItemDetailsDto,
   MatchingItemsDto,
@@ -280,6 +281,25 @@ describe('RequestsController', () => {
         requestId,
         foodManufacturerId,
       );
+    });
+  });
+
+  describe('PATCH /:requestId/close', () => {
+    it('should call requestsService.closeRequest and return the closed food request', async () => {
+      const requestId = 1;
+      const closedRequest: Partial<FoodRequest> = {
+        ...foodRequest1,
+        status: FoodRequestStatus.CLOSED,
+      };
+
+      mockRequestsService.closeRequest.mockResolvedValueOnce(
+        closedRequest as FoodRequest,
+      );
+
+      const result = await controller.closeRequest(requestId);
+
+      expect(result).toEqual(closedRequest);
+      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
     });
   });
 });
