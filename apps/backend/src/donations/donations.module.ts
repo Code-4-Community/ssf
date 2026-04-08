@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
@@ -19,7 +19,7 @@ import { AllocationModule } from '../allocations/allocations.module';
       DonationItem,
       Allocation,
     ]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     DonationItemsModule,
     AllocationModule,
   ],
