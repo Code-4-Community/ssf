@@ -10,7 +10,9 @@ import {
   ValidationPipe,
   UploadedFiles,
   UseInterceptors,
+  Post,
   PayloadTooLargeException,
+  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
@@ -28,7 +30,12 @@ import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
+import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { FoodRequest } from '../foodRequests/request.entity';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
 
 @Controller('orders')
 export class OrdersController {
@@ -116,6 +123,80 @@ export class OrdersController {
     return this.allocationsService.getAllAllocationsByOrder(orderId);
   }
 
+  @Post('/')
+  @ApiBody({
+    description: 'Details for creating a order',
+    schema: {
+      type: 'object',
+      properties: {
+        foodRequestId: {
+          type: 'integer',
+          description: 'ID of the associated request this order is related to',
+          example: 1,
+        },
+        manufacturerId: {
+          type: 'integer',
+          description: 'Food manufacturer ID of the FM fulfilling the order',
+          example: 1,
+        },
+        itemAllocations: {
+          type: 'object',
+          description:
+            'Map of donationItemId -> quantity to allocate, donation items and their quantity to allocate for this order',
+          additionalProperties: {
+            type: 'integer',
+            example: 10,
+          },
+          example: {
+            '5': 10,
+            '8': 3,
+            '12': 7,
+          },
+        },
+      },
+    },
+  })
+  async createOrder(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ValidationPipe())
+    orderData: CreateOrderDto,
+  ): Promise<Order> {
+    const parsedAllocations = new Map<number, number>();
+
+    for (const [key, value] of Object.entries(orderData.itemAllocations)) {
+      const itemId = Number(key);
+
+      if (!Number.isInteger(itemId) || itemId < 1) {
+        throw new BadRequestException(`Invalid item ID: ${key}`);
+      }
+
+      if (typeof value !== 'number') {
+        throw new BadRequestException(
+          `Quantity for item ${key} must be of type number`,
+        );
+      }
+
+      if (!Number.isInteger(value) || value < 1) {
+        throw new BadRequestException(`Invalid quantity for item ${key}`);
+      }
+
+      if (parsedAllocations.has(itemId)) {
+        throw new BadRequestException(
+          `Invalid duplicate item IDs for item: ${itemId}`,
+        );
+      }
+
+      parsedAllocations.set(itemId, value);
+    }
+
+    return this.ordersService.create(
+      orderData.foodRequestId,
+      orderData.manufacturerId,
+      parsedAllocations,
+      req.user.id,
+    );
+  }
+
   @Patch('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -187,13 +268,32 @@ export class OrdersController {
         body,
         uploadedPhotoUrls,
       );
-    } catch (err: any) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        throw new PayloadTooLargeException(
-          'Each photo must be 5 MB or smaller',
-        );
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'code' in err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          throw new PayloadTooLargeException(
+            'Each photo must be 5 MB or smaller',
+          );
+        }
       }
       throw err;
     }
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(OrdersService).findOne(entityId),
+        (order: Order) => [order.assigneeId],
+      ),
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/complete-action')
+  async completeVolunteerAction(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
+  ) {
+    return this.ordersService.completeVolunteerAction(orderId, dto.action);
   }
 }

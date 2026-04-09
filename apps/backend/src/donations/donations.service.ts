@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Repository, EntityManager } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
@@ -104,6 +104,41 @@ export class DonationService {
     }
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
+  }
+
+  async matchAll(
+    donationIds: number[],
+    transactionManager?: EntityManager,
+  ): Promise<void> {
+    donationIds.forEach((id) => validateId(id, 'Donation'));
+
+    const donationTransactionRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : undefined;
+
+    const targetRepo = donationTransactionRepo
+      ? donationTransactionRepo
+      : this.repo;
+
+    const donations = await targetRepo.find({
+      where: { donationId: In(donationIds) },
+      select: ['donationId'],
+    });
+
+    const foundIds = donations.map((d) => d.donationId);
+
+    const missingIds = donationIds.filter((id) => !foundIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donations not found for ID(s): ${missingIds.join(', ')}`,
+      );
+    }
+
+    await targetRepo.update(
+      { donationId: In(donationIds) },
+      { status: DonationStatus.MATCHED },
+    );
   }
 
   async handleRecurringDonations(): Promise<void> {

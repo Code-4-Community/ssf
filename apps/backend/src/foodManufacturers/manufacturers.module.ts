@@ -15,5 +15,6 @@ import { EmailsModule } from '../emails/email.module';
   ],
   controllers: [FoodManufacturersController],
   providers: [FoodManufacturersService],
+  exports: [FoodManufacturersService],
 })
 export class ManufacturerModule {}

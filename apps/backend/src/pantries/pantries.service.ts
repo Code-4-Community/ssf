@@ -15,7 +15,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { User } from '../users/users.entity';
-import { validateId } from '../utils/validation.utils';
+import { hasDuplicates, validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { Role } from '../users/types';
@@ -27,6 +27,7 @@ import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
 import { PantryStatsDto } from './dtos/pantry-stats.dto';
+import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Injectable()
 export class PantriesService {
@@ -336,7 +337,7 @@ export class PantriesService {
         pantryMessage.subject,
         pantryMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry application submitted confirmation email to representative',
       );
@@ -349,7 +350,7 @@ export class PantriesService {
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new pantry application notification email to SSF',
       );
@@ -423,7 +424,7 @@ export class PantriesService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry account approved notification email to representative',
       );
@@ -469,10 +470,36 @@ export class PantriesService {
 
   async updatePantryVolunteers(
     pantryId: number,
-    volunteerIds: number[],
+    body: UpdatePantryVolunteersDto,
   ): Promise<void> {
+    const { addVolunteerIds = [], removeVolunteerIds = [] } = body;
+
     validateId(pantryId, 'Pantry');
-    volunteerIds.forEach((id) => validateId(id, 'Volunteer'));
+    if (addVolunteerIds.length === 0 && removeVolunteerIds.length === 0) return;
+
+    if (hasDuplicates(addVolunteerIds)) {
+      throw new BadRequestException(
+        'addVolunteerIds contains duplicate values',
+      );
+    }
+
+    if (hasDuplicates(removeVolunteerIds)) {
+      throw new BadRequestException(
+        'removeVolunteerIds contains duplicate values',
+      );
+    }
+
+    const addSet = new Set(addVolunteerIds);
+    const removeSet = new Set(removeVolunteerIds);
+
+    const overlap = addVolunteerIds.filter((id) => removeSet.has(id));
+    if (overlap.length) {
+      throw new BadRequestException(
+        `The following ID(s) appear in both the add and remove lists: ${overlap.join(
+          ', ',
+        )}`,
+      );
+    }
 
     const pantry = await this.repo.findOne({
       where: { pantryId },
@@ -483,36 +510,47 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
-    const users = await Promise.all(
-      volunteerIds.map((id) => this.usersService.findOne(id)),
-    );
-
-    if (users.length !== volunteerIds.length) {
-      throw new NotFoundException('One or more users not found');
-    }
+    const uniqueVolunteerIds = new Set([
+      ...addVolunteerIds,
+      ...removeVolunteerIds,
+    ]);
+    const users = await this.usersService.findByIds([...uniqueVolunteerIds]);
 
     const nonVolunteers = users.filter((user) => user.role !== Role.VOLUNTEER);
-
     if (nonVolunteers.length > 0) {
       throw new BadRequestException(
-        `Users ${nonVolunteers
+        `User(s) ${nonVolunteers
           .map((user) => user.id)
           .join(', ')} are not volunteers`,
       );
     }
 
-    pantry.volunteers = users;
+    const volunteersToAdd = users.filter((u) => addSet.has(u.id));
+
+    const currentVolunteers = pantry.volunteers ?? [];
+    const volunteersToKeep = currentVolunteers.filter(
+      (v) => !removeSet.has(v.id),
+    );
+
+    // avoid re-adding volunteers already associated with the pantry
+    const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
+    const newVolunteers = volunteersToAdd.filter(
+      (u) => !existingVolunteerIds.has(u.id),
+    );
+
+    pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
     await this.repo.save(pantry);
   }
 
+  // given pantryIds should not have duplicates
   async findByIds(pantryIds: number[]): Promise<Pantry[]> {
     pantryIds.forEach((id) => validateId(id, 'Pantry'));
 
     const pantries = await this.repo.findBy({ pantryId: In(pantryIds) });
 
     if (pantries.length !== pantryIds.length) {
-      const foundIds = pantries.map((p) => p.pantryId);
-      const missingIds = pantryIds.filter((id) => !foundIds.includes(id));
+      const foundIds = new Set(pantries.map((p) => p.pantryId));
+      const missingIds = pantryIds.filter((id) => !foundIds.has(id));
       throw new NotFoundException(
         `Pantries not found: ${missingIds.join(', ')}`,
       );

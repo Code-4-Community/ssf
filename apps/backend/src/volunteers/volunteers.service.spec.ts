@@ -19,8 +19,9 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
-import { DataSource } from 'typeorm';
 import { Allocation } from '../allocations/allocations.entity';
+import { AllocationsService } from '../allocations/allocations.service';
+import { DataSource } from 'typeorm';
 
 jest.setTimeout(60000);
 
@@ -44,6 +45,7 @@ describe('VolunteersService', () => {
         FoodManufacturersService,
         DonationItemsService,
         DonationService,
+        AllocationsService,
         {
           provide: AuthService,
           useValue: {
