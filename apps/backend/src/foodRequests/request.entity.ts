@@ -40,8 +40,10 @@ export class FoodRequest {
     array: true,
     transformer: {
       to: (value: FoodType[]) => value,
-      from: (value: string | string[]) =>
-        Array.isArray(value)
+      from: (value: string | string[] | null) =>
+        value == null
+          ? []
+          : Array.isArray(value)
           ? value
           : value
               .slice(1, -1)

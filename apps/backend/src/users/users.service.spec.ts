@@ -488,4 +488,17 @@ describe('UsersService', () => {
       });
     });
   });
+  
+  describe('findByIds', () => {
+    it('findByIds success', async () => {
+      const found = await service.findByIds([1, 2]);
+      expect(found.map((u) => u.id)).toEqual([1, 2]);
+    });
+
+    it('findByIds with some non-existent IDs throws NotFoundException', async () => {
+      await expect(service.findByIds([1, 9999])).rejects.toThrow(
+        new NotFoundException('Users not found: 9999'),
+      );
+    });
+  });
 });
