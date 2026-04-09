@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { DonationItemsService } from './donationItems.service';
 import { Donation } from '../donations/donations.entity';
@@ -132,15 +133,17 @@ describe('DonationItemsService', () => {
         FoodType.DRIED_BEANS,
       );
 
-      expect(item).toBeDefined();
-      expect(item.itemId).toBeDefined();
-      expect(item.donationId).toEqual(donationId);
-      expect(item.itemName).toEqual('Canned Beans');
-      expect(item.quantity).toEqual(10);
-      expect(item.reservedQuantity).toEqual(0);
-      expect(Number(item.ozPerItem)).toEqual(15.5);
-      expect(Number(item.estimatedValue)).toEqual(2.99);
-      expect(item.foodType).toEqual(FoodType.DRIED_BEANS);
+      const itemDb = await service.findOne(item.itemId);
+      expect(itemDb).toBeDefined();
+      expect(itemDb.itemId).toBeDefined();
+      expect(itemDb.donationId).toEqual(donationId);
+      expect(itemDb.itemName).toEqual('Canned Beans');
+      expect(itemDb.quantity).toEqual(10);
+      expect(itemDb.reservedQuantity).toEqual(0);
+      expect(Number(itemDb.ozPerItem)).toEqual(15.5);
+      expect(Number(itemDb.estimatedValue)).toEqual(2.99);
+      expect(itemDb.foodType).toEqual(FoodType.DRIED_BEANS);
+      expect(itemDb.foodRescue).toEqual(false);
     });
 
     it('throws NotFoundException when donation does not exist', async () => {
@@ -196,7 +199,10 @@ describe('DonationItemsService', () => {
 
       expect(result).toHaveLength(2);
 
-      const [beans, rice] = result;
+      const itemRepo = testDataSource.getRepository(DonationItem);
+      const [beans, rice] = await itemRepo.findBy({
+        itemId: In(result.map((i) => i.itemId)),
+      });
 
       expect(beans.itemId).toBeDefined();
       expect(beans.donationId).toEqual(donation.donationId);

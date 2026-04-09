@@ -14,7 +14,6 @@ import {
 } from 'class-validator';
 import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
-import { FoodType } from '../../donationItems/types';
 import { CreateDonationItemDto } from '../../donationItems/dtos/create-donation-items.dto';
 
 function AtLeastOneDaySelected() {

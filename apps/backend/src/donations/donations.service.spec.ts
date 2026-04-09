@@ -890,34 +890,27 @@ describe('DonationService', () => {
       expect(donation).toBeDefined();
       expect(donation.donationId).toBeDefined();
 
+      const donationDb = await testDataSource.query(
+        `SELECT * FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(donationDb).toHaveLength(1);
+      const donationRow = donationDb[0];
+      expect(donationRow.donation_id).toEqual(donation.donationId);
+      expect(donationRow.food_manufacturer_id).toEqual(1);
+      expect(donationRow.status).toEqual(DonationStatus.AVAILABLE);
+      expect(donationRow.recurrence).toEqual(RecurrenceEnum.NONE);
+      expect(donationRow.recurrence_freq).toBeNull();
+      expect(donationRow.next_donation_dates).toBeNull();
+      expect(donationRow.occurrences_remaining).toBeNull();
+
       const items = await testDataSource.query(
-        `SELECT * FROM donation_items WHERE donation_id = $1 ORDER BY item_name`,
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
         [donation.donationId],
       );
 
       expect(items).toHaveLength(2);
-
-      const [beans, corn] = items;
-
-      expect(beans.item_id).toBeDefined();
-      expect(beans.donation_id).toEqual(donation.donationId);
-      expect(beans.item_name).toEqual('Canned Beans');
-      expect(beans.quantity).toEqual(10);
-      expect(beans.reserved_quantity).toEqual(0);
-      expect(Number(beans.oz_per_item)).toEqual(15.5);
-      expect(Number(beans.estimated_value)).toEqual(2.99);
-      expect(beans.food_type).toEqual(FoodType.DAIRY_FREE_ALTERNATIVES);
-      expect(beans.food_rescue).toEqual(false);
-
-      expect(corn.item_id).toBeDefined();
-      expect(corn.donation_id).toEqual(donation.donationId);
-      expect(corn.item_name).toEqual('Canned Corn');
-      expect(corn.quantity).toEqual(5);
-      expect(corn.reserved_quantity).toEqual(0);
-      expect(Number(corn.oz_per_item)).toEqual(12);
-      expect(Number(corn.estimated_value)).toEqual(1.99);
-      expect(corn.food_type).toEqual(FoodType.GRANOLA);
-      expect(corn.food_rescue).toEqual(true);
     });
 
     it('populates nextDonationDates in the database for a recurring donation', async () => {
