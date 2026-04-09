@@ -6,9 +6,7 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
-import { DonationItemsService } from '../donationItems/donationItems.service';
-import { DonationItem } from '../donationItems/donationItems.entity';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
 import {
@@ -16,6 +14,8 @@ import {
   ReplaceDonationItemsDto,
 } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 jest.setTimeout(60000);
 
@@ -857,6 +857,163 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('create', () => {
+    const validItems = [
+      {
+        itemName: 'Canned Beans',
+        quantity: 10,
+        ozPerItem: 15.5,
+        estimatedValue: 2.99,
+        foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+        foodRescue: false,
+      },
+      {
+        itemName: 'Canned Corn',
+        quantity: 5,
+        ozPerItem: 12,
+        estimatedValue: 1.99,
+        foodType: FoodType.GRANOLA,
+        foodRescue: true,
+      },
+    ];
+
+    it('successfully creates a donation with items', async () => {
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.NONE,
+        items: validItems,
+      });
+
+      expect(donation).toBeDefined();
+      expect(donation.donationId).toBeDefined();
+
+      const donationDb = await testDataSource.query(
+        `SELECT * FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(donationDb).toHaveLength(1);
+      const donationRow = donationDb[0];
+      expect(donationRow.donation_id).toEqual(donation.donationId);
+      expect(donationRow.food_manufacturer_id).toEqual(1);
+      expect(donationRow.status).toEqual(DonationStatus.AVAILABLE);
+      expect(donationRow.recurrence).toEqual(RecurrenceEnum.NONE);
+      expect(donationRow.recurrence_freq).toBeNull();
+      expect(donationRow.next_donation_dates).toBeNull();
+      expect(donationRow.occurrences_remaining).toBeNull();
+
+      const items = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(items).toHaveLength(2);
+    });
+
+    it('populates nextDonationDates in the database for a recurring donation', async () => {
+      const before = new Date();
+      before.setHours(0, 0, 0, 0);
+
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 1,
+        occurrencesRemaining: 3,
+        items: validItems,
+      });
+
+      const rows = await testDataSource.query(
+        `SELECT next_donation_dates, occurrences_remaining, recurrence, recurrence_freq
+         FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(rows).toHaveLength(1);
+      const row = rows[0];
+
+      expect(row.recurrence).toEqual(RecurrenceEnum.MONTHLY);
+      expect(row.recurrence_freq).toEqual(1);
+      expect(row.occurrences_remaining).toEqual(3);
+
+      const dates: Date[] = row.next_donation_dates;
+      expect(dates).toHaveLength(1);
+
+      // Clip the before date if necessary
+      const expectedDate = new Date(before);
+      if (expectedDate.getDate() > 28) expectedDate.setDate(28);
+      expectedDate.setMonth(expectedDate.getMonth() + 1);
+
+      const actualDate = new Date(dates[0]);
+      expect(actualDate.getFullYear()).toEqual(expectedDate.getFullYear());
+      expect(actualDate.getMonth()).toEqual(expectedDate.getMonth());
+      expect(actualDate.getDate()).toEqual(expectedDate.getDate());
+    });
+
+    it('throws when foodManufacturerId does not exist', async () => {
+      expect(
+        service.create({
+          foodManufacturerId: 99999,
+          recurrence: RecurrenceEnum.NONE,
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new NotFoundException('Food Manufacturer 99999 not found'),
+      );
+    });
+
+    it('throws when recurrence is not NONE but recurrenceFreq is missing', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.WEEKLY,
+          repeatOnDays: {
+            Sunday: false,
+            Monday: true,
+            Tuesday: false,
+            Wednesday: false,
+            Thursday: false,
+            Friday: false,
+            Saturday: false,
+          },
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'recurrenceFreq is required for recurring donations',
+        ),
+      );
+
+      donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+    });
+
+    it('rolls back donation when a donation item fails to save', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.NONE,
+          items: [
+            ...validItems,
+            {
+              itemName: 'a'.repeat(1000),
+              quantity: 5,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+              foodRescue: false,
+            },
+          ],
+        }),
+      ).rejects.toThrow();
+
+      donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
     });
   });
 

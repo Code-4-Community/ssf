@@ -21,6 +21,7 @@ import { OrdersService } from '../orders/order.service';
 import { DonationService } from '../donations/donations.service';
 import { RecurrenceEnum } from '../donations/types';
 import { CreateDonationDto } from '../donations/dtos/create-donation.dto';
+import { FoodType } from '../donationItems/types';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -348,6 +349,14 @@ describe('UsersService', () => {
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Test Item',
+            quantity: 10,
+            foodType: FoodType.GRANOLA,
+            foodRescue: false,
+          },
+        ],
       };
 
       await donationService.create(createDonationBody as CreateDonationDto);

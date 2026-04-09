@@ -21,16 +21,9 @@ import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { RequestsService } from '../foodRequests/request.service';
-import { OrdersService } from '../orders/order.service';
+import { Donation } from '../donations/donations.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
-import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationItemsService } from '../donationItems/donationItems.service';
-import { DonationService } from '../donations/donations.service';
-import { Donation } from '../donations/donations.entity';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { User } from '../users/users.entity';
 import { AllocationsService } from '../allocations/allocations.service';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
@@ -114,13 +107,7 @@ describe('PantriesService', () => {
     testModule = await Test.createTestingModule({
       providers: [
         PantriesService,
-        OrdersService,
-        RequestsService,
         UsersService,
-        DonationItemsService,
-        DonationService,
-        FoodManufacturersService,
-        AllocationsService,
         {
           provide: AuthService,
           useValue: {
@@ -148,24 +135,8 @@ describe('PantriesService', () => {
           useValue: testDataSource.getRepository(FoodRequest),
         },
         {
-          provide: getRepositoryToken(DonationItem),
-          useValue: testDataSource.getRepository(DonationItem),
-        },
-        {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
-        },
-        {
-          provide: getRepositoryToken(FoodManufacturer),
-          useValue: testDataSource.getRepository(FoodManufacturer),
-        },
-        {
-          provide: getRepositoryToken(Allocation),
-          useValue: testDataSource.getRepository(Allocation),
-        },
-        {
-          provide: DataSource,
-          useValue: testDataSource,
         },
       ],
     }).compile();
