@@ -132,6 +132,15 @@ export class UpdatePantryApplicationDto {
   @MaxLength(255, { each: true })
   restrictions?: string[];
 
+  @IsBoolean()
+  @IsOptional()
+  acceptFoodDeliveries?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  deliveryWindowInstructions?: string;
+
   @IsEnum(RefrigeratedDonation)
   @IsOptional()
   refrigeratedDonation?: RefrigeratedDonation;
@@ -139,6 +148,11 @@ export class UpdatePantryApplicationDto {
   @IsEnum(ReserveFoodForAllergic)
   @IsOptional()
   reserveFoodForAllergic?: ReserveFoodForAllergic;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  reservationExplanation?: string | null;
 
   @IsBoolean()
   @IsOptional()

@@ -33,13 +33,13 @@ import { TagGroup } from './tagGroup';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 
-const otherRestrictionsOptions: string[] = [
+export const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
   'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
   'Other dietary restriction',
 ];
 
-const dietaryRestrictionOptions = [
+export const dietaryRestrictionOptions = [
   'Egg allergy',
   'Fish allergy',
   'Milk allergy',
@@ -57,7 +57,7 @@ const dietaryRestrictionOptions = [
   'Unsure',
 ];
 
-const activityOptions = [
+export const activityOptions = [
   'Create a labeled, allergy-friendly shelf or shelves',
   'Provide clients and staff/volunteers with educational pamphlets',
   "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",

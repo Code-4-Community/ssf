@@ -29,6 +29,8 @@ import {
   PantryWithUser,
   Assignments,
   UpdateProfileFields,
+  UpdatePantryApplicationDto,
+  UpdateFoodManufacturerApplicationDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -330,6 +332,15 @@ export class ApiClient {
     });
   }
 
+  public async updatePantryApplication(
+    pantryId: number,
+    data: UpdatePantryApplicationDto,
+  ): Promise<Pantry> {
+    return this.axiosInstance
+      .patch(`/api/pantries/${pantryId}/update`, data)
+      .then((response) => response.data);
+  }
+
   public async updatePantry(
     pantryId: number,
     decision: 'approve' | 'deny',
@@ -364,6 +375,20 @@ export class ApiClient {
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
     return data as number;
+  }
+
+  public async getCurrentUserFoodManufacturerId(): Promise<number> {
+    const data = await this.get('/api/manufacturers/my-id');
+    return data as number;
+  }
+
+  public async updateFoodManufacturerApplicationData(
+    manufacturerId: number,
+    data: UpdateFoodManufacturerApplicationDto,
+  ): Promise<FoodManufacturer> {
+    return this.axiosInstance
+      .patch(`/api/manufacturers/${manufacturerId}/application`, data)
+      .then((response) => response.data);
   }
 
   public async getMe(): Promise<User> {
