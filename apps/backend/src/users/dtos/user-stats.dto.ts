@@ -1,4 +1,4 @@
-export type AggregatedStatsDto = {
+export type UserStatsDto = {
   'Food Requests': string;
   Orders: string;
   Donations: string;

@@ -26,6 +26,9 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource } from 'typeorm';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
 
 jest.setTimeout(60000);
 
@@ -55,6 +58,9 @@ describe('UsersService', () => {
         RequestsService,
         OrdersService,
         DonationService,
+        FoodManufacturersService,
+        DonationItemsService,
+        AllocationsService,
         {
           provide: AuthService,
           useValue: mockAuthService,
@@ -488,7 +494,7 @@ describe('UsersService', () => {
       });
     });
   });
-  
+
   describe('findByIds', () => {
     it('findByIds success', async () => {
       const found = await service.findByIds([1, 2]);
