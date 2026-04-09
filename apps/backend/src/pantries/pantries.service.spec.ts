@@ -1014,4 +1014,45 @@ describe('PantriesService', () => {
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
   });
+
+  describe('getStats', () => {
+    it('returns proper stats for pantry', async () => {
+      const pantryId = 1;
+
+      const result = await service.getStats(pantryId);
+
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Items Received',
+        'Value Received',
+      ];
+      expect(Object.keys(result)).toEqual(expectedKeys);
+
+      Object.values(result).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(result['Food Requests']).toBe('2');
+      expect(result['Orders']).toBe('2');
+      expect(result['Items Received']).toBe('125');
+      expect(result['Value Received']).toBe('$625');
+    });
+
+    it('throws NotFoundException for non-existent pantry', async () => {
+      await expect(service.getStats(9999)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
+      );
+    });
+
+    it('returns zero stats for a pantry with no food requests or orders', async () => {
+      const pantryId = 5;
+      const result = await service.getStats(pantryId);
+
+      expect(result['Food Requests']).toBe('0');
+      expect(result['Orders']).toBe('0');
+      expect(result['Items Received']).toBe('0');
+      expect(result['Value Received']).toBe('$0');
+    });
+  });
 });

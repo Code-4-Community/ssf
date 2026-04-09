@@ -11,6 +11,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { Order } from '../orders/order.entity';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Allocation } from '../allocations/allocations.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 import { User } from '../users/users.entity';
 import { hasDuplicates, validateId } from '../utils/validation.utils';
 import { ApplicationStatus } from '../shared/types';
@@ -23,6 +26,7 @@ import { UsersService } from '../users/users.service';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
+import { PantryStatsDto } from './dtos/pantry-stats.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Injectable()
@@ -566,5 +570,38 @@ export class PantriesService {
       throw new NotFoundException(`Pantry for User ${userId} not found`);
     }
     return pantry;
+  }
+
+  async getStats(pantryId: number): Promise<PantryStatsDto> {
+    validateId(pantryId, 'Pantry');
+
+    const pantry = await this.repo.findOneBy({ pantryId: pantryId });
+
+    if (!pantry) {
+      throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    // Pantry has no @OneToMany to FoodRequest, so use entity-class joins with explicit column conditions
+    const result = await this.repo
+      .createQueryBuilder('pantry')
+      .leftJoin(FoodRequest, 'fr', 'fr.pantry_id = pantry.pantry_id')
+      .leftJoin(Order, 'o', 'o.request_id = fr.request_id')
+      .leftJoin(Allocation, 'a', 'a.order_id = o.order_id')
+      .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
+      .where('pantry.pantryId = :pantryId', { pantryId })
+      .select([
+        'COUNT(DISTINCT fr.request_id) AS food_requests',
+        'COUNT(DISTINCT o.order_id) AS orders',
+        'COALESCE(SUM(a.allocated_quantity), 0) AS total_items',
+        'COALESCE(SUM(di.estimated_value * a.allocated_quantity), 0) AS total_value',
+      ])
+      .getRawOne();
+
+    return {
+      'Food Requests': String(result.food_requests),
+      Orders: String(result.orders),
+      'Items Received': String(result.total_items),
+      'Value Received': `$${Number(result.total_value)}`,
+    };
   }
 }
