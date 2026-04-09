@@ -11,6 +11,7 @@ import {
   Checkbox,
   Input,
   Link,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   ArrowDownUp,
@@ -23,28 +24,50 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate, getInitials } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import {
+  OrderStatus,
+  VolunteerOrder,
+  VolunteerAction,
+  User,
+} from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
+import CompleteRequiredActionsModal from '@components/forms/completeRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
-// Extending the OrderSummary type to include assignee color for display
-type OrderWithColor = OrderSummary & { assigneeColor?: string };
+type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
 
-const AdminOrderManagement: React.FC = () => {
-  // State to hold orders grouped by status
+const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
+
+const STATUS_TITLES: Record<OrderStatus, string> = {
+  [OrderStatus.SHIPPED]: 'In Progress',
+  [OrderStatus.PENDING]: 'Received',
+  [OrderStatus.DELIVERED]: 'Completed',
+};
+
+const hasRequiredActions = (order: VolunteerOrder): boolean => {
+  if (!order.actionCompletion) return false;
+  return (
+    !order.actionCompletion.confirmDonationReceipt ||
+    !order.actionCompletion.notifyPantry
+  );
+};
+
+const VolunteerOrderManagement: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   const [statusOrders, setStatusOrders] = useState<
-    Record<OrderStatus, OrderWithColor[]>
+    Record<OrderStatus, VolunteerOrderWithColor[]>
   >({
     [OrderStatus.SHIPPED]: [],
     [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
   });
 
-  // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [actionModalOrder, setActionModalOrder] =
+    useState<VolunteerOrder | null>(null);
 
-  // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
       [OrderStatus.SHIPPED]: 1,
@@ -54,19 +77,14 @@ const AdminOrderManagement: React.FC = () => {
   );
 
   const [alertState, setAlertMessage] = useAlert();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // State to hold filter state per status
   type FilterState = {
     selectedPantries: string[];
     searchPantry: string;
     sortAsc: boolean;
   };
 
-  // Record to store the filter state for each status
-  // selectedPantries represents the pantries selected in the filter
-  // searchPantry is the current search input for pantry filtering
-  // sortAsc indicates whether the sorting is ascending (oldest first) or descending (newest first)
-  // We store all these here to determine what orders to display for each status
   const [filterStates, setFilterStates] = useState<
     Record<OrderStatus, FilterState>
   >({
@@ -87,7 +105,6 @@ const AdminOrderManagement: React.FC = () => {
     },
   });
 
-  // Color mapping for statuses, the first color is background, the second is color for status text
   const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
     [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
     [OrderStatus.PENDING, ['blue.200', 'blue.core']],
@@ -96,15 +113,24 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
-
   useEffect(() => {
-    // Fetch all orders on component mount and sorts them into their appropriate status lists
     const fetchOrders = async () => {
+      let user: User;
+      let userId: number;
       try {
-        const data = await ApiClient.getAllOrders();
+        user = await ApiClient.getMe();
+        userId = user.id;
+        setCurrentUser(user);
+      } catch {
+        setAlertMessage('Authentication error. Please log in and try again.');
+        setIsLoading(false);
+        return;
+      }
 
-        const grouped: Record<OrderStatus, OrderWithColor[]> = {
+      try {
+        const data = await ApiClient.getVolunteerOrders(userId);
+
+        const grouped: Record<OrderStatus, VolunteerOrderWithColor[]> = {
           [OrderStatus.SHIPPED]: [],
           [OrderStatus.PENDING]: [],
           [OrderStatus.DELIVERED]: [],
@@ -112,7 +138,8 @@ const AdminOrderManagement: React.FC = () => {
 
         for (const order of data) {
           const status = order.status;
-          const orderWithColor: OrderWithColor = { ...order };
+
+          const orderWithColor: VolunteerOrderWithColor = { ...order };
 
           if (order.assignee) {
             orderWithColor.assigneeColor =
@@ -132,24 +159,61 @@ const AdminOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching assigned orders');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchOrders();
   }, [setAlertMessage]);
 
-  // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
   };
 
   const handlePageChange = (status: OrderStatus, page: number) => {
-    setCurrentPages((prev) => ({
-      ...prev,
-      [status]: page,
-    }));
+    setCurrentPages((prev) => ({ ...prev, [status]: page }));
   };
+
+  // Update actionCompletion in state after a successful complete-action call
+  const handleActionCompleted = (orderId: number, action: VolunteerAction) => {
+    setStatusOrders((prev) => {
+      const updated = { ...prev };
+      for (const status of Object.values(OrderStatus)) {
+        updated[status] = updated[status].map((o) => {
+          if (o.orderId !== orderId) return o;
+          const completion = o.actionCompletion ?? {
+            confirmDonationReceipt: false,
+            notifyPantry: false,
+          };
+          return {
+            ...o,
+            actionCompletion: {
+              ...completion,
+              [action]: true,
+            },
+          };
+        });
+      }
+      return updated;
+    });
+
+    // Also update the modal order so it reflects immediately
+    setActionModalOrder((prev) => {
+      if (!prev || prev.orderId !== orderId) return prev;
+      const completion = prev.actionCompletion ?? {
+        confirmDonationReceipt: false,
+        notifyPantry: false,
+      };
+      return {
+        ...prev,
+        actionCompletion: { ...completion, [action]: true },
+      };
+    });
+  };
+
+  if (isLoading) return <Spinner />;
 
   return (
     <Box p={12}>
@@ -170,24 +234,22 @@ const AdminOrderManagement: React.FC = () => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
-        // Get pantry options through all orders in the status
         const pantryOptions = [
-          ...new Set(allOrders.map((o) => o.request.pantry.pantryName)),
+          ...new Set(allOrders.map((o) => o.pantryName)),
         ].sort((a, b) => a.localeCompare(b));
 
-        // Apply filters and sorting to all orders
         const filteredOrders = allOrders
           .filter(
             (o) =>
               filterState.selectedPantries.length === 0 ||
-              filterState.selectedPantries.includes(
-                o.request.pantry.pantryName,
-              ),
+              filterState.selectedPantries.includes(o.pantryName),
           )
           .sort((a, b) =>
             filterState.sortAsc
-              ? a.createdAt.localeCompare(b.createdAt)
-              : b.createdAt.localeCompare(a.createdAt),
+              ? new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+              : new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
           );
 
         const totalFiltered = filteredOrders.length;
@@ -211,30 +273,39 @@ const AdminOrderManagement: React.FC = () => {
               pantryOptions={pantryOptions}
               filterState={filterState}
               onFilterChange={(newState: FilterState) =>
-                // Update filter state for the specific status
                 setFilterStates((prev) => {
                   const prevSelected = prev[status]?.selectedPantries || [];
                   const prevKey = [...prevSelected].sort().join(',');
                   const newKey = [...newState.selectedPantries]
                     .sort()
                     .join(',');
-                  // Reset page if selected pantries changed
                   if (prevKey !== newKey) {
                     resetPageForStatus(status);
                   }
                   return { ...prev, [status]: newState };
                 })
               }
+              onOpenActionModal={setActionModalOrder}
+              currentUser={currentUser}
             />
           </Box>
         );
       })}
+
+      {actionModalOrder && (
+        <CompleteRequiredActionsModal
+          order={actionModalOrder}
+          isOpen={true}
+          onClose={() => setActionModalOrder(null)}
+          onActionCompleted={handleActionCompleted}
+        />
+      )}
     </Box>
   );
 };
 
 interface OrderStatusSectionProps {
-  orders: OrderWithColor[];
+  orders: VolunteerOrderWithColor[];
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
@@ -253,6 +324,8 @@ interface OrderStatusSectionProps {
     searchPantry: string;
     sortAsc: boolean;
   }) => void;
+  onOpenActionModal: (order: VolunteerOrder) => void;
+  currentUser: User | null;
 }
 
 const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
@@ -267,6 +340,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   pantryOptions,
   filterState,
   onFilterChange,
+  onOpenActionModal,
+  currentUser,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -318,7 +393,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {capitalize(status)}
+          {STATUS_TITLES[status]}
         </Box>
       </Box>
 
@@ -342,7 +417,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} orders at this time.
+            You have no {STATUS_TITLES[status].toLowerCase()} orders at this
+            time.
           </Box>
         </Box>
       ) : (
@@ -563,7 +639,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="18%"
+                  width="10%"
                 >
                   Status
                 </Table.ColumnHeader>
@@ -588,14 +664,14 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="15%"
+                  width="20%"
                 >
                   Dates
                 </Table.ColumnHeader>
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
                   textAlign="right"
-                  width="20%"
+                  width="23%"
                 >
                   Action Required
                 </Table.ColumnHeader>
@@ -603,7 +679,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             </Table.Header>
             <Table.Body>
               {orders.map((order, index) => {
-                const pantry = order.request.pantry;
+                const needsAction = hasRequiredActions(order);
 
                 return (
                   <Table.Row
@@ -639,7 +715,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={0.5}
                         px={3}
                       >
-                        {capitalize(order.status)}
+                        {capitalize(STATUS_TITLES[status])}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -648,13 +724,11 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRightColor="neutral.100"
                     >
                       <Box
-                        direction="row"
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
                       >
                         <Box
-                          key={index}
                           borderRadius="full"
                           bg={order.assigneeColor || 'gray'}
                           width="33px"
@@ -677,7 +751,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {pantry.pantryName}
+                      {order.pantryName}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -686,14 +760,29 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {formatDate(order.createdAt)}-
-                      {order.deliveredAt && formatDate(order.deliveredAt)}
+                      {formatDate(String(order.createdAt))}
+                      {order.deliveredAt &&
+                        `–${formatDate(String(order.deliveredAt))}`}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
-                      textAlign="left"
+                      textAlign="right"
                       bg="#FAFAFA"
-                    ></Table.Cell>
+                      pr={3}
+                    >
+                      {order.assignee?.id === currentUser?.id &&
+                        (needsAction ? (
+                          <Link
+                            textDecorationColor="black"
+                            variant="underline"
+                            onClick={() => onOpenActionModal(order)}
+                          >
+                            Complete Required Actions
+                          </Link>
+                        ) : (
+                          'No Action Required'
+                        ))}
+                    </Table.Cell>
                   </Table.Row>
                 );
               })}
@@ -771,4 +860,4 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   );
 };
 
-export default AdminOrderManagement;
+export default VolunteerOrderManagement;
