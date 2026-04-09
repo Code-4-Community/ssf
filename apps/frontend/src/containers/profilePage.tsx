@@ -18,6 +18,7 @@ const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
 
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
+  const [orgName, setOrgName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [alertState, setAlertMessage] = useAlert();
 
@@ -26,6 +27,15 @@ const ProfilePage: React.FC = () => {
       try {
         const user: User = await ApiClient.getMe();
         setProfile(user);
+        if (user.role === Role.PANTRY) {
+          const id = await ApiClient.getCurrentUserPantryId();
+          const pantry = await ApiClient.getPantry(id);
+          setOrgName(pantry.pantryName);
+        } else if (user.role === Role.FOODMANUFACTURER) {
+          const id = await ApiClient.getCurrentUserFoodManufacturerId();
+          const fm = await ApiClient.getFoodManufacturer(id);
+          setOrgName(fm.foodManufacturerName);
+        }
       } catch {
         setAlertMessage('Authentication error. Please log in and try again.');
       } finally {
@@ -108,7 +118,7 @@ const ProfilePage: React.FC = () => {
       >
         <Box flexShrink={0}>
           <ProfileLeftPanel
-            name={`${firstName} ${lastName}`}
+            name={orgName ?? `${firstName} ${lastName}`}
             roleLabel={config.label}
             initials={getInitials(firstName, lastName)}
             avatarBg={config.avatarBg}
