@@ -5,11 +5,8 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsObject,
   IsOptional,
-  IsString,
-  Length,
   Min,
   ValidateIf,
   ValidateNested,
@@ -18,6 +15,7 @@ import {
 import { RecurrenceEnum } from '../types';
 import { Type } from 'class-transformer';
 import { FoodType } from '../../donationItems/types';
+import { CreateDonationItemDto } from '../../donationItems/dtos/create-donation-items.dto';
 
 function AtLeastOneDaySelected() {
   return function (object: object, propertyName: string) {
@@ -65,39 +63,6 @@ export class RepeatOnDaysDto {
   @IsBoolean()
   @IsOptional()
   Sunday?: boolean;
-}
-
-export class CreateDonationItemDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(1, 255)
-  itemName!: string;
-
-  @IsInt()
-  @Min(1)
-  quantity!: number;
-
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'ozPerItem must have at most 2 decimal places' },
-  )
-  @Min(0.01)
-  @IsOptional()
-  ozPerItem?: number;
-
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'estimatedValue must have at most 2 decimal places' },
-  )
-  @Min(0.01)
-  @IsOptional()
-  estimatedValue?: number;
-
-  @IsEnum(FoodType)
-  foodType!: FoodType;
-
-  @IsBoolean()
-  foodRescue!: boolean;
 }
 
 export class CreateDonationDto {

@@ -11,6 +11,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { OrderStatus } from './types';
 import { Allocation } from '../allocations/allocations.entity';
+import { User } from '../users/users.entity';
 
 @Entity('orders')
 export class Order {
@@ -99,4 +100,19 @@ export class Order {
     },
   })
   shippingCost!: number | null;
+
+  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'assignee_id' })
+  assignee!: User;
+
+  @Column({ name: 'assignee_id', type: 'int' })
+  assigneeId!: number;
+
+  // represents whether or not the assigned volunteer has confirmed donation receipt
+  @Column({ name: 'confirm_donation_receipt', type: 'boolean', default: false })
+  confirmDonationReceipt!: boolean;
+
+  // represents whether or not the assigned volunteer has notified the pantry of delivery
+  @Column({ name: 'notify_pantry', type: 'boolean', default: false })
+  notifyPantry!: boolean;
 }

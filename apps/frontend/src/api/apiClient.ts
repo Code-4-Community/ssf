@@ -145,6 +145,20 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getAllPendingFoodManufacturers(): Promise<FoodManufacturer[]> {
+    return this.axiosInstance
+      .get('/api/manufacturers/pending')
+      .then((response) => response.data);
+  }
+
+  public async getFoodManufacturer(
+    manufacturerId: number,
+  ): Promise<FoodManufacturer> {
+    return this.get(
+      `/api/manufacturers/${manufacturerId}`,
+    ) as Promise<FoodManufacturer>;
+  }
+
   public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/pantry`)
@@ -305,6 +319,18 @@ export class ApiClient {
     await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
+  }
+
+  public async updateFoodManufacturer(
+    manufacturerId: number,
+    decision: 'approve' | 'deny',
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/manufacturers/${manufacturerId}/${decision}`,
+      {
+        manufacturerId,
+      },
+    );
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {

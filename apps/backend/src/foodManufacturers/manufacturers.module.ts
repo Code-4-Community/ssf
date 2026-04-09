@@ -17,5 +17,6 @@ import { DonationItemsModule } from '../donationItems/donationItems.module';
   ],
   controllers: [FoodManufacturersController],
   providers: [FoodManufacturersService],
+  exports: [FoodManufacturersService],
 })
 export class ManufacturerModule {}

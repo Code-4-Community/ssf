@@ -14,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Donation } from '../donations/donations.entity';
 
 jest.setTimeout(60000);
 
@@ -68,6 +69,10 @@ describe('VolunteersService', () => {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
         },
+        {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
+        },
       ],
     }).compile();
 
@@ -120,7 +125,8 @@ describe('VolunteersService', () => {
 
   describe('getVolunteersAndPantryAssignments', () => {
     it('returns an empty array when there are no volunteers', async () => {
-      // Delete all users with role 'volunteer' (CASCADE will handle related data)
+      await testDataSource.query(`DELETE FROM allocations`);
+      await testDataSource.query(`DELETE FROM orders`);
       await testDataSource.query(
         `DELETE FROM "users" WHERE role = 'volunteer'`,
       );

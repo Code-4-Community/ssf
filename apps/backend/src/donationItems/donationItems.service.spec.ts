@@ -6,7 +6,7 @@ import { Donation } from '../donations/donations.entity';
 import { FoodType } from './types';
 import { NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { CreateDonationItemDto } from '../donations/dtos/create-donation.dto';
+import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
 
 jest.setTimeout(60000);
 
