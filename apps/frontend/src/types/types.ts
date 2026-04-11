@@ -105,6 +105,41 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
+export interface UpdatePantryApplicationDto {
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  shipmentAddressLine1?: string;
+  shipmentAddressLine2?: string;
+  shipmentAddressCity?: string;
+  shipmentAddressState?: string;
+  shipmentAddressZip?: string;
+  shipmentAddressCountry?: string;
+  mailingAddressLine1?: string;
+  mailingAddressLine2?: string;
+  mailingAddressCity?: string;
+  mailingAddressState?: string;
+  mailingAddressZip?: string;
+  mailingAddressCountry?: string;
+  acceptFoodDeliveries?: boolean;
+  deliveryWindowInstructions?: string;
+  allergenClients?: string;
+  restrictions?: string[];
+  refrigeratedDonation?: string;
+  dedicatedAllergyFriendly?: boolean;
+  reserveFoodForAllergic?: string;
+  reservationExplanation?: string | null;
+  clientVisitFrequency?: string;
+  identifyAllergensConfidence?: string;
+  serveAllergicChildren?: string;
+  activities?: string[];
+  activitiesComments?: string;
+  itemsInStock?: string;
+  needMoreOptions?: string;
+  newsletterSubscription?: boolean;
+}
+
 export interface CreateRequestDto {
   pantryId: number;
   requestedSize: RequestSize;
@@ -271,6 +306,25 @@ export interface FoodManufacturer {
   donations: Donation[];
   status: ApplicationStatus;
   dateApplied: string;
+}
+
+export interface UpdateFoodManufacturerApplicationDto {
+  secondaryContactFirstName?: string;
+  secondaryContactLastName?: string;
+  secondaryContactEmail?: string;
+  secondaryContactPhone?: string;
+  foodManufacturerName?: string;
+  foodManufacturerWebsite?: string;
+  unlistedProductAllergens?: Allergen[];
+  facilityFreeAllergens?: Allergen[];
+  productsGlutenFree?: boolean;
+  productsContainSulfites?: boolean;
+  productsSustainableExplanation?: string;
+  inKindDonations?: boolean;
+  donateWastedFood?: DonateWastedFood;
+  manufacturerAttribute?: ManufacturerAttribute;
+  additionalComments?: string;
+  newsletterSubscription?: boolean;
 }
 
 export interface ManufacturerApplicationDto {
