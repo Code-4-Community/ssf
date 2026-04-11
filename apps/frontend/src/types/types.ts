@@ -118,6 +118,29 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
 }
 
+export class MatchingManufacturersDto {
+  matchingManufacturers!: FoodManufacturer[];
+  nonMatchingManufacturers!: FoodManufacturer[];
+}
+
+export class MatchingItemsDto {
+  matchingItems!: DonationItemDetailsDto[];
+  nonMatchingItems!: DonationItemDetailsDto[];
+}
+
+export class CreateOrderDto {
+  foodRequestId!: number;
+  manufacturerId!: number;
+  itemAllocations!: Record<string, unknown>;
+}
+
+export class DonationItemDetailsDto {
+  itemId!: number;
+  itemName!: string;
+  foodType!: FoodType;
+  availableQuantity!: number;
+}
+
 export enum RecurrenceEnum {
   NONE = 'none',
   WEEKLY = 'weekly',
@@ -354,6 +377,11 @@ export enum FoodRequestStatus {
   CLOSED = 'closed',
 }
 
+export enum VolunteerRequestAction {
+  CREATE_NEW_ORDER = 'createNewOrder',
+  CLOSE_REQUEST = 'closeRequest',
+}
+
 export enum DonationFrequency {
   YEARLY = 'yearly',
   BIWEEKLY = 'biweekly',
@@ -420,3 +448,7 @@ export type TotalStats = Omit<PantryStats, 'pantryId'>;
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 
 export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
+
+export type DonationItemsGroupedByFoodType = Partial<
+  Record<FoodType, DonationItemDetailsDto[]>
+>;

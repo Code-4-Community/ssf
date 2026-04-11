@@ -17,6 +17,10 @@ import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
+import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
+import CreateNewOrderModal from '@components/forms/createNewOrderModal';
+import { useAlert } from '../hooks/alert';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
@@ -28,19 +32,29 @@ const VolunteerRequestManagement: React.FC = () => {
     null,
   );
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [selectedActionRequest, setSelectedActionRequest] =
+    useState<FoodRequest | null>(null);
+  const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
+    useState<FoodRequest | null>(null);
+  const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
+    useState<FoodRequest | null>(null);
+
+  const [alertState, setAlertMessage] = useAlert();
+  const [isAlertError, setIsAlertError] = useState<boolean>(true);
+
+  const fetchRequests = async () => {
+    try {
+      const data = await ApiClient.getVolunteerAssignedRequests();
+      setRequests(data);
+    } catch (error) {
+      setIsAlertError(true);
+      setAlertMessage('Error fetching requests' + error);
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await ApiClient.getVolunteerAssignedRequests();
-        setRequests(data);
-      } catch (error) {
-        setAlertMessage('Error fetching requests' + error);
-      }
-    };
     fetchRequests();
-  }, []);
+  });
 
   useEffect(() => {
     setCurrentPage(1);
@@ -105,8 +119,13 @@ const VolunteerRequestManagement: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status={isAlertError ? 'error' : 'info'}
+          timeout={6000}
+        />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
@@ -295,7 +314,29 @@ const VolunteerRequestManagement: React.FC = () => {
               >
                 {formatDate(request.requestedAt)}
               </Table.Cell>
-              <Table.Cell {...tableCellStyles}>{/* TODO*/}</Table.Cell>
+              <Table.Cell
+                {...tableCellStyles}
+                bgColor={
+                  request.status !== FoodRequestStatus.ACTIVE
+                    ? 'neutral.50'
+                    : 'white'
+                }
+                textAlign="right"
+                color="neutral.700"
+                pr={0}
+              >
+                {request.status === FoodRequestStatus.ACTIVE && (
+                  <Button
+                    variant="plain"
+                    fontWeight="400"
+                    textDecoration="underline"
+                    color="neutral.700"
+                    onClick={() => setSelectedActionRequest(request)}
+                  >
+                    Complete Required Action
+                  </Button>
+                )}
+              </Table.Cell>
             </Table.Row>
           ))}
 
@@ -305,6 +346,49 @@ const VolunteerRequestManagement: React.FC = () => {
               isOpen={selectedRequest !== null}
               onClose={() => setSelectedRequest(null)}
             />
+          )}
+
+          {selectedActionRequest && (
+            <VolunteerRequestActionRequiredModal
+              isOpen={true}
+              onClose={() => setSelectedActionRequest(null)}
+              onCloseRequest={() => {
+                setSelectedCloseRequestAction(selectedActionRequest);
+                setSelectedActionRequest(null);
+              }}
+              onCreateOrder={() => {
+                setSelectedCreateOrderRequest(selectedActionRequest);
+                setSelectedActionRequest(null);
+              }}
+            />
+          )}
+
+          {selectedCloseRequestAction && (
+            <VolunteerCloseRequestActionModal
+              request={selectedCloseRequestAction}
+              isOpen={true}
+              onClose={() => setSelectedCloseRequestAction(null)}
+              onSuccess={() => {
+                setSelectedCloseRequestAction(null);
+                setIsAlertError(false);
+                setAlertMessage('Request Closed');
+                fetchRequests();
+              }}
+            ></VolunteerCloseRequestActionModal>
+          )}
+
+          {selectedCreateOrderRequest && (
+            <CreateNewOrderModal
+              request={selectedCreateOrderRequest}
+              isOpen={true}
+              onClose={() => setSelectedCreateOrderRequest(null)}
+              onOrderCreate={() => {
+                setSelectedCreateOrderRequest(null);
+                setIsAlertError(false);
+                setAlertMessage('Order Created');
+                fetchRequests();
+              }}
+            ></CreateNewOrderModal>
           )}
         </Table.Body>
       </Table.Root>

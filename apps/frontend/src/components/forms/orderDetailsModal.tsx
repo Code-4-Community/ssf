@@ -19,7 +19,7 @@ import {
 } from 'types/types';
 import { FoodRequestStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
-import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 
