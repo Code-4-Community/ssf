@@ -401,7 +401,7 @@ describe('RequestsService', () => {
         ...resultBefore.nonMatchingManufacturers,
       ].map((fm) => fm.foodManufacturerId);
 
-      expect(allIdsBefore).toEqual([1, 2]);
+      expect(allIdsBefore.sort()).toEqual([1, 2]);
 
       const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
 
