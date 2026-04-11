@@ -66,7 +66,7 @@ const VolunteerCloseRequestActionModal: React.FC<
           </Dialog.Header>
           <Dialog.Body pb={6}>
             <VStack align="stretch" gap={4}>
-              <Text textStyle="p2" color="gray.dark" mt={3}>
+              <Text textStyle="p2" color="gray.dark">
                 Are you sure you want to close this request? This action cannot
                 be undone.
               </Text>
@@ -76,14 +76,14 @@ const VolunteerCloseRequestActionModal: React.FC<
                 borderColor={'neutral.100'}
                 borderRadius={5}
               >
-                <Text textStyle={'p2'} color="gray.dark">
+                <Text textStyle="p2" color="gray.dark">
                   Request #{request.requestId}
                 </Text>
-                <Text color="neutral.600" textStyle={'p2'} fontSize={'12'}>
+                <Text color="neutral.600" textStyle="p2" fontSize={'12'}>
                   Submitted {formatDate(request.requestedAt)}
                 </Text>
               </Box>
-              <Flex justifyContent="flex-end" mt={2} gap={2.5}>
+              <Flex justifyContent="flex-end" gap={2.5}>
                 <Button
                   textStyle="p2"
                   fontWeight={600}
@@ -96,7 +96,7 @@ const VolunteerCloseRequestActionModal: React.FC<
                 <Button
                   textStyle="p2"
                   fontWeight={600}
-                  bg={'#213C4A'}
+                  bg={'blue.hover'}
                   color={'white'}
                   onClick={onCloseRequest}
                 >

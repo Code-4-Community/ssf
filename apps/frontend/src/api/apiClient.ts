@@ -95,30 +95,18 @@ export class ApiClient {
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
-     return this.post('/api/requests/', body) as Promise<FoodRequest>;
+    return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
-  public async closeFoodRequest(
-    requestId: number,
-    body?: unknown,
-  ): Promise<FoodRequest> {
+  public async closeFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.patch(
       `/api/requests/${requestId}/close`,
-      body,
     ) as Promise<FoodRequest>;
   }
 
-  public async postMultipleDonationItems(
-    body: CreateMultipleDonationItemsBody,
-  ): Promise<DonationItem[]> {
-    return this.post('/api/donation-items/create-multiple', body) as Promise<
-      DonationItem[]
-    >;
-  }
-
-  private async patch(path: string, body: unknown): Promise<unknown> {
+  private async patch(path: string, body?: unknown): Promise<unknown> {
     return this.axiosInstance
-      .patch(path, body)
+      .patch(path, body ?? {})
       .then((response) => response.data);
   }
 

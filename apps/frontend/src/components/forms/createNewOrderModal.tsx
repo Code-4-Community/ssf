@@ -25,7 +25,7 @@ import {
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useGroupedDonationItemsByFoodType } from '../../hooks/groupedDonationItemsByType';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 
 interface CreateNewOrderModalModalProps {
   request: FoodRequest;
@@ -161,7 +161,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   ];
 
   const groupedDonationItems: DonationItemsGroupedByFoodType =
-    useGroupedDonationItemsByFoodType(allItems);
+    useGroupedItemsByFoodType(allItems);
 
   const sectionTitleStyles = {
     textStyle: 'p2',
@@ -331,7 +331,9 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                   minW={5}
                                   py={2}
                                   textStyle="p2"
+                                  textAlign="center"
                                   color="neutral.800"
+                                  bgColor="white.core"
                                 >
                                   {item.availableQuantity}
                                 </Text>
@@ -349,7 +351,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                 <Button
                   textStyle="p2"
                   fontWeight={600}
-                  bg={'#213C4A'}
+                  bg={'blue.hover'}
                   color={'white'}
                   disabled={!selectedManufacturer}
                   onClick={() => setNewOrderState(true)}
@@ -438,6 +440,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                     fontWeight={600}
                     color="neutral.800"
                     variant="outline"
+                    borderColor="neutral.200"
                     onClick={() => {
                       setNewOrderState(false);
                       setSelectedManufacturer(null);
@@ -449,7 +452,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                   <Button
                     textStyle="p2"
                     fontWeight={600}
-                    bg={'#213C4A'}
+                    bg={'blue.hover'}
                     color={'white'}
                     onClick={onSubmitNewOrder}
                   >

@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
-import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 
 interface RequestDetailsModalProps {
   request: FoodRequest;
