@@ -13,8 +13,9 @@ import { OrderStatus } from '../orders/types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
-import { DonationItem } from '../donationItems/donationItems.entity';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class DonationService {
     private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -84,17 +86,29 @@ export class DonationService {
       );
     }
 
-    const donation = this.repo.create({
-      foodManufacturer: manufacturer,
-      dateDonated: new Date(),
-      status: DonationStatus.AVAILABLE,
-      recurrence: donationData.recurrence,
-      recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: nextDonationDates,
-      occurrencesRemaining: donationData.occurrencesRemaining,
-    });
+    return this.dataSource.transaction(async (transactionManager) => {
+      const transactionRepo = transactionManager.getRepository(Donation);
 
-    return this.repo.save(donation);
+      const donation = transactionRepo.create({
+        foodManufacturer: manufacturer,
+        dateDonated: new Date(),
+        status: DonationStatus.AVAILABLE,
+        recurrence: donationData.recurrence,
+        recurrenceFreq: donationData.recurrenceFreq,
+        nextDonationDates,
+        occurrencesRemaining: donationData.occurrencesRemaining,
+      });
+
+      const savedDonation = await transactionRepo.save(donation);
+
+      await this.donationItemsService.createMultiple(
+        savedDonation,
+        donationData.items,
+        transactionManager,
+      );
+
+      return savedDonation;
+    });
   }
 
   async fulfill(donationId: number): Promise<Donation> {
@@ -106,6 +120,41 @@ export class DonationService {
     }
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
+  }
+
+  async matchAll(
+    donationIds: number[],
+    transactionManager?: EntityManager,
+  ): Promise<void> {
+    donationIds.forEach((id) => validateId(id, 'Donation'));
+
+    const donationTransactionRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : undefined;
+
+    const targetRepo = donationTransactionRepo
+      ? donationTransactionRepo
+      : this.repo;
+
+    const donations = await targetRepo.find({
+      where: { donationId: In(donationIds) },
+      select: ['donationId'],
+    });
+
+    const foundIds = donations.map((d) => d.donationId);
+
+    const missingIds = donationIds.filter((id) => !foundIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donations not found for ID(s): ${missingIds.join(', ')}`,
+      );
+    }
+
+    await targetRepo.update(
+      { donationId: In(donationIds) },
+      { status: DonationStatus.MATCHED },
+    );
   }
 
   async handleRecurringDonations(): Promise<void> {

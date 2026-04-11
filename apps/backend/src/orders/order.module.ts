@@ -11,8 +11,12 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { AWSS3Module } from '../aws/aws-s3.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { RequestsModule } from '../foodRequests/request.module';
-import { Donation } from '../donations/donations.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
+import { DonationItemsModule } from '../donationItems/donationItems.module';
+import { Allocation } from '../allocations/allocations.entity';
+import { Donation } from '../donations/donations.entity';
 
 @Module({
   imports: [
@@ -20,14 +24,18 @@ import { DonationItem } from '../donationItems/donationItems.entity';
       Order,
       Pantry,
       FoodRequest,
-      Donation,
+      FoodManufacturer,
       DonationItem,
+      Allocation,
+      Donation,
     ]),
     AllocationModule,
     forwardRef(() => AuthModule),
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     forwardRef(() => RequestsModule),
+    ManufacturerModule,
+    DonationItemsModule,
     DonationModule,
   ],
   controllers: [OrdersController],

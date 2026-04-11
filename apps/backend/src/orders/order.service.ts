@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository, In, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
-import { OrderStatus } from './types';
 import { DonationService } from '../donations/donations.service';
+import { OrderStatus, VolunteerAction } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -18,6 +18,12 @@ import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
 import { Donation } from '../donations/donations.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { FoodRequestStatus } from '../foodRequests/types';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
+import { ApplicationStatus } from '../shared/types';
+import { VolunteerOrder } from '../volunteers/types';
 
 @Injectable()
 export class OrdersService {
@@ -29,6 +35,10 @@ export class OrdersService {
     private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private donationService: DonationService,
+    private manufacturerService: FoodManufacturersService,
+    private donationItemsService: DonationItemsService,
+    private allocationsService: AllocationsService,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   // TODO: when order is created, set FM
@@ -65,6 +75,52 @@ export class OrdersService {
     return qb.getMany();
   }
 
+  // returns ALL orders (not scoped to volunteer)
+  // for orders assigned to the given volunteer, includes actionCompletion (otherwise undefined)
+  async getAllOrdersForVolunteer(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'order.confirmDonationReceipt',
+        'order.notifyPantry',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .getMany();
+
+    return orders.map((o) => {
+      const { assignee, confirmDonationReceipt, notifyPantry } = o;
+      const actionCompletion =
+        assignee.id === volunteerId
+          ? { confirmDonationReceipt, notifyPantry }
+          : undefined;
+
+      return {
+        orderId: o.orderId,
+        status: o.status,
+        createdAt: o.createdAt,
+        shippedAt: o.shippedAt,
+        deliveredAt: o.deliveredAt,
+        pantryName: o.request.pantry.pantryName,
+        assignee: o.assignee,
+        actionCompletion,
+      };
+    });
+  }
+
   async getCurrentOrders() {
     return this.repo.find({
       where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
@@ -74,6 +130,116 @@ export class OrdersService {
   async getPastOrders() {
     return this.repo.find({
       where: { status: OrderStatus.DELIVERED },
+    });
+  }
+
+  /*
+  This create method follows these high level steps:
+  1. Validate the request status is active before allowing order creation.
+  2. Ensure all donation items belong to the specified manufacturer and the manufacturer is approved.
+  3. Validate allocated quantities do not exceed the remaining quantity (quantity - reserved_quantity).
+  4. Create the order with status pending and assigneeId as the given userId.
+  5. Associate the order with the provided request and manufacturer.
+  6. Create allocation records for each donation item included in the order.
+  7. Update the reserved quantity for each allocated donation item.
+  8. Identify all unique donations associated with the allocated donation items and set their status to matched.
+  */
+  async create(
+    requestId: number,
+    manufacturerId: number,
+    itemAllocations: Map<number, number>,
+    userId: number,
+  ): Promise<Order> {
+    return this.dataSource.transaction(async (transactionManager) => {
+      validateId(manufacturerId, 'Food Manufacturer');
+      validateId(requestId, 'Request');
+
+      const request = await this.requestsService.findOne(requestId);
+
+      if (request.status !== FoodRequestStatus.ACTIVE) {
+        throw new BadRequestException(`Request ${requestId} is not active`);
+      }
+
+      const manufacturer = await this.manufacturerService.findOne(
+        manufacturerId,
+      );
+
+      if (manufacturer.status !== ApplicationStatus.APPROVED) {
+        throw new BadRequestException(
+          `Manufacturer ${manufacturerId} is not approved`,
+        );
+      }
+
+      const fmDonations = await this.donationRepo.find({
+        where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
+        select: ['donationId'],
+      });
+
+      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
+
+      const donationItemIds = Array.from(itemAllocations.keys());
+      const donationItems = await this.donationItemsService.getByIds(
+        donationItemIds,
+      );
+
+      const invalidItems = donationItems.filter(
+        (item) => !fmDonationIdSet.has(item.donationId),
+      );
+
+      if (invalidItems.length > 0) {
+        const messages = invalidItems.map(
+          (item) =>
+            `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
+        );
+        throw new BadRequestException(
+          `The following donation items are not associated with the current food manufacturer: ${messages.join(
+            ', ',
+          )}`,
+        );
+      }
+
+      for (const donationItem of donationItems) {
+        const id = donationItem.itemId;
+        const quantityToAllocate = itemAllocations.get(id)!;
+
+        if (
+          quantityToAllocate >
+          donationItem.quantity - donationItem.reservedQuantity
+        ) {
+          throw new BadRequestException(
+            `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+          );
+        }
+      }
+
+      const orderTransactionRepo = transactionManager.getRepository(Order);
+
+      const order = orderTransactionRepo.create({
+        requestId: requestId,
+        foodManufacturerId: manufacturerId,
+        status: OrderStatus.PENDING,
+        assigneeId: userId,
+      });
+
+      const savedOrder = await orderTransactionRepo.save(order);
+
+      await this.allocationsService.createMultiple(
+        savedOrder.orderId,
+        itemAllocations,
+        transactionManager,
+      );
+
+      const associatedDonationIdsSet =
+        await this.donationItemsService.getAssociatedDonationIds(
+          donationItemIds,
+        );
+
+      await this.donationService.matchAll(
+        Array.from(associatedDonationIdsSet),
+        transactionManager,
+      );
+
+      return savedOrder;
     });
   }
 
@@ -240,9 +406,7 @@ export class OrdersService {
       throw new BadRequestException('Invalid date format for dateReceived');
     }
 
-    const order = await this.repo.findOne({
-      where: { orderId },
-    });
+    const order = await this.repo.findOneBy({ orderId });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -340,5 +504,31 @@ export class OrdersService {
         await this.donationService.checkAndFulfillDonation(donation);
       }
     }
+  }
+
+  async completeVolunteerAction(orderId: number, action: VolunteerAction) {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order[action]) {
+      throw new BadRequestException(
+        `Action ${action} already completed for Order ${orderId}`,
+      );
+    }
+
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException(
+        `Action ${action} can only be completed for shipped orders`,
+      );
+    }
+
+    order[action] = true;
+
+    return this.repo.save(order);
   }
 }

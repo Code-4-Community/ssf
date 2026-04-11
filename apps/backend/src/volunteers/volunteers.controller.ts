@@ -12,13 +12,17 @@ import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
-import { Assignments } from './types';
+import { Assignments, VolunteerOrder } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { OrdersService } from '../orders/order.service';
 
 @Controller('volunteers')
 export class VolunteersController {
-  constructor(private volunteersService: VolunteersService) {}
+  constructor(
+    private volunteersService: VolunteersService,
+    private ordersService: OrdersService,
+  ) {}
 
   @Roles(Role.ADMIN)
   @Get('/')
@@ -54,5 +58,15 @@ export class VolunteersController {
     const currentUser = req.user;
 
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);
+  }
+
+  // returns all orders globally
+  // only includes actionCompletion for orders assigned to the requesting volunteer
+  @Roles(Role.VOLUNTEER)
+  @Get('/:id/orders')
+  async getVolunteerOrders(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<VolunteerOrder[]> {
+    return this.ordersService.getAllOrdersForVolunteer(id);
   }
 }

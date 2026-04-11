@@ -16,6 +16,7 @@ import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { FoodType } from '../donationItems/types';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 
 @Controller('donations')
@@ -39,7 +40,7 @@ export class DonationsController {
     return this.donationService.findOne(donationId);
   }
 
-  @Post('/create')
+  @Post()
   @ApiBody({
     description: 'Details for creating a donation',
     schema: {
@@ -66,6 +67,24 @@ export class DonationsController {
           },
         },
         occurrencesRemaining: { type: 'integer', example: 2, nullable: true },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              itemName: { type: 'string', example: 'Canned Beans' },
+              quantity: { type: 'integer', example: 1 },
+              ozPerItem: { type: 'number', example: 0.01, nullable: true },
+              estimatedValue: { type: 'number', example: 0.01, nullable: true },
+              foodType: {
+                type: 'enum',
+                enum: Object.values(FoodType),
+                example: FoodType.QUINOA,
+              },
+              foodRescue: { type: 'boolean', example: false },
+            },
+          },
+        },
       },
     },
   })
