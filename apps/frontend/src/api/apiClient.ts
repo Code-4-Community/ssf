@@ -332,12 +332,12 @@ export class ApiClient {
     });
   }
 
-  public async updatePantryApplication(
+  public async updatePantryApplicationData(
     pantryId: number,
     data: UpdatePantryApplicationDto,
   ): Promise<Pantry> {
     return this.axiosInstance
-      .patch(`/api/pantries/${pantryId}/update`, data)
+      .patch(`/api/pantries/${pantryId}/application`, data)
       .then((response) => response.data);
   }
 

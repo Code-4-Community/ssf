@@ -6,16 +6,8 @@ import {
   HStack,
   VStack,
   Center,
-  Input,
   Button,
-  Textarea,
-  RadioGroup,
-  Stack,
-  NativeSelect,
-  NativeSelectIndicator,
-  Menu,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from 'lucide-react';
 import ApiClient from '@api/apiClient';
 import {
   FoodManufacturer,
@@ -29,331 +21,21 @@ import {
 import { formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
-
-// ---------------------------------------------------------------------------
-// Style constants
-// ---------------------------------------------------------------------------
-
-const fieldHeaderStyles = {
-  fontSize: '14px',
-  color: 'neutral.800' as const,
-  fontWeight: 600,
-  mb: 1,
-};
-
-const fieldContentStyles = {
-  fontSize: '14px',
-  color: 'neutral.800' as const,
-};
-
-const sectionLabelStyles = {
-  fontSize: '16px',
-  fontWeight: 600,
-  fontFamily: 'inter',
-  color: 'neutral.800' as const,
-  mb: 8,
-};
-
-const inputStyles = {
-  borderColor: 'neutral.100' as const,
-  color: 'neutral.600' as const,
-  size: 'sm' as const,
-};
+import {
+  fieldHeaderStyles,
+  fieldContentStyles,
+  sectionLabelStyles,
+  Section,
+  Field,
+  EditField,
+  EditRadio,
+  EditSelect,
+  EditMultiSelect,
+} from '@components/editableComponents';
 
 const allergenOptions = Object.values(Allergen);
 const donateWastedFoodOptions = Object.values(DonateWastedFood);
 const manufacturerAttributeOptions = Object.values(ManufacturerAttribute);
-
-// ---------------------------------------------------------------------------
-// Read-only sub-components
-// ---------------------------------------------------------------------------
-
-interface SectionProps {
-  title: string;
-  children: React.ReactNode;
-}
-const Section: React.FC<SectionProps> = ({ title, children }) => (
-  <Box>
-    <Text {...sectionLabelStyles}>{title}</Text>
-    {children}
-  </Box>
-);
-
-interface FieldProps {
-  label: string;
-  value?: string | null;
-  fallback?: string;
-}
-const Field: React.FC<FieldProps> = ({ label, value, fallback = '-' }) => (
-  <Box mb={10}>
-    <Text {...fieldHeaderStyles}>{label}</Text>
-    <Text {...fieldContentStyles}>{value || fallback}</Text>
-  </Box>
-);
-
-// Edit Mode Subcomponents
-interface EditFieldProps {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (v: string) => void;
-  textarea?: boolean;
-  helperText?: string;
-  required?: boolean;
-}
-const EditField: React.FC<EditFieldProps> = ({
-  label,
-  name,
-  value,
-  onChange,
-  textarea,
-  helperText,
-  required,
-}) => (
-  <Box mb={6}>
-    <Text {...fieldHeaderStyles} mb={2}>
-      {label}
-      {required && (
-        <Text as="span" color="red" ml="1">
-          *
-        </Text>
-      )}
-    </Text>
-    {textarea ? (
-      <Textarea
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        {...inputStyles}
-        autoresize
-        placeholder="-"
-      />
-    ) : (
-      <Input
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        {...inputStyles}
-      />
-    )}
-    {helperText && (
-      <Text fontSize="13px" color="neutral.600" mt={1}>
-        {helperText}
-      </Text>
-    )}
-  </Box>
-);
-
-interface EditRadioProps {
-  label: string;
-  name: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  helperText?: string;
-  required?: boolean;
-}
-const EditRadio: React.FC<EditRadioProps> = ({
-  label,
-  name,
-  value,
-  options,
-  onChange,
-  helperText,
-  required,
-}) => (
-  <Box mb={6}>
-    <Text {...fieldHeaderStyles} mb={helperText ? 1 : 2}>
-      {label}
-      {required && (
-        <Text as="span" color="red" ml="1">
-          *
-        </Text>
-      )}
-    </Text>
-    {helperText && (
-      <Text fontSize="13px" color="neutral.600" mb={2}>
-        {helperText}
-      </Text>
-    )}
-    <RadioGroup.Root
-      name={name}
-      value={value}
-      variant="solid"
-      colorPalette="neutral"
-      onValueChange={(e: { value: string }) => onChange(e.value)}
-    >
-      <Stack>
-        {options.map((opt) => (
-          <RadioGroup.Item key={opt} value={opt}>
-            <RadioGroup.ItemHiddenInput />
-            <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
-              <RadioGroup.ItemIndicator
-                border="1px solid"
-                borderColor="neutral.100"
-              />
-            </RadioGroup.ItemControl>
-            <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-              {opt}
-            </RadioGroup.ItemText>
-          </RadioGroup.Item>
-        ))}
-      </Stack>
-    </RadioGroup.Root>
-  </Box>
-);
-
-interface EditSelectProps {
-  label: string;
-  name: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  helperText?: string;
-  required?: boolean;
-  placeholder?: string;
-}
-const EditSelect: React.FC<EditSelectProps> = ({
-  label,
-  name,
-  value,
-  options,
-  onChange,
-  helperText,
-  required,
-  placeholder,
-}) => (
-  <Box mb={6}>
-    <Text {...fieldHeaderStyles} mb={2}>
-      {label}
-      {required && (
-        <Text as="span" color="red" ml="1">
-          *
-        </Text>
-      )}
-    </Text>
-    <NativeSelect.Root borderColor="neutral.100">
-      <NativeSelect.Field
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        {...inputStyles}
-      >
-        <option value="">{placeholder ?? 'Select an option'}</option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </NativeSelect.Field>
-      <NativeSelectIndicator />
-    </NativeSelect.Root>
-    {helperText && (
-      <Text fontSize="13px" color="neutral.600" mt={1}>
-        {helperText}
-      </Text>
-    )}
-  </Box>
-);
-
-interface EditMultiSelectProps {
-  label: string;
-  value: string[];
-  options: string[];
-  onChange: (v: string[]) => void;
-  triggerLabel?: string;
-  helperText?: string;
-  required?: boolean;
-}
-const EditMultiSelect: React.FC<EditMultiSelectProps> = ({
-  label,
-  value,
-  options,
-  onChange,
-  triggerLabel,
-  helperText,
-  required,
-}) => (
-  <Box mb={6}>
-    <Text {...fieldHeaderStyles} mb={2}>
-      {label}
-      {required && (
-        <Text as="span" color="red" ml="1">
-          *
-        </Text>
-      )}
-    </Text>
-    <Menu.Root closeOnSelect={false} colorPalette="neutral">
-      <Menu.Trigger asChild>
-        <Button
-          pl={3}
-          pr={2}
-          w="full"
-          bgColor="white"
-          color="neutral.800"
-          borderColor="neutral.100"
-          justifyContent="space-between"
-          textStyle="p2"
-          size="sm"
-          borderWidth="1px"
-          borderStyle="solid"
-        >
-          {value.length > 0 ? `Select more` : triggerLabel ?? 'Select options'}
-          <ChevronDownIcon />
-        </Button>
-      </Menu.Trigger>
-      <Menu.Positioner w="full">
-        <Menu.Content maxH="400px" overflowY="auto">
-          {options.map((opt) => (
-            <Menu.CheckboxItem
-              key={opt}
-              checked={value.includes(opt)}
-              onCheckedChange={(checked: boolean) =>
-                onChange(
-                  checked ? [...value, opt] : value.filter((i) => i !== opt),
-                )
-              }
-              display="flex"
-              alignItems="center"
-            >
-              <Box
-                position="absolute"
-                left={1}
-                ml={0.5}
-                w={5}
-                h={5}
-                borderWidth="1px"
-                borderRadius="4px"
-                borderColor="neutral.200"
-              />
-              <Menu.ItemIndicator />
-              <Text
-                ml={0.5}
-                color="neutral.800"
-                fontWeight={500}
-                fontFamily="Inter"
-              >
-                {opt}
-              </Text>
-            </Menu.CheckboxItem>
-          ))}
-        </Menu.Content>
-      </Menu.Positioner>
-    </Menu.Root>
-    {value.length > 0 && (
-      <TagGroup
-        values={value}
-        onRemove={(v) => onChange(value.filter((i) => i !== v))}
-        blueVariant
-      />
-    )}
-    {helperText && (
-      <Text fontSize="13px" color="neutral.600" mt={1}>
-        {helperText}
-      </Text>
-    )}
-  </Box>
-);
 
 type FormState = {
   secondaryContactFirstName: string;
@@ -430,9 +112,11 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
   const fetchApplication = useCallback(async () => {
     try {
       const manufacturerId = await ApiClient.getCurrentUserFoodManufacturerId();
-      const data = await ApiClient.getFoodManufacturer(manufacturerId);
-      setApplication(data);
-      setForm(buildFormState(data));
+      if (manufacturerId) {
+        const data = await ApiClient.getFoodManufacturer(manufacturerId);
+        setApplication(data);
+        setForm(buildFormState(data));
+      }
     } catch {
       setError('Could not load application details. Please try again later.');
     }
@@ -522,7 +206,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
   // Read-only view
   if (!isEditing) {
     return (
-      <VStack align="stretch" gap={10}>
+      <VStack align="stretch" gap={4}>
         <Section title="Secondary Point of Contact">
           <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
             <Field
