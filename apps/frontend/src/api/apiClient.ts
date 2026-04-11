@@ -17,7 +17,6 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
-  CreateMultipleDonationItemsBody,
   ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
@@ -28,6 +27,7 @@ import {
   OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
+  CreateDonationDto,
   UpdateProfileFields,
   MatchingManufacturersDto,
   MatchingItemsDto,
@@ -88,14 +88,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postDonation(body: unknown): Promise<Donation> {
-    return this.post('/api/donations/create', body) as Promise<Donation>;
+  public async postDonation(body: CreateDonationDto): Promise<Donation> {
+    return this.post('/api/donations/', body) as Promise<Donation>;
   }
 
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
-    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
+     return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
   public async closeFoodRequest(
@@ -144,16 +144,6 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
-  }
-
-  public async updateDonationItemQuantity(
-    itemId: number,
-    body?: unknown,
-  ): Promise<DonationItem> {
-    return this.patch(
-      `/api/donation-items/update-quantity/${itemId}`,
-      body,
-    ) as Promise<DonationItem>;
   }
 
   private async delete(path: string): Promise<unknown> {

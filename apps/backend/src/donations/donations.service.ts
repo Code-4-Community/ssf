@@ -11,6 +11,7 @@ import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
@@ -27,6 +28,7 @@ export class DonationService {
     private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -82,17 +84,29 @@ export class DonationService {
       );
     }
 
-    const donation = this.repo.create({
-      foodManufacturer: manufacturer,
-      dateDonated: new Date(),
-      status: DonationStatus.AVAILABLE,
-      recurrence: donationData.recurrence,
-      recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: nextDonationDates,
-      occurrencesRemaining: donationData.occurrencesRemaining,
-    });
+    return this.dataSource.transaction(async (transactionManager) => {
+      const transactionRepo = transactionManager.getRepository(Donation);
 
-    return this.repo.save(donation);
+      const donation = transactionRepo.create({
+        foodManufacturer: manufacturer,
+        dateDonated: new Date(),
+        status: DonationStatus.AVAILABLE,
+        recurrence: donationData.recurrence,
+        recurrenceFreq: donationData.recurrenceFreq,
+        nextDonationDates,
+        occurrencesRemaining: donationData.occurrencesRemaining,
+      });
+
+      const savedDonation = await transactionRepo.save(donation);
+
+      await this.donationItemsService.createMultiple(
+        savedDonation,
+        donationData.items,
+        transactionManager,
+      );
+
+      return savedDonation;
+    });
   }
 
   async fulfill(donationId: number): Promise<Donation> {

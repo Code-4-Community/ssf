@@ -73,7 +73,7 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
-  @Post('/create')
+  @Post()
   @ApiBody({
     description: 'Details for creating a food request',
     schema: {

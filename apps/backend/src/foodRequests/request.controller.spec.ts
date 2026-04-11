@@ -168,7 +168,7 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('POST /create', () => {
+  describe('POST /', () => {
     it('should call requestsService.create and return the created food request', async () => {
       const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
