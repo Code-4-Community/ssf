@@ -15,6 +15,7 @@ import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Donation } from '../donations/donations.entity';
+import { DataSource } from 'typeorm';
 
 jest.setTimeout(60000);
 
@@ -33,6 +34,10 @@ describe('VolunteersService', () => {
         UsersService,
         PantriesService,
         RequestsService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: AuthService,
           useValue: {
