@@ -4,7 +4,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Donation } from './donations.entity';
 import { CreateDonationDto } from './dtos/create-donation.dto';
+import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { FoodType } from '../donationItems/types';
 
 const mockDonationService = mock<DonationService>();
 
@@ -79,13 +83,21 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('POST /create', () => {
+  describe('POST /', () => {
     it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
         foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Item 1',
+          } as CreateDonationItemDto,
+          {
+            itemName: 'Item 2',
+          } as CreateDonationItemDto,
+        ] as CreateDonationItemDto[],
       };
 
       const createdDonation: Partial<Donation> = {
@@ -118,6 +130,63 @@ describe('DonationsController', () => {
 
       expect(result).toEqual(donation1);
       expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
+    });
+  });
+
+  describe('PUT /:donationId/items', () => {
+    it('should call donationService.replaceDonationItems and return updated donation', async () => {
+      const donationId = 1;
+
+      const replaceBody = {
+        items: [
+          {
+            id: 1,
+            itemName: 'Apples',
+            quantity: 10,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          },
+          {
+            itemName: 'Oranges',
+            quantity: 5,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          },
+        ],
+      };
+
+      const updatedDonation: Partial<Donation> = {
+        donationId,
+        donationItems: [
+          { itemId: 1, itemName: 'Apples', quantity: 10 } as DonationItem,
+          { itemId: 2, itemName: 'Oranges', quantity: 5 } as DonationItem,
+        ],
+        status: DonationStatus.AVAILABLE,
+      };
+
+      mockDonationService.replaceDonationItems.mockResolvedValueOnce(
+        updatedDonation as Donation,
+      );
+
+      const result = await controller.replaceDonationItems(
+        donationId,
+        replaceBody as ReplaceDonationItemsDto,
+      );
+
+      expect(result).toEqual(updatedDonation);
+      expect(mockDonationService.replaceDonationItems).toHaveBeenCalledWith(
+        donationId,
+        replaceBody,
+      );
+    });
+  });
+
+  describe('DELETE /:donationId', () => {
+    it('should call donationService.delete with the correct id', async () => {
+      const donationId = 1;
+
+      await controller.deleteDonation(donationId);
+
+      expect(mockDonationService.delete).toHaveBeenCalledWith(donationId);
+      expect(mockDonationService.delete).toHaveBeenCalledTimes(1);
     });
   });
 });

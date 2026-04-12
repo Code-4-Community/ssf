@@ -6,7 +6,16 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Allocation } from '../allocations/allocations.entity';
+import { DataSource, In } from 'typeorm';
+import {
+  ReplaceDonationItemDto,
+  ReplaceDonationItemsDto,
+} from '../donationItems/dtos/create-donation-items.dto';
+import { FoodType } from '../donationItems/types';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
 
 jest.setTimeout(60000);
 
@@ -83,6 +92,7 @@ const TODAYOfWeek = (iso: string): DayOfWeek => {
 
 describe('DonationService', () => {
   let service: DonationService;
+  let donationItemService: DonationItemsService;
 
   beforeAll(async () => {
     if (!testDataSource.isInitialized) {
@@ -95,6 +105,11 @@ describe('DonationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DonationService,
+        DonationItemsService,
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
@@ -103,10 +118,20 @@ describe('DonationService', () => {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
         },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
       ],
     }).compile();
 
     service = module.get<DonationService>(DonationService);
+    donationItemService =
+      module.get<DonationItemsService>(DonationItemsService);
   });
 
   beforeEach(async () => {
@@ -170,6 +195,38 @@ describe('DonationService', () => {
     it('returns total number of donations in the database', async () => {
       const donationCount = await service.getNumberOfDonations();
       expect(donationCount).toEqual(4);
+    });
+  });
+
+  describe('matchAll', () => {
+    it('updates all given donations to have status MATCHED', async () => {
+      const donationId1 = 1;
+      const donationId2 = 2;
+      const donationIds = [donationId1, donationId2];
+
+      const donation1 = await service.findOne(donationId1);
+      const donation2 = await service.findOne(donationId2);
+      expect(donation1.status).toEqual(DonationStatus.AVAILABLE);
+      expect(donation2.status).toEqual(DonationStatus.MATCHED);
+
+      await service.matchAll(donationIds);
+
+      const updatedDonation1 = await service.findOne(donationId1);
+      const updatedDonation2 = await service.findOne(donationId2);
+
+      expect(updatedDonation1.status).toEqual(DonationStatus.MATCHED);
+      expect(updatedDonation2.status).toEqual(DonationStatus.MATCHED);
+    });
+
+    it('throws an error if one or more donationIds do not exist', async () => {
+      const existingDonationId = 1;
+      const nonExistingDonationId = 999;
+
+      const donationIds = [existingDonationId, nonExistingDonationId];
+
+      await expect(service.matchAll(donationIds)).rejects.toThrow(
+        `Donations not found for ID(s): ${nonExistingDonationId}`,
+      );
     });
   });
 
@@ -800,6 +857,358 @@ describe('DonationService', () => {
         repeatOnDays,
       );
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('create', () => {
+    const validItems = [
+      {
+        itemName: 'Canned Beans',
+        quantity: 10,
+        ozPerItem: 15.5,
+        estimatedValue: 2.99,
+        foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+        foodRescue: false,
+      },
+      {
+        itemName: 'Canned Corn',
+        quantity: 5,
+        ozPerItem: 12,
+        estimatedValue: 1.99,
+        foodType: FoodType.GRANOLA,
+        foodRescue: true,
+      },
+    ];
+
+    it('successfully creates a donation with items', async () => {
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.NONE,
+        items: validItems,
+      });
+
+      expect(donation).toBeDefined();
+      expect(donation.donationId).toBeDefined();
+
+      const donationDb = await testDataSource.query(
+        `SELECT * FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(donationDb).toHaveLength(1);
+      const donationRow = donationDb[0];
+      expect(donationRow.donation_id).toEqual(donation.donationId);
+      expect(donationRow.food_manufacturer_id).toEqual(1);
+      expect(donationRow.status).toEqual(DonationStatus.AVAILABLE);
+      expect(donationRow.recurrence).toEqual(RecurrenceEnum.NONE);
+      expect(donationRow.recurrence_freq).toBeNull();
+      expect(donationRow.next_donation_dates).toBeNull();
+      expect(donationRow.occurrences_remaining).toBeNull();
+
+      const items = await testDataSource.query(
+        `SELECT * FROM donation_items WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(items).toHaveLength(2);
+    });
+
+    it('populates nextDonationDates in the database for a recurring donation', async () => {
+      const before = new Date();
+      before.setHours(0, 0, 0, 0);
+
+      const donation = await service.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 1,
+        occurrencesRemaining: 3,
+        items: validItems,
+      });
+
+      const rows = await testDataSource.query(
+        `SELECT next_donation_dates, occurrences_remaining, recurrence, recurrence_freq
+         FROM donations WHERE donation_id = $1`,
+        [donation.donationId],
+      );
+
+      expect(rows).toHaveLength(1);
+      const row = rows[0];
+
+      expect(row.recurrence).toEqual(RecurrenceEnum.MONTHLY);
+      expect(row.recurrence_freq).toEqual(1);
+      expect(row.occurrences_remaining).toEqual(3);
+
+      const dates: Date[] = row.next_donation_dates;
+      expect(dates).toHaveLength(1);
+
+      // Clip the before date if necessary
+      const expectedDate = new Date(before);
+      if (expectedDate.getDate() > 28) expectedDate.setDate(28);
+      expectedDate.setMonth(expectedDate.getMonth() + 1);
+
+      const actualDate = new Date(dates[0]);
+      expect(actualDate.getFullYear()).toEqual(expectedDate.getFullYear());
+      expect(actualDate.getMonth()).toEqual(expectedDate.getMonth());
+      expect(actualDate.getDate()).toEqual(expectedDate.getDate());
+    });
+
+    it('throws when foodManufacturerId does not exist', async () => {
+      expect(
+        service.create({
+          foodManufacturerId: 99999,
+          recurrence: RecurrenceEnum.NONE,
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new NotFoundException('Food Manufacturer 99999 not found'),
+      );
+    });
+
+    it('throws when recurrence is not NONE but recurrenceFreq is missing', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.WEEKLY,
+          repeatOnDays: {
+            Sunday: false,
+            Monday: true,
+            Tuesday: false,
+            Wednesday: false,
+            Thursday: false,
+            Friday: false,
+            Saturday: false,
+          },
+          items: validItems,
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'recurrenceFreq is required for recurring donations',
+        ),
+      );
+
+      donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+    });
+
+    it('rolls back donation when a donation item fails to save', async () => {
+      let donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+
+      await expect(
+        service.create({
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.NONE,
+          items: [
+            ...validItems,
+            {
+              itemName: 'a'.repeat(1000),
+              quantity: 5,
+              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+              foodRescue: false,
+            },
+          ],
+        }),
+      ).rejects.toThrow();
+
+      donations = await testDataSource.query(`SELECT * FROM donations`);
+      expect(donations).toHaveLength(4);
+    });
+  });
+
+  describe('replaceDonationItems', () => {
+    it('should replace donation items for an available donation', async () => {
+      const donationId = 1;
+
+      // (update item1, remove item2, remove item3, add item 4)
+      const body = {
+        items: [
+          {
+            id: 1,
+            itemName: 'Green Apples',
+            quantity: 15,
+          } as Partial<ReplaceDonationItemDto>,
+          {
+            itemName: 'Bananas',
+            quantity: 20,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          } as Partial<ReplaceDonationItemDto>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      // manually removing allocations for deleted item ids
+      await service['allocationRepo'].delete({ itemId: In([2, 3]) });
+
+      const updatedDonation = await service.replaceDonationItems(
+        donationId,
+        body,
+      );
+
+      expect(updatedDonation).toBeDefined();
+      expect(updatedDonation.donationItems).toHaveLength(2);
+
+      const updatedItemNames = updatedDonation.donationItems.map(
+        (i) => i.itemName,
+      );
+      expect(updatedItemNames).toContain('Green Apples'); // updated
+      expect(updatedItemNames).toContain('Bananas'); // new
+      expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
+      expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
+    });
+
+    it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
+      const donationId = 1;
+
+      // (update item1, remove item2, remove item3, add item 4)
+      const body = {
+        items: [
+          {
+            id: 1,
+            itemName: 'Green Apples',
+            quantity: 15,
+          } as Partial<ReplaceDonationItemDto>,
+          {
+            itemName: 'Bananas',
+            quantity: 20,
+            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+          } as Partial<ReplaceDonationItemDto>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow(
+        `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
+      );
+    });
+
+    it('should delete all donation items for an available donation when passed an empty array', async () => {
+      const donationId = 1;
+
+      const body = {
+        items: [],
+      } as ReplaceDonationItemsDto;
+
+      // manually removing allocations for deleted item ids
+      await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
+
+      const updatedDonation = await service.replaceDonationItems(
+        donationId,
+        body,
+      );
+
+      expect(updatedDonation).toBeDefined();
+      expect(updatedDonation.donationItems).toHaveLength(0);
+    });
+
+    it('should throw NotFoundException if donation does not exist', async () => {
+      const body = { items: [] };
+      await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
+        `Donation 9999 not found`,
+      );
+    });
+
+    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+      // Donation with status MATCHED
+      const donationId = 2;
+
+      const body = { items: [] };
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow('Only available donations can be updated');
+    });
+
+    it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
+      const donationId = 1;
+
+      const body = {
+        items: [
+          {
+            id: 9999,
+            itemName: 'Nonexistent',
+            quantity: 1,
+          } as Partial<DonationItem>,
+        ],
+      } as ReplaceDonationItemsDto;
+
+      await expect(
+        service.replaceDonationItems(donationId, body),
+      ).rejects.toThrow(
+        `Donation item 9999 for Donation ${donationId} not found`,
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete an available donation and associated donation items', async () => {
+      const donationId = 3;
+
+      const donationBefore = await service.findOne(donationId);
+      expect(donationBefore).toBeDefined();
+      expect(donationBefore.status).toBe(DonationStatus.AVAILABLE);
+
+      const itemsBefore = await donationItemService.getAllDonationItems(
+        donationId,
+      );
+
+      const itemIds = itemsBefore.map((item) => item.itemId);
+
+      await testDataSource
+        .getRepository(Allocation)
+        .delete(itemIds.length ? { itemId: In(itemIds) } : {});
+
+      await service.delete(donationId);
+
+      await expect(service.findOne(donationId)).rejects.toThrow(
+        `Donation ${donationId} not found`,
+      );
+
+      const items = await donationItemService.getAllDonationItems(donationId);
+      expect(items).toHaveLength(0);
+    });
+
+    it('should throw BadRequestException if there are existing associated allocations', async () => {
+      const donationId = 3;
+
+      const donation = await service.findOne(donationId);
+      expect(donation).toBeDefined();
+      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        `Cannot delete donation ${donationId} with existing allocations`,
+      );
+    });
+
+    it('should throw BadRequestException if there is a donation item with reservedQuantity', async () => {
+      const donationId = 3;
+
+      const donation = await service.findOne(donationId);
+      expect(donation).toBeDefined();
+      expect(donation.status).toBe(DonationStatus.AVAILABLE);
+
+      await testDataSource
+        .getRepository(DonationItem)
+        .update(7, { reservedQuantity: 1 });
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        `Cannot delete donation ${donationId} as it has a donation item with reserved quantity`,
+      );
+    });
+
+    it('should throw NotFoundException if donation does not exist', async () => {
+      await expect(service.delete(9999)).rejects.toThrow(
+        `Donation 9999 not found`,
+      );
+    });
+
+    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
+      // donation with status MATCHED
+      const donationId = 2;
+
+      await expect(service.delete(donationId)).rejects.toThrow(
+        'Only available donations can be deleted',
+      );
     });
   });
 });

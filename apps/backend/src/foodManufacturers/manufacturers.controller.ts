@@ -14,12 +14,12 @@ import { FoodManufacturer } from './manufacturers.entity';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
-import { Donation } from '../donations/donations.entity';
 import { Public } from '../auth/public.decorator';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { DonationDetailsDto } from './dtos/donation-details-dto';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -37,11 +37,16 @@ export class FoodManufacturersController {
     return this.foodManufacturersService.findOne(foodManufacturerId);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
   @Get('/:foodManufacturerId/donations')
   async getFoodManufacturerDonations(
+    @Req() req: AuthenticatedRequest,
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
-  ): Promise<Donation[]> {
-    return this.foodManufacturersService.getFMDonations(foodManufacturerId);
+  ): Promise<DonationDetailsDto[]> {
+    return this.foodManufacturersService.getFMDonations(
+      foodManufacturerId,
+      req.user.id,
+    );
   }
 
   @ApiBody({

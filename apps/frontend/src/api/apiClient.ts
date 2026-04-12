@@ -17,7 +17,6 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
-  CreateMultipleDonationItemsBody,
   ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
@@ -30,6 +29,7 @@ import {
   Assignments,
   PantryStats,
   TotalStats,
+  CreateDonationDto,
   UpdateProfileFields,
 } from 'types/types';
 
@@ -87,22 +87,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postDonation(body: unknown): Promise<Donation> {
-    return this.post('/api/donations/create', body) as Promise<Donation>;
+  public async postDonation(body: CreateDonationDto): Promise<Donation> {
+    return this.post('/api/donations/', body) as Promise<Donation>;
   }
 
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
-    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
-  }
-
-  public async postMultipleDonationItems(
-    body: CreateMultipleDonationItemsBody,
-  ): Promise<DonationItem[]> {
-    return this.post('/api/donation-items/create-multiple', body) as Promise<
-      DonationItem[]
-    >;
+    return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
@@ -135,16 +127,6 @@ export class ApiClient {
     ) as Promise<Donation>;
   }
 
-  public async updateDonationItemQuantity(
-    itemId: number,
-    body?: unknown,
-  ): Promise<DonationItem> {
-    return this.patch(
-      `/api/donation-items/update-quantity/${itemId}`,
-      body,
-    ) as Promise<DonationItem>;
-  }
-
   private async delete(path: string): Promise<unknown> {
     return this.axiosInstance.delete(path).then((response) => response.data);
   }
@@ -163,6 +145,20 @@ export class ApiClient {
     return this.axiosInstance
       .get('/api/pantries/pending')
       .then((response) => response.data);
+  }
+
+  public async getAllPendingFoodManufacturers(): Promise<FoodManufacturer[]> {
+    return this.axiosInstance
+      .get('/api/manufacturers/pending')
+      .then((response) => response.data);
+  }
+
+  public async getFoodManufacturer(
+    manufacturerId: number,
+  ): Promise<FoodManufacturer> {
+    return this.get(
+      `/api/manufacturers/${manufacturerId}`,
+    ) as Promise<FoodManufacturer>;
   }
 
   public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
@@ -365,6 +361,18 @@ export class ApiClient {
     await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
+  }
+
+  public async updateFoodManufacturer(
+    manufacturerId: number,
+    decision: 'approve' | 'deny',
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/manufacturers/${manufacturerId}/${decision}`,
+      {
+        manufacturerId,
+      },
+    );
   }
 
   public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {

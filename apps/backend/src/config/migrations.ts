@@ -33,10 +33,14 @@ import { UpdateOrderEntity1769990652833 } from '../migrations/1769990652833-Upda
 import { DonationItemFoodTypeNotNull1771524930613 } from '../migrations/1771524930613-DonationItemFoodTypeNotNull';
 import { MoveRequestFieldsToOrders1770571145350 } from '../migrations/1770571145350-MoveRequestFieldsToOrders';
 import { RenameDonationMatchingStatus1771260403657 } from '../migrations/1771260403657-RenameDonationMatchingStatus';
+import { AddAssigneeToOrders1773009000618 } from '../migrations/1773009000618-AddAssigneeToOrders';
 import { DropDonationTotalColumns1772241115031 } from '../migrations/1772241115031-DropDonationTotalColumns';
 import { FixTrackingLinks1773041840374 } from '../migrations/1773041840374-FixTrackingLinks';
 import { CleanupRequestsAndAllocations1771821377918 } from '../migrations/1771821377918-CleanupRequestsAndAllocations';
+import { MakeFoodRescueRequired1773889925002 } from '../migrations/1773889925002-MakeFoodRescueRequired.ts';
 import { AddDonationItemConfirmation1774140453305 } from '../migrations/1774140453305-AddDonationItemConfirmation';
+import { DonationItemsOnDeleteCascade1774214910101 } from '../migrations/1774214910101-DonationItemsOnDeleteCascade';
+import { OrdersVolunteerActions1774883880543 } from '../migrations/1774883880543-OrdersVolunteerActions';
 
 const schemaMigrations = [
   User1725726359198,
@@ -74,10 +78,14 @@ const schemaMigrations = [
   DonationItemFoodTypeNotNull1771524930613,
   MoveRequestFieldsToOrders1770571145350,
   RenameDonationMatchingStatus1771260403657,
+  AddAssigneeToOrders1773009000618,
   DropDonationTotalColumns1772241115031,
   FixTrackingLinks1773041840374,
   CleanupRequestsAndAllocations1771821377918,
+  MakeFoodRescueRequired1773889925002,
   AddDonationItemConfirmation1774140453305,
+  DonationItemsOnDeleteCascade1774214910101,
+  OrdersVolunteerActions1774883880543,
 ];
 
 export default schemaMigrations;

@@ -8,6 +8,8 @@ import {
   IsNotEmpty,
   Length,
   IsOptional,
+  IsInt,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FoodType } from '../types';
@@ -18,34 +20,42 @@ export class CreateDonationItemDto {
   @Length(1, 255)
   itemName!: string;
 
-  @IsNumber()
+  @IsInt()
   @Min(1)
   quantity!: number;
 
-  @IsNumber()
-  @Min(0)
-  reservedQuantity!: number;
-
-  @IsNumber()
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'ozPerItem must have at most 2 decimal places' },
+  )
   @Min(0.01)
   @IsOptional()
   ozPerItem?: number;
 
-  @IsNumber()
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'estimatedValue must have at most 2 decimal places' },
+  )
   @Min(0.01)
   @IsOptional()
   estimatedValue?: number;
 
   @IsEnum(FoodType)
   foodType!: FoodType;
+
+  @IsBoolean()
+  foodRescue!: boolean;
 }
 
-export class CreateMultipleDonationItemsDto {
+export class ReplaceDonationItemDto extends CreateDonationItemDto {
+  @IsOptional()
   @IsNumber()
-  donationId!: number;
+  id?: number;
+}
 
+export class ReplaceDonationItemsDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateDonationItemDto)
-  items!: CreateDonationItemDto[];
+  @Type(() => ReplaceDonationItemDto)
+  items!: ReplaceDonationItemDto[];
 }
