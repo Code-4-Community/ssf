@@ -1,10 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import PantryPastOrders from '@containers/pantryPastOrders';
 import Pantries from '@containers/pantries';
-import Orders from '@containers/orders';
-import PantryDashboard from '@containers/pantryDashboard';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
@@ -12,7 +9,6 @@ import { submitPantryApplicationForm } from '@components/forms/pantryApplication
 import ApprovePantries from '@containers/approvePantries';
 import PantryApplicationDetails from '@containers/pantryApplicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
-import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import AdminDonation from '@containers/adminDonation';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
@@ -77,15 +73,6 @@ const router = createBrowserRouter([
         path: '/unauthorized',
         element: <Unauthorized />,
       },
-      // Private routes (protected by auth)
-      {
-        path: '/pantry-past-orders',
-        element: (
-          <ProtectedRoute>
-            <PantryPastOrders />
-          </ProtectedRoute>
-        ),
-      },
       {
         path: '/pantries',
         element: (
@@ -95,42 +82,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-dashboard',
-        element: (
-          <ProtectedRoute>
-            <PantryDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantry-past-orders',
-        element: (
-          <ProtectedRoute>
-            <PantryPastOrders />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/pantries',
         element: (
           <ProtectedRoute>
             <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/food-manufacturer-order-dashboard',
-        element: (
-          <ProtectedRoute>
-            <FoodManufacturerOrderDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/orders',
-        element: (
-          <ProtectedRoute>
-            <Orders />
           </ProtectedRoute>
         ),
       },

@@ -35,16 +35,6 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-dashboard">Pantry Dashboard</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/pantry-past-orders">Past Orders</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
                 <RouterLink to="/request-form">Request Form</RouterLink>
               </Link>
             </ListItem>
@@ -70,18 +60,6 @@ const Homepage: React.FC = () => {
             Food Manufacturer View
           </Heading>
           <List.Root unstyled gap={2}>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/food-manufacturer-order-dashboard">
-                  Order Dashboard
-                </RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/orders">Orders</RouterLink>
-              </Link>
-            </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
                 <RouterLink to="/fm-donation-management">
