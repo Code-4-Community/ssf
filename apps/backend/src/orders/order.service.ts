@@ -23,6 +23,8 @@ import { DonationService } from '../donations/donations.service';
 import { ApplicationStatus } from '../shared/types';
 import { Donation } from '../donations/donations.entity';
 import { VolunteerOrder } from '../volunteers/types';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class OrdersService {
@@ -36,6 +38,7 @@ export class OrdersService {
     private allocationsService: AllocationsService,
     private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
+    private emailsService: EmailsService,
   ) {}
 
   // TODO: when order is created, set FM
@@ -391,6 +394,7 @@ export class OrdersService {
       .execute();
   }
 
+  // Updated confirmDelivery()
   async confirmDelivery(
     orderId: number,
     dto: ConfirmDeliveryDto,
@@ -403,7 +407,10 @@ export class OrdersService {
       throw new BadRequestException('Invalid date format for dateReceived');
     }
 
-    const order = await this.repo.findOneBy({ orderId });
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['request', 'request.pantry', 'foodManufacturer', 'assignee'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -423,6 +430,18 @@ export class OrdersService {
     const updatedOrder = await this.repo.save(order);
 
     await this.requestsService.updateRequestStatus(order.requestId);
+
+    const { subject, bodyHTML } = emailTemplates.pantryConfirmsOrderDelivery({
+      volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+      pantryName: order.request.pantry.pantryName,
+      fmName: order.foodManufacturer.foodManufacturerName,
+    });
+
+    await this.emailsService.sendEmails(
+      [order.assignee.email],
+      subject,
+      bodyHTML,
+    );
 
     return updatedOrder;
   }
@@ -472,7 +491,10 @@ export class OrdersService {
       dto.trackingLink = sanitized;
     }
 
-    const order = await this.repo.findOneBy({ orderId });
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['request', 'request.pantry', 'foodManufacturer', 'assignee'],
+    });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
@@ -504,6 +526,22 @@ export class OrdersService {
     ) {
       order.status = OrderStatus.SHIPPED;
       order.shippedAt = new Date();
+
+      const { subject, bodyHTML } = emailTemplates.trackingLinkAvailable({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        trackingLink: order.trackingLink,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+      const pantryEmails = [order.request.pantry.secondaryContactEmail].filter(
+        (e): e is string => e !== null,
+      );
+
+      if (pantryEmails.length > 0) {
+        await this.emailsService.sendEmails(pantryEmails, subject, bodyHTML);
+      }
     }
 
     await this.repo.save(order);
