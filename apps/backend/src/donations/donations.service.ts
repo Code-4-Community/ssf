@@ -380,11 +380,26 @@ export class DonationService {
     validateId(donationId, 'Donation');
 
     return this.dataSource.transaction(async (transactionManager) => {
-      const donation = await this.donationItemsService.confirmItemDetails(
+      const donationTransactionRepo =
+        transactionManager.getRepository(Donation);
+
+      const donation = await donationTransactionRepo.findOneBy({ donationId });
+      if (!donation) {
+        throw new NotFoundException(`Donation ${donationId} not found`);
+      }
+
+      if (donation.status !== DonationStatus.MATCHED) {
+        throw new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        );
+      }
+
+      await this.donationItemsService.confirmItemDetails(
         donationId,
         body,
         transactionManager,
       );
+
       return this.checkAndFulfillDonation(donation, transactionManager);
     });
   }

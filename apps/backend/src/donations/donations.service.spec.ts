@@ -1262,6 +1262,59 @@ describe('DonationService', () => {
       foodRescue: true,
     });
 
+    it('throws NotFoundException when donation does not exist', async () => {
+      await expect(
+        service.confirmDonationItemDetails(9999, [makeDto(1)]),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
+    });
+
+    it('throws BadRequestException when donation status is not MATCHED', async () => {
+      // seed donation 1 has status 'available' — status check fires before item lookup
+      await expect(
+        service.confirmDonationItemDetails(1, [makeDto(1)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        ),
+      );
+    });
+
+    it('throws NotFoundException when a donation item does not exist', async () => {
+      const donationId = await insertMatchedDonation();
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(99999)]),
+      ).rejects.toThrow(new NotFoundException('Donation item 99999 not found'));
+    });
+
+    it('throws BadRequestException when an item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      // item 1 belongs to donation 1 (seed data), not our new donation
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(1)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to Donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when an item is already confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+      await testDataSource.query(
+        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
+        [itemId],
+      );
+
+      await expect(
+        service.confirmDonationItemDetails(donationId, [makeDto(itemId)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${itemId} has already been confirmed`,
+        ),
+      );
+    });
+
     it('returns the donation after confirming item details', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 10);

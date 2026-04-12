@@ -107,20 +107,7 @@ export class DonationItemsService {
     donationId: number,
     body: ConfirmDonationItemDetailsDto[],
     transactionManager: EntityManager,
-  ): Promise<Donation> {
-    const donationTransactionRepo = transactionManager.getRepository(Donation);
-
-    const donation = await donationTransactionRepo.findOneBy({ donationId });
-    if (!donation) {
-      throw new NotFoundException(`Donation ${donationId} not found`);
-    }
-
-    if (donation.status !== DonationStatus.MATCHED) {
-      throw new BadRequestException(
-        `Donation status must be ${DonationStatus.MATCHED}`,
-      );
-    }
-
+  ): Promise<void> {
     const donationItemTransactionRepo =
       transactionManager.getRepository(DonationItem);
 
@@ -152,8 +139,6 @@ export class DonationItemsService {
         detailsConfirmed: true,
       });
     }
-
-    return donation;
   }
 
   async createMultiple(

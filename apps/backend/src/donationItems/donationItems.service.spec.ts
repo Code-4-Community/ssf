@@ -4,7 +4,6 @@ import { In } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { DonationItemsService } from './donationItems.service';
 import { Donation } from '../donations/donations.entity';
-import { DonationStatus } from '../donations/types';
 import { FoodType } from './types';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
@@ -335,27 +334,6 @@ describe('DonationItemsService', () => {
       );
       return result[0].item_id;
     }
-
-    it('throws NotFoundException when donation does not exist', async () => {
-      await expect(
-        testDataSource.transaction((tm) =>
-          service.confirmItemDetails(9999, [makeDto(1)], tm),
-        ),
-      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
-    });
-
-    it('throws BadRequestException when donation status is not MATCHED', async () => {
-      // Donation 1 has status 'available'
-      await expect(
-        testDataSource.transaction((tm) =>
-          service.confirmItemDetails(1, [makeDto(1)], tm),
-        ),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Donation status must be ${DonationStatus.MATCHED}`,
-        ),
-      );
-    });
 
     it('throws NotFoundException when a donation item does not exist', async () => {
       const donationId = await insertMatchedDonation();
