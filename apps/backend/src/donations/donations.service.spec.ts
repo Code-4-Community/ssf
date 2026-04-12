@@ -16,6 +16,7 @@ import {
 import { FoodType } from '../donationItems/types';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { EmailsService } from '../emails/email.service';
 
 jest.setTimeout(60000);
 
@@ -125,6 +126,10 @@ describe('DonationService', () => {
         {
           provide: DataSource,
           useValue: testDataSource,
+        },
+        {
+          provide: EmailsService,
+          useValue: { sendEmails: jest.fn() },
         },
       ],
     }).compile();

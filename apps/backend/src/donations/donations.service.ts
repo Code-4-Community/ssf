@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -15,11 +14,11 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class DonationService {
-  private readonly logger = new Logger(DonationService.name);
-
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
     @InjectRepository(Allocation)
@@ -30,6 +29,7 @@ export class DonationService {
     private manufacturerRepo: Repository<FoodManufacturer>,
     private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -203,13 +203,22 @@ export class DonationService {
           break;
         }
 
-        this.logger.log(`Placeholder for sending automated email`);
+        const { subject, bodyHTML } =
+          emailTemplates.fmRecurringDonationReminder({
+            fmName: donation.foodManufacturer.foodManufacturerName,
+          });
 
-        /**
-         * IMPORTANT: future logic below should only proceed if the email is successfully sent
-         */
-        const emailSent = true;
-        if (!emailSent) continue;
+        try {
+          const fmEmails = [
+            donation.foodManufacturer.secondaryContactEmail,
+          ].filter((e): e is string => e !== null);
+
+          if (fmEmails.length > 0) {
+            await this.emailsService.sendEmails(fmEmails, subject, bodyHTML);
+          }
+        } catch (e) {
+          continue;
+        }
 
         dates.splice(i, 1);
         i--;
@@ -225,11 +234,22 @@ export class DonationService {
 
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
-            this.logger.log(
-              `Placeholder for sending automated email for replacement date`,
-            );
-            const cascadeEmailSent = true;
-            if (!cascadeEmailSent) break;
+            const { subject: cs, bodyHTML: cb } =
+              emailTemplates.fmRecurringDonationReminder({
+                fmName: donation.foodManufacturer.foodManufacturerName,
+              });
+
+            try {
+              const fmEmails = [
+                donation.foodManufacturer.secondaryContactEmail,
+              ].filter((e): e is string => e !== null);
+
+              if (fmEmails.length > 0) {
+                await this.emailsService.sendEmails(fmEmails, cs, cb);
+              }
+            } catch (e) {
+              break;
+            }
 
             occurrences -= 1;
 

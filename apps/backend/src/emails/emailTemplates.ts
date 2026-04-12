@@ -98,4 +98,74 @@ export const emailTemplates = {
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),
+
+  fmRecurringDonationReminder: (params: { fmName: string }): EmailTemplate => ({
+    subject: 'Reminder: Submit Your Scheduled Recurring Donation with SSF',
+    bodyHTML: `
+      <p>Hi ${params.fmName},</p>
+      <p>
+        This is a friendly reminder from Securing Safe Food that your recurring donation
+        schedule indicates a new donation submission is due.
+      </p>
+      <p>
+        When you have a moment, please log into your account and submit your current
+        donation availability so we can continue matching your contributions with pantry requests.
+      </p>
+      <p>
+        We greatly appreciate your continued generosity and support of our mission. Your
+        recurring donations make a meaningful and consistent impact for the communities we serve.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  trackingLinkAvailable: (params: {
+    pantryName: string;
+    fmName: string;
+    trackingLink: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: `Tracking Information for your ${params.fmName} delivery (Securing Safe Food)`,
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Good news! Tracking information is now available for your upcoming SSF delivery
+        from ${params.fmName}. You can use this tracking information to monitor the
+        status of your shipment or log into your portal for more information on your
+        expected donation.
+      </p>
+      <p>
+        Tracking Link: <a href="${params.trackingLink}">${params.trackingLink}</a>
+      </p>
+      <p>
+        You can use the tracking link above to monitor your shipment, or <a href="${EMAIL_REDIRECT_URL}/login">log into your portal</a> for full order details and updates.
+      </p>
+      <p>
+        If you experience any issues or have questions, please contact your coordinator,
+        ${params.volunteerName}, at <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>, and our team will be happy to assist.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  pantryConfirmsOrderDelivery: (params: {
+    volunteerName: string;
+    pantryName: string;
+    fmName: string;
+  }): EmailTemplate => ({
+    subject: `${params.pantryName} Confirmed for your ${params.fmName} Order`,
+    bodyHTML: `
+      <p>Hi ${params.volunteerName},</p>
+      <p>
+        ${params.pantryName} has confirmed receipt of the most recent ${params.fmName}
+        order you are assigned to. Please log into the platform to review the completed
+        request or check for additional information.
+      </p>
+      <p>
+        Thank you for your coordination and support in helping reach this order to completion!
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
 };
