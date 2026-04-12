@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, In } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
+import { DonationStatus } from '../donations/types';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
+import { ConfirmDonationItemDetailsDto } from './dtos/confirm-donation-item-details.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -95,6 +101,59 @@ export class DonationItemsService {
     });
 
     return this.repo.save(donationItem);
+  }
+
+  async confirmItemDetails(
+    donationId: number,
+    body: ConfirmDonationItemDetailsDto[],
+    transactionManager: EntityManager,
+  ): Promise<Donation> {
+    const donationTransactionRepo = transactionManager.getRepository(Donation);
+
+    const donation = await donationTransactionRepo.findOneBy({ donationId });
+    if (!donation) {
+      throw new NotFoundException(`Donation ${donationId} not found`);
+    }
+
+    if (donation.status !== DonationStatus.MATCHED) {
+      throw new BadRequestException(
+        `Donation status must be ${DonationStatus.MATCHED}`,
+      );
+    }
+
+    const donationItemTransactionRepo =
+      transactionManager.getRepository(DonationItem);
+
+    for (const dto of body) {
+      const item = await donationItemTransactionRepo.findOneBy({
+        itemId: dto.itemId,
+      });
+
+      if (!item) {
+        throw new NotFoundException(`Donation item ${dto.itemId} not found`);
+      }
+
+      if (item.donationId !== donationId) {
+        throw new BadRequestException(
+          `Donation item ${dto.itemId} does not belong to Donation ${donationId}`,
+        );
+      }
+
+      if (item.detailsConfirmed) {
+        throw new BadRequestException(
+          `Donation item ${dto.itemId} has already been confirmed`,
+        );
+      }
+
+      await donationItemTransactionRepo.update(dto.itemId, {
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      });
+    }
+
+    return donation;
   }
 
   async createMultiple(

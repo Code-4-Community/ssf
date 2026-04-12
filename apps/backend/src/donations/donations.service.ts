@@ -379,45 +379,12 @@ export class DonationService {
   ): Promise<Donation> {
     validateId(donationId, 'Donation');
 
-    const donation = await this.repo.findOneBy({ donationId });
-    if (!donation) {
-      throw new NotFoundException(`Donation ${donationId} not found`);
-    }
-
-    if (donation.status !== DonationStatus.MATCHED) {
-      throw new BadRequestException(
-        `Donation status must be ${DonationStatus.MATCHED}`,
-      );
-    }
-
     return this.dataSource.transaction(async (transactionManager) => {
-      const transactionRepo = transactionManager.getRepository(DonationItem);
-
-      for (const dto of body) {
-        const item = await transactionRepo.findOne({
-          where: { itemId: dto.itemId, donationId },
-        });
-
-        if (!item) {
-          throw new BadRequestException(
-            `Donation item ${dto.itemId} does not belong to Donation ${donationId}`,
-          );
-        }
-
-        if (item.detailsConfirmed) {
-          throw new BadRequestException(
-            `Donation item ${dto.itemId} has already been confirmed`,
-          );
-        }
-
-        await transactionRepo.update(dto.itemId, {
-          ozPerItem: dto.ozPerItem,
-          estimatedValue: dto.estimatedValue,
-          foodRescue: dto.foodRescue,
-          detailsConfirmed: true,
-        });
-      }
-
+      const donation = await this.donationItemsService.confirmItemDetails(
+        donationId,
+        body,
+        transactionManager,
+      );
       return this.checkAndFulfillDonation(donation, transactionManager);
     });
   }

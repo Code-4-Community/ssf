@@ -4,10 +4,12 @@ import { In } from 'typeorm';
 import { DonationItem } from './donationItems.entity';
 import { DonationItemsService } from './donationItems.service';
 import { Donation } from '../donations/donations.entity';
+import { DonationStatus } from '../donations/types';
 import { FoodType } from './types';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
+import { ConfirmDonationItemDetailsDto } from './dtos/confirm-donation-item-details.dto';
 
 jest.setTimeout(60000);
 
@@ -293,6 +295,200 @@ describe('DonationItemsService', () => {
       );
 
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('confirmItemDetails', () => {
+    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+      itemId,
+      ozPerItem: 5.0,
+      estimatedValue: 10.0,
+      foodRescue: true,
+    });
+
+    async function insertMatchedDonation(): Promise<number> {
+      const result = await testDataSource.query(
+        `INSERT INTO donations
+          (food_manufacturer_id, status, recurrence, recurrence_freq,
+           next_donation_dates, occurrences_remaining)
+         VALUES (
+           (SELECT food_manufacturer_id FROM food_manufacturers
+            WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
+           'matched', 'none', NULL, NULL, NULL
+         )
+         RETURNING donation_id`,
+      );
+      return result[0].donation_id;
+    }
+
+    async function insertDonationItem(
+      donationId: number,
+      qty: number,
+      reserved: number,
+    ): Promise<number> {
+      const result = await testDataSource.query(
+        `INSERT INTO donation_items
+          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+         RETURNING item_id`,
+        [donationId, qty, reserved],
+      );
+      return result[0].item_id;
+    }
+
+    it('throws NotFoundException when donation does not exist', async () => {
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(9999, [makeDto(1)], tm),
+        ),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
+    });
+
+    it('throws BadRequestException when donation status is not MATCHED', async () => {
+      // Donation 1 has status 'available'
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(1, [makeDto(1)], tm),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        ),
+      );
+    });
+
+    it('throws NotFoundException when a donation item does not exist', async () => {
+      const donationId = await insertMatchedDonation();
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(donationId, [makeDto(99999)], tm),
+        ),
+      ).rejects.toThrow(new NotFoundException('Donation item 99999 not found'));
+    });
+
+    it('throws BadRequestException when an item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      // Item 1 belongs to donation 1, not the new donation
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(donationId, [makeDto(1)], tm),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to Donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when an item in the body is already confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+      await testDataSource.query(
+        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
+        [itemId],
+      );
+
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(donationId, [makeDto(itemId)], tm),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${itemId} has already been confirmed`,
+        ),
+      );
+    });
+
+    it('updates fields and sets detailsConfirmed to true for a single item', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const dto: ConfirmDonationItemDetailsDto = {
+        itemId,
+        ozPerItem: 8.5,
+        estimatedValue: 12.0,
+        foodRescue: false,
+      };
+
+      await testDataSource.transaction((tm) =>
+        service.confirmItemDetails(donationId, [dto], tm),
+      );
+
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(8.5);
+      expect(Number(item?.estimatedValue)).toBe(12.0);
+      expect(item?.foodRescue).toBe(false);
+      expect(item?.detailsConfirmed).toBe(true);
+    });
+
+    it('updates multiple items in a single call', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId, 10, 5);
+      const itemId2 = await insertDonationItem(donationId, 20, 10);
+
+      await testDataSource.transaction((tm) =>
+        service.confirmItemDetails(
+          donationId,
+          [
+            {
+              itemId: itemId1,
+              ozPerItem: 4.0,
+              estimatedValue: 8.0,
+              foodRescue: true,
+            },
+            {
+              itemId: itemId2,
+              ozPerItem: 6.0,
+              estimatedValue: 14.0,
+              foodRescue: false,
+            },
+          ],
+          tm,
+        ),
+      );
+
+      const item1 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId1 });
+      const item2 = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId: itemId2 });
+
+      expect(Number(item1?.ozPerItem)).toBe(4.0);
+      expect(item1?.foodRescue).toBe(true);
+      expect(item1?.detailsConfirmed).toBe(true);
+
+      expect(Number(item2?.ozPerItem)).toBe(6.0);
+      expect(item2?.foodRescue).toBe(false);
+      expect(item2?.detailsConfirmed).toBe(true);
+    });
+
+    it('rolls back all updates when one item does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      // Second dto references item 1 which belongs to donation 1, not ours
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.confirmItemDetails(
+            donationId,
+            [makeDto(itemId), makeDto(1)],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item 1 does not belong to Donation ${donationId}`,
+        ),
+      );
+
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(item?.detailsConfirmed).toBe(false);
+      expect(item?.ozPerItem).toBeNull();
     });
   });
 });
