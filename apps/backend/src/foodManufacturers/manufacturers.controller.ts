@@ -23,6 +23,7 @@ import {
   DonationDetailsDto,
   DonationReminderDto,
 } from './dtos/donation-details-dto';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -52,15 +53,23 @@ export class FoodManufacturersController {
     );
   }
 
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(FoodManufacturersService).findOne(entityId),
+        (manufacturer: FoodManufacturer) => [
+          manufacturer.foodManufacturerRepresentative.id,
+        ],
+      ),
+  })
   @Roles(Role.FOODMANUFACTURER)
   @Get('/:foodManufacturerId/next-two-reminders')
   async getNextTwoDonationReminders(
-    @Req() req: AuthenticatedRequest,
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<DonationReminderDto[]> {
     return this.foodManufacturersService.getUpcomingDonationReminders(
       foodManufacturerId,
-      req.user.id,
     );
   }
 

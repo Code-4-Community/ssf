@@ -167,21 +167,16 @@ describe('FoodManufacturersController', () => {
         },
       ];
 
-      const req = { user: { id: 1 } };
-
       mockManufacturersService.getUpcomingDonationReminders.mockResolvedValue(
         mockDonationReminders,
       );
 
-      const result = await controller.getNextTwoDonationReminders(
-        req as AuthenticatedRequest,
-        1,
-      );
+      const result = await controller.getNextTwoDonationReminders(1);
 
       expect(result).toEqual(mockDonationReminders);
       expect(
         mockManufacturersService.getUpcomingDonationReminders,
-      ).toHaveBeenCalledWith(1, 1);
+      ).toHaveBeenCalledWith(1);
     });
   });
 

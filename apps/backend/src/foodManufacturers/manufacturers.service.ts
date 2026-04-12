@@ -26,7 +26,7 @@ import {
   DonationReminderDto,
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
-import { DonationStatus } from '../donations/types';
+import { DonationStatus, RecurrenceEnum } from '../donations/types';
 import { ManufacturerStatsDto } from './dtos/manufacturer-stats.dto';
 
 @Injectable()
@@ -142,10 +142,8 @@ export class FoodManufacturersService {
 
   async getUpcomingDonationReminders(
     foodManufacturerId: number,
-    currentUserId: number,
   ): Promise<DonationReminderDto[]> {
     validateId(foodManufacturerId, 'Food Manufacturer');
-    validateId(currentUserId, 'User');
 
     const manufacturer = await this.repo.findOne({
       where: { foodManufacturerId },
@@ -158,12 +156,6 @@ export class FoodManufacturersService {
       );
     }
 
-    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new ForbiddenException(
-        `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
-      );
-    }
-
     const donations = await this.donationsRepo.find({
       where: { foodManufacturer: { foodManufacturerId } },
     });
@@ -171,10 +163,30 @@ export class FoodManufacturersService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const donationReminders: DonationReminderDto[] = donations.flatMap(
-      (donation) =>
-        (donation.nextDonationDates ?? [])
-          .filter((date) => date >= today)
-          .map((date) => ({ donation, reminderDate: date })),
+      (donation) => {
+        const allDates = donation.nextDonationDates ?? [];
+        const dates = allDates.filter((date) => date >= today);
+        const reminders: DonationReminderDto[] = dates.map((date) => ({
+          donation,
+          reminderDate: date,
+        }));
+
+        if (
+          donation.recurrence === RecurrenceEnum.WEEKLY &&
+          donation.recurrenceFreq &&
+          allDates.length > 0
+        ) {
+          for (const date of allDates) {
+            const nextDate = new Date(date);
+            nextDate.setDate(nextDate.getDate() + 7 * donation.recurrenceFreq);
+            if (nextDate >= today) {
+              reminders.push({ donation, reminderDate: nextDate });
+            }
+          }
+        }
+
+        return reminders;
+      },
     );
 
     donationReminders.sort(

@@ -582,7 +582,6 @@ describe('FoodManufacturersService', () => {
 
       const result = await service.getUpcomingDonationReminders(
         foodManufacturerId,
-        3,
       );
 
       expect(result).toHaveLength(2);
@@ -593,7 +592,7 @@ describe('FoodManufacturersService', () => {
     });
 
     it('returns empty array if no upcoming donation reminders exist', async () => {
-      const result = await service.getUpcomingDonationReminders(2, 4);
+      const result = await service.getUpcomingDonationReminders(2);
 
       expect(result).toEqual([]);
     });
@@ -614,7 +613,7 @@ describe('FoodManufacturersService', () => {
         ],
       );
 
-      const result = await service.getUpcomingDonationReminders(1, 3);
+      const result = await service.getUpcomingDonationReminders(1);
 
       expect(result).toHaveLength(2);
       expect(result[0].donation.donationId).toBeDefined();
@@ -622,6 +621,39 @@ describe('FoodManufacturersService', () => {
       expect(result[1].donation.donationId).toBeDefined();
       expect(result[1].reminderDate).toStrictEqual(futureDate2);
       expect(result[0].donation.donationId).toBe(result[1].donation.donationId);
+    });
+
+    it('generates next weekly occurrence when a later donation would otherwise take its slot', async () => {
+      const foodManufacturerId = 1;
+      const weeklyDate = new Date();
+      weeklyDate.setDate(weeklyDate.getDate() + 3);
+      const monthlyDate = new Date();
+      monthlyDate.setDate(monthlyDate.getDate() + 30);
+
+      // FM 1 has donations 1 and 4
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'weekly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 1`,
+        [weeklyDate.toISOString()],
+      );
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'monthly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 4`,
+        [monthlyDate.toISOString()],
+      );
+
+      const result = await service.getUpcomingDonationReminders(
+        foodManufacturerId,
+      );
+
+      const expectedSecondWeekly = new Date(weeklyDate);
+      expectedSecondWeekly.setDate(expectedSecondWeekly.getDate() + 7);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].donation.donationId).toBe(1);
+      expect(result[0].reminderDate).toStrictEqual(weeklyDate);
+      expect(result[1].donation.donationId).toBe(1);
+      expect(result[1].reminderDate).toStrictEqual(expectedSecondWeekly);
     });
 
     it('only returns the next two reminders when more exist', async () => {
@@ -643,24 +675,14 @@ describe('FoodManufacturersService', () => {
         ],
       );
 
-      const result = await service.getUpcomingDonationReminders(1, 3);
+      const result = await service.getUpcomingDonationReminders(1);
 
       expect(result).toHaveLength(2);
     });
 
     it('throws NotFoundException for non-existent manufacturer', async () => {
-      await expect(
-        service.getUpcomingDonationReminders(9999, 3),
-      ).rejects.toThrow(
+      await expect(service.getUpcomingDonationReminders(9999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 9999 not found'),
-      );
-    });
-
-    it('throws ForbiddenException when user is not the representative of the food manufacturer', async () => {
-      await expect(service.getUpcomingDonationReminders(1, 4)).rejects.toThrow(
-        new ForbiddenException(
-          'User 4 is not allowed to access donations for Food Manufacturer 1',
-        ),
       );
     });
   });
