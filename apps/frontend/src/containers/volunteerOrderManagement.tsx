@@ -47,6 +47,7 @@ const STATUS_TITLES: Record<OrderStatus, string> = {
 
 const hasRequiredActions = (order: VolunteerOrder): boolean => {
   if (!order.actionCompletion) return false;
+  if (order.status !== OrderStatus.SHIPPED) return false;
   return (
     !order.actionCompletion.confirmDonationReceipt ||
     !order.actionCompletion.notifyPantry
