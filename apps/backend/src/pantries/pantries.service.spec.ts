@@ -497,7 +497,9 @@ describe('PantriesService', () => {
       await expect(
         service.getPantryStats(['Riverside Food Assistance']),
       ).rejects.toThrow(
-        new NotFoundException('Pantries not found: Riverside Food Assistance'),
+        new NotFoundException(
+          'Pantries not approved: Riverside Food Assistance',
+        ),
       );
     });
 
@@ -505,7 +507,7 @@ describe('PantriesService', () => {
       await expect(
         service.getPantryStats(['Harbor Community Center']),
       ).rejects.toThrow(
-        new NotFoundException('Pantries not found: Harbor Community Center'),
+        new NotFoundException('Pantries not approved: Harbor Community Center'),
       );
     });
 
@@ -1017,7 +1019,7 @@ describe('PantriesService', () => {
           addVolunteerIds: [],
           removeVolunteerIds: [99999],
         }),
-      ).rejects.toThrow(new NotFoundException('One or more users not found'));
+      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
     });
 
     it('throws BadRequestException for duplicate IDs in addVolunteerIds', async () => {

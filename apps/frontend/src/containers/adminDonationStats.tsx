@@ -44,17 +44,14 @@ const AdminDonationStats: React.FC = () => {
     const fetchInitialData = async () => {
       try {
         const names = await ApiClient.getApprovedPantryNames();
-        if (names) setPantryNameOptions(names);
+        setPantryNameOptions(names);
       } catch {
         setAlertMessage('Error fetching pantry names');
       }
 
       try {
         const years = await ApiClient.getPantryOrderYears();
-        if (years) {
-          setAvailableYears(years);
-          setSelectedYears(years);
-        }
+        setAvailableYears(years);
       } catch {
         setAlertMessage('Error fetching available years');
       }
@@ -66,38 +63,25 @@ const AdminDonationStats: React.FC = () => {
     // Total stats only displayed on first page, so no need to do anything on page change
     if (currentPage !== 1) return;
 
-    // If years are available but none are selected, the user has explicitly deselected all — show nothing
-    if (availableYears.length > 0 && selectedYears.length === 0) {
-      setTotalStats(undefined);
-      return;
-    }
-
     const fetchTotalStats = async () => {
-      const allSelected = selectedYears.length === availableYears.length;
       try {
         const stats = await ApiClient.getTotalStats(
-          allSelected ? undefined : selectedYears,
+          selectedYears.length ? selectedYears : undefined,
         );
-        if (stats) setTotalStats(stats);
+        setTotalStats(stats);
       } catch {
         setAlertMessage('Error fetching total stats');
       }
     };
     fetchTotalStats();
-  }, [selectedYears, availableYears, currentPage]);
+  }, [selectedYears, currentPage]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      // If years are available but none are selected, show zeros — don't fetch
-      if (availableYears.length > 0 && selectedYears.length === 0) {
-        setPantryStats([]);
-        return;
-      }
       try {
-        const allSelected = selectedYears.length === availableYears.length;
         const stats = await ApiClient.getPantryStats({
           pantryNames: selectedPantries.length ? selectedPantries : undefined,
-          years: allSelected ? undefined : selectedYears,
+          years: selectedYears.length ? selectedYears : undefined,
           page: currentPage,
         });
         setPantryStats(stats);
@@ -106,7 +90,7 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchStats();
-  }, [selectedPantries, selectedYears, availableYears, currentPage]);
+  }, [selectedPantries, selectedYears, currentPage]);
 
   const handlePantryNameFilterChange = (name: string, checked: boolean) => {
     // For simplicity, reset the page
@@ -128,26 +112,16 @@ const AdminDonationStats: React.FC = () => {
     }
   };
 
-  const allYearsSelected =
-    availableYears.length > 0 && selectedYears.length === availableYears.length;
-
-  // Default All Available Data, otherwise display as many years as possible in ascending order
   const yearButtonLabel =
-    allYearsSelected || selectedYears.length === 0
-      ? 'All Available Data'
+    selectedYears.length === 0
+      ? 'Year'
       : [...selectedYears].sort((a, b) => a - b).join(', ');
-
-  const zerosMode = availableYears.length > 0 && selectedYears.length === 0;
 
   const itemsPerPage = 10;
   const pantryList =
     selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
   const totalCount = pantryList.length;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-  // For zeros mode, paginate the pantry name list locally
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const zeroPagedNames = pantryList.slice(startIdx, startIdx + itemsPerPage);
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -332,18 +306,6 @@ const AdminDonationStats: React.FC = () => {
                   fontWeight="500"
                   gap={2}
                 >
-                  <Checkbox.Root
-                    checked={allYearsSelected}
-                    onCheckedChange={(e: { checked: boolean }) => {
-                      setCurrentPage(1);
-                      setSelectedYears(e.checked ? [...availableYears] : []);
-                    }}
-                    size="md"
-                  >
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control borderRadius="sm" />
-                    <Checkbox.Label>All Available Data</Checkbox.Label>
-                  </Checkbox.Root>
                   {[...availableYears].map((year) => (
                     <Checkbox.Root
                       key={year}
@@ -476,105 +438,56 @@ const AdminDonationStats: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           )}
-          {zerosMode
-            ? zeroPagedNames.map((name) => (
-                <Table.Row key={name} _hover={{ bg: 'neutral.50' }}>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                    py={0}
-                  >
-                    {name}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    0
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    0.00
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    0.00
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    $0.00
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    $0.00
-                  </Table.Cell>
-                  <Table.Cell textStyle="p2">$0.00</Table.Cell>
-                </Table.Row>
-              ))
-            : pantryStats.map((stat) => (
-                <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                    py={0}
-                  >
-                    {stat.pantryName}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    {stat.totalItems}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    {stat.totalOz.toFixed(2)}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    {stat.totalLbs.toFixed(2)}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    ${stat.totalDonatedFoodValue.toFixed(2)}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    ${stat.totalShippingCost.toFixed(2)}
-                  </Table.Cell>
-                  <Table.Cell textStyle="p2">
-                    ${stat.totalValue.toFixed(2)}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
+          {pantryStats.map((stat) => (
+            <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                py={0}
+              >
+                {stat.pantryName}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                {stat.totalItems}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                {stat.totalOz.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                {stat.totalLbs.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                ${stat.totalDonatedFoodValue.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
+                ${stat.totalShippingCost.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell textStyle="p2">
+                ${stat.totalValue.toFixed(2)}
+              </Table.Cell>
+            </Table.Row>
+          ))}
         </Table.Body>
       </Table.Root>
 

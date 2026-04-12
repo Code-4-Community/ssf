@@ -161,28 +161,17 @@ export class PantriesService {
       throw new BadRequestException('Page number must be greater than 0');
     }
 
-    const nameArray = pantryNames
-      ? Array.isArray(pantryNames)
-        ? pantryNames
-        : [pantryNames]
-      : undefined;
-    const yearsArray = years
-      ? (Array.isArray(years) ? years : [years]).map(Number)
-      : undefined;
-
     let paginated: { pantryId: number; pantryName: string }[];
 
     // If names were provided, validate ALL of them before paginating
-    if (nameArray?.length) {
+    if (pantryNames?.length) {
       const allMatched = await this.repo.find({
-        select: ['pantryId', 'pantryName'],
-        where: {
-          pantryName: In(nameArray),
-        },
+        select: ['pantryId', 'pantryName', 'status'],
+        where: { pantryName: In(pantryNames) },
         order: { pantryId: 'ASC' },
       });
 
-      const missingNames = nameArray.filter(
+      const missingNames = pantryNames.filter(
         (name) => !allMatched.some((p) => p.pantryName === name),
       );
       if (missingNames.length > 0) {
@@ -191,10 +180,20 @@ export class PantriesService {
         );
       }
 
+      const unapprovedNames = allMatched
+        .filter((p) => p.status !== ApplicationStatus.APPROVED)
+        .map((p) => p.pantryName);
+      if (unapprovedNames.length > 0) {
+        throw new NotFoundException(
+          `Pantries not approved: ${unapprovedNames.join(', ')}`,
+        );
+      }
+
       paginated = allMatched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     } else {
       paginated = await this.repo.find({
         select: ['pantryId', 'pantryName'],
+        where: { status: ApplicationStatus.APPROVED },
         order: { pantryId: 'ASC' },
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
@@ -204,7 +203,7 @@ export class PantriesService {
     if (paginated.length === 0) return [];
 
     const pantryIds = paginated.map((p) => p.pantryId);
-    const stats = await this.aggregateStats(pantryIds, yearsArray);
+    const stats = await this.aggregateStats(pantryIds, years);
     const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
 
     return paginated.map((p) => {
@@ -222,6 +221,7 @@ export class PantriesService {
   async getTotalStats(years?: number[]): Promise<TotalStats> {
     const pantries = await this.repo.find({
       select: ['pantryId'],
+      where: { status: ApplicationStatus.APPROVED },
     });
 
     if (pantries.length === 0) {
@@ -229,11 +229,7 @@ export class PantriesService {
     }
 
     const pantryIds = pantries.map((p) => p.pantryId);
-    const yearsArray = years
-      ? (Array.isArray(years) ? years : [years]).map(Number)
-      : undefined;
-
-    const stats = await this.aggregateStats(pantryIds, yearsArray);
+    const stats = await this.aggregateStats(pantryIds, years);
 
     const totalStats = { ...this.EMPTY_STATS };
     let totalFoodRescueItems = 0;
