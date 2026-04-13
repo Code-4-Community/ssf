@@ -777,7 +777,7 @@ describe('PantriesService', () => {
   });
 
   describe('getPantryOrderYears', () => {
-    it('returns years from approved pantry orders sorted descending', async () => {
+    it('returns years from pantry orders sorted descending', async () => {
       await testDataSource.query(
         `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
       );
@@ -804,23 +804,8 @@ describe('PantriesService', () => {
       expect(years).toEqual([2025, 2024]);
     });
 
-    it('returns empty array when no approved pantries exist', async () => {
-      await testDataSource.query(
-        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
-      );
-
-      const years = await service.getPantryOrderYears();
-
-      expect(years).toEqual([]);
-    });
-
-    it('excludes years from non-approved pantry orders', async () => {
-      await testDataSource.query(
-        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
-      );
-      await testDataSource.query(
-        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
-      );
+    it('returns empty array when no orders exist', async () => {
+      await testDataSource.query(`DELETE FROM public.orders`);
 
       const years = await service.getPantryOrderYears();
 
