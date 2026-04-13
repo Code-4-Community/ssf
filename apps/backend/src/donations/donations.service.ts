@@ -383,10 +383,7 @@ export class DonationService {
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
-      const donation = await donationTransactionRepo.findOne({
-        where: { donationId },
-        relations: ['donationItems'],
-      });
+      const donation = await donationTransactionRepo.findOneBy({ donationId });
 
       if (!donation) {
         throw new NotFoundException(`Donation ${donationId} not found`);

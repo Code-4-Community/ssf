@@ -1283,6 +1283,8 @@ describe('DonationService', () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 10);
 
+      const spy = jest.spyOn(service, 'checkAndFulfillDonation');
+
       const result = await service.confirmDonationItemDetails(donationId, [
         makeDto(itemId),
       ]);
@@ -1295,6 +1297,7 @@ describe('DonationService', () => {
       );
       const dbDonation = await service.findOne(donationId);
       expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+      expect(spy).toHaveBeenCalled();
     });
   });
 
