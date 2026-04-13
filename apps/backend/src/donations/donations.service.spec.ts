@@ -1320,6 +1320,19 @@ describe('DonationService', () => {
     it('returns donation unchanged when not all items are fulfilled', async () => {
       const donationId = await insertMatchedDonation();
       // reservedQuantity (5) != quantity (10), detailsConfirmed = false
+      await insertDonationItem(donationId, 10, 10);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('returns donation unchanged when not all items have reservedQuantity = quantity', async () => {
+      const donationId = await insertMatchedDonation();
+      // reservedQuantity (5) != quantity (10), detailsConfirmed = false
       await insertDonationItem(donationId, 10, 5);
 
       const donation = await service.findOne(donationId);

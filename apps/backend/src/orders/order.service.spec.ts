@@ -511,7 +511,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('checkAndFulfillDonation', () => {
+  describe('checkAndFulfillDonations', () => {
     it('does not fulfill associated donation when items are not fully reserved or confirmed', async () => {
       // Create a matched donation with an item that is not fully reserved
       const [{ donation_id }] = await testDataSource.query(`
