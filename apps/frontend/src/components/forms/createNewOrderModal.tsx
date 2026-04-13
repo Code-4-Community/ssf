@@ -15,9 +15,8 @@ import {
   Input,
 } from '@chakra-ui/react';
 import {
-  CreateOrderDto,
   DonationItemsGroupedByFoodType,
-  FoodManufacturer,
+  FoodManufacturerWithoutRelations,
   FoodRequest,
   MatchingItemsDto,
   MatchingManufacturersDto,
@@ -31,23 +30,23 @@ interface CreateNewOrderModalModalProps {
   request: FoodRequest;
   isOpen: boolean;
   onClose: () => void;
-  onOrderCreate: () => void;
+  onSuccess: () => void;
 }
 
 const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   request,
   isOpen,
   onClose,
-  onOrderCreate,
+  onSuccess,
 }) => {
   const [alertState, setAlertMessage] = useAlert();
   const [selectedManufacturer, setSelectedManufacturer] =
-    useState<FoodManufacturer | null>(null);
+    useState<FoodManufacturerWithoutRelations | null>(null);
   const [manufacturers, setManufacturers] =
     useState<MatchingManufacturersDto | null>(null);
   const [manufacturerItems, setManufacturerItems] =
     useState<MatchingItemsDto | null>(null);
-  const [newOrderState, setNewOrderState] = useState<boolean>(false);
+  const [isCreatingNewOrder, setIsCreatingNewOrder] = useState<boolean>(false);
   const [itemAllocations, setItemAllocations] = useState<
     Record<number, number>
   >({});
@@ -64,7 +63,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       }
     };
     fetchManufacturers();
-  });
+  }, [request, setAlertMessage]);
 
   // Set initial itemAllocations to be equal to avaliable quantity left
   useEffect(() => {
@@ -83,41 +82,33 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   }, [manufacturerItems]);
 
   // Collection for option group select element to seperate by matching stock and non matching stock
-  const manufacturerCollection = createListCollection({
-    items: manufacturers
-      ? [
-          ...manufacturers.matchingManufacturers.map((m) => ({
+  const categories = manufacturers
+    ? [
+        {
+          category: 'Matching Stock',
+          items: manufacturers.matchingManufacturers.map((m) => ({
             label: m.foodManufacturerName,
             value: m.foodManufacturerId,
-            category: 'Matching Stock',
           })),
-          ...manufacturers.nonMatchingManufacturers.map((m) => ({
+        },
+        {
+          category: 'Other',
+          items: manufacturers.nonMatchingManufacturers.map((m) => ({
             label: m.foodManufacturerName,
             value: m.foodManufacturerId,
-            category: 'Other',
           })),
-        ]
-      : [],
-  });
+        },
+      ]
+    : [];
 
-  const categories = [
-    {
-      category: 'Matching Stock',
-      items:
-        manufacturers?.matchingManufacturers.map((m) => ({
-          label: m.foodManufacturerName,
-          value: m.foodManufacturerId,
-        })) || [],
-    },
-    {
-      category: 'Other',
-      items:
-        manufacturers?.nonMatchingManufacturers.map((m) => ({
-          label: m.foodManufacturerName,
-          value: m.foodManufacturerId,
-        })) || [],
-    },
-  ];
+  const manufacturerCollection = createListCollection({
+    items: categories.flatMap(({ category, items }) =>
+      items.map((item) => ({
+        ...item,
+        category,
+      })),
+    ),
+  });
 
   const onChooseManufacturer = async (manufacturerId: number) => {
     if (!manufacturers) return;
@@ -143,13 +134,13 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   const onSubmitNewOrder = async () => {
     const data = {
       foodRequestId: request.requestId,
-      manufacturerId: selectedManufacturer?.foodManufacturerId,
+      manufacturerId: selectedManufacturer!.foodManufacturerId,
       itemAllocations: itemAllocations,
-    } as CreateOrderDto;
+    };
 
     try {
       await apiClient.createOrder(data);
-      onOrderCreate();
+      onSuccess();
     } catch {
       setAlertMessage('Error creating new order');
     }
@@ -201,12 +192,12 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
           <Dialog.Body pb={6}>
             <VStack align="stretch" gap={4}>
               <Text textStyle="p2" color="gray.dark" mt={3}>
-                {!newOrderState
+                {!isCreatingNewOrder
                   ? 'Begin by selecting a Food Manufacturer below that fulfills the requested food types.'
                   : 'Add the amount of each product you would like to add to this order.'}
               </Text>
 
-              {!newOrderState && (
+              {!isCreatingNewOrder && (
                 <Select.Root
                   collection={manufacturerCollection}
                   size="sm"
@@ -267,7 +258,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                 </Select.Root>
               )}
 
-              {manufacturerItems && !newOrderState && (
+              {manufacturerItems && !isCreatingNewOrder && (
                 <Box>
                   <Text {...sectionTitleStyles} mb={3}>
                     Donation Stock
@@ -347,14 +338,14 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                 </Box>
               )}
 
-              {!newOrderState && (
+              {!isCreatingNewOrder && (
                 <Button
                   textStyle="p2"
                   fontWeight={600}
                   bg={'blue.hover'}
                   color={'white'}
                   disabled={!selectedManufacturer}
-                  onClick={() => setNewOrderState(true)}
+                  onClick={() => setIsCreatingNewOrder(true)}
                   w="40%"
                   ml="auto"
                 >
@@ -362,7 +353,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                 </Button>
               )}
 
-              {manufacturerItems && newOrderState && (
+              {manufacturerItems && isCreatingNewOrder && (
                 <Box>
                   <Text {...sectionTitleStyles} my={3} mb={6}>
                     {selectedManufacturer?.foodManufacturerName} Stock
@@ -402,6 +393,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
 
                               <Input
                                 type="number"
+                                step={1}
                                 _focusVisible={{
                                   outline: 'none',
                                 }}
@@ -433,7 +425,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                 </Box>
               )}
 
-              {newOrderState && (
+              {isCreatingNewOrder && (
                 <Flex justifyContent="flex-end" mt={2} gap={2.5}>
                   <Button
                     textStyle="p2"
@@ -442,7 +434,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                     variant="outline"
                     borderColor="neutral.200"
                     onClick={() => {
-                      setNewOrderState(false);
+                      setIsCreatingNewOrder(false);
                       setSelectedManufacturer(null);
                       setManufacturerItems(null);
                     }}

@@ -33,6 +33,7 @@ import {
   MatchingItemsDto,
   CreateOrderDto,
   DonationDetails,
+  FoodRequestWithoutRelations,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -99,10 +100,12 @@ export class ApiClient {
     return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
-  public async closeFoodRequest(requestId: number): Promise<FoodRequest> {
+  public async closeFoodRequest(
+    requestId: number,
+  ): Promise<FoodRequestWithoutRelations> {
     return this.patch(
       `/api/requests/${requestId}/close`,
-    ) as Promise<FoodRequest>;
+    ) as Promise<FoodRequestWithoutRelations>;
   }
 
   private async patch(path: string, body?: unknown): Promise<unknown> {
@@ -322,8 +325,10 @@ export class ApiClient {
     });
   }
 
-  public async createOrder(dto: CreateOrderDto): Promise<Order> {
-    return this.post(`/api/orders`, dto) as Promise<Order>;
+  public async createOrder(
+    dto: CreateOrderDto,
+  ): Promise<OrderWithoutRelations> {
+    return this.post(`/api/orders`, dto) as Promise<OrderWithoutRelations>;
   }
 
   public async updatePantry(

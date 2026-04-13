@@ -14,7 +14,7 @@ import {
 import ApiClient from '@api/apiClient';
 import {
   FoodRequestSummaryDto,
-  GroupedByFoodType,
+  OrderItemDetailsGroupedByFoodType,
   OrderDetails,
 } from 'types/types';
 import { FoodRequestStatus } from '../../types/types';
@@ -73,9 +73,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   }, [isOpen, orderId, setAlertMessage]);
 
-  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
-    orderDetails?.items,
-  );
+  const groupedOrderItemsByType: OrderItemDetailsGroupedByFoodType =
+    useGroupedItemsByFoodType(orderDetails?.items);
 
   const sectionTitleStyles = {
     textStyle: 'p2',

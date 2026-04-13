@@ -119,8 +119,8 @@ export enum DonationStatus {
 }
 
 export class MatchingManufacturersDto {
-  matchingManufacturers!: FoodManufacturer[];
-  nonMatchingManufacturers!: FoodManufacturer[];
+  matchingManufacturers!: FoodManufacturerWithoutRelations[];
+  nonMatchingManufacturers!: FoodManufacturerWithoutRelations[];
 }
 
 export class MatchingItemsDto {
@@ -131,7 +131,7 @@ export class MatchingItemsDto {
 export class CreateOrderDto {
   foodRequestId!: number;
   manufacturerId!: number;
-  itemAllocations!: Record<string, unknown>;
+  itemAllocations!: Record<string, number>;
 }
 
 export class DonationItemDetailsDto {
@@ -229,16 +229,19 @@ export interface UserDto {
   role: Role;
 }
 
-export interface FoodRequest {
+export interface FoodRequest extends FoodRequestWithoutRelations {
+  pantry: Pantry;
+  orders?: Order[];
+}
+
+export interface FoodRequestWithoutRelations {
   requestId: number;
   pantryId: number;
-  pantry: Pantry;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
   additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
-  orders?: Order[];
 }
 
 export interface FoodRequestSummaryDto {
@@ -291,11 +294,15 @@ export interface OrderDetails {
   items: OrderItemDetails[];
 }
 
-export interface FoodManufacturer {
+export interface FoodManufacturer extends FoodManufacturerWithoutRelations {
+  foodManufacturerRepresentative: User;
+  donations: Donation[];
+}
+
+export interface FoodManufacturerWithoutRelations {
   foodManufacturerId: number;
   foodManufacturerName: string;
   foodManufacturerWebsite: string;
-  foodManufacturerRepresentative: User;
   secondaryContactFirstName?: string;
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
@@ -310,7 +317,6 @@ export interface FoodManufacturer {
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
   newsletterSubscription?: boolean;
-  donations: Donation[];
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -396,11 +402,6 @@ export enum FoodRequestStatus {
   CLOSED = 'closed',
 }
 
-export enum VolunteerRequestAction {
-  CREATE_NEW_ORDER = 'createNewOrder',
-  CLOSE_REQUEST = 'closeRequest',
-}
-
 export enum DonationFrequency {
   YEARLY = 'yearly',
   BIWEEKLY = 'biweekly',
@@ -466,7 +467,9 @@ export type TotalStats = Omit<PantryStats, 'pantryId'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 
-export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
+export type OrderItemDetailsGroupedByFoodType = Partial<
+  Record<FoodType, OrderItemDetails[]>
+>;
 
 export type DonationItemsGroupedByFoodType = Partial<
   Record<FoodType, DonationItemDetailsDto[]>

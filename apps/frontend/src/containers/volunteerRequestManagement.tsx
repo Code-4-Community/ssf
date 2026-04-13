@@ -46,15 +46,15 @@ const VolunteerRequestManagement: React.FC = () => {
     try {
       const data = await ApiClient.getVolunteerAssignedRequests();
       setRequests(data);
-    } catch (error) {
+    } catch {
       setIsAlertError(true);
-      setAlertMessage('Error fetching requests' + error);
+      setAlertMessage('Error fetching requests');
     }
   };
 
   useEffect(() => {
     fetchRequests();
-  });
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -254,10 +254,7 @@ const VolunteerRequestManagement: React.FC = () => {
         </Table.Header>
         <Table.Body>
           {paginatedRequests.map((request, index) => (
-            <Table.Row
-              key={`${request.requestId}-${index}`}
-              _hover={{ bg: 'gray.50' }}
-            >
+            <Table.Row key={request.requestId} _hover={{ bg: 'gray.50' }}>
               <Table.Cell
                 {...tableCellStyles}
                 borderRight="1px solid"
@@ -382,7 +379,7 @@ const VolunteerRequestManagement: React.FC = () => {
               request={selectedCreateOrderRequest}
               isOpen={true}
               onClose={() => setSelectedCreateOrderRequest(null)}
-              onOrderCreate={() => {
+              onSuccess={() => {
                 setSelectedCreateOrderRequest(null);
                 setIsAlertError(false);
                 setAlertMessage('Order Created');
