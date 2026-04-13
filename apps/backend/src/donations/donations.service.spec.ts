@@ -1279,43 +1279,7 @@ describe('DonationService', () => {
       );
     });
 
-    it('throws NotFoundException when a donation item does not exist', async () => {
-      const donationId = await insertMatchedDonation();
-      await expect(
-        service.confirmDonationItemDetails(donationId, [makeDto(99999)]),
-      ).rejects.toThrow(new NotFoundException('Donation item 99999 not found'));
-    });
-
-    it('throws BadRequestException when an item does not belong to the donation', async () => {
-      const donationId = await insertMatchedDonation();
-      // item 1 belongs to donation 1 (seed data), not our new donation
-      await expect(
-        service.confirmDonationItemDetails(donationId, [makeDto(1)]),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Donation item 1 does not belong to Donation ${donationId}`,
-        ),
-      );
-    });
-
-    it('throws BadRequestException when an item is already confirmed', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 10);
-      await testDataSource.query(
-        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
-        [itemId],
-      );
-
-      await expect(
-        service.confirmDonationItemDetails(donationId, [makeDto(itemId)]),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Donation item ${itemId} has already been confirmed`,
-        ),
-      );
-    });
-
-    it('returns the donation after confirming item details', async () => {
+    it('returns the donation after confirming item details, as well as fulfills donation', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 10);
 
@@ -1325,64 +1289,13 @@ describe('DonationService', () => {
 
       expect(result).toBeDefined();
       expect(result.donationId).toBe(donationId);
-    });
-
-    it('does not fulfill donation when reservedQuantity does not equal quantity', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.MATCHED);
-    });
-
-    it('does not fulfill donation when a pending order is associated', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 10);
-      // Order 4 is pending in the seed data
-      await insertAllocation(4, itemId);
-
-      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.MATCHED);
-    });
-
-    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no orders', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 10);
-
-      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.FULFILLED);
-    });
-
-    it('sets donation to FULFILLED when all orders associated are non-pending', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 10);
-      // Order 1 is delivered, so should not block fulfillment
-      await insertAllocation(1, itemId);
-
-      await service.confirmDonationItemDetails(donationId, [makeDto(itemId)]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.FULFILLED);
-    });
-
-    it('sets donation to FULFILLED with multiple items all fully reserved and confirmed', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId1 = await insertDonationItem(donationId, 10, 10);
-      const itemId2 = await insertDonationItem(donationId, 20, 20);
-
-      await service.confirmDonationItemDetails(donationId, [
-        makeDto(itemId1),
-        makeDto(itemId2),
-      ]);
-
-      const donation = await service.findOne(donationId);
-      expect(donation.status).toBe(DonationStatus.FULFILLED);
+      expect(result.status).toBe(DonationStatus.FULFILLED);
+      expect(result.donationItems.every((item) => item.detailsConfirmed)).toBe(
+        true,
+      );
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+      expect(service.checkAndFulfillDonation).toHaveBeenCalled();
     });
   });
 

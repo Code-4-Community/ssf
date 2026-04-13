@@ -436,10 +436,12 @@ describe('DonationItemsService', () => {
 
       expect(Number(item1?.ozPerItem)).toBe(4.0);
       expect(item1?.foodRescue).toBe(true);
+      expect(item1?.estimatedValue).toBe(8.0);
       expect(item1?.detailsConfirmed).toBe(true);
 
       expect(Number(item2?.ozPerItem)).toBe(6.0);
       expect(item2?.foodRescue).toBe(false);
+      expect(item1?.estimatedValue).toBe(14.0);
       expect(item2?.detailsConfirmed).toBe(true);
     });
 

@@ -490,7 +490,7 @@ export class OrdersService {
     await this.checkAndFulfillDonations(orderId);
   }
 
-  private async checkAndFulfillDonations(orderId: number): Promise<void> {
+  async checkAndFulfillDonations(orderId: number): Promise<void> {
     const affectedDonations = await this.donationItemRepo
       .createQueryBuilder('item')
       .innerJoin('item.allocations', 'allocation')
