@@ -36,10 +36,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
     {
       type: 'group',
       label: 'Pantries',
-      children: [
-        { label: 'Pantry Management', to: '/pantries' },
-        { label: 'Application Review', to: '/approve-pantries' },
-      ],
+      children: [{ label: 'Application Review', to: '/approve-pantries' }],
     },
     {
       type: 'group',

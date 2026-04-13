@@ -74,22 +74,6 @@ const router = createBrowserRouter([
         element: <Unauthorized />,
       },
       {
-        path: '/pantries',
-        element: (
-          <ProtectedRoute>
-            <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantries',
-        element: (
-          <ProtectedRoute>
-            <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: '/request-form',
         element: (
           <ProtectedRoute>
