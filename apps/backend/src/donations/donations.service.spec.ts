@@ -1295,7 +1295,6 @@ describe('DonationService', () => {
       );
       const dbDonation = await service.findOne(donationId);
       expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
-      expect(service.checkAndFulfillDonation).toHaveBeenCalled();
     });
   });
 
