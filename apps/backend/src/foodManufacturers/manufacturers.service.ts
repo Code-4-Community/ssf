@@ -27,6 +27,7 @@ import {
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
 import { DonationStatus, RecurrenceEnum } from '../donations/types';
+import { calculateNextDonationDate } from '../donations/recurrence.utils';
 import { ManufacturerStatsDto } from './dtos/manufacturer-stats.dto';
 
 @Injectable()
@@ -172,13 +173,16 @@ export class FoodManufacturersService {
         }));
 
         if (
-          donation.recurrence === RecurrenceEnum.WEEKLY &&
+          donation.recurrence !== RecurrenceEnum.NONE &&
           donation.recurrenceFreq &&
           allDates.length > 0
         ) {
           for (const date of allDates) {
-            const nextDate = new Date(date);
-            nextDate.setDate(nextDate.getDate() + 7 * donation.recurrenceFreq);
+            const nextDate = calculateNextDonationDate(
+              date,
+              donation.recurrence,
+              donation.recurrenceFreq,
+            );
             if (nextDate >= today) {
               reminders.push({ donation, reminderDate: nextDate });
             }

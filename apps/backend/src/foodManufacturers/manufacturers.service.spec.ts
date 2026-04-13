@@ -623,6 +623,72 @@ describe('FoodManufacturersService', () => {
       expect(result[0].donation.donationId).toBe(result[1].donation.donationId);
     });
 
+    it('monthly donation recurs twice before yearly donation', async () => {
+      const foodManufacturerId = 1;
+      const monthlyDate = new Date();
+      monthlyDate.setDate(monthlyDate.getDate() + 60);
+      const yearlyDate = new Date();
+      yearlyDate.setFullYear(yearlyDate.getFullYear() + 1);
+
+      // FM 1 has donations 1 and 4
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'monthly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 1`,
+        [monthlyDate.toISOString()],
+      );
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'yearly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 4`,
+        [yearlyDate.toISOString()],
+      );
+
+      const result = await service.getUpcomingDonationReminders(
+        foodManufacturerId,
+      );
+
+      const expectedSecondMonthly = new Date(monthlyDate);
+      expectedSecondMonthly.setMonth(expectedSecondMonthly.getMonth() + 1);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].donation.donationId).toBe(1);
+      expect(result[0].reminderDate).toStrictEqual(monthlyDate);
+      expect(result[1].donation.donationId).toBe(1);
+      expect(result[1].reminderDate).toStrictEqual(expectedSecondMonthly);
+    });
+
+    it('yearly donation recurs twice before every-3-years donation', async () => {
+      const foodManufacturerId = 1;
+      const yearlyDate = new Date();
+      yearlyDate.setDate(yearlyDate.getDate() + 30);
+      const threeYearlyDate = new Date();
+      threeYearlyDate.setFullYear(threeYearlyDate.getFullYear() + 3);
+
+      // FM 1 has donations 1 and 4
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'yearly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 1`,
+        [yearlyDate.toISOString()],
+      );
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'yearly', recurrence_freq = 3, occurrences_remaining = 5
+        WHERE donation_id = 4`,
+        [threeYearlyDate.toISOString()],
+      );
+
+      const result = await service.getUpcomingDonationReminders(
+        foodManufacturerId,
+      );
+
+      const expectedSecondYearly = new Date(yearlyDate);
+      expectedSecondYearly.setFullYear(expectedSecondYearly.getFullYear() + 1);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].donation.donationId).toBe(1);
+      expect(result[0].reminderDate).toStrictEqual(yearlyDate);
+      expect(result[1].donation.donationId).toBe(1);
+      expect(result[1].reminderDate).toStrictEqual(expectedSecondYearly);
+    });
+
     it('generates next weekly occurrence when a later donation would otherwise take its slot', async () => {
       const foodManufacturerId = 1;
       const weeklyDate = new Date();
