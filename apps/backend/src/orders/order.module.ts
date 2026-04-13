@@ -1,4 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { DonationModule } from '../donations/donations.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersController } from './order.controller';
 import { Order } from './order.entity';
@@ -15,7 +16,6 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
-import { DonationModule } from '../donations/donations.module';
 import { Donation } from '../donations/donations.entity';
 
 @Module({

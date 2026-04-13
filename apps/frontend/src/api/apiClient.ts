@@ -32,6 +32,7 @@ import {
   MatchingManufacturersDto,
   MatchingItemsDto,
   CreateOrderDto,
+  DonationDetails,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -118,7 +119,7 @@ export class ApiClient {
 
   public async getAllDonationsByFoodManufacturer(
     foodManufacturerId: number,
-  ): Promise<Donation[]> {
+  ): Promise<DonationDetails[]> {
     return this.axiosInstance
       .get(`/api/manufacturers/${foodManufacturerId}/donations`)
       .then((response) => response.data);

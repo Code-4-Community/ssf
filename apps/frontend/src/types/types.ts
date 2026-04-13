@@ -159,6 +159,25 @@ export interface Donation {
   occurrencesRemaining?: number;
 }
 
+export interface DonationDetails {
+  donation: Donation;
+  associatedPendingOrders: DonationOrderDetails[];
+  relevantDonationItems: DonationItemWithAllocatedQuantity[];
+}
+
+export interface DonationItemWithAllocatedQuantity {
+  itemId: number;
+  itemName: string;
+  foodType: FoodType;
+  allocatedQuantity: number;
+}
+
+export interface DonationOrderDetails {
+  orderId: number;
+  pantryId: number;
+  pantryName: string;
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
