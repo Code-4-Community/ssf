@@ -11,14 +11,18 @@ import {
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { PantryWithUser, UpdatePantryApplicationDto } from '../../types/types';
-import { Activity } from '../../types/pantryEnums';
+import {
+  Activity,
+  RefrigeratedDonation,
+  ReserveFoodForAllergic,
+  ClientVisitFrequency,
+  AllergensConfidence,
+  ServeAllergicChildren,
+} from '../../types/pantryEnums';
 import { formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
-import {
-  dietaryRestrictionOptions,
-  activityOptions,
-} from '@components/forms/pantryApplicationForm';
+import { dietaryRestrictionOptions } from '@components/forms/pantryApplicationForm';
 import {
   fieldHeaderStyles,
   fieldContentStyles,
@@ -41,26 +45,6 @@ const allergenClientOptions = [
   "I'm not sure",
   'I have an exact number',
 ];
-
-// Maps between stored Activity enum values and display strings shown in the form
-const activityDisplayMap: Record<string, string> = {
-  [Activity.CREATE_LABELED_SHELF]:
-    'Create a labeled, allergy-friendly shelf or shelves',
-  [Activity.PROVIDE_EDUCATIONAL_PAMPHLETS]:
-    'Provide clients and staff/volunteers with educational pamphlets',
-  [Activity.TRACK_DIETARY_NEEDS]:
-    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
-  [Activity.POST_RESOURCE_FLYERS]:
-    'Post allergen-free resource flyers throughout pantry',
-  [Activity.SURVEY_CLIENTS]:
-    'Survey your clients to determine their medical dietary needs',
-  [Activity.COLLECT_FEEDBACK]:
-    'Collect feedback from allergen-avoidant clients on SSF foods',
-  [Activity.SOMETHING_ELSE]: 'Something else',
-};
-const activityStorageMap: Record<string, Activity> = Object.fromEntries(
-  Object.entries(activityDisplayMap).map(([k, v]) => [v, k as Activity]),
-);
 
 const clientVisitOptions = [
   'Daily',
@@ -224,7 +208,7 @@ function buildFormState(app: PantryWithUser): FormState {
     clientVisitFrequency: app.clientVisitFrequency ?? '',
     identifyAllergensConfidence: app.identifyAllergensConfidence ?? '',
     serveAllergicChildren: app.serveAllergicChildren ?? '',
-    activities: (app.activities ?? []).map((a) => activityDisplayMap[a] ?? a),
+    activities: app.activities ?? [],
     activitiesComments: app.activitiesComments ?? '',
     itemsInStock: app.itemsInStock ?? '',
     needMoreOptions: app.needMoreOptions ?? '',
@@ -246,7 +230,7 @@ function validateRequired(form: FormState): boolean {
   if (!form.itemsInStock.trim()) return false;
   if (!form.needMoreOptions.trim()) return false;
   if (
-    form.activities.includes('Something else') &&
+    form.activities.includes(Activity.SOMETHING_ELSE) &&
     !form.activitiesComments.trim()
   )
     return false;
@@ -332,19 +316,24 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
             ? form.allergenClientsExact || undefined
             : form.allergenClients || undefined,
         restrictions: form.restrictions,
-        refrigeratedDonation: form.refrigeratedDonation || undefined,
+        refrigeratedDonation:
+          (form.refrigeratedDonation as RefrigeratedDonation) || undefined,
         dedicatedAllergyFriendly: form.dedicatedAllergyFriendly === 'Yes',
-        reserveFoodForAllergic: form.reserveFoodForAllergic || undefined,
+        reserveFoodForAllergic:
+          (form.reserveFoodForAllergic as ReserveFoodForAllergic) || undefined,
         reservationExplanation:
-          form.reserveFoodForAllergic === 'Yes' ||
-          form.reserveFoodForAllergic === 'Some'
+          form.reserveFoodForAllergic === ReserveFoodForAllergic.YES ||
+          form.reserveFoodForAllergic === ReserveFoodForAllergic.SOME
             ? form.reservationExplanation || undefined
             : null,
-        clientVisitFrequency: form.clientVisitFrequency || undefined,
+        clientVisitFrequency:
+          (form.clientVisitFrequency as ClientVisitFrequency) || undefined,
         identifyAllergensConfidence:
-          form.identifyAllergensConfidence || undefined,
-        serveAllergicChildren: form.serveAllergicChildren || undefined,
-        activities: form.activities.map((a) => activityStorageMap[a] ?? a),
+          (form.identifyAllergensConfidence as AllergensConfidence) ||
+          undefined,
+        serveAllergicChildren:
+          (form.serveAllergicChildren as ServeAllergicChildren) || undefined,
+        activities: form.activities as Activity[],
         activitiesComments: form.activitiesComments || undefined,
         itemsInStock: form.itemsInStock || undefined,
         needMoreOptions: form.needMoreOptions || undefined,
@@ -354,7 +343,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         application.pantryId,
         formData,
       );
-      const updatedWithUser = {
+      const updatedWithUser: PantryWithUser = {
         ...application,
         ...updated,
         pantryUser: application.pantryUser,
@@ -502,11 +491,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           <Box mb={10}>
             <Text {...fieldHeaderStyles}>Activities with SSF</Text>
             {application.activities?.length ? (
-              <TagGroup
-                values={application.activities.map(
-                  (a) => activityDisplayMap[a] ?? a,
-                )}
-              />
+              <TagGroup values={application.activities} />
             ) : (
               <Text {...fieldContentStyles}>-</Text>
             )}
@@ -534,263 +519,263 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         </Section>
       </VStack>
     );
-  }
-
-  // Editing view
-  return (
-    <VStack align="stretch" gap={2}>
-      <Box mb={4}>
-        <Text {...sectionLabelStyles}>Secondary Point of Contact</Text>
-        <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
-          <EditField
-            label="First Name"
-            name="secondaryContactFirstName"
-            value={form.secondaryContactFirstName}
-            onChange={(v) => setField('secondaryContactFirstName', v)}
-          />
-          <EditField
-            label="Last Name"
-            name="secondaryContactLastName"
-            value={form.secondaryContactLastName}
-            onChange={(v) => setField('secondaryContactLastName', v)}
-          />
-          <EditField
-            label="Email Address"
-            name="secondaryContactEmail"
-            value={form.secondaryContactEmail}
-            onChange={(v) => setField('secondaryContactEmail', v)}
-          />
-          <Box mb={6}>
-            <Text {...fieldHeaderStyles} mb={2}>
-              Phone Number
-            </Text>
-            <USPhoneInput
-              value={form.secondaryContactPhone}
-              onChange={(v) => setField('secondaryContactPhone', v)}
-              allowEmpty
-              inputProps={{
-                name: 'secondaryContactPhone',
-                borderColor: 'neutral.100',
-                color: 'neutral.600',
-                size: 'sm',
-              }}
+  } else {
+    // Editing view
+    return (
+      <VStack align="stretch" gap={2}>
+        <Box mb={4}>
+          <Text {...sectionLabelStyles}>Secondary Point of Contact</Text>
+          <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
+            <EditField
+              label="First Name"
+              name="secondaryContactFirstName"
+              value={form.secondaryContactFirstName}
+              onChange={(v) => setField('secondaryContactFirstName', v)}
             />
-          </Box>
-        </Grid>
-      </Box>
+            <EditField
+              label="Last Name"
+              name="secondaryContactLastName"
+              value={form.secondaryContactLastName}
+              onChange={(v) => setField('secondaryContactLastName', v)}
+            />
+            <EditField
+              label="Email Address"
+              name="secondaryContactEmail"
+              value={form.secondaryContactEmail}
+              onChange={(v) => setField('secondaryContactEmail', v)}
+            />
+            <Box mb={6}>
+              <Text {...fieldHeaderStyles} mb={2}>
+                Phone Number
+              </Text>
+              <USPhoneInput
+                value={form.secondaryContactPhone}
+                onChange={(v) => setField('secondaryContactPhone', v)}
+                allowEmpty
+                inputProps={{
+                  name: 'secondaryContactPhone',
+                  borderColor: 'neutral.100',
+                  color: 'neutral.600',
+                  size: 'sm',
+                }}
+              />
+            </Box>
+          </Grid>
+        </Box>
 
-      <EditAddressSection
-        title="Shipping Address"
-        prefix="shipment"
-        form={form}
-        onChange={setField}
-      />
-
-      <EditRadio
-        label="Would your pantry be able to accept food deliveries during standard business hours Mon-Fri?"
-        name="acceptFoodDeliveries"
-        value={form.acceptFoodDeliveries}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('acceptFoodDeliveries', v)}
-      />
-
-      <EditField
-        label="Please note any delivery window restrictions."
-        name="deliveryWindowInstructions"
-        value={form.deliveryWindowInstructions}
-        onChange={(v) => setField('deliveryWindowInstructions', v)}
-        textarea
-      />
-
-      <EditAddressSection
-        title="Mailing Address"
-        prefix="mailing"
-        form={form}
-        onChange={setField}
-      />
-
-      <Text {...sectionLabelStyles}>Pantry Details</Text>
-
-      <EditSelect
-        label="Approximately how many allergen-avoidant clients does your pantry serve?"
-        name="allergenClients"
-        value={form.allergenClients}
-        options={allergenClientOptions}
-        onChange={(v) => setField('allergenClients', v)}
-        required
-      />
-
-      {form.allergenClients === 'I have an exact number' && (
-        <EditField
-          label="Please provide the exact number, if known"
-          name="allergenClientsExact"
-          value={form.allergenClientsExact}
-          onChange={(v) => setField('allergenClientsExact', v)}
-          required
+        <EditAddressSection
+          title="Shipping Address"
+          prefix="shipment"
+          form={form}
+          onChange={setField}
         />
-      )}
 
-      <EditMultiSelect
-        label="Which food allergies or other medical dietary restrictions do clients at your pantry report?"
-        value={form.restrictions}
-        options={dietaryRestrictionOptions}
-        onChange={(v) =>
-          setForm((prev) => (prev ? { ...prev, restrictions: v } : prev))
-        }
-        triggerLabel="Select restrictions"
-      />
+        <EditRadio
+          label="Would your pantry be able to accept food deliveries during standard business hours Mon-Fri?"
+          name="acceptFoodDeliveries"
+          value={form.acceptFoodDeliveries}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('acceptFoodDeliveries', v)}
+        />
 
-      <EditRadio
-        label="Would you be able to accept frozen donations that require refrigeration or freezing?"
-        name="refrigeratedDonation"
-        value={form.refrigeratedDonation}
-        options={['Yes, always', 'No', 'Sometimes (check in before sending)']}
-        onChange={(v) => setField('refrigeratedDonation', v)}
-        required
-      />
-
-      <EditRadio
-        label="Do you have a dedicated shelf or section of your pantry for allergy-friendly items?"
-        name="dedicatedAllergyFriendly"
-        value={form.dedicatedAllergyFriendly}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('dedicatedAllergyFriendly', v)}
-        required
-      />
-
-      <EditRadio
-        label="Are you willing to reserve our food shipments for allergen-avoidant individuals?"
-        name="reserveFoodForAllergic"
-        value={form.reserveFoodForAllergic}
-        options={['Yes', 'Some', 'No']}
-        helperText="For example, grouping allergen-friendly items on a separate shelf or in separate bins and encouraging non-allergic clients to save these items for clients who do not have other safe food options."
-        onChange={(v) => setField('reserveFoodForAllergic', v)}
-        required
-      />
-
-      {(form.reserveFoodForAllergic === 'Yes' ||
-        form.reserveFoodForAllergic === 'Some') && (
         <EditField
-          label={
-            form.reserveFoodForAllergic === 'Yes'
-              ? 'How would you work to ensure that allergen-friendly foods are distributed to clients with food allergies or other adverse reactions to foods?'
-              : 'Please explain why you selected "Some."'
-          }
-          name="reservationExplanation"
-          value={form.reservationExplanation}
-          onChange={(v) => setField('reservationExplanation', v)}
+          label="Please note any delivery window restrictions."
+          name="deliveryWindowInstructions"
+          value={form.deliveryWindowInstructions}
+          onChange={(v) => setField('deliveryWindowInstructions', v)}
           textarea
         />
-      )}
 
-      <EditSelect
-        label="How often do allergen-avoidant clients visit your food pantry?"
-        name="clientVisitFrequency"
-        value={form.clientVisitFrequency}
-        options={clientVisitOptions}
-        onChange={(v) => setField('clientVisitFrequency', v)}
-      />
+        <EditAddressSection
+          title="Mailing Address"
+          prefix="mailing"
+          form={form}
+          onChange={setField}
+        />
 
-      <EditSelect
-        label="Are you confident in identifying the top 9 allergens in an ingredient list?"
-        name="identifyAllergensConfidence"
-        value={form.identifyAllergensConfidence}
-        options={identifyAllergensOptions}
-        helperText="The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy, fish, shellfish, and sesame."
-        onChange={(v) => setField('identifyAllergensConfidence', v)}
-      />
+        <Text {...sectionLabelStyles}>Pantry Details</Text>
 
-      <EditSelect
-        label="Do you serve allergen-avoidant or food-allergic children at your pantry?"
-        name="serveAllergicChildren"
-        value={form.serveAllergicChildren}
-        options={serveChildrenOptions}
-        helperText='"Children" is defined as any individual under the age of 18 either living independently or as part of a household.'
-        onChange={(v) => setField('serveAllergicChildren', v)}
-      />
+        <EditSelect
+          label="Approximately how many allergen-avoidant clients does your pantry serve?"
+          name="allergenClients"
+          value={form.allergenClients}
+          options={allergenClientOptions}
+          onChange={(v) => setField('allergenClients', v)}
+          required
+        />
 
-      <EditMultiSelect
-        label="What activities are you open to doing with SSF?"
-        value={form.activities}
-        options={activityOptions}
-        onChange={(v) =>
-          setForm((prev) => (prev ? { ...prev, activities: v } : prev))
-        }
-        triggerLabel="Select activities"
-        helperText="Food donations are one part of being a partner pantry. The following are additional ways to help us better support you! Please select all that apply."
-        required
-      />
+        {form.allergenClients === 'I have an exact number' && (
+          <EditField
+            label="Please provide the exact number, if known"
+            name="allergenClientsExact"
+            value={form.allergenClientsExact}
+            onChange={(v) => setField('allergenClientsExact', v)}
+            required
+          />
+        )}
 
-      <EditField
-        label="Please list any comments/concerns related to the previous question."
-        name="activitiesComments"
-        value={form.activitiesComments}
-        onChange={(v) => setField('activitiesComments', v)}
-        textarea
-        required={form.activities.includes('Something else')}
-        helperText='If you answered "Something Else," please elaborate.'
-      />
+        <EditMultiSelect
+          label="Which food allergies or other medical dietary restrictions do clients at your pantry report?"
+          value={form.restrictions}
+          options={dietaryRestrictionOptions}
+          onChange={(v) =>
+            setForm((prev) => (prev ? { ...prev, restrictions: v } : prev))
+          }
+          triggerLabel="Select restrictions"
+        />
 
-      <EditField
-        label="What types of allergen-free items, if any, do you currently have in stock?"
-        name="itemsInStock"
-        value={form.itemsInStock}
-        onChange={(v) => setField('itemsInStock', v)}
-        textarea
-        required
-        helperText="For example, gluten-free breads, sunflower seed butters, nondairy beverages, etc."
-      />
+        <EditRadio
+          label="Would you be able to accept frozen donations that require refrigeration or freezing?"
+          name="refrigeratedDonation"
+          value={form.refrigeratedDonation}
+          options={['Yes, always', 'No', 'Sometimes (check in before sending)']}
+          onChange={(v) => setField('refrigeratedDonation', v)}
+          required
+        />
 
-      <EditField
-        label="Do allergen-avoidant clients at your pantry ever request a greater variety of items or not have enough options? Please explain."
-        name="needMoreOptions"
-        value={form.needMoreOptions}
-        onChange={(v) => setField('needMoreOptions', v)}
-        textarea
-        required
-      />
+        <EditRadio
+          label="Do you have a dedicated shelf or section of your pantry for allergy-friendly items?"
+          name="dedicatedAllergyFriendly"
+          value={form.dedicatedAllergyFriendly}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('dedicatedAllergyFriendly', v)}
+          required
+        />
 
-      <EditRadio
-        label="Would you like to subscribe to our quarterly newsletter?"
-        name="newsletterSubscription"
-        value={form.newsletterSubscription}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('newsletterSubscription', v)}
-      />
+        <EditRadio
+          label="Are you willing to reserve our food shipments for allergen-avoidant individuals?"
+          name="reserveFoodForAllergic"
+          value={form.reserveFoodForAllergic}
+          options={['Yes', 'Some', 'No']}
+          helperText="For example, grouping allergen-friendly items on a separate shelf or in separate bins and encouraging non-allergic clients to save these items for clients who do not have other safe food options."
+          onChange={(v) => setField('reserveFoodForAllergic', v)}
+          required
+        />
 
-      {error && (
-        <Text color="red" fontSize="14px" mb={2}>
-          {error}
-        </Text>
-      )}
+        {(form.reserveFoodForAllergic === ReserveFoodForAllergic.YES ||
+          form.reserveFoodForAllergic === ReserveFoodForAllergic.SOME) && (
+          <EditField
+            label={
+              form.reserveFoodForAllergic === ReserveFoodForAllergic.YES
+                ? 'How would you work to ensure that allergen-friendly foods are distributed to clients with food allergies or other adverse reactions to foods?'
+                : 'Please explain why you selected "Some."'
+            }
+            name="reservationExplanation"
+            value={form.reservationExplanation}
+            onChange={(v) => setField('reservationExplanation', v)}
+            textarea
+          />
+        )}
 
-      <HStack justify="flex-end" gap={3} mt={6}>
-        <Button
-          variant="outline"
-          size="sm"
-          color="neutral.800"
-          onClick={handleCancel}
-          disabled={isSaving}
-          borderColor="neutral.200"
-          fontWeight={600}
-        >
-          Cancel
-        </Button>
-        <Button
-          color="white"
-          bg="blue.hover"
-          variant="solid"
-          size="sm"
-          px={7}
-          onClick={handleSave}
-          loading={isSaving}
-          fontWeight={600}
-        >
-          Save Changes
-        </Button>
-      </HStack>
-    </VStack>
-  );
+        <EditSelect
+          label="How often do allergen-avoidant clients visit your food pantry?"
+          name="clientVisitFrequency"
+          value={form.clientVisitFrequency}
+          options={clientVisitOptions}
+          onChange={(v) => setField('clientVisitFrequency', v)}
+        />
+
+        <EditSelect
+          label="Are you confident in identifying the top 9 allergens in an ingredient list?"
+          name="identifyAllergensConfidence"
+          value={form.identifyAllergensConfidence}
+          options={identifyAllergensOptions}
+          helperText="The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy, fish, shellfish, and sesame."
+          onChange={(v) => setField('identifyAllergensConfidence', v)}
+        />
+
+        <EditSelect
+          label="Do you serve allergen-avoidant or food-allergic children at your pantry?"
+          name="serveAllergicChildren"
+          value={form.serveAllergicChildren}
+          options={serveChildrenOptions}
+          helperText='"Children" is defined as any individual under the age of 18 either living independently or as part of a household.'
+          onChange={(v) => setField('serveAllergicChildren', v)}
+        />
+
+        <EditMultiSelect
+          label="What activities are you open to doing with SSF?"
+          value={form.activities}
+          options={Object.values(Activity)}
+          onChange={(v) =>
+            setForm((prev) => (prev ? { ...prev, activities: v } : prev))
+          }
+          triggerLabel="Select activities"
+          helperText="Food donations are one part of being a partner pantry. The following are additional ways to help us better support you! Please select all that apply."
+          required
+        />
+
+        <EditField
+          label="Please list any comments/concerns related to the previous question."
+          name="activitiesComments"
+          value={form.activitiesComments}
+          onChange={(v) => setField('activitiesComments', v)}
+          textarea
+          required={form.activities.includes(Activity.SOMETHING_ELSE)}
+          helperText='If you answered "Something Else," please elaborate.'
+        />
+
+        <EditField
+          label="What types of allergen-free items, if any, do you currently have in stock?"
+          name="itemsInStock"
+          value={form.itemsInStock}
+          onChange={(v) => setField('itemsInStock', v)}
+          textarea
+          required
+          helperText="For example, gluten-free breads, sunflower seed butters, nondairy beverages, etc."
+        />
+
+        <EditField
+          label="Do allergen-avoidant clients at your pantry ever request a greater variety of items or not have enough options? Please explain."
+          name="needMoreOptions"
+          value={form.needMoreOptions}
+          onChange={(v) => setField('needMoreOptions', v)}
+          textarea
+          required
+        />
+
+        <EditRadio
+          label="Would you like to subscribe to our quarterly newsletter?"
+          name="newsletterSubscription"
+          value={form.newsletterSubscription}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('newsletterSubscription', v)}
+        />
+
+        {error && (
+          <Text color="red" fontSize="14px" mb={2}>
+            {error}
+          </Text>
+        )}
+
+        <HStack justify="flex-end" gap={3} mt={6}>
+          <Button
+            variant="outline"
+            size="sm"
+            color="neutral.800"
+            onClick={handleCancel}
+            disabled={isSaving}
+            borderColor="neutral.200"
+            fontWeight={600}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="white"
+            bg="blue.hover"
+            variant="solid"
+            size="sm"
+            px={7}
+            onClick={handleSave}
+            loading={isSaving}
+            fontWeight={600}
+          >
+            Save Changes
+          </Button>
+        </HStack>
+      </VStack>
+    );
+  }
 };
 
 export default EditablePantryApplication;

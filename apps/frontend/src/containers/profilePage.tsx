@@ -28,12 +28,13 @@ const ProfilePage: React.FC = () => {
         const user: User = await ApiClient.getMe();
         setProfile(user);
         if (user.role === Role.PANTRY) {
-          const id = await ApiClient.getCurrentUserPantryId();
-          const pantry = await ApiClient.getPantry(id);
+          const pantryId = await ApiClient.getCurrentUserPantryId();
+          const pantry = await ApiClient.getPantry(pantryId);
           setOrgName(pantry.pantryName);
         } else if (user.role === Role.FOODMANUFACTURER) {
-          const id = await ApiClient.getCurrentUserFoodManufacturerId();
-          const fm = await ApiClient.getFoodManufacturer(id);
+          const foodManufacturerId =
+            await ApiClient.getCurrentUserFoodManufacturerId();
+          const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
           setOrgName(fm.foodManufacturerName);
         }
       } catch {

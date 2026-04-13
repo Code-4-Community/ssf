@@ -242,7 +242,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         </Section>
 
         <Section title="Product Details">
-          <Box mb={10}>
+          <Box mb={14}>
             <Text {...fieldHeaderStyles}>
               Allergens not listed in product ingredients
             </Text>
@@ -252,7 +252,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
               <Text {...fieldContentStyles}>-</Text>
             )}
           </Box>
-          <Box mb={10}>
+          <Box mb={14}>
             <Text {...fieldHeaderStyles}>
               Allergens that facilities are free from
             </Text>
@@ -302,201 +302,201 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         </Section>
       </VStack>
     );
-  }
-
-  // Editing view
-  return (
-    <VStack align="stretch" gap={2}>
-      <Box mb={4}>
-        <Text {...sectionLabelStyles}>Secondary Point of Contact</Text>
-        <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
-          <EditField
-            label="First Name"
-            name="secondaryContactFirstName"
-            value={form.secondaryContactFirstName}
-            onChange={(v) => setField('secondaryContactFirstName', v)}
-          />
-          <EditField
-            label="Last Name"
-            name="secondaryContactLastName"
-            value={form.secondaryContactLastName}
-            onChange={(v) => setField('secondaryContactLastName', v)}
-          />
-          <EditField
-            label="Email Address"
-            name="secondaryContactEmail"
-            value={form.secondaryContactEmail}
-            onChange={(v) => setField('secondaryContactEmail', v)}
-          />
-          <Box mb={6}>
-            <Text {...fieldHeaderStyles} mb={2}>
-              Phone Number
-            </Text>
-            <USPhoneInput
-              value={form.secondaryContactPhone}
-              onChange={(v) => setField('secondaryContactPhone', v)}
-              allowEmpty
-              inputProps={{
-                name: 'secondaryContactPhone',
-                borderColor: 'neutral.100',
-                color: 'neutral.600',
-                size: 'sm',
-              }}
+  } else {
+    // Editing view
+    return (
+      <VStack align="stretch" gap={2}>
+        <Box mb={4}>
+          <Text {...sectionLabelStyles}>Secondary Point of Contact</Text>
+          <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
+            <EditField
+              label="First Name"
+              name="secondaryContactFirstName"
+              value={form.secondaryContactFirstName}
+              onChange={(v) => setField('secondaryContactFirstName', v)}
             />
-          </Box>
-        </Grid>
-      </Box>
+            <EditField
+              label="Last Name"
+              name="secondaryContactLastName"
+              value={form.secondaryContactLastName}
+              onChange={(v) => setField('secondaryContactLastName', v)}
+            />
+            <EditField
+              label="Email Address"
+              name="secondaryContactEmail"
+              value={form.secondaryContactEmail}
+              onChange={(v) => setField('secondaryContactEmail', v)}
+            />
+            <Box mb={6}>
+              <Text {...fieldHeaderStyles} mb={2}>
+                Phone Number
+              </Text>
+              <USPhoneInput
+                value={form.secondaryContactPhone}
+                onChange={(v) => setField('secondaryContactPhone', v)}
+                allowEmpty
+                inputProps={{
+                  name: 'secondaryContactPhone',
+                  borderColor: 'neutral.100',
+                  color: 'neutral.600',
+                  size: 'sm',
+                }}
+              />
+            </Box>
+          </Grid>
+        </Box>
 
-      <Box mb={4}>
-        <Text {...sectionLabelStyles}>Company Information</Text>
-        <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
-          <EditField
-            label="Company Name"
-            name="foodManufacturerName"
-            value={form.foodManufacturerName}
-            onChange={(v) => setField('foodManufacturerName', v)}
-            required
-          />
-          <EditField
-            label="Company Website"
-            name="foodManufacturerWebsite"
-            value={form.foodManufacturerWebsite}
-            onChange={(v) => setField('foodManufacturerWebsite', v)}
-            required
-          />
-        </Grid>
-      </Box>
+        <Box mb={4}>
+          <Text {...sectionLabelStyles}>Company Information</Text>
+          <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
+            <EditField
+              label="Company Name"
+              name="foodManufacturerName"
+              value={form.foodManufacturerName}
+              onChange={(v) => setField('foodManufacturerName', v)}
+              required
+            />
+            <EditField
+              label="Company Website"
+              name="foodManufacturerWebsite"
+              value={form.foodManufacturerWebsite}
+              onChange={(v) => setField('foodManufacturerWebsite', v)}
+              required
+            />
+          </Grid>
+        </Box>
 
-      <Text {...sectionLabelStyles}>Product Details</Text>
+        <Text {...sectionLabelStyles}>Product Details</Text>
 
-      <EditMultiSelect
-        label="Allergens not listed in product ingredients"
-        value={form.unlistedProductAllergens}
-        options={allergenOptions}
-        onChange={(v) =>
-          setForm((prev) =>
-            prev ? { ...prev, unlistedProductAllergens: v } : prev,
-          )
-        }
-        triggerLabel="Select allergens"
-        required
-      />
+        <EditMultiSelect
+          label="Allergens not listed in product ingredients"
+          value={form.unlistedProductAllergens}
+          options={allergenOptions}
+          onChange={(v) =>
+            setForm((prev) =>
+              prev ? { ...prev, unlistedProductAllergens: v } : prev,
+            )
+          }
+          triggerLabel="Select allergens"
+          required
+        />
 
-      <EditMultiSelect
-        label="Allergens that facilities are free from"
-        value={form.facilityFreeAllergens}
-        options={allergenOptions}
-        onChange={(v) =>
-          setForm((prev) =>
-            prev ? { ...prev, facilityFreeAllergens: v } : prev,
-          )
-        }
-        triggerLabel="Select allergens"
-        required
-      />
+        <EditMultiSelect
+          label="Allergens that facilities are free from"
+          value={form.facilityFreeAllergens}
+          options={allergenOptions}
+          onChange={(v) =>
+            setForm((prev) =>
+              prev ? { ...prev, facilityFreeAllergens: v } : prev,
+            )
+          }
+          triggerLabel="Select allergens"
+          required
+        />
 
-      <EditRadio
-        label="Are products certified gluten-free"
-        name="productsGlutenFree"
-        value={form.productsGlutenFree}
-        options={['Yes, always', 'No']}
-        onChange={(v) => setField('productsGlutenFree', v)}
-        required
-      />
+        <EditRadio
+          label="Are products certified gluten-free"
+          name="productsGlutenFree"
+          value={form.productsGlutenFree}
+          options={['Yes, always', 'No']}
+          onChange={(v) => setField('productsGlutenFree', v)}
+          required
+        />
 
-      <EditRadio
-        label="Does product contain sulfites?"
-        name="productsContainSulfites"
-        value={form.productsContainSulfites}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('productsContainSulfites', v)}
-        required
-      />
+        <EditRadio
+          label="Does product contain sulfites?"
+          name="productsContainSulfites"
+          value={form.productsContainSulfites}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('productsContainSulfites', v)}
+          required
+        />
 
-      <EditRadio
-        label="Provides in-kind food donations"
-        name="inKindDonations"
-        value={form.inKindDonations}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('inKindDonations', v)}
-        required
-      />
+        <EditRadio
+          label="Provides in-kind food donations"
+          name="inKindDonations"
+          value={form.inKindDonations}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('inKindDonations', v)}
+          required
+        />
 
-      <EditRadio
-        label="Donates food-rescue"
-        name="donateWastedFood"
-        value={form.donateWastedFood}
-        options={donateWastedFoodOptions}
-        onChange={(v) => setField('donateWastedFood', v)}
-        required
-      />
+        <EditRadio
+          label="Donates food-rescue"
+          name="donateWastedFood"
+          value={form.donateWastedFood}
+          options={donateWastedFoodOptions}
+          onChange={(v) => setField('donateWastedFood', v)}
+          required
+        />
 
-      <EditField
-        label="Are your products sustainable or environmentally conscious?"
-        name="productsSustainableExplanation"
-        value={form.productsSustainableExplanation}
-        onChange={(v) => setField('productsSustainableExplanation', v)}
-        textarea
-        required
-      />
+        <EditField
+          label="Are your products sustainable or environmentally conscious?"
+          name="productsSustainableExplanation"
+          value={form.productsSustainableExplanation}
+          onChange={(v) => setField('productsSustainableExplanation', v)}
+          textarea
+          required
+        />
 
-      <EditSelect
-        label="Pantry is"
-        name="manufacturerAttribute"
-        value={form.manufacturerAttribute}
-        options={manufacturerAttributeOptions}
-        onChange={(v) => setField('manufacturerAttribute', v)}
-      />
+        <EditSelect
+          label="Pantry is"
+          name="manufacturerAttribute"
+          value={form.manufacturerAttribute}
+          options={manufacturerAttributeOptions}
+          onChange={(v) => setField('manufacturerAttribute', v)}
+        />
 
-      <EditField
-        label="Additional Information"
-        name="additionalComments"
-        value={form.additionalComments}
-        onChange={(v) => setField('additionalComments', v)}
-        textarea
-      />
+        <EditField
+          label="Additional Information"
+          name="additionalComments"
+          value={form.additionalComments}
+          onChange={(v) => setField('additionalComments', v)}
+          textarea
+        />
 
-      <EditRadio
-        label="Subscribed to Newsletter"
-        name="newsletterSubscription"
-        value={form.newsletterSubscription}
-        options={['Yes', 'No']}
-        onChange={(v) => setField('newsletterSubscription', v)}
-      />
+        <EditRadio
+          label="Subscribed to Newsletter"
+          name="newsletterSubscription"
+          value={form.newsletterSubscription}
+          options={['Yes', 'No']}
+          onChange={(v) => setField('newsletterSubscription', v)}
+        />
 
-      {error && (
-        <Text color="red" fontSize="14px" mb={2}>
-          {error}
-        </Text>
-      )}
+        {error && (
+          <Text color="red" fontSize="14px" mb={2}>
+            {error}
+          </Text>
+        )}
 
-      <HStack justify="flex-end" gap={3} mt={6}>
-        <Button
-          variant="outline"
-          size="sm"
-          color="neutral.800"
-          onClick={handleCancel}
-          disabled={isSaving}
-          borderColor="neutral.200"
-          fontWeight={600}
-        >
-          Cancel
-        </Button>
-        <Button
-          color="white"
-          bg="blue.hover"
-          variant="solid"
-          size="sm"
-          px={7}
-          onClick={handleSave}
-          loading={isSaving}
-          fontWeight={600}
-        >
-          Save Changes
-        </Button>
-      </HStack>
-    </VStack>
-  );
+        <HStack justify="flex-end" gap={3} mt={6}>
+          <Button
+            variant="outline"
+            size="sm"
+            color="neutral.800"
+            onClick={handleCancel}
+            disabled={isSaving}
+            borderColor="neutral.200"
+            fontWeight={600}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="white"
+            bg="blue.hover"
+            variant="solid"
+            size="sm"
+            px={7}
+            onClick={handleSave}
+            loading={isSaving}
+            fontWeight={600}
+          >
+            Save Changes
+          </Button>
+        </HStack>
+      </VStack>
+    );
+  }
 };
 
 export default EditableFMApplication;

@@ -151,7 +151,6 @@ export class UpdatePantryApplicationDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   reservationExplanation?: string | null;
 
   @IsBoolean()
