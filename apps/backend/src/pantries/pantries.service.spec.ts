@@ -805,6 +805,8 @@ describe('PantriesService', () => {
     });
 
     it('returns empty array when no orders exist', async () => {
+      // Need to delete cascading tables first
+      await testDataSource.query(`DELETE FROM public.allocations`);
       await testDataSource.query(`DELETE FROM public.orders`);
 
       const years = await service.getPantryOrderYears();
