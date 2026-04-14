@@ -27,13 +27,13 @@ import {
   fieldHeaderStyles,
   fieldContentStyles,
   sectionLabelStyles,
-  inputStyles,
   Section,
   Field,
   EditField,
   EditRadio,
   EditSelect,
   EditMultiSelect,
+  EditAddressSection,
 } from '@components/editableComponents';
 
 const allergenClientOptions = [
@@ -45,20 +45,6 @@ const allergenClientOptions = [
   "I'm not sure",
   'I have an exact number',
 ];
-
-const clientVisitOptions = [
-  'Daily',
-  'More than once a week',
-  'Once a week',
-  'A few times a month',
-  'Once a month',
-];
-const identifyAllergensOptions = [
-  'Very confident',
-  'Somewhat confident',
-  'Not very confident (we need more education!)',
-];
-const serveChildrenOptions = ['Yes, many (> 10)', 'Yes, a few (< 10)', 'No'];
 
 interface AddressSectionProps {
   title: string;
@@ -94,46 +80,6 @@ const AddressSection: React.FC<AddressSectionProps> = ({
     </Grid>
   </Section>
 );
-
-const ADDRESS_FIELDS = [
-  { suffix: 'Line1', label: 'Address Line 1' },
-  { suffix: 'Line2', label: 'Address Line 2' },
-  { suffix: 'City', label: 'City/Town' },
-  { suffix: 'State', label: 'State/Region/Province' },
-  { suffix: 'Zip', label: 'Zip/Postal Code' },
-  { suffix: 'Country', label: 'Country' },
-];
-
-interface EditAddressSectionProps {
-  title: string;
-  prefix: string;
-  form: { [key: string]: string | boolean | string[] };
-  onChange: (name: string, value: string) => void;
-}
-const EditAddressSection: React.FC<EditAddressSectionProps> = ({
-  title,
-  prefix,
-  form,
-  onChange,
-}) => {
-  const str = (key: string) => (form[key] as string) ?? '';
-  return (
-    <Box mb={6}>
-      <Text {...sectionLabelStyles}>{title}</Text>
-      <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
-        {ADDRESS_FIELDS.map(({ suffix, label }) => (
-          <EditField
-            key={suffix}
-            label={label}
-            name={`${prefix}${suffix}`}
-            value={str(`${prefix}${suffix}`)}
-            onChange={(v) => onChange(`${prefix}${suffix}`, v)}
-          />
-        ))}
-      </Grid>
-    </Box>
-  );
-};
 
 type FormState = {
   secondaryContactFirstName: string;
@@ -324,7 +270,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         reservationExplanation:
           form.reserveFoodForAllergic === ReserveFoodForAllergic.YES ||
           form.reserveFoodForAllergic === ReserveFoodForAllergic.SOME
-            ? form.reservationExplanation || undefined
+            ? form.reservationExplanation || null
             : null,
         clientVisitFrequency:
           (form.clientVisitFrequency as ClientVisitFrequency) || undefined,
@@ -628,7 +574,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           label="Would you be able to accept frozen donations that require refrigeration or freezing?"
           name="refrigeratedDonation"
           value={form.refrigeratedDonation}
-          options={['Yes, always', 'No', 'Sometimes (check in before sending)']}
+          options={Object.values(RefrigeratedDonation)}
           onChange={(v) => setField('refrigeratedDonation', v)}
           required
         />
@@ -646,7 +592,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           label="Are you willing to reserve our food shipments for allergen-avoidant individuals?"
           name="reserveFoodForAllergic"
           value={form.reserveFoodForAllergic}
-          options={['Yes', 'Some', 'No']}
+          options={Object.values(ReserveFoodForAllergic)}
           helperText="For example, grouping allergen-friendly items on a separate shelf or in separate bins and encouraging non-allergic clients to save these items for clients who do not have other safe food options."
           onChange={(v) => setField('reserveFoodForAllergic', v)}
           required
@@ -671,7 +617,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           label="How often do allergen-avoidant clients visit your food pantry?"
           name="clientVisitFrequency"
           value={form.clientVisitFrequency}
-          options={clientVisitOptions}
+          options={Object.values(ClientVisitFrequency)}
           onChange={(v) => setField('clientVisitFrequency', v)}
         />
 
@@ -679,7 +625,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           label="Are you confident in identifying the top 9 allergens in an ingredient list?"
           name="identifyAllergensConfidence"
           value={form.identifyAllergensConfidence}
-          options={identifyAllergensOptions}
+          options={Object.values(AllergensConfidence)}
           helperText="The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy, fish, shellfish, and sesame."
           onChange={(v) => setField('identifyAllergensConfidence', v)}
         />
@@ -688,7 +634,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           label="Do you serve allergen-avoidant or food-allergic children at your pantry?"
           name="serveAllergicChildren"
           value={form.serveAllergicChildren}
-          options={serveChildrenOptions}
+          options={Object.values(ServeAllergicChildren)}
           helperText='"Children" is defined as any individual under the age of 18 either living independently or as part of a household.'
           onChange={(v) => setField('serveAllergicChildren', v)}
         />

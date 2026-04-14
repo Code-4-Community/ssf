@@ -10,6 +10,7 @@ import {
   NativeSelectIndicator,
   Menu,
   Button,
+  Grid,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from '@components/forms/tagGroup';
@@ -330,3 +331,43 @@ export const EditMultiSelect: React.FC<EditMultiSelectProps> = ({
     )}
   </Box>
 );
+
+const ADDRESS_FIELDS = [
+  { suffix: 'Line1', label: 'Address Line 1' },
+  { suffix: 'Line2', label: 'Address Line 2' },
+  { suffix: 'City', label: 'City/Town' },
+  { suffix: 'State', label: 'State/Region/Province' },
+  { suffix: 'Zip', label: 'Zip/Postal Code' },
+  { suffix: 'Country', label: 'Country' },
+];
+
+interface EditAddressSectionProps {
+  title: string;
+  prefix: string;
+  form: { [key: string]: string | boolean | string[] };
+  onChange: (name: string, value: string) => void;
+}
+export const EditAddressSection: React.FC<EditAddressSectionProps> = ({
+  title,
+  prefix,
+  form,
+  onChange,
+}) => {
+  const str = (key: string) => (form[key] as string) ?? '';
+  return (
+    <Box mb={6}>
+      <Text {...sectionLabelStyles}>{title}</Text>
+      <Grid templateColumns="repeat(2, 1fr)" columnGap={6}>
+        {ADDRESS_FIELDS.map(({ suffix, label }) => (
+          <EditField
+            key={suffix}
+            label={label}
+            name={`${prefix}${suffix}`}
+            value={str(`${prefix}${suffix}`)}
+            onChange={(v) => onChange(`${prefix}${suffix}`, v)}
+          />
+        ))}
+      </Grid>
+    </Box>
+  );
+};
