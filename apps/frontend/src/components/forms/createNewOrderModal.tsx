@@ -18,6 +18,7 @@ import {
   DonationItemsGroupedByFoodType,
   FoodManufacturerWithoutRelations,
   FoodRequest,
+  FoodType,
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from 'types/types';
@@ -64,22 +65,6 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
     };
     fetchManufacturers();
   }, [request, setAlertMessage]);
-
-  // Set initial itemAllocations to be equal to avaliable quantity left
-  useEffect(() => {
-    if (!manufacturerItems) return;
-
-    const initial: Record<number, number> = {};
-
-    [
-      ...manufacturerItems.matchingItems,
-      ...manufacturerItems.nonMatchingItems,
-    ].forEach((item) => {
-      initial[item.itemId] = item.availableQuantity;
-    });
-
-    setItemAllocations(initial);
-  }, [manufacturerItems]);
 
   // Collection for option group select element to seperate by matching stock and non matching stock
   const categories = manufacturers
@@ -271,8 +256,8 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                   >
                     {Object.entries(groupedDonationItems).map(
                       ([foodType, items]) => {
-                        const isMatching = manufacturerItems.matchingItems.some(
-                          (i) => i.foodType === foodType,
+                        const isMatching = request.requestedFoodTypes.includes(
+                          foodType as FoodType,
                         );
 
                         return (
@@ -398,7 +383,8 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                   outline: 'none',
                                 }}
                                 border="none"
-                                value={itemAllocations[item.itemId]}
+                                value={itemAllocations[item.itemId] ?? ''}
+                                placeholder={String(item.availableQuantity)}
                                 min={1}
                                 max={item.availableQuantity}
                                 onChange={(e) => {

@@ -24,13 +24,15 @@ import { useAlert } from '../hooks/alert';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
-  const [sortAsc, setSortAsc] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
-    null,
-  );
+  const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(true);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [isFilterPantryDropdownOpen, setIsFilterPantryDropdownOpen] =
+    useState(false);
+  const [selectedFilteredPantries, setSelectedFilteredPantries] = useState<
+    string[]
+  >([]);
+  const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
+    useState<FoodRequest | null>(null);
 
   const [selectedActionRequest, setSelectedActionRequest] =
     useState<FoodRequest | null>(null);
@@ -57,8 +59,8 @@ const VolunteerRequestManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedPantries]);
+    setCurrentPageNumber(1);
+  }, [selectedFilteredPantries]);
 
   const pantryOptions = [
     ...new Set(
@@ -70,21 +72,23 @@ const VolunteerRequestManagement: React.FC = () => {
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
     if (checked) {
-      setSelectedPantries([...selectedPantries, pantry]);
+      setSelectedFilteredPantries([...selectedFilteredPantries, pantry]);
     } else {
-      setSelectedPantries(selectedPantries.filter((p) => p !== pantry));
+      setSelectedFilteredPantries(
+        selectedFilteredPantries.filter((p) => p !== pantry),
+      );
     }
   };
 
   const filteredRequests = requests
     .filter((r) => {
       const matchesFilter =
-        selectedPantries.length === 0 ||
-        (r.pantry && selectedPantries.includes(r.pantry?.pantryName));
+        selectedFilteredPantries.length === 0 ||
+        (r.pantry && selectedFilteredPantries.includes(r.pantry?.pantryName));
       return matchesFilter;
     })
     .sort((a, b) =>
-      sortAsc
+      sortRequestedAtAsc
         ? a.requestedAt.localeCompare(b.requestedAt)
         : b.requestedAt.localeCompare(a.requestedAt),
     );
@@ -92,8 +96,8 @@ const VolunteerRequestManagement: React.FC = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPageNumber - 1) * itemsPerPage,
+    currentPageNumber * itemsPerPage,
   );
 
   const tableHeaderStyles = {
@@ -114,6 +118,10 @@ const VolunteerRequestManagement: React.FC = () => {
     py: 0,
   };
 
+  const clearActionRequest = () => setSelectedActionRequest(null);
+  const clearCloseRequest = () => setSelectedCloseRequestAction(null);
+  const clearCreateOrder = () => setSelectedCreateOrderRequest(null);
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
@@ -130,7 +138,9 @@ const VolunteerRequestManagement: React.FC = () => {
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            onClick={() =>
+              setIsFilterPantryDropdownOpen(!isFilterPantryDropdownOpen)
+            }
             variant="outline"
             color="neutral.600"
             border="1px solid"
@@ -144,7 +154,7 @@ const VolunteerRequestManagement: React.FC = () => {
             Filter
           </Button>
 
-          {isFilterOpen && (
+          {isFilterPantryDropdownOpen && (
             <>
               <Box
                 position="fixed"
@@ -152,7 +162,7 @@ const VolunteerRequestManagement: React.FC = () => {
                 left={0}
                 right={0}
                 bottom={0}
-                onClick={() => setIsFilterOpen(false)}
+                onClick={() => setIsFilterPantryDropdownOpen(false)}
                 zIndex={10}
               />
               <Box
@@ -175,7 +185,7 @@ const VolunteerRequestManagement: React.FC = () => {
                   {pantryOptions.map((pantry) => (
                     <Checkbox.Root
                       key={pantry}
-                      checked={selectedPantries.includes(pantry)}
+                      checked={selectedFilteredPantries.includes(pantry)}
                       onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(pantry, e.checked)
                       }
@@ -193,7 +203,7 @@ const VolunteerRequestManagement: React.FC = () => {
           )}
         </Box>
         <Button
-          onClick={() => setSortAsc((s) => !s)}
+          onClick={() => setSortRequestedAtAsc((s) => !s)}
           variant="outline"
           color="neutral.600"
           border="1px solid"
@@ -263,7 +273,7 @@ const VolunteerRequestManagement: React.FC = () => {
                 <Link
                   textDecorationColor="black"
                   variant="underline"
-                  onClick={() => setSelectedRequest(request)}
+                  onClick={() => setSelectedViewDetailsRequest(request)}
                 >
                   {request.requestId}
                 </Link>
@@ -337,25 +347,25 @@ const VolunteerRequestManagement: React.FC = () => {
             </Table.Row>
           ))}
 
-          {selectedRequest && (
+          {selectedViewDetailsRequest && (
             <RequestDetailsModal
-              request={selectedRequest}
-              isOpen={selectedRequest !== null}
-              onClose={() => setSelectedRequest(null)}
+              request={selectedViewDetailsRequest}
+              isOpen={selectedViewDetailsRequest !== null}
+              onClose={() => setSelectedViewDetailsRequest(null)}
             />
           )}
 
           {selectedActionRequest && (
             <VolunteerRequestActionRequiredModal
               isOpen={true}
-              onClose={() => setSelectedActionRequest(null)}
+              onClose={clearActionRequest}
               onCloseRequest={() => {
                 setSelectedCloseRequestAction(selectedActionRequest);
-                setSelectedActionRequest(null);
+                clearActionRequest();
               }}
               onCreateOrder={() => {
                 setSelectedCreateOrderRequest(selectedActionRequest);
-                setSelectedActionRequest(null);
+                clearActionRequest();
               }}
             />
           )}
@@ -364,9 +374,9 @@ const VolunteerRequestManagement: React.FC = () => {
             <VolunteerCloseRequestActionModal
               request={selectedCloseRequestAction}
               isOpen={true}
-              onClose={() => setSelectedCloseRequestAction(null)}
+              onClose={clearCloseRequest}
               onSuccess={() => {
-                setSelectedCloseRequestAction(null);
+                clearCloseRequest();
                 setIsAlertError(false);
                 setAlertMessage('Request Closed');
                 fetchRequests();
@@ -378,9 +388,9 @@ const VolunteerRequestManagement: React.FC = () => {
             <CreateNewOrderModal
               request={selectedCreateOrderRequest}
               isOpen={true}
-              onClose={() => setSelectedCreateOrderRequest(null)}
+              onClose={clearCreateOrder}
               onSuccess={() => {
-                setSelectedCreateOrderRequest(null);
+                clearCreateOrder();
                 setIsAlertError(false);
                 setAlertMessage('Order Created');
                 fetchRequests();
@@ -394,8 +404,8 @@ const VolunteerRequestManagement: React.FC = () => {
         <Pagination.Root
           count={filteredRequests.length}
           pageSize={itemsPerPage}
-          page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
+          page={currentPageNumber}
+          onPageChange={(e: { page: number }) => setCurrentPageNumber(e.page)}
         >
           <ButtonGroup
             display="flex"
