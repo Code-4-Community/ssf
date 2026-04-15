@@ -117,10 +117,20 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   };
 
   const onSubmitNewOrder = async () => {
+    const cleanedAllocations: Record<number, number> = {};
+
+    for (const item in itemAllocations) {
+      const value = itemAllocations[item];
+
+      if (value !== 0) {
+        cleanedAllocations[Number(item)] = value;
+      }
+    }
+
     const data = {
       foodRequestId: request.requestId,
       manufacturerId: selectedManufacturer!.foodManufacturerId,
-      itemAllocations: itemAllocations,
+      itemAllocations: cleanedAllocations,
     };
 
     try {
@@ -386,13 +396,13 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                 textAlign="center"
                                 value={itemAllocations[item.itemId] ?? ''}
                                 placeholder={String(item.availableQuantity)}
-                                min={1}
+                                min={0}
                                 max={item.availableQuantity}
                                 onChange={(e) => {
                                   let value = Number(e.target.value);
 
-                                  // Limit value to be between 1 and availableQuantity
-                                  if (isNaN(value) || value < 1) value = 1;
+                                  // Limit value to be between 0 and availableQuantity
+                                  if (isNaN(value) || value < 0) value = 0;
                                   if (value > item.availableQuantity)
                                     value = item.availableQuantity;
 
