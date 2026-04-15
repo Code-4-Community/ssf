@@ -3,11 +3,12 @@ import { RequestsController } from './request.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { FoodRequest } from './request.entity';
-import { RequestSize } from './types';
+import { FoodRequestStatus, RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 import {
   DonationItemDetailsDto,
   MatchingItemsDto,
@@ -44,6 +45,8 @@ describe('RequestsController', () => {
     mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.getOrderDetails.mockReset();
+    mockRequestsService.update.mockReset();
+    mockRequestsService.delete.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RequestsController],
@@ -167,7 +170,7 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('POST /create', () => {
+  describe('POST /', () => {
     it('should call requestsService.create and return the created food request', async () => {
       const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
@@ -239,6 +242,40 @@ describe('RequestsController', () => {
     });
   });
 
+  describe('PATCH /:requestId', () => {
+    it('should update request with valid information', async () => {
+      const updatedRequest = {
+        ...foodRequest1,
+        requestedSize: RequestSize.MEDIUM,
+      };
+      mockRequestsService.update.mockResolvedValue(
+        updatedRequest as FoodRequest,
+      );
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+      const result = await controller.updateRequest(1, updateRequestDto);
+
+      expect(result).toEqual(updatedRequest);
+      expect(mockRequestsService.update).toHaveBeenCalledWith(
+        1,
+        updateRequestDto,
+      );
+    });
+  });
+
+  describe('DELETE /:requestId', () => {
+    it('should delete a request by id', async () => {
+      mockRequestsService.delete.mockResolvedValue(undefined);
+
+      const result = await controller.deleteRequest(1);
+
+      expect(result).toBeUndefined();
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('GET /:requestId/matching-manufacturers/:foodManufacturerId/available-items', () => {
     it('should call requestsService.getAvailableItems and return grouped items', async () => {
       const requestId = 1;
@@ -280,6 +317,25 @@ describe('RequestsController', () => {
         requestId,
         foodManufacturerId,
       );
+    });
+  });
+
+  describe('PATCH /:requestId/close', () => {
+    it('should call requestsService.closeRequest and return the closed food request', async () => {
+      const requestId = 1;
+      const closedRequest: Partial<FoodRequest> = {
+        ...foodRequest1,
+        status: FoodRequestStatus.CLOSED,
+      };
+
+      mockRequestsService.closeRequest.mockResolvedValueOnce(
+        closedRequest as FoodRequest,
+      );
+
+      const result = await controller.closeRequest(requestId);
+
+      expect(result).toEqual(closedRequest);
+      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
     });
   });
 });
