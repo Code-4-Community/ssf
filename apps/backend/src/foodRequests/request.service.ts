@@ -296,9 +296,11 @@ export class RequestsService {
       (order) => order.status === OrderStatus.DELIVERED,
     );
 
-    request.status = allDelivered
-      ? FoodRequestStatus.CLOSED
-      : FoodRequestStatus.ACTIVE;
+    if (request.status !== FoodRequestStatus.CLOSED) {
+      request.status = allDelivered
+        ? FoodRequestStatus.CLOSED
+        : FoodRequestStatus.ACTIVE;
+    }
 
     await this.repo.save(request);
   }
@@ -367,5 +369,26 @@ export class RequestsService {
     }
 
     await this.repo.remove(request);
+  }
+
+  async closeRequest(requestId: number): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status !== FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Cannot close a request with status: ${request.status}`,
+      );
+    }
+
+    request.status = FoodRequestStatus.CLOSED;
+    return this.repo.save(request);
   }
 }

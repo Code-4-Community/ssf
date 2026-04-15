@@ -16,7 +16,6 @@ import {
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { BadRequestException } from '@nestjs/common';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -171,7 +170,7 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('POST /create', () => {
+  describe('POST /', () => {
     it('should call requestsService.create and return the created food request', async () => {
       const createBody: Partial<CreateRequestDto> = {
         pantryId: 1,
@@ -318,6 +317,25 @@ describe('RequestsController', () => {
         requestId,
         foodManufacturerId,
       );
+    });
+  });
+
+  describe('PATCH /:requestId/close', () => {
+    it('should call requestsService.closeRequest and return the closed food request', async () => {
+      const requestId = 1;
+      const closedRequest: Partial<FoodRequest> = {
+        ...foodRequest1,
+        status: FoodRequestStatus.CLOSED,
+      };
+
+      mockRequestsService.closeRequest.mockResolvedValueOnce(
+        closedRequest as FoodRequest,
+      );
+
+      const result = await controller.closeRequest(requestId);
+
+      expect(result).toEqual(closedRequest);
+      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
     });
   });
 });

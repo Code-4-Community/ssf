@@ -75,7 +75,7 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
-  @Post('/create')
+  @Post()
   @ApiBody({
     description: 'Details for creating a food request',
     schema: {
@@ -125,5 +125,13 @@ export class RequestsController {
     @Param('requestId', ParseIntPipe) requestId: number,
   ): Promise<void> {
     return this.requestsService.delete(requestId);
+  }
+
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:requestId/close')
+  async closeRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId);
   }
 }
