@@ -355,7 +355,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                               border="1px solid"
                               borderColor="neutral.100"
                               borderRadius="md"
-                              px={4}
+                              pl={4}
                               align="center"
                               mt="2"
                               key={item.itemId}
@@ -383,6 +383,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                   outline: 'none',
                                 }}
                                 border="none"
+                                textAlign="center"
                                 value={itemAllocations[item.itemId] ?? ''}
                                 placeholder={String(item.availableQuantity)}
                                 min={1}
