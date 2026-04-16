@@ -101,8 +101,7 @@ export const emailTemplates = {
 
   pantryRequestMatchedOrder: (params: {
     pantryName: string;
-    quantity: string;
-    product: string;
+    items: { quantity: string; product: string }[];
     brand: string;
     volunteerName: string;
     volunteerEmail: string;
@@ -112,11 +111,22 @@ export const emailTemplates = {
       <p>Hi ${params.pantryName},</p>
       <p>
         Good news! Your recent food request through Securing Safe Food has been successfully matched to an order and is now moving forward toward delivery. 
-        You can expect to receive ${params.quantity} of ${params.product} from ${params.brand}. 
+      </p>
+      <p>
+      <strong>Items you will receive from ${params.brand}:</strong>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+    </p>
+      <p>
         To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please log into the platform. 
       </p>
       <p>
-        If any details change on your end or you have updated availability, please update your request in the system or email your coordinator, ${params.volunteerName} at ${params.volunteerEmail}.
+        If any details change on your end or you have updated availability, please update your request in the system or email your coordinator, ${
+          params.volunteerName
+        } at ${params.volunteerEmail}.
       </p>
       <p>
         We will continue to keep you informed as the order progresses. We’re excited to help support your pantry and looking forward to this donation!
@@ -130,8 +140,7 @@ export const emailTemplates = {
 
   fmDonationMatchedOrder: (params: {
     manufacturerName: string;
-    quantity: string;
-    product: string;
+    items: { quantity: string; product: string }[];
     pantryName: string;
     pantryAddress: string;
     volunteerName: string;
@@ -145,7 +154,11 @@ export const emailTemplates = {
       Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
     </p>
     <p>
-      <strong>Matched Item:</strong> ${params.quantity} of ${params.product}<br />
+      <strong>Matched Items:</strong><br />
+      ${params.items
+        .map((item) => `• ${item.quantity} of ${item.product}`)
+        .join('<br />')}
+      <br /><br />
       <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
       <strong>Address:</strong><br />
       ${params.pantryAddress}
@@ -157,7 +170,9 @@ export const emailTemplates = {
       Your support plays a direct role in expanding access to allergen-safe foods, and we truly appreciate your commitment to this work.
     </p>
     <p>
-      If you have any questions or need assistance, please contact your coordinator, ${params.volunteerName} at ${params.volunteerEmail}.
+      If you have any questions or need assistance, please contact your coordinator, ${
+        params.volunteerName
+      } at ${params.volunteerEmail}.
     </p>
     <p>
       Thank you so much.
