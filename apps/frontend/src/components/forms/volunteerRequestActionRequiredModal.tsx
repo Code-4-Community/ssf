@@ -17,6 +17,16 @@ const VolunteerRequestActionRequiredModal: React.FC<
     color: 'neutral.600',
   };
 
+  const handleCloseRequest = async () => {
+    onClose();
+    onCloseRequest();
+  };
+
+  const handleCreateOrder = async () => {
+    onClose();
+    onCreateOrder();
+  };
+
   return (
     <Dialog.Root
       open={isOpen}
@@ -51,7 +61,7 @@ const VolunteerRequestActionRequiredModal: React.FC<
                   borderWidth="1px"
                   bg="white"
                   {...buttonStyles}
-                  onClick={onCreateOrder}
+                  onClick={handleCreateOrder}
                 >
                   Create New Order
                 </Button>
@@ -59,7 +69,7 @@ const VolunteerRequestActionRequiredModal: React.FC<
                   bg="blue.core"
                   {...buttonStyles}
                   color="white"
-                  onClick={onCloseRequest}
+                  onClick={handleCloseRequest}
                 >
                   Close Request
                 </Button>

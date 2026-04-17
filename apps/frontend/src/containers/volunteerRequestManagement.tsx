@@ -361,11 +361,9 @@ const VolunteerRequestManagement: React.FC = () => {
               onClose={clearActionRequest}
               onCloseRequest={() => {
                 setSelectedCloseRequestAction(selectedActionRequest);
-                clearActionRequest();
               }}
               onCreateOrder={() => {
                 setSelectedCreateOrderRequest(selectedActionRequest);
-                clearActionRequest();
               }}
             />
           )}
@@ -376,7 +374,6 @@ const VolunteerRequestManagement: React.FC = () => {
               isOpen={true}
               onClose={clearCloseRequest}
               onSuccess={() => {
-                clearCloseRequest();
                 setIsAlertError(false);
                 setAlertMessage('Request Closed');
                 fetchRequests();
@@ -390,7 +387,6 @@ const VolunteerRequestManagement: React.FC = () => {
               isOpen={true}
               onClose={clearCreateOrder}
               onSuccess={() => {
-                clearCreateOrder();
                 setIsAlertError(false);
                 setAlertMessage('Order Created');
                 fetchRequests();

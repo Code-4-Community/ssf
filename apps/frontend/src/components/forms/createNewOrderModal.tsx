@@ -135,6 +135,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
 
     try {
       await apiClient.createOrder(data);
+      onClose();
       onSuccess();
     } catch {
       setAlertMessage('Error creating new order');

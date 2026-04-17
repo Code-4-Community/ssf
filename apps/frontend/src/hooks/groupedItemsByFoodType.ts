@@ -7,11 +7,11 @@ export function groupedItemsByFoodType<T extends { foodType: FoodType }>(
 ): Partial<Record<FoodType, T[]>> {
   if (!items) return {};
 
-  return items.reduce((acc: Record<string, T[]>, item) => {
+  return items.reduce((acc: Partial<Record<FoodType, T[]>>, item) => {
     if (!acc[item.foodType]) {
       acc[item.foodType] = [];
     }
-    acc[item.foodType].push(item);
+    acc[item.foodType]!.push(item);
     return acc;
   }, {});
 }

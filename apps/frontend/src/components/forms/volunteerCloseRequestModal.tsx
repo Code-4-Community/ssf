@@ -29,6 +29,7 @@ const VolunteerCloseRequestActionModal: React.FC<
   const onCloseRequest = async () => {
     try {
       await apiClient.closeFoodRequest(request.requestId);
+      onClose();
       onSuccess();
     } catch {
       setAlertMessage('Error completing action. Please try again.');
