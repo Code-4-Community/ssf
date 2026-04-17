@@ -21,8 +21,14 @@ import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { DataSource } from 'typeorm';
 import { FoodType } from '../donationItems/types';
+import { DonationService } from '../donations/donations.service';
+import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
+import { Allocation } from '../allocations/allocations.entity';
 
 jest.setTimeout(60000);
 
@@ -61,6 +67,13 @@ describe('FoodManufacturersService', () => {
       providers: [
         FoodManufacturersService,
         UsersService,
+        DonationService,
+        DonationItemsService,
+        PantriesService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: AuthService,
           useValue: {
@@ -76,12 +89,20 @@ describe('FoodManufacturersService', () => {
           useValue: testDataSource.getRepository(FoodManufacturer),
         },
         {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
+        },
+        {
           provide: getRepositoryToken(User),
           useValue: testDataSource.getRepository(User),
         },
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
         {
           provide: getRepositoryToken(Order),
@@ -92,8 +113,8 @@ describe('FoodManufacturersService', () => {
           useValue: testDataSource.getRepository(FoodRequest),
         },
         {
-          provide: getRepositoryToken(Pantry),
-          useValue: testDataSource.getRepository(Pantry),
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
         },
       ],
     }).compile();
