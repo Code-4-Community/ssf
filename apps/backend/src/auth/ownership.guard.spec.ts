@@ -140,4 +140,68 @@ describe('OwnershipGuard', () => {
     // If it fails to parse, it will throw ForbiddenException before even calling the resolver.
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
   });
+
+  describe('OwnershipGuard bypassRoles', () => {
+    it('returns true when user role is in bypassRoles without calling resolver', async () => {
+      const resolver = jest.fn();
+      const config: OwnershipConfig = {
+        idParam: 'id',
+        resolver,
+        bypassRoles: [Role.VOLUNTEER],
+      };
+      const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+      const ctx = makeExecutionContext(dummyUser, { id: '10' });
+      await expect(guard.canActivate(ctx)).resolves.toBe(true);
+      expect(resolver).not.toHaveBeenCalled();
+    });
+
+    it('does not bypass when user role is not in bypassRoles', async () => {
+      const pantryUser: User = { id: 55, role: Role.PANTRY } as User;
+      const config: OwnershipConfig = {
+        idParam: 'id',
+        resolver: async () => [99],
+        bypassRoles: [Role.VOLUNTEER],
+      };
+      const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+      const ctx = makeExecutionContext(pantryUser, { id: '10' });
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('bypasses when user role matches one of multiple bypassRoles', async () => {
+      const pantryUser: User = { id: 55, role: Role.PANTRY } as User;
+      const resolver = jest.fn();
+      const config: OwnershipConfig = {
+        idParam: 'id',
+        resolver,
+        bypassRoles: [Role.VOLUNTEER, Role.PANTRY],
+      };
+      const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+      const ctx = makeExecutionContext(pantryUser, { id: '10' });
+      await expect(guard.canActivate(ctx)).resolves.toBe(true);
+      expect(resolver).not.toHaveBeenCalled();
+    });
+
+    it('admin bypasses regardless of bypassRoles', async () => {
+      const resolver = jest.fn();
+      const config: OwnershipConfig = {
+        idParam: 'id',
+        resolver,
+        bypassRoles: [],
+      };
+      const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+      const ctx = makeExecutionContext(adminUser, { id: '5' });
+      await expect(guard.canActivate(ctx)).resolves.toBe(true);
+      expect(resolver).not.toHaveBeenCalled();
+    });
+
+    it('proceeds to ownership check when bypassRoles is undefined', async () => {
+      const config: OwnershipConfig = {
+        idParam: 'id',
+        resolver: async () => [dummyUser.id],
+      };
+      const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+      const ctx = makeExecutionContext(dummyUser, { id: '10' });
+      await expect(guard.canActivate(ctx)).resolves.toBe(true);
+    });
+  });
 });
