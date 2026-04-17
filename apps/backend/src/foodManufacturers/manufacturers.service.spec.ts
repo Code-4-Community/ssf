@@ -13,20 +13,21 @@ import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Donation } from '../donations/donations.entity';
 import { User } from '../users/users.entity';
+import { Order } from '../orders/order.entity';
+import { FoodRequest } from '../foodRequests/request.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
-import { Pantry } from '../pantries/pantries.entity';
-import { Order } from '../orders/order.entity';
-import { FoodRequest } from '../foodRequests/request.entity';
-import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationService } from '../donations/donations.service';
-import { PantriesService } from '../pantries/pantries.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { DonationItem } from '../donationItems/donationItems.entity';
 import { DataSource } from 'typeorm';
 import { FoodType } from '../donationItems/types';
+import { DonationService } from '../donations/donations.service';
+import { PantriesService } from '../pantries/pantries.service';
+import { Pantry } from '../pantries/pantries.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { RecurrenceEnum } from '../donations/types';
 
@@ -68,7 +69,12 @@ describe('FoodManufacturersService', () => {
         FoodManufacturersService,
         UsersService,
         DonationService,
+        DonationItemsService,
         PantriesService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: AuthService,
           useValue: {
@@ -84,6 +90,10 @@ describe('FoodManufacturersService', () => {
           useValue: testDataSource.getRepository(FoodManufacturer),
         },
         {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
+        },
+        {
           provide: getRepositoryToken(User),
           useValue: testDataSource.getRepository(User),
         },
@@ -92,8 +102,8 @@ describe('FoodManufacturersService', () => {
           useValue: testDataSource.getRepository(Donation),
         },
         {
-          provide: getRepositoryToken(Pantry),
-          useValue: testDataSource.getRepository(Pantry),
+          provide: getRepositoryToken(DonationItem),
+          useValue: testDataSource.getRepository(DonationItem),
         },
         {
           provide: getRepositoryToken(Order),
@@ -104,16 +114,8 @@ describe('FoodManufacturersService', () => {
           useValue: testDataSource.getRepository(FoodRequest),
         },
         {
-          provide: getRepositoryToken(DonationItem),
-          useValue: testDataSource.getRepository(DonationItem),
-        },
-        {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
-        },
-        {
-          provide: DataSource,
-          useValue: testDataSource,
         },
       ],
     }).compile();

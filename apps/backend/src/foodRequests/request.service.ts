@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -21,6 +22,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 
 @Injectable()
 export class RequestsService {
@@ -294,10 +296,99 @@ export class RequestsService {
       (order) => order.status === OrderStatus.DELIVERED,
     );
 
-    request.status = allDelivered
-      ? FoodRequestStatus.CLOSED
-      : FoodRequestStatus.ACTIVE;
+    if (request.status !== FoodRequestStatus.CLOSED) {
+      request.status = allDelivered
+        ? FoodRequestStatus.CLOSED
+        : FoodRequestStatus.ACTIVE;
+    }
 
     await this.repo.save(request);
+  }
+
+  async update(requestId: number, dto: UpdateRequestDto): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    if (
+      dto.requestedSize == undefined &&
+      dto.requestedFoodTypes == undefined &&
+      dto.additionalInformation == undefined
+    ) {
+      throw new BadRequestException(
+        'At least one field must be provided to update request',
+      );
+    }
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be updated if it still has orders associated with it`,
+      );
+    }
+
+    Object.assign(request, dto);
+
+    return this.repo.save(request);
+  }
+
+  async delete(requestId: number) {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be deleted if it still has orders associated with it`,
+      );
+    }
+
+    await this.repo.remove(request);
+  }
+
+  async closeRequest(requestId: number): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status !== FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Cannot close a request with status: ${request.status}`,
+      );
+    }
+
+    request.status = FoodRequestStatus.CLOSED;
+    return this.repo.save(request);
   }
 }

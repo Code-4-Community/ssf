@@ -17,7 +17,6 @@ import {
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
-  CreateMultipleDonationItemsBody,
   ManufacturerApplicationDto,
   OrderSummary,
   UserDto,
@@ -28,7 +27,11 @@ import {
   OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
+  CreateDonationDto,
   UpdateProfileFields,
+  DonationDetails,
+  VolunteerOrder,
+  VolunteerAction,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -85,22 +88,14 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postDonation(body: unknown): Promise<Donation> {
-    return this.post('/api/donations/create', body) as Promise<Donation>;
+  public async postDonation(body: CreateDonationDto): Promise<Donation> {
+    return this.post('/api/donations/', body) as Promise<Donation>;
   }
 
   public async createFoodRequest(
     body: CreateFoodRequestBody,
   ): Promise<FoodRequest> {
-    return this.post('/api/requests/create', body) as Promise<FoodRequest>;
-  }
-
-  public async postMultipleDonationItems(
-    body: CreateMultipleDonationItemsBody,
-  ): Promise<DonationItem[]> {
-    return this.post('/api/donation-items/create-multiple', body) as Promise<
-      DonationItem[]
-    >;
+    return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
   private async patch(path: string, body: unknown): Promise<unknown> {
@@ -117,7 +112,7 @@ export class ApiClient {
 
   public async getAllDonationsByFoodManufacturer(
     foodManufacturerId: number,
-  ): Promise<Donation[]> {
+  ): Promise<DonationDetails[]> {
     return this.axiosInstance
       .get(`/api/manufacturers/${foodManufacturerId}/donations`)
       .then((response) => response.data);
@@ -131,16 +126,6 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body,
     ) as Promise<Donation>;
-  }
-
-  public async updateDonationItemQuantity(
-    itemId: number,
-    body?: unknown,
-  ): Promise<DonationItem> {
-    return this.patch(
-      `/api/donation-items/update-quantity/${itemId}`,
-      body,
-    ) as Promise<DonationItem>;
   }
 
   private async delete(path: string): Promise<unknown> {
@@ -215,6 +200,19 @@ export class ApiClient {
 
   public async getVolunteerPantries(userId: number): Promise<Pantry[]> {
     return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
+  }
+
+  public async getVolunteerOrders(userId: number): Promise<VolunteerOrder[]> {
+    return this.get(`/api/volunteers/${userId}/orders`) as Promise<
+      VolunteerOrder[]
+    >;
+  }
+
+  public async completeOrderAction(
+    orderId: number,
+    action: VolunteerAction,
+  ): Promise<void> {
+    await this.patch(`/api/orders/${orderId}/complete-action`, { action });
   }
 
   public async updateUser(

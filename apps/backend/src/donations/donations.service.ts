@@ -5,13 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { Donation } from './donations.entity';
 import { validateId } from '../utils/validation.utils';
 import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
+import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
@@ -28,6 +31,7 @@ export class DonationService {
     private donationItemsRepo: Repository<DonationItem>,
     @InjectRepository(FoodManufacturer)
     private manufacturerRepo: Repository<FoodManufacturer>,
+    private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -83,17 +87,29 @@ export class DonationService {
       );
     }
 
-    const donation = this.repo.create({
-      foodManufacturer: manufacturer,
-      dateDonated: new Date(),
-      status: DonationStatus.AVAILABLE,
-      recurrence: donationData.recurrence,
-      recurrenceFreq: donationData.recurrenceFreq,
-      nextDonationDates: nextDonationDates,
-      occurrencesRemaining: donationData.occurrencesRemaining,
-    });
+    return this.dataSource.transaction(async (transactionManager) => {
+      const transactionRepo = transactionManager.getRepository(Donation);
 
-    return this.repo.save(donation);
+      const donation = transactionRepo.create({
+        foodManufacturer: manufacturer,
+        dateDonated: new Date(),
+        status: DonationStatus.AVAILABLE,
+        recurrence: donationData.recurrence,
+        recurrenceFreq: donationData.recurrenceFreq,
+        nextDonationDates,
+        occurrencesRemaining: donationData.occurrencesRemaining,
+      });
+
+      const savedDonation = await transactionRepo.save(donation);
+
+      await this.donationItemsService.createMultiple(
+        savedDonation,
+        donationData.items,
+        transactionManager,
+      );
+
+      return savedDonation;
+    });
   }
 
   async fulfill(donationId: number): Promise<Donation> {
@@ -105,6 +121,41 @@ export class DonationService {
     }
     donation.status = DonationStatus.FULFILLED;
     return this.repo.save(donation);
+  }
+
+  async matchAll(
+    donationIds: number[],
+    transactionManager?: EntityManager,
+  ): Promise<void> {
+    donationIds.forEach((id) => validateId(id, 'Donation'));
+
+    const donationTransactionRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : undefined;
+
+    const targetRepo = donationTransactionRepo
+      ? donationTransactionRepo
+      : this.repo;
+
+    const donations = await targetRepo.find({
+      where: { donationId: In(donationIds) },
+      select: ['donationId'],
+    });
+
+    const foundIds = donations.map((d) => d.donationId);
+
+    const missingIds = donationIds.filter((id) => !foundIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Donations not found for ID(s): ${missingIds.join(', ')}`,
+      );
+    }
+
+    await targetRepo.update(
+      { donationId: In(donationIds) },
+      { status: DonationStatus.MATCHED },
+    );
   }
 
   async handleRecurringDonations(): Promise<void> {
@@ -281,6 +332,81 @@ export class DonationService {
       dates.push(nextDate.toISOString());
     }
     return dates;
+  }
+
+  async confirmDonationItemDetails(
+    donationId: number,
+    body: ConfirmDonationItemDetailsDto[],
+  ): Promise<Donation> {
+    validateId(donationId, 'Donation');
+
+    return this.dataSource.transaction(async (transactionManager) => {
+      const donationTransactionRepo =
+        transactionManager.getRepository(Donation);
+
+      const donation = await donationTransactionRepo.findOneBy({ donationId });
+
+      if (!donation) {
+        throw new NotFoundException(`Donation ${donationId} not found`);
+      }
+
+      if (donation.status !== DonationStatus.MATCHED) {
+        throw new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        );
+      }
+
+      await this.donationItemsService.confirmItemDetails(
+        donationId,
+        body,
+        transactionManager,
+      );
+
+      const updated = await donationTransactionRepo.findOne({
+        where: { donationId },
+        relations: ['donationItems'],
+      });
+
+      return this.checkAndFulfillDonation(updated!, transactionManager);
+    });
+  }
+
+  async checkAndFulfillDonation(
+    donation: Donation,
+    transactionManager?: EntityManager,
+  ): Promise<Donation> {
+    const itemRepo = transactionManager
+      ? transactionManager.getRepository(DonationItem)
+      : this.donationItemsRepo;
+    const donationRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : this.repo;
+
+    const items = await itemRepo.find({
+      where: { donationId: donation.donationId },
+      relations: { allocations: { order: true } },
+    });
+
+    const allItemsFulfilled = items.every(
+      (item) =>
+        item.detailsConfirmed && item.reservedQuantity === item.quantity,
+    );
+
+    if (!allItemsFulfilled) return donation;
+
+    const hasPendingOrder = items.some((item) =>
+      item.allocations.some(
+        (allocation) => allocation.order.status === OrderStatus.PENDING,
+      ),
+    );
+
+    if (hasPendingOrder) return donation;
+
+    await donationRepo.update(donation.donationId, {
+      status: DonationStatus.FULFILLED,
+    });
+    donation.status = DonationStatus.FULFILLED;
+    return donation;
   }
 
   async replaceDonationItems(
