@@ -400,10 +400,21 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                                 min={0}
                                 max={item.availableQuantity}
                                 onChange={(e) => {
+                                  const raw = e.target.value;
+
+                                  if (raw === '') {
+                                    setItemAllocations((prev) => {
+                                      const updated = { ...prev };
+                                      delete updated[item.itemId];
+                                      return updated;
+                                    });
+                                    return;
+                                  }
+
                                   let value = Number(e.target.value);
 
                                   // Limit value to be between 0 and availableQuantity
-                                  if (isNaN(value) || value < 0) value = 0;
+                                  if (value < 0) value = 0;
                                   if (value > item.availableQuantity)
                                     value = item.availableQuantity;
 
