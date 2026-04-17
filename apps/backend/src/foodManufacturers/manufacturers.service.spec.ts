@@ -21,9 +21,8 @@ import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
 import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
-import { DataSource } from 'typeorm';
 import { FoodType } from '../donationItems/types';
-import { Allocation } from '../allocations/allocations.entity';
+import { Pantry } from '../pantries/pantries.entity';
 
 jest.setTimeout(60000);
 
@@ -91,6 +90,10 @@ describe('FoodManufacturersService', () => {
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
+        },
+        {
+          provide: getRepositoryToken(Pantry),
+          useValue: testDataSource.getRepository(Pantry),
         },
       ],
     }).compile();

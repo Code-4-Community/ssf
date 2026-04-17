@@ -191,6 +191,45 @@ describe('OrdersService', () => {
     });
   });
 
+  describe('getRecentOrdersByAssignee', () => {
+    it('returns empty array when volunteer has no assigned orders', async () => {
+      // assign all seed orders away from volunteer 6
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = (SELECT user_id FROM users WHERE role = 'volunteer' AND user_id != 6 LIMIT 1)`,
+      );
+
+      const result = await service.getRecentOrdersByAssignee(6);
+      expect(result).toEqual([]);
+    });
+
+    it('returns at most 2 orders even when volunteer has more', async () => {
+      // assign all seed orders to volunteer 6
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrdersByAssignee(6);
+      expect(result).toHaveLength(2);
+    });
+
+    it('returns correct shape of orders', async () => {
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrdersByAssignee(6);
+
+      expect(result[0].createdAt >= result[1].createdAt).toBe(true);
+      result.forEach((order) => {
+        expect(order.pantryName).toBeDefined();
+        expect(order.assignee.id).toBe(6);
+        expect(order.assignee.firstName).toBe('James');
+        expect(order.assignee.lastName).toBe('Thomas');
+        expect(order.orderId).toBeDefined();
+        expect(order.status).toBeDefined();
+        expect(order.createdAt).toBeDefined();
+        expect(order.shippedAt).toBeDefined();
+        expect(order.deliveredAt).toBeDefined();
+      });
+    });
+  });
+
   describe('findOrderDetails', () => {
     it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
       const orderId = 1;
@@ -382,6 +421,8 @@ describe('OrdersService', () => {
       expect(orders.length).toBe(2);
       expect(orders.every((order) => order.request)).toBeDefined();
       expect(orders.every((order) => order.request.pantryId === 1)).toBe(true);
+      expect(orders.every((order) => order.request.pantry)).toBeDefined();
+      expect(orders.every((order) => order.assignee)).toBeDefined();
     });
 
     it('returns empty list for pantry with no orderes', async () => {
@@ -806,13 +847,20 @@ describe('OrdersService', () => {
         where: { itemId: 9 },
       });
 
-      expect(updatedDonationItem1!.reservedQuantity).toBe(
+      if (
+        !updatedDonationItem1 ||
+        !updatedDonationItem2 ||
+        !updatedDonationItem3
+      ) {
+        throw new Error('Missing donation item test object');
+      }
+      expect(updatedDonationItem1.reservedQuantity).toBe(
         donationItem1.reservedQuantity + 10,
       );
-      expect(updatedDonationItem2!.reservedQuantity).toBe(
+      expect(updatedDonationItem2.reservedQuantity).toBe(
         donationItem2.reservedQuantity + 3,
       );
-      expect(updatedDonationItem3!.reservedQuantity).toBe(
+      expect(updatedDonationItem3.reservedQuantity).toBe(
         donationItem3.reservedQuantity + 5,
       );
 

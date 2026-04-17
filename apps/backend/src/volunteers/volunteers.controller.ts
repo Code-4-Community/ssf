@@ -42,6 +42,14 @@ export class VolunteersController {
     return this.volunteersService.findOne(userId);
   }
 
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @Get('/:id/my-recent-orders')
+  async getRecentOrders(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<VolunteerOrder[]> {
+    return this.volunteersService.getRecentOrders(id);
+  }
+
   @Post('/:id/pantries')
   async assignPantries(
     @Param('id', ParseIntPipe) id: number,

@@ -213,4 +213,43 @@ describe('VolunteersController', () => {
       );
     });
   });
+
+  describe('GET /:id/my-recent-orders', () => {
+    it('returns the 2 most recent orders for a volunteer', async () => {
+      const assignee = { id: 6, firstName: 'James', lastName: 'Thomas' };
+      const recentOrders: Partial<VolunteerOrder>[] = [
+        {
+          orderId: 4,
+          status: 'pending' as VolunteerOrder['status'],
+          pantryName: 'Community Food Pantry Downtown',
+          assignee,
+        },
+        {
+          orderId: 3,
+          status: 'shipped' as VolunteerOrder['status'],
+          pantryName: 'North End Food Bank',
+          assignee,
+        },
+      ];
+
+      mockVolunteersService.getRecentOrders.mockResolvedValueOnce(
+        recentOrders as VolunteerOrder[],
+      );
+
+      const result = await controller.getRecentOrders(6);
+
+      expect(result).toEqual(recentOrders);
+      expect(result).toHaveLength(2);
+      expect(mockVolunteersService.getRecentOrders).toHaveBeenCalledWith(6);
+    });
+
+    it('returns empty array when volunteer has no assigned orders', async () => {
+      mockVolunteersService.getRecentOrders.mockResolvedValueOnce([]);
+
+      const result = await controller.getRecentOrders(6);
+
+      expect(result).toEqual([]);
+      expect(mockVolunteersService.getRecentOrders).toHaveBeenCalledWith(6);
+    });
+  });
 });

@@ -253,7 +253,7 @@ export class RequestsService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new food request notification email to volunteers',
       );
@@ -262,7 +262,7 @@ export class RequestsService {
     return foodRequest;
   }
 
-  async find(pantryId: number) {
+  async findAllForPantry(pantryId: number) {
     validateId(pantryId, 'Pantry');
 
     return await this.repo.find({

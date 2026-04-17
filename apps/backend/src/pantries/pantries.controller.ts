@@ -34,12 +34,15 @@ import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { RequestsService } from '../foodRequests/request.service';
 
 @Controller('pantries')
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
     private ordersService: OrdersService,
+    private requestsService: RequestsService,
   ) {}
 
   @Roles(Role.ADMIN)
@@ -104,6 +107,14 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Order[]> {
     return this.ordersService.getOrdersByPantry(pantryId);
+  }
+
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @Get('/:pantryId/requests')
+  async getFoodRequests(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<FoodRequest[]> {
+    return this.requestsService.findAllForPantry(pantryId);
   }
 
   @ApiBody({
