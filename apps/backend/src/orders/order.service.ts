@@ -479,7 +479,8 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
-      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoin('request.pantry', 'pantry')
+      .addSelect('pantry.pantryName')
       .leftJoinAndSelect('order.allocations', 'allocations')
       .leftJoinAndSelect('allocations.item', 'item')
       .leftJoinAndSelect('order.assignee', 'assignee')

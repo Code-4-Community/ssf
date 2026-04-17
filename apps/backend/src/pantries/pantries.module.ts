@@ -18,7 +18,7 @@ import { RequestsModule } from '../foodRequests/request.module';
     forwardRef(() => UsersModule),
     EmailsModule,
     forwardRef(() => AuthModule),
-    RequestsModule,
+    forwardRef(() => RequestsModule),
   ],
   controllers: [PantriesController],
   providers: [PantriesService],
