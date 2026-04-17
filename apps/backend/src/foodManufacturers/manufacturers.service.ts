@@ -146,10 +146,7 @@ export class FoodManufacturersService {
   ): Promise<DonationReminderDto[]> {
     validateId(foodManufacturerId, 'Food Manufacturer');
 
-    const manufacturer = await this.repo.findOne({
-      where: { foodManufacturerId },
-      relations: ['foodManufacturerRepresentative'],
-    });
+    const manufacturer = await this.repo.findOneBy({ foodManufacturerId });
 
     if (!manufacturer) {
       throw new NotFoundException(
@@ -165,8 +162,7 @@ export class FoodManufacturersService {
     today.setHours(0, 0, 0, 0);
     const donationReminders: DonationReminderDto[] = donations.flatMap(
       (donation) => {
-        const allDates = donation.nextDonationDates ?? [];
-        const dates = allDates.filter((date) => date >= today);
+        const dates = donation.nextDonationDates ?? [];
         const reminders: DonationReminderDto[] = dates.map((date) => ({
           donation,
           reminderDate: date,
@@ -175,15 +171,18 @@ export class FoodManufacturersService {
         if (
           donation.recurrence !== RecurrenceEnum.NONE &&
           donation.recurrenceFreq &&
-          allDates.length > 0
+          dates.length > 0
         ) {
-          for (const date of allDates) {
+          for (const date of dates) {
             const nextDate = calculateNextDonationDate(
               date,
               donation.recurrence,
               donation.recurrenceFreq,
             );
-            if (nextDate >= today) {
+            if (
+              nextDate >= today &&
+              !dates.some((d) => d.getTime() === nextDate.getTime())
+            ) {
               reminders.push({ donation, reminderDate: nextDate });
             }
           }

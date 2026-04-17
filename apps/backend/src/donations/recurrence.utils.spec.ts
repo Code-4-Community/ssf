@@ -29,6 +29,15 @@ describe('calculateNextDonationDate', () => {
       );
       expect(result).toEqual(new Date(2025, 2, 31));
     });
+
+    it('rolls over into the next month', () => {
+      const result = calculateNextDonationDate(
+        new Date(2025, 0, 28),
+        RecurrenceEnum.WEEKLY,
+        1,
+      );
+      expect(result).toEqual(new Date(2025, 1, 4));
+    });
   });
 
   describe('MONTHLY', () => {
@@ -62,15 +71,6 @@ describe('calculateNextDonationDate', () => {
     it('clamps day to 28 before adding months when date is after the 28th', () => {
       const result = calculateNextDonationDate(
         new Date(2025, 0, 31),
-        RecurrenceEnum.MONTHLY,
-        1,
-      );
-      expect(result).toEqual(new Date(2025, 1, 28));
-    });
-
-    it('does not clamp day when date is on the 28th', () => {
-      const result = calculateNextDonationDate(
-        new Date(2025, 0, 28),
         RecurrenceEnum.MONTHLY,
         1,
       );

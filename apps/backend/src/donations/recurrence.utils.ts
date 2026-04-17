@@ -10,7 +10,7 @@ import { RecurrenceEnum } from './types';
  * for MONTHLY/YEARLY recurrence, dates > 28 are clamped to 28 before adding the interval to
  *  prevent date rollover
  *
- * @param currentDate - date to calculate from (typically an expired donation date)
+ * @param currentDate - date to calculate from
  * @param recurrence - recurrence type (WEEKLY, MONTHLY, YEARLY, or NONE)
  * @param recurrenceFreq - how many weeks/months/years to add (defaults to 1)
  * @returns a new Date representing the next occurrence
