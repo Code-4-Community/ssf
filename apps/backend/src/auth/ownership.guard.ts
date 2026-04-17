@@ -14,6 +14,7 @@ import {
   ServiceRegistry,
 } from './ownership.decorator';
 import { User } from '../users/users.entity';
+import { Role } from '../users/types';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
@@ -40,6 +41,11 @@ export class OwnershipGuard implements CanActivate {
 
     // Admins bypass ownership checks
     if (user.role === 'admin') {
+      return true;
+    }
+
+    // Specified roles bypass ownership checks
+    if (config.bypassRoles?.includes(user.role as Role)) {
       return true;
     }
 
@@ -87,7 +93,7 @@ export class OwnershipGuard implements CanActivate {
           const service = moduleRef.get(serviceClass, { strict: false });
           cache.set(serviceClass, service);
           return service;
-        } catch (error) {
+        } catch {
           throw new Error(`Could not resolve service: ${serviceClass.name}`);
         }
       },

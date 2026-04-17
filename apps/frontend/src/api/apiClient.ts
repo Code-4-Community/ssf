@@ -34,6 +34,8 @@ import {
   CreateOrderDto,
   DonationDetails,
   FoodRequestWithoutRelations,
+  VolunteerOrder,
+  VolunteerAction,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -210,6 +212,19 @@ export class ApiClient {
 
   public async getVolunteerPantries(userId: number): Promise<Pantry[]> {
     return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
+  }
+
+  public async getVolunteerOrders(userId: number): Promise<VolunteerOrder[]> {
+    return this.get(`/api/volunteers/${userId}/orders`) as Promise<
+      VolunteerOrder[]
+    >;
+  }
+
+  public async completeOrderAction(
+    orderId: number,
+    action: VolunteerAction,
+  ): Promise<void> {
+    await this.patch(`/api/orders/${orderId}/complete-action`, { action });
   }
 
   public async updateUser(

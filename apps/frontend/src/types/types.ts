@@ -299,6 +299,33 @@ export interface FoodManufacturer extends FoodManufacturerWithoutRelations {
   donations: Donation[];
 }
 
+export type VolunteerOrder = {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantryName: string;
+  assignee: OrderAssignee;
+  actionCompletion?: VolunteerActionCompletion;
+};
+
+export type VolunteerActionCompletion = {
+  confirmDonationReceipt: boolean;
+  notifyPantry: boolean;
+};
+
+export enum VolunteerAction {
+  CONFIRM_DONATION_RECEIPT = 'confirmDonationReceipt',
+  NOTIFY_PANTRY = 'notifyPantry',
+}
+
+export type OrderAssignee = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
 export interface FoodManufacturerWithoutRelations {
   foodManufacturerId: number;
   foodManufacturerName: string;
