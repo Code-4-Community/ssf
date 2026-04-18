@@ -249,10 +249,11 @@ describe('RequestsService', () => {
         FoodType.REFRIGERATED_MEALS,
       ]);
 
+      if (!pantry) throw new Error('Missing pantry test object');
       const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
       });
-      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
@@ -275,10 +276,11 @@ describe('RequestsService', () => {
         FoodType.REFRIGERATED_MEALS,
       ]);
 
+      if (!pantry) throw new Error('Missing pantry test object');
       const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
       });
-      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(volunteerEmails).toEqual([]);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
@@ -303,7 +305,7 @@ describe('RequestsService', () => {
         ),
       );
 
-      const requests = await service.find(pantryId);
+      const requests = await service.findAllForPantry(pantryId);
       expect(requests.length).toBe(3);
     });
 
@@ -319,10 +321,10 @@ describe('RequestsService', () => {
     });
   });
 
-  describe('find', () => {
+  describe('findAllForPantry', () => {
     it('should return all food requests for a specific pantry with pantry details', async () => {
       const pantryId = 1;
-      const result = await service.find(pantryId);
+      const result = await service.findAllForPantry(pantryId);
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(2);
@@ -335,7 +337,7 @@ describe('RequestsService', () => {
 
     it('should return empty array for pantry with no requests', async () => {
       const pantryId = 5;
-      const result = await service.find(pantryId);
+      const result = await service.findAllForPantry(pantryId);
 
       expect(result).toBeDefined();
       expect(result).toEqual([]);

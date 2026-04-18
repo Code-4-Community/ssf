@@ -30,6 +30,7 @@ export class VolunteersController {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
@@ -40,6 +41,14 @@ export class VolunteersController {
   @Get('/:id')
   async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.volunteersService.findOne(userId);
+  }
+
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @Get('/:id/my-recent-orders')
+  async getRecentOrders(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<VolunteerOrder[]> {
+    return this.volunteersService.getRecentOrders(id);
   }
 
   @Post('/:id/pantries')

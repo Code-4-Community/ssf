@@ -121,6 +121,44 @@ export class OrdersService {
     });
   }
 
+  async getRecentOrdersByAssignee(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
+    validateId(volunteerId, 'Volunteer');
+
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .where('order.assigneeId = :volunteerId', { volunteerId })
+      .orderBy('order.createdAt', 'DESC')
+      .take(2)
+      .getMany();
+
+    return orders.map((o) => ({
+      orderId: o.orderId,
+      status: o.status,
+      createdAt: o.createdAt,
+      shippedAt: o.shippedAt,
+      deliveredAt: o.deliveredAt,
+      pantryName: o.request.pantry.pantryName,
+      assignee: o.assignee,
+    }));
+  }
+
   async getCurrentOrders() {
     return this.repo.find({
       where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
@@ -444,8 +482,11 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
+      .leftJoin('request.pantry', 'pantry')
+      .addSelect('pantry.pantryName')
       .leftJoinAndSelect('order.allocations', 'allocations')
       .leftJoinAndSelect('allocations.item', 'item')
+      .leftJoinAndSelect('order.assignee', 'assignee')
       .where('request.pantryId = :pantryId', { pantryId });
 
     if (years && years.length > 0) {

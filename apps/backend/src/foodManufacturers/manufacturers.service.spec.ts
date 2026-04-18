@@ -29,7 +29,6 @@ import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
 import { Allocation } from '../allocations/allocations.entity';
-import { AllocationsService } from '../allocations/allocations.service';
 
 jest.setTimeout(60000);
 
