@@ -21,9 +21,11 @@ export const ROUTES = {
   VOLUNTEER_MANAGEMENT: '/volunteer-management',
   ADMIN_ORDER_MANAGEMENT: '/admin-order-management',
   ADMIN_DONATION: '/admin-donation',
+  ADMIN_DONATION_STATS: '/admin-donation-stats',
 
   VOLUNTEER_ASSIGNED_PANTRIES: '/volunteer-assigned-pantries',
   VOLUNTEER_REQUEST_MANAGEMENT: '/volunteer-request-management',
+  VOLUNTEER_ORDER_MANAGEMENT: '/volunteer-order-management',
 
   PANTRY_ORDER_MANAGEMENT: '/pantry-order-management',
   REQUEST_FORM: '/request-form',

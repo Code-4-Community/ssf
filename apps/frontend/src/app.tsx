@@ -132,7 +132,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin-donation-stats',
+        path: ROUTES.ADMIN_DONATION_STATS,
         element: (
           <ProtectedRoute>
             <AdminDonationStats />
@@ -188,7 +188,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/volunteer-order-management',
+        path: ROUTES.VOLUNTEER_ORDER_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <VolunteerOrderManagement />
