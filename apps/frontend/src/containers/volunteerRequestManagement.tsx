@@ -17,34 +17,50 @@ import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
+import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
+import CreateNewOrderModal from '@components/forms/createNewOrderModal';
+import { useAlert } from '../hooks/alert';
 
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<FoodRequest | null>(
-    null,
-  );
+  const [isFilterPantryDropdownOpen, setIsFilterPantryDropdownOpen] =
+    useState(false);
+  const [selectedFilteredPantries, setSelectedFilteredPantries] = useState<
+    string[]
+  >([]);
+  const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
+    useState<FoodRequest | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [selectedActionRequest, setSelectedActionRequest] =
+    useState<FoodRequest | null>(null);
+  const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
+    useState<FoodRequest | null>(null);
+  const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
+    useState<FoodRequest | null>(null);
+
+  const [alertState, setAlertMessage] = useAlert();
+  const [isAlertError, setIsAlertError] = useState<boolean>(true);
+
+  const fetchRequests = async () => {
+    try {
+      const data = await ApiClient.getVolunteerAssignedRequests();
+      setRequests(data);
+    } catch {
+      setIsAlertError(true);
+      setAlertMessage('Error fetching requests');
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await ApiClient.getVolunteerAssignedRequests();
-        setRequests(data);
-      } catch (error) {
-        setAlertMessage('Error fetching requests' + error);
-      }
-    };
     fetchRequests();
   }, []);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedPantries]);
+  }, [selectedFilteredPantries]);
 
   const pantryOptions = [
     ...new Set(
@@ -56,21 +72,23 @@ const VolunteerRequestManagement: React.FC = () => {
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
     if (checked) {
-      setSelectedPantries([...selectedPantries, pantry]);
+      setSelectedFilteredPantries([...selectedFilteredPantries, pantry]);
     } else {
-      setSelectedPantries(selectedPantries.filter((p) => p !== pantry));
+      setSelectedFilteredPantries(
+        selectedFilteredPantries.filter((p) => p !== pantry),
+      );
     }
   };
 
   const filteredRequests = requests
     .filter((r) => {
       const matchesFilter =
-        selectedPantries.length === 0 ||
-        (r.pantry && selectedPantries.includes(r.pantry?.pantryName));
+        selectedFilteredPantries.length === 0 ||
+        (r.pantry && selectedFilteredPantries.includes(r.pantry?.pantryName));
       return matchesFilter;
     })
     .sort((a, b) =>
-      sortAsc
+      sortRequestedAtAsc
         ? a.requestedAt.localeCompare(b.requestedAt)
         : b.requestedAt.localeCompare(a.requestedAt),
     );
@@ -100,18 +118,29 @@ const VolunteerRequestManagement: React.FC = () => {
     py: 0,
   };
 
+  const clearActionRequest = () => setSelectedActionRequest(null);
+  const clearCloseRequest = () => setSelectedCloseRequestAction(null);
+  const clearCreateOrder = () => setSelectedCreateOrderRequest(null);
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {alertMessage && (
-        <FloatingAlert message={alertMessage} status="error" timeout={6000} />
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status={isAlertError ? 'error' : 'info'}
+          timeout={6000}
+        />
       )}
       <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
         <Box position="relative">
           <Button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            onClick={() =>
+              setIsFilterPantryDropdownOpen(!isFilterPantryDropdownOpen)
+            }
             variant="outline"
             color="neutral.600"
             border="1px solid"
@@ -125,7 +154,7 @@ const VolunteerRequestManagement: React.FC = () => {
             Filter
           </Button>
 
-          {isFilterOpen && (
+          {isFilterPantryDropdownOpen && (
             <>
               <Box
                 position="fixed"
@@ -133,7 +162,7 @@ const VolunteerRequestManagement: React.FC = () => {
                 left={0}
                 right={0}
                 bottom={0}
-                onClick={() => setIsFilterOpen(false)}
+                onClick={() => setIsFilterPantryDropdownOpen(false)}
                 zIndex={10}
               />
               <Box
@@ -156,7 +185,7 @@ const VolunteerRequestManagement: React.FC = () => {
                   {pantryOptions.map((pantry) => (
                     <Checkbox.Root
                       key={pantry}
-                      checked={selectedPantries.includes(pantry)}
+                      checked={selectedFilteredPantries.includes(pantry)}
                       onCheckedChange={(e: { checked: boolean }) =>
                         handleFilterChange(pantry, e.checked)
                       }
@@ -174,7 +203,7 @@ const VolunteerRequestManagement: React.FC = () => {
           )}
         </Box>
         <Button
-          onClick={() => setSortAsc((s) => !s)}
+          onClick={() => setSortRequestedAtAsc((s) => !s)}
           variant="outline"
           color="neutral.600"
           border="1px solid"
@@ -235,10 +264,7 @@ const VolunteerRequestManagement: React.FC = () => {
         </Table.Header>
         <Table.Body>
           {paginatedRequests.map((request, index) => (
-            <Table.Row
-              key={`${request.requestId}-${index}`}
-              _hover={{ bg: 'neutral.50' }}
-            >
+            <Table.Row key={request.requestId} _hover={{ bg: 'neutral.50' }}>
               <Table.Cell
                 {...tableCellStyles}
                 borderRight="1px solid"
@@ -247,7 +273,7 @@ const VolunteerRequestManagement: React.FC = () => {
                 <Link
                   textDecorationColor="black"
                   variant="underline"
-                  onClick={() => setSelectedRequest(request)}
+                  onClick={() => setSelectedViewDetailsRequest(request)}
                 >
                   {request.requestId}
                 </Link>
@@ -295,16 +321,77 @@ const VolunteerRequestManagement: React.FC = () => {
               >
                 {formatDate(request.requestedAt)}
               </Table.Cell>
-              <Table.Cell {...tableCellStyles}>{/* TODO*/}</Table.Cell>
+              <Table.Cell
+                {...tableCellStyles}
+                bgColor={
+                  request.status !== FoodRequestStatus.ACTIVE
+                    ? 'neutral.50'
+                    : 'white'
+                }
+                textAlign="right"
+                color="neutral.700"
+                pr={0}
+              >
+                {request.status === FoodRequestStatus.ACTIVE && (
+                  <Button
+                    variant="plain"
+                    fontWeight="400"
+                    textDecoration="underline"
+                    color="neutral.700"
+                    onClick={() => setSelectedActionRequest(request)}
+                  >
+                    Complete Required Action
+                  </Button>
+                )}
+              </Table.Cell>
             </Table.Row>
           ))}
 
-          {selectedRequest && (
+          {selectedViewDetailsRequest && (
             <RequestDetailsModal
-              request={selectedRequest}
-              isOpen={selectedRequest !== null}
-              onClose={() => setSelectedRequest(null)}
+              request={selectedViewDetailsRequest}
+              isOpen={selectedViewDetailsRequest !== null}
+              onClose={() => setSelectedViewDetailsRequest(null)}
             />
+          )}
+
+          {selectedActionRequest && (
+            <VolunteerRequestActionRequiredModal
+              isOpen={true}
+              onClose={clearActionRequest}
+              onCloseRequest={() => {
+                setSelectedCloseRequestAction(selectedActionRequest);
+              }}
+              onCreateOrder={() => {
+                setSelectedCreateOrderRequest(selectedActionRequest);
+              }}
+            />
+          )}
+
+          {selectedCloseRequestAction && (
+            <VolunteerCloseRequestActionModal
+              request={selectedCloseRequestAction}
+              isOpen={true}
+              onClose={clearCloseRequest}
+              onSuccess={() => {
+                setIsAlertError(false);
+                setAlertMessage('Request Closed');
+                fetchRequests();
+              }}
+            ></VolunteerCloseRequestActionModal>
+          )}
+
+          {selectedCreateOrderRequest && (
+            <CreateNewOrderModal
+              request={selectedCreateOrderRequest}
+              isOpen={true}
+              onClose={clearCreateOrder}
+              onSuccess={() => {
+                setIsAlertError(false);
+                setAlertMessage('Order Created');
+                fetchRequests();
+              }}
+            ></CreateNewOrderModal>
           )}
         </Table.Body>
       </Table.Root>

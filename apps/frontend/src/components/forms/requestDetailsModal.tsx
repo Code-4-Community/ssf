@@ -1,5 +1,9 @@
 import apiClient from '@api/apiClient';
-import { FoodRequest, GroupedByFoodType, OrderDetails } from 'types/types';
+import {
+  FoodRequest,
+  OrderItemDetailsGroupedByFoodType,
+  OrderDetails,
+} from 'types/types';
 import { OrderStatus } from '../../types/types';
 import React, { useState, useEffect } from 'react';
 import {
@@ -18,7 +22,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
-import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 
 interface RequestDetailsModalProps {
   request: FoodRequest;
@@ -64,9 +68,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     currentOrder = orderDetailsList[currentPage - 1];
   }
 
-  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
-    currentOrder?.items,
-  );
+  const groupedOrderItemsByType: OrderItemDetailsGroupedByFoodType =
+    useGroupedItemsByFoodType(currentOrder?.items);
 
   const sectionTitleStyles = {
     textStyle: 'p2',

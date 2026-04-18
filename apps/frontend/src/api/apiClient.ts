@@ -31,6 +31,13 @@ import {
   TotalStats,
   CreateDonationDto,
   UpdateProfileFields,
+  MatchingManufacturersDto,
+  MatchingItemsDto,
+  CreateOrderDto,
+  DonationDetails,
+  FoodRequestWithoutRelations,
+  VolunteerOrder,
+  VolunteerAction,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -97,9 +104,17 @@ export class ApiClient {
     return this.post('/api/requests/', body) as Promise<FoodRequest>;
   }
 
-  private async patch(path: string, body: unknown): Promise<unknown> {
+  public async closeFoodRequest(
+    requestId: number,
+  ): Promise<FoodRequestWithoutRelations> {
+    return this.patch(
+      `/api/requests/${requestId}/close`,
+    ) as Promise<FoodRequestWithoutRelations>;
+  }
+
+  private async patch(path: string, body?: unknown): Promise<unknown> {
     return this.axiosInstance
-      .patch(path, body)
+      .patch(path, body ?? {})
       .then((response) => response.data);
   }
 
@@ -111,7 +126,7 @@ export class ApiClient {
 
   public async getAllDonationsByFoodManufacturer(
     foodManufacturerId: number,
-  ): Promise<Donation[]> {
+  ): Promise<DonationDetails[]> {
     return this.axiosInstance
       .get(`/api/manufacturers/${foodManufacturerId}/donations`)
       .then((response) => response.data);
@@ -241,6 +256,19 @@ export class ApiClient {
     return this.get(`/api/volunteers/${userId}/pantries`) as Promise<Pantry[]>;
   }
 
+  public async getVolunteerOrders(userId: number): Promise<VolunteerOrder[]> {
+    return this.get(`/api/volunteers/${userId}/orders`) as Promise<
+      VolunteerOrder[]
+    >;
+  }
+
+  public async completeOrderAction(
+    orderId: number,
+    action: VolunteerAction,
+  ): Promise<void> {
+    await this.patch(`/api/orders/${orderId}/complete-action`, { action });
+  }
+
   public async updateUser(
     userId: number,
     fields: UpdateProfileFields,
@@ -354,6 +382,12 @@ export class ApiClient {
     });
   }
 
+  public async createOrder(
+    dto: CreateOrderDto,
+  ): Promise<OrderWithoutRelations> {
+    return this.post(`/api/orders`, dto) as Promise<OrderWithoutRelations>;
+  }
+
   public async updatePantry(
     pantryId: number,
     decision: 'approve' | 'deny',
@@ -393,6 +427,23 @@ export class ApiClient {
   public async getMe(): Promise<User> {
     const data = await this.get('/api/users/me');
     return data as User;
+  }
+
+  public async getMatchingManufacturers(
+    requestId: number,
+  ): Promise<MatchingManufacturersDto> {
+    return this.get(
+      `/api/requests/${requestId}/matching-manufacturers`,
+    ) as Promise<MatchingManufacturersDto>;
+  }
+
+  public async getAvailableItemsForManufacturer(
+    requestId: number,
+    manufacturerId: number,
+  ): Promise<MatchingItemsDto> {
+    return this.get(
+      `/api/requests/${requestId}/matching-manufacturers/${manufacturerId}/available-items`,
+    ) as Promise<MatchingItemsDto>;
   }
 }
 

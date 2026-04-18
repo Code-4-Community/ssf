@@ -6,6 +6,7 @@ import { Donation } from './donations.entity';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
@@ -130,6 +131,40 @@ describe('DonationsController', () => {
 
       expect(result).toEqual(donation1);
       expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
+    });
+  });
+
+  describe('PATCH /:donationId/item-details', () => {
+    it('calls confirmDonationItemDetails with the correct donationId and body, returns result', async () => {
+      const donationId = 1;
+      const body: ConfirmDonationItemDetailsDto[] = [
+        {
+          itemId: 1,
+          ozPerItem: 5.0,
+          estimatedValue: 10.0,
+          foodRescue: true,
+        },
+        {
+          itemId: 2,
+          ozPerItem: 8.0,
+          estimatedValue: 15.0,
+          foodRescue: false,
+        },
+      ];
+
+      mockDonationService.confirmDonationItemDetails.mockResolvedValueOnce(
+        donation1 as Donation,
+      );
+
+      const result = await controller.confirmDonationItemDetails(
+        donationId,
+        body,
+      );
+
+      expect(result).toEqual(donation1);
+      expect(
+        mockDonationService.confirmDonationItemDetails,
+      ).toHaveBeenCalledWith(donationId, body);
     });
   });
 

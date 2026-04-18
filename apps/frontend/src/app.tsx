@@ -34,6 +34,7 @@ import FoodManufacturerApplicationDetails from '@containers/foodManufacturerAppl
 import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
+import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -244,6 +245,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <VolunteerRequestManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/volunteer-order-management',
+        element: (
+          <ProtectedRoute>
+            <VolunteerOrderManagement />
           </ProtectedRoute>
         ),
       },
