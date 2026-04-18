@@ -8,6 +8,7 @@ import {
   Center,
   Button,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import ApiClient from '@api/apiClient';
 import {
   FoodManufacturer,
@@ -186,8 +187,19 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
       setApplication(updatedWithRelations);
       setForm(buildFormState(updatedWithRelations));
       onEditingChange(false);
-    } catch {
-      setError('Failed to save changes. Please try again.');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 403) {
+          setError('You do not have permission to edit this profile.');
+        } else if (status === 404) {
+          setError('This manufacturer profile could not be found.');
+        } else if (status === 500) {
+          setError('A server error occurred while saving. Please try again.');
+        } else {
+          setError('Failed to save changes. Please try again.');
+        }
+      }
     } finally {
       setIsSaving(false);
     }
@@ -284,7 +296,10 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
             label="Are your products sustainable or environmentally conscious?"
             value={application.productsSustainableExplanation}
           />
-          <Field label="Pantry is" value={application.manufacturerAttribute} />
+          <Field
+            label="Food Manufacturer is"
+            value={application.manufacturerAttribute}
+          />
           <Field
             label="Additional Information"
             value={application.additionalComments}
@@ -440,7 +455,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         />
 
         <EditSelect
-          label="Pantry is"
+          label="Food Manufacturer is"
           name="manufacturerAttribute"
           value={form.manufacturerAttribute}
           options={manufacturerAttributeOptions}

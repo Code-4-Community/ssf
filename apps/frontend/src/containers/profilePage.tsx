@@ -28,14 +28,22 @@ const ProfilePage: React.FC = () => {
         const user: User = await ApiClient.getMe();
         setProfile(user);
         if (user.role === Role.PANTRY) {
-          const pantryId = await ApiClient.getCurrentUserPantryId();
-          const pantry = await ApiClient.getPantry(pantryId);
-          setOrgName(pantry.pantryName);
+          try {
+            const pantryId = await ApiClient.getCurrentUserPantryId();
+            const pantry = await ApiClient.getPantry(pantryId);
+            setOrgName(pantry.pantryName);
+          } catch {
+            setAlertMessage('Failed to fetch pantry data.');
+          }
         } else if (user.role === Role.FOODMANUFACTURER) {
-          const foodManufacturerId =
-            await ApiClient.getCurrentUserFoodManufacturerId();
-          const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
-          setOrgName(fm.foodManufacturerName);
+          try {
+            const foodManufacturerId =
+              await ApiClient.getCurrentUserFoodManufacturerId();
+            const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
+            setOrgName(fm.foodManufacturerName);
+          } catch {
+            setAlertMessage('Failed to fetch food manufacturer data.');
+          }
         }
       } catch {
         setAlertMessage('Authentication error. Please log in and try again.');

@@ -9,6 +9,7 @@ import {
   Center,
   Button,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import ApiClient from '@api/apiClient';
 import { PantryWithUser, UpdatePantryApplicationDto } from '../../types/types';
 import {
@@ -158,7 +159,12 @@ function buildFormState(app: PantryWithUser): FormState {
     activitiesComments: app.activitiesComments ?? '',
     itemsInStock: app.itemsInStock ?? '',
     needMoreOptions: app.needMoreOptions ?? '',
-    newsletterSubscription: app.newsletterSubscription ? 'Yes' : 'No',
+    newsletterSubscription:
+      app.newsletterSubscription != null
+        ? app.newsletterSubscription
+          ? 'Yes'
+          : 'No'
+        : '',
   };
 }
 
@@ -297,8 +303,19 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       setApplication(updatedWithUser);
       setForm(buildFormState(updatedWithUser));
       onEditingChange(false);
-    } catch {
-      setError('Failed to save changes. Please try again.');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 403) {
+          setError('You do not have permission to edit this profile.');
+        } else if (status === 404) {
+          setError('This pantry profile could not be found.');
+        } else if (status === 500) {
+          setError('A server error occurred while saving. Please try again.');
+        } else {
+          setError('Failed to save changes. Please try again.');
+        }
+      }
     } finally {
       setIsSaving(false);
     }

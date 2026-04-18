@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { Pencil } from 'lucide-react';
 import { Role, UpdateProfileFields, User } from '../../types/types';
+import { formatPhone } from '@utils/utils';
 import EditablePantryApplication from '@components/forms/editablePantryApplication';
 import EditableFMApplication from '@components/forms/editableFMApplication';
 
@@ -23,10 +24,12 @@ type ProfileFieldProps =
   | {
       label: string;
       value: string;
+      displayValue?: string;
     }
   | {
       label: string;
       value: string;
+      displayValue?: string;
       name: string;
       isEditing: boolean;
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -57,7 +60,7 @@ const ProfileField: React.FC<ProfileFieldProps> = (props) => (
       />
     ) : (
       <Text color="neutral.800" textStyle="p2">
-        {props.value}
+        {props.displayValue ?? props.value}
       </Text>
     )}
   </Box>
@@ -154,6 +157,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
           label="Phone Number"
           name="phone"
           value={form.phone}
+          displayValue={formatPhone(form.phone) ?? form.phone}
           isEditing={isEditing}
           onChange={handleChange}
         />
