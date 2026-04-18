@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Text, VStack, Button, Link } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
 import AuthHeader from '@components/AuthHeader';
+import { ROUTES } from '../routes';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const SignupPage: React.FC = () => {
               color="white"
               textStyle="p2"
               fontWeight={600}
-              onClick={() => navigate('/pantry-application')}
+              onClick={() => navigate(ROUTES.PANTRY_APPLICATION)}
             >
               Food Pantry Partner
             </Button>
@@ -54,7 +55,7 @@ const SignupPage: React.FC = () => {
               color="white"
               textStyle="p2"
               fontWeight={600}
-              onClick={() => navigate('/food-manufacturer-application')}
+              onClick={() => navigate(ROUTES.FOOD_MANUFACTURER_APPLICATION)}
             >
               Food Manufacturer (Donor) Partner
             </Button>
@@ -64,7 +65,7 @@ const SignupPage: React.FC = () => {
             <Link
               textStyle="p2"
               color="neutral.600"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(ROUTES.LOGIN)}
               variant="underline"
               textDecorationColor="neutral.300"
             >

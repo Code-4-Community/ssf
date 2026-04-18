@@ -6,6 +6,7 @@ import { signOut } from 'aws-amplify/auth';
 import { ChevronDown, ChevronRight, LogOut } from 'lucide-react';
 import ApiClient from '@api/apiClient';
 import { Role, User } from '../types/types';
+import { ROUTES } from '../routes';
 
 const ROLE_MAP: Record<Role, { label: string }> = {
   [Role.ADMIN]: { label: 'Admin' },
@@ -30,25 +31,27 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Volunteers',
       children: [
-        { label: 'Volunteer Management', to: '/volunteer-management' },
+        { label: 'Volunteer Management', to: ROUTES.VOLUNTEER_MANAGEMENT },
       ],
     },
     {
       type: 'group',
       label: 'Pantries',
-      children: [{ label: 'Application Review', to: '/approve-pantries' }],
+      children: [{ label: 'Application Review', to: ROUTES.APPROVE_PANTRIES }],
     },
     {
       type: 'group',
       label: 'Orders',
-      children: [{ label: 'Order Management', to: '/admin-order-management' }],
+      children: [
+        { label: 'Order Management', to: ROUTES.ADMIN_ORDER_MANAGEMENT },
+      ],
     },
     {
       type: 'group',
       label: 'Manufacturers',
       children: [
-        { label: 'Donation Management', to: '/admin-donation' },
-        { label: 'Application Review', to: '/approve-food-manufacturers' },
+        { label: 'Donation Management', to: ROUTES.ADMIN_DONATION },
+        { label: 'Application Review', to: ROUTES.APPROVE_FOOD_MANUFACTURERS },
       ],
     },
   ],
@@ -56,7 +59,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
     {
       type: 'flat',
       label: 'Assigned Pantries',
-      to: '/volunteer-assigned-pantries',
+      to: ROUTES.VOLUNTEER_ASSIGNED_PANTRIES,
     },
     {
       type: 'group',
@@ -64,7 +67,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       children: [
         {
           label: 'Food Request Management',
-          to: '/volunteer-request-management',
+          to: ROUTES.VOLUNTEER_REQUEST_MANAGEMENT,
         },
       ],
     },
@@ -74,7 +77,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Donations',
       children: [
-        { label: 'Donation Management', to: '/fm-donation-management' },
+        { label: 'Donation Management', to: ROUTES.FM_DONATION_MANAGEMENT },
       ],
     },
   ],
@@ -83,8 +86,8 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Orders',
       children: [
-        { label: 'Order Management', to: '/pantry-order-management' },
-        { label: 'Food Requests', to: '/request-form' },
+        { label: 'Order Management', to: ROUTES.PANTRY_ORDER_MANAGEMENT },
+        { label: 'Food Requests', to: ROUTES.REQUEST_FORM },
       ],
     },
   ],
@@ -199,22 +202,21 @@ const NavGroup: React.FC<NavGroupProps> = ({
 );
 
 const Navbar: React.FC = () => {
-  const { user: cognitoUser } = useAuthenticator((context) => [context.user]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only fetch the current user if they are logged in
-    if (cognitoUser) {
+    if (authStatus === 'authenticated') {
       ApiClient.getMe()
         .then(setCurrentUser)
         .catch(() => setCurrentUser(null));
     } else {
       setCurrentUser(null);
     }
-  }, [cognitoUser]);
+  }, [authStatus]);
 
   // On reload or navigation, make sure the currently opened groups stays open
   useEffect(() => {
@@ -234,13 +236,11 @@ const Navbar: React.FC = () => {
     });
   }, [location.pathname, currentUser]);
 
-  if (!cognitoUser) return null;
+  if (authStatus !== 'authenticated' || !currentUser) return null;
 
-  const roleLabel = currentUser ? ROLE_MAP[currentUser.role].label : null;
-  const sections: NavSection[] = currentUser
-    ? ROLE_NAV_SECTIONS[currentUser.role]
-    : [];
-  const email = currentUser?.email ?? '';
+  const roleLabel = ROLE_MAP[currentUser.role].label;
+  const sections: NavSection[] = ROLE_NAV_SECTIONS[currentUser.role];
+  const email = currentUser.email;
 
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) => {
@@ -253,7 +253,7 @@ const Navbar: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate(ROUTES.LOGIN, { replace: true });
   };
 
   return (
@@ -269,7 +269,10 @@ const Navbar: React.FC = () => {
       pb={4}
       flexShrink={0}
     >
-      <RouterLink to="/profile" style={{ width: '100%', marginBottom: '24px' }}>
+      <RouterLink
+        to={ROUTES.PROFILE}
+        style={{ width: '100%', marginBottom: '24px' }}
+      >
         <Box
           bg="white.core"
           borderWidth="1px"
@@ -316,9 +319,9 @@ const Navbar: React.FC = () => {
       <VStack align="stretch" gap={0} flex={1}>
         <NavLink
           fontWeight="600"
-          to="/"
+          to={ROUTES.HOME}
           label="Dashboard"
-          isActive={location.pathname === '/'}
+          isActive={location.pathname === ROUTES.HOME}
         />
 
         {sections.map((section) =>

@@ -17,6 +17,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import AuthHeader from '@components/AuthHeader';
+import { ROUTES } from '../routes';
 
 type Step = 'login' | 'new-password';
 
@@ -267,7 +268,7 @@ const LoginPage: React.FC = () => {
                 <Link
                   textStyle="p2"
                   color="neutral.600"
-                  onClick={() => navigate('/signup')}
+                  onClick={() => navigate(ROUTES.SIGNUP)}
                   variant="underline"
                   textDecorationColor="neutral.300"
                 >
@@ -276,7 +277,10 @@ const LoginPage: React.FC = () => {
               </Text>
 
               <Text fontSize="sm" textAlign="center" mt={12} fontWeight={400}>
-                <Link color="red" onClick={() => navigate('/forgot-password')}>
+                <Link
+                  color="red"
+                  onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
+                >
                   Reset Password
                 </Link>
               </Text>
