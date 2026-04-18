@@ -20,6 +20,7 @@ import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import ConfirmPantryDecisionModal from '@components/forms/confirmPantryDecisionModal';
 import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -73,7 +74,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               textStyle="p2"
               fontWeight={600}
             >
-              <Link to="/approve-pantries">Return to applications</Link>
+              <Link to={ROUTES.APPROVE_PANTRIES}>Return to applications</Link>
             </Button>
           )}
         </Box>
@@ -163,7 +164,9 @@ const PantryApplicationDetails: React.FC = () => {
       try {
         await ApiClient.updatePantry(application.pantryId, 'approve');
         navigate(
-          '/approve-pantries?action=approved&name=' + application.pantryName,
+          ROUTES.APPROVE_PANTRIES +
+            '?action=approved&name=' +
+            application.pantryName,
         );
       } catch {
         setAlertMessage('Error approving application');
@@ -176,7 +179,9 @@ const PantryApplicationDetails: React.FC = () => {
       try {
         await ApiClient.updatePantry(application.pantryId, 'deny');
         navigate(
-          '/approve-pantries?action=denied&name=' + application.pantryName,
+          ROUTES.APPROVE_PANTRIES +
+            '?action=denied&name=' +
+            application.pantryName,
         );
       } catch {
         setAlertMessage('Error denying application');
