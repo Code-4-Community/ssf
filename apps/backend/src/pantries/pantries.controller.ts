@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -45,8 +46,10 @@ export class PantriesController {
   @Roles(Role.ADMIN)
   @Get('/stats-by-pantry')
   async getPantryStats(
-    @Query('pantryNames') pantryNames?: string[],
-    @Query('years') years?: number[],
+    @Query('pantryNames', new ParseArrayPipe({ optional: true }))
+    pantryNames?: string[],
+    @Query('years', new ParseArrayPipe({ optional: true, items: Number }))
+    years?: number[],
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
   ): Promise<PantryStats[]> {
     return this.pantriesService.getPantryStats(pantryNames, years, page);
@@ -54,7 +57,10 @@ export class PantriesController {
 
   @Roles(Role.ADMIN)
   @Get('/total-stats')
-  async getTotalStats(@Query('years') years?: number[]): Promise<TotalStats> {
+  async getTotalStats(
+    @Query('years', new ParseArrayPipe({ optional: true, items: Number }))
+    years?: number[],
+  ): Promise<TotalStats> {
     return this.pantriesService.getTotalStats(years);
   }
 
@@ -76,6 +82,17 @@ export class PantriesController {
   }
 
   @Roles(Role.ADMIN)
+  @Get('/approved-names')
+  async getApprovedPantryNames(): Promise<string[]> {
+    return this.pantriesService.getApprovedPantryNames();
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('/available-years-stats')
+  async getPantryAdminStatsOrderYears(): Promise<number[]> {
+    return this.pantriesService.getPantryAdminStatsOrderYears();
+  }
+
   @Get('/approved')
   async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
     return this.pantriesService.getApprovedPantriesWithVolunteers();

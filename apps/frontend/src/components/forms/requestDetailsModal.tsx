@@ -268,10 +268,11 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       page={currentPage}
                       onChange={(page: number) => setCurrentPage(page)}
                     >
-                      <ButtonGroup variant="outline" size="sm">
+                      <ButtonGroup variant="outline" size="sm" gap={4}>
                         <Pagination.PrevTrigger asChild>
                           <IconButton
                             variant="ghost"
+                            disabled={currentPage === 1}
                             onClick={() =>
                               setCurrentPage((prev) => Math.max(prev - 1, 1))
                             }
@@ -295,6 +296,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         <Pagination.NextTrigger asChild>
                           <IconButton
                             variant="ghost"
+                            disabled={currentPage === orderDetailsList.length}
                             onClick={() =>
                               setCurrentPage((prev) =>
                                 Math.min(prev + 1, orderDetailsList.length),

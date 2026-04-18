@@ -282,7 +282,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                 return (
                   <Table.Row
                     key={`${donation.donationId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: 'neutral.50' }}
                   >
                     <Table.Cell
                       {...tableCellStyles}
@@ -356,6 +356,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
+                  gap={4}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"

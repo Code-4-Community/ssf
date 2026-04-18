@@ -25,7 +25,7 @@ import { useAlert } from '../hooks/alert';
 const VolunteerRequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<FoodRequest[]>([]);
   const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(true);
-  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPantryDropdownOpen, setIsFilterPantryDropdownOpen] =
     useState(false);
   const [selectedFilteredPantries, setSelectedFilteredPantries] = useState<
@@ -59,7 +59,7 @@ const VolunteerRequestManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setCurrentPageNumber(1);
+    setCurrentPage(1);
   }, [selectedFilteredPantries]);
 
   const pantryOptions = [
@@ -96,8 +96,8 @@ const VolunteerRequestManagement: React.FC = () => {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice(
-    (currentPageNumber - 1) * itemsPerPage,
-    currentPageNumber * itemsPerPage,
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
   const tableHeaderStyles = {
@@ -264,7 +264,7 @@ const VolunteerRequestManagement: React.FC = () => {
         </Table.Header>
         <Table.Body>
           {paginatedRequests.map((request, index) => (
-            <Table.Row key={request.requestId} _hover={{ bg: 'gray.50' }}>
+            <Table.Row key={request.requestId} _hover={{ bg: 'neutral.50' }}>
               <Table.Cell
                 {...tableCellStyles}
                 borderRight="1px solid"
@@ -400,8 +400,8 @@ const VolunteerRequestManagement: React.FC = () => {
         <Pagination.Root
           count={filteredRequests.length}
           pageSize={itemsPerPage}
-          page={currentPageNumber}
-          onPageChange={(e: { page: number }) => setCurrentPageNumber(e.page)}
+          page={currentPage}
+          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
         >
           <ButtonGroup
             display="flex"
@@ -410,10 +410,12 @@ const VolunteerRequestManagement: React.FC = () => {
             mt={12}
             variant="outline"
             size="sm"
+            gap={4}
           >
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
+              disabled={currentPage === 1}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronLeft size={16} />
@@ -435,6 +437,7 @@ const VolunteerRequestManagement: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
+              disabled={currentPage === totalPages}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronRight size={16} />
