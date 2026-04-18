@@ -74,6 +74,25 @@ declare module '@chakra-ui/react' {
   export interface FieldRootProps extends ComponentPropsLenientChildren {}
   export interface FieldHelperTextProps extends ComponentPropsLenientChildren {}
 
+  // Select components
+  export interface SelectRootProps extends ComponentPropsStrictChildren {}
+  export interface SelectTriggerProps extends ComponentPropsStrictChildren {}
+  export interface SelectValueTextProps extends ComponentPropsLenientChildren {}
+  export interface SelectContentProps extends ComponentPropsStrictChildren {}
+  export interface SelectPositionerProps extends ComponentPropsStrictChildren {}
+  export interface SelectItemProps extends ComponentPropsLenientChildren {}
+  export interface SelectItemIndicatorProps
+    extends ComponentPropsStrictChildren {}
+  export interface SelectItemGroupProps extends ComponentPropsLenientChildren {}
+  export interface SelectItemGroupLabelProps
+    extends ComponentPropsLenientChildren {}
+  export interface HiddenSelectProps extends ComponentPropsStrictChildren {}
+  export interface SelectIndicatorGroupProps
+    extends ComponentPropsStrictChildren {}
+  export interface SelectIndicatorProps extends ComponentPropsStrictChildren {}
+  export interface SelectControlProps extends ComponentPropsStrictChildren {}
+  export interface SelectLabelProps extends ComponentPropsLenientChildren {}
+
   // Native Select components
   export interface NativeSelectFieldProps
     extends ComponentPropsLenientChildren {}

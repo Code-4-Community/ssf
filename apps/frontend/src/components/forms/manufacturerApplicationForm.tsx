@@ -101,7 +101,7 @@ const ManufacturerApplicationForm: React.FC = () => {
       </Box>
       <Box
         as="section"
-        bg="#FEFEFE"
+        bg="white.core"
         p="2em"
         border="1px solid"
         borderColor="neutral.200"
