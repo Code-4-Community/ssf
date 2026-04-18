@@ -1,9 +1,9 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -23,9 +23,11 @@ import {
   DonationDetailsDto,
   DonationItemWithAllocatedQuantityDto,
   DonationOrderDetailsDto,
+  DonationReminderDto,
 } from './dtos/donation-details-dto';
 import { OrderStatus } from '../orders/types';
-import { DonationStatus } from '../donations/types';
+import { DonationStatus, RecurrenceEnum } from '../donations/types';
+import { calculateNextDonationDate } from '../donations/recurrence.utils';
 import { ManufacturerStatsDto } from './dtos/manufacturer-stats.dto';
 
 @Injectable()
@@ -76,7 +78,7 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
       );
     }
@@ -137,6 +139,64 @@ export class FoodManufacturersService {
         relevantDonationItems,
       };
     });
+  }
+
+  async getUpcomingDonationReminders(
+    foodManufacturerId: number,
+  ): Promise<DonationReminderDto[]> {
+    validateId(foodManufacturerId, 'Food Manufacturer');
+
+    const manufacturer = await this.repo.findOneBy({ foodManufacturerId });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    const donations = await this.donationsRepo.find({
+      where: { foodManufacturer: { foodManufacturerId } },
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const donationReminders: DonationReminderDto[] = donations.flatMap(
+      (donation) => {
+        const dates = donation.nextDonationDates ?? [];
+        const reminders: DonationReminderDto[] = dates.map((date) => ({
+          donation,
+          reminderDate: date,
+        }));
+
+        if (
+          donation.recurrence !== RecurrenceEnum.NONE &&
+          donation.recurrenceFreq &&
+          dates.length > 0
+        ) {
+          for (const date of dates) {
+            const nextDate = calculateNextDonationDate(
+              date,
+              donation.recurrence,
+              donation.recurrenceFreq,
+            );
+            if (
+              nextDate >= today &&
+              !dates.some((d) => d.getTime() === nextDate.getTime())
+            ) {
+              reminders.push({ donation, reminderDate: nextDate });
+            }
+          }
+        }
+
+        return reminders;
+      },
+    );
+
+    donationReminders.sort(
+      (a, b) => a.reminderDate.getTime() - b.reminderDate.getTime(),
+    );
+
+    return donationReminders.slice(0, 2);
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
@@ -248,7 +308,7 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
       );
     }
