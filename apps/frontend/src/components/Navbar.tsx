@@ -301,7 +301,7 @@ const Navbar: React.FC = () => {
               overflow="hidden"
               style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
             >
-              {`${roleLabel} Dashboard`}
+              {roleLabel ? `${roleLabel} Dashboard` : 'Dashboard'}
             </Text>
             <Text
               fontSize="10px"
