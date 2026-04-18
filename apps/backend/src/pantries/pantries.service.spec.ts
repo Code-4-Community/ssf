@@ -511,6 +511,26 @@ describe('PantriesService', () => {
       );
     });
 
+    it('returns zeroed stats for an approved pantry with no orders', async () => {
+      // Pantry 5 has no orders; approve it so getPantryStats will include it
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_id = 5`,
+      );
+      const pantry = await service.findOne(5);
+      expect(pantry.status).toBe(ApplicationStatus.APPROVED);
+
+      const stats = (await service.getPantryStats([pantry.pantryName]))[0];
+
+      expect(stats.pantryId).toBe(5);
+      expect(stats.totalItems).toBe(0);
+      expect(stats.totalOz).toBe(0);
+      expect(stats.totalLbs).toBe(0);
+      expect(stats.totalDonatedFoodValue).toBe(0);
+      expect(stats.totalShippingCost).toBe(0);
+      expect(stats.totalValue).toBe(0);
+      expect(stats.percentageFoodRescueItems).toBe(0);
+    });
+
     it('respects year filter and returns zeros for a non-matching year', async () => {
       const stats = (
         await service.getPantryStats(['Community Food Pantry Downtown'], [2030])
@@ -774,15 +794,35 @@ describe('PantriesService', () => {
       expect(total.totalValue).toBe(0);
       expect(total.percentageFoodRescueItems).toBe(0);
     });
+
+    it('excludes a pantry set to pending from the totals', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE pantry_id = 1`,
+      );
+      const total = await service.getTotalStats();
+      // 220 - 125 = 95 remaining items
+      expect(total.totalItems).toBe(95);
+      expect(total.totalDonatedFoodValue).toBeCloseTo(462.5, 2);
+    });
+
+    it('excludes a pantry set to denied from the totals', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'denied' WHERE pantry_id = 1`,
+      );
+      const total = await service.getTotalStats();
+      // 220 - 125 = 95 remaining items
+      expect(total.totalItems).toBe(95);
+      expect(total.totalDonatedFoodValue).toBeCloseTo(462.5, 2);
+    });
   });
 
-  describe('getPantryOrderYears', () => {
+  describe('getPantryAdminStatsOrderYears', () => {
     it('returns years from pantry orders sorted descending', async () => {
       await testDataSource.query(
         `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
       );
 
-      const years = await service.getPantryOrderYears();
+      const years = await service.getPantryAdminStatsOrderYears();
 
       expect(years).toEqual([2024]);
     });
@@ -799,7 +839,7 @@ describe('PantriesService', () => {
         WHERE order_id != (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
       `);
 
-      const years = await service.getPantryOrderYears();
+      const years = await service.getPantryAdminStatsOrderYears();
 
       expect(years).toEqual([2025, 2024]);
     });
@@ -809,7 +849,7 @@ describe('PantriesService', () => {
       await testDataSource.query(`DELETE FROM public.allocations`);
       await testDataSource.query(`DELETE FROM public.orders`);
 
-      const years = await service.getPantryOrderYears();
+      const years = await service.getPantryAdminStatsOrderYears();
 
       expect(years).toEqual([]);
     });

@@ -110,24 +110,32 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('getPantryOrderYears', () => {
+  describe('getPantryAdminStatsOrderYears', () => {
     it('should return an array of years', async () => {
       const mockYears = [2025, 2024];
-      mockPantriesService.getPantryOrderYears.mockResolvedValueOnce(mockYears);
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        mockYears,
+      );
 
-      const result = await controller.getPantryOrderYears();
+      const result = await controller.getPantryAdminStatsOrderYears();
 
       expect(result).toEqual(mockYears);
-      expect(mockPantriesService.getPantryOrderYears).toHaveBeenCalled();
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
     });
 
     it('should return an empty array when no approved pantry orders exist', async () => {
-      mockPantriesService.getPantryOrderYears.mockResolvedValueOnce([]);
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        [],
+      );
 
-      const result = await controller.getPantryOrderYears();
+      const result = await controller.getPantryAdminStatsOrderYears();
 
       expect(result).toEqual([]);
-      expect(mockPantriesService.getPantryOrderYears).toHaveBeenCalled();
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
     });
   });
 

@@ -333,7 +333,7 @@ const AdminDonationStats: React.FC = () => {
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width="25%"
+              width="20%"
             >
               Pantry
             </Table.ColumnHeader>
@@ -341,7 +341,7 @@ const AdminDonationStats: React.FC = () => {
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width="10%"
+              width="8%"
             >
               Total Items
             </Table.ColumnHeader>
@@ -377,8 +377,16 @@ const AdminDonationStats: React.FC = () => {
             >
               Shipping Cost/Tax
             </Table.ColumnHeader>
-            <Table.ColumnHeader {...tableHeaderStyles} width="10%">
+            <Table.ColumnHeader
+              {...tableHeaderStyles}
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              width="8%"
+            >
               Total Value
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...tableHeaderStyles} width="25%">
+              % of Food Rescue
             </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
@@ -433,8 +441,16 @@ const AdminDonationStats: React.FC = () => {
               >
                 ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
               </Table.Cell>
-              <Table.Cell textStyle="p2" bg="yellow.100">
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                bg="yellow.100"
+              >
                 ${(totalStats?.totalValue ?? 0).toFixed(2)}
+              </Table.Cell>
+              <Table.Cell textStyle="p2" bg="yellow.100">
+                {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
               </Table.Cell>
             </Table.Row>
           )}
@@ -483,8 +499,15 @@ const AdminDonationStats: React.FC = () => {
               >
                 ${stat.totalShippingCost.toFixed(2)}
               </Table.Cell>
-              <Table.Cell textStyle="p2">
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
                 ${stat.totalValue.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell textStyle="p2">
+                {stat.percentageFoodRescueItems.toFixed(2)}%
               </Table.Cell>
             </Table.Row>
           ))}
@@ -512,7 +535,6 @@ const AdminDonationStats: React.FC = () => {
                 variant="ghost"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                ml={2}
               >
                 <ChevronLeft />
               </IconButton>
@@ -523,7 +545,6 @@ const AdminDonationStats: React.FC = () => {
                 <IconButton
                   variant={{ base: 'outline', _selected: 'outline' }}
                   onClick={() => setCurrentPage(page.value)}
-                  mr={2}
                 >
                   {page.value}
                 </IconButton>

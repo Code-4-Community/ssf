@@ -719,13 +719,12 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
-                  gap={2}
+                  gap={4}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === 1}
-                    ml={2}
                   >
                     <ChevronLeft
                       size={16}
@@ -752,7 +751,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === totalPages}
-                    mr={2}
                   >
                     <ChevronRight
                       size={16}

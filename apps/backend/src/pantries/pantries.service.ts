@@ -270,7 +270,7 @@ export class PantriesService {
     return pantries.map((p) => p.pantryName);
   }
 
-  async getPantryOrderYears(): Promise<number[]> {
+  async getPantryAdminStatsOrderYears(): Promise<number[]> {
     const rows = await this.orderRepo
       .createQueryBuilder('order')
       .select('EXTRACT(YEAR FROM order.createdAt)::int', 'year')

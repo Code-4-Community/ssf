@@ -353,13 +353,12 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
-                  gap={2}
+                  gap={4}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === 1}
-                    ml={2}
                   >
                     <ChevronLeft
                       size={16}
@@ -386,7 +385,6 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                     color="neutral.800"
                     _hover={{ color: 'black' }}
                     disabled={currentPage === totalPages}
-                    mr={2}
                   >
                     <ChevronRight
                       size={16}
