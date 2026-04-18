@@ -118,6 +118,29 @@ export enum DonationStatus {
   FULFILLED = 'fulfilled',
 }
 
+export class MatchingManufacturersDto {
+  matchingManufacturers!: FoodManufacturerWithoutRelations[];
+  nonMatchingManufacturers!: FoodManufacturerWithoutRelations[];
+}
+
+export class MatchingItemsDto {
+  matchingItems!: DonationItemDetailsDto[];
+  nonMatchingItems!: DonationItemDetailsDto[];
+}
+
+export class CreateOrderDto {
+  foodRequestId!: number;
+  manufacturerId!: number;
+  itemAllocations!: Record<string, number>;
+}
+
+export class DonationItemDetailsDto {
+  itemId!: number;
+  itemName!: string;
+  foodType!: FoodType;
+  availableQuantity!: number;
+}
+
 export enum RecurrenceEnum {
   NONE = 'none',
   WEEKLY = 'weekly',
@@ -134,6 +157,25 @@ export interface Donation {
   recurrenceFreq?: number;
   nextDonationDates?: string[];
   occurrencesRemaining?: number;
+}
+
+export interface DonationDetails {
+  donation: Donation;
+  associatedPendingOrders: DonationOrderDetails[];
+  relevantDonationItems: DonationItemWithAllocatedQuantity[];
+}
+
+export interface DonationItemWithAllocatedQuantity {
+  itemId: number;
+  itemName: string;
+  foodType: FoodType;
+  allocatedQuantity: number;
+}
+
+export interface DonationOrderDetails {
+  orderId: number;
+  pantryId: number;
+  pantryName: string;
 }
 
 export interface DonationItem {
@@ -187,16 +229,19 @@ export interface UserDto {
   role: Role;
 }
 
-export interface FoodRequest {
+export interface FoodRequest extends FoodRequestWithoutRelations {
+  pantry: Pantry;
+  orders?: Order[];
+}
+
+export interface FoodRequestWithoutRelations {
   requestId: number;
   pantryId: number;
-  pantry: Pantry;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
   additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
-  orders?: Order[];
 }
 
 export interface FoodRequestSummaryDto {
@@ -249,11 +294,42 @@ export interface OrderDetails {
   items: OrderItemDetails[];
 }
 
-export interface FoodManufacturer {
+export interface FoodManufacturer extends FoodManufacturerWithoutRelations {
+  foodManufacturerRepresentative: User;
+  donations: Donation[];
+}
+
+export type VolunteerOrder = {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantryName: string;
+  assignee: OrderAssignee;
+  actionCompletion?: VolunteerActionCompletion;
+};
+
+export type VolunteerActionCompletion = {
+  confirmDonationReceipt: boolean;
+  notifyPantry: boolean;
+};
+
+export enum VolunteerAction {
+  CONFIRM_DONATION_RECEIPT = 'confirmDonationReceipt',
+  NOTIFY_PANTRY = 'notifyPantry',
+}
+
+export type OrderAssignee = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
+export interface FoodManufacturerWithoutRelations {
   foodManufacturerId: number;
   foodManufacturerName: string;
   foodManufacturerWebsite: string;
-  foodManufacturerRepresentative: User;
   secondaryContactFirstName?: string;
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
@@ -268,7 +344,6 @@ export interface FoodManufacturer {
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
   newsletterSubscription?: boolean;
-  donations: Donation[];
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -405,6 +480,7 @@ export type RepeatOnState = Record<DayOfWeek, boolean>;
 
 export interface PantryStats {
   pantryId: number;
+  pantryName: string;
   totalItems: number;
   totalOz: number;
   totalLbs: number;
@@ -414,9 +490,14 @@ export interface PantryStats {
   percentageFoodRescueItems: number;
 }
 
-// Make TotalStats interface just not include pantryId
-export type TotalStats = Omit<PantryStats, 'pantryId'>;
+export type TotalStats = Omit<PantryStats, 'pantryId' | 'pantryName'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 
-export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
+export type OrderItemDetailsGroupedByFoodType = Partial<
+  Record<FoodType, OrderItemDetails[]>
+>;
+
+export type DonationItemsGroupedByFoodType = Partial<
+  Record<FoodType, DonationItemDetailsDto[]>
+>;

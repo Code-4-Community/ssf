@@ -217,10 +217,11 @@ const FormRequests: React.FC = () => {
           page={currentPage}
           onChange={(page: number) => setCurrentPage(page)}
         >
-          <ButtonGroup variant="outline" size="sm">
+          <ButtonGroup variant="outline" size="sm" gap={4}>
             <Pagination.PrevTrigger asChild>
               <IconButton
                 variant="ghost"
+                disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               >
                 <ChevronLeft />
@@ -242,6 +243,7 @@ const FormRequests: React.FC = () => {
             <Pagination.NextTrigger asChild>
               <IconButton
                 variant="ghost"
+                disabled={currentPage === Math.ceil(requests.length / pageSize)}
                 onClick={() =>
                   setCurrentPage((prev) =>
                     Math.min(prev + 1, Math.ceil(requests.length / pageSize)),

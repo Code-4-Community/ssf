@@ -346,6 +346,7 @@ const ApproveFoodManufacturers: React.FC = () => {
                 mt={12}
                 variant="outline"
                 size="sm"
+                gap={4}
               >
                 <Pagination.PrevTrigger
                   color="neutral.800"

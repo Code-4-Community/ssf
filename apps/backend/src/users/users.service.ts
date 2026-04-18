@@ -130,12 +130,10 @@ export class UsersService {
   async update(id: number, dto: UpdateUserInfoDto): Promise<User> {
     validateId(id, 'User');
 
-    const { firstName, lastName, phone } = dto;
-
     if (
-      firstName === undefined &&
-      lastName === undefined &&
-      phone === undefined
+      dto.firstName === undefined &&
+      dto.lastName === undefined &&
+      dto.phone === undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update',
@@ -148,9 +146,7 @@ export class UsersService {
       throw new NotFoundException(`User ${id} not found`);
     }
 
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined) user.lastName = lastName;
-    if (phone !== undefined) user.phone = phone;
+    Object.assign(user, dto);
 
     return this.repo.save(user);
   }

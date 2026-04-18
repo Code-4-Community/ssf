@@ -1,4 +1,5 @@
 import { SetMetadata, Type } from '@nestjs/common';
+import { Role } from '../users/types';
 
 // Resolver function type to get the owner user ID for a given entity ID
 // Should return the user IDs of the users who are authorized to call the
@@ -20,6 +21,7 @@ export interface ServiceRegistry {
 export interface OwnershipConfig {
   idParam: string;
   resolver: OwnerIdResolver;
+  bypassRoles?: Role[];
 }
 
 export const OWNERSHIP_CHECK_KEY = 'ownership_check';
