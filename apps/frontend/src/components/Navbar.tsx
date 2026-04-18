@@ -52,6 +52,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       children: [
         { label: 'Donation Management', to: ROUTES.ADMIN_DONATION },
         { label: 'Application Review', to: ROUTES.APPROVE_FOOD_MANUFACTURERS },
+        { label: 'Donation Statistics', to: ROUTES.ADMIN_DONATION_STATS },
       ],
     },
   ],
@@ -65,6 +66,10 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Orders',
       children: [
+        {
+          label: 'Order Management',
+          to: ROUTES.VOLUNTEER_ORDER_MANAGEMENT,
+        },
         {
           label: 'Food Request Management',
           to: ROUTES.VOLUNTEER_REQUEST_MANAGEMENT,
