@@ -17,6 +17,7 @@ import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { DonationModule } from '../donations/donations.module';
 import { Donation } from '../donations/donations.entity';
+import { EmailsModule } from '../emails/email.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { Donation } from '../donations/donations.entity';
     ManufacturerModule,
     DonationItemsModule,
     DonationModule,
+    EmailsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

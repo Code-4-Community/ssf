@@ -183,31 +183,4 @@ export const emailTemplates = {
       </p>
   `,
   }),
-
-  trackingLinkAvailable: (params: {
-    pantryName: string;
-    manufacturerName: string;
-    trackingLink: string;
-    volunteerName: string;
-    volunteerEmail: string;
-  }): EmailTemplate => ({
-    subject: `Tracking Information for your ${params.manufacturerName} delivery (Securing Safe Food)`,
-    bodyHTML: `
-    <p>Hi ${params.pantryName},</p>
-    <p>
-      Good news! Tracking information is now available for your upcoming SSF delivery from ${params.manufacturerName}. You can use this tracking information to monitor the status of your shipment or log into your portal for more information on your expected donation.
-    </p>
-    <p>
-      <strong>Tracking Link:</strong><br />
-      <a href="${params.trackingLink}">${params.trackingLink}</a>
-    </p>
-    <p>
-      You can use the tracking link above to monitor your shipment, or log into your portal for full order details and updates.
-    </p>
-    <p>
-      If you experience any issues or have questions, please contact your coordinator, ${params.volunteerName}, at ${params.volunteerEmail}, and our team will be happy to assist.
-    </p>
-    <p>Best regards,<br />The Securing Safe Food Team</p>
-  `,
-  }),
 };

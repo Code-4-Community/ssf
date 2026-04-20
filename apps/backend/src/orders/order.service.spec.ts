@@ -28,14 +28,19 @@ import { DonationStatus } from '../donations/types';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
@@ -101,6 +106,10 @@ describe('OrdersService', () => {
           provide: AuthService,
           useValue: {},
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -108,6 +117,7 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
