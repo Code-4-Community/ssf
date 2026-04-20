@@ -419,6 +419,11 @@ export class ApiClient {
     return data as FoodRequest[];
   }
 
+  public async getAllFoodRequests(): Promise<FoodRequest[]> {
+    const data = await this.get(`/api/requests/`);
+    return data as FoodRequest[];
+  }
+
   public async getCurrentUserPantryId(): Promise<number> {
     const data = await this.get('/api/pantries/my-id');
     return data as number;
