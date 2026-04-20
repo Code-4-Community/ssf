@@ -1,4 +1,23 @@
-import { DayOfWeek, RecurrenceEnum, RepeatOnState } from '../types/types';
+import {
+  DayOfWeek,
+  RecurrenceEnum,
+  RepeatOnState,
+  OrderStatus,
+  DonationStatus,
+} from '../types/types';
+
+export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
+  [OrderStatus.SHIPPED]: ['yellow.200', 'yellow.hover'],
+  [OrderStatus.PENDING]: ['blue.200', 'blue.core'],
+  [OrderStatus.DELIVERED]: ['teal.200', 'teal.hover'],
+};
+
+export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
+  {
+    [DonationStatus.MATCHED]: ['yellow.200', 'yellow.hover'],
+    [DonationStatus.AVAILABLE]: ['blue.200', 'blue.core'],
+    [DonationStatus.FULFILLED]: ['teal.200', 'teal.hover'],
+  };
 
 export const formatPhone = (phone?: string | null) => {
   if (!phone) return null;

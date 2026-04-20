@@ -58,7 +58,7 @@ const Homepage: React.FC = () => {
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
                 <RouterLink to="/pantry-order-management">
-                  Pantry Order Management
+                  Order Management
                 </RouterLink>
               </Link>
             </ListItem>

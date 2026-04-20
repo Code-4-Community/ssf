@@ -10,7 +10,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
-import { capitalize, formatDate } from '@utils/utils';
+import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
@@ -40,13 +40,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
-
-  // Color mapping for statuses
-  const STATUS_COLORS = new Map<DonationStatus, [string, string]>([
-    [DonationStatus.MATCHED, ['yellow.200', 'yellow.hover']],
-    [DonationStatus.AVAILABLE, ['blue.200', 'blue.core']],
-    [DonationStatus.FULFILLED, ['teal.200', 'teal.hover']],
-  ]);
 
   const MAX_PER_STATUS = 5;
 
@@ -135,7 +128,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
             <DonationStatusSection
               donations={displayedDonations}
               status={status}
-              colors={STATUS_COLORS.get(status)!}
+              colors={DONATION_STATUS_COLORS[status]}
               selectedDonationId={selectedDonationId}
               onDonationSelect={setSelectedDonationId}
               totalDonations={allDonationsByStatus.length}
@@ -314,6 +307,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                         bg={colors[0]}
                         color={colors[1]}
                         display="inline-block"
+                        fontSize="12px"
                         fontWeight="500"
                         my={2}
                         py={1}

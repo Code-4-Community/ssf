@@ -1,9 +1,19 @@
 import React from 'react';
 import { Box, Text, VStack } from '@chakra-ui/react';
 import { ChevronRight, Package, Handshake, List } from 'lucide-react';
-import { formatDate } from '@utils/utils';
-import { getInitials } from '@utils/utils';
-import { OrderAssignee, DashboardCardType } from '../../types/types';
+import {
+  formatDate,
+  getInitials,
+  ORDER_STATUS_COLORS,
+  DONATION_STATUS_COLORS,
+} from '@utils/utils';
+import {
+  OrderAssignee,
+  DashboardCardType,
+  OrderStatus,
+  DonationStatus,
+  FoodRequestStatus,
+} from '../../types/types';
 
 export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
   [DashboardCardType.Donation]: <Package size={24} />,
@@ -12,11 +22,71 @@ export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
   [DashboardCardType.Action]: <Handshake size={24} />,
 };
 
+const CARD_TYPE_DATE_LABEL: Record<DashboardCardType, string> = {
+  [DashboardCardType.Action]: 'Applied',
+  [DashboardCardType.Order]: 'Requested',
+  [DashboardCardType.Donation]: 'Donated',
+  [DashboardCardType.FoodRequest]: 'Requested',
+};
+
 export interface DashboardCardBadge {
   label: string;
   bg?: string;
   color?: string;
 }
+
+export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
+  [OrderStatus.SHIPPED]: {
+    label: 'In Progress',
+    bg: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][1],
+  },
+  [OrderStatus.PENDING]: {
+    label: 'Pending',
+    bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
+  },
+  [OrderStatus.DELIVERED]: {
+    label: 'Received',
+    bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
+  },
+};
+
+export const DONATION_STATUS_BADGE: Record<DonationStatus, DashboardCardBadge> =
+  {
+    [DonationStatus.MATCHED]: {
+      label: 'Matched',
+      bg: DONATION_STATUS_COLORS[DonationStatus.MATCHED][0],
+      color: DONATION_STATUS_COLORS[DonationStatus.MATCHED][1],
+    },
+    [DonationStatus.AVAILABLE]: {
+      label: 'Available',
+      bg: DONATION_STATUS_COLORS[DonationStatus.AVAILABLE][0],
+      color: DONATION_STATUS_COLORS[DonationStatus.AVAILABLE][1],
+    },
+    [DonationStatus.FULFILLED]: {
+      label: 'Fulfilled',
+      bg: DONATION_STATUS_COLORS[DonationStatus.FULFILLED][0],
+      color: DONATION_STATUS_COLORS[DonationStatus.FULFILLED][1],
+    },
+  };
+
+export const FOOD_REQUEST_STATUS_BADGE: Record<
+  FoodRequestStatus,
+  DashboardCardBadge
+> = {
+  [FoodRequestStatus.ACTIVE]: {
+    label: 'Active',
+    bg: 'blue.100',
+    color: 'blue.ssf',
+  },
+  [FoodRequestStatus.CLOSED]: {
+    label: 'Closed',
+    bg: 'neutral.100',
+    color: 'neutral.600',
+  },
+};
 
 const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
@@ -24,7 +94,7 @@ export interface DashboardCardProps {
   type: DashboardCardType;
   title: string;
   subtitle?: string;
-  dateLabel: string;
+  dateLabel?: string;
   date: string;
   linkText: string;
   badge?: DashboardCardBadge;
@@ -36,7 +106,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   type,
   title,
   subtitle,
-  dateLabel,
+  dateLabel = CARD_TYPE_DATE_LABEL[type],
   date,
   linkText,
   badge,
