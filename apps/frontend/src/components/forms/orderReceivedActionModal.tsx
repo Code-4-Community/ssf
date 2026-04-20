@@ -13,6 +13,8 @@ import {
   Icon,
   Portal,
   parseDate,
+  InputGroup,
+  type DateValue,
 } from '@chakra-ui/react';
 import { Upload, Calendar } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
@@ -147,6 +149,14 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   </Text>
                 </Field.Label>
                 <DatePicker.Root
+                  format={(date: DateValue) =>
+                    new Intl.DateTimeFormat('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      timeZone: 'UTC',
+                    }).format(new Date(date.toString()))
+                  }
                   min={parseDate(minDate)}
                   max={parseDate(today)}
                   value={dateReceived ? [parseDate(dateReceived)] : []}
@@ -157,14 +167,21 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   closeOnSelect
                   positioning={{ placement: 'top-start' }}
                 >
-                  <DatePicker.Control>
-                    <DatePicker.Input />
-                    <DatePicker.IndicatorGroup>
-                      <DatePicker.Trigger>
-                        <Calendar size={16} />
+                  <InputGroup
+                    as={DatePicker.Control}
+                    startElement={
+                      <DatePicker.Trigger
+                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+                      >
+                        <Calendar
+                          size={16}
+                          color="var(--chakra-colors-neutral-300)"
+                        />
                       </DatePicker.Trigger>
-                    </DatePicker.IndicatorGroup>
-                  </DatePicker.Control>
+                    }
+                  >
+                    <DatePicker.Input placeholder="" color="neutral.800" />
+                  </InputGroup>
                   <Portal>
                     <DatePicker.Positioner>
                       <DatePicker.Content>
