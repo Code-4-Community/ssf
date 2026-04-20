@@ -8,11 +8,13 @@ import {
   Box,
   Field,
   CloseButton,
-  Input,
+  DatePicker,
   FileUpload,
   Icon,
+  Portal,
+  parseDate,
 } from '@chakra-ui/react';
-import { Upload } from 'lucide-react';
+import { Upload, Calendar } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
 import apiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -85,7 +87,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       resetForm();
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       resetForm();
       onError();
       onClose();
@@ -144,20 +146,44 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     Date Received
                   </Text>
                 </Field.Label>
-                <Input
-                  type="date"
-                  textStyle="p2"
-                  w="full"
-                  bg="white"
-                  borderColor="neutral.100"
-                  color="neutral.700"
-                  borderWidth="1px"
-                  borderRadius="4px"
-                  min={minDate}
-                  max={today}
-                  onChange={(e) => setDateReceived(e.target.value)}
-                  value={dateReceived}
-                />
+                <DatePicker.Root
+                  min={parseDate(minDate)}
+                  max={parseDate(today)}
+                  value={dateReceived ? [parseDate(dateReceived)] : []}
+                  onValueChange={({ value }) => {
+                    const date = value?.[0];
+                    setDateReceived(date ? date.toString() : '');
+                  }}
+                  closeOnSelect
+                  positioning={{ placement: 'top-start' }}
+                >
+                  <DatePicker.Control>
+                    <DatePicker.Input />
+                    <DatePicker.IndicatorGroup>
+                      <DatePicker.Trigger>
+                        <Calendar size={16} />
+                      </DatePicker.Trigger>
+                    </DatePicker.IndicatorGroup>
+                  </DatePicker.Control>
+                  <Portal>
+                    <DatePicker.Positioner>
+                      <DatePicker.Content>
+                        <DatePicker.View view="day">
+                          <DatePicker.Header />
+                          <DatePicker.DayTable />
+                        </DatePicker.View>
+                        <DatePicker.View view="month">
+                          <DatePicker.Header />
+                          <DatePicker.MonthTable />
+                        </DatePicker.View>
+                        <DatePicker.View view="year">
+                          <DatePicker.Header />
+                          <DatePicker.YearTable />
+                        </DatePicker.View>
+                      </DatePicker.Content>
+                    </DatePicker.Positioner>
+                  </Portal>
+                </DatePicker.Root>
               </Field.Root>
 
               <Field.Root mb={4}>
