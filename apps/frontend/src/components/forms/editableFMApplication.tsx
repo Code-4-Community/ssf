@@ -84,16 +84,17 @@ function buildFormState(app: FoodManufacturer): FormState {
 }
 
 function validateRequired(form: FormState): boolean {
-  if (!form.foodManufacturerName.trim()) return false;
-  if (!form.foodManufacturerWebsite.trim()) return false;
-  if (form.unlistedProductAllergens.length === 0) return false;
-  if (form.facilityFreeAllergens.length === 0) return false;
-  if (!form.productsGlutenFree) return false;
-  if (!form.productsContainSulfites) return false;
-  if (!form.productsSustainableExplanation.trim()) return false;
-  if (!form.inKindDonations) return false;
-  if (!form.donateWastedFood) return false;
-  return true;
+  return (
+    !!form.foodManufacturerName.trim() &&
+    !!form.foodManufacturerWebsite.trim() &&
+    form.unlistedProductAllergens.length > 0 &&
+    form.facilityFreeAllergens.length > 0 &&
+    !!form.productsGlutenFree &&
+    !!form.productsContainSulfites &&
+    !!form.productsSustainableExplanation.trim() &&
+    !!form.inKindDonations &&
+    !!form.donateWastedFood
+  );
 }
 
 interface EditableFMApplicationProps {
@@ -190,7 +191,14 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
-        if (status === 403) {
+        if (status === 400) {
+          const messages = err.response?.data?.message;
+          setError(
+            Array.isArray(messages)
+              ? messages.join(' ')
+              : 'Invalid input. Please check your entries and try again.',
+          );
+        } else if (status === 403) {
           setError('You do not have permission to edit this profile.');
         } else if (status === 404) {
           setError('This manufacturer profile could not be found.');

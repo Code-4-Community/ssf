@@ -346,12 +346,15 @@ interface EditAddressSectionProps {
   prefix: string;
   form: { [key: string]: string | boolean | string[] };
   onChange: (name: string, value: string) => void;
+  requiredSuffixes: string[];
 }
+
 export const EditAddressSection: React.FC<EditAddressSectionProps> = ({
   title,
   prefix,
   form,
   onChange,
+  requiredSuffixes,
 }) => {
   const str = (key: string) => (form[key] as string) ?? '';
   return (
@@ -365,6 +368,7 @@ export const EditAddressSection: React.FC<EditAddressSectionProps> = ({
             name={`${prefix}${suffix}`}
             value={str(`${prefix}${suffix}`)}
             onChange={(v) => onChange(`${prefix}${suffix}`, v)}
+            required={requiredSuffixes.includes(suffix)}
           />
         ))}
       </Grid>

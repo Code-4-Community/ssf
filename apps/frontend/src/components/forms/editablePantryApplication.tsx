@@ -169,24 +169,38 @@ function buildFormState(app: PantryWithUser): FormState {
 }
 
 function validateRequired(form: FormState): boolean {
-  if (!form.allergenClients) return false;
-  if (
-    form.allergenClients === 'I have an exact number' &&
-    !form.allergenClientsExact.trim()
-  )
-    return false;
-  if (!form.refrigeratedDonation) return false;
-  if (!form.dedicatedAllergyFriendly) return false;
-  if (!form.reserveFoodForAllergic) return false;
-  if (form.activities.length === 0) return false;
-  if (!form.itemsInStock.trim()) return false;
-  if (!form.needMoreOptions.trim()) return false;
-  if (
-    form.activities.includes(Activity.SOMETHING_ELSE) &&
-    !form.activitiesComments.trim()
-  )
-    return false;
-  return true;
+  return (
+    !!form.shipmentLine1.trim() &&
+    !!form.shipmentCity.trim() &&
+    !!form.shipmentState.trim() &&
+    !!form.shipmentZip.trim() &&
+    !!form.mailingLine1.trim() &&
+    !!form.mailingCity.trim() &&
+    !!form.mailingState.trim() &&
+    !!form.mailingZip.trim() &&
+    !!form.acceptFoodDeliveries &&
+    !!form.allergenClients &&
+    !(
+      form.allergenClients === 'I have an exact number' &&
+      !form.allergenClientsExact.trim()
+    ) &&
+    form.restrictions.length > 0 &&
+    !!form.refrigeratedDonation &&
+    !!form.dedicatedAllergyFriendly &&
+    !!form.reserveFoodForAllergic &&
+    !(
+      (form.reserveFoodForAllergic === ReserveFoodForAllergic.YES ||
+        form.reserveFoodForAllergic === ReserveFoodForAllergic.SOME) &&
+      !form.reservationExplanation.trim()
+    ) &&
+    form.activities.length > 0 &&
+    !(
+      form.activities.includes(Activity.SOMETHING_ELSE) &&
+      !form.activitiesComments.trim()
+    ) &&
+    !!form.itemsInStock.trim() &&
+    !!form.needMoreOptions.trim()
+  );
 }
 
 interface EditablePantryApplicationProps {
@@ -306,7 +320,14 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
-        if (status === 403) {
+        if (status === 400) {
+          const messages = err.response?.data?.message;
+          setError(
+            Array.isArray(messages)
+              ? messages.join(' ')
+              : 'Invalid input. Please check your entries and try again.',
+          );
+        } else if (status === 403) {
           setError('You do not have permission to edit this profile.');
         } else if (status === 404) {
           setError('This pantry profile could not be found.');
@@ -531,6 +552,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           prefix="shipment"
           form={form}
           onChange={setField}
+          requiredSuffixes={['Line1', 'City', 'State', 'Zip']}
         />
 
         <EditRadio
@@ -539,6 +561,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           value={form.acceptFoodDeliveries}
           options={['Yes', 'No']}
           onChange={(v) => setField('acceptFoodDeliveries', v)}
+          required
         />
 
         <EditField
@@ -554,6 +577,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           prefix="mailing"
           form={form}
           onChange={setField}
+          requiredSuffixes={['Line1', 'City', 'State', 'Zip']}
         />
 
         <Text {...sectionLabelStyles}>Pantry Details</Text>
@@ -585,6 +609,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
             setForm((prev) => (prev ? { ...prev, restrictions: v } : prev))
           }
           triggerLabel="Select restrictions"
+          required
         />
 
         <EditRadio
@@ -627,6 +652,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
             value={form.reservationExplanation}
             onChange={(v) => setField('reservationExplanation', v)}
             textarea
+            required
           />
         )}
 

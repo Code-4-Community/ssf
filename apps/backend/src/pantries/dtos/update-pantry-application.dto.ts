@@ -8,6 +8,7 @@ import {
   IsPhoneNumber,
   IsString,
   Length,
+  Matches,
   MaxLength,
 } from 'class-validator';
 import {
@@ -33,7 +34,10 @@ export class UpdatePantryApplicationDto {
   secondaryContactLastName?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    { message: 'Secondary contact email must be a valid email address.' },
+  )
   @IsNotEmpty()
   @MaxLength(255)
   secondaryContactEmail?: string;
