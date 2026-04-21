@@ -37,7 +37,8 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
-    @InjectRepository(DonationItem) private donationItemRepo: Repository<DonationItem>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
@@ -45,7 +46,6 @@ export class OrdersService {
     private allocationsService: AllocationsService,
     private donationService: DonationService,
     private emailsService: EmailsService,
-    private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
