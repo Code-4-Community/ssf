@@ -12,8 +12,7 @@ import {
   DashboardCardType,
   OrderStatus,
   DonationStatus,
-  FoodRequestStatus,
-} from '../../types/types';
+} from '../types/types';
 
 export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
   [DashboardCardType.Donation]: <Package size={24} />,
@@ -31,8 +30,8 @@ const CARD_TYPE_DATE_LABEL: Record<DashboardCardType, string> = {
 
 export interface DashboardCardBadge {
   label: string;
-  bg?: string;
-  color?: string;
+  bg: string;
+  color: string;
 }
 
 export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
@@ -72,22 +71,6 @@ export const DONATION_STATUS_BADGE: Record<DonationStatus, DashboardCardBadge> =
     },
   };
 
-export const FOOD_REQUEST_STATUS_BADGE: Record<
-  FoodRequestStatus,
-  DashboardCardBadge
-> = {
-  [FoodRequestStatus.ACTIVE]: {
-    label: 'Active',
-    bg: 'blue.100',
-    color: 'blue.ssf',
-  },
-  [FoodRequestStatus.CLOSED]: {
-    label: 'Closed',
-    bg: 'neutral.100',
-    color: 'neutral.600',
-  },
-};
-
 const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
 export interface DashboardCardProps {
@@ -98,7 +81,7 @@ export interface DashboardCardProps {
   date: string;
   linkText: string;
   badge?: DashboardCardBadge;
-  onLinkClick?: () => void;
+  onLinkClick: () => void;
   assignee?: OrderAssignee;
 }
 
@@ -135,10 +118,11 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           <Box
             flexShrink={0}
             border="1px solid"
-            borderColor="neutral.200"
+            borderColor={badge?.bg ?? 'neutral.200'}
             borderRadius="10px"
             padding={2}
-            color="var(--chakra-colors-neutral-600)"
+            bg={badge?.bg ?? 'neutral.50'}
+            color={badge?.color ?? 'neutral.600'}
             textStyle="p"
             fontWeight={400}
           >
@@ -159,8 +143,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             px={2}
             py={0.5}
             borderRadius="4px"
-            bg={badge.bg ?? 'neutral.100'}
-            color={badge.color ?? 'neutral.600'}
+            bg={badge.bg}
+            color={badge.color}
             textStyle="p3"
             fontWeight={500}
             flexShrink={0}
@@ -176,52 +160,46 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         </Text>
       )}
 
-      {(linkText || assignee) && (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        pt={3}
+        borderTop="1px solid"
+        borderColor="neutral.100"
+      >
         <Box
           display="flex"
           alignItems="center"
-          justifyContent="space-between"
-          pt={3}
-          borderTop="1px solid"
-          borderColor="neutral.100"
+          gap={2}
+          color="neutral.600"
+          cursor="pointer"
+          onClick={onLinkClick}
+          _hover={{ color: 'neutral.900' }}
         >
-          {linkText ? (
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={2}
-              color="neutral.600"
-              cursor="pointer"
-              onClick={onLinkClick}
-              _hover={{ color: 'neutral.900' }}
-            >
-              <Text textStyle="p" fontWeight={500}>
-                {linkText}
-              </Text>
-              <ChevronRight size={16} />
-            </Box>
-          ) : (
-            <Box />
-          )}
-
-          {assignee && (
-            <Box
-              w="30px"
-              h="30px"
-              borderRadius="full"
-              bg={ASSIGNEE_COLORS[assignee.id % ASSIGNEE_COLORS.length]}
-              color="white"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              textStyle="p2"
-              flexShrink={0}
-            >
-              {getInitials(assignee.firstName, assignee.lastName)}
-            </Box>
-          )}
+          <Text textStyle="p" fontWeight={500}>
+            {linkText}
+          </Text>
+          <ChevronRight size={16} />
         </Box>
-      )}
+
+        {assignee && (
+          <Box
+            w="30px"
+            h="30px"
+            borderRadius="full"
+            bg={ASSIGNEE_COLORS[assignee.id % ASSIGNEE_COLORS.length]}
+            color="white"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            textStyle="p2"
+            flexShrink={0}
+          >
+            {getInitials(assignee.firstName, assignee.lastName)}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

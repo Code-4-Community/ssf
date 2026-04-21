@@ -3,8 +3,10 @@ import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, {
   ORDER_STATUS_BADGE,
   DONATION_STATUS_BADGE,
-} from '@components/forms/dashboardCard';
+} from '@components/dashboardCard';
 import { DashboardCardType, OrderStatus, DonationStatus } from '../types/types';
+
+const noop = () => undefined;
 
 const AdminDashboard: React.FC = () => {
   return (
@@ -22,21 +24,28 @@ const AdminDashboard: React.FC = () => {
           title="Brooklyn Food Pantry"
           date="2025-04-10"
           linkText="View Application Details"
-          badge={{ label: 'Pantry' }}
+          badge={{ label: 'Pantry', bg: 'neutral.100', color: 'neutral.600' }}
+          onLinkClick={noop}
         />
         <DashboardCard
           type={DashboardCardType.Action}
           title="Sunbutter"
           date="2025-04-15"
           linkText="View Application Details"
-          badge={{ label: 'Food Manufacturer' }}
+          badge={{
+            label: 'Food Manufacturer',
+            bg: 'neutral.100',
+            color: 'neutral.600',
+          }}
+          onLinkClick={noop}
         />
         <DashboardCard
           type={DashboardCardType.Action}
           title="Brooklyn Food Pantry"
           date="2025-04-15"
           linkText="View Application Details"
-          badge={{ label: 'Pantry' }}
+          badge={{ label: 'Pantry', bg: 'neutral.100', color: 'neutral.600' }}
+          onLinkClick={noop}
         />
       </Box>
 
@@ -52,6 +61,7 @@ const AdminDashboard: React.FC = () => {
           linkText="View Order Details"
           badge={ORDER_STATUS_BADGE[OrderStatus.DELIVERED]}
           assignee={{ id: 2, firstName: 'Laney', lastName: 'Ridge' }}
+          onLinkClick={noop}
         />
         <DashboardCard
           type={DashboardCardType.Order}
@@ -61,6 +71,7 @@ const AdminDashboard: React.FC = () => {
           linkText="View Order Details"
           badge={ORDER_STATUS_BADGE[OrderStatus.SHIPPED]}
           assignee={{ id: 2, firstName: 'Macy', lastName: 'Jiang' }}
+          onLinkClick={noop}
         />
       </Box>
 
@@ -75,6 +86,7 @@ const AdminDashboard: React.FC = () => {
           subtitle="Eastside Food Bank"
           linkText="View Donation Details"
           badge={DONATION_STATUS_BADGE[DonationStatus.FULFILLED]}
+          onLinkClick={noop}
         />
         <DashboardCard
           type={DashboardCardType.Donation}
@@ -83,6 +95,7 @@ const AdminDashboard: React.FC = () => {
           subtitle="Sainsbury's"
           linkText="View Donation Details"
           badge={DONATION_STATUS_BADGE[DonationStatus.AVAILABLE]}
+          onLinkClick={noop}
         />
       </Box>
 
@@ -96,6 +109,7 @@ const AdminDashboard: React.FC = () => {
           dateLabel="Scheduled"
           date="2025-04-10"
           linkText="View Donation Requirements"
+          onLinkClick={noop}
         />
       </Box>
 
@@ -109,6 +123,7 @@ const AdminDashboard: React.FC = () => {
           date="2025-04-01"
           subtitle="Eastside Food Bank"
           linkText="Fulfill Request"
+          onLinkClick={noop}
         />
         <DashboardCard
           type={DashboardCardType.FoodRequest}
@@ -116,6 +131,7 @@ const AdminDashboard: React.FC = () => {
           date="2025-04-20"
           subtitle="Westside Community Pantry"
           linkText="Fulfill Request"
+          onLinkClick={noop}
         />
       </Box>
     </Box>
