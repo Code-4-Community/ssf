@@ -281,7 +281,7 @@ const LoginPage: React.FC = () => {
                   color="red"
                   onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
                 >
-                  Reset Password
+                  Forgot Password?
                 </Link>
               </Text>
             </>

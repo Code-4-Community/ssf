@@ -12,7 +12,7 @@ const ROLE_MAP: Record<Role, { label: string }> = {
   [Role.ADMIN]: { label: 'Admin' },
   [Role.VOLUNTEER]: { label: 'Volunteer' },
   [Role.PANTRY]: { label: 'Pantry' },
-  [Role.FOODMANUFACTURER]: { label: 'Food Manufacturer' },
+  [Role.FOODMANUFACTURER]: { label: 'Manufacturer' },
 };
 
 // Nav Structure Types
@@ -37,13 +37,17 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
     {
       type: 'group',
       label: 'Pantries',
-      children: [{ label: 'Application Review', to: ROUTES.APPROVE_PANTRIES }],
+      children: [
+        { label: 'Pantry Management', to: ROUTES.PANTRY_MANAGEMENT },
+        { label: 'Application Review', to: ROUTES.APPROVE_PANTRIES },
+      ],
     },
     {
       type: 'group',
       label: 'Orders',
       children: [
         { label: 'Order Management', to: ROUTES.ADMIN_ORDER_MANAGEMENT },
+        { label: 'Food Requests', to: ROUTES.FOOD_REQUESTS },
       ],
     },
     {
@@ -71,7 +75,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
           to: ROUTES.VOLUNTEER_ORDER_MANAGEMENT,
         },
         {
-          label: 'Food Request Management',
+          label: 'Food Requests',
           to: ROUTES.VOLUNTEER_REQUEST_MANAGEMENT,
         },
       ],
@@ -150,14 +154,21 @@ const NavGroup: React.FC<NavGroupProps> = ({
       _hover={{ bg: 'neutral.100' }}
       onClick={onToggle}
       w="full"
+      mb="4px"
+      mt="4px"
     >
-      <Text fontSize="14px" color="neutral.800" fontWeight="600">
+      <Text
+        fontSize="14px"
+        color="neutral.800"
+        fontWeight="600"
+        fontFamily="ibm"
+      >
         {label}
       </Text>
       {isOpen ? (
-        <ChevronDown size={10} color="var(--chakra-colors-neutral-800)" />
+        <ChevronDown size={14} color="var(--chakra-colors-neutral-800)" />
       ) : (
-        <ChevronRight size={10} color="var(--chakra-colors-neutral-800)" />
+        <ChevronRight size={14} color="var(--chakra-colors-neutral-800)" />
       )}
     </Box>
 
@@ -174,7 +185,7 @@ const NavGroup: React.FC<NavGroupProps> = ({
             pr="8px"
             w="full"
           >
-            <Box position="relative" w="15px" h="20px" flexShrink={0}>
+            <Box position="relative" w="15px" h="20px">
               <Box
                 position="absolute"
                 left="calc(50% + 3px)"
@@ -297,12 +308,11 @@ const Navbar: React.FC = () => {
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </Box>
-          <Box overflow="hidden">
+          <Box overflow="hidden" lineHeight="1.2" fontFamily="ibm">
             <Text
               fontSize="14px"
               color="neutral.800"
               fontWeight="normal"
-              lineHeight="1.5"
               overflow="hidden"
               style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
             >
@@ -310,8 +320,7 @@ const Navbar: React.FC = () => {
             </Text>
             <Text
               fontSize="10px"
-              color="neutral.700"
-              lineHeight="1.5"
+              color="neutral.800"
               overflow="hidden"
               style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
             >
@@ -360,10 +369,14 @@ const Navbar: React.FC = () => {
         cursor="pointer"
         _hover={{ bg: 'neutral.100' }}
         onClick={handleSignOut}
-        mt={4}
+        mb={8}
       >
-        <LogOut size={14} color="var(--chakra-colors-neutral-700)" />
-        <Text fontSize="14px" color="neutral.700">
+        <LogOut
+          size={14}
+          color="var(--chakra-colors-neutral-700)"
+          style={{ transform: 'scaleX(-1)' }}
+        />
+        <Text fontSize="14px" color="neutral.700" fontFamily="ibm">
           Sign Out
         </Text>
       </Box>
