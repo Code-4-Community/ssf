@@ -1,6 +1,6 @@
 import React from 'react';
 import ApiClient from '@api/apiClient';
-import RequestManagement from '@components/forms/foodRequestManagement';
+import RequestManagement from '@components/foodRequestManagement';
 
 const VolunteerRequestManagement: React.FC = () => (
   <RequestManagement

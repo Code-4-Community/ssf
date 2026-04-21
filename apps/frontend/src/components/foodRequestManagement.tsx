@@ -14,12 +14,12 @@ import {
 import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
-import { FoodRequest, FoodRequestStatus } from '../../types/types';
+import { FoodRequest, FoodRequestStatus } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
-import { useAlert } from '../../hooks/alert';
+import { useAlert } from '../hooks/alert';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequest[]>;
