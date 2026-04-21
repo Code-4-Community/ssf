@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { PantryWithUser } from 'types/types';
+import { ApplicationStatus, PantryWithUser } from 'types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -165,7 +165,9 @@ const PantryApplicationDetails: React.FC = () => {
         await ApiClient.updatePantry(application.pantryId, 'approve');
         navigate(
           ROUTES.APPROVE_PANTRIES +
-            '?action=approved&name=' +
+            '?action=' +
+            ApplicationStatus.APPROVED +
+            '&name=' +
             application.pantryName,
         );
       } catch {
@@ -180,7 +182,9 @@ const PantryApplicationDetails: React.FC = () => {
         await ApiClient.updatePantry(application.pantryId, 'deny');
         navigate(
           ROUTES.APPROVE_PANTRIES +
-            '?action=denied&name=' +
+            '?action=' +
+            ApplicationStatus.DENIED +
+            '&name=' +
             application.pantryName,
         );
       } catch {

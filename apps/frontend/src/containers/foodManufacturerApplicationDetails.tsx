@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodManufacturer } from 'types/types';
+import { ApplicationStatus, FoodManufacturer } from 'types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -172,7 +172,9 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
         );
         navigate(
           ROUTES.APPROVE_FOOD_MANUFACTURERS +
-            '?action=approved&name=' +
+            '?action=' +
+            ApplicationStatus.APPROVED +
+            '&name=' +
             application.foodManufacturerName,
         );
       } catch {
@@ -190,7 +192,9 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
         );
         navigate(
           ROUTES.APPROVE_FOOD_MANUFACTURERS +
-            '?action=denied&name=' +
+            '?action=' +
+            ApplicationStatus.DENIED +
+            '&name=' +
             application.foodManufacturerName,
         );
       } catch {
