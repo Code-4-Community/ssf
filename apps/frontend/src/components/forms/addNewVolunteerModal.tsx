@@ -222,7 +222,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
               <Button
                 textStyle="p2"
                 fontWeight={600}
-                bg={'#213C4A'}
+                bg={'blue.hover'}
                 color={'white'}
                 onClick={handleSubmit}
               >

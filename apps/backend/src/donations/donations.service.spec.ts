@@ -7,6 +7,9 @@ import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
 import {
@@ -14,8 +17,6 @@ import {
   ReplaceDonationItemsDto,
 } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
-import { DonationItemsService } from '../donationItems/donationItems.service';
-import { DonationItem } from '../donationItems/donationItems.entity';
 
 jest.setTimeout(60000);
 
@@ -36,6 +37,47 @@ const daysFromNow = (numDays: number): Date => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+
+async function insertMatchedDonation(): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donations
+      (food_manufacturer_id, status, recurrence, recurrence_freq,
+       next_donation_dates, occurrences_remaining)
+     VALUES (
+       (SELECT food_manufacturer_id FROM food_manufacturers
+        WHERE food_manufacturer_name = 'FoodCorp Industries' LIMIT 1),
+       'matched', 'none', NULL, NULL, NULL
+     )
+     RETURNING donation_id`,
+  );
+  return result[0].donation_id;
+}
+
+async function insertDonationItem(
+  donationId: number,
+  qty: number,
+  reserved: number,
+): Promise<number> {
+  const result = await testDataSource.query(
+    `INSERT INTO donation_items
+      (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+     RETURNING item_id`,
+    [donationId, qty, reserved],
+  );
+  return result[0].item_id;
+}
+
+async function insertAllocation(
+  orderId: number,
+  itemId: number,
+): Promise<void> {
+  await testDataSource.query(
+    `INSERT INTO allocations (order_id, item_id, allocated_quantity)
+     VALUES ($1, $2, 1)`,
+    [orderId, itemId],
+  );
+}
 
 // insert a minimal donation and return its generated ID
 async function insertDonation(overrides: {
@@ -1209,6 +1251,122 @@ describe('DonationService', () => {
       await expect(service.delete(donationId)).rejects.toThrow(
         'Only available donations can be deleted',
       );
+    });
+  });
+
+  describe('confirmDonationItemDetails', () => {
+    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+      itemId,
+      ozPerItem: 5.0,
+      estimatedValue: 10.0,
+      foodRescue: true,
+    });
+
+    it('throws NotFoundException when donation does not exist', async () => {
+      await expect(
+        service.confirmDonationItemDetails(9999, [makeDto(1)]),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
+    });
+
+    it('throws BadRequestException when donation status is not MATCHED', async () => {
+      // seed donation 1 has status 'available' — status check fires before item lookup
+      await expect(
+        service.confirmDonationItemDetails(1, [makeDto(1)]),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation status must be ${DonationStatus.MATCHED}`,
+        ),
+      );
+    });
+
+    it('returns the donation after confirming item details, as well as fulfills donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 10);
+
+      const spy = jest.spyOn(service, 'checkAndFulfillDonation');
+
+      const result = await service.confirmDonationItemDetails(donationId, [
+        makeDto(itemId),
+      ]);
+
+      expect(result).toBeDefined();
+      expect(result.donationId).toBe(donationId);
+      expect(result.status).toBe(DonationStatus.FULFILLED);
+      expect(result.donationItems.every((item) => item.detailsConfirmed)).toBe(
+        true,
+      );
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('checkAndFulfillDonation', () => {
+    async function insertConfirmedDonationItem(
+      donationId: number,
+      qty: number,
+      reserved: number,
+    ): Promise<number> {
+      const result = await testDataSource.query(
+        `INSERT INTO donation_items
+          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 'Granola', true)
+         RETURNING item_id`,
+        [donationId, qty, reserved],
+      );
+      return result[0].item_id;
+    }
+
+    it('returns donation unchanged when not all items are fulfilled', async () => {
+      const donationId = await insertMatchedDonation();
+      // reservedQuantity (5) != quantity (10), detailsConfirmed = false
+      await insertDonationItem(donationId, 10, 10);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('returns donation unchanged when not all items have reservedQuantity = quantity', async () => {
+      const donationId = await insertMatchedDonation();
+      // reservedQuantity (5) != quantity (10), detailsConfirmed = false
+      await insertDonationItem(donationId, 10, 5);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('returns donation unchanged when there is a pending order', async () => {
+      const donationId = await insertMatchedDonation();
+      // fully reserved and confirmed, but order 4 is PENDING
+      const itemId = await insertConfirmedDonationItem(donationId, 10, 10);
+      await insertAllocation(4, itemId);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('sets donation to FULFILLED when all items confirmed, fully reserved, and no pending orders', async () => {
+      const donationId = await insertMatchedDonation();
+      await insertConfirmedDonationItem(donationId, 10, 10);
+
+      const donation = await service.findOne(donationId);
+      const result = await service.checkAndFulfillDonation(donation);
+
+      expect(result.status).toBe(DonationStatus.FULFILLED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
     });
   });
 });

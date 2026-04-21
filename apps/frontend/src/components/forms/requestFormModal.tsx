@@ -303,7 +303,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
                 <Button
                   onClick={handleSubmit}
-                  bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                  bg={isFormValid ? 'blue.hover' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
                 >
