@@ -35,7 +35,6 @@ import {
   MatchingItemsDto,
   CreateOrderDto,
   DonationDetails,
-  FoodRequestWithoutRelations,
   VolunteerOrder,
   VolunteerAction,
 } from 'types/types';
@@ -54,6 +53,8 @@ export class ApiClient {
   constructor() {
     this.axiosInstance = axios.create({ baseURL: defaultBaseUrl });
 
+    // Attach the access token to each request if available
+    // All API requests will go through this interceptor, making the user required to login
     this.axiosInstance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
         const session = await fetchAuthSession();
@@ -96,9 +97,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async closeFoodRequest(
-    requestId: number,
-  ): Promise<FoodRequestWithoutRelations> {
+  public async closeFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.axiosInstance
       .patch(`/api/requests/${requestId}/close`, {})
       .then((response) => response.data);
@@ -406,19 +405,23 @@ export class ApiClient {
     );
   }
 
-  public async getPantryRequests(pantryId: number): Promise<FoodRequest[]> {
+  public async getPantryRequests(
+    pantryId: number,
+  ): Promise<FoodRequestSummaryDto[]> {
     return this.axiosInstance
       .get(`/api/requests/${pantryId}/all`)
       .then((response) => response.data);
   }
 
-  public async getVolunteerAssignedRequests(): Promise<FoodRequest[]> {
+  public async getVolunteerAssignedRequests(): Promise<
+    FoodRequestSummaryDto[]
+  > {
     return this.axiosInstance
       .get(`/api/volunteers/me/assigned-requests`)
       .then((response) => response.data);
   }
 
-  public async getAllFoodRequests(): Promise<FoodRequest[]> {
+  public async getAllFoodRequests(): Promise<FoodRequestSummaryDto[]> {
     return this.axiosInstance
       .get(`/api/requests/`)
       .then((response) => response.data);

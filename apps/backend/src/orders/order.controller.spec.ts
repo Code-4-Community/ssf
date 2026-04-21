@@ -41,7 +41,7 @@ describe('OrdersController', () => {
 
   const mockRequestSummary: Partial<FoodRequestSummaryDto> = {
     requestId: 4,
-    pantryName: 'Example Pantry',
+    pantry: { pantryId: 1, pantryName: 'Example Pantry' },
   };
 
   const mockFoodManufacturer: Partial<FoodManufacturer> = {

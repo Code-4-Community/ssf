@@ -105,13 +105,6 @@ export interface PantryApplicationDto {
   newsletterSubscription?: string;
 }
 
-export interface CreateRequestDto {
-  pantryId: number;
-  requestedSize: RequestSize;
-  requestedFoodTypes: FoodType[];
-  additionalInformation?: string;
-}
-
 export enum DonationStatus {
   MATCHED = 'matched',
   AVAILABLE = 'available',
@@ -246,13 +239,17 @@ export interface FoodRequestWithoutRelations {
 
 export interface FoodRequestSummaryDto {
   requestId: number;
-  pantryId: number;
-  pantryName: string;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
-  additionalInformation?: string | null;
+  additionalInformation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
+  pantry: FoodRequestPantry;
+}
+
+export interface FoodRequestPantry {
+  pantryId: number;
+  pantryName: string;
 }
 
 export interface Order extends OrderWithoutFoodManufacturer {

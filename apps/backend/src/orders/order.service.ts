@@ -308,11 +308,13 @@ export class OrdersService {
     }
 
     const pantry = await this.pantryRepo.findOneBy({
-      pantryId: request.pantryId,
+      pantryId: request.pantry.pantryId,
     });
 
     if (!pantry) {
-      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
+      throw new NotFoundException(
+        `Pantry ${request.pantry.pantryId} not found`,
+      );
     }
 
     return pantry;
@@ -331,13 +333,13 @@ export class OrdersService {
       select: {
         request: {
           requestId: true,
-          pantryId: true,
           requestedSize: true,
           requestedFoodTypes: true,
           additionalInformation: true,
           requestedAt: true,
           status: true,
           pantry: {
+            pantryId: true,
             pantryName: true,
           },
         },
@@ -350,17 +352,15 @@ export class OrdersService {
 
     return {
       requestId: order.request.requestId,
-      pantryId: order.request.pantryId,
-      pantryName: order.request.pantry.pantryName,
-
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
-
       additionalInformation: order.request.additionalInformation ?? null,
-
       requestedAt: order.request.requestedAt,
-
       status: order.request.status,
+      pantry: {
+        pantryId: order.request.pantry.pantryId,
+        pantryName: order.request.pantry.pantryName,
+      },
     };
   }
 

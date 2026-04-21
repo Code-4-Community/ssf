@@ -17,7 +17,7 @@ import {
 import {
   DonationItemsGroupedByFoodType,
   FoodManufacturerWithoutRelations,
-  FoodRequest,
+  FoodRequestSummaryDto,
   FoodType,
   MatchingItemsDto,
   MatchingManufacturersDto,
@@ -28,7 +28,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 
 interface CreateNewOrderModalModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;

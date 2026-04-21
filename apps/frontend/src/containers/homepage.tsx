@@ -180,11 +180,6 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/approve-pantries">Approve Pantries</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
                 <RouterLink to="/admin-request-management">
                   Food Request Management
                 </RouterLink>

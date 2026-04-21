@@ -14,7 +14,7 @@ import {
 import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
-import { FoodRequest, FoodRequestStatus } from '../types/types';
+import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
@@ -22,7 +22,7 @@ import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
 
 interface RequestManagementProps {
-  fetchRequests: () => Promise<FoodRequest[]>;
+  fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
   showActionColumn?: boolean;
 }
 
@@ -30,7 +30,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   fetchRequests: fetchData,
   showActionColumn = true,
 }) => {
-  const [requests, setRequests] = useState<FoodRequest[]>([]);
+  const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
   const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPantryDropdownOpen, setIsFilterPantryDropdownOpen] =
@@ -39,13 +39,13 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
     string[]
   >([]);
   const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
   const [selectedActionRequest, setSelectedActionRequest] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
   const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
   const [isAlertError, setIsAlertError] = useState<boolean>(true);
