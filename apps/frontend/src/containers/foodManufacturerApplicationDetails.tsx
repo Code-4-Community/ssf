@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { ApplicationStatus, FoodManufacturer } from 'types/types';
+import { ApplicationStatus, FoodManufacturer } from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
