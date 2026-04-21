@@ -118,6 +118,13 @@ const Homepage: React.FC = () => {
                 </RouterLink>
               </Link>
             </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-order-management">
+                  Order Management
+                </RouterLink>
+              </Link>
+            </ListItem>
           </List.Root>
         </Box>
 
@@ -154,6 +161,13 @@ const Homepage: React.FC = () => {
               <Link asChild color="teal.500">
                 <RouterLink to="/admin-donation">
                   Donation Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/admin-donation-stats">
+                  Donation Statistics
                 </RouterLink>
               </Link>
             </ListItem>
