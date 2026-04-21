@@ -27,6 +27,7 @@ import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { emailTemplates } from '../emails/emailTemplates';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
@@ -36,6 +37,7 @@ export class OrdersService {
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
     private requestsService: RequestsService,
+    private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
@@ -256,13 +258,15 @@ export class OrdersService {
         transactionManager,
       );
 
+      const assignee = await this.usersService.findOne(userId);
+
       try {
         const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
           pantryName: request.pantry.pantryName,
           items: itemDetails,
           brand: manufacturer.foodManufacturerName,
-          volunteerName: '',
-          volunteerEmail: '',
+          volunteerName: assignee.firstName + ' ' + assignee.lastName,
+          volunteerEmail: assignee.email,
         });
         await this.emailsService.sendEmails(
           [request.pantry.pantryUser.email],
@@ -282,16 +286,16 @@ export class OrdersService {
           pantryName: request.pantry.pantryName,
           pantryAddress:
             request.pantry.mailingAddressLine1 +
-            ', ' +
+            ' ' +
             request.pantry.mailingAddressCity +
-            ', ' +
+            ' ' +
             request.pantry.mailingAddressState +
             ' ' +
             request.pantry.mailingAddressZip +
             ' ' +
             request.pantry.mailingAddressCountry,
-          volunteerName: '',
-          volunteerEmail: '',
+          volunteerName: assignee.firstName + ' ' + assignee.lastName,
+          volunteerEmail: assignee.email,
         });
         await this.emailsService.sendEmails(
           [manufacturer.foodManufacturerRepresentative.email],

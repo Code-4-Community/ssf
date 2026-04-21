@@ -18,6 +18,8 @@ import { Allocation } from '../allocations/allocations.entity';
 import { DonationModule } from '../donations/donations.module';
 import { Donation } from '../donations/donations.entity';
 import { EmailsModule } from '../emails/email.module';
+import { User } from '../users/users.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { EmailsModule } from '../emails/email.module';
       DonationItem,
       Allocation,
       Donation,
+      User,
     ]),
     AllocationModule,
     forwardRef(() => AuthModule),
@@ -39,6 +42,7 @@ import { EmailsModule } from '../emails/email.module';
     DonationItemsModule,
     DonationModule,
     EmailsModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
