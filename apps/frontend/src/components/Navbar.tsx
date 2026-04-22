@@ -107,8 +107,7 @@ const NavLink: React.FC<{
   to: string;
   label: string;
   isActive: boolean;
-  fontWeight?: string | number;
-}> = ({ to, label, isActive, fontWeight }) => (
+}> = ({ to, label, isActive }) => (
   <RouterLink to={to} style={{ width: '100%' }}>
     <Box
       h="32px"
@@ -120,7 +119,7 @@ const NavLink: React.FC<{
       _hover={{ bg: 'neutral.100' }}
       cursor="pointer"
     >
-      <Text fontSize="14px" color="neutral.800" fontWeight={fontWeight}>
+      <Text fontSize="14px" color="neutral.700" fontWeight="600">
         {label}
       </Text>
     </Box>
@@ -159,8 +158,8 @@ const NavGroup: React.FC<NavGroupProps> = ({
     >
       <Text
         fontSize="14px"
-        color="neutral.800"
-        fontWeight="600"
+        color="neutral.700"
+        fontWeight="semibold"
         fontFamily="ibm"
       >
         {label}
@@ -206,7 +205,7 @@ const NavGroup: React.FC<NavGroupProps> = ({
                 _hover={{ bg: 'neutral.100' }}
                 cursor="pointer"
               >
-                <Text fontSize="14px" color="neutral.800">
+                <Text fontSize="14px" color="neutral.700">
                   {child.label}
                 </Text>
               </Box>
@@ -276,7 +275,9 @@ const Navbar: React.FC = () => {
     <Flex
       direction="column"
       w="240px"
-      minH="100vh"
+      h="100vh"
+      position="sticky"
+      top={0}
       bg="neutral.50"
       borderRightWidth="1px"
       borderRightColor="neutral.200"
@@ -308,13 +309,18 @@ const Navbar: React.FC = () => {
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </Box>
-          <Box overflow="hidden" lineHeight="1.2" fontFamily="ibm">
+          <Box
+            overflow="hidden"
+            lineHeight="1.2"
+            fontFamily="ibm"
+            fontWeight="semibold"
+          >
             <Text
               fontSize="14px"
               color="neutral.800"
               fontWeight="normal"
               overflow="hidden"
-              style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
+              style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
             >
               {roleLabel ? `${roleLabel} Dashboard` : 'Dashboard'}
             </Text>
@@ -330,9 +336,8 @@ const Navbar: React.FC = () => {
         </Box>
       </RouterLink>
 
-      <VStack align="stretch" gap={0} flex={1}>
+      <VStack align="stretch" gap={0} flex={1} overflowY="auto">
         <NavLink
-          fontWeight="600"
           to={ROUTES.HOME}
           label="Dashboard"
           isActive={location.pathname === ROUTES.HOME}
@@ -376,7 +381,12 @@ const Navbar: React.FC = () => {
           color="var(--chakra-colors-neutral-700)"
           style={{ transform: 'scaleX(-1)' }}
         />
-        <Text fontSize="14px" color="neutral.700" fontFamily="ibm">
+        <Text
+          fontSize="14px"
+          color="neutral.700"
+          fontFamily="ibm"
+          fontWeight="semibold"
+        >
           Sign Out
         </Text>
       </Box>
