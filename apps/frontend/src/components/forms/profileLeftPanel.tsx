@@ -2,6 +2,8 @@ import React from 'react';
 import { VStack, Text, Button, Box, useDisclosure } from '@chakra-ui/react';
 import { LockKeyhole } from 'lucide-react';
 import ChangePasswordModal from './changePasswordModal';
+import { useAlert } from '../../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface ProfileLeftPanelProps {
   name: string;
@@ -17,9 +19,18 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
   avatarBg,
 }) => {
   const { open, onOpen, onClose } = useDisclosure();
+  const [alertState, setAlertMessage] = useAlert();
 
   return (
     <VStack alignItems="center" mt={8} mb={6} p={10}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       <Box
         w={24}
         h={24}
@@ -63,7 +74,11 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         Change Password
       </Button>
 
-      <ChangePasswordModal open={open} onClose={onClose}></ChangePasswordModal>
+      <ChangePasswordModal
+        open={open}
+        onClose={onClose}
+        onSuccess={() => setAlertMessage('Password successfully changed')}
+      ></ChangePasswordModal>
     </VStack>
   );
 };

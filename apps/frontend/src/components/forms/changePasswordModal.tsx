@@ -8,33 +8,41 @@ import {
   Field,
   Dialog,
   Portal,
+  IconButton,
+  Group,
 } from '@chakra-ui/react';
 import { updatePassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface ChangePasswordModalProps {
   open: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   open,
   onClose,
+  onSuccess,
 }) => {
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
 
   const handleChangePassword = async () => {
-    if (password !== confirmPassword) {
-      setAlertMessage('Passwords must match');
+    if (password.length < 8) {
+      setAlertMessage('Password must be at least 8 characters');
       return;
     }
 
-    if (password.length < 8) {
-      setAlertMessage('Password must be at least 8 characters');
+    if (password !== confirmPassword) {
+      setAlertMessage('Passwords must match');
       return;
     }
 
@@ -45,8 +53,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       });
 
       onClose();
+      onSuccess();
     } catch {
-      setAlertMessage('Failed to update password');
+      setAlertMessage('Failed to update password, old password is incorrect');
     }
   };
 
@@ -116,35 +125,68 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                     <Field.Label {...fieldHeaderStyles}>
                       Current Password
                     </Field.Label>
-                    <Input
-                      type="password"
-                      placeholder="Enter your current password"
-                      {...inputStyles}
-                      onChange={(e) => setOldPassword(e.target.value)}
-                    />
+                    <Group attached w="full">
+                      <Input
+                        type={showOldPassword ? 'text' : 'password'}
+                        placeholder="Enter your current password"
+                        {...inputStyles}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                      />
+                      <IconButton
+                        variant="outline"
+                        onClick={() => setShowOldPassword((prev) => !prev)}
+                      >
+                        <Box color="neutral.200">
+                          {showOldPassword && <EyeOff />}
+                          {!showOldPassword && <Eye />}
+                        </Box>
+                      </IconButton>
+                    </Group>
                   </Field.Root>
                   <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                       New Password
                     </Field.Label>
-                    <Input
-                      type="password"
-                      placeholder="Enter a new password"
-                      {...inputStyles}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+                    <Group attached w="full">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter a new password"
+                        {...inputStyles}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <IconButton
+                        variant="outline"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                      >
+                        <Box color="neutral.200">
+                          {showPassword && <EyeOff />}
+                          {!showPassword && <Eye />}
+                        </Box>
+                      </IconButton>
+                    </Group>
                   </Field.Root>
 
                   <Field.Root required>
                     <Field.Label {...fieldHeaderStyles}>
                       Confirm Password
                     </Field.Label>
-                    <Input
-                      type="password"
-                      placeholder="Confirm new password"
-                      {...inputStyles}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
+                    <Group attached w="full">
+                      <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Confirm new password"
+                        {...inputStyles}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                      <IconButton
+                        variant="outline"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      >
+                        <Box color="neutral.200">
+                          {showConfirmPassword && <EyeOff />}
+                          {!showConfirmPassword && <Eye />}
+                        </Box>
+                      </IconButton>
+                    </Group>
                   </Field.Root>
                 </VStack>
 
