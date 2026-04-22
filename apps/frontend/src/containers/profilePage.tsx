@@ -125,7 +125,7 @@ const ProfilePage: React.FC = () => {
         w="100%"
         bg="neutral.50"
       >
-        <Box flexShrink={0}>
+        <Box minW={0} flexShrink={1}>
           <ProfileLeftPanel
             name={orgName ?? `${firstName} ${lastName}`}
             roleLabel={config.label}
