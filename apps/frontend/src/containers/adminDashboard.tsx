@@ -21,7 +21,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.Action}
+          type={DashboardCardType.ACTION}
           title="Brooklyn Food Pantry"
           date="2025-04-10"
           linkText="View Application Details"
@@ -29,7 +29,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.Action}
+          type={DashboardCardType.ACTION}
           title="Sunbutter"
           date="2025-04-15"
           linkText="View Application Details"
@@ -41,7 +41,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.Action}
+          type={DashboardCardType.ACTION}
           title="Brooklyn Food Pantry"
           date="2025-04-15"
           linkText="View Application Details"
@@ -55,7 +55,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.Order}
+          type={DashboardCardType.ORDER}
           title="Order #20"
           date="2025-04-01"
           subtitle="Boston Food Pantry"
@@ -65,7 +65,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.Order}
+          type={DashboardCardType.ORDER}
           title="Order #19"
           date="2025-04-20"
           subtitle="New York Food Pantry"
@@ -81,7 +81,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.RecentDonation}
+          type={DashboardCardType.RECENT_DONATION}
           title="Donation #20"
           date="2025-04-01"
           subtitle="Eastside Food Bank"
@@ -90,7 +90,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.RecentDonation}
+          type={DashboardCardType.RECENT_DONATION}
           title="Donation #19"
           date="2025-04-20"
           subtitle="Sainsbury's"
@@ -105,7 +105,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.UpcomingDonation}
+          type={DashboardCardType.UPCOMING_DONATION}
           title="Donation #1042"
           date="2025-04-10"
           linkText="View Donation Requirements"
@@ -118,7 +118,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.FoodRequest}
+          type={DashboardCardType.FOOD_REQUEST}
           title="Order #20"
           date="2025-04-01"
           subtitle="Eastside Food Bank"
@@ -126,7 +126,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.FoodRequest}
+          type={DashboardCardType.FOOD_REQUEST}
           title="Action Required: Confirm Delivery"
           date="2025-04-20"
           subtitle="Westside Community Pantry"

@@ -11,27 +11,27 @@ import {
 import { OrderAssignee, OrderStatus, DonationStatus } from '../types/types';
 
 export enum DashboardCardType {
-  UpcomingDonation = 'upcoming donation',
-  RecentDonation = 'recent donation',
-  FoodRequest = 'food request',
-  Order = 'order',
-  Action = 'action',
+  UPCOMING_DONATION,
+  RECENT_DONATION,
+  FOOD_REQUEST,
+  ORDER,
+  ACTION,
 }
 
 export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
-  [DashboardCardType.RecentDonation]: <Package size={24} />,
-  [DashboardCardType.FoodRequest]: <List size={24} />,
-  [DashboardCardType.UpcomingDonation]: <List size={24} />,
-  [DashboardCardType.Order]: <Package size={24} />,
-  [DashboardCardType.Action]: <Handshake size={24} />,
+  [DashboardCardType.RECENT_DONATION]: <Package size={24} />,
+  [DashboardCardType.FOOD_REQUEST]: <List size={24} />,
+  [DashboardCardType.UPCOMING_DONATION]: <List size={24} />,
+  [DashboardCardType.ORDER]: <Package size={24} />,
+  [DashboardCardType.ACTION]: <Handshake size={24} />,
 };
 
 const CARD_TYPE_DATE_LABEL: Record<DashboardCardType, string> = {
-  [DashboardCardType.Action]: 'Applied',
-  [DashboardCardType.Order]: 'Requested',
-  [DashboardCardType.UpcomingDonation]: 'Scheduled',
-  [DashboardCardType.RecentDonation]: 'Donated',
-  [DashboardCardType.FoodRequest]: 'Requested',
+  [DashboardCardType.ACTION]: 'Applied',
+  [DashboardCardType.ORDER]: 'Requested',
+  [DashboardCardType.UPCOMING_DONATION]: 'Scheduled',
+  [DashboardCardType.RECENT_DONATION]: 'Donated',
+  [DashboardCardType.FOOD_REQUEST]: 'Requested',
 };
 
 export interface DashboardCardBadge {
