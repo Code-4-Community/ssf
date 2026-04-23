@@ -15,27 +15,18 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
   initials,
   avatarBg,
 }) => (
-  <VStack
-    alignItems="center"
-    mt={8}
-    mb={6}
-    p={{ base: 4, md: 6, lg: 10 }}
-    minW={0}
-  >
+  <VStack alignItems="center" mt="2.2vw" mb="1.7vw" p="2.8vw" minW={0}>
     <Box
-      w={{ base: 14, md: 20, lg: 24 }}
-      h={{ base: 14, md: 20, lg: 24 }}
+      w="6.7vw"
+      h="6.7vw"
       borderRadius="full"
       bg={avatarBg}
       display="flex"
       alignItems="center"
       justifyContent="center"
-      mb={4}
+      mb="1.1vw"
     >
-      <Text
-        color="neutral.50"
-        fontSize={{ base: '18px', md: '26px', lg: '32px' }}
-      >
+      <Text color="neutral.50" fontSize="2.2vw">
         {initials}
       </Text>
     </Box>
@@ -44,7 +35,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
       <Text
         fontFamily="ibm"
         fontWeight="semibold"
-        fontSize={{ base: '14px', md: '17px', lg: '20px' }}
+        fontSize="1.4vw"
         textAlign="center"
         mb={0}
       >
@@ -57,8 +48,8 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
     </VStack>
 
     <Button
-      mt={{ base: 8, md: 16, lg: 24 }}
-      px={{ base: 3, md: 6, lg: 8 }}
+      mt="6.7vw"
+      px="2.2vw"
       bg="red"
       size="sm"
       color="white.core"
