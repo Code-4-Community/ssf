@@ -371,6 +371,21 @@ export interface ManufacturerApplicationDto {
   newsletterSubscription?: boolean;
 }
 
+export interface ApprovedPantryResponse {
+  pantryId: number;
+  pantryName: string;
+  refrigeratedDonation: RefrigeratedDonation;
+  volunteers: AssignedVolunteer[];
+}
+
+export interface AssignedVolunteer {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;

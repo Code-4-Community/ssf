@@ -38,6 +38,7 @@ import {
   FoodRequestWithoutRelations,
   VolunteerOrder,
   VolunteerAction,
+  ApprovedPantryResponse,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -174,6 +175,12 @@ export class ApiClient {
     return this.get(
       `/api/manufacturers/${manufacturerId}`,
     ) as Promise<FoodManufacturer>;
+  }
+
+  public async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.get(`/api/pantries/approved`) as Promise<
+      ApprovedPantryResponse[]
+    >;
   }
 
   public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
