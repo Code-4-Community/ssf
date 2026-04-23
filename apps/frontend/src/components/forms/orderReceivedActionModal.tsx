@@ -14,7 +14,7 @@ import {
   Portal,
   parseDate,
   InputGroup,
-  type DateValue,
+  Input,
 } from '@chakra-ui/react';
 import { Upload, Calendar } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
@@ -81,8 +81,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
         return;
       }
 
+      // TODO: fix date/time storage/handling
       const dto: ConfirmDeliveryDto = {
-        dateReceived: new Date(dateReceived).toISOString(),
+        dateReceived: dateReceived,
         feedback: feedback,
       };
 
@@ -151,14 +152,6 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   </Text>
                 </Field.Label>
                 <DatePicker.Root
-                  format={(date: DateValue) =>
-                    new Intl.DateTimeFormat('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      timeZone: 'UTC',
-                    }).format(new Date(date.toString()))
-                  }
                   min={parseDate(minDate)}
                   max={parseDate(today)}
                   value={dateReceived ? [parseDate(dateReceived)] : []}
@@ -172,17 +165,35 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   <InputGroup
                     as={DatePicker.Control}
                     startElement={
-                      <DatePicker.Trigger
-                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-                      >
-                        <Calendar
-                          size={16}
-                          color="var(--chakra-colors-neutral-300)"
-                        />
-                      </DatePicker.Trigger>
+                      <Calendar
+                        size={16}
+                        color="var(--chakra-colors-neutral-300)"
+                      />
                     }
                   >
-                    <DatePicker.Input placeholder="" color="neutral.800" />
+                    <DatePicker.Trigger asChild>
+                      <Input
+                        readOnly
+                        w="100%"
+                        h={10}
+                        borderRadius="sm"
+                        border="1px solid var(--chakra-colors-neutral-100)"
+                        cursor="pointer"
+                        placeholder=""
+                        color="neutral.800"
+                        value={
+                          dateReceived
+                            ? new Date(
+                                dateReceived + 'T00:00:00',
+                              ).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : ''
+                        }
+                      />
+                    </DatePicker.Trigger>
                   </InputGroup>
                   <Portal>
                     <DatePicker.Positioner>
