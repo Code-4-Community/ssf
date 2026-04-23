@@ -22,7 +22,13 @@ import {
   CircleCheck,
   Search,
 } from 'lucide-react';
-import { capitalize, formatDate, getInitials } from '@utils/utils';
+import {
+  capitalize,
+  formatDate,
+  getInitials,
+  ORDER_STATUS_COLORS,
+  ASSIGNEE_COLORS,
+} from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import {
   OrderStatus,
@@ -36,8 +42,6 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
-
-const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
 const STATUS_TITLES: Record<OrderStatus, string> = {
   [OrderStatus.SHIPPED]: 'In Progress',
@@ -105,12 +109,6 @@ const VolunteerOrderManagement: React.FC = () => {
       sortAsc: false,
     },
   });
-
-  const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
-    [OrderStatus.PENDING, ['blue.200', 'blue.core']],
-    [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
-  ]);
 
   const MAX_PER_STATUS = 5;
 
@@ -265,7 +263,7 @@ const VolunteerOrderManagement: React.FC = () => {
             <OrderStatusSection
               orders={displayedOrders}
               status={status}
-              colors={STATUS_COLORS.get(status)!}
+              colors={ORDER_STATUS_COLORS[status]}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
