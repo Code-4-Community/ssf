@@ -58,6 +58,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         grouped[donationDetail.donation.status].push(donationDetail);
       });
 
+      (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+        grouped[status].sort(
+          (a, b) =>
+            new Date(a.donation.dateDonated).getTime() -
+            new Date(b.donation.dateDonated).getTime(),
+        );
+      });
+
       setStatusDonations(grouped);
 
       // Initialize current page for each status

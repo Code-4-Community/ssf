@@ -68,13 +68,13 @@ const PantryOrderManagement: React.FC = () => {
     Record<OrderStatus, FilterState>
   >({
     [OrderStatus.SHIPPED]: {
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.PENDING]: {
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.DELIVERED]: {
-      sortAsc: true,
+      sortAsc: false,
     },
   });
 
