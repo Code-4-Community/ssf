@@ -162,29 +162,45 @@ export class FoodManufacturersService {
     today.setHours(0, 0, 0, 0);
     const donationReminders: DonationReminderDto[] = donations.flatMap(
       (donation) => {
-        const dates = donation.nextDonationDates ?? [];
+        const allDates = (donation.nextDonationDates ?? [])
+          .slice()
+          .sort((a, b) => a.getTime() - b.getTime());
+
+        // cap upcoming dates to occurrencesRemaining so the display matches
+        // what the scheduler will actually send emails for.
+        const maxDates =
+          donation.occurrencesRemaining != null
+            ? Math.min(allDates.length, donation.occurrencesRemaining)
+            : allDates.length;
+        const dates = allDates.slice(0, maxDates);
+
         const reminders: DonationReminderDto[] = dates.map((date) => ({
           donation,
           reminderDate: date,
         }));
 
+        let remainingForFuture =
+          donation.occurrencesRemaining != null
+            ? donation.occurrencesRemaining - dates.length
+            : null;
+
         if (
           donation.recurrence !== RecurrenceEnum.NONE &&
           donation.recurrenceFreq &&
-          dates.length > 0
+          dates.length > 0 &&
+          (remainingForFuture === null || remainingForFuture > 0)
         ) {
           for (const date of dates) {
+            if (remainingForFuture !== null && remainingForFuture <= 0) break;
+
             const nextDate = calculateNextDonationDate(
               date,
               donation.recurrence,
               donation.recurrenceFreq,
             );
-            if (
-              nextDate >= today &&
-              !dates.some((d) => d.getTime() === nextDate.getTime())
-            ) {
-              reminders.push({ donation, reminderDate: nextDate });
-            }
+
+            reminders.push({ donation, reminderDate: nextDate });
+            if (remainingForFuture !== null) remainingForFuture--;
           }
         }
 
