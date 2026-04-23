@@ -501,10 +501,3 @@ export type OrderItemDetailsGroupedByFoodType = Partial<
 export type DonationItemsGroupedByFoodType = Partial<
   Record<FoodType, DonationItemDetailsDto[]>
 >;
-
-export enum DashboardCardType {
-  Donation = 'donation',
-  FoodRequest = 'food request',
-  Order = 'order',
-  Action = 'action',
-}

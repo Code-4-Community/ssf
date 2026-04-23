@@ -6,6 +6,7 @@ import {
   DonationStatus,
 } from '../types/types';
 
+// color mapping for order/donation statuses, the first color is background, the second is color for status text
 export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
   [OrderStatus.SHIPPED]: ['yellow.200', 'yellow.hover'],
   [OrderStatus.PENDING]: ['blue.200', 'blue.core'],
@@ -98,3 +99,5 @@ export const generateNextDonationDate = (
 
 export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
+
+export const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];

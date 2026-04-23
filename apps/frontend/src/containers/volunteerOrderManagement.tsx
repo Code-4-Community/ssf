@@ -27,6 +27,7 @@ import {
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ASSIGNEE_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import {
@@ -41,8 +42,6 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
-
-const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
 const STATUS_TITLES: Record<OrderStatus, string> = {
   [OrderStatus.SHIPPED]: 'In Progress',

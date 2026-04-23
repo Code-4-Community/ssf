@@ -26,6 +26,7 @@ import {
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ASSIGNEE_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
@@ -93,8 +94,6 @@ const AdminOrderManagement: React.FC = () => {
   });
 
   const MAX_PER_STATUS = 5;
-
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
   useEffect(() => {
     // Fetch all orders on component mount and sorts them into their appropriate status lists

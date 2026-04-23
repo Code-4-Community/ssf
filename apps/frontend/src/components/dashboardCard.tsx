@@ -6,17 +6,22 @@ import {
   getInitials,
   ORDER_STATUS_COLORS,
   DONATION_STATUS_COLORS,
+  ASSIGNEE_COLORS,
 } from '@utils/utils';
-import {
-  OrderAssignee,
-  DashboardCardType,
-  OrderStatus,
-  DonationStatus,
-} from '../types/types';
+import { OrderAssignee, OrderStatus, DonationStatus } from '../types/types';
+
+export enum DashboardCardType {
+  UpcomingDonation = 'upcoming donation',
+  RecentDonation = 'recent donation',
+  FoodRequest = 'food request',
+  Order = 'order',
+  Action = 'action',
+}
 
 export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
-  [DashboardCardType.Donation]: <Package size={24} />,
+  [DashboardCardType.RecentDonation]: <Package size={24} />,
   [DashboardCardType.FoodRequest]: <List size={24} />,
+  [DashboardCardType.UpcomingDonation]: <List size={24} />,
   [DashboardCardType.Order]: <Package size={24} />,
   [DashboardCardType.Action]: <Handshake size={24} />,
 };
@@ -24,7 +29,8 @@ export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
 const CARD_TYPE_DATE_LABEL: Record<DashboardCardType, string> = {
   [DashboardCardType.Action]: 'Applied',
   [DashboardCardType.Order]: 'Requested',
-  [DashboardCardType.Donation]: 'Donated',
+  [DashboardCardType.UpcomingDonation]: 'Scheduled',
+  [DashboardCardType.RecentDonation]: 'Donated',
   [DashboardCardType.FoodRequest]: 'Requested',
 };
 
@@ -71,17 +77,14 @@ export const DONATION_STATUS_BADGE: Record<DonationStatus, DashboardCardBadge> =
     },
   };
 
-const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
-
 export interface DashboardCardProps {
   type: DashboardCardType;
   title: string;
-  subtitle?: string;
-  dateLabel?: string;
   date: string;
   linkText: string;
-  badge?: DashboardCardBadge;
   onLinkClick: () => void;
+  subtitle?: string;
+  badge?: DashboardCardBadge;
   assignee?: OrderAssignee;
 }
 
@@ -89,7 +92,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   type,
   title,
   subtitle,
-  dateLabel = CARD_TYPE_DATE_LABEL[type],
   date,
   linkText,
   badge,
@@ -102,6 +104,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       borderColor="neutral.100"
       borderRadius="14px"
       p={6}
+      pb={4}
       bg="white"
       display="flex"
       flexDirection="column"
@@ -130,7 +133,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           </Box>
           <VStack gap={0} alignItems="flex-start">
             <Text color="neutral.500" lineHeight="1.1">
-              {dateLabel} {formatDate(date)}
+              {CARD_TYPE_DATE_LABEL[type]} {formatDate(date)}
             </Text>
             <Text color="black" lineHeight="1.1">
               {title}
@@ -164,7 +167,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        pt={3}
+        pt={4}
         borderTop="1px solid"
         borderColor="neutral.100"
       >
@@ -174,8 +177,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           gap={2}
           color="neutral.600"
           cursor="pointer"
+          // TODO: implement nav accordingly
           onClick={onLinkClick}
-          _hover={{ color: 'neutral.900' }}
+          _hover={{ color: 'neutral.700' }}
         >
           <Text textStyle="p" fontWeight={500}>
             {linkText}

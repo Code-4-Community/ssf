@@ -4,7 +4,8 @@ import DashboardCard, {
   ORDER_STATUS_BADGE,
   DONATION_STATUS_BADGE,
 } from '@components/dashboardCard';
-import { DashboardCardType, OrderStatus, DonationStatus } from '../types/types';
+import { OrderStatus, DonationStatus } from '../types/types';
+import { DashboardCardType } from '@components/dashboardCard';
 
 const noop = () => undefined;
 
@@ -80,7 +81,7 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.Donation}
+          type={DashboardCardType.RecentDonation}
           title="Donation #20"
           date="2025-04-01"
           subtitle="Eastside Food Bank"
@@ -89,7 +90,7 @@ const AdminDashboard: React.FC = () => {
           onLinkClick={noop}
         />
         <DashboardCard
-          type={DashboardCardType.Donation}
+          type={DashboardCardType.RecentDonation}
           title="Donation #19"
           date="2025-04-20"
           subtitle="Sainsbury's"
@@ -104,9 +105,8 @@ const AdminDashboard: React.FC = () => {
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         <DashboardCard
-          type={DashboardCardType.Donation}
+          type={DashboardCardType.UpcomingDonation}
           title="Donation #1042"
-          dateLabel="Scheduled"
           date="2025-04-10"
           linkText="View Donation Requirements"
           onLinkClick={noop}
@@ -130,7 +130,7 @@ const AdminDashboard: React.FC = () => {
           title="Action Required: Confirm Delivery"
           date="2025-04-20"
           subtitle="Westside Community Pantry"
-          linkText="Fulfill Request"
+          linkText="View Request Details"
           onLinkClick={noop}
         />
       </Box>
