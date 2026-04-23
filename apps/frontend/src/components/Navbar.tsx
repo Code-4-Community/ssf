@@ -336,7 +336,7 @@ const Navbar: React.FC = () => {
         </Box>
       </RouterLink>
 
-      <VStack align="stretch" gap={0} flex={1} overflowY="auto">
+      <VStack align="stretch" gap={1} flex={1} overflowY="auto">
         <NavLink
           to={ROUTES.HOME}
           label="Dashboard"
