@@ -30,6 +30,7 @@ import { DataSource } from 'typeorm';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { PantriesService } from '../pantries/pantries.service';
 
 jest.setTimeout(60000);
 
@@ -42,6 +43,8 @@ describe('UsersService', () => {
   let service: UsersService;
   let foodRequestService: RequestsService;
   let donationService: DonationService;
+  let pantriesService: PantriesService;
+  let foodManufacturersService: FoodManufacturersService;
 
   beforeAll(async () => {
     process.env.SEND_AUTOMATED_EMAILS = 'true';
@@ -62,6 +65,7 @@ describe('UsersService', () => {
         FoodManufacturersService,
         DonationItemsService,
         AllocationsService,
+        PantriesService,
         {
           provide: AuthService,
           useValue: mockAuthService,
@@ -112,6 +116,10 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
     foodRequestService = module.get<RequestsService>(RequestsService);
     donationService = module.get<DonationService>(DonationService);
+    pantriesService = module.get<PantriesService>(PantriesService);
+    foodManufacturersService = module.get<FoodManufacturersService>(
+      FoodManufacturersService,
+    );
   });
 
   beforeEach(async () => {
@@ -513,6 +521,77 @@ describe('UsersService', () => {
     it('findByIds with some non-existent IDs throws NotFoundException', async () => {
       await expect(service.findByIds([1, 9999])).rejects.toThrow(
         new NotFoundException('Users not found: 9999'),
+      );
+    });
+  });
+
+  describe('getUserDashboardStats', () => {
+    it('should call getMonthlyAggregatedStats and return admin stats for admin user', async () => {
+      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+
+      const result = await service.getUserDashboardStats(1);
+
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual({
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      });
+    });
+
+    it('should call getMonthlyAggregatedStats and return volunteer stats for volunteer user', async () => {
+      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+
+      const result = await service.getUserDashboardStats(6);
+
+      expect(spy).toHaveBeenCalled();
+      expect(result).toEqual({
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      });
+    });
+
+    it('should call pantriesService.getStats and return pantry stats for pantry user', async () => {
+      const findByUserIdSpy = jest.spyOn(pantriesService, 'findByUserId');
+      const getStatsSpy = jest.spyOn(pantriesService, 'getStats');
+
+      const result = await service.getUserDashboardStats(10);
+
+      expect(findByUserIdSpy).toHaveBeenCalledWith(10);
+      expect(getStatsSpy).toHaveBeenCalledWith(1);
+      expect(result).toEqual({
+        'Food Requests': '2',
+        Orders: '2',
+        'Items Received': '125',
+        'Value Received': '$625',
+      });
+    });
+
+    it('should call foodManufacturersService.getStats and return manufacturer stats for food manufacturer user', async () => {
+      const findByUserIdSpy = jest.spyOn(
+        foodManufacturersService,
+        'findByUserId',
+      );
+      const getStatsSpy = jest.spyOn(foodManufacturersService, 'getStats');
+
+      const result = await service.getUserDashboardStats(3);
+
+      expect(findByUserIdSpy).toHaveBeenCalledWith(3);
+      expect(getStatsSpy).toHaveBeenCalledWith(1);
+      expect(result).toEqual({
+        Donations: '2',
+        'Value Donated': '$925',
+        'Items Donated': '225',
+        'lbs Donated': '225.03125',
+      });
+    });
+
+    it('should throw NotFoundException for non-existent user', async () => {
+      await expect(service.getUserDashboardStats(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
       );
     });
   });

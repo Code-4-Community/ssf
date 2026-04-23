@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   ConflictException,
@@ -34,6 +36,7 @@ export class FoodManufacturersService {
     @InjectRepository(FoodManufacturer)
     private repo: Repository<FoodManufacturer>,
 
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private emailsService: EmailsService,
 
@@ -323,6 +326,21 @@ export class FoodManufacturersService {
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
+  }
+
+  async findByUserId(userId: number): Promise<FoodManufacturer> {
+    validateId(userId, 'User');
+
+    const foodManufacturer = await this.repo.findOne({
+      where: { foodManufacturerRepresentative: { id: userId } },
+    });
+
+    if (!foodManufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer for User ${userId} not found`,
+      );
+    }
+    return foodManufacturer;
   }
 
   async getStats(id: number): Promise<ManufacturerStatsDto> {
