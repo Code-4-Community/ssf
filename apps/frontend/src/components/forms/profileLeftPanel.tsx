@@ -42,7 +42,12 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         {name}
       </Text>
 
-      <Text textStyle="p2" textAlign="center">
+      <Text
+        fontFamily="inter"
+        fontWeight="500"
+        fontSize="0.97vw"
+        textAlign="center"
+      >
         {roleLabel}
       </Text>
     </VStack>
