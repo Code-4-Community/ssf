@@ -164,7 +164,7 @@ export class ApiClient {
   }
 
   public async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
-    return this.get(`/api/pantries/approved`) as Promise<
+    return this.axiosInstance.get(`/api/pantries/approved`) as Promise<
       ApprovedPantryResponse[]
     >;
   }

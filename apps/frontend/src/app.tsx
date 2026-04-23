@@ -37,6 +37,7 @@ import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
 import AdminPantryManagement from '@containers/adminPantryManagement';
 import AdminRequestManagement from '@containers/adminRequestManagement';
+import AdminDashboard from '@containers/testAdminDashboard';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -206,7 +207,7 @@ const router = createBrowserRouter([
         path: '/test-admin-dashboard',
         element: (
           <ProtectedRoute>
-            <TestAdminDashboard />
+            <AdminDashboard />
           </ProtectedRoute>
         ),
       },

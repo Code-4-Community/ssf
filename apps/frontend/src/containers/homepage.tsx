@@ -182,6 +182,11 @@ const Homepage: React.FC = () => {
               <Link asChild color="teal.500">
                 <RouterLink to="/admin-pantry-management">
                   Pantry Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
                 <RouterLink to="/test-admin-dashboard">Dashboard</RouterLink>
               </Link>
             </ListItem>
