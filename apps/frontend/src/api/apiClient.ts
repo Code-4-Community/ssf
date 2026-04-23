@@ -37,6 +37,7 @@ import {
   DonationDetails,
   VolunteerOrder,
   VolunteerAction,
+  FoodRequestWithoutRelations,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -97,7 +98,9 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async closeFoodRequest(requestId: number): Promise<FoodRequest> {
+  public async closeFoodRequest(
+    requestId: number,
+  ): Promise<FoodRequestWithoutRelations> {
     return this.axiosInstance
       .patch(`/api/requests/${requestId}/close`, {})
       .then((response) => response.data);

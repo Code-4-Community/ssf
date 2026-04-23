@@ -5,7 +5,7 @@ import RequestManagement from '@components/foodRequestManagement';
 const AdminRequestManagement: React.FC = () => (
   <RequestManagement
     fetchRequests={() => ApiClient.getAllFoodRequests()}
-    showActionColumn={false}
+    enableVolunteerActions={false}
   />
 );
 

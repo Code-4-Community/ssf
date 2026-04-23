@@ -214,22 +214,6 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('getOrderByRequestId', () => {
-    it('should call ordersService.findOrderByRequest and return order', async () => {
-      const requestId = 1;
-      mockOrdersService.findOrderByRequest.mockResolvedValueOnce(
-        mockOrders[0] as Order,
-      );
-
-      const result = await controller.getOrderByRequestId(requestId);
-
-      expect(result).toEqual(mockOrders[0] as Order);
-      expect(mockOrdersService.findOrderByRequest).toHaveBeenCalledWith(
-        requestId,
-      );
-    });
-  });
-
   describe('getAllAllocationsByOrder', () => {
     it('should call allocationsService.getAllAllocationsByOrder and return allocations', async () => {
       const orderId = 1;

@@ -23,15 +23,15 @@ import { useAlert } from '../hooks/alert';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
-  showActionColumn?: boolean;
+  enableVolunteerActions?: boolean;
 }
 
 const RequestManagement: React.FC<RequestManagementProps> = ({
   fetchRequests: fetchData,
-  showActionColumn = true,
+  enableVolunteerActions = true,
 }) => {
   const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
-  const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(true);
+  const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPantryDropdownOpen, setIsFilterPantryDropdownOpen] =
     useState(false);
@@ -93,15 +93,11 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         (r.pantry && selectedFilteredPantries.includes(r.pantry?.pantryName));
       return matchesFilter;
     })
-    .sort((a, b) => {
-      const statusOrder = (s: FoodRequestStatus) =>
-        s === FoodRequestStatus.ACTIVE ? 0 : 1;
-      const statusDiff = statusOrder(a.status) - statusOrder(b.status);
-      if (statusDiff !== 0) return statusDiff;
-      return sortRequestedAtAsc
+    .sort((a, b) =>
+      sortRequestedAtAsc
         ? a.requestedAt.localeCompare(b.requestedAt)
-        : b.requestedAt.localeCompare(a.requestedAt);
-    });
+        : b.requestedAt.localeCompare(a.requestedAt),
+    );
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
@@ -250,20 +246,20 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width={showActionColumn ? '20%' : '40%'}
+              width={enableVolunteerActions ? '20%' : '40%'}
             >
               Pantry
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
               textAlign="right"
-              borderRight={showActionColumn ? '1px solid' : undefined}
+              borderRight={enableVolunteerActions ? '1px solid' : undefined}
               borderRightColor="neutral.100"
-              width={showActionColumn ? '20%' : '30%'}
+              width={enableVolunteerActions ? '20%' : '30%'}
             >
               Date Requested
             </Table.ColumnHeader>
-            {showActionColumn && (
+            {enableVolunteerActions && (
               <Table.ColumnHeader
                 {...tableHeaderStyles}
                 textAlign="right"
@@ -327,13 +323,13 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               <Table.Cell
                 {...tableCellStyles}
                 textAlign="right"
-                borderRight="1px solid"
+                borderRight={enableVolunteerActions ? '1px solid' : undefined}
                 borderRightColor="neutral.100"
                 color="neutral.700"
               >
                 {formatDate(request.requestedAt)}
               </Table.Cell>
-              {showActionColumn && (
+              {enableVolunteerActions && (
                 <Table.Cell
                   {...tableCellStyles}
                   bgColor={

@@ -104,20 +104,11 @@ export class OrdersController {
     return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {
     return this.ordersService.findOrderDetails(orderId);
-  }
-
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
-  @Get('/order/:requestId')
-  async getOrderByRequestId(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order> {
-    return this.ordersService.findOrderByRequest(requestId);
   }
 
   @Get('/:orderId/allocations')

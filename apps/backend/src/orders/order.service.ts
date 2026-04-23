@@ -285,22 +285,6 @@ export class OrdersService {
     };
   }
 
-  async findOrderByRequest(requestId: number): Promise<Order> {
-    validateId(requestId, 'Request');
-
-    const order = await this.repo.findOne({
-      where: { requestId },
-      relations: ['request'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(
-        `Order with request ID ${requestId} not found`,
-      );
-    }
-    return order;
-  }
-
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
     if (!request) {
