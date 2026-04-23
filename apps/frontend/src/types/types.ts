@@ -59,6 +59,11 @@ export interface ConfirmDeliveryDto {
   feedback?: string;
 }
 
+export interface UpdatePantryVolunteersDto {
+  addVolunteerIds?: number[];
+  removeVolunteerIds?: number[];
+}
+
 export interface PantryWithUser extends Pantry {
   pantryUser: User;
 }

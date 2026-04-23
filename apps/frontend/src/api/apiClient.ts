@@ -39,6 +39,7 @@ import {
   VolunteerOrder,
   VolunteerAction,
   ApprovedPantryResponse,
+  UpdatePantryVolunteersDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -402,6 +403,13 @@ export class ApiClient {
     await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
+  }
+
+  public async updatePantryVolunteers(
+    pantryId: number,
+    body: UpdatePantryVolunteersDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(`api/pantries/${pantryId}/volunteers`, body);
   }
 
   public async updateFoodManufacturer(

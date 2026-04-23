@@ -21,6 +21,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials } from '@utils/utils';
 import { RefrigeratedDonation } from '../types/pantryEnums';
+import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
 
 const AdminPantryManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -34,22 +35,35 @@ const AdminPantryManagement: React.FC = () => {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const [
+    selectedPantryToAssignVolunteers,
+    setSelectedPantryToAssignVolunteers,
+  ] = useState<ApprovedPantryResponse | null>(null);
+
   const pageSize = 8;
 
   const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
 
-  useEffect(() => {
-    const fetchPantries = async () => {
-      try {
-        const allApprovedPantries = await ApiClient.getApprovedPantries();
-        setPantries(allApprovedPantries);
-      } catch {
-        setAlertMessage('Error fetching pantries');
-      }
-    };
+  const fetchPantries = async () => {
+    try {
+      const allApprovedPantries = await ApiClient.getApprovedPantries();
+      setPantries(allApprovedPantries);
+    } catch {
+      setSubmitSuccess(false);
 
+      setAlertMessage('Error fetching pantries');
+    }
+  };
+
+  useEffect(() => {
     fetchPantries();
   }, [setAlertMessage]);
+
+  const handleAssignVolunteersSuccess = () => {
+    setSubmitSuccess(true);
+    setAlertMessage('Successfully assigned volunteers');
+    fetchPantries();
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -247,6 +261,7 @@ const AdminPantryManagement: React.FC = () => {
                     color="black"
                     variant="underline"
                     textDecorationColor="neutral.700"
+                    onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
                   >
                     {pantry.pantryName}
                   </Link>
@@ -358,6 +373,14 @@ const AdminPantryManagement: React.FC = () => {
                 </Table.Cell>
               </Table.Row>
             ))}
+            {selectedPantryToAssignVolunteers && (
+              <AssignVolunteersModal
+                pantry={selectedPantryToAssignVolunteers}
+                onClose={() => setSelectedPantryToAssignVolunteers(null)}
+                onSuccess={handleAssignVolunteersSuccess}
+                isOpen={true}
+              />
+            )}
           </Table.Body>
         </Table.Root>
         <Flex justify="center" mt={12}>
