@@ -153,8 +153,6 @@ const NavGroup: React.FC<NavGroupProps> = ({
       _hover={{ bg: 'neutral.100' }}
       onClick={onToggle}
       w="full"
-      mb="4px"
-      mt="4px"
     >
       <Text
         fontSize="14px"
@@ -336,7 +334,7 @@ const Navbar: React.FC = () => {
         </Box>
       </RouterLink>
 
-      <VStack align="stretch" gap={1} flex={1} overflowY="auto">
+      <VStack align="stretch" gap={2} flex={1} overflowY="auto">
         <NavLink
           to={ROUTES.HOME}
           label="Dashboard"
