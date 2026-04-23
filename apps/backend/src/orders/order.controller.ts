@@ -87,9 +87,9 @@ export class OrdersController {
         (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },
-    bypassRoles: [Role.VOLUNTEER],
+    bypassRoles: [Role.VOLUNTEER, Role.ADMIN],
   })
-  @Roles(Role.VOLUNTEER, Role.PANTRY)
+  @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId/request')
   async getRequestFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -109,13 +109,6 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {
     return this.ordersService.findOrderDetails(orderId);
-  }
-
-  @Get('/order/:requestId')
-  async getOrderByRequestId(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<Order> {
-    return this.ordersService.findOrderByRequest(requestId);
   }
 
   @Get('/:orderId/allocations')

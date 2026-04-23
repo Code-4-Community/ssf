@@ -8,14 +8,14 @@ import {
   Flex,
   Dialog,
 } from '@chakra-ui/react';
-import { FoodRequest } from 'types/types';
+import { FoodRequestSummaryDto } from 'types/types';
 import { formatDate } from '@utils/utils';
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 
 interface CloseRequestActionModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;

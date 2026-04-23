@@ -326,10 +326,7 @@ describe('RequestsService', () => {
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(2);
-      expect(result.every((r) => r.pantryId === pantryId)).toBe(true);
-      result.forEach((request) => {
-        expect(request.orders).toBeDefined();
-      });
+      expect(result.every((r) => r.pantry.pantryId === pantryId)).toBe(true);
       expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
