@@ -50,14 +50,15 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
     <Button
       mt="6.7vw"
       px="2.2vw"
+      py="0.6vw"
       bg="red"
-      size="sm"
+      fontSize="0.9vw"
       color="white.core"
       onClick={() => {
         // TODO: add functionality
       }}
     >
-      <LockKeyhole />
+      <LockKeyhole size="1vw" />
       Change Password
     </Button>
   </VStack>
