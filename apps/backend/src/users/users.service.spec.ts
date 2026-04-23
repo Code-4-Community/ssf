@@ -527,29 +527,107 @@ describe('UsersService', () => {
 
   describe('getUserDashboardStats', () => {
     it('should call getMonthlyAggregatedStats and return admin stats for admin user', async () => {
-      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+      // Populate with dummy data
+      const now = new Date();
+      const foodRequestRepo = testDataSource.getRepository(FoodRequest);
+      const orderRepo = testDataSource.getRepository(Order);
 
+      const request1 = await foodRequestService.findOne(1);
+      request1.requestedAt = new Date(now.getFullYear(), now.getMonth(), 5);
+      await foodRequestRepo.save(request1);
+
+      const request2 = await foodRequestService.findOne(2);
+      request2.requestedAt = new Date(now.getFullYear(), now.getMonth(), 10);
+      await foodRequestRepo.save(request2);
+
+      const order1 = await orderRepo.findOneBy({ orderId: 1 });
+      order1!.createdAt = new Date(now.getFullYear(), now.getMonth(), 5);
+      await orderRepo.save(order1!);
+
+      await donationService.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 3,
+        occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Test Item',
+            quantity: 10,
+            foodType: FoodType.GRANOLA,
+            foodRescue: false,
+          },
+        ],
+      } as CreateDonationDto);
+
+      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
       const result = await service.getUserDashboardStats(1);
 
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual({
-        'Food Requests': '0',
-        Orders: '0',
-        Donations: '0',
+        'Food Requests': '2',
+        Orders: '1',
+        Donations: '1',
         Volunteers: '4',
       });
     });
 
     it('should call getMonthlyAggregatedStats and return volunteer stats for volunteer user', async () => {
-      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+      // Populate with dummy data
+      const now = new Date();
+      const foodRequestRepo = testDataSource.getRepository(FoodRequest);
+      const orderRepo = testDataSource.getRepository(Order);
 
-      const result = await service.getUserDashboardStats(6);
+      const request1 = await foodRequestService.findOne(3);
+      request1.requestedAt = new Date(now.getFullYear(), now.getMonth(), 8);
+      await foodRequestRepo.save(request1);
+
+      const order1 = await orderRepo.findOneBy({ orderId: 2 });
+      order1!.createdAt = new Date(now.getFullYear(), now.getMonth(), 8);
+      await orderRepo.save(order1!);
+
+      const order2 = await orderRepo.findOneBy({ orderId: 3 });
+      order2!.createdAt = new Date(now.getFullYear(), now.getMonth(), 15);
+      await orderRepo.save(order2!);
+
+      await donationService.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 3,
+        occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Test Item A',
+            quantity: 5,
+            foodType: FoodType.GRANOLA,
+            foodRescue: false,
+          },
+        ],
+      } as CreateDonationDto);
+
+      await donationService.create({
+        foodManufacturerId: 1,
+        recurrence: RecurrenceEnum.MONTHLY,
+        recurrenceFreq: 3,
+        occurrencesRemaining: 2,
+        items: [
+          {
+            itemName: 'Test Item B',
+            quantity: 8,
+            foodType: FoodType.GRANOLA,
+            foodRescue: false,
+          },
+        ],
+      } as CreateDonationDto);
+
+      // Maria Garcia (id=7) is a volunteer
+      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+      const result = await service.getUserDashboardStats(7);
 
       expect(spy).toHaveBeenCalled();
       expect(result).toEqual({
-        'Food Requests': '0',
-        Orders: '0',
-        Donations: '0',
+        'Food Requests': '1',
+        Orders: '2',
+        Donations: '2',
         Volunteers: '4',
       });
     });

@@ -578,6 +578,7 @@ export class PantriesService {
 
     const pantry = await this.repo.findOne({
       where: { pantryUser: { id: userId } },
+      relations: ['pantryUser'],
     });
 
     if (!pantry) {

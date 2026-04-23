@@ -226,13 +226,7 @@ export class UsersService {
   async getUserDashboardStats(
     userId: number,
   ): Promise<UserStatsDto | PantryStatsDto | ManufacturerStatsDto> {
-    validateId(userId, 'User');
-
     const user = await this.findOne(userId);
-
-    if (!user) {
-      throw new NotFoundException(`User ${userId} not found`);
-    }
 
     if (user.role == Role.ADMIN || user.role == Role.VOLUNTEER) {
       return await this.getMonthlyAggregatedStats();

@@ -333,6 +333,7 @@ export class FoodManufacturersService {
 
     const foodManufacturer = await this.repo.findOne({
       where: { foodManufacturerRepresentative: { id: userId } },
+      relations: ['foodManufacturerRepresentative'],
     });
 
     if (!foodManufacturer) {
