@@ -41,18 +41,18 @@ export interface DashboardCardBadge {
 }
 
 export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
+  [OrderStatus.PENDING]: {
+    label: 'Received',
+    bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
+  },
   [OrderStatus.SHIPPED]: {
     label: 'In Progress',
     bg: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][1],
   },
-  [OrderStatus.PENDING]: {
-    label: 'Pending',
-    bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
-    color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
-  },
   [OrderStatus.DELIVERED]: {
-    label: 'Received',
+    label: 'Completed',
     bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
   },
@@ -125,7 +125,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             borderRadius="10px"
             padding={2}
             bg={badge?.bg ?? 'neutral.50'}
-            color={badge?.color ?? 'neutral.600'}
+            color={badge?.color ?? 'neutral.500'}
             textStyle="p"
             fontWeight={400}
           >

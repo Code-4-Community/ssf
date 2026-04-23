@@ -6,18 +6,22 @@ import {
   DonationStatus,
 } from '../types/types';
 
+export const YELLOW_STATUS: [string, string] = ['yellow.200', 'yellow.hover'];
+export const BLUE_STATUS: [string, string] = ['blue.100', 'blue.core'];
+export const TEAL_STATUS: [string, string] = ['teal.200', 'teal.hover'];
+
 // color mapping for order/donation statuses, the first color is background, the second is color for status text
 export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
-  [OrderStatus.SHIPPED]: ['yellow.200', 'yellow.hover'],
-  [OrderStatus.PENDING]: ['blue.200', 'blue.core'],
-  [OrderStatus.DELIVERED]: ['teal.200', 'teal.hover'],
+  [OrderStatus.SHIPPED]: YELLOW_STATUS,
+  [OrderStatus.PENDING]: BLUE_STATUS,
+  [OrderStatus.DELIVERED]: TEAL_STATUS,
 };
 
 export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
   {
-    [DonationStatus.MATCHED]: ['yellow.200', 'yellow.hover'],
-    [DonationStatus.AVAILABLE]: ['blue.200', 'blue.core'],
-    [DonationStatus.FULFILLED]: ['teal.200', 'teal.hover'],
+    [DonationStatus.MATCHED]: YELLOW_STATUS,
+    [DonationStatus.AVAILABLE]: BLUE_STATUS,
+    [DonationStatus.FULFILLED]: TEAL_STATUS,
   };
 
 export const formatPhone = (phone?: string | null) => {
@@ -100,4 +104,4 @@ export const generateNextDonationDate = (
 export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 
-export const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
+export const ASSIGNEE_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.ssf'];
