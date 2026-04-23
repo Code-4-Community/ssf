@@ -13,6 +13,7 @@ import { Role, UserDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import { USPhoneInput } from './usPhoneInput';
 import { PlusIcon } from 'lucide-react';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface NewVolunteerModalProps {
   onSubmitSuccess?: () => void;
@@ -23,6 +24,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
   onSubmitSuccess,
   onSubmitFail,
 }) => {
+  useModalBodyCleanup();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');

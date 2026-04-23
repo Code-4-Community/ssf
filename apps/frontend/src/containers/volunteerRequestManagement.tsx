@@ -346,55 +346,54 @@ const VolunteerRequestManagement: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-
-          {selectedViewDetailsRequest && (
-            <RequestDetailsModal
-              request={selectedViewDetailsRequest}
-              isOpen={selectedViewDetailsRequest !== null}
-              onClose={() => setSelectedViewDetailsRequest(null)}
-            />
-          )}
-
-          {selectedActionRequest && (
-            <VolunteerRequestActionRequiredModal
-              isOpen={true}
-              onClose={clearActionRequest}
-              onCloseRequest={() => {
-                setSelectedCloseRequestAction(selectedActionRequest);
-              }}
-              onCreateOrder={() => {
-                setSelectedCreateOrderRequest(selectedActionRequest);
-              }}
-            />
-          )}
-
-          {selectedCloseRequestAction && (
-            <VolunteerCloseRequestActionModal
-              request={selectedCloseRequestAction}
-              isOpen={true}
-              onClose={clearCloseRequest}
-              onSuccess={() => {
-                setIsAlertError(false);
-                setAlertMessage('Request Closed');
-                fetchRequests();
-              }}
-            ></VolunteerCloseRequestActionModal>
-          )}
-
-          {selectedCreateOrderRequest && (
-            <CreateNewOrderModal
-              request={selectedCreateOrderRequest}
-              isOpen={true}
-              onClose={clearCreateOrder}
-              onSuccess={() => {
-                setIsAlertError(false);
-                setAlertMessage('Order Created');
-                fetchRequests();
-              }}
-            ></CreateNewOrderModal>
-          )}
         </Table.Body>
       </Table.Root>
+      {selectedViewDetailsRequest && (
+        <RequestDetailsModal
+          request={selectedViewDetailsRequest}
+          isOpen={selectedViewDetailsRequest !== null}
+          onClose={() => setSelectedViewDetailsRequest(null)}
+        />
+      )}
+
+      {selectedActionRequest && (
+        <VolunteerRequestActionRequiredModal
+          isOpen={true}
+          onClose={clearActionRequest}
+          onCloseRequest={() => {
+            setSelectedCloseRequestAction(selectedActionRequest);
+          }}
+          onCreateOrder={() => {
+            setSelectedCreateOrderRequest(selectedActionRequest);
+          }}
+        />
+      )}
+
+      {selectedCloseRequestAction && (
+        <VolunteerCloseRequestActionModal
+          request={selectedCloseRequestAction}
+          isOpen={true}
+          onClose={clearCloseRequest}
+          onSuccess={() => {
+            setIsAlertError(false);
+            setAlertMessage('Request Closed');
+            fetchRequests();
+          }}
+        ></VolunteerCloseRequestActionModal>
+      )}
+
+      {selectedCreateOrderRequest && (
+        <CreateNewOrderModal
+          request={selectedCreateOrderRequest}
+          isOpen={true}
+          onClose={clearCreateOrder}
+          onSuccess={() => {
+            setIsAlertError(false);
+            setAlertMessage('Order Created');
+            fetchRequests();
+          }}
+        ></CreateNewOrderModal>
+      )}
 
       {totalPages > 1 && (
         <Pagination.Root

@@ -14,7 +14,7 @@ const ForgotPasswordPage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
     >
-      <ResetPasswordModal></ResetPasswordModal>
+      <ResetPasswordModal />
     </Box>
   );
 };

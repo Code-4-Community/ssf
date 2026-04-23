@@ -96,15 +96,15 @@ const FoodManufacturerOrderDashboard: React.FC = () => {
                 </Table.Cell>
               </Table.Row>
             ))}
-            {openOrderId && (
-              <OrderInformationModal
-                orderId={openOrderId}
-                isOpen={openOrderId !== null}
-                onClose={() => setOpenOrderId(null)}
-              />
-            )}
           </Table.Body>
         </Table.Root>
+        {openOrderId && (
+          <OrderInformationModal
+            orderId={openOrderId}
+            isOpen={openOrderId !== null}
+            onClose={() => setOpenOrderId(null)}
+          />
+        )}
       </VStack>
     </Center>
   );

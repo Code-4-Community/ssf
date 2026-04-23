@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
 import { PantryWithUser } from 'types/types';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface PantryApplicationModalProps {
   pantry: PantryWithUser;
@@ -13,6 +14,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const pantryUser = pantry.pantryUser;
   return (
     <Dialog.Root

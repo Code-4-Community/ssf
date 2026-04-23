@@ -21,6 +21,7 @@ import { ConfirmDeliveryDto } from 'types/types';
 import apiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface OrderReceivedActionModalProps {
   orderId: number;
@@ -42,6 +43,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   onSuccess,
   onError,
 }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
   const [feedback, setFeedback] = useState<string>('');
   const [dateReceived, setDateReceived] = useState<string>('');

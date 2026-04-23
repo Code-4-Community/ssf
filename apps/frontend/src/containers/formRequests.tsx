@@ -201,15 +201,15 @@ const FormRequests: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {openReadOnlyRequest && (
-            <RequestDetailsModal
-              request={openReadOnlyRequest}
-              isOpen={openReadOnlyRequest !== null}
-              onClose={() => setOpenReadOnlyRequest(null)}
-            />
-          )}
         </Table.Body>
       </Table.Root>
+      {openReadOnlyRequest && (
+        <RequestDetailsModal
+          request={openReadOnlyRequest}
+          isOpen={openReadOnlyRequest !== null}
+          onClose={() => setOpenReadOnlyRequest(null)}
+        />
+      )}
       <Flex justify="center" mt={12}>
         <Pagination.Root
           count={Math.ceil(requests.length / pageSize)}
