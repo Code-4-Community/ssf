@@ -28,7 +28,7 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [foodManufacturers, setFoodManufacturers] = useState<
     FoodManufacturer[]
   >([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
   const [selectedFoodManufacturers, setSelectedFoodManufacturers] = useState<
     string[]
   >([]);

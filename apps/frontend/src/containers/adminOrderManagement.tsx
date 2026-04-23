@@ -73,17 +73,17 @@ const AdminOrderManagement: React.FC = () => {
     [OrderStatus.SHIPPED]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.PENDING]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.DELIVERED]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
   });
 
