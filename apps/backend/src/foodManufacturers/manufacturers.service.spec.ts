@@ -531,6 +531,21 @@ describe('FoodManufacturersService', () => {
     });
   });
 
+  describe('findByUserId', () => {
+    it('findByUserId success', async () => {
+      const manufacturer = await service.findOne(1);
+      const userId = manufacturer.foodManufacturerRepresentative.id;
+      const result = await service.findByUserId(userId);
+      expect(result.foodManufacturerId).toBe(1);
+    });
+
+    it('findByUserId with non-existent user throws NotFoundException', async () => {
+      await expect(service.findByUserId(9999)).rejects.toThrow(
+        new NotFoundException('Food Manufacturer for User 9999 not found'),
+      );
+    });
+  });
+
   describe('getStats', () => {
     it('returns proper stats for manufacturer', async () => {
       const manufacturerId = 1;

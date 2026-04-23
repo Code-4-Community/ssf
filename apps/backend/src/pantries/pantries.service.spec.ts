@@ -26,6 +26,8 @@ import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../users/users.entity';
 import { AllocationsService } from '../allocations/allocations.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -108,6 +110,7 @@ describe('PantriesService', () => {
       providers: [
         PantriesService,
         UsersService,
+        FoodManufacturersService,
         {
           provide: AuthService,
           useValue: {
@@ -137,6 +140,10 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
         },
       ],
     }).compile();
