@@ -267,7 +267,7 @@ export class RequestsService {
   async find(pantryId: number) {
     validateId(pantryId, 'Pantry');
 
-    return await this.repo.find({
+    return this.repo.find({
       where: { pantryId },
       relations: ['orders', 'pantry'],
     });

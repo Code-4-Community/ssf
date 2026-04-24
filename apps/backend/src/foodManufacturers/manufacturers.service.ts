@@ -143,7 +143,7 @@ export class FoodManufacturersService {
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
-    return await this.repo.find({
+    return this.repo.find({
       where: { status: ApplicationStatus.PENDING },
       relations: ['foodManufacturerRepresentative'],
     });
@@ -258,7 +258,7 @@ export class FoodManufacturersService {
 
     Object.assign(manufacturer, foodManufacturerData);
 
-    return await this.repo.save(manufacturer);
+    return this.repo.save(manufacturer);
   }
 
   async approve(id: number) {

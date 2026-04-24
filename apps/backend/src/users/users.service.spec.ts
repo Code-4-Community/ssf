@@ -672,5 +672,15 @@ describe('UsersService', () => {
         new NotFoundException('User 9999 not found'),
       );
     });
+
+    it('should throw BadRequestException for unsupported role', async () => {
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValueOnce({ role: 'unknown' } as unknown as User);
+
+      await expect(service.getUserDashboardStats(1)).rejects.toThrow(
+        new BadRequestException('Unsupported role: unknown'),
+      );
+    });
   });
 });

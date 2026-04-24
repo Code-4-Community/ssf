@@ -228,18 +228,20 @@ export class UsersService {
   ): Promise<UserStatsDto | PantryStatsDto | ManufacturerStatsDto> {
     const user = await this.findOne(userId);
 
-    if (user.role == Role.ADMIN || user.role == Role.VOLUNTEER) {
-      return await this.getMonthlyAggregatedStats();
-    } else if (user.role == Role.PANTRY) {
+    if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
+      return this.getMonthlyAggregatedStats();
+    } else if (user.role === Role.PANTRY) {
       const pantry = await this.pantriesService.findByUserId(userId);
-      return await this.pantriesService.getStats(pantry.pantryId);
-    } else {
+      return this.pantriesService.getStats(pantry.pantryId);
+    } else if (user.role === Role.FOODMANUFACTURER) {
       const foodManufacturer = await this.foodManufacturersService.findByUserId(
         userId,
       );
-      return await this.foodManufacturersService.getStats(
+      return this.foodManufacturersService.getStats(
         foodManufacturer.foodManufacturerId,
       );
+    } else {
+      throw new BadRequestException(`Unsupported role: ${user.role}`);
     }
   }
 }
