@@ -1,8 +1,8 @@
 import apiClient from '@api/apiClient';
 import {
-  FoodRequest,
   OrderItemDetailsGroupedByFoodType,
   OrderDetails,
+  FoodRequestSummaryDto,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
 import React, { useState, useEffect } from 'react';
@@ -25,7 +25,7 @@ import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 
 interface RequestDetailsModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
 }

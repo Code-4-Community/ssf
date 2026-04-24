@@ -24,6 +24,8 @@ export const ROUTES = {
   ADMIN_ORDER_MANAGEMENT: '/admin-order-management',
   ADMIN_DONATION: '/admin-donation',
   ADMIN_DONATION_STATS: '/admin-donation-stats',
+  ADMIN_REQUEST_MANAGEMENT: '/admin-request-management',
+  TEST_ADMIN_DASHBOARD: '/test-admin-dashboard',
 
   VOLUNTEER_ASSIGNED_PANTRIES: '/volunteer-assigned-pantries',
   VOLUNTEER_REQUEST_MANAGEMENT: '/volunteer-request-management',
