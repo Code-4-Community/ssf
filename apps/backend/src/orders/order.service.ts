@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -24,6 +25,10 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
+import { EmailsService } from '../emails/email.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { emailTemplates } from '../emails/emailTemplates';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
@@ -31,13 +36,16 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
-    private donationService: DonationService,
+    private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private donationService: DonationService,
+    private emailsService: EmailsService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -154,7 +162,14 @@ export class OrdersService {
       validateId(manufacturerId, 'Food Manufacturer');
       validateId(requestId, 'Request');
 
-      const request = await this.requestsService.findOne(requestId);
+      const request = await this.requestRepo.findOne({
+        where: { requestId },
+        relations: ['pantry', 'pantry.pantryUser'],
+      });
+
+      if (!request) {
+        throw new NotFoundException(`Request ${requestId} not found`);
+      }
 
       if (request.status !== FoodRequestStatus.ACTIVE) {
         throw new BadRequestException(`Request ${requestId} is not active`);
@@ -198,6 +213,8 @@ export class OrdersService {
         );
       }
 
+      const itemDetails: { quantity: string; product: string }[] = [];
+
       for (const donationItem of donationItems) {
         const id = donationItem.itemId;
         const quantityToAllocate = itemAllocations.get(id)!;
@@ -210,6 +227,11 @@ export class OrdersService {
             `Donation item ${id} quantity to allocate exceeds remaining quantity`,
           );
         }
+
+        itemDetails.push({
+          quantity: String(quantityToAllocate),
+          product: donationItem.itemName,
+        });
       }
 
       const orderTransactionRepo = transactionManager.getRepository(Order);
@@ -238,6 +260,56 @@ export class OrdersService {
         Array.from(associatedDonationIdsSet),
         transactionManager,
       );
+
+      const assignee = await this.usersService.findOne(userId);
+
+      try {
+        const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
+          pantryName: request.pantry.pantryName,
+          items: itemDetails,
+          brand: manufacturer.foodManufacturerName,
+          volunteerName: assignee.firstName + ' ' + assignee.lastName,
+          volunteerEmail: assignee.email,
+        });
+        await this.emailsService.sendEmails(
+          [request.pantry.pantryUser.email],
+          pantryMessage.subject,
+          pantryMessage.bodyHTML,
+        );
+      } catch {
+        throw new InternalServerErrorException(
+          'Failed to send pantry request matched order confirmation email to representative',
+        );
+      }
+
+      try {
+        const fmMessage = emailTemplates.fmDonationMatchedOrder({
+          manufacturerName: manufacturer.foodManufacturerName,
+          items: itemDetails,
+          pantryName: request.pantry.pantryName,
+          pantryAddress:
+            request.pantry.mailingAddressLine1 +
+            ' ' +
+            request.pantry.mailingAddressCity +
+            ' ' +
+            request.pantry.mailingAddressState +
+            ' ' +
+            request.pantry.mailingAddressZip +
+            ' ' +
+            request.pantry.mailingAddressCountry,
+          volunteerName: assignee.firstName + ' ' + assignee.lastName,
+          volunteerEmail: assignee.email,
+        });
+        await this.emailsService.sendEmails(
+          [manufacturer.foodManufacturerRepresentative.email],
+          fmMessage.subject,
+          fmMessage.bodyHTML,
+        );
+      } catch {
+        throw new InternalServerErrorException(
+          'Failed to send food manufacturer donation matched to order confirmation email to representative',
+        );
+      }
 
       return savedOrder;
     });
