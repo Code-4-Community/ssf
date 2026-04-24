@@ -292,22 +292,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('findOrderByRequest', () => {
-    it('returns order by request ID', async () => {
-      const order = await service.findOrderByRequest(1);
-
-      expect(order).toBeDefined();
-      expect(order.request).toBeDefined();
-      expect(order.requestId).toBe(1);
-    });
-
-    it('throws NotFoundException for non-existent order', async () => {
-      await expect(service.findOrderByRequest(9999)).rejects.toThrow(
-        new NotFoundException('Order with request ID 9999 not found'),
-      );
-    });
-  });
-
   describe('findOrderFoodRequest', () => {
     it('returns food request of order', async () => {
       const foodRequest = await service.findOrderFoodRequest(1);

@@ -21,7 +21,7 @@ import { useAlert } from '../hooks/alert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
