@@ -54,8 +54,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
       onClose();
       onSuccess();
-    } catch {
-      setAlertMessage('Failed to update password, old password is incorrect');
+    } catch (err: any) {
+      if (err.name === 'LimitExceededException') {
+        setAlertMessage('Limit exceeded, please try again later');
+      } else if (err.name === 'NotAuthorizedException') {
+        setAlertMessage('Failed to update password, old password is incorrect');
+      } else {
+        setAlertMessage('Failed to update password, please try again');
+      }
     }
   };
 
@@ -83,7 +89,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   return (
     <Dialog.Root
       open={open}
-      onOpenChange={(e: any) => {
+      onOpenChange={(e: { open: boolean }) => {
         if (!e.open) {
           setAlertMessage('');
           onClose();
@@ -107,7 +113,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               )}
               <VStack gap={5} align="stretch" py={5}>
                 <Box mb={4}>
-                  <Text textStyle="h1">Change Password</Text>
+                  <Dialog.Title>
+                    <Text textStyle="h1">Change Password</Text>
+                  </Dialog.Title>
                   <Text color="#52525B" textStyle="p2" mt={5}>
                     To reset your password, please provide your old password and
                     the password you would like to update it to.
