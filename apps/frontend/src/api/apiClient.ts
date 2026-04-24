@@ -408,7 +408,10 @@ export class ApiClient {
     pantryId: number,
     body: UpdatePantryVolunteersDto,
   ): Promise<void> {
-    await this.axiosInstance.patch(`api/pantries/${pantryId}/volunteers`, body);
+    await this.axiosInstance.patch(
+      `/api/pantries/${pantryId}/volunteers`,
+      body,
+    );
   }
 
   public async updateFoodManufacturer(

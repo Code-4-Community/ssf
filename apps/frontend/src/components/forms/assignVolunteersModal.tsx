@@ -31,7 +31,7 @@ type VolunteerDisplay = {
   lastName: string;
 };
 
-const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
 const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   pantry,
@@ -157,20 +157,24 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
               fontFamily="inter"
               fontWeight={600}
               color="black"
+              mt={3}
             >
               Assign Volunteers
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body pb={6}>
             <VStack align="stretch" gap={4}>
-              <Text textStyle="p2" color="gray.dark" mt={3}>
+              <Text textStyle="p2" color="gray.dark">
                 {pantry.pantryName}
               </Text>
               <VStack align="stretch" gap={8} mt={6}>
                 <InputGroup
                   startElement={
-                    <SearchIcon color="#707070" size={13}></SearchIcon>
+                    <Box color="neutral.600">
+                      <SearchIcon size={13} />
+                    </Box>
                   }
+                  px={3}
                 >
                   <Input
                     placeholder="Search"
@@ -190,11 +194,10 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
                         key={volunteer.userId}
                         align="center"
                         justify="space-between"
-                        py={3}
                         borderBottom="1px solid"
                         borderColor="neutral.100"
                       >
-                        <Flex align="center" gap={3}>
+                        <Flex align="center" gap={3} py={2}>
                           <Box
                             borderRadius="full"
                             bg={
@@ -222,19 +225,28 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
                           </Text>
                         </Flex>
 
-                        <Checkbox.Root
-                          checked={selectedIds.has(volunteer.userId)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleToggle(volunteer.userId, e.checked)
-                          }
-                          size="md"
+                        <Box
+                          borderLeft="1px solid"
+                          borderColor="neutral.100"
+                          pl={4}
+                          alignSelf="stretch"
+                          display="flex"
+                          alignItems="center"
                         >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control
-                            borderRadius="2px"
-                            borderColor="neutral.100"
-                          />
-                        </Checkbox.Root>
+                          <Checkbox.Root
+                            checked={selectedIds.has(volunteer.userId)}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleToggle(volunteer.userId, e.checked)
+                            }
+                            size="md"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control
+                              borderRadius="2px"
+                              borderColor="neutral.100"
+                            />
+                          </Checkbox.Root>
+                        </Box>
                       </Flex>
                     ))}
 
@@ -254,6 +266,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
                   <Button
                     bg="blue.core"
                     color="white"
+                    fontWeight={600}
                     onClick={handleSave}
                     px={10}
                   >

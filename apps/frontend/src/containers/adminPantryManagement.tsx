@@ -40,9 +40,9 @@ const AdminPantryManagement: React.FC = () => {
     setSelectedPantryToAssignVolunteers,
   ] = useState<ApprovedPantryResponse | null>(null);
 
-  const pageSize = 8;
+  const pageSize = 10;
 
-  const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+  const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
   const fetchPantries = async () => {
     try {
@@ -92,6 +92,13 @@ const AdminPantryManagement: React.FC = () => {
     currentPage * pageSize,
   );
 
+  const textHeaderStyles = {
+    color: 'neutral.800',
+    textStyle: 'p2',
+    fontWeight: '600',
+    fontFamily: 'inter',
+  };
+
   return (
     <Box flexDirection="column" p={12}>
       <Text textStyle="h1" color="#515151">
@@ -124,7 +131,7 @@ const AdminPantryManagement: React.FC = () => {
             <Button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               variant="outline"
-              color="neutral.600"
+              color="neutral.800"
               border="1px solid"
               borderColor="neutral.200"
               size="sm"
@@ -158,7 +165,7 @@ const AdminPantryManagement: React.FC = () => {
                   boxShadow="lg"
                   p={4}
                   minW="275px"
-                  maxH="150px"
+                  maxH="200px"
                   overflowY="auto"
                   zIndex={20}
                 >
@@ -203,8 +210,8 @@ const AdminPantryManagement: React.FC = () => {
                           onCheckedChange={(e: { checked: boolean }) =>
                             handleFilterChange(pantry, e.checked)
                           }
-                          color="black"
-                          size="sm"
+                          color="gray.dark"
+                          size="md"
                         >
                           <Checkbox.HiddenInput />
                           <Checkbox.Control borderRadius="sm" />
@@ -220,47 +227,34 @@ const AdminPantryManagement: React.FC = () => {
         <Table.Root variant="line" showColumnBorder>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-              >
+              <Table.ColumnHeader {...textHeaderStyles}>
                 Pantry
               </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-              >
+              <Table.ColumnHeader {...textHeaderStyles}>
                 Assignee
               </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-                textAlign="right"
-              >
-                Refridgerator-Friendly
+              <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
+                Refrigerator-Friendly
               </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-                textAlign="right"
-              >
+              <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
                 Action
               </Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
-          <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
+          <Table.Body
+            color="neutral.700"
+            fontWeight={400}
+            textStyle="p2"
+            css={{ '& td': { paddingTop: '8px', paddingBottom: '8px' } }}
+          >
             {paginatedPantries?.map((pantry) => (
               <Table.Row key={pantry.pantryId}>
                 <Table.Cell>
                   <Link
                     textStyle="p2"
-                    color="black"
+                    color="gray.dark"
                     variant="underline"
-                    textDecorationColor="neutral.700"
+                    textDecorationColor="gray.dark"
                     onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
                   >
                     {pantry.pantryName}
@@ -305,6 +299,7 @@ const AdminPantryManagement: React.FC = () => {
                                 fontSize="12px"
                                 ml={index === 0 ? 0 : '-10px'}
                                 zIndex={index}
+                                border="1px solid white"
                               >
                                 {getInitials(
                                   volunteer.firstName,
@@ -326,6 +321,7 @@ const AdminPantryManagement: React.FC = () => {
                                 textStyle="p2"
                                 ml="-10px"
                                 zIndex={maxVisible}
+                                border="1px solid white"
                               >
                                 +{remainingCount}
                               </Box>
@@ -335,7 +331,7 @@ const AdminPantryManagement: React.FC = () => {
                       })()
                     ) : (
                       <Box color="neutral.600" fontStyle="p2">
-                        No volunteer
+                        No Volunteer
                       </Box>
                     )}
                   </Box>
@@ -346,7 +342,7 @@ const AdminPantryManagement: React.FC = () => {
                     px={2}
                     color="neutral.800"
                     textStyle="p2"
-                    fontWeight={400}
+                    fontWeight={500}
                     fontSize="12px"
                     bgColor={
                       pantry.refrigeratedDonation === RefrigeratedDonation.YES
@@ -355,8 +351,8 @@ const AdminPantryManagement: React.FC = () => {
                     }
                   >
                     {pantry.refrigeratedDonation === RefrigeratedDonation.YES
-                      ? 'Refridgerator-Friendly'
-                      : 'Not Refridgerator-Friendly'}
+                      ? 'Refrigerator-Friendly'
+                      : 'Not Refrigerator-Friendly'}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
@@ -406,6 +402,10 @@ const AdminPantryManagement: React.FC = () => {
               <Pagination.Items
                 render={(page) => (
                   <IconButton
+                    borderColor={{
+                      base: 'neutral.100',
+                      _selected: 'neutral.600',
+                    }}
                     variant={{ base: 'outline', _selected: 'outline' }}
                     onClick={() => setCurrentPage(page.value)}
                   >
