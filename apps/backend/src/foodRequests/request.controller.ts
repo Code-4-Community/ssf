@@ -6,6 +6,8 @@ import {
   Post,
   Body,
   ValidationPipe,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -13,6 +15,7 @@ import { FoodRequest } from './request.entity';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { RequestSize } from './types';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 import { FoodType } from '../donationItems/types';
@@ -20,6 +23,7 @@ import {
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 
 @Controller('requests')
 export class RequestsController {
@@ -27,7 +31,7 @@ export class RequestsController {
 
   @Roles(Role.ADMIN)
   @Get()
-  async getAllFoodRequests(): Promise<FoodRequest[]> {
+  async getAllFoodRequests(): Promise<FoodRequestSummaryDto[]> {
     return this.requestsService.getAll();
   }
 
@@ -43,7 +47,7 @@ export class RequestsController {
   @Get('/:pantryId/all')
   async getAllPantryRequests(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<FoodRequest[]> {
+  ): Promise<FoodRequestSummaryDto[]> {
     return this.requestsService.find(pantryId);
   }
 
@@ -72,7 +76,7 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
-  @Post('/create')
+  @Post()
   @ApiBody({
     description: 'Details for creating a food request',
     schema: {
@@ -107,5 +111,28 @@ export class RequestsController {
       requestData.requestedFoodTypes,
       requestData.additionalInformation,
     );
+  }
+
+  @Patch('/:requestId')
+  async updateRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Body(new ValidationPipe()) body: UpdateRequestDto,
+  ): Promise<FoodRequest> {
+    return this.requestsService.update(requestId, body);
+  }
+
+  @Delete('/:requestId')
+  async deleteRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<void> {
+    return this.requestsService.delete(requestId);
+  }
+
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:requestId/close')
+  async closeRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId);
   }
 }

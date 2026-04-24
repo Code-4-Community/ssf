@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import {
   CreateFoodRequestBody,
-  FoodRequest,
+  FoodRequestSummaryDto,
   FoodType,
   RequestSize,
 } from '../../types/types';
@@ -23,7 +23,7 @@ import { TagGroup } from './tagGroup';
 import { useAlert } from '../../hooks/alert';
 
 interface FoodRequestFormModalProps {
-  previousRequest?: FoodRequest;
+  previousRequest?: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;
@@ -303,7 +303,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
                 <Button
                   onClick={handleSubmit}
-                  bg={isFormValid ? '#213C4A' : 'neutral.400'}
+                  bg={isFormValid ? 'blue.hover' : 'neutral.400'}
                   color={'white'}
                   disabled={!isFormValid}
                 >

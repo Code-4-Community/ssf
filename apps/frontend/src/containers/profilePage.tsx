@@ -10,7 +10,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import axios from 'axios';
 
 const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
-  [Role.ADMIN]: { label: 'Admin', avatarBg: 'yellow.ssf' },
+  [Role.ADMIN]: { label: 'Admin', avatarBg: 'yellow.core' },
   [Role.VOLUNTEER]: { label: 'Volunteer', avatarBg: 'red' },
   [Role.PANTRY]: { label: 'Pantry', avatarBg: 'blue.400' },
   [Role.FOODMANUFACTURER]: { label: 'Food Manufacturer', avatarBg: 'teal.ssf' },

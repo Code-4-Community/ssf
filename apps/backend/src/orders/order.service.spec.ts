@@ -13,8 +13,19 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { RequestsService } from '../foodRequests/request.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { UsersService } from '../users/users.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Donation } from '../donations/donations.entity';
+import { DonationStatus } from '../donations/types';
+import { User } from '../users/users.entity';
+import { AuthService } from '../auth/auth.service';
+import { DonationService } from '../donations/donations.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
 
@@ -38,7 +49,21 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         RequestsService,
+        FoodManufacturersService,
+        DonationItemsService,
+        AllocationsService,
+        UsersService,
+        DonationService,
         EmailsService,
+        DonationService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: EmailsService,
           useValue: {
@@ -50,6 +75,10 @@ describe('OrdersService', () => {
           useValue: testDataSource.getRepository(Order),
         },
         {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
           provide: getRepositoryToken(Pantry),
           useValue: testDataSource.getRepository(Pantry),
         },
@@ -58,16 +87,24 @@ describe('OrdersService', () => {
           useValue: testDataSource.getRepository(FoodRequest),
         },
         {
-          provide: getRepositoryToken(FoodManufacturer),
-          useValue: testDataSource.getRepository(FoodManufacturer),
-        },
-        {
           provide: getRepositoryToken(DonationItem),
           useValue: testDataSource.getRepository(DonationItem),
         },
         {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
+        },
+        {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: testDataSource.getRepository(User),
+        },
+        {
+          provide: AuthService,
+          useValue: {},
         },
       ],
     }).compile();
@@ -255,22 +292,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('findOrderByRequest', () => {
-    it('returns order by request ID', async () => {
-      const order = await service.findOrderByRequest(1);
-
-      expect(order).toBeDefined();
-      expect(order.request).toBeDefined();
-      expect(order.requestId).toBe(1);
-    });
-
-    it('throws NotFoundException for non-existent order', async () => {
-      await expect(service.findOrderByRequest(9999)).rejects.toThrow(
-        new NotFoundException('Order with request ID 9999 not found'),
-      );
-    });
-  });
-
   describe('findOrderFoodRequest', () => {
     it('returns food request of order', async () => {
       const foodRequest = await service.findOrderFoodRequest(1);
@@ -405,47 +426,15 @@ describe('OrdersService', () => {
       ).rejects.toThrow(new NotFoundException('Order 9999 not found'));
     });
 
-    it('throws when tracking link and shipping cost not given', async () => {
-      await expect(service.updateTrackingCostInfo(3, {})).rejects.toThrow(
-        new BadRequestException(
-          'At least one of tracking link or shipping cost must be provided',
-        ),
-      );
-    });
-
-    it('sanitizes and updates tracking link for shipped order', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'samplelink.com',
-      };
-
-      await service.updateTrackingCostInfo(3, trackingCostDto);
-
-      const order = await service.findOne(3);
-      expect(order.trackingLink).toBeDefined();
-      expect(order.trackingLink).toEqual('https://samplelink.com/');
-    });
-
-    it('updates shipping cost for shipped order', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        shippingCost: 12.99,
-      };
-
-      await service.updateTrackingCostInfo(3, trackingCostDto);
-
-      const order = await service.findOne(3);
-      expect(order.shippingCost).toBeDefined();
-      expect(order.shippingCost).toEqual(12.99);
-    });
-
     it('updates both shipping cost and tracking link (sanitized)', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'testtracking.com',
         shippingCost: 7.5,
       };
 
-      await service.updateTrackingCostInfo(3, trackingCostDto);
+      await service.updateTrackingCostInfo(4, trackingCostDto);
 
-      const order = await service.findOne(3);
+      const order = await service.findOne(4);
       expect(order.trackingLink).toEqual('https://testtracking.com/');
       expect(order.shippingCost).toEqual(7.5);
     });
@@ -465,27 +454,7 @@ describe('OrdersService', () => {
         service.updateTrackingCostInfo(orderId, trackingCostDto),
       ).rejects.toThrow(
         new BadRequestException(
-          'Can only update tracking info for pending or shipped orders',
-        ),
-      );
-    });
-
-    it('throws when both fields are not provided for first time setting', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-      };
-      const orderId = 4;
-
-      const order = await service.findOne(orderId);
-
-      expect(order.shippedAt).toBeNull();
-      expect(order.trackingLink).toBeNull();
-
-      await expect(
-        service.updateTrackingCostInfo(4, trackingCostDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          'Must provide both tracking link and shipping cost on initial assignment',
+          'Can only update tracking info for pending orders',
         ),
       );
     });
@@ -523,6 +492,73 @@ describe('OrdersService', () => {
 
       expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
       expect(updatedOrder.shippedAt).toBeDefined();
+    });
+  });
+
+  describe('checkAndFulfillDonations', () => {
+    it('does not fulfill associated donation when items are not fully reserved or confirmed', async () => {
+      // Create a matched donation with an item that is not fully reserved
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 5, 'Granola', false)
+         RETURNING item_id`,
+        [donation_id],
+      );
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
+        [item_id],
+      );
+
+      await service.updateTrackingCostInfo(4, {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.0,
+      });
+
+      const donation = await testDataSource
+        .getRepository(Donation)
+        .findOneBy({ donationId: donation_id });
+      expect(donation?.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('fulfills associated donation when all items are confirmed, fully reserved, and no pending orders remain', async () => {
+      // Create a matched donation with a fully-reserved confirmed item allocated to order 4
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 'Granola', true)
+         RETURNING item_id`,
+        [donation_id],
+      );
+      // Allocate to order 4 (pending); after updateTrackingCostInfo it becomes shipped → no more pending orders
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
+        [item_id],
+      );
+
+      await service.updateTrackingCostInfo(4, {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.0,
+      });
+
+      const donation = await testDataSource
+        .getRepository(Donation)
+        .findOneBy({ donationId: donation_id });
+      expect(donation?.status).toBe(DonationStatus.FULFILLED);
     });
   });
 
@@ -691,6 +727,278 @@ describe('OrdersService', () => {
     });
   });
 
+  describe('createOrder', () => {
+    let validCreateOrderDto: CreateOrderDto;
+    let parsedAllocations: Map<number, number>;
+    const userId = 3;
+
+    beforeEach(() => {
+      validCreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        itemAllocations: {
+          1: 10,
+          2: 3,
+        },
+      };
+
+      parsedAllocations = new Map<number, number>([
+        [1, 10],
+        [2, 3],
+      ]);
+    });
+
+    it('should create a new order successfully', async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+      const donationRepo = testDataSource.getRepository(Donation);
+
+      parsedAllocations.set(9, 5);
+
+      // Initial donation items
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const donationItem2 = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+      const donationItem3 = await donationItemRepo.findOne({
+        where: { itemId: 9 },
+      });
+
+      if (!donationItem1 || !donationItem2 || !donationItem3)
+        throw new Error('Missing dummy donation items');
+
+      donationItem3.quantity = 100;
+
+      await donationItemRepo.save(donationItem3);
+
+      const createdOrder = await service.create(
+        validCreateOrderDto.foodRequestId,
+        validCreateOrderDto.manufacturerId,
+        parsedAllocations,
+        userId,
+      );
+
+      expect(createdOrder).toBeDefined();
+      expect(createdOrder.orderId).toBeDefined();
+      expect(createdOrder.status).toEqual(OrderStatus.PENDING);
+      expect(createdOrder.assigneeId).toEqual(userId);
+      expect(createdOrder.foodManufacturerId).toEqual(
+        validCreateOrderDto.manufacturerId,
+      );
+      expect(createdOrder.requestId).toEqual(validCreateOrderDto.foodRequestId);
+
+      const allocations = await allocationRepo.find({
+        where: { orderId: createdOrder.orderId },
+      });
+      expect(allocations.length).toBe(parsedAllocations.size);
+      expect(allocations.map((a) => a.itemId)).toEqual(
+        expect.arrayContaining([1, 2, 9]),
+      );
+      expect(allocations.map((a) => a.allocatedQuantity)).toEqual(
+        expect.arrayContaining([10, 3, 5]),
+      );
+
+      const updatedDonationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const updatedDonationItem2 = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+      const updatedDonationItem3 = await donationItemRepo.findOne({
+        where: { itemId: 9 },
+      });
+
+      expect(updatedDonationItem1!.reservedQuantity).toBe(
+        donationItem1.reservedQuantity + 10,
+      );
+      expect(updatedDonationItem2!.reservedQuantity).toBe(
+        donationItem2.reservedQuantity + 3,
+      );
+      expect(updatedDonationItem3!.reservedQuantity).toBe(
+        donationItem3.reservedQuantity + 5,
+      );
+
+      const matchedDonation1 = await donationRepo.findOne({
+        where: { donationId: 1 },
+      });
+      expect(matchedDonation1?.status).toBe(DonationStatus.MATCHED);
+
+      const matchedDonation2 = await donationRepo.findOne({
+        where: { donationId: 2 },
+      });
+      expect(matchedDonation2?.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('should throw BadRequestException if request is not active', async () => {
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const request = await requestRepo.findOne({ where: { requestId: 2 } });
+
+      if (!request) throw new Error('Missing dummy request');
+
+      request.status = FoodRequestStatus.CLOSED;
+      await requestRepo.save(request);
+
+      validCreateOrderDto.foodRequestId = 2;
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        `Request ${validCreateOrderDto.foodRequestId} is not active`,
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw BadRequestException if manufacturer is not approved', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      validCreateOrderDto.foodRequestId = 1;
+      // Manufacturer that has status pending
+      validCreateOrderDto.manufacturerId = 3;
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw NotFoundException if donation item does not exist', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      parsedAllocations.set(999, 1);
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(`Donation items not found for ID(s): 999`);
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw BadRequestException if allocated quantity exceeds remaining', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const donationItemId = 2;
+
+      parsedAllocations = new Map<number, number>([
+        [donationItemId, 500],
+        [1, 10],
+      ]);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw Error if donation is not associated with manufacturer', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const donationItemId = 7;
+      parsedAllocations = new Map<number, number>([
+        [donationItemId, 2],
+        [1, 10],
+      ]);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+  });
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;

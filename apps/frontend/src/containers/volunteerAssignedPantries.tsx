@@ -330,7 +330,10 @@ const AssignedPantries: React.FC = () => {
               </Table.Header>
               <Table.Body>
                 {filteredPantries.map((pantry) => (
-                  <Table.Row key={pantry.pantryId} _hover={{ bg: 'gray.50' }}>
+                  <Table.Row
+                    key={pantry.pantryId}
+                    _hover={{ bg: 'neutral.50' }}
+                  >
                     {/* Pantry Name */}
                     <Table.Cell
                       borderRight="1px solid"

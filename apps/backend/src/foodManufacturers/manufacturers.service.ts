@@ -358,17 +358,17 @@ export class FoodManufacturersService {
       .where('fm.foodManufacturerId = :id', { id })
       .select([
         'COUNT(DISTINCT d.donationId) AS donations',
-        'COALESCE(SUM(di.estimatedValue * di.quantity), 0) AS totalValue',
-        'COALESCE(SUM(di.quantity), 0) AS totalItems',
-        'COALESCE(SUM(di.quantity * di.ozPerItem) / 16.0, 0) AS totalLbs',
+        'COALESCE(SUM(di.estimatedValue * di.quantity), 0) AS total_value',
+        'COALESCE(SUM(di.quantity), 0) AS total_items',
+        'COALESCE(SUM(di.quantity * di.ozPerItem) / 16.0, 0) AS total_lbs',
       ])
       .getRawOne();
 
     return {
       Donations: String(result.donations),
-      'Value Donated': `$${Number(result.totalvalue)}`,
-      'Items Donated': String(result.totalitems),
-      'lbs Donated': `${Number(result.totallbs)}`,
+      'Value Donated': `$${Number(result.total_value)}`,
+      'Items Donated': String(result.total_items),
+      'lbs Donated': `${Number(result.total_lbs)}`,
     };
   }
 }

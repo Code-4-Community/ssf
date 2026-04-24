@@ -10,9 +10,9 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
-import { capitalize, formatDate } from '@utils/utils';
+import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { Donation, DonationStatus } from '../types/types';
+import { DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 
@@ -20,7 +20,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
-    [key in DonationStatus]: Donation[];
+    [key in DonationStatus]: DonationDetails[];
   }>({
     [DonationStatus.MATCHED]: [],
     [DonationStatus.AVAILABLE]: [],
@@ -41,13 +41,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.FULFILLED]: 1,
   });
 
-  // Color mapping for statuses
-  const STATUS_COLORS = new Map<DonationStatus, [string, string]>([
-    [DonationStatus.MATCHED, ['yellow.200', 'yellow.hover']],
-    [DonationStatus.AVAILABLE, ['blue.200', 'blue.core']],
-    [DonationStatus.FULFILLED, ['teal.200', 'teal.hover']],
-  ]);
-
   const MAX_PER_STATUS = 5;
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
@@ -55,14 +48,22 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     try {
       const data = await ApiClient.getAllDonationsByFoodManufacturer(1); // Replace with actual food manufacturer ID
 
-      const grouped: Record<DonationStatus, Donation[]> = {
+      const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
         [DonationStatus.FULFILLED]: [],
         [DonationStatus.MATCHED]: [],
       };
 
-      data.forEach((donation: Donation) => {
-        grouped[donation.status].push(donation);
+      data.forEach((donationDetail: DonationDetails) => {
+        grouped[donationDetail.donation.status].push(donationDetail);
+      });
+
+      (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+        grouped[status].sort(
+          (a, b) =>
+            new Date(a.donation.dateDonated).getTime() -
+            new Date(b.donation.dateDonated).getTime(),
+        );
       });
 
       setStatusDonations(grouped);
@@ -135,7 +136,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
             <DonationStatusSection
               donations={displayedDonations}
               status={status}
-              colors={STATUS_COLORS.get(status)!}
+              colors={DONATION_STATUS_COLORS[status]}
               selectedDonationId={selectedDonationId}
               onDonationSelect={setSelectedDonationId}
               totalDonations={allDonationsByStatus.length}
@@ -150,7 +151,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 };
 
 interface DonationStatusSectionProps {
-  donations: Donation[];
+  donations: DonationDetails[];
   status: DonationStatus;
   colors: string[];
   onDonationSelect: (donationId: number | null) => void;
@@ -277,65 +278,69 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {donations.map((donation, index) => (
-                <Table.Row
-                  key={`${donation.donationId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
+              {donations.map((donationDetail, index) => {
+                const donation = donationDetail.donation;
+                return (
+                  <Table.Row
+                    key={`${donation.donationId}-${index}`}
+                    _hover={{ bg: 'neutral.50' }}
                   >
-                    <Link
-                      textDecorationColor="black"
-                      variant="underline"
-                      onClick={() => onDonationSelect(donation.donationId)}
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
                     >
-                      {donation.donationId}
-                    </Link>
-                    {selectedDonationId === donation.donationId && (
-                      <DonationDetailsModal
-                        donation={donation}
-                        isOpen={true}
-                        onClose={() => onDonationSelect(null)}
-                      />
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    <Box
-                      borderRadius="md"
-                      bg={colors[0]}
-                      color={colors[1]}
-                      display="inline-block"
-                      fontWeight="500"
-                      my={2}
-                      py={1}
-                      px={3}
+                      <Link
+                        textDecorationColor="black"
+                        variant="underline"
+                        onClick={() => onDonationSelect(donation.donationId)}
+                      >
+                        {donation.donationId}
+                      </Link>
+                      {selectedDonationId === donation.donationId && (
+                        <DonationDetailsModal
+                          donation={donation}
+                          isOpen={true}
+                          onClose={() => onDonationSelect(null)}
+                        />
+                      )}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
                     >
-                      {capitalize(donation.status)}
-                    </Box>
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    borderRight="1px solid"
-                    borderRightColor="neutral.100"
-                  >
-                    {formatDate(donation.dateDonated)}
-                  </Table.Cell>
-                  <Table.Cell
-                    {...tableCellStyles}
-                    textAlign="right"
-                    color="neutral.700"
-                  >
-                    No Action Required
-                  </Table.Cell>
-                </Table.Row>
-              ))}
+                      <Box
+                        borderRadius="md"
+                        bg={colors[0]}
+                        color={colors[1]}
+                        display="inline-block"
+                        fontSize="12px"
+                        fontWeight="500"
+                        my={2}
+                        py={1}
+                        px={3}
+                      >
+                        {capitalize(donation.status)}
+                      </Box>
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {formatDate(donation.dateDonated)}
+                    </Table.Cell>
+                    <Table.Cell
+                      {...tableCellStyles}
+                      textAlign="right"
+                      color="neutral.700"
+                    >
+                      No Action Required
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
 
@@ -353,6 +358,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
+                  gap={4}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"

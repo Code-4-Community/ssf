@@ -140,17 +140,33 @@ export interface UpdatePantryApplicationDto {
   newsletterSubscription?: boolean;
 }
 
-export interface CreateRequestDto {
-  pantryId: number;
-  requestedSize: RequestSize;
-  requestedFoodTypes: FoodType[];
-  additionalInformation?: string;
-}
-
 export enum DonationStatus {
   MATCHED = 'matched',
   AVAILABLE = 'available',
   FULFILLED = 'fulfilled',
+}
+
+export class MatchingManufacturersDto {
+  matchingManufacturers!: FoodManufacturerWithoutRelations[];
+  nonMatchingManufacturers!: FoodManufacturerWithoutRelations[];
+}
+
+export class MatchingItemsDto {
+  matchingItems!: DonationItemDetailsDto[];
+  nonMatchingItems!: DonationItemDetailsDto[];
+}
+
+export class CreateOrderDto {
+  foodRequestId!: number;
+  manufacturerId!: number;
+  itemAllocations!: Record<string, number>;
+}
+
+export class DonationItemDetailsDto {
+  itemId!: number;
+  itemName!: string;
+  foodType!: FoodType;
+  availableQuantity!: number;
 }
 
 export enum RecurrenceEnum {
@@ -171,6 +187,25 @@ export interface Donation {
   occurrencesRemaining?: number;
 }
 
+export interface DonationDetails {
+  donation: Donation;
+  associatedPendingOrders: DonationOrderDetails[];
+  relevantDonationItems: DonationItemWithAllocatedQuantity[];
+}
+
+export interface DonationItemWithAllocatedQuantity {
+  itemId: number;
+  itemName: string;
+  foodType: FoodType;
+  allocatedQuantity: number;
+}
+
+export interface DonationOrderDetails {
+  orderId: number;
+  pantryId: number;
+  pantryName: string;
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
@@ -180,7 +215,7 @@ export interface DonationItem {
   ozPerItem?: number;
   estimatedValue?: number;
   foodType: FoodType;
-  foodRescue?: boolean;
+  foodRescue: boolean;
 }
 
 export enum FoodType {
@@ -222,27 +257,34 @@ export interface UserDto {
   role: Role;
 }
 
-export interface FoodRequest {
+export interface FoodRequest extends FoodRequestWithoutRelations {
+  pantry: Pantry;
+  orders?: Order[];
+}
+
+export interface FoodRequestWithoutRelations {
   requestId: number;
   pantryId: number;
-  pantry: Pantry;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
   additionalInformation?: string;
   requestedAt: string;
   status: FoodRequestStatus;
-  orders?: Order[];
 }
 
 export interface FoodRequestSummaryDto {
   requestId: number;
-  pantryId: number;
-  pantryName: string;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
-  additionalInformation?: string | null;
+  additionalInformation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
+  pantry: FoodRequestPantry;
+}
+
+export interface FoodRequestPantry {
+  pantryId: number;
+  pantryName: string;
 }
 
 export interface Order extends OrderWithoutFoodManufacturer {
@@ -284,11 +326,42 @@ export interface OrderDetails {
   items: OrderItemDetails[];
 }
 
-export interface FoodManufacturer {
+export interface FoodManufacturer extends FoodManufacturerWithoutRelations {
+  foodManufacturerRepresentative: User;
+  donations: Donation[];
+}
+
+export type VolunteerOrder = {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  pantryName: string;
+  assignee: OrderAssignee;
+  actionCompletion?: VolunteerActionCompletion;
+};
+
+export type VolunteerActionCompletion = {
+  confirmDonationReceipt: boolean;
+  notifyPantry: boolean;
+};
+
+export enum VolunteerAction {
+  CONFIRM_DONATION_RECEIPT = 'confirmDonationReceipt',
+  NOTIFY_PANTRY = 'notifyPantry',
+}
+
+export type OrderAssignee = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
+export interface FoodManufacturerWithoutRelations {
   foodManufacturerId: number;
   foodManufacturerName: string;
   foodManufacturerWebsite: string;
-  foodManufacturerRepresentative: User;
   secondaryContactFirstName?: string;
   secondaryContactLastName?: string;
   secondaryContactEmail?: string;
@@ -303,7 +376,6 @@ export interface FoodManufacturer {
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
   newsletterSubscription?: boolean;
-  donations: Donation[];
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -357,17 +429,22 @@ export interface CreateFoodRequestBody {
   additionalInformation?: string;
 }
 
-export interface CreateMultipleDonationItemsBody {
-  donationId: number;
-  items: {
-    itemName: string;
-    quantity: number;
-    reservedQuantity: number;
-    ozPerItem?: number;
-    estimatedValue?: number;
-    foodType: FoodType;
-    foodRescue?: boolean;
-  }[];
+export interface CreateDonationDto {
+  foodManufacturerId: number;
+  recurrenceFreq?: number;
+  recurrence: RecurrenceEnum;
+  repeatOnDays?: RepeatOnState;
+  occurrencesRemaining?: number;
+  items: CreateDonationItemDto[];
+}
+
+export interface CreateDonationItemDto {
+  itemName: string;
+  quantity: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodType: FoodType;
+  foodRescue: boolean;
 }
 
 export interface Allocation {
@@ -454,6 +531,7 @@ export type RepeatOnState = Record<DayOfWeek, boolean>;
 
 export interface PantryStats {
   pantryId: number;
+  pantryName: string;
   totalItems: number;
   totalOz: number;
   totalLbs: number;
@@ -463,9 +541,14 @@ export interface PantryStats {
   percentageFoodRescueItems: number;
 }
 
-// Make TotalStats interface just not include pantryId
-export type TotalStats = Omit<PantryStats, 'pantryId'>;
+export type TotalStats = Omit<PantryStats, 'pantryId' | 'pantryName'>;
 
 export type Assignments = Omit<User, 'pantries'> & { pantryIds: number[] };
 
-export type GroupedByFoodType = Partial<Record<FoodType, OrderItemDetails[]>>;
+export type OrderItemDetailsGroupedByFoodType = Partial<
+  Record<FoodType, OrderItemDetails[]>
+>;
+
+export type DonationItemsGroupedByFoodType = Partial<
+  Record<FoodType, DonationItemDetailsDto[]>
+>;

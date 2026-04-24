@@ -28,7 +28,7 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [foodManufacturers, setFoodManufacturers] = useState<
     FoodManufacturer[]
   >([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
   const [selectedFoodManufacturers, setSelectedFoodManufacturers] = useState<
     string[]
   >([]);
@@ -346,6 +346,7 @@ const ApproveFoodManufacturers: React.FC = () => {
                 mt={12}
                 variant="outline"
                 size="sm"
+                gap={4}
               >
                 <Pagination.PrevTrigger
                   color="neutral.800"

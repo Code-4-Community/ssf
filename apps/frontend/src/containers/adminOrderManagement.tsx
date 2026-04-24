@@ -21,7 +21,13 @@ import {
   CircleCheck,
   Search,
 } from 'lucide-react';
-import { capitalize, formatDate, getInitials } from '@utils/utils';
+import {
+  capitalize,
+  formatDate,
+  getInitials,
+  ORDER_STATUS_COLORS,
+  ASSIGNEE_COLORS,
+} from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
@@ -73,30 +79,21 @@ const AdminOrderManagement: React.FC = () => {
     [OrderStatus.SHIPPED]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.PENDING]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.DELIVERED]: {
       selectedPantries: [],
       searchPantry: '',
-      sortAsc: true,
+      sortAsc: false,
     },
   });
 
-  // Color mapping for statuses, the first color is background, the second is color for status text
-  const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
-    [OrderStatus.PENDING, ['blue.200', 'blue.core']],
-    [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
-  ]);
-
   const MAX_PER_STATUS = 5;
-
-  const ASSIGNEE_COLORS = ['yellow.ssf', 'red', 'teal.ssf', 'blue.ssf'];
 
   useEffect(() => {
     // Fetch all orders on component mount and sorts them into their appropriate status lists
@@ -202,7 +199,7 @@ const AdminOrderManagement: React.FC = () => {
             <OrderStatusSection
               orders={displayedOrders}
               status={status}
-              colors={STATUS_COLORS.get(status)!}
+              colors={ORDER_STATUS_COLORS[status]}
               selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
@@ -401,7 +398,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
                         size={18}
-                        color="#B8B8B8"
+                        color="var(--chakra-colors-neutral-300)"
                         style={{
                           position: 'absolute',
                           top: '50%',
@@ -608,7 +605,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                 return (
                   <Table.Row
                     key={`${order.orderId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: 'neutral.50' }}
                   >
                     <Table.Cell
                       {...tableCellStyles}
@@ -665,8 +662,10 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                           color="white"
                           p={2}
                         >
-                          {order.assignee.firstName.charAt(0).toUpperCase()}
-                          {order.assignee.lastName.charAt(0).toUpperCase()}
+                          {getInitials(
+                            order.assignee.firstName,
+                            order.assignee.lastName,
+                          )}
                         </Box>
                       </Box>
                     </Table.Cell>
@@ -719,6 +718,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   alignItems="center"
                   variant="outline"
                   size="sm"
+                  gap={4}
                 >
                   <Pagination.PrevTrigger
                     color="neutral.800"

@@ -21,17 +21,11 @@ import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { RequestsService } from '../foodRequests/request.service';
-import { OrdersService } from '../orders/order.service';
+import { Donation } from '../donations/donations.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
-import { DonationItem } from '../donationItems/donationItems.entity';
-import { DonationItemsService } from '../donationItems/donationItems.service';
-import { DonationService } from '../donations/donations.service';
-import { Donation } from '../donations/donations.entity';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { User } from '../users/users.entity';
+import { AllocationsService } from '../allocations/allocations.service';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -113,12 +107,7 @@ describe('PantriesService', () => {
     testModule = await Test.createTestingModule({
       providers: [
         PantriesService,
-        OrdersService,
-        RequestsService,
         UsersService,
-        DonationItemsService,
-        DonationService,
-        FoodManufacturersService,
         {
           provide: AuthService,
           useValue: {
@@ -146,24 +135,8 @@ describe('PantriesService', () => {
           useValue: testDataSource.getRepository(FoodRequest),
         },
         {
-          provide: getRepositoryToken(DonationItem),
-          useValue: testDataSource.getRepository(DonationItem),
-        },
-        {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
-        },
-        {
-          provide: getRepositoryToken(FoodManufacturer),
-          useValue: testDataSource.getRepository(FoodManufacturer),
-        },
-        {
-          provide: getRepositoryToken(Allocation),
-          useValue: testDataSource.getRepository(Allocation),
-        },
-        {
-          provide: DataSource,
-          useValue: testDataSource,
         },
       ],
     }).compile();
@@ -481,7 +454,9 @@ describe('PantriesService', () => {
     it('throws NotFoundException for non-existent pantry names', async () => {
       await expect(
         service.getPantryStats(['Nonexistent Pantry']),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Nonexistent Pantry'),
+      );
     });
 
     it('throws NotFoundException when some provided pantry names do not exist', async () => {
@@ -490,7 +465,9 @@ describe('PantriesService', () => {
           'Community Food Pantry Downtown',
           'Fake Pantry',
         ]),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not found: Fake Pantry'),
+      );
     });
 
     it('error message includes the missing pantry name', async () => {
@@ -516,12 +493,35 @@ describe('PantriesService', () => {
       expect(stats.percentageFoodRescueItems).toBe(0);
     });
 
-    it('returns zeroed stats for a pantry with no orders (Riverside Food Assistance)', async () => {
-      const stats = (
-        await service.getPantryStats(['Riverside Food Assistance'])
-      )[0];
+    it('throws NotFoundException for a non-approved (denied) pantry', async () => {
+      await expect(
+        service.getPantryStats(['Riverside Food Assistance']),
+      ).rejects.toThrow(
+        new NotFoundException(
+          'Pantries not approved: Riverside Food Assistance',
+        ),
+      );
+    });
 
-      expect(stats.pantryId).toBe(4);
+    it('throws NotFoundException for a non-approved (pending) pantry', async () => {
+      await expect(
+        service.getPantryStats(['Harbor Community Center']),
+      ).rejects.toThrow(
+        new NotFoundException('Pantries not approved: Harbor Community Center'),
+      );
+    });
+
+    it('returns zeroed stats for an approved pantry with no orders', async () => {
+      // Pantry 5 has no orders; approve it so getPantryStats will include it
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_id = 5`,
+      );
+      const pantry = await service.findOne(5);
+      expect(pantry.status).toBe(ApplicationStatus.APPROVED);
+
+      const stats = (await service.getPantryStats([pantry.pantryName]))[0];
+
+      expect(stats.pantryId).toBe(5);
       expect(stats.totalItems).toBe(0);
       expect(stats.totalOz).toBe(0);
       expect(stats.totalLbs).toBe(0);
@@ -589,6 +589,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 10; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
 
       const page1 = await service.getPantryStats(undefined, undefined, 1);
       expect(page1.length).toBe(10);
@@ -616,9 +619,13 @@ describe('PantriesService', () => {
       expect(community?.totalDonatedFoodValue).toBeCloseTo(130.0, 2);
     });
 
-    it('returns proper array for no pantryNames given', async () => {
+    it('returns only approved pantries when no names given', async () => {
       const stats = await service.getPantryStats();
-      expect(stats.length).toBe(6);
+      expect(stats.length).toBe(3);
+      const names = stats.map((s) => s.pantryName);
+      expect(names).not.toContain('Riverside Food Assistance');
+      expect(names).not.toContain('Harbor Community Center');
+      expect(names).not.toContain('Southside Pantry Network');
     });
 
     it('returns nothing for an invalid pantry name', async () => {
@@ -638,9 +645,13 @@ describe('PantriesService', () => {
     });
 
     it('validates all names before paginating — throws if any name is invalid regardless of page', async () => {
+      // Create 12 valid approved pantries so we have enough to paginate
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const validNames = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -659,6 +670,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -672,6 +686,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -685,6 +702,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -698,6 +718,9 @@ describe('PantriesService', () => {
       for (let i = 0; i < 12; i++) {
         await service.addPantry(makePantryDto(i));
       }
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'approved' WHERE pantry_name LIKE 'BulkTest Pantry%'`,
+      );
       const names = Array.from(
         { length: 12 },
         (_, i) => `BulkTest Pantry ${i}`,
@@ -711,6 +734,27 @@ describe('PantriesService', () => {
       const page1Ids = new Set(page1.map((s) => s.pantryId));
       const overlap = page2.filter((s) => page1Ids.has(s.pantryId));
       expect(overlap.length).toBe(0);
+    });
+  });
+
+  describe('getApprovedPantryNames', () => {
+    it('returns the 3 approved pantry names from seed data', async () => {
+      const names = await service.getApprovedPantryNames();
+
+      expect(names).toHaveLength(3);
+      expect(names).toContain('Community Food Pantry Downtown');
+      expect(names).toContain('Westside Community Kitchen');
+      expect(names).toContain('North End Food Bank');
+    });
+
+    it('returns an empty array when no pantries are approved', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+
+      const names = await service.getApprovedPantryNames();
+
+      expect(names).toEqual([]);
     });
   });
 
@@ -735,6 +779,79 @@ describe('PantriesService', () => {
       expect(totalEmpty.totalShippingCost).toBe(0);
       expect(totalEmpty.totalValue).toBe(0);
       expect(totalEmpty.percentageFoodRescueItems).toBe(0);
+    });
+
+    it('returns all zeros when no approved pantries exist', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE status = 'approved'`,
+      );
+      const total = await service.getTotalStats();
+      expect(total.totalItems).toBe(0);
+      expect(total.totalOz).toBe(0);
+      expect(total.totalLbs).toBe(0);
+      expect(total.totalDonatedFoodValue).toBe(0);
+      expect(total.totalShippingCost).toBe(0);
+      expect(total.totalValue).toBe(0);
+      expect(total.percentageFoodRescueItems).toBe(0);
+    });
+
+    it('excludes a pantry set to pending from the totals', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'pending' WHERE pantry_id = 1`,
+      );
+      const total = await service.getTotalStats();
+      // 220 - 125 = 95 remaining items
+      expect(total.totalItems).toBe(95);
+      expect(total.totalDonatedFoodValue).toBeCloseTo(462.5, 2);
+    });
+
+    it('excludes a pantry set to denied from the totals', async () => {
+      await testDataSource.query(
+        `UPDATE public.pantries SET status = 'denied' WHERE pantry_id = 1`,
+      );
+      const total = await service.getTotalStats();
+      // 220 - 125 = 95 remaining items
+      expect(total.totalItems).toBe(95);
+      expect(total.totalDonatedFoodValue).toBeCloseTo(462.5, 2);
+    });
+  });
+
+  describe('getPantryAdminStatsOrderYears', () => {
+    it('returns years from pantry orders sorted descending', async () => {
+      await testDataSource.query(
+        `UPDATE public.orders SET created_at = '2024-06-01 00:00:00'`,
+      );
+
+      const years = await service.getPantryAdminStatsOrderYears();
+
+      expect(years).toEqual([2024]);
+    });
+
+    it('returns multiple years sorted descending', async () => {
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2025-01-01 00:00:00'
+        WHERE order_id = (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+      await testDataSource.query(`
+        UPDATE public.orders
+        SET created_at = '2024-01-01 00:00:00'
+        WHERE order_id != (SELECT order_id FROM public.orders ORDER BY order_id LIMIT 1)
+      `);
+
+      const years = await service.getPantryAdminStatsOrderYears();
+
+      expect(years).toEqual([2025, 2024]);
+    });
+
+    it('returns empty array when no orders exist', async () => {
+      // Need to delete cascading tables first
+      await testDataSource.query(`DELETE FROM public.allocations`);
+      await testDataSource.query(`DELETE FROM public.orders`);
+
+      const years = await service.getPantryAdminStatsOrderYears();
+
+      expect(years).toEqual([]);
     });
   });
 
@@ -815,7 +932,8 @@ describe('PantriesService', () => {
       const saved = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryName: 'No Volunteer Pantry' },
       });
-      await testDataSource.getRepository(Pantry).update(saved!.pantryId, {
+      if (!saved) throw new Error('Pantry not found after creation');
+      await testDataSource.getRepository(Pantry).update(saved.pantryId, {
         status: ApplicationStatus.APPROVED,
       });
 
@@ -837,42 +955,228 @@ describe('PantriesService', () => {
   });
 
   describe('updatePantryVolunteers', () => {
-    const getVolunteerId = async (email: string) =>
-      (
-        await testDataSource.query(
-          `SELECT user_id FROM users WHERE email = $1 LIMIT 1`,
-          [email],
-        )
-      )[0].user_id;
+    it('adds volunteers to a pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).not.toContain(7);
 
-    it('replaces volunteer set', async () => {
-      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
-      await service.updatePantryVolunteers(1, [williamId]);
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [7],
+        removeVolunteerIds: [],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryAfter?.volunteers?.map((v) => v.id)).toContain(7);
+    });
+
+    it('removes volunteers from a pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).toContain(6);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [6],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryAfter?.volunteers?.map((v) => v.id)).not.toContain(6);
+    });
+
+    it('adds and removes volunteers in a single request', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const idsBefore = pantryBefore?.volunteers?.map((v) => v.id);
+      expect(idsBefore).not.toContain(8);
+      expect(idsBefore).toContain(6);
+      expect(idsBefore).toContain(9);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [8],
+        removeVolunteerIds: [6, 9],
+      });
       const pantry = await testDataSource
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
-      expect(pantry?.volunteers).toHaveLength(1);
-      expect(pantry?.volunteers?.[0].id).toBe(williamId);
+      const idsAfter = pantry?.volunteers?.map((v) => v.id);
+      expect(idsAfter).toContain(8);
+      expect(idsAfter).not.toContain(6);
+      expect(idsAfter).not.toContain(9);
     });
 
-    it('throws NotFoundException when pantry not found', async () => {
-      const williamId = Number(await getVolunteerId('william.m@volunteer.org'));
-      await expect(
-        service.updatePantryVolunteers(9999, [williamId]),
-      ).rejects.toThrow(NotFoundException);
+    it('silently ignores adding an already-assigned volunteer', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers?.map((v) => v.id)).toContain(6);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [6],
+        removeVolunteerIds: [],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const ids = pantryAfter?.volunteers?.map((v) => v.id);
+      expect(ids?.filter((id) => id === 6)).toHaveLength(1);
+    });
+
+    it('silently ignores removing a volunteer not assigned to the pantry', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [8],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
 
     it('throws NotFoundException when volunteer id does not exist', async () => {
-      await expect(service.updatePantryVolunteers(1, [99999])).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [],
+          removeVolunteerIds: [99999],
+        }),
+      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
+    });
+
+    it('throws BadRequestException for duplicate IDs in addVolunteerIds', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [7, 7],
+          removeVolunteerIds: [99999],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('addVolunteerIds contains duplicate values'),
       );
     });
 
-    it('throws BadRequestException when user is not a volunteer', async () => {
-      const adminId = Number(await getVolunteerId('john.smith@ssf.org'));
+    it('throws BadRequestException for duplicate IDs in removeVolunteerIds', async () => {
       await expect(
-        service.updatePantryVolunteers(1, [adminId]),
-      ).rejects.toThrow(BadRequestException);
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [],
+          removeVolunteerIds: [6, 6],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('removeVolunteerIds contains duplicate values'),
+      );
+    });
+
+    it('throws BadRequestException when same ID appears in both add and remove lists', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [6],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'The following ID(s) appear in both the add and remove lists: 6',
+        ),
+      );
+    });
+
+    it('throws NotFoundException when pantry not found', async () => {
+      await expect(
+        service.updatePantryVolunteers(9999, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when some volunteer IDs do not exist', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [7, 99999],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(new NotFoundException('Users not found: 99999'));
+    });
+
+    it('throws BadRequestException when some users to remove are not volunteers in a mixed list', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [],
+          removeVolunteerIds: [1, 6],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('User(s) 1 are not volunteers'),
+      );
+    });
+
+    it('throws BadRequestException when some users to add are not volunteers in a mixed list', async () => {
+      await expect(
+        service.updatePantryVolunteers(1, {
+          addVolunteerIds: [6, 1],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('User(s) 1 are not volunteers'),
+      );
+    });
+
+    it('should no-op for empty add and remove lists', async () => {
+      const pantryBefore = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [],
+      });
+      const pantryAfter = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
+    });
+  });
+
+  describe('getStats', () => {
+    it('returns proper stats for pantry', async () => {
+      const pantryId = 1;
+
+      const result = await service.getStats(pantryId);
+
+      const expectedKeys = [
+        'Food Requests',
+        'Orders',
+        'Items Received',
+        'Value Received',
+      ];
+      expect(Object.keys(result)).toEqual(expectedKeys);
+
+      Object.values(result).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(result['Food Requests']).toBe('2');
+      expect(result['Orders']).toBe('2');
+      expect(result['Items Received']).toBe('125');
+      expect(result['Value Received']).toBe('$625');
+    });
+
+    it('throws NotFoundException for non-existent pantry', async () => {
+      await expect(service.getStats(9999)).rejects.toThrow(
+        new NotFoundException('Pantry 9999 not found'),
+      );
+    });
+
+    it('returns zero stats for a pantry with no food requests or orders', async () => {
+      const pantryId = 5;
+      const result = await service.getStats(pantryId);
+
+      expect(result['Food Requests']).toBe('0');
+      expect(result['Orders']).toBe('0');
+      expect(result['Items Received']).toBe('0');
+      expect(result['Value Received']).toBe('$0');
     });
   });
 });
