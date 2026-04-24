@@ -8,7 +8,6 @@ import {
   IsPhoneNumber,
   IsString,
   Length,
-  Matches,
   MaxLength,
 } from 'class-validator';
 import {
@@ -46,7 +45,7 @@ export class UpdatePantryApplicationDto {
   @IsString()
   @IsPhoneNumber('US', {
     message:
-      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+      'Secondary contact phone must be a valid phone number (make sure all the digits are correct)',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;

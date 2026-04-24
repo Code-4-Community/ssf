@@ -9,6 +9,7 @@ import {
   Button,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { AuthError } from 'aws-amplify/auth';
 import ApiClient from '@api/apiClient';
 import {
   FoodManufacturer,
@@ -207,6 +208,10 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         } else {
           setError('Failed to save changes. Please try again.');
         }
+      } else if (err instanceof AuthError) {
+        setError(
+          'Your session may have expired. Please refresh or log in again.',
+        );
       }
     } finally {
       setIsSaving(false);

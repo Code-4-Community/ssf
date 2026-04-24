@@ -36,6 +36,7 @@ import {
   EditMultiSelect,
   EditAddressSection,
 } from '@components/editableComponents';
+import { AuthError } from 'aws-amplify/auth';
 
 const allergenClientOptions = [
   '< 10',
@@ -336,6 +337,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         } else {
           setError('Failed to save changes. Please try again.');
         }
+      } else if (err instanceof AuthError) {
+        setError(
+          'Your session may have expired. Please refresh or log in again.',
+        );
       }
     } finally {
       setIsSaving(false);
