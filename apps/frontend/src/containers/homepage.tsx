@@ -24,7 +24,7 @@ const Homepage: React.FC = () => {
         </Heading>
 
         <Box w="full" textAlign="center">
-          <Link color="teal.500">
+          <Link asChild color="teal.500">
             <RouterLink to="/profile">Profile View</RouterLink>
           </Link>
         </Box>

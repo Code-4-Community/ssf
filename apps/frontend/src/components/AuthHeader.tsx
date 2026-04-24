@@ -5,8 +5,6 @@ const AuthHeader: React.FC = () => (
     h="74px"
     w="full"
     bg="white.core"
-    borderBottomWidth="1px"
-    borderBottomColor="neutral.100"
     display="flex"
     alignItems="center"
     pl="26px"
