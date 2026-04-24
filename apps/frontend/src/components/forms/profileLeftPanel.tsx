@@ -22,7 +22,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
   const [alertState, setAlertMessage] = useAlert();
 
   return (
-    <VStack alignItems="center" mt={8} mb={6} p={10}>
+    <VStack alignItems="center" mt="2vw" mb="1.5vw" p="2.5vw">
       {alertState && (
         <FloatingAlert
           key={alertState.id}
@@ -32,16 +32,16 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         />
       )}
       <Box
-        w={24}
-        h={24}
+        w="6vw"
+        h="6vw"
         borderRadius="full"
         bg={avatarBg}
         display="flex"
         alignItems="center"
         justifyContent="center"
-        mb={4}
+        mb="1vw"
       >
-        <Text color="neutral.50" fontSize="32px">
+        <Text color="neutral.50" fontSize="2vw">
           {initials}
         </Text>
       </Box>
@@ -50,7 +50,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         <Text
           fontFamily="ibm"
           fontWeight="semibold"
-          fontSize="20px"
+          fontSize="1.25vw"
           textAlign="center"
           mb={0}
         >
@@ -63,14 +63,15 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
       </VStack>
 
       <Button
-        mt={24}
-        px={8}
+        mt="6vw"
+        px="2vw"
+        py="0.5vw"
         bg="red"
-        size="sm"
+        fontSize="0.875vw"
         color="white.core"
         onClick={onOpen}
       >
-        <LockKeyhole />
+        <LockKeyhole style={{ width: '1vw', height: '1vw' }} />
         Change Password
       </Button>
 
