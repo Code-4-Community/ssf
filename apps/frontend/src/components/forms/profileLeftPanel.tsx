@@ -57,17 +57,25 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
           {name}
         </Text>
 
-        <Text textStyle="p2" textAlign="center">
+        <Text
+          fontFamily="inter"
+          fontWeight="400"
+          fontSize="1vw"
+          textAlign="center"
+        >
           {roleLabel}
         </Text>
       </VStack>
 
       <Button
         mt="6vw"
-        px="2vw"
-        py="0.5vw"
+        style={{
+          padding: '0.5vw 2vw',
+          fontSize: '0.875vw',
+          height: 'auto',
+          minHeight: 'auto',
+        }}
         bg="red"
-        fontSize="0.875vw"
         color="white.core"
         onClick={onOpen}
       >
