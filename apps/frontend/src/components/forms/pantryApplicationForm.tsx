@@ -32,6 +32,7 @@ import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { ROUTES } from '../../routes';
 
 export const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
@@ -142,7 +143,7 @@ const PantryApplicationForm: React.FC = () => {
         borderColor="neutral.200"
         rounded="sm"
       >
-        <Form method="post" action="/pantry-application">
+        <Form method="post" action={ROUTES.PANTRY_APPLICATION}>
           <Heading textStyle="h3" mb="1em" color="gray.dark">
             Pantry Application Form
           </Heading>
@@ -1210,7 +1211,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   try {
     await ApiClient.postPantry(data as PantryApplicationDto);
-    return redirect('/application-submitted');
+    return redirect(ROUTES.APPLICATION_SUBMITTED);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       return {
