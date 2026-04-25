@@ -15,7 +15,7 @@ import { useAlert } from '../../hooks/alert';
 import { useEffect, useState } from 'react';
 import { ApprovedPantryResponse, Assignments } from 'types/types';
 import { SearchIcon } from 'lucide-react';
-import { getInitials } from '@utils/utils';
+import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 
 interface AssignVolunteersModalProps {
@@ -30,8 +30,6 @@ type VolunteerDisplay = {
   firstName: string;
   lastName: string;
 };
-
-const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
 const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   pantry,
@@ -59,6 +57,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   };
 
   useEffect(() => {
+    if (!isOpen) return;
     const fetchVolunteers = async () => {
       try {
         const allVolunteers: Assignments[] = await ApiClient.getVolunteers();
@@ -148,7 +147,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content>
           <Dialog.CloseTrigger asChild>
-            <CloseButton size="lg" />
+            <CloseButton size="md" mt={3} />
           </Dialog.CloseTrigger>
 
           <Dialog.Header pb={0}>
@@ -170,8 +169,8 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
               <VStack align="stretch" gap={8} mt={6}>
                 <InputGroup
                   startElement={
-                    <Box color="neutral.600">
-                      <SearchIcon size={13} />
+                    <Box color="var(--chakra-colors-neutral-600)">
+                      <SearchIcon size={13} strokeWidth={3} />
                     </Box>
                   }
                   px={3}
@@ -179,7 +178,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
                   <Input
                     placeholder="Search"
                     value={searchName}
-                    borderColor="neutral.200"
+                    borderColor="neutral.100"
                     ps="8"
                     onChange={handleSearchNameChange}
                     color="neutral.600"

@@ -19,7 +19,7 @@ import { ApprovedPantryResponse } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import { getInitials } from '@utils/utils';
+import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
 
@@ -41,8 +41,6 @@ const AdminPantryManagement: React.FC = () => {
   ] = useState<ApprovedPantryResponse | null>(null);
 
   const pageSize = 10;
-
-  const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
   const fetchPantries = async () => {
     try {
@@ -418,11 +416,15 @@ const AdminPantryManagement: React.FC = () => {
                 <IconButton
                   variant="ghost"
                   disabled={
-                    currentPage === Math.ceil(pantries.length / pageSize)
+                    currentPage ===
+                    Math.ceil(filteredPantries.length / pageSize)
                   }
                   onClick={() =>
                     setCurrentPage((prev) =>
-                      Math.min(prev + 1, Math.ceil(pantries.length / pageSize)),
+                      Math.min(
+                        prev + 1,
+                        Math.ceil(filteredPantries.length / pageSize),
+                      ),
                     )
                   }
                 >
