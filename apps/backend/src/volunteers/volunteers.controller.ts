@@ -16,6 +16,8 @@ import { Assignments, VolunteerOrder } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import { UsersService } from '../users/users.service';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -43,6 +45,16 @@ export class VolunteersController {
     return this.volunteersService.findOne(userId);
   }
 
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(UsersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+    bypassRoles: [Role.ADMIN],
+  })
   @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/:id/my-recent-orders')
   async getRecentOrders(
