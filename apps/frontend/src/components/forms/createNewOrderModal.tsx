@@ -17,7 +17,7 @@ import {
 import {
   DonationItemsGroupedByFoodType,
   FoodManufacturerWithoutRelations,
-  FoodRequest,
+  FoodRequestSummaryDto,
   FoodType,
   MatchingItemsDto,
   MatchingManufacturersDto,
@@ -29,7 +29,7 @@ import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface CreateNewOrderModalModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;

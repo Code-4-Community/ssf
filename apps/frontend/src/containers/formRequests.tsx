@@ -15,7 +15,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import { FoodRequest, FoodRequestStatus } from '../types/types';
+import {
+  FoodRequest,
+  FoodRequestStatus,
+  FoodRequestSummaryDto,
+} from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -28,13 +32,13 @@ const FormRequests: React.FC = () => {
   const previousRequestDisclosure = useDisclosure();
 
   const [pantryId, setPantryId] = useState<number>();
-  const [requests, setRequests] = useState<FoodRequest[]>([]);
+  const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
-    FoodRequest | undefined
+    FoodRequestSummaryDto | undefined
   >(undefined);
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
 

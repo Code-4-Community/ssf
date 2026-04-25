@@ -17,6 +17,7 @@ import { RefrigeratedDonation } from '../types/pantryEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 
 const AssignedPantries: React.FC = () => {
   const navigate = useNavigate();
@@ -382,7 +383,9 @@ const AssignedPantries: React.FC = () => {
                         textDecoration="underline"
                         color="neutral.700"
                         textStyle="p2"
-                        onClick={() => navigate('/landing-page')}
+                        onClick={() =>
+                          navigate(ROUTES.VOLUNTEER_REQUEST_MANAGEMENT)
+                        }
                         p={0}
                         height="auto"
                         minW="auto"

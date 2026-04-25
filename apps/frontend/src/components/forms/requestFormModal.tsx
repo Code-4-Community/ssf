@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import {
   CreateFoodRequestBody,
-  FoodRequest,
+  FoodRequestSummaryDto,
   FoodType,
   RequestSize,
 } from '../../types/types';
@@ -24,7 +24,7 @@ import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface FoodRequestFormModalProps {
-  previousRequest?: FoodRequest;
+  previousRequest?: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;

@@ -170,7 +170,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         Request {foodRequest.requestId} -
                         <Text as="span" color="neutral.800" textStyle="p2">
                           {' '}
-                          {foodRequest.pantryName}
+                          {foodRequest.pantry.pantryName}
                         </Text>
                       </Text>
                       {foodRequest.status === FoodRequestStatus.CLOSED ? (

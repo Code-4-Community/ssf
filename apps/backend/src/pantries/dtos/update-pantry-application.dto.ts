@@ -33,7 +33,10 @@ export class UpdatePantryApplicationDto {
   secondaryContactLastName?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    { message: 'Secondary contact email must be a valid email address.' },
+  )
   @IsNotEmpty()
   @MaxLength(255)
   secondaryContactEmail?: string;
@@ -42,7 +45,7 @@ export class UpdatePantryApplicationDto {
   @IsString()
   @IsPhoneNumber('US', {
     message:
-      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+      'Secondary contact phone must be a valid phone number (make sure all the digits are correct)',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;
@@ -132,6 +135,15 @@ export class UpdatePantryApplicationDto {
   @MaxLength(255, { each: true })
   restrictions?: string[];
 
+  @IsBoolean()
+  @IsOptional()
+  acceptFoodDeliveries?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  deliveryWindowInstructions?: string;
+
   @IsEnum(RefrigeratedDonation)
   @IsOptional()
   refrigeratedDonation?: RefrigeratedDonation;
@@ -139,6 +151,10 @@ export class UpdatePantryApplicationDto {
   @IsEnum(ReserveFoodForAllergic)
   @IsOptional()
   reserveFoodForAllergic?: ReserveFoodForAllergic;
+
+  @IsOptional()
+  @IsString()
+  reservationExplanation?: string | null;
 
   @IsBoolean()
   @IsOptional()
