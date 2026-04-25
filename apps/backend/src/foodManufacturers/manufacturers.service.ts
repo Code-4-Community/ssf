@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   ConflictException,
@@ -34,6 +36,7 @@ export class FoodManufacturersService {
     @InjectRepository(FoodManufacturer)
     private repo: Repository<FoodManufacturer>,
 
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private emailsService: EmailsService,
 
@@ -155,7 +158,7 @@ export class FoodManufacturersService {
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
-    return await this.repo.find({
+    return this.repo.find({
       where: { status: ApplicationStatus.PENDING },
       relations: ['foodManufacturerRepresentative'],
     });
@@ -270,7 +273,7 @@ export class FoodManufacturersService {
 
     Object.assign(manufacturer, foodManufacturerData);
 
-    return await this.repo.save(manufacturer);
+    return this.repo.save(manufacturer);
   }
 
   async approve(id: number) {
@@ -338,6 +341,22 @@ export class FoodManufacturersService {
     }
 
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
+  }
+
+  async findByUserId(userId: number): Promise<FoodManufacturer> {
+    validateId(userId, 'User');
+
+    const foodManufacturer = await this.repo.findOne({
+      where: { foodManufacturerRepresentative: { id: userId } },
+      relations: ['foodManufacturerRepresentative'],
+    });
+
+    if (!foodManufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer for User ${userId} not found`,
+      );
+    }
+    return foodManufacturer;
   }
 
   async getStats(id: number): Promise<ManufacturerStatsDto> {

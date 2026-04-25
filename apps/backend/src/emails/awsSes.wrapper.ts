@@ -67,6 +67,6 @@ export class AmazonSESWrapper {
       },
     });
 
-    return await this.client.send(command);
+    return this.client.send(command);
   }
 }

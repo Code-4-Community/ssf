@@ -29,6 +29,7 @@ describe('UsersController', () => {
     mockUserService.remove.mockReset();
     mockUserService.update.mockReset();
     mockUserService.create.mockReset();
+    mockUserService.getUserDashboardStats.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
@@ -120,6 +121,23 @@ describe('UsersController', () => {
         ),
       );
       expect(mockUserService.update).toHaveBeenCalledWith(1, updateUserSchema);
+    });
+  });
+
+  describe('GET /:id/stats', () => {
+    it('should call getUserDashboardStats and return the result', async () => {
+      const mockStats = {
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      };
+      mockUserService.getUserDashboardStats.mockResolvedValue(mockStats);
+
+      const result = await controller.getUserDashboardStats(1);
+
+      expect(result).toEqual(mockStats);
+      expect(mockUserService.getUserDashboardStats).toHaveBeenCalledWith(1);
     });
   });
 

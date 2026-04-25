@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -18,6 +20,10 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
 import { UserStatsDto } from './dtos/user-stats.dto';
+import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
+import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
+import { PantriesService } from '../pantries/pantries.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +38,10 @@ export class UsersService {
     private donationRepo: Repository<Donation>,
     private authService: AuthService,
     private emailsService: EmailsService,
+    @Inject(forwardRef(() => PantriesService))
+    private pantriesService: PantriesService,
+    @Inject(forwardRef(() => FoodManufacturersService))
+    private foodManufacturersService: FoodManufacturersService,
   ) {}
 
   async create(createUserDto: userSchemaDto): Promise<User> {
@@ -211,5 +221,27 @@ export class UsersService {
       Donations: donationsCount.toString(),
       Volunteers: volunteersCount.toString(),
     };
+  }
+
+  async getUserDashboardStats(
+    userId: number,
+  ): Promise<UserStatsDto | PantryStatsDto | ManufacturerStatsDto> {
+    const user = await this.findOne(userId);
+
+    if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
+      return this.getMonthlyAggregatedStats();
+    } else if (user.role === Role.PANTRY) {
+      const pantry = await this.pantriesService.findByUserId(userId);
+      return this.pantriesService.getStats(pantry.pantryId);
+    } else if (user.role === Role.FOODMANUFACTURER) {
+      const foodManufacturer = await this.foodManufacturersService.findByUserId(
+        userId,
+      );
+      return this.foodManufacturersService.getStats(
+        foodManufacturer.foodManufacturerId,
+      );
+    } else {
+      throw new BadRequestException(`Unsupported role: ${user.role}`);
+    }
   }
 }
