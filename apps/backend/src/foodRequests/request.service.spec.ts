@@ -19,6 +19,7 @@ import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates } from '../emails/emailTemplates';
 import { Allocation } from '../allocations/allocations.entity';
+import { ApplicationStatus } from '../shared/types';
 
 jest.setTimeout(60000);
 
@@ -327,10 +328,7 @@ describe('RequestsService', () => {
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(2);
-      expect(result.every((r) => r.pantryId === pantryId)).toBe(true);
-      result.forEach((request) => {
-        expect(request.orders).toBeDefined();
-      });
+      expect(result.every((r) => r.pantry.pantryId === pantryId)).toBe(true);
       expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
@@ -390,6 +388,38 @@ describe('RequestsService', () => {
       await expect(service.getMatchingManufacturers(999)).rejects.toThrow(
         new NotFoundException('Request 999 not found'),
       );
+    });
+
+    it('should not return manufacturers if they are not approved', async () => {
+      const requestId = 1;
+
+      const resultBefore = await service.getMatchingManufacturers(requestId);
+
+      const allIdsBefore = [
+        ...resultBefore.matchingManufacturers,
+        ...resultBefore.nonMatchingManufacturers,
+      ].map((fm) => fm.foodManufacturerId);
+
+      expect(allIdsBefore.sort()).toEqual([1, 2]);
+
+      const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
+
+      const manufacturer = await manufacturerRepo.findOne({
+        where: { foodManufacturerId: 1 },
+      });
+
+      manufacturer!.status = ApplicationStatus.PENDING;
+
+      await manufacturerRepo.save(manufacturer!);
+
+      const resultAfter = await service.getMatchingManufacturers(requestId);
+
+      const allIdsAfter = [
+        ...resultAfter.matchingManufacturers,
+        ...resultAfter.nonMatchingManufacturers,
+      ].map((fm) => fm.foodManufacturerId);
+
+      expect(allIdsAfter).toEqual([2]);
     });
 
     it('should correctly match manufacturers based on requested food types and available stock', async () => {

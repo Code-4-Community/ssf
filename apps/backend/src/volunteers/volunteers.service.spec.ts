@@ -283,7 +283,7 @@ describe('VolunteersService', () => {
 
       const requests = await service.findRequestsByVolunteer(volunteerId);
       requests.forEach((request) => {
-        expect(assignedPantryIds).toContain(request.pantryId);
+        expect(assignedPantryIds).toContain(request.pantry.pantryId);
       });
     });
 

@@ -5,10 +5,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { VolunteerOrder } from './types';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
 const mockVolunteersService = mock<VolunteersService>();
 const mockOrdersService = mock<OrdersService>();
@@ -175,12 +175,12 @@ describe('VolunteersController', () => {
       const req: AuthenticatedRequest = {
         user: { id: 1 },
       } as AuthenticatedRequest;
-      const foodRequests: Partial<FoodRequest>[] = [
+      const foodRequests: Partial<FoodRequestSummaryDto>[] = [
         { requestId: 10 },
         { requestId: 5 },
       ];
       mockVolunteersService.findRequestsByVolunteer.mockResolvedValueOnce(
-        foodRequests as FoodRequest[],
+        foodRequests as FoodRequestSummaryDto[],
       );
 
       const result = await controller.getAssignedRequests(

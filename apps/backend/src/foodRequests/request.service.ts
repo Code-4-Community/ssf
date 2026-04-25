@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodRequestStatus, RequestSize } from './types';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
@@ -51,7 +52,7 @@ export class RequestsService {
     return request;
   }
 
-  async getAll(): Promise<FoodRequest[]> {
+  async getAll(): Promise<FoodRequestSummaryDto[]> {
     return this.repo
       .createQueryBuilder('request')
       .leftJoin('request.pantry', 'pantry')
@@ -139,6 +140,7 @@ export class RequestsService {
         )`,
           { requestedFoodTypes },
         )
+        .andWhere('fm.status = :status', { status: 'approved' })
         .getRawAndEntities()
         .then(({ raw, entities }) =>
           entities.map((fm, i) => ({
@@ -263,12 +265,12 @@ export class RequestsService {
     return foodRequest;
   }
 
-  async findAllForPantry(pantryId: number) {
+  async findAllForPantry(pantryId: number): Promise<FoodRequestSummaryDto[]> {
     validateId(pantryId, 'Pantry');
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['orders', 'pantry'],
+      relations: ['pantry'],
     });
   }
 

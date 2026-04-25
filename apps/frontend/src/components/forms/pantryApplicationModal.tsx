@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Dialog, Grid, GridItem, Text } from '@chakra-ui/react';
 import { PantryWithUser } from 'types/types';
+import { formatPhone } from '@utils/utils';
 
 interface PantryApplicationModalProps {
   pantry: PantryWithUser;
@@ -46,7 +47,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
                 <GridItem>
                   <Text fontWeight="bold">Phone</Text>
                 </GridItem>
-                <GridItem>{pantryUser.phone}</GridItem>
+                <GridItem>{formatPhone(pantryUser.phone)}</GridItem>
               </Grid>
             ) : (
               <Text>No user details available.</Text>

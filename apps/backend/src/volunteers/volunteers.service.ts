@@ -8,9 +8,9 @@ import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
 import { Assignments, VolunteerOrder } from './types';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { OrdersService } from '../orders/order.service';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
 @Injectable()
 export class VolunteersService {
@@ -84,7 +84,9 @@ export class VolunteersService {
     return this.repo.save(volunteer);
   }
 
-  async findRequestsByVolunteer(volunteerId: number): Promise<FoodRequest[]> {
+  async findRequestsByVolunteer(
+    volunteerId: number,
+  ): Promise<FoodRequestSummaryDto[]> {
     validateId(volunteerId, 'Volunteer');
 
     const pantries = await this.getVolunteerPantries(volunteerId);
@@ -94,6 +96,17 @@ export class VolunteersService {
       pantryIds.map((id) => this.requestsService.findAllForPantry(id)),
     );
 
-    return requestArrays.flat();
+    return requestArrays.flat().map((r) => ({
+      requestId: r.requestId,
+      requestedSize: r.requestedSize,
+      requestedFoodTypes: r.requestedFoodTypes,
+      additionalInformation: r.additionalInformation,
+      requestedAt: r.requestedAt,
+      status: r.status,
+      pantry: {
+        pantryId: r.pantry.pantryId,
+        pantryName: r.pantry.pantryName,
+      },
+    }));
   }
 }

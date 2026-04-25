@@ -21,7 +21,7 @@ import { useAlert } from '../hooks/alert';
 
 const AdminDonation: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
@@ -224,7 +224,7 @@ const AdminDonation: React.FC = () => {
           {paginatedDonations.map((donation, index) => (
             <Table.Row
               key={`${donation.donationId}-${index}`}
-              _hover={{ bg: 'gray.50' }}
+              _hover={{ bg: 'neutral.50' }}
             >
               <Table.Cell
                 textStyle="p2"
@@ -276,10 +276,12 @@ const AdminDonation: React.FC = () => {
             mt={12}
             variant="outline"
             size="sm"
+            gap={4}
           >
             <Pagination.PrevTrigger
               color="neutral.800"
               variant="outline"
+              disabled={currentPage === 1}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronLeft size={16} />
@@ -301,6 +303,7 @@ const AdminDonation: React.FC = () => {
             <Pagination.NextTrigger
               color="neutral.800"
               variant="ghost"
+              disabled={currentPage === totalPages}
               _hover={{ color: 'black', cursor: 'pointer' }}
             >
               <ChevronRight size={16} />

@@ -127,6 +127,58 @@ describe('PantriesController', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('getPantryAdminStatsOrderYears', () => {
+    it('should return an array of years', async () => {
+      const mockYears = [2025, 2024];
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        mockYears,
+      );
+
+      const result = await controller.getPantryAdminStatsOrderYears();
+
+      expect(result).toEqual(mockYears);
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
+    });
+
+    it('should return an empty array when no approved pantry orders exist', async () => {
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        [],
+      );
+
+      const result = await controller.getPantryAdminStatsOrderYears();
+
+      expect(result).toEqual([]);
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
+    });
+  });
+
+  describe('getApprovedPantryNames', () => {
+    it('should return an array of approved pantry names', async () => {
+      const mockNames = ['Pantry A', 'Pantry B'];
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce(
+        mockNames,
+      );
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual(mockNames);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
+
+    it('should return an empty array if no approved pantries exist', async () => {
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce([]);
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual([]);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
+  });
+
   describe('getPendingPantries', () => {
     it('should return an array of pending pantries', async () => {
       mockPantriesService.getPendingPantries.mockResolvedValueOnce([
@@ -413,6 +465,7 @@ describe('PantriesController', () => {
       const mockStats: PantryStats[] = [
         {
           pantryId: 1,
+          pantryName: 'Community Food Pantry Downtown',
           totalItems: 100,
           totalOz: 1600,
           totalLbs: 100,

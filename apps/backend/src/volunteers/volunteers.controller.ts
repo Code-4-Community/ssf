@@ -13,9 +13,9 @@ import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
 import { Assignments, VolunteerOrder } from './types';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { UsersService } from '../users/users.service';
 
@@ -75,7 +75,7 @@ export class VolunteersController {
   @Get('/me/assigned-requests')
   async getAssignedRequests(
     @Req() req: AuthenticatedRequest,
-  ): Promise<FoodRequest[]> {
+  ): Promise<FoodRequestSummaryDto[]> {
     const currentUser = req.user;
 
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);

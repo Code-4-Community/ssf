@@ -15,7 +15,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import { FoodRequest, FoodRequestStatus } from '../types/types';
+import {
+  FoodRequest,
+  FoodRequestStatus,
+  FoodRequestSummaryDto,
+} from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -28,13 +32,13 @@ const FormRequests: React.FC = () => {
   const previousRequestDisclosure = useDisclosure();
 
   const [pantryId, setPantryId] = useState<number>();
-  const [requests, setRequests] = useState<FoodRequest[]>([]);
+  const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
   const [previousRequest, setPreviousRequest] = useState<
-    FoodRequest | undefined
+    FoodRequestSummaryDto | undefined
   >(undefined);
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
-    useState<FoodRequest | null>(null);
+    useState<FoodRequestSummaryDto | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
 
@@ -217,10 +221,11 @@ const FormRequests: React.FC = () => {
           page={currentPage}
           onChange={(page: number) => setCurrentPage(page)}
         >
-          <ButtonGroup variant="outline" size="sm">
+          <ButtonGroup variant="outline" size="sm" gap={4}>
             <Pagination.PrevTrigger asChild>
               <IconButton
                 variant="ghost"
+                disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               >
                 <ChevronLeft />
@@ -242,6 +247,7 @@ const FormRequests: React.FC = () => {
             <Pagination.NextTrigger asChild>
               <IconButton
                 variant="ghost"
+                disabled={currentPage === Math.ceil(requests.length / pageSize)}
                 onClick={() =>
                   setCurrentPage((prev) =>
                     Math.min(prev + 1, Math.ceil(requests.length / pageSize)),

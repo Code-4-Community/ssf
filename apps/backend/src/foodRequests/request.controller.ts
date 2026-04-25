@@ -15,6 +15,7 @@ import { FoodRequest } from './request.entity';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { RequestSize } from './types';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
 import { FoodType } from '../donationItems/types';
@@ -30,7 +31,7 @@ export class RequestsController {
 
   @Roles(Role.ADMIN)
   @Get()
-  async getAllFoodRequests(): Promise<FoodRequest[]> {
+  async getAllFoodRequests(): Promise<FoodRequestSummaryDto[]> {
     return this.requestsService.getAll();
   }
 
