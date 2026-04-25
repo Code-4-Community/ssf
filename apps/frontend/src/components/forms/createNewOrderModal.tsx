@@ -26,6 +26,7 @@ import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface CreateNewOrderModalModalProps {
   request: FoodRequestSummaryDto;
@@ -40,6 +41,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
   const [selectedManufacturer, setSelectedManufacturer] =
     useState<FoodManufacturerWithoutRelations | null>(null);
