@@ -66,21 +66,6 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
   const handleSubmit = async () => {
     try {
-      if (new Date(dateReceived) < new Date(orderCreatedAt)) {
-        setAlertMessage(
-          'Date received cannot be earlier than the order creation date',
-        );
-        return;
-      }
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (new Date(dateReceived) > today) {
-        setAlertMessage('Date received cannot be in the future');
-        return;
-      }
-
       // TODO: fix date/time storage/handling
       const dto: ConfirmDeliveryDto = {
         dateReceived: dateReceived,
@@ -180,7 +165,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                         border="1px solid var(--chakra-colors-neutral-100)"
                         cursor="pointer"
                         placeholder=""
-                        color="neutral.800"
+                        color="neutral.700"
+                        fontWeight={600}
                         value={
                           dateReceived
                             ? new Date(

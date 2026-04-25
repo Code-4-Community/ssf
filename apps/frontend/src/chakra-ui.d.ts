@@ -117,15 +117,19 @@ declare module '@chakra-ui/react' {
 
   // DatePicker component props
   export interface DatePickerRootProps extends ComponentPropsLenientChildren {
-    min?: any;
-    max?: any;
-    value?: any[];
+    min?: CalendarDate;
+    max?: CalendarDate;
+    value?: CalendarDate[];
     onValueChange?: (details: {
       valueAsString: string[];
-      value: any[];
+      value: CalendarDate[];
     }) => void;
     closeOnSelect?: boolean;
+    positioning?: {
+      placement?: string;
+    };
   }
+
   export interface DatePickerControlProps
     extends ComponentPropsStrictChildren {}
   export interface DatePickerInputProps extends ComponentPropsLenientChildren {}
