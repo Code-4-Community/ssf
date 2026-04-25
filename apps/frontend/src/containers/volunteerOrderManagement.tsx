@@ -785,15 +785,15 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   </Table.Row>
                 );
               })}
-              {selectedOrderId && (
-                <OrderDetailsModal
-                  orderId={selectedOrderId}
-                  isOpen={true}
-                  onClose={() => onOrderSelect(null)}
-                />
-              )}
             </Table.Body>
           </Table.Root>
+          {selectedOrderId && (
+            <OrderDetailsModal
+              orderId={selectedOrderId}
+              isOpen={true}
+              onClose={() => onOrderSelect(null)}
+            />
+          )}
 
           {totalPages > 1 && (
             <Box mt={4}>

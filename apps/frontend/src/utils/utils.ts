@@ -28,7 +28,8 @@ export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
 export const formatPhone = (phone?: string | null) => {
   if (!phone) return null;
-  const digits = phone.replace(/\D/g, '');
+  let digits = phone.replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) digits = digits.slice(1);
   if (digits.length === 10) {
     return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
   }

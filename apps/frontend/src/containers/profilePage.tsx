@@ -18,6 +18,7 @@ const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
 
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
+  const [orgName, setOrgName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [alertState, setAlertMessage] = useAlert();
 
@@ -26,6 +27,24 @@ const ProfilePage: React.FC = () => {
       try {
         const user: User = await ApiClient.getMe();
         setProfile(user);
+        if (user.role === Role.PANTRY) {
+          try {
+            const pantryId = await ApiClient.getCurrentUserPantryId();
+            const pantry = await ApiClient.getPantry(pantryId);
+            setOrgName(pantry.pantryName);
+          } catch {
+            setAlertMessage('Failed to fetch pantry data.');
+          }
+        } else if (user.role === Role.FOODMANUFACTURER) {
+          try {
+            const foodManufacturerId =
+              await ApiClient.getCurrentUserFoodManufacturerId();
+            const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
+            setOrgName(fm.foodManufacturerName);
+          } catch {
+            setAlertMessage('Failed to fetch food manufacturer data.');
+          }
+        }
       } catch {
         setAlertMessage('Authentication error. Please log in and try again.');
       } finally {
@@ -106,9 +125,9 @@ const ProfilePage: React.FC = () => {
         w="100%"
         bg="neutral.50"
       >
-        <Box flexShrink={0}>
+        <Box minW={0} flexShrink={1}>
           <ProfileLeftPanel
-            name={`${firstName} ${lastName}`}
+            name={orgName ?? `${firstName} ${lastName}`}
             roleLabel={config.label}
             initials={getInitials(firstName, lastName)}
             avatarBg={config.avatarBg}
