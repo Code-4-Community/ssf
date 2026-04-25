@@ -246,4 +246,23 @@ describe('FoodManufacturersController', () => {
       expect(mockManufacturersService.deny).toHaveBeenCalledWith(1);
     });
   });
+
+  describe('getCurrentUserFoodManufacturerId', () => {
+    it('returns foodManufacturerId for authenticated user', async () => {
+      const req = { user: { id: 1 } };
+      const manufacturer: Partial<FoodManufacturer> = {
+        foodManufacturerId: 10,
+      };
+      mockManufacturersService.findByUserId.mockResolvedValueOnce(
+        manufacturer as FoodManufacturer,
+      );
+
+      const result = await controller.getCurrentUserFoodManufacturerId(
+        req as AuthenticatedRequest,
+      );
+
+      expect(result).toEqual(10);
+      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(1);
+    });
+  });
 });

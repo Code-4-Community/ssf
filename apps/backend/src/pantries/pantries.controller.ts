@@ -368,7 +368,7 @@ export class PantriesController {
   }
 
   @Roles(Role.PANTRY)
-  @Patch('/:pantryId/update')
+  @Patch('/:pantryId/application')
   async updatePantryApplication(
     @Req() req: AuthenticatedRequest,
     @Param('pantryId', ParseIntPipe) pantryId: number,
