@@ -18,7 +18,7 @@ import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import { getInitials } from '@utils/utils';
+import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -29,8 +29,6 @@ const VolunteerManagement: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
   const pageSize = 8;
-
-  const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
 
   useEffect(() => {
     const fetchVolunteers = async () => {

@@ -39,6 +39,8 @@ import {
   DonationDetails,
   VolunteerOrder,
   VolunteerAction,
+  ApprovedPantryResponse,
+  UpdatePantryVolunteersDto,
   FoodRequestWithoutRelations,
 } from 'types/types';
 
@@ -160,6 +162,12 @@ export class ApiClient {
   ): Promise<FoodManufacturer> {
     return this.axiosInstance
       .get(`/api/manufacturers/${manufacturerId}`)
+      .then((response) => response.data);
+  }
+
+  public async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/approved`)
       .then((response) => response.data);
   }
 
@@ -405,6 +413,16 @@ export class ApiClient {
     await this.axiosInstance.patch(`/api/pantries/${pantryId}/${decision}`, {
       pantryId,
     });
+  }
+
+  public async updatePantryVolunteers(
+    pantryId: number,
+    body: UpdatePantryVolunteersDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/pantries/${pantryId}/volunteers`,
+      body,
+    );
   }
 
   public async updateFoodManufacturer(
