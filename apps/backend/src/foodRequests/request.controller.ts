@@ -43,14 +43,6 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
-  @Roles(Role.PANTRY, Role.ADMIN)
-  @Get('/:pantryId/all')
-  async getAllPantryRequests(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<FoodRequestSummaryDto[]> {
-    return this.requestsService.find(pantryId);
-  }
-
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(

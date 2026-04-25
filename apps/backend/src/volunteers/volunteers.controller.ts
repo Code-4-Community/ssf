@@ -16,6 +16,8 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import { UsersService } from '../users/users.service';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -30,6 +32,7 @@ export class VolunteersController {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
@@ -40,6 +43,24 @@ export class VolunteersController {
   @Get('/:id')
   async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.volunteersService.findOne(userId);
+  }
+
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(UsersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+    bypassRoles: [Role.ADMIN],
+  })
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @Get('/:id/my-recent-orders')
+  async getRecentOrders(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<VolunteerOrder[]> {
+    return this.volunteersService.getRecentOrders(id);
   }
 
   @Post('/:id/pantries')

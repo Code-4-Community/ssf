@@ -7,8 +7,9 @@ import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
-import { Assignments } from './types';
+import { Assignments, VolunteerOrder } from './types';
 import { RequestsService } from '../foodRequests/request.service';
+import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class VolunteersService {
     private usersService: UsersService,
     private pantriesService: PantriesService,
     private requestsService: RequestsService,
+    private ordersService: OrdersService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -58,6 +60,11 @@ export class VolunteersService {
     return volunteer.pantries || [];
   }
 
+  async getRecentOrders(volunteerId: number): Promise<VolunteerOrder[]> {
+    validateId(volunteerId, 'Volunteer');
+    return this.ordersService.getRecentOrdersByAssignee(volunteerId);
+  }
+
   async assignPantriesToVolunteer(
     volunteerId: number,
     pantryIds: number[],
@@ -86,7 +93,7 @@ export class VolunteersService {
     const pantryIds = pantries.map((p) => p.pantryId);
 
     const requestArrays = await Promise.all(
-      pantryIds.map((id) => this.requestsService.find(id)),
+      pantryIds.map((id) => this.requestsService.findAllForPantry(id)),
     );
 
     return requestArrays.flat().map((r) => ({
