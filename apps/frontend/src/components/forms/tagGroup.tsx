@@ -26,11 +26,12 @@ export const TagGroup: React.FC<TagGroupProps> = ({
           fontWeight={blueVariant ? 400 : 500}
           color="neutral.800"
         >
-          <Tag.Label>{value}</Tag.Label>
+          <Tag.Label color="neutral.800">{value}</Tag.Label>
           {onRemove && (
             <Tag.EndElement ml={4}>
               <Tag.CloseTrigger
                 onClick={() => onRemove(value)}
+                color="neutral.800"
                 style={{ cursor: 'pointer' }}
               />
             </Tag.EndElement>

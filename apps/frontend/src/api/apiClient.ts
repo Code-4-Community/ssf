@@ -31,6 +31,8 @@ import {
   TotalStats,
   CreateDonationDto,
   UpdateProfileFields,
+  UpdatePantryApplicationDto,
+  UpdateFoodManufacturerApplicationDto,
   MatchingManufacturersDto,
   MatchingItemsDto,
   CreateOrderDto,
@@ -379,6 +381,15 @@ export class ApiClient {
     });
   }
 
+  public async updatePantryApplicationData(
+    pantryId: number,
+    data: UpdatePantryApplicationDto,
+  ): Promise<Pantry> {
+    return this.axiosInstance
+      .patch(`/api/pantries/${pantryId}/application`, data)
+      .then((response) => response.data);
+  }
+
   public async createOrder(
     dto: CreateOrderDto,
   ): Promise<OrderWithoutRelations> {
@@ -433,6 +444,21 @@ export class ApiClient {
   public async getCurrentUserPantryId(): Promise<number> {
     return this.axiosInstance
       .get('/api/pantries/my-id')
+      .then((response) => response.data);
+  }
+
+  public async getCurrentUserFoodManufacturerId(): Promise<number> {
+    return this.axiosInstance
+      .get('/api/manufacturers/my-id')
+      .then((response) => response.data);
+  }
+
+  public async updateFoodManufacturerApplicationData(
+    manufacturerId: number,
+    data: UpdateFoodManufacturerApplicationDto,
+  ): Promise<FoodManufacturer> {
+    return this.axiosInstance
+      .patch(`/api/manufacturers/${manufacturerId}/application`, data)
       .then((response) => response.data);
   }
 
