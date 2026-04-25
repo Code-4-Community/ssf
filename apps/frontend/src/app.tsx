@@ -154,7 +154,7 @@ const router = createBrowserRouter([
         path: ROUTES.TEST_ADMIN_DASHBOARD,
         element: (
           <ProtectedRoute>
-            <TestAdminDashboard />
+            <AdminDashboard />
           </ProtectedRoute>
         ),
       },
@@ -215,7 +215,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin-pantry-management',
+        path: ROUTES.ADMIN_PANTRY_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <AdminPantryManagement />

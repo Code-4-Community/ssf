@@ -17,6 +17,7 @@ import { ApprovedPantryResponse, Assignments } from 'types/types';
 import { SearchIcon } from 'lucide-react';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface AssignVolunteersModalProps {
   pantry: ApprovedPantryResponse;
@@ -37,6 +38,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   onClose,
   isOpen,
 }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
   const [assignedVolunteers, setAssignedVolunteers] = useState<
