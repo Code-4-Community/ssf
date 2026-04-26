@@ -16,8 +16,7 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
-import { UsersService } from '../users/users.service';
+import { CheckOwnership } from '../auth/ownership.decorator';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -47,12 +46,7 @@ export class VolunteersController {
 
   @CheckOwnership({
     idParam: 'id',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(UsersService).findOne(entityId),
-        (user: User) => [user.id],
-      );
-    },
+    resolver: async ({ entityId }) => [entityId],
     bypassRoles: [Role.ADMIN],
   })
   @Roles(Role.VOLUNTEER, Role.ADMIN)

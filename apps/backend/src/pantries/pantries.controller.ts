@@ -35,7 +35,6 @@ import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
