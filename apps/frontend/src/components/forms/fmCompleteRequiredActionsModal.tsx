@@ -108,11 +108,15 @@ const FmCompleteRequiredActionsModal: React.FC<
   FmCompleteRequiredActionsModalProps
 > = ({ donation, isOpen, onClose, onSuccess }) => {
   const orders = donation.associatedPendingOrders;
-  const items = donation.relevantDonationItems;
+  const items = donation.relevantDonationItems.filter(
+    (item) => !item.detailsConfirmed,
+  );
   const hasItemsToConfirm = items.length > 0;
 
+  // Track which action user is on
   const [stage, setStage] = useState<Stage>('shipping');
   const [currentPage, setCurrentPage] = useState(1);
+  // Form data for each id to persis between pagination
   const [orderFormData, setOrderFormData] = useState<
     Record<number, OrderFormData>
   >(() =>

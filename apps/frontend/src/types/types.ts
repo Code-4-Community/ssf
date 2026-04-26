@@ -198,6 +198,7 @@ export interface DonationItemWithAllocatedQuantity {
   itemName: string;
   foodType: FoodType;
   allocatedQuantity: number;
+  detailsConfirmed: boolean;
 }
 
 export interface DonationOrderDetails {
@@ -560,11 +561,7 @@ export interface TrackingCostDto {
 
 export interface BulkUpdateTrackingCostDto {
   donationId: number;
-  orders: {
-    orderId: number;
-    trackingLink: string;
-    shippingCost: number;
-  }[];
+  orders: ({ orderId: number } & TrackingCostDto)[];
 }
 
 export interface ConfirmDonationItemDetailsDto {

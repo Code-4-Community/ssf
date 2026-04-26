@@ -84,6 +84,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     }
   };
 
+  // On page load, get the food manufacturer id and all appropriate donations
   useEffect(() => {
     const init = async () => {
       try {
