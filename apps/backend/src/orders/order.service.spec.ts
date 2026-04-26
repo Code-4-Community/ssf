@@ -8,6 +8,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
@@ -34,6 +35,7 @@ jest.setTimeout(60000);
 
 describe('OrdersService', () => {
   let service: OrdersService;
+  let donationService: DonationService;
 
   beforeAll(async () => {
     // Initialize DataSource once
@@ -110,6 +112,7 @@ describe('OrdersService', () => {
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
+    donationService = module.get<DonationService>(DonationService);
   });
 
   beforeEach(async () => {
@@ -1104,6 +1107,267 @@ describe('OrdersService', () => {
           `Action ${action} already completed for Order ${orderId}`,
         ),
       );
+    });
+  });
+
+  describe('bulkUpdateTrackingCostInfo', () => {
+    async function insertMatchedDonation(): Promise<number> {
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      return donation_id;
+    }
+
+    async function insertDonationItem(donationId: number): Promise<number> {
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, food_rescue, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 'Granola', false, false)
+         RETURNING item_id`,
+        [donationId],
+      );
+      return item_id;
+    }
+
+    async function insertAllocation(
+      orderId: number,
+      itemId: number,
+    ): Promise<void> {
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES ($1, $2, 1)`,
+        [orderId, itemId],
+      );
+    }
+
+    async function createPendingOrder(): Promise<number> {
+      const [{ order_id }] = await testDataSource.query(`
+        INSERT INTO orders (request_id, food_manufacturer_id, status, assignee_id)
+        VALUES (
+          (SELECT request_id FROM food_requests LIMIT 1),
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'pending',
+          (SELECT user_id FROM users LIMIT 1)
+        )
+        RETURNING order_id
+      `);
+      return order_id;
+    }
+
+    it('throws BadRequestException when tracking link fails sanitization', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await expect(
+        service.bulkUpdateTrackingCostInfo({
+          donationId,
+          orders: [
+            {
+              orderId: 4,
+              trackingLink: `javascript:alert("you've been hacked!")`,
+              shippingCost: 5.0,
+            },
+          ],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Invalid tracking link for order 4. Only valid HTTP/HTTPS URLs are accepted.',
+        ),
+      );
+    });
+
+    it('throws BadRequestException when one order has an invalid tracking URL', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      await expect(
+        service.bulkUpdateTrackingCostInfo({
+          donationId,
+          orders: [
+            {
+              orderId: 4,
+              trackingLink: 'https://valid.com',
+              shippingCost: 5.0,
+            },
+            {
+              orderId: orderId2,
+              trackingLink: `javascript:alert('xss')`,
+              shippingCost: 5.0,
+            },
+          ],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Invalid tracking link for order ${orderId2}. Only valid HTTP/HTTPS URLs are accepted.`,
+        ),
+      );
+    });
+
+    it('throws NotFoundException when donation does not exist', async () => {
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId: 9999,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking.com',
+            shippingCost: 5.0,
+          },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new NotFoundException('Donation 9999 not found'),
+      );
+    });
+
+    it('throws NotFoundException when one order does not exist', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: 9999,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 6.0,
+          },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new NotFoundException('Order 9999 not found'),
+      );
+    });
+
+    it('throws BadRequestException when one order is not pending', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId1);
+      await insertAllocation(2, itemId2);
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: 2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 6.0,
+          },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new BadRequestException(
+          `Can only update tracking info for pending orders. Order 2 is ${OrderStatus.DELIVERED}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when one order does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+      const orderId2 = await createPendingOrder();
+      // orderId2 has no allocation to donationId
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 6.0,
+          },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new BadRequestException(
+          `Order ${orderId2} does not belong to donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('updates tracking link (sanitized), shipping cost, status, and shippedAt for all orders', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      const before1 = await service.findOne(4);
+      const before2 = await service.findOne(orderId2);
+      expect(before1.status).toEqual(OrderStatus.PENDING);
+      expect(before1.shippedAt).toBeNull();
+      expect(before2.status).toEqual(OrderStatus.PENDING);
+      expect(before2.shippedAt).toBeNull();
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          { orderId: 4, trackingLink: 'tracking1.com', shippingCost: 5.0 },
+          {
+            orderId: orderId2,
+            trackingLink: 'tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      const after1 = await service.findOne(4);
+      const after2 = await service.findOne(orderId2);
+      expect(after1.trackingLink).toEqual('https://tracking1.com/');
+      expect(after1.shippingCost).toEqual(5.0);
+      expect(after1.status).toEqual(OrderStatus.SHIPPED);
+      expect(after1.shippedAt).toBeDefined();
+      expect(after2.trackingLink).toEqual('https://tracking2.com/');
+      expect(after2.shippingCost).toEqual(7.5);
+      expect(after2.status).toEqual(OrderStatus.SHIPPED);
+      expect(after2.shippedAt).toBeDefined();
+    });
+
+    it('calls donationService.checkAndFulfillDonation after updating orders', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const spy = jest.spyOn(donationService, 'checkAndFulfillDonation');
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          { orderId: 4, trackingLink: 'tracking.com', shippingCost: 5.0 },
+        ],
+      });
+
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

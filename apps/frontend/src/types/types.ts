@@ -552,3 +552,24 @@ export type OrderItemDetailsGroupedByFoodType = Partial<
 export type DonationItemsGroupedByFoodType = Partial<
   Record<FoodType, DonationItemDetailsDto[]>
 >;
+
+export interface TrackingCostDto {
+  trackingLink: string;
+  shippingCost: number;
+}
+
+export interface BulkUpdateTrackingCostDto {
+  donationId: number;
+  orders: {
+    orderId: number;
+    trackingLink: string;
+    shippingCost: number;
+  }[];
+}
+
+export interface ConfirmDonationItemDetailsDto {
+  itemId: number;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodRescue: boolean;
+}
