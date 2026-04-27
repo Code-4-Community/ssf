@@ -1026,54 +1026,6 @@ describe('OrdersService', () => {
       );
     });
 
-    it('throws BadRequestException when tracking link fails sanitization', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId);
-      await insertAllocation(4, itemId);
-
-      await expect(
-        service.bulkUpdateTrackingCostInfo({
-          donationId,
-          orders: [
-            {
-              orderId: 4,
-              trackingLink: `javascript:alert("you've been hacked!")`,
-            },
-          ],
-        }),
-      ).rejects.toThrow(
-        new BadRequestException(
-          'Invalid tracking link for order 4. Only valid HTTP/HTTPS URLs are accepted.',
-        ),
-      );
-    });
-
-    it('throws BadRequestException when one order has an invalid tracking URL', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId1 = await insertDonationItem(donationId);
-      const itemId2 = await insertDonationItem(donationId);
-      const orderId2 = await createPendingOrder();
-      await insertAllocation(4, itemId1);
-      await insertAllocation(orderId2, itemId2);
-
-      await expect(
-        service.bulkUpdateTrackingCostInfo({
-          donationId,
-          orders: [
-            { orderId: 4, trackingLink: 'https://valid.com' },
-            {
-              orderId: orderId2,
-              trackingLink: `javascript:alert('xss')`,
-            },
-          ],
-        }),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Invalid tracking link for order ${orderId2}. Only valid HTTP/HTTPS URLs are accepted.`,
-        ),
-      );
-    });
-
     it('throws NotFoundException when donation does not exist', async () => {
       const dto: BulkUpdateTrackingCostDto = {
         donationId: 9999,
@@ -1158,10 +1110,14 @@ describe('OrdersService', () => {
       await service.bulkUpdateTrackingCostInfo({
         donationId,
         orders: [
-          { orderId: 4, trackingLink: 'tracking1.com', shippingCost: 5.0 },
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
           {
             orderId: orderId2,
-            trackingLink: 'tracking2.com',
+            trackingLink: 'https://tracking2.com',
             shippingCost: 7.5,
           },
         ],
@@ -1169,11 +1125,11 @@ describe('OrdersService', () => {
 
       const after1 = await service.findOne(4);
       const after2 = await service.findOne(orderId2);
-      expect(after1.trackingLink).toEqual('https://tracking1.com/');
+      expect(after1.trackingLink).toEqual('https://tracking1.com');
       expect(after1.shippingCost).toEqual(5.0);
       expect(after1.status).toEqual(OrderStatus.SHIPPED);
       expect(after1.shippedAt).toBeDefined();
-      expect(after2.trackingLink).toEqual('https://tracking2.com/');
+      expect(after2.trackingLink).toEqual('https://tracking2.com');
       expect(after2.shippingCost).toEqual(7.5);
       expect(after2.status).toEqual(OrderStatus.SHIPPED);
       expect(after2.shippedAt).toBeDefined();
@@ -1186,11 +1142,11 @@ describe('OrdersService', () => {
 
       await service.bulkUpdateTrackingCostInfo({
         donationId,
-        orders: [{ orderId: 4, trackingLink: 'tracking.com' }],
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
       });
 
       const after = await service.findOne(4);
-      expect(after.trackingLink).toEqual('https://tracking.com/');
+      expect(after.trackingLink).toEqual('https://tracking.com');
       expect(after.shippingCost).toBeNull();
       expect(after.status).toEqual(OrderStatus.PENDING);
       expect(after.shippedAt).toBeNull();
@@ -1220,7 +1176,7 @@ describe('OrdersService', () => {
 
       await service.bulkUpdateTrackingCostInfo({
         donationId,
-        orders: [{ orderId: 4, trackingLink: 'tracking.com' }],
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
       });
       expect((await service.findOne(4)).status).toEqual(OrderStatus.PENDING);
 
@@ -1230,7 +1186,7 @@ describe('OrdersService', () => {
       });
 
       const after = await service.findOne(4);
-      expect(after.trackingLink).toEqual('https://tracking.com/');
+      expect(after.trackingLink).toEqual('https://tracking.com');
       expect(after.shippingCost).toEqual(10.0);
       expect(after.status).toEqual(OrderStatus.SHIPPED);
       expect(after.shippedAt).toBeDefined();

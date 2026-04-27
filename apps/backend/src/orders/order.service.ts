@@ -8,7 +8,7 @@ import { Repository, In, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { sanitizeUrl, validateId } from '../utils/validation.utils';
+import { validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
@@ -445,25 +445,16 @@ export class OrdersService {
   async bulkUpdateTrackingCostInfo(
     dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
-    // Sanitize all URLs before entering transaction
-    for (const entry of dto.orders) {
-      validateId(entry.orderId, 'Order');
+    for (const order of dto.orders) {
+      validateId(order.orderId, 'Order');
+
       if (
-        entry.trackingLink === undefined &&
-        entry.shippingCost === undefined
+        order.trackingLink === undefined &&
+        order.shippingCost === undefined
       ) {
         throw new BadRequestException(
-          `Order ${entry.orderId} must include at least a tracking link or shipping cost.`,
+          `Order ${order.orderId} must include at least a tracking link or shipping cost.`,
         );
-      }
-      if (entry.trackingLink !== undefined) {
-        const sanitized = sanitizeUrl(entry.trackingLink);
-        if (!sanitized) {
-          throw new BadRequestException(
-            `Invalid tracking link for order ${entry.orderId}. Only valid HTTP/HTTPS URLs are accepted.`,
-          );
-        }
-        entry.trackingLink = sanitized;
       }
     }
 
@@ -495,6 +486,7 @@ export class OrdersService {
           );
         }
 
+        // Can only update orders belonging to the provided donation
         const relatedCount = await transactionManager
           .createQueryBuilder(DonationItem, 'item')
           .innerJoin('item.allocations', 'allocation')

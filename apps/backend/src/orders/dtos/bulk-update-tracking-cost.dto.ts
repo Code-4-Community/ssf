@@ -18,6 +18,7 @@ export class OrderTrackingCostEntryDto {
   @IsUrl(
     {
       protocols: ['http', 'https'],
+      require_protocol: true,
     },
     { message: 'Tracking link must be a valid HTTP/HTTPS URL' },
   )

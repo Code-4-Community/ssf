@@ -146,6 +146,7 @@ export class FoodManufacturersService {
                 items: [],
               });
             }
+            // Populate the items afterwards
             orderMap.get(order.orderId)!.items.push({
               id: item.itemId,
               name: item.itemName,
