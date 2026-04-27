@@ -149,7 +149,11 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content>
           <Dialog.CloseTrigger asChild>
-            <CloseButton size="md" mt={3} />
+            <CloseButton
+              color="var(--chakra-colors-neutral-700)"
+              size="md"
+              mt={3}
+            />
           </Dialog.CloseTrigger>
 
           <Dialog.Header pb={0}>
@@ -171,8 +175,12 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
               <VStack align="stretch" gap={8} mt={6}>
                 <InputGroup
                   startElement={
-                    <Box color="var(--chakra-colors-neutral-600)">
-                      <SearchIcon size={13} strokeWidth={3} />
+                    <Box>
+                      <SearchIcon
+                        color="var(--chakra-colors-neutral-600)"
+                        size={13}
+                        strokeWidth={3}
+                      />
                     </Box>
                   }
                   px={3}

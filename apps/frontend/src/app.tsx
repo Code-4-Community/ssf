@@ -215,7 +215,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ROUTES.ADMIN_PANTRY_MANAGEMENT,
+        path: ROUTES.PANTRY_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <AdminPantryManagement />
