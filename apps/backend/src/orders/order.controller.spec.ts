@@ -9,7 +9,6 @@ import { OrderStatus, VolunteerAction } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodType } from '../donationItems/types';
@@ -357,22 +356,6 @@ describe('OrdersController', () => {
       await expect(
         controller.updateStatus(orderId, invalidStatus),
       ).rejects.toThrow(new BadRequestException('Invalid status'));
-    });
-  });
-
-  describe('updateTrackingCostInfo', () => {
-    it('should call ordersService.updateTrackingCostInfo with correct parameters', async () => {
-      const orderId = 1;
-      const trackingLink = 'www.samplelink/samplelink';
-      const shippingCost = 15.99;
-      const dto: TrackingCostDto = { trackingLink, shippingCost };
-
-      await controller.updateTrackingCostInfo(orderId, dto);
-
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
-        dto,
-      );
     });
   });
 

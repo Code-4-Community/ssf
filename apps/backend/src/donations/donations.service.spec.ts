@@ -183,6 +183,7 @@ describe('DonationService', () => {
   });
 
   afterEach(async () => {
+    jest.restoreAllMocks();
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
