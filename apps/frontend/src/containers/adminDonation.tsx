@@ -252,15 +252,15 @@ const AdminDonation: React.FC = () => {
               </Table.Cell>
             </Table.Row>
           ))}
-          {selectedDonation && (
-            <DonationDetailsModal
-              donation={selectedDonation}
-              isOpen={selectedDonation !== null}
-              onClose={() => setSelectedDonation(null)}
-            />
-          )}
         </Table.Body>
       </Table.Root>
+      {selectedDonation && (
+        <DonationDetailsModal
+          donation={selectedDonation}
+          isOpen={selectedDonation !== null}
+          onClose={() => setSelectedDonation(null)}
+        />
+      )}
 
       {totalPages > 1 && (
         <Pagination.Root

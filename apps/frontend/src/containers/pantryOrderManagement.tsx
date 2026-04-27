@@ -106,7 +106,7 @@ const PantryOrderManagement: React.FC = () => {
         [OrderStatus.DELIVERED]: 1,
       };
       setCurrentPages(initialPages);
-    } catch (error) {
+    } catch {
       setIsAlertError(true);
       setAlertMessage('Failed to fetch orders');
     }
