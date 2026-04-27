@@ -423,7 +423,7 @@ export class ApiClient {
     pantryId: number,
   ): Promise<FoodRequestSummaryDto[]> {
     return this.axiosInstance
-      .get(`/api/requests/${pantryId}/all`)
+      .get(`/api/pantries/${pantryId}/requests`)
       .then((response) => response.data);
   }
 
