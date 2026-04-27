@@ -265,7 +265,7 @@ export class RequestsService {
     return foodRequest;
   }
 
-  async find(pantryId: number): Promise<FoodRequestSummaryDto[]> {
+  async findAllForPantry(pantryId: number): Promise<FoodRequestSummaryDto[]> {
     validateId(pantryId, 'Pantry');
 
     return await this.repo.find({

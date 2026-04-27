@@ -8,14 +8,16 @@ import {
   Body,
   Patch,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
+import { PendingApplication, Role } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { UseGuards } from '@nestjs/common';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -30,6 +32,12 @@ export class UsersController {
   @Get('/:id')
   async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('/admin/recent-pending-applications')
+  async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    return this.usersService.getRecentPendingApplications();
   }
 
   @Delete('/:id')
