@@ -62,6 +62,10 @@ export class VolunteersService {
 
   async getRecentOrders(volunteerId: number): Promise<VolunteerOrder[]> {
     validateId(volunteerId, 'Volunteer');
+    const volunteer = await this.findOne(volunteerId);
+    if (!volunteer) {
+      throw new NotFoundException(`Volunteer ${volunteerId} not found`);
+    }
     return this.ordersService.getRecentOrdersByAssignee(volunteerId);
   }
 

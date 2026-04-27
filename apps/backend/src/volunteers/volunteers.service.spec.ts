@@ -368,5 +368,11 @@ describe('VolunteersService', () => {
         expect(order.deliveredAt).toBeDefined();
       });
     });
+
+    it('throws when volunteer does not exist', async () => {
+      await expect(service.getRecentOrders(999)).rejects.toThrow(
+        new NotFoundException('Volunteer 999 not found'),
+      );
+    });
   });
 });
