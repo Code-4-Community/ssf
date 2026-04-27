@@ -19,7 +19,11 @@ import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { DonationDetailsDto } from './dtos/donation-details-dto';
+import {
+  DonationDetailsDto,
+  DonationReminderDto,
+} from './dtos/donation-details-dto';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -57,6 +61,26 @@ export class FoodManufacturersController {
     return this.foodManufacturersService.getFMDonations(
       foodManufacturerId,
       req.user.id,
+    );
+  }
+
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(FoodManufacturersService).findOne(entityId),
+        (manufacturer: FoodManufacturer) => [
+          manufacturer.foodManufacturerRepresentative.id,
+        ],
+      ),
+  })
+  @Roles(Role.FOODMANUFACTURER)
+  @Get('/:foodManufacturerId/next-two-reminders')
+  async getNextTwoDonationReminders(
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+  ): Promise<DonationReminderDto[]> {
+    return this.foodManufacturersService.getUpcomingDonationReminders(
+      foodManufacturerId,
     );
   }
 
