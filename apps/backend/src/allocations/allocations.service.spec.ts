@@ -188,6 +188,10 @@ describe('AllocationsService', () => {
         [itemId2],
       );
 
+      const [{ count: allocationCountBefore }] = await testDataSource.query(
+        `SELECT COUNT(*) FROM allocations`,
+      );
+
       await expect(
         testDataSource.transaction(async (manager) => {
           await service.createMultiple(
@@ -210,8 +214,13 @@ describe('AllocationsService', () => {
         [itemId2],
       );
 
+      const [{ count: allocationCountAfter }] = await testDataSource.query(
+        `SELECT COUNT(*) FROM allocations`,
+      );
+
       expect(Number(after1)).toBe(Number(before1));
       expect(Number(after2)).toBe(Number(before2));
+      expect(Number(allocationCountAfter)).toBe(Number(allocationCountBefore));
     });
   });
 });
