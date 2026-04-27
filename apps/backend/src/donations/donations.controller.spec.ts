@@ -6,7 +6,7 @@ import { Donation } from './donations.entity';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
-import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
@@ -135,9 +135,9 @@ describe('DonationsController', () => {
   });
 
   describe('PATCH /:donationId/item-details', () => {
-    it('calls confirmDonationItemDetails with the correct donationId and body, returns result', async () => {
+    it('calls updateDonationItemDetails with the correct donationId and body, returns result', async () => {
       const donationId = 1;
-      const body: ConfirmDonationItemDetailsDto[] = [
+      const body: UpdateDonationItemDetailsDto[] = [
         {
           itemId: 1,
           ozPerItem: 5.0,
@@ -152,18 +152,18 @@ describe('DonationsController', () => {
         },
       ];
 
-      mockDonationService.confirmDonationItemDetails.mockResolvedValueOnce(
+      mockDonationService.updateDonationItemDetails.mockResolvedValueOnce(
         donation1 as Donation,
       );
 
-      const result = await controller.confirmDonationItemDetails(
+      const result = await controller.updateDonationItemDetails(
         donationId,
         body,
       );
 
       expect(result).toEqual(donation1);
       expect(
-        mockDonationService.confirmDonationItemDetails,
+        mockDonationService.updateDonationItemDetails,
       ).toHaveBeenCalledWith(donationId, body);
     });
   });

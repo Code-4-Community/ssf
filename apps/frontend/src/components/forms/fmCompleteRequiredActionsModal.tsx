@@ -18,8 +18,9 @@ import axios from 'axios';
 import ApiClient from '@api/apiClient';
 import {
   DonationDetails,
+  DonationItem,
   OrderDetails,
-  ConfirmDonationItemDetailsDto,
+  UpdateDonationItemDetailsDto,
 } from '../../types/types';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -108,15 +109,11 @@ const FmCompleteRequiredActionsModal: React.FC<
   FmCompleteRequiredActionsModalProps
 > = ({ donation, isOpen, onClose, onSuccess }) => {
   const orders = donation.associatedPendingOrders;
-  const items = donation.relevantDonationItems.filter(
-    (item) => !item.detailsConfirmed,
-  );
-  const hasItemsToConfirm = items.length > 0;
 
   // Track which action user is on
   const [stage, setStage] = useState<Stage>('shipping');
   const [currentPage, setCurrentPage] = useState(1);
-  // Form data for each id to persis between pagination
+  // Form data for each id to persist between pagination
   const [orderFormData, setOrderFormData] = useState<
     Record<number, OrderFormData>
   >(() =>
@@ -124,16 +121,10 @@ const FmCompleteRequiredActionsModal: React.FC<
       orders.map((o) => [o.orderId, { shippingCost: '', trackingLink: '' }]),
     ),
   );
+  const [donationItems, setDonationItems] = useState<DonationItem[]>([]);
   const [itemFormData, setItemFormData] = useState<
     Record<number, ItemFormData>
-  >(() =>
-    Object.fromEntries(
-      items.map((item) => [
-        item.itemId,
-        { ozPerItem: '', estimatedValue: '', foodRescue: false },
-      ]),
-    ),
-  );
+  >({});
   const [orderDetailsMap, setOrderDetailsMap] = useState<
     Record<number, OrderDetails>
   >({});
@@ -144,22 +135,50 @@ const FmCompleteRequiredActionsModal: React.FC<
   const currentOrder = orders[currentPage - 1];
 
   useEffect(() => {
-    const fetchAllOrderDetails = async () => {
+    const fetchData = async () => {
       try {
-        const fetchedDetails = await Promise.all(
-          orders.map((order) => ApiClient.getOrder(order.orderId)),
+        const [fetchedItems, ...fetchedOrderDetails] = await Promise.all([
+          ApiClient.getDonationItemsByDonationId(donation.donation.donationId),
+          ...orders.map((order) => ApiClient.getOrder(order.orderId)),
+        ]);
+
+        setDonationItems(fetchedItems as DonationItem[]);
+        setItemFormData(
+          Object.fromEntries(
+            (fetchedItems as DonationItem[]).map((item) => [
+              item.itemId,
+              {
+                ozPerItem: item.ozPerItem?.toString() ?? '',
+                estimatedValue: item.estimatedValue?.toString() ?? '',
+                foodRescue: item.foodRescue,
+              },
+            ]),
+          ),
         );
+
         const detailsMap: Record<number, OrderDetails> = {};
         orders.forEach((order, i) => {
-          detailsMap[order.orderId] = fetchedDetails[i];
+          detailsMap[order.orderId] = fetchedOrderDetails[i] as OrderDetails;
         });
         setOrderDetailsMap(detailsMap);
+
+        setOrderFormData((prev) => {
+          const updated = { ...prev };
+          orders.forEach((order) => {
+            const details = detailsMap[order.orderId];
+            updated[order.orderId] = {
+              trackingLink: details?.trackingLink ?? '',
+              shippingCost: details?.shippingCost?.toString() ?? '',
+            };
+          });
+          return updated;
+        });
       } catch {
-        setAlertMessage('Error fetching order details. Please try again.');
+        setAlertMessage('Error fetching donation details. Please try again.');
       }
     };
 
-    fetchAllOrderDetails();
+    fetchData();
   }, []);
 
   const updateOrderField = (
@@ -184,52 +203,63 @@ const FmCompleteRequiredActionsModal: React.FC<
     }));
   };
 
-  const areOrderFieldsFilled = orders.every(
-    (order) =>
-      orderFormData[order.orderId].trackingLink.trim() !== '' &&
-      orderFormData[order.orderId].shippingCost !== '',
-  );
-
-  const areItemFieldsFilled = items.every(
-    (item) =>
-      itemFormData[item.itemId].ozPerItem !== '' &&
-      itemFormData[item.itemId].estimatedValue !== '',
-  );
-
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      if (hasItemsToConfirm) {
-        const confirmItems: ConfirmDonationItemDetailsDto[] = items.map(
-          (item) => ({
+      const confirmItems: UpdateDonationItemDetailsDto[] = donationItems.map(
+        (item) => {
+          const formData = itemFormData[item.itemId];
+          const dto: UpdateDonationItemDetailsDto = {
             itemId: item.itemId,
-            ozPerItem: parseFloat(itemFormData[item.itemId].ozPerItem),
-            estimatedValue: parseFloat(
-              itemFormData[item.itemId].estimatedValue,
-            ),
-            foodRescue: itemFormData[item.itemId].foodRescue,
-          }),
-        );
-        await ApiClient.confirmDonationItemDetails(
-          donation.donation.donationId,
-          confirmItems,
-        );
-      }
+            foodRescue: formData.foodRescue,
+          };
+          if (formData.ozPerItem !== '')
+            dto.ozPerItem = parseFloat(formData.ozPerItem);
+          if (formData.estimatedValue !== '')
+            dto.estimatedValue = parseFloat(formData.estimatedValue);
+          return dto;
+        },
+      );
+      await ApiClient.updateDonationItemDetails(
+        donation.donation.donationId,
+        confirmItems,
+      );
 
-      await ApiClient.bulkUpdateTrackingCostInfo({
-        donationId: donation.donation.donationId,
-        orders: orders.map((order) => ({
-          orderId: order.orderId,
-          trackingLink: orderFormData[order.orderId].trackingLink,
-          shippingCost: parseFloat(orderFormData[order.orderId].shippingCost),
-        })),
-      });
+      const ordersToUpdate = orders
+        .filter((order) => {
+          const { trackingLink, shippingCost } = orderFormData[order.orderId];
+          return trackingLink.trim() !== '' || shippingCost.trim() !== '';
+        })
+        .map(
+          (
+            order,
+          ): {
+            orderId: number;
+            trackingLink?: string;
+            shippingCost?: number;
+          } => {
+            const { trackingLink, shippingCost } = orderFormData[order.orderId];
+            return {
+              orderId: order.orderId,
+              ...(trackingLink.trim() !== '' && { trackingLink }),
+              ...(shippingCost !== '' && {
+                shippingCost: parseFloat(shippingCost),
+              }),
+            };
+          },
+        );
+
+      if (ordersToUpdate.length > 0) {
+        await ApiClient.bulkUpdateTrackingCostInfo({
+          donationId: donation.donation.donationId,
+          orders: ordersToUpdate,
+        });
+      }
 
       onSuccess();
     } catch (error) {
       const rawMsg = axios.isAxiosError(error) && error.response?.data?.message;
       const msg = Array.isArray(rawMsg) ? rawMsg[0] : rawMsg;
-      // Strip out nested validation for the orders for cleaner message
       setAlertMessage(
         msg
           ? msg.replace(/^orders\.\d+\./, '')
@@ -295,9 +325,6 @@ const FmCompleteRequiredActionsModal: React.FC<
                 <Box mt={4}>
                   <Text fontWeight="600" fontSize="sm" color="neutral.800">
                     Shipping Cost
-                    <Text as="span" color="red">
-                      *
-                    </Text>
                   </Text>
                   <Input
                     mt={1}
@@ -319,9 +346,6 @@ const FmCompleteRequiredActionsModal: React.FC<
                 <Box mt={4}>
                   <Text fontWeight="600" fontSize="sm" color="neutral.800">
                     Delivery Tracking Link
-                    <Text as="span" color="red">
-                      *
-                    </Text>
                   </Text>
                   <Input
                     mt={1}
@@ -429,32 +453,15 @@ const FmCompleteRequiredActionsModal: React.FC<
                   >
                     Cancel
                   </Button>
-                  {hasItemsToConfirm ? (
-                    <Button
-                      backgroundColor="blue.ssf"
-                      color="neutral.50"
-                      fontWeight={600}
-                      size="md"
-                      disabled={!areOrderFieldsFilled}
-                      _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                      onClick={() => setStage('itemDetails')}
-                    >
-                      Continue
-                    </Button>
-                  ) : (
-                    <Button
-                      backgroundColor="blue.ssf"
-                      color="neutral.50"
-                      fontWeight={600}
-                      size="md"
-                      disabled={!areOrderFieldsFilled || isSubmitting}
-                      _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                      loading={isSubmitting}
-                      onClick={handleSubmit}
-                    >
-                      Complete Actions
-                    </Button>
-                  )}
+                  <Button
+                    backgroundColor="blue.ssf"
+                    color="neutral.50"
+                    fontWeight={600}
+                    size="md"
+                    onClick={() => setStage('itemDetails')}
+                  >
+                    Continue
+                  </Button>
                 </Flex>
               </>
             )}
@@ -479,15 +486,9 @@ const FmCompleteRequiredActionsModal: React.FC<
                         </Table.ColumnHeader>
                         <Table.ColumnHeader {...tableHeaderStyles} width="18%">
                           Oz. per item
-                          <Text as="span" color="red">
-                            *
-                          </Text>
                         </Table.ColumnHeader>
                         <Table.ColumnHeader {...tableHeaderStyles} width="18%">
                           Donation Value
-                          <Text as="span" color="red">
-                            *
-                          </Text>
                         </Table.ColumnHeader>
                         <Table.ColumnHeader
                           {...tableHeaderStyles}
@@ -495,14 +496,11 @@ const FmCompleteRequiredActionsModal: React.FC<
                           textAlign="center"
                         >
                           Food Rescue
-                          <Text as="span" color="red">
-                            *
-                          </Text>
                         </Table.ColumnHeader>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {items.map((item) => (
+                      {donationItems.map((item) => (
                         <Table.Row key={item.itemId}>
                           <Table.Cell
                             borderBottom="1px solid"
@@ -525,7 +523,7 @@ const FmCompleteRequiredActionsModal: React.FC<
                               min={0.01}
                               step={0.01}
                               placeholder="0.00"
-                              value={itemFormData[item.itemId].ozPerItem}
+                              value={itemFormData[item.itemId]?.ozPerItem ?? ''}
                               onChange={(e) =>
                                 updateItemField(
                                   item.itemId,
@@ -547,7 +545,9 @@ const FmCompleteRequiredActionsModal: React.FC<
                               min={0.01}
                               step={0.01}
                               placeholder="0.00"
-                              value={itemFormData[item.itemId].estimatedValue}
+                              value={
+                                itemFormData[item.itemId]?.estimatedValue ?? ''
+                              }
                               onChange={(e) =>
                                 updateItemField(
                                   item.itemId,
@@ -564,7 +564,9 @@ const FmCompleteRequiredActionsModal: React.FC<
                             textAlign="center"
                           >
                             <Checkbox.Root
-                              checked={itemFormData[item.itemId].foodRescue}
+                              checked={
+                                itemFormData[item.itemId]?.foodRescue ?? false
+                              }
                               size="lg"
                               borderRadius="2px"
                               onCheckedChange={(e: { checked: boolean }) =>
@@ -605,12 +607,12 @@ const FmCompleteRequiredActionsModal: React.FC<
                     color="neutral.50"
                     fontWeight={600}
                     size="md"
-                    disabled={!areItemFieldsFilled || isSubmitting}
+                    disabled={isSubmitting}
                     _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
                     loading={isSubmitting}
                     onClick={handleSubmit}
                   >
-                    Complete Actions
+                    Submit
                   </Button>
                 </Flex>
               </>

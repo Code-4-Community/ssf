@@ -11,7 +11,6 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -277,6 +276,7 @@ export class OrdersService {
       status: order.status,
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
       trackingLink: order.trackingLink,
+      shippingCost: order.shippingCost,
       items: order.allocations.map((allocation) => ({
         id: allocation.item.itemId,
         name: allocation.item.itemName,
@@ -442,68 +442,29 @@ export class OrdersService {
     return qb.getMany();
   }
 
-  async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
-    validateId(orderId, 'Order');
-
-    const sanitized = sanitizeUrl(dto.trackingLink);
-    if (!sanitized) {
-      throw new BadRequestException(
-        'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-      );
-    }
-    dto.trackingLink = sanitized;
-
-    const order = await this.repo.findOneBy({ orderId });
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-
-    if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestException(
-        'Can only update tracking info for pending orders',
-      );
-    }
-
-    order.trackingLink = dto.trackingLink;
-    order.shippingCost = dto.shippingCost;
-
-    order.status = OrderStatus.SHIPPED;
-    order.shippedAt = new Date();
-
-    await this.repo.save(order);
-
-    await this.checkAndFulfillDonations(orderId);
-  }
-
-  async checkAndFulfillDonations(orderId: number): Promise<void> {
-    const affectedDonations = await this.donationItemRepo
-      .createQueryBuilder('item')
-      .innerJoin('item.allocations', 'allocation')
-      .where('allocation.orderId = :orderId', { orderId })
-      .select('DISTINCT item.donationId', 'donationId')
-      .getRawMany<{ donationId: number }>();
-
-    for (const { donationId } of affectedDonations) {
-      const donation = await this.donationRepo.findOneBy({ donationId });
-      if (donation) {
-        await this.donationService.checkAndFulfillDonation(donation);
-      }
-    }
-  }
-
   async bulkUpdateTrackingCostInfo(
     dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
     // Sanitize all URLs before entering transaction
     for (const entry of dto.orders) {
       validateId(entry.orderId, 'Order');
-      const sanitized = sanitizeUrl(entry.trackingLink);
-      if (!sanitized) {
+      if (
+        entry.trackingLink === undefined &&
+        entry.shippingCost === undefined
+      ) {
         throw new BadRequestException(
-          `Invalid tracking link for order ${entry.orderId}. Only valid HTTP/HTTPS URLs are accepted.`,
+          `Order ${entry.orderId} must include at least a tracking link or shipping cost.`,
         );
       }
-      entry.trackingLink = sanitized;
+      if (entry.trackingLink !== undefined) {
+        const sanitized = sanitizeUrl(entry.trackingLink);
+        if (!sanitized) {
+          throw new BadRequestException(
+            `Invalid tracking link for order ${entry.orderId}. Only valid HTTP/HTTPS URLs are accepted.`,
+          );
+        }
+        entry.trackingLink = sanitized;
+      }
     }
 
     await this.dataSource.transaction(async (transactionManager) => {
@@ -549,10 +510,16 @@ export class OrdersService {
           );
         }
 
-        order.trackingLink = entry.trackingLink;
-        order.shippingCost = entry.shippingCost;
-        order.status = OrderStatus.SHIPPED;
-        order.shippedAt = new Date();
+        if (entry.trackingLink !== undefined) {
+          order.trackingLink = entry.trackingLink;
+        }
+        if (entry.shippingCost !== undefined) {
+          order.shippingCost = entry.shippingCost;
+        }
+        if (order.trackingLink != null && order.shippingCost != null) {
+          order.status = OrderStatus.SHIPPED;
+          order.shippedAt = new Date();
+        }
         ordersToUpdate.push(order);
       }
 

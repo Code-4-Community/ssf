@@ -40,9 +40,8 @@ import {
   VolunteerOrder,
   VolunteerAction,
   FoodRequestWithoutRelations,
-  TrackingCostDto,
   BulkUpdateTrackingCostDto,
-  ConfirmDonationItemDetailsDto,
+  UpdateDonationItemDetailsDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -456,16 +455,6 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async updateTrackingCostInfo(
-    orderId: number,
-    data: TrackingCostDto,
-  ): Promise<void> {
-    await this.axiosInstance.patch(
-      `/api/orders/${orderId}/update-tracking-cost-info`,
-      data,
-    );
-  }
-
   public async bulkUpdateTrackingCostInfo(
     data: BulkUpdateTrackingCostDto,
   ): Promise<void> {
@@ -475,9 +464,9 @@ export class ApiClient {
     );
   }
 
-  public async confirmDonationItemDetails(
+  public async updateDonationItemDetails(
     donationId: number,
-    items: ConfirmDonationItemDetailsDto[],
+    items: UpdateDonationItemDetailsDto[],
   ): Promise<void> {
     await this.axiosInstance.patch(
       `/api/donations/${donationId}/item-details`,

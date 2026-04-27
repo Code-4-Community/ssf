@@ -23,7 +23,6 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -209,15 +208,6 @@ export class OrdersController {
     @Body(new ValidationPipe()) dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
     return this.ordersService.bulkUpdateTrackingCostInfo(dto);
-  }
-
-  @Patch('/:orderId/update-tracking-cost-info')
-  async updateTrackingCostInfo(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body(new ValidationPipe())
-    dto: TrackingCostDto,
-  ): Promise<void> {
-    return this.ordersService.updateTrackingCostInfo(orderId, dto);
   }
 
   @Patch('/:orderId/confirm-delivery')

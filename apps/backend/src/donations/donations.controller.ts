@@ -15,7 +15,7 @@ import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
-import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { FoodType } from '../donationItems/types';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 
@@ -103,12 +103,12 @@ export class DonationsController {
   }
 
   @Patch('/:donationId/item-details')
-  async confirmDonationItemDetails(
+  async updateDonationItemDetails(
     @Param('donationId', ParseIntPipe) donationId: number,
-    @Body(new ParseArrayPipe({ items: ConfirmDonationItemDetailsDto }))
-    body: ConfirmDonationItemDetailsDto[],
+    @Body(new ParseArrayPipe({ items: UpdateDonationItemDetailsDto }))
+    body: UpdateDonationItemDetailsDto[],
   ): Promise<Donation> {
-    return this.donationService.confirmDonationItemDetails(donationId, body);
+    return this.donationService.updateDonationItemDetails(donationId, body);
   }
 
   @Put('/:donationId/items')

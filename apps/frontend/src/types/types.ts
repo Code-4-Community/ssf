@@ -324,6 +324,7 @@ export interface OrderDetails {
   status: OrderStatus;
   foodManufacturerName: string;
   trackingLink: string | null;
+  shippingCost: number | null;
   items: OrderItemDetails[];
 }
 
@@ -554,19 +555,18 @@ export type DonationItemsGroupedByFoodType = Partial<
   Record<FoodType, DonationItemDetailsDto[]>
 >;
 
-export interface TrackingCostDto {
-  trackingLink: string;
-  shippingCost: number;
-}
-
 export interface BulkUpdateTrackingCostDto {
   donationId: number;
-  orders: ({ orderId: number } & TrackingCostDto)[];
+  orders: {
+    orderId: number;
+    trackingLink?: string;
+    shippingCost?: number;
+  }[];
 }
 
-export interface ConfirmDonationItemDetailsDto {
+export interface UpdateDonationItemDetailsDto {
   itemId: number;
-  ozPerItem: number;
-  estimatedValue: number;
-  foodRescue: boolean;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodRescue?: boolean;
 }
