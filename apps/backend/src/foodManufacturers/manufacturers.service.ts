@@ -158,8 +158,6 @@ export class FoodManufacturersService {
       where: { foodManufacturer: { foodManufacturerId } },
     });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const donationReminders: DonationReminderDto[] = donations.flatMap(
       (donation) => {
         const allDates = (donation.nextDonationDates ?? [])
