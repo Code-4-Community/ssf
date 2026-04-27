@@ -121,17 +121,18 @@ export class FoodManufacturersService {
 
           if (pendingAllocations.length === 0) return;
 
-          if (!item.detailsConfirmed) {
-            relevantDonationItems.push({
-              itemId: item.itemId,
-              itemName: item.itemName,
-              foodType: item.foodType,
-              allocatedQuantity: pendingAllocations.reduce(
-                (sum, a) => sum + a.allocatedQuantity,
-                0,
-              ),
-            });
-          }
+          relevantDonationItems.push({
+            itemId: item.itemId,
+            itemName: item.itemName,
+            foodType: item.foodType,
+            allocatedQuantity: pendingAllocations.reduce(
+              (sum, a) => sum + a.allocatedQuantity,
+              0,
+            ),
+            ozPerItem: item.ozPerItem ?? undefined,
+            estimatedValue: item.estimatedValue ?? undefined,
+            foodRescue: item.foodRescue,
+          });
 
           pendingAllocations.forEach((a) => {
             const order = a.order;
@@ -140,8 +141,17 @@ export class FoodManufacturersService {
                 orderId: order.orderId,
                 pantryId: order.request.pantry.pantryId,
                 pantryName: order.request.pantry.pantryName,
+                trackingLink: order.trackingLink,
+                shippingCost: order.shippingCost,
+                items: [],
               });
             }
+            orderMap.get(order.orderId)!.items.push({
+              id: item.itemId,
+              name: item.itemName,
+              quantity: a.allocatedQuantity,
+              foodType: item.foodType,
+            });
           });
         });
       }

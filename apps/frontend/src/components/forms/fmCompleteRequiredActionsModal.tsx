@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -18,8 +18,7 @@ import axios from 'axios';
 import ApiClient from '@api/apiClient';
 import {
   DonationDetails,
-  DonationItem,
-  OrderDetails,
+  OrderItemDetails,
   UpdateDonationItemDetailsDto,
 } from '../../types/types';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
@@ -48,11 +47,11 @@ interface ItemFormData {
 
 // Order items section
 const OrderItemsSection: React.FC<{
-  orderDetails: OrderDetails | undefined;
-}> = ({ orderDetails }) => {
-  const groupedItems = useGroupedItemsByFoodType(orderDetails?.items);
+  items: OrderItemDetails[] | undefined;
+}> = ({ items }) => {
+  const groupedItems = useGroupedItemsByFoodType(items);
 
-  if (!orderDetails) {
+  if (!items) {
     return (
       <Text fontSize="sm" color="neutral.500" mt={3}>
         Loading order details...
@@ -110,76 +109,58 @@ const FmCompleteRequiredActionsModal: React.FC<
 > = ({ donation, isOpen, onClose, onSuccess }) => {
   const orders = donation.associatedPendingOrders;
 
-  // Track which action user is on
+  // Which stage of the two-step modal the user is currently on
   const [stage, setStage] = useState<Stage>('shipping');
   const [currentPage, setCurrentPage] = useState(1);
-  // Form data for each id to persist between pagination
+
+  // Shipping cost and tracking link inputs keyed by orderId, pre-filled from prop and persisted across pagination
   const [orderFormData, setOrderFormData] = useState<
     Record<number, OrderFormData>
   >(() =>
     Object.fromEntries(
-      orders.map((o) => [o.orderId, { shippingCost: '', trackingLink: '' }]),
+      orders.map((o) => [
+        o.orderId,
+        {
+          shippingCost: o.shippingCost?.toString() ?? '',
+          trackingLink: o.trackingLink ?? '',
+        },
+      ]),
     ),
   );
-  const [donationItems, setDonationItems] = useState<DonationItem[]>([]);
+
+  // ozPerItem, estimatedValue, and foodRescue inputs keyed by itemId, pre-filled from prop
   const [itemFormData, setItemFormData] = useState<
     Record<number, ItemFormData>
-  >({});
-  const [orderDetailsMap, setOrderDetailsMap] = useState<
-    Record<number, OrderDetails>
-  >({});
+  >(() =>
+    Object.fromEntries(
+      donation.relevantDonationItems.map((item) => [
+        item.itemId,
+        {
+          ozPerItem: item.ozPerItem?.toString() ?? '',
+          estimatedValue: item.estimatedValue?.toString() ?? '',
+          foodRescue: item.foodRescue,
+        },
+      ]),
+    ),
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
 
+  // True once every relevant item has both ozPerItem and estimatedValue filled in
+  const isSubmitEnabled = useMemo(
+    () =>
+      donation.relevantDonationItems.length > 0 &&
+      donation.relevantDonationItems.every(
+        (item) =>
+          (itemFormData[item.itemId]?.ozPerItem ?? '') !== '' &&
+          (itemFormData[item.itemId]?.estimatedValue ?? '') !== '',
+      ),
+    [itemFormData],
+  );
+
+  // The order currently shown in the shipping stage based on the current page
   const currentOrder = orders[currentPage - 1];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [fetchedItems, ...fetchedOrderDetails] = await Promise.all([
-          ApiClient.getDonationItemsByDonationId(donation.donation.donationId),
-          ...orders.map((order) => ApiClient.getOrder(order.orderId)),
-        ]);
-
-        setDonationItems(fetchedItems as DonationItem[]);
-        setItemFormData(
-          Object.fromEntries(
-            (fetchedItems as DonationItem[]).map((item) => [
-              item.itemId,
-              {
-                ozPerItem: item.ozPerItem?.toString() ?? '',
-                estimatedValue: item.estimatedValue?.toString() ?? '',
-                foodRescue: item.foodRescue,
-              },
-            ]),
-          ),
-        );
-
-        const detailsMap: Record<number, OrderDetails> = {};
-        orders.forEach((order, i) => {
-          detailsMap[order.orderId] = fetchedOrderDetails[i] as OrderDetails;
-        });
-        setOrderDetailsMap(detailsMap);
-
-        setOrderFormData((prev) => {
-          const updated = { ...prev };
-          orders.forEach((order) => {
-            const details = detailsMap[order.orderId];
-            updated[order.orderId] = {
-              trackingLink: details?.trackingLink ?? '',
-              shippingCost: details?.shippingCost?.toString() ?? '',
-            };
-          });
-          return updated;
-        });
-      } catch {
-        setAlertMessage('Error fetching donation details. Please try again.');
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const updateOrderField = (
     orderId: number,
@@ -206,29 +187,48 @@ const FmCompleteRequiredActionsModal: React.FC<
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const confirmItems: UpdateDonationItemDetailsDto[] = donationItems.map(
-        (item) => {
-          const formData = itemFormData[item.itemId];
-          const dto: UpdateDonationItemDetailsDto = {
-            itemId: item.itemId,
-            foodRescue: formData.foodRescue,
-          };
-          if (formData.ozPerItem !== '')
-            dto.ozPerItem = parseFloat(formData.ozPerItem);
-          if (formData.estimatedValue !== '')
-            dto.estimatedValue = parseFloat(formData.estimatedValue);
-          return dto;
-        },
-      );
-      await ApiClient.updateDonationItemDetails(
-        donation.donation.donationId,
-        confirmItems,
-      );
+      // Only include items where the user actually changed a value from the original prop values
+      const confirmItems: UpdateDonationItemDetailsDto[] =
+        donation.relevantDonationItems
+          .filter((item) => {
+            const formData = itemFormData[item.itemId];
+            return (
+              formData.ozPerItem !== (item.ozPerItem?.toString() ?? '') ||
+              formData.estimatedValue !==
+                (item.estimatedValue?.toString() ?? '') ||
+              formData.foodRescue !== item.foodRescue
+            );
+          })
+          .map((item) => {
+            const formData = itemFormData[item.itemId];
+            const dto: UpdateDonationItemDetailsDto = {
+              itemId: item.itemId,
+              foodRescue: formData.foodRescue,
+            };
+            if (formData.ozPerItem !== '')
+              dto.ozPerItem = parseFloat(formData.ozPerItem);
+            if (formData.estimatedValue !== '')
+              dto.estimatedValue = parseFloat(formData.estimatedValue);
+            return dto;
+          });
 
+      // Donation items must be updated before tracking/shipping so detailsConfirmed is set first
+      if (confirmItems.length > 0) {
+        await ApiClient.updateDonationItemDetails(
+          donation.donation.donationId,
+          confirmItems,
+        );
+      }
+
+      // Only include orders where the user actually changed a value from the original prop values
       const ordersToUpdate = orders
         .filter((order) => {
           const { trackingLink, shippingCost } = orderFormData[order.orderId];
-          return trackingLink.trim() !== '' || shippingCost.trim() !== '';
+          const originalTracking = order.trackingLink ?? '';
+          const originalCost = order.shippingCost?.toString() ?? '';
+          return (
+            trackingLink !== originalTracking || shippingCost !== originalCost
+          );
         })
         .map(
           (
@@ -272,6 +272,7 @@ const FmCompleteRequiredActionsModal: React.FC<
 
   if (!currentOrder) return null;
 
+  // Shared style props applied to every column header in the item details table
   const tableHeaderStyles = {
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
@@ -374,9 +375,7 @@ const FmCompleteRequiredActionsModal: React.FC<
                       Requested by {currentOrder.pantryName}
                     </Text>
                   </Text>
-                  <OrderItemsSection
-                    orderDetails={orderDetailsMap[currentOrder.orderId]}
-                  />
+                  <OrderItemsSection items={currentOrder.items} />
                 </Box>
 
                 {orders.length > 1 && (
@@ -500,7 +499,7 @@ const FmCompleteRequiredActionsModal: React.FC<
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {donationItems.map((item) => (
+                      {donation.relevantDonationItems.map((item) => (
                         <Table.Row key={item.itemId}>
                           <Table.Cell
                             borderBottom="1px solid"
@@ -607,7 +606,7 @@ const FmCompleteRequiredActionsModal: React.FC<
                     color="neutral.50"
                     fontWeight={600}
                     size="md"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isSubmitEnabled}
                     _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
                     loading={isSubmitting}
                     onClick={handleSubmit}

@@ -464,22 +464,6 @@ describe('FoodManufacturersService', () => {
       expect(item.foodType).toBe(FoodType.GLUTEN_FREE_BREAD);
     });
 
-    it('excludes donation items where detailsConfirmed is true', async () => {
-      await testDataSource.query(
-        `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,
-        [fulfilledDonationId],
-      );
-
-      await testDataSource.query(
-        `UPDATE public.donation_items SET details_confirmed = true 
-        WHERE item_name = 'Cereal Boxes'`,
-      );
-
-      const result = await service.getFMDonations(fmId1, fmRepId1);
-
-      expect(result[0].relevantDonationItems).toEqual([]);
-    });
-
     it('excludes donation items not used in any pending order', async () => {
       await testDataSource.query(
         `UPDATE public.donations SET status = 'matched' WHERE donation_id = $1`,

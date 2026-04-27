@@ -199,12 +199,18 @@ export interface DonationItemWithAllocatedQuantity {
   foodType: FoodType;
   allocatedQuantity: number;
   detailsConfirmed: boolean;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodRescue: boolean;
 }
 
 export interface DonationOrderDetails {
   orderId: number;
   pantryId: number;
   pantryName: string;
+  trackingLink: string | null;
+  shippingCost: number | null;
+  items: OrderItemDetails[];
 }
 
 export interface DonationItem {

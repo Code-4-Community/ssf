@@ -108,6 +108,9 @@ describe('FoodManufacturersController', () => {
               orderId: 1,
               pantryId: 2,
               pantryName: 'Community Food Pantry',
+              trackingLink: null,
+              shippingCost: null,
+              items: [],
             },
           ],
           relevantDonationItems: [
@@ -116,6 +119,7 @@ describe('FoodManufacturersController', () => {
               itemName: 'Almond Breeze Almond Milk',
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
               allocatedQuantity: 10,
+              foodRescue: false,
             },
           ],
         },
