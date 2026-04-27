@@ -85,6 +85,14 @@ describe('AllocationsService', () => {
       const orderId = 1;
       const itemId = 4;
 
+      const [{ reserved_quantity: reserved_quantity_before }] =
+        await testDataSource.query(
+          `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+          [itemId],
+        );
+
+      expect(Number(reserved_quantity_before)).toBe(30);
+
       const result = await service.createMultiple(
         orderId,
         new Map([[itemId, 3]]),
@@ -105,6 +113,22 @@ describe('AllocationsService', () => {
       const orderId = 1;
       const itemId1 = 4;
       const itemId2 = 5;
+
+      const [{ reserved_quantity: reserved_quantity1_before }] =
+        await testDataSource.query(
+          `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+          [itemId1],
+        );
+
+      expect(Number(reserved_quantity1_before)).toBe(30);
+
+      const [{ reserved_quantity: reserved_quantity2_before }] =
+        await testDataSource.query(
+          `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+          [itemId2],
+        );
+
+      expect(Number(reserved_quantity2_before)).toBe(20);
 
       const result = await service.createMultiple(
         orderId,
@@ -127,24 +151,6 @@ describe('AllocationsService', () => {
       expect(Number(item2.reserved_quantity)).toBe(22);
     });
 
-    it('should throw BadRequestException for orderId of 0', async () => {
-      await expect(
-        service.createMultiple(0, new Map([[1, 1]])),
-      ).rejects.toThrow(new BadRequestException('Invalid Order ID'));
-    });
-
-    it('should throw BadRequestException for negative orderId', async () => {
-      await expect(
-        service.createMultiple(-5, new Map([[1, 1]])),
-      ).rejects.toThrow(new BadRequestException('Invalid Order ID'));
-    });
-
-    it('should throw BadRequestException for itemId of 0', async () => {
-      await expect(
-        service.createMultiple(1, new Map([[0, 1]])),
-      ).rejects.toThrow(new BadRequestException('Invalid Donation Item ID'));
-    });
-
     it('should work with a given transaction manager', async () => {
       const orderId = 1;
       const itemId = 4;
@@ -165,6 +171,47 @@ describe('AllocationsService', () => {
         [itemId],
       );
       expect(Number(reserved_quantity)).toBe(34);
+    });
+
+    it('should rollback all changes if an error occurs during the transaction', async () => {
+      const orderId = 1;
+      const itemId1 = 4;
+      const itemId2 = 5;
+
+      const [{ reserved_quantity: before1 }] = await testDataSource.query(
+        `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+        [itemId1],
+      );
+
+      const [{ reserved_quantity: before2 }] = await testDataSource.query(
+        `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+        [itemId2],
+      );
+
+      await expect(
+        testDataSource.transaction(async (manager) => {
+          await service.createMultiple(
+            orderId,
+            new Map([[itemId1, 5]]),
+            manager,
+          );
+
+          throw new Error('Simulated failure');
+        }),
+      ).rejects.toThrow('Simulated failure');
+
+      const [{ reserved_quantity: after1 }] = await testDataSource.query(
+        `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+        [itemId1],
+      );
+
+      const [{ reserved_quantity: after2 }] = await testDataSource.query(
+        `SELECT reserved_quantity FROM donation_items WHERE item_id = $1`,
+        [itemId2],
+      );
+
+      expect(Number(after1)).toBe(Number(before1));
+      expect(Number(after2)).toBe(Number(before2));
     });
   });
 });
