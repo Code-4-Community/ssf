@@ -42,7 +42,6 @@ describe('RequestsController', () => {
 
   beforeEach(async () => {
     mockRequestsService.findOne.mockReset();
-    mockRequestsService.find.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.getOrderDetails.mockReset();
     mockRequestsService.update.mockReset();
@@ -91,28 +90,6 @@ describe('RequestsController', () => {
 
       expect(result).toEqual(foodRequest1);
       expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
-    });
-  });
-
-  describe('GET /:pantryId/all', () => {
-    it('should call requestsService.find and return all food requests for a specific pantry', async () => {
-      const foodRequests: Partial<FoodRequest>[] = [
-        foodRequest1,
-        {
-          requestId: 2,
-          pantryId: 1,
-        },
-      ];
-      const pantryId = 1;
-
-      mockRequestsService.find.mockResolvedValueOnce(
-        foodRequests as FoodRequest[],
-      );
-
-      const result = await controller.getAllPantryRequests(pantryId);
-
-      expect(result).toEqual(foodRequests);
-      expect(mockRequestsService.find).toHaveBeenCalledWith(pantryId);
     });
   });
 

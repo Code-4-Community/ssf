@@ -1,5 +1,9 @@
 import apiClient from '@api/apiClient';
-import { FoodRequest, GroupedByFoodType, OrderDetails } from 'types/types';
+import {
+  OrderItemDetailsGroupedByFoodType,
+  OrderDetails,
+  FoodRequestSummaryDto,
+} from 'types/types';
 import { OrderStatus } from '../../types/types';
 import React, { useState, useEffect } from 'react';
 import {
@@ -18,10 +22,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
-import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByType';
+import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface RequestDetailsModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -31,6 +36,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const [orderDetailsList, setOrderDetailsList] = useState<OrderDetails[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -64,9 +70,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     currentOrder = orderDetailsList[currentPage - 1];
   }
 
-  const groupedOrderItemsByType: GroupedByFoodType = useGroupedItemsByFoodType(
-    currentOrder?.items,
-  );
+  const groupedOrderItemsByType: OrderItemDetailsGroupedByFoodType =
+    useGroupedItemsByFoodType(currentOrder?.items);
 
   const sectionTitleStyles = {
     textStyle: 'p2',
@@ -265,10 +270,11 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       page={currentPage}
                       onChange={(page: number) => setCurrentPage(page)}
                     >
-                      <ButtonGroup variant="outline" size="sm">
+                      <ButtonGroup variant="outline" size="sm" gap={4}>
                         <Pagination.PrevTrigger asChild>
                           <IconButton
                             variant="ghost"
+                            disabled={currentPage === 1}
                             onClick={() =>
                               setCurrentPage((prev) => Math.max(prev - 1, 1))
                             }
@@ -292,6 +298,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         <Pagination.NextTrigger asChild>
                           <IconButton
                             variant="ghost"
+                            disabled={currentPage === orderDetailsList.length}
                             onClick={() =>
                               setCurrentPage((prev) =>
                                 Math.min(prev + 1, orderDetailsList.length),

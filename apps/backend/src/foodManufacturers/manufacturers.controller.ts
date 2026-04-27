@@ -34,6 +34,17 @@ export class FoodManufacturersController {
     return this.foodManufacturersService.getPendingManufacturers();
   }
 
+  @Roles(Role.FOODMANUFACTURER)
+  @Get('/my-id')
+  async getCurrentUserFoodManufacturerId(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<number> {
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      req.user.id,
+    );
+    return manufacturer.foodManufacturerId;
+  }
+
   @Get('/:foodManufacturerId')
   async getFoodManufacturer(
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,

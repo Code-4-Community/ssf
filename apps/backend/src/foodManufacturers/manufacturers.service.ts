@@ -59,6 +59,21 @@ export class FoodManufacturersService {
     return foodManufacturer;
   }
 
+  async findByUserId(userId: number): Promise<FoodManufacturer> {
+    validateId(userId, 'User');
+
+    const manufacturer = await this.repo.findOne({
+      where: { foodManufacturerRepresentative: { id: userId } },
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException(
+        `Food Manufacturer for User ${userId} not found`,
+      );
+    }
+    return manufacturer;
+  }
+
   async getFMDonations(
     foodManufacturerId: number,
     currentUserId: number,

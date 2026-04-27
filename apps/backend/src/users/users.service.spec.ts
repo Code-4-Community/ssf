@@ -516,4 +516,100 @@ describe('UsersService', () => {
       );
     });
   });
+
+  describe('getRecentPendingApplications', () => {
+    it('returns empty array when no pending applications exist', async () => {
+      await testDataSource.query(
+        `UPDATE pantries SET status = 'approved' WHERE status = 'pending'`,
+      );
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'approved' WHERE status = 'pending'`,
+      );
+
+      const result = await service.getRecentPendingApplications();
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns only pending applications, not approved or denied ones', async () => {
+      // db has 2 pending pantries - approve one to confirm it's excluded
+      await testDataSource.query(
+        `UPDATE pantries SET status = 'approved' WHERE pantry_name = 'Harbor Community Center'`,
+      );
+      // db has 3 pending FMs - approve two to confirm it's excluded
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'approved' 
+        WHERE food_manufacturer_name in ('FoodCorp Industries', 'Healthy Foods Co')`,
+      );
+
+      const result = await service.getRecentPendingApplications();
+
+      expect(result).toHaveLength(2);
+      expect(result[0].name).toBe('Southside Pantry Network');
+      expect(result[1].name).toBe('Organic Suppliers LLC');
+    });
+
+    it('returns correct shape for pantry applications', async () => {
+      const result = await service.getRecentPendingApplications();
+
+      result
+        .filter((a) => a.type === 'pantry')
+        .forEach((a) => {
+          expect(a.id).toBeDefined();
+          expect(a.name).toBeDefined();
+          expect(a.dateApplied).toBeDefined();
+        });
+    });
+
+    it('returns correct shape for food_manufacturer applications', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending'`,
+      );
+
+      const result = await service.getRecentPendingApplications();
+
+      result
+        .filter((a) => a.type === 'food_manufacturer')
+        .forEach((a) => {
+          expect(a.id).toBeDefined();
+          expect(a.name).toBeDefined();
+          expect(a.dateApplied).toBeDefined();
+        });
+    });
+
+    it('returns at most 4 results even when more pending applications exist', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending'`,
+      );
+
+      // now we have 2 pending pantries + 3 pending FMs
+      const result = await service.getRecentPendingApplications();
+
+      expect(result).toHaveLength(4);
+    });
+
+    it('returns results sorted by dateApplied descending', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending'`,
+      );
+
+      const result = await service.getRecentPendingApplications();
+
+      for (let i = 0; i < result.length - 1; i++) {
+        expect(result[i].dateApplied >= result[i + 1].dateApplied).toBe(true);
+      }
+    });
+
+    it('mixes pantry and food_manufacturer results correctly', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending'`,
+      );
+
+      const result = await service.getRecentPendingApplications();
+
+      const types = result.map((a) => a.type);
+      expect(types).toContain('pantry');
+      expect(types).toContain('food_manufacturer');
+    });
+  });
 });
