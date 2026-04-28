@@ -10,6 +10,8 @@ import { UsersService } from '../users/users.service';
 import { Assignments } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { RequestsService } from '../foodRequests/request.service';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class VolunteersService {
@@ -19,6 +21,7 @@ export class VolunteersService {
     private usersService: UsersService,
     private pantriesService: PantriesService,
     private requestsService: RequestsService,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -74,7 +77,15 @@ export class VolunteersService {
     );
 
     volunteer.pantries = [...existingPantries, ...newPantries];
-    return this.repo.save(volunteer);
+    const saved = await this.repo.save(volunteer);
+
+    const { subject, bodyHTML } =
+      emailTemplates.volunteerPantryAssignmentChanged({
+        volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+      });
+    await this.emailsService.sendEmails([volunteer.email], subject, bodyHTML);
+
+    return saved;
   }
 
   async findRequestsByVolunteer(volunteerId: number): Promise<FoodRequest[]> {

@@ -98,4 +98,25 @@ export const emailTemplates = {
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),
+
+  volunteerPantryAssignmentChanged: (params: {
+    volunteerName: string;
+  }): EmailTemplate => ({
+    subject: 'Your SSF Pantry Assignment has been updated',
+    bodyHTML: `
+      <p>Hi ${params.volunteerName},</p>
+      <p>
+        Your pantry assignment with SSF has been updated. Please log into the platform
+        to review your current assignments and any active requests that may require your attention.
+      </p>
+      <p>
+        Thank you for your continued support of our partners and mission.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        To view your pantry assignments, please click the following link:
+        <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries</a>
+      </p>
+    `,
+  }),
 };
