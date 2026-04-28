@@ -22,10 +22,13 @@ import { ApplicationStatus } from '../shared/types';
 import { User } from '../users/users.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
+import { RequestsService } from '../foodRequests/request.service';
+import { FoodRequest } from '../foodRequests/request.entity';
 
 const mockPantriesService = mock<PantriesService>();
 const mockOrdersService = mock<OrdersService>();
 const mockEmailsService = mock<EmailsService>();
+const mockRequestsService = mock<RequestsService>();
 
 describe('PantriesController', () => {
   let controller: PantriesController;
@@ -80,6 +83,16 @@ describe('PantriesController', () => {
     newsletterSubscription: true,
   } as PantryApplicationDto;
 
+  // Mock Food Request
+  const foodRequest1: Partial<FoodRequest> = {
+    requestId: 1,
+    pantryId: 1,
+    pantry: {
+      pantryId: 1,
+      pantryName: 'Test Pantry 1',
+    } as Pantry,
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PantriesController],
@@ -96,6 +109,10 @@ describe('PantriesController', () => {
           provide: EmailsService,
           useValue: mockEmailsService,
         },
+        {
+          provide: RequestsService,
+          useValue: mockRequestsService,
+        },
       ],
     }).compile();
 
@@ -108,6 +125,58 @@ describe('PantriesController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getPantryAdminStatsOrderYears', () => {
+    it('should return an array of years', async () => {
+      const mockYears = [2025, 2024];
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        mockYears,
+      );
+
+      const result = await controller.getPantryAdminStatsOrderYears();
+
+      expect(result).toEqual(mockYears);
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
+    });
+
+    it('should return an empty array when no approved pantry orders exist', async () => {
+      mockPantriesService.getPantryAdminStatsOrderYears.mockResolvedValueOnce(
+        [],
+      );
+
+      const result = await controller.getPantryAdminStatsOrderYears();
+
+      expect(result).toEqual([]);
+      expect(
+        mockPantriesService.getPantryAdminStatsOrderYears,
+      ).toHaveBeenCalled();
+    });
+  });
+
+  describe('getApprovedPantryNames', () => {
+    it('should return an array of approved pantry names', async () => {
+      const mockNames = ['Pantry A', 'Pantry B'];
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce(
+        mockNames,
+      );
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual(mockNames);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
+
+    it('should return an empty array if no approved pantries exist', async () => {
+      mockPantriesService.getApprovedPantryNames.mockResolvedValueOnce([]);
+
+      const result = await controller.getApprovedPantryNames();
+
+      expect(result).toEqual([]);
+      expect(mockPantriesService.getApprovedPantryNames).toHaveBeenCalled();
+    });
   });
 
   describe('getPendingPantries', () => {
@@ -375,6 +444,7 @@ describe('PantriesController', () => {
       );
     });
   });
+
   describe('getCurrentUserPantryId', () => {
     it('returns pantryId for authenticated user', async () => {
       const req = { user: { id: 1 } };
@@ -395,6 +465,7 @@ describe('PantriesController', () => {
       const mockStats: PantryStats[] = [
         {
           pantryId: 1,
+          pantryName: 'Community Food Pantry Downtown',
           totalItems: 100,
           totalOz: 1600,
           totalLbs: 100,
@@ -470,6 +541,30 @@ describe('PantriesController', () => {
 
       expect(result).toEqual(mockTotalStats);
       expect(mockPantriesService.getTotalStats).toHaveBeenCalledWith(years);
+    });
+  });
+
+  describe('getFoodRequests', () => {
+    it('should call requestsService.find and return all food requests for a specific pantry', async () => {
+      const foodRequests: Partial<FoodRequest>[] = [
+        foodRequest1,
+        {
+          requestId: 2,
+          pantryId: 1,
+        },
+      ];
+      const pantryId = 1;
+
+      mockRequestsService.findAllForPantry.mockResolvedValueOnce(
+        foodRequests as FoodRequest[],
+      );
+
+      const result = await controller.getFoodRequests(pantryId);
+
+      expect(result).toEqual(foodRequests);
+      expect(mockRequestsService.findAllForPantry).toHaveBeenCalledWith(
+        pantryId,
+      );
     });
   });
 });

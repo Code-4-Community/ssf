@@ -45,3 +45,5 @@ Thumbs.db
 !.env.example
 
 vite.config.*.timestamp*
+
+/.claude

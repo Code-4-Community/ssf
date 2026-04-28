@@ -7,11 +7,12 @@ import { validateId } from '../utils/validation.utils';
 import { Pantry } from '../pantries/pantries.entity';
 import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
-import { Assignments } from './types';
-import { FoodRequest } from '../foodRequests/request.entity';
+import { Assignments, VolunteerOrder } from './types';
 import { RequestsService } from '../foodRequests/request.service';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { OrdersService } from '../orders/order.service';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
 @Injectable()
 export class VolunteersService {
@@ -22,6 +23,7 @@ export class VolunteersService {
     private pantriesService: PantriesService,
     private requestsService: RequestsService,
     private emailsService: EmailsService,
+    private ordersService: OrdersService,
   ) {}
 
   async findOne(id: number): Promise<User> {
@@ -61,6 +63,15 @@ export class VolunteersService {
     return volunteer.pantries || [];
   }
 
+  async getRecentOrders(volunteerId: number): Promise<VolunteerOrder[]> {
+    validateId(volunteerId, 'Volunteer');
+    const volunteer = await this.findOne(volunteerId);
+    if (!volunteer) {
+      throw new NotFoundException(`Volunteer ${volunteerId} not found`);
+    }
+    return this.ordersService.getRecentOrdersByAssignee(volunteerId);
+  }
+
   async assignPantriesToVolunteer(
     volunteerId: number,
     pantryIds: number[],
@@ -88,16 +99,29 @@ export class VolunteersService {
     return saved;
   }
 
-  async findRequestsByVolunteer(volunteerId: number): Promise<FoodRequest[]> {
+  async findRequestsByVolunteer(
+    volunteerId: number,
+  ): Promise<FoodRequestSummaryDto[]> {
     validateId(volunteerId, 'Volunteer');
 
     const pantries = await this.getVolunteerPantries(volunteerId);
     const pantryIds = pantries.map((p) => p.pantryId);
 
     const requestArrays = await Promise.all(
-      pantryIds.map((id) => this.requestsService.find(id)),
+      pantryIds.map((id) => this.requestsService.findAllForPantry(id)),
     );
 
-    return requestArrays.flat();
+    return requestArrays.flat().map((r) => ({
+      requestId: r.requestId,
+      requestedSize: r.requestedSize,
+      requestedFoodTypes: r.requestedFoodTypes,
+      additionalInformation: r.additionalInformation,
+      requestedAt: r.requestedAt,
+      status: r.status,
+      pantry: {
+        pantryId: r.pantry.pantryId,
+        pantryName: r.pantry.pantryName,
+      },
+    }));
   }
 }

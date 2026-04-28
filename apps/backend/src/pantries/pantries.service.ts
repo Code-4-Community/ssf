@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -56,7 +57,7 @@ export class PantriesService {
     return pantry;
   }
 
-  private readonly EMPTY_STATS: Omit<PantryStats, 'pantryId'> = {
+  private readonly EMPTY_STATS: Omit<PantryStats, 'pantryId' | 'pantryName'> = {
     totalItems: 0,
     totalOz: 0,
     totalLbs: 0,
@@ -67,9 +68,9 @@ export class PantriesService {
   };
 
   private async aggregateStats(
-    pantryIds?: number[],
+    pantryIds: number[],
     years?: number[],
-  ): Promise<PantryStats[]> {
+  ): Promise<Omit<PantryStats, 'pantryName'>[]> {
     // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, totalFoodRescueItems)
     const itemsQb = this.orderRepo
       .createQueryBuilder('order')
@@ -90,11 +91,9 @@ export class PantriesService {
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
         'totalFoodRescueItems',
       )
+      .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
-    if (pantryIds?.length) {
-      itemsQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
-    }
     if (years?.length) {
       itemsQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
@@ -107,11 +106,9 @@ export class PantriesService {
       .leftJoin('order.request', 'request')
       .select('request.pantryId', 'pantryId')
       .addSelect('COALESCE(SUM(order.shippingCost), 0)', 'totalShippingCost')
+      .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
-    if (pantryIds?.length) {
-      shippingQb.andWhere('request.pantryId IN (:...pantryIds)', { pantryIds });
-    }
     if (years?.length) {
       shippingQb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
         years,
@@ -150,7 +147,7 @@ export class PantriesService {
           totalItems > 0
             ? parseFloat(((totalFoodRescueItems / totalItems) * 100).toFixed(2))
             : 0,
-      } satisfies PantryStats;
+      } satisfies Omit<PantryStats, 'pantryName'>;
     });
   }
 
@@ -165,21 +162,17 @@ export class PantriesService {
       throw new BadRequestException('Page number must be greater than 0');
     }
 
-    const nameArray = pantryNames
-      ? Array.isArray(pantryNames)
-        ? pantryNames
-        : [pantryNames]
-      : undefined;
+    let paginated: { pantryId: number; pantryName: string }[];
 
     // If names were provided, validate ALL of them before paginating
-    if (nameArray?.length) {
+    if (pantryNames?.length) {
       const allMatched = await this.repo.find({
-        select: ['pantryId', 'pantryName'],
-        where: { pantryName: In(nameArray) },
+        select: ['pantryId', 'pantryName', 'status'],
+        where: { pantryName: In(pantryNames) },
         order: { pantryId: 'ASC' },
       });
 
-      const missingNames = nameArray.filter(
+      const missingNames = pantryNames.filter(
         (name) => !allMatched.some((p) => p.pantryName === name),
       );
       if (missingNames.length > 0) {
@@ -188,53 +181,56 @@ export class PantriesService {
         );
       }
 
-      // Paginate the validated results in-memory
-      const paginated = allMatched.slice(
-        (page - 1) * PAGE_SIZE,
-        page * PAGE_SIZE,
-      );
-      if (paginated.length === 0) return [];
+      const unapprovedNames = allMatched
+        .filter((p) => p.status !== ApplicationStatus.APPROVED)
+        .map((p) => p.pantryName);
+      if (unapprovedNames.length > 0) {
+        throw new NotFoundException(
+          `Pantries not approved: ${unapprovedNames.join(', ')}`,
+        );
+      }
 
-      const pantryIds = paginated.map((p) => p.pantryId);
-      const yearsArray = years
-        ? (Array.isArray(years) ? years : [years]).map(Number)
-        : undefined;
-
-      const stats = await this.aggregateStats(pantryIds, yearsArray);
-      const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
-      return pantryIds.map(
-        (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
-      );
+      paginated = allMatched.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    } else {
+      paginated = await this.repo.find({
+        select: ['pantryId', 'pantryName'],
+        where: { status: ApplicationStatus.APPROVED },
+        order: { pantryId: 'ASC' },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      });
     }
 
-    // No names provided — paginate from the full table
-    const pantries = await this.repo.find({
-      select: ['pantryId', 'pantryName'],
-      order: { pantryId: 'ASC' },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    });
+    if (paginated.length === 0) return [];
 
-    if (pantries.length === 0) return [];
-
-    const pantryIds = pantries.map((p) => p.pantryId);
-    const yearsArray = years
-      ? (Array.isArray(years) ? years : [years]).map(Number)
-      : undefined;
-
-    const stats = await this.aggregateStats(pantryIds, yearsArray);
+    const pantryIds = paginated.map((p) => p.pantryId);
+    const stats = await this.aggregateStats(pantryIds, years);
     const statsMap = new Map(stats.map((s) => [s.pantryId, s]));
-    return pantryIds.map(
-      (id) => statsMap.get(id) ?? { pantryId: id, ...this.EMPTY_STATS },
-    );
+
+    return paginated.map((p) => {
+      const stat = statsMap.get(p.pantryId);
+      return stat
+        ? { ...stat, pantryName: p.pantryName }
+        : {
+            pantryId: p.pantryId,
+            pantryName: p.pantryName,
+            ...this.EMPTY_STATS,
+          };
+    });
   }
 
   async getTotalStats(years?: number[]): Promise<TotalStats> {
-    const yearsArray = years
-      ? (Array.isArray(years) ? years : [years]).map(Number)
-      : undefined;
+    const pantries = await this.repo.find({
+      select: ['pantryId'],
+      where: { status: ApplicationStatus.APPROVED },
+    });
 
-    const stats = await this.aggregateStats(undefined, yearsArray);
+    if (pantries.length === 0) {
+      return { ...this.EMPTY_STATS };
+    }
+
+    const pantryIds = pantries.map((p) => p.pantryId);
+    const stats = await this.aggregateStats(pantryIds, years);
 
     const totalStats = { ...this.EMPTY_STATS };
     let totalFoodRescueItems = 0;
@@ -265,6 +261,25 @@ export class PantriesService {
       where: { status: ApplicationStatus.PENDING },
       relations: ['pantryUser'],
     });
+  }
+
+  async getApprovedPantryNames(): Promise<string[]> {
+    const pantries = await this.repo.find({
+      select: ['pantryName'],
+      where: { status: ApplicationStatus.APPROVED },
+    });
+    return pantries.map((p) => p.pantryName);
+  }
+
+  async getPantryAdminStatsOrderYears(): Promise<number[]> {
+    const rows = await this.orderRepo
+      .createQueryBuilder('order')
+      .select('EXTRACT(YEAR FROM order.createdAt)::int', 'year')
+      .groupBy('EXTRACT(YEAR FROM order.createdAt)::int')
+      .orderBy('"year"', 'DESC')
+      .getRawMany();
+
+    return rows.map((r) => Number(r.year));
   }
 
   async addPantry(pantryData: PantryApplicationDto) {
@@ -375,7 +390,7 @@ export class PantriesService {
     }
 
     if (pantry.pantryUser.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
       );
     }

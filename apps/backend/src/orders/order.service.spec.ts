@@ -20,11 +20,11 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UsersService } from '../users/users.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Donation } from '../donations/donations.entity';
+import { DonationStatus } from '../donations/types';
 import { User } from '../users/users.entity';
 import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { DonationStatus } from '../donations/types';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
@@ -55,6 +55,11 @@ describe('OrdersService', () => {
         UsersService,
         DonationService,
         EmailsService,
+        DonationService,
+        {
+          provide: DataSource,
+          useValue: testDataSource,
+        },
         {
           provide: DataSource,
           useValue: testDataSource,
@@ -191,6 +196,45 @@ describe('OrdersService', () => {
     });
   });
 
+  describe('getRecentOrdersByAssignee', () => {
+    it('returns empty array when volunteer has no assigned orders', async () => {
+      // assign all seed orders away from volunteer 6
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = (SELECT user_id FROM users WHERE role = 'volunteer' AND user_id != 6 LIMIT 1)`,
+      );
+
+      const result = await service.getRecentOrdersByAssignee(6);
+      expect(result).toEqual([]);
+    });
+
+    it('returns at most 2 orders even when volunteer has more', async () => {
+      // assign all seed orders to volunteer 6
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrdersByAssignee(6);
+      expect(result).toHaveLength(2);
+    });
+
+    it('returns correct shape of orders', async () => {
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrdersByAssignee(6);
+
+      expect(result[0].createdAt >= result[1].createdAt).toBe(true);
+      result.forEach((order) => {
+        expect(order.pantryName).toBeDefined();
+        expect(order.assignee.id).toBe(6);
+        expect(order.assignee.firstName).toBe('James');
+        expect(order.assignee.lastName).toBe('Thomas');
+        expect(order.orderId).toBeDefined();
+        expect(order.status).toBeDefined();
+        expect(order.createdAt).toBeDefined();
+        expect(order.shippedAt).toBeDefined();
+        expect(order.deliveredAt).toBeDefined();
+      });
+    });
+  });
+
   describe('findOrderDetails', () => {
     it('returns mapped OrderDetailsDto including allocations and manufacturer', async () => {
       const orderId = 1;
@@ -287,22 +331,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('findOrderByRequest', () => {
-    it('returns order by request ID', async () => {
-      const order = await service.findOrderByRequest(1);
-
-      expect(order).toBeDefined();
-      expect(order.request).toBeDefined();
-      expect(order.requestId).toBe(1);
-    });
-
-    it('throws NotFoundException for non-existent order', async () => {
-      await expect(service.findOrderByRequest(9999)).rejects.toThrow(
-        new NotFoundException('Order with request ID 9999 not found'),
-      );
-    });
-  });
-
   describe('findOrderFoodRequest', () => {
     it('returns food request of order', async () => {
       const foodRequest = await service.findOrderFoodRequest(1);
@@ -382,6 +410,8 @@ describe('OrdersService', () => {
       expect(orders.length).toBe(2);
       expect(orders.every((order) => order.request)).toBeDefined();
       expect(orders.every((order) => order.request.pantryId === 1)).toBe(true);
+      expect(orders.every((order) => order.request.pantry)).toBeDefined();
+      expect(orders.every((order) => order.assignee)).toBeDefined();
     });
 
     it('returns empty list for pantry with no orderes', async () => {
@@ -437,47 +467,15 @@ describe('OrdersService', () => {
       ).rejects.toThrow(new NotFoundException('Order 9999 not found'));
     });
 
-    it('throws when tracking link and shipping cost not given', async () => {
-      await expect(service.updateTrackingCostInfo(3, {})).rejects.toThrow(
-        new BadRequestException(
-          'At least one of tracking link or shipping cost must be provided',
-        ),
-      );
-    });
-
-    it('sanitizes and updates tracking link for shipped order', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'samplelink.com',
-      };
-
-      await service.updateTrackingCostInfo(3, trackingCostDto);
-
-      const order = await service.findOne(3);
-      expect(order.trackingLink).toBeDefined();
-      expect(order.trackingLink).toEqual('https://samplelink.com/');
-    });
-
-    it('updates shipping cost for shipped order', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        shippingCost: 12.99,
-      };
-
-      await service.updateTrackingCostInfo(3, trackingCostDto);
-
-      const order = await service.findOne(3);
-      expect(order.shippingCost).toBeDefined();
-      expect(order.shippingCost).toEqual(12.99);
-    });
-
     it('updates both shipping cost and tracking link (sanitized)', async () => {
       const trackingCostDto: TrackingCostDto = {
         trackingLink: 'testtracking.com',
         shippingCost: 7.5,
       };
 
-      await service.updateTrackingCostInfo(3, trackingCostDto);
+      await service.updateTrackingCostInfo(4, trackingCostDto);
 
-      const order = await service.findOne(3);
+      const order = await service.findOne(4);
       expect(order.trackingLink).toEqual('https://testtracking.com/');
       expect(order.shippingCost).toEqual(7.5);
     });
@@ -497,27 +495,7 @@ describe('OrdersService', () => {
         service.updateTrackingCostInfo(orderId, trackingCostDto),
       ).rejects.toThrow(
         new BadRequestException(
-          'Can only update tracking info for pending or shipped orders',
-        ),
-      );
-    });
-
-    it('throws when both fields are not provided for first time setting', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-      };
-      const orderId = 4;
-
-      const order = await service.findOne(orderId);
-
-      expect(order.shippedAt).toBeNull();
-      expect(order.trackingLink).toBeNull();
-
-      await expect(
-        service.updateTrackingCostInfo(4, trackingCostDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          'Must provide both tracking link and shipping cost on initial assignment',
+          'Can only update tracking info for pending orders',
         ),
       );
     });
@@ -555,6 +533,73 @@ describe('OrdersService', () => {
 
       expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
       expect(updatedOrder.shippedAt).toBeDefined();
+    });
+  });
+
+  describe('checkAndFulfillDonations', () => {
+    it('does not fulfill associated donation when items are not fully reserved or confirmed', async () => {
+      // Create a matched donation with an item that is not fully reserved
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 5, 'Granola', false)
+         RETURNING item_id`,
+        [donation_id],
+      );
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
+        [item_id],
+      );
+
+      await service.updateTrackingCostInfo(4, {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.0,
+      });
+
+      const donation = await testDataSource
+        .getRepository(Donation)
+        .findOneBy({ donationId: donation_id });
+      expect(donation?.status).toBe(DonationStatus.MATCHED);
+    });
+
+    it('fulfills associated donation when all items are confirmed, fully reserved, and no pending orders remain', async () => {
+      // Create a matched donation with a fully-reserved confirmed item allocated to order 4
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 'Granola', true)
+         RETURNING item_id`,
+        [donation_id],
+      );
+      // Allocate to order 4 (pending); after updateTrackingCostInfo it becomes shipped → no more pending orders
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
+        [item_id],
+      );
+
+      await service.updateTrackingCostInfo(4, {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.0,
+      });
+
+      const donation = await testDataSource
+        .getRepository(Donation)
+        .findOneBy({ donationId: donation_id });
+      expect(donation?.status).toBe(DonationStatus.FULFILLED);
     });
   });
 
@@ -806,13 +851,20 @@ describe('OrdersService', () => {
         where: { itemId: 9 },
       });
 
-      expect(updatedDonationItem1!.reservedQuantity).toBe(
+      if (
+        !updatedDonationItem1 ||
+        !updatedDonationItem2 ||
+        !updatedDonationItem3
+      ) {
+        throw new Error('Missing donation item test object');
+      }
+      expect(updatedDonationItem1.reservedQuantity).toBe(
         donationItem1.reservedQuantity + 10,
       );
-      expect(updatedDonationItem2!.reservedQuantity).toBe(
+      expect(updatedDonationItem2.reservedQuantity).toBe(
         donationItem2.reservedQuantity + 3,
       );
-      expect(updatedDonationItem3!.reservedQuantity).toBe(
+      expect(updatedDonationItem3.reservedQuantity).toBe(
         donationItem3.reservedQuantity + 5,
       );
 

@@ -9,19 +9,20 @@ import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { sanitizeUrl, validateId } from '../utils/validation.utils';
+import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { Donation } from '../donations/donations.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
 import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
-import { DonationService } from '../donations/donations.service';
 import { ApplicationStatus } from '../shared/types';
-import { Donation } from '../donations/donations.entity';
 import { VolunteerOrder } from '../volunteers/types';
 
 @Injectable()
@@ -30,11 +31,13 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    @InjectRepository(DonationItem)
+    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
+    private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
-    private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -116,6 +119,44 @@ export class OrdersService {
         actionCompletion,
       };
     });
+  }
+
+  async getRecentOrdersByAssignee(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
+    validateId(volunteerId, 'Volunteer');
+
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .where('order.assigneeId = :volunteerId', { volunteerId })
+      .orderBy('order.createdAt', 'DESC')
+      .take(2)
+      .getMany();
+
+    return orders.map((o) => ({
+      orderId: o.orderId,
+      status: o.status,
+      createdAt: o.createdAt,
+      shippedAt: o.shippedAt,
+      deliveredAt: o.deliveredAt,
+      pantryName: o.request.pantry.pantryName,
+      assignee: o.assignee,
+    }));
   }
 
   async getCurrentOrders() {
@@ -282,22 +323,6 @@ export class OrdersService {
     };
   }
 
-  async findOrderByRequest(requestId: number): Promise<Order> {
-    validateId(requestId, 'Request');
-
-    const order = await this.repo.findOne({
-      where: { requestId },
-      relations: ['request'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(
-        `Order with request ID ${requestId} not found`,
-      );
-    }
-    return order;
-  }
-
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
     if (!request) {
@@ -305,11 +330,13 @@ export class OrdersService {
     }
 
     const pantry = await this.pantryRepo.findOneBy({
-      pantryId: request.pantryId,
+      pantryId: request.pantry.pantryId,
     });
 
     if (!pantry) {
-      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
+      throw new NotFoundException(
+        `Pantry ${request.pantry.pantryId} not found`,
+      );
     }
 
     return pantry;
@@ -328,13 +355,13 @@ export class OrdersService {
       select: {
         request: {
           requestId: true,
-          pantryId: true,
           requestedSize: true,
           requestedFoodTypes: true,
           additionalInformation: true,
           requestedAt: true,
           status: true,
           pantry: {
+            pantryId: true,
             pantryName: true,
           },
         },
@@ -347,17 +374,15 @@ export class OrdersService {
 
     return {
       requestId: order.request.requestId,
-      pantryId: order.request.pantryId,
-      pantryName: order.request.pantry.pantryName,
-
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
-
       additionalInformation: order.request.additionalInformation ?? null,
-
       requestedAt: order.request.requestedAt,
-
       status: order.request.status,
+      pantry: {
+        pantryId: order.request.pantry.pantryId,
+        pantryName: order.request.pantry.pantryName,
+      },
     };
   }
 
@@ -441,8 +466,11 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
+      .leftJoin('request.pantry', 'pantry')
+      .addSelect('pantry.pantryName')
       .leftJoinAndSelect('order.allocations', 'allocations')
       .leftJoinAndSelect('allocations.item', 'item')
+      .leftJoinAndSelect('order.assignee', 'assignee')
       .where('request.pantryId = :pantryId', { pantryId });
 
     if (years && years.length > 0) {
@@ -456,57 +484,51 @@ export class OrdersService {
 
   async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
     validateId(orderId, 'Order');
-    if (!dto.trackingLink && !dto.shippingCost) {
+
+    const sanitized = sanitizeUrl(dto.trackingLink);
+    if (!sanitized) {
       throw new BadRequestException(
-        'At least one of tracking link or shipping cost must be provided',
+        'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
       );
     }
-
-    if (dto.trackingLink) {
-      const sanitized = sanitizeUrl(dto.trackingLink);
-      if (!sanitized) {
-        throw new BadRequestException(
-          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-        );
-      }
-      dto.trackingLink = sanitized;
-    }
+    dto.trackingLink = sanitized;
 
     const order = await this.repo.findOneBy({ orderId });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    const isFirstTimeSetting = !order.trackingLink && !order.shippingCost;
-
-    if (isFirstTimeSetting && (!dto.trackingLink || !dto.shippingCost)) {
+    if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
-        'Must provide both tracking link and shipping cost on initial assignment',
+        'Can only update tracking info for pending orders',
       );
     }
 
-    if (
-      order.status !== OrderStatus.SHIPPED &&
-      order.status !== OrderStatus.PENDING
-    ) {
-      throw new BadRequestException(
-        'Can only update tracking info for pending or shipped orders',
-      );
-    }
+    order.trackingLink = dto.trackingLink;
+    order.shippingCost = dto.shippingCost;
 
-    if (dto.trackingLink) order.trackingLink = dto.trackingLink;
-    if (dto.shippingCost) order.shippingCost = dto.shippingCost;
-
-    if (
-      order.status === OrderStatus.PENDING &&
-      order.trackingLink &&
-      order.shippingCost
-    ) {
-      order.status = OrderStatus.SHIPPED;
-      order.shippedAt = new Date();
-    }
+    order.status = OrderStatus.SHIPPED;
+    order.shippedAt = new Date();
 
     await this.repo.save(order);
+
+    await this.checkAndFulfillDonations(orderId);
+  }
+
+  async checkAndFulfillDonations(orderId: number): Promise<void> {
+    const affectedDonations = await this.donationItemRepo
+      .createQueryBuilder('item')
+      .innerJoin('item.allocations', 'allocation')
+      .where('allocation.orderId = :orderId', { orderId })
+      .select('DISTINCT item.donationId', 'donationId')
+      .getRawMany<{ donationId: number }>();
+
+    for (const { donationId } of affectedDonations) {
+      const donation = await this.donationRepo.findOneBy({ donationId });
+      if (donation) {
+        await this.donationService.checkAndFulfillDonation(donation);
+      }
+    }
   }
 
   async completeVolunteerAction(orderId: number, action: VolunteerAction) {

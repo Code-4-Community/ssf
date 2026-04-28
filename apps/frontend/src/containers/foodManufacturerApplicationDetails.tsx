@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodManufacturer } from 'types/types';
+import { ApplicationStatus, FoodManufacturer } from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -20,6 +20,7 @@ import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import ConfirmFoodManufacturerDecisionModal from '@components/forms/confirmFoodManufacturerDecisionModal';
+import { ROUTES } from '../routes';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -73,7 +74,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               textStyle="p2"
               fontWeight={600}
             >
-              <Link to="/approve-food-manufacturers">
+              <Link to={ROUTES.APPROVE_FOOD_MANUFACTURERS}>
                 Return to applications
               </Link>
             </Button>
@@ -170,7 +171,10 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
           'approve',
         );
         navigate(
-          '/approve-food-manufacturers?action=approved&name=' +
+          ROUTES.APPROVE_FOOD_MANUFACTURERS +
+            '?action=' +
+            ApplicationStatus.APPROVED +
+            '&name=' +
             application.foodManufacturerName,
         );
       } catch {
@@ -187,7 +191,10 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
           'deny',
         );
         navigate(
-          '/approve-food-manufacturers?action=denied&name=' +
+          ROUTES.APPROVE_FOOD_MANUFACTURERS +
+            '?action=' +
+            ApplicationStatus.DENIED +
+            '&name=' +
             application.foodManufacturerName,
         );
       } catch {

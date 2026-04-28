@@ -10,7 +10,10 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { DonationDetailsDto } from './dtos/donation-details-dto';
+import {
+  DonationDetailsDto,
+  DonationReminderDto,
+} from './dtos/donation-details-dto';
 import { FoodType } from '../donationItems/types';
 
 const mockManufacturersService = mock<FoodManufacturersService>();
@@ -145,6 +148,38 @@ describe('FoodManufacturersController', () => {
     });
   });
 
+  describe('GET /:foodManufacturerId/next-two-reminders', () => {
+    it('should return the next two upcoming donation reminders for a given food manufacturer', async () => {
+      const mockDonationReminders: DonationReminderDto[] = [
+        {
+          donation: {
+            donationId: 1,
+            foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+          } as Donation,
+          reminderDate: new Date('2024-07-01'),
+        },
+        {
+          donation: {
+            donationId: 2,
+            foodManufacturer: { foodManufacturerId: 1 } as FoodManufacturer,
+          } as Donation,
+          reminderDate: new Date('2024-07-15'),
+        },
+      ];
+
+      mockManufacturersService.getUpcomingDonationReminders.mockResolvedValue(
+        mockDonationReminders,
+      );
+
+      const result = await controller.getNextTwoDonationReminders(1);
+
+      expect(result).toEqual(mockDonationReminders);
+      expect(
+        mockManufacturersService.getUpcomingDonationReminders,
+      ).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('POST /application', () => {
     it('should submit a food manufacturer application', async () => {
       const mockApplicationData: FoodManufacturerApplicationDto = {
@@ -244,6 +279,25 @@ describe('FoodManufacturersController', () => {
       await controller.denyManufacturer(1);
 
       expect(mockManufacturersService.deny).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('getCurrentUserFoodManufacturerId', () => {
+    it('returns foodManufacturerId for authenticated user', async () => {
+      const req = { user: { id: 1 } };
+      const manufacturer: Partial<FoodManufacturer> = {
+        foodManufacturerId: 10,
+      };
+      mockManufacturersService.findByUserId.mockResolvedValueOnce(
+        manufacturer as FoodManufacturer,
+      );
+
+      const result = await controller.getCurrentUserFoodManufacturerId(
+        req as AuthenticatedRequest,
+      );
+
+      expect(result).toEqual(10);
+      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(1);
     });
   });
 });

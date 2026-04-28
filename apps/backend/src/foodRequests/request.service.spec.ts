@@ -11,14 +11,15 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { testDataSource } from '../config/typeormTestDataSource';
 import {
+  BadRequestException,
   InternalServerErrorException,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates } from '../emails/emailTemplates';
 import { Allocation } from '../allocations/allocations.entity';
+import { ApplicationStatus } from '../shared/types';
 
 jest.setTimeout(60000);
 
@@ -248,10 +249,11 @@ describe('RequestsService', () => {
         FoodType.REFRIGERATED_MEALS,
       ]);
 
+      if (!pantry) throw new Error('Missing pantry test object');
       const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
       });
-      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
@@ -274,10 +276,11 @@ describe('RequestsService', () => {
         FoodType.REFRIGERATED_MEALS,
       ]);
 
+      if (!pantry) throw new Error('Missing pantry test object');
       const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
       });
-      const volunteerEmails = (pantry!.volunteers ?? []).map((v) => v.email);
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(volunteerEmails).toEqual([]);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
@@ -302,7 +305,7 @@ describe('RequestsService', () => {
         ),
       );
 
-      const requests = await service.find(pantryId);
+      const requests = await service.findAllForPantry(pantryId);
       expect(requests.length).toBe(3);
     });
 
@@ -318,23 +321,20 @@ describe('RequestsService', () => {
     });
   });
 
-  describe('find', () => {
+  describe('findAllForPantry', () => {
     it('should return all food requests for a specific pantry with pantry details', async () => {
       const pantryId = 1;
-      const result = await service.find(pantryId);
+      const result = await service.findAllForPantry(pantryId);
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(2);
-      expect(result.every((r) => r.pantryId === pantryId)).toBe(true);
-      result.forEach((request) => {
-        expect(request.orders).toBeDefined();
-      });
+      expect(result.every((r) => r.pantry.pantryId === pantryId)).toBe(true);
       expect(result.every((r) => r.pantry)).toBeDefined();
     });
 
     it('should return empty array for pantry with no requests', async () => {
       const pantryId = 5;
-      const result = await service.find(pantryId);
+      const result = await service.findAllForPantry(pantryId);
 
       expect(result).toBeDefined();
       expect(result).toEqual([]);
@@ -388,6 +388,38 @@ describe('RequestsService', () => {
       await expect(service.getMatchingManufacturers(999)).rejects.toThrow(
         new NotFoundException('Request 999 not found'),
       );
+    });
+
+    it('should not return manufacturers if they are not approved', async () => {
+      const requestId = 1;
+
+      const resultBefore = await service.getMatchingManufacturers(requestId);
+
+      const allIdsBefore = [
+        ...resultBefore.matchingManufacturers,
+        ...resultBefore.nonMatchingManufacturers,
+      ].map((fm) => fm.foodManufacturerId);
+
+      expect(allIdsBefore.sort()).toEqual([1, 2]);
+
+      const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
+
+      const manufacturer = await manufacturerRepo.findOne({
+        where: { foodManufacturerId: 1 },
+      });
+
+      manufacturer!.status = ApplicationStatus.PENDING;
+
+      await manufacturerRepo.save(manufacturer!);
+
+      const resultAfter = await service.getMatchingManufacturers(requestId);
+
+      const allIdsAfter = [
+        ...resultAfter.matchingManufacturers,
+        ...resultAfter.nonMatchingManufacturers,
+      ].map((fm) => fm.foodManufacturerId);
+
+      expect(allIdsAfter).toEqual([2]);
     });
 
     it('should correctly match manufacturers based on requested food types and available stock', async () => {
@@ -582,6 +614,137 @@ describe('RequestsService', () => {
       );
     });
   });
+
+  describe('update', () => {
+    it('should update request attributes', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      const result = await service.update(1, {
+        requestedSize: RequestSize.MEDIUM,
+      });
+
+      expect(result.requestedSize).toBe(RequestSize.MEDIUM);
+      expect(result.requestedFoodTypes).toEqual([
+        FoodType.SEED_BUTTERS,
+        FoodType.GLUTEN_FREE_BREAD,
+        FoodType.DRIED_BEANS,
+        FoodType.DAIRY_FREE_ALTERNATIVES,
+      ]);
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb?.requestedSize).toBe(RequestSize.MEDIUM);
+    });
+
+    it('should throw NotFoundException when request is not found', async () => {
+      await expect(
+        service.update(9999, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(new NotFoundException('Request 9999 not found'));
+    });
+
+    it('should update all request attributes when all fields are provided', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      const result = await service.update(1, {
+        requestedSize: RequestSize.SMALL,
+        requestedFoodTypes: [FoodType.GRANOLA],
+        additionalInformation: 'Updated information',
+      });
+
+      expect(result.requestedSize).toBe(RequestSize.SMALL);
+      expect(result.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(result.additionalInformation).toBe('Updated information');
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb?.requestedSize).toBe(RequestSize.SMALL);
+      expect(fromDb?.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(fromDb?.additionalInformation).toBe('Updated information');
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      await testDataSource.query(
+        `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
+      );
+
+      await expect(
+        service.update(1, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      await expect(
+        service.update(2, { requestedSize: RequestSize.MEDIUM }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be updated if it still has orders associated with it`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when all DTO fields are undefined', async () => {
+      await expect(service.update(1, {})).rejects.toThrow(
+        new BadRequestException(
+          'At least one field must be provided to update request',
+        ),
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a request by id', async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE request_id = 1)`,
+      );
+      await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
+
+      await service.delete(1);
+
+      const fromDb = await testDataSource
+        .getRepository(FoodRequest)
+        .findOneBy({ requestId: 1 });
+      expect(fromDb).toBeNull();
+    });
+
+    it('should throw BadRequestException when request is not active', async () => {
+      await testDataSource.query(
+        `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
+      );
+
+      await expect(service.delete(1)).rejects.toThrow(
+        new BadRequestException(
+          `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when request has orders', async () => {
+      await expect(service.delete(2)).rejects.toThrow(
+        new BadRequestException(
+          `Request 2 cannot be deleted if it still has orders associated with it`,
+        ),
+      );
+    });
+
+    it('should throw NotFoundException when request is not found', async () => {
+      await expect(service.delete(9999)).rejects.toThrow(
+        new NotFoundException('Request 9999 not found'),
+      );
+    });
+  });
+
   describe('closeRequest', () => {
     it('should close an active request', async () => {
       const result = await service.closeRequest(3);

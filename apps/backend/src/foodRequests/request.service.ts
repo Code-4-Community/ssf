@@ -1,14 +1,15 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodRequestStatus, RequestSize } from './types';
+import { FoodRequestSummaryDto } from './dtos/food-request-summary.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
@@ -22,6 +23,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 
 @Injectable()
 export class RequestsService {
@@ -50,7 +52,7 @@ export class RequestsService {
     return request;
   }
 
-  async getAll(): Promise<FoodRequest[]> {
+  async getAll(): Promise<FoodRequestSummaryDto[]> {
     return this.repo
       .createQueryBuilder('request')
       .leftJoin('request.pantry', 'pantry')
@@ -138,6 +140,7 @@ export class RequestsService {
         )`,
           { requestedFoodTypes },
         )
+        .andWhere('fm.status = :status', { status: 'approved' })
         .getRawAndEntities()
         .then(({ raw, entities }) =>
           entities.map((fm, i) => ({
@@ -253,7 +256,7 @@ export class RequestsService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new food request notification email to volunteers',
       );
@@ -262,12 +265,12 @@ export class RequestsService {
     return foodRequest;
   }
 
-  async find(pantryId: number) {
+  async findAllForPantry(pantryId: number): Promise<FoodRequestSummaryDto[]> {
     validateId(pantryId, 'Pantry');
 
     return await this.repo.find({
       where: { pantryId },
-      relations: ['orders', 'pantry'],
+      relations: ['pantry'],
     });
   }
 
@@ -302,6 +305,72 @@ export class RequestsService {
     }
 
     await this.repo.save(request);
+  }
+
+  async update(requestId: number, dto: UpdateRequestDto): Promise<FoodRequest> {
+    validateId(requestId, 'Request');
+
+    if (
+      dto.requestedSize == undefined &&
+      dto.requestedFoodTypes == undefined &&
+      dto.additionalInformation == undefined
+    ) {
+      throw new BadRequestException(
+        'At least one field must be provided to update request',
+      );
+    }
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be updated`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be updated if it still has orders associated with it`,
+      );
+    }
+
+    Object.assign(request, dto);
+
+    return this.repo.save(request);
+  }
+
+  async delete(requestId: number) {
+    validateId(requestId, 'Request');
+
+    const request = await this.repo.findOne({
+      where: { requestId },
+      relations: ['orders'],
+    });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${requestId} not found`);
+    }
+
+    if (request.status != FoodRequestStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Request must be ${FoodRequestStatus.ACTIVE} in order to be deleted`,
+      );
+    }
+
+    if (request.orders && request.orders.length > 0) {
+      throw new BadRequestException(
+        `Request ${requestId} cannot be deleted if it still has orders associated with it`,
+      );
+    }
+
+    await this.repo.remove(request);
   }
 
   async closeRequest(requestId: number): Promise<FoodRequest> {

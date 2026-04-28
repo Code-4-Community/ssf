@@ -12,8 +12,10 @@ import {
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 const ResetPasswordModal: React.FC = () => {
+  useModalBodyCleanup();
   const [email, setEmail] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [step, setStep] = useState<'reset' | 'new'>('reset');

@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Repository } from 'typeorm';
 import { User } from './users.entity';
-import { Role } from './types';
+import { PendingApplication, Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthService } from '../auth/auth.service';
@@ -18,6 +18,9 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
 import { UserStatsDto } from './dtos/user-stats.dto';
+import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +33,10 @@ export class UsersService {
     private orderRepo: Repository<Order>,
     @InjectRepository(Donation)
     private donationRepo: Repository<Donation>,
+    @InjectRepository(Pantry)
+    private pantryRepo: Repository<Pantry>,
+    @InjectRepository(FoodManufacturer)
+    private fmRepo: Repository<FoodManufacturer>,
     private authService: AuthService,
     private emailsService: EmailsService,
   ) {}
@@ -127,15 +134,49 @@ export class UsersService {
     return users;
   }
 
+  async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    const [pendingPantries, pendingFMs] = await Promise.all([
+      this.pantryRepo.find({
+        where: { status: ApplicationStatus.PENDING },
+        select: ['pantryId', 'pantryName', 'dateApplied'],
+        order: { dateApplied: 'DESC' },
+        take: 4,
+      }),
+      this.fmRepo.find({
+        where: { status: ApplicationStatus.PENDING },
+        select: ['foodManufacturerId', 'foodManufacturerName', 'dateApplied'],
+        order: { dateApplied: 'DESC' },
+        take: 4,
+      }),
+    ]);
+
+    const combined: PendingApplication[] = [
+      ...pendingPantries.map((p) => ({
+        id: p.pantryId,
+        name: p.pantryName,
+        type: 'pantry' as const,
+        dateApplied: p.dateApplied,
+      })),
+      ...pendingFMs.map((fm) => ({
+        id: fm.foodManufacturerId,
+        name: fm.foodManufacturerName,
+        type: 'food_manufacturer' as const,
+        dateApplied: fm.dateApplied,
+      })),
+    ];
+
+    return combined
+      .sort((a, b) => b.dateApplied.getTime() - a.dateApplied.getTime())
+      .slice(0, 4);
+  }
+
   async update(id: number, dto: UpdateUserInfoDto): Promise<User> {
     validateId(id, 'User');
 
-    const { firstName, lastName, phone } = dto;
-
     if (
-      firstName === undefined &&
-      lastName === undefined &&
-      phone === undefined
+      dto.firstName === undefined &&
+      dto.lastName === undefined &&
+      dto.phone === undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update',
@@ -148,9 +189,7 @@ export class UsersService {
       throw new NotFoundException(`User ${id} not found`);
     }
 
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined) user.lastName = lastName;
-    if (phone !== undefined) user.phone = phone;
+    Object.assign(user, dto);
 
     return this.repo.save(user);
   }

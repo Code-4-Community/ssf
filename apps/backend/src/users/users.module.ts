@@ -9,10 +9,19 @@ import { EmailsModule } from '../emails/email.module';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
+import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, FoodRequest, Order, Donation]),
+    TypeOrmModule.forFeature([
+      User,
+      FoodRequest,
+      Order,
+      Donation,
+      Pantry,
+      FoodManufacturer,
+    ]),
     forwardRef(() => PantriesModule),
     forwardRef(() => AuthModule),
     EmailsModule,

@@ -8,15 +8,20 @@ import {
   Box,
   Field,
   CloseButton,
-  Input,
+  DatePicker,
   FileUpload,
   Icon,
+  Portal,
+  parseDate,
+  InputGroup,
+  Input,
 } from '@chakra-ui/react';
-import { Upload } from 'lucide-react';
+import { Upload, Calendar } from 'lucide-react';
 import { ConfirmDeliveryDto } from 'types/types';
 import apiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface OrderReceivedActionModalProps {
   orderId: number;
@@ -38,6 +43,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   onSuccess,
   onError,
 }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
   const [feedback, setFeedback] = useState<string>('');
   const [dateReceived, setDateReceived] = useState<string>('');
@@ -60,23 +66,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
   const handleSubmit = async () => {
     try {
-      if (new Date(dateReceived) < new Date(orderCreatedAt)) {
-        setAlertMessage(
-          'Date received cannot be earlier than the order creation date',
-        );
-        return;
-      }
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (new Date(dateReceived) > today) {
-        setAlertMessage('Date received cannot be in the future');
-        return;
-      }
-
+      // TODO: fix date/time storage/handling
       const dto: ConfirmDeliveryDto = {
-        dateReceived: new Date(dateReceived).toISOString(),
+        dateReceived: dateReceived,
         feedback: feedback,
       };
 
@@ -85,7 +77,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       resetForm();
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       resetForm();
       onError();
       onClose();
@@ -144,20 +136,70 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     Date Received
                   </Text>
                 </Field.Label>
-                <Input
-                  type="date"
-                  textStyle="p2"
-                  w="full"
-                  bg="white"
-                  borderColor="neutral.100"
-                  color="neutral.700"
-                  borderWidth="1px"
-                  borderRadius="4px"
-                  min={minDate}
-                  max={today}
-                  onChange={(e) => setDateReceived(e.target.value)}
-                  value={dateReceived}
-                />
+                <DatePicker.Root
+                  min={parseDate(minDate)}
+                  max={parseDate(today)}
+                  value={dateReceived ? [parseDate(dateReceived)] : []}
+                  onValueChange={({ value }) => {
+                    const date = value?.[0];
+                    setDateReceived(date ? date.toString() : '');
+                  }}
+                  closeOnSelect
+                  positioning={{ placement: 'top-start' }}
+                >
+                  <InputGroup
+                    as={DatePicker.Control}
+                    startElement={
+                      <Calendar
+                        size={16}
+                        color="var(--chakra-colors-neutral-300)"
+                      />
+                    }
+                  >
+                    <DatePicker.Trigger asChild>
+                      <Input
+                        readOnly
+                        w="100%"
+                        h={10}
+                        borderRadius="sm"
+                        border="1px solid var(--chakra-colors-neutral-100)"
+                        cursor="pointer"
+                        placeholder=""
+                        color="neutral.700"
+                        fontWeight={600}
+                        value={
+                          dateReceived
+                            ? new Date(
+                                dateReceived + 'T00:00:00',
+                              ).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : ''
+                        }
+                      />
+                    </DatePicker.Trigger>
+                  </InputGroup>
+                  <Portal>
+                    <DatePicker.Positioner>
+                      <DatePicker.Content>
+                        <DatePicker.View view="day">
+                          <DatePicker.Header />
+                          <DatePicker.DayTable />
+                        </DatePicker.View>
+                        <DatePicker.View view="month">
+                          <DatePicker.Header />
+                          <DatePicker.MonthTable />
+                        </DatePicker.View>
+                        <DatePicker.View view="year">
+                          <DatePicker.Header />
+                          <DatePicker.YearTable />
+                        </DatePicker.View>
+                      </DatePicker.Content>
+                    </DatePicker.Positioner>
+                  </Portal>
+                </DatePicker.Root>
               </Field.Root>
 
               <Field.Root mb={4}>
