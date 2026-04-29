@@ -1,8 +1,8 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource } from 'typeorm';
@@ -32,6 +32,8 @@ import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
@@ -158,161 +160,180 @@ export class OrdersService {
     itemAllocations: Map<number, number>,
     userId: number,
   ): Promise<Order> {
-    return this.dataSource.transaction(async (transactionManager) => {
-      validateId(manufacturerId, 'Food Manufacturer');
-      validateId(requestId, 'Request');
+    const { savedOrder, request, manufacturer, assignee, itemDetails } =
+      await this.dataSource.transaction(async (transactionManager) => {
+        validateId(manufacturerId, 'Food Manufacturer');
+        validateId(requestId, 'Request');
 
-      const request = await this.requestRepo.findOne({
-        where: { requestId },
-        relations: ['pantry', 'pantry.pantryUser'],
-      });
+        const request = await this.requestRepo.findOne({
+          where: { requestId },
+          relations: ['pantry', 'pantry.pantryUser'],
+        });
 
-      if (!request) {
-        throw new NotFoundException(`Request ${requestId} not found`);
-      }
+        if (!request) {
+          throw new NotFoundException(`Request ${requestId} not found`);
+        }
 
-      if (request.status !== FoodRequestStatus.ACTIVE) {
-        throw new BadRequestException(`Request ${requestId} is not active`);
-      }
+        if (request.status !== FoodRequestStatus.ACTIVE) {
+          throw new BadRequestException(`Request ${requestId} is not active`);
+        }
 
-      const manufacturer = await this.manufacturerService.findOne(
-        manufacturerId,
-      );
-
-      if (manufacturer.status !== ApplicationStatus.APPROVED) {
-        throw new BadRequestException(
-          `Manufacturer ${manufacturerId} is not approved`,
+        const manufacturer = await this.manufacturerService.findOne(
+          manufacturerId,
         );
-      }
 
-      const fmDonations = await this.donationRepo.find({
-        where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
-        select: ['donationId'],
-      });
-
-      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
-
-      const donationItemIds = Array.from(itemAllocations.keys());
-      const donationItems = await this.donationItemsService.getByIds(
-        donationItemIds,
-      );
-
-      const invalidItems = donationItems.filter(
-        (item) => !fmDonationIdSet.has(item.donationId),
-      );
-
-      if (invalidItems.length > 0) {
-        const messages = invalidItems.map(
-          (item) =>
-            `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
-        );
-        throw new BadRequestException(
-          `The following donation items are not associated with the current food manufacturer: ${messages.join(
-            ', ',
-          )}`,
-        );
-      }
-
-      const itemDetails: { quantity: string; product: string }[] = [];
-
-      for (const donationItem of donationItems) {
-        const id = donationItem.itemId;
-        const quantityToAllocate = itemAllocations.get(id)!;
-
-        if (
-          quantityToAllocate >
-          donationItem.quantity - donationItem.reservedQuantity
-        ) {
+        if (manufacturer.status !== ApplicationStatus.APPROVED) {
           throw new BadRequestException(
-            `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+            `Manufacturer ${manufacturerId} is not approved`,
           );
         }
 
-        itemDetails.push({
-          quantity: String(quantityToAllocate),
-          product: donationItem.itemName,
+        const fmDonations = await this.donationRepo.find({
+          where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
+          select: ['donationId'],
         });
-      }
 
-      const orderTransactionRepo = transactionManager.getRepository(Order);
+        const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
 
-      const order = orderTransactionRepo.create({
-        requestId: requestId,
-        foodManufacturerId: manufacturerId,
-        status: OrderStatus.PENDING,
-        assigneeId: userId,
-      });
-
-      const savedOrder = await orderTransactionRepo.save(order);
-
-      await this.allocationsService.createMultiple(
-        savedOrder.orderId,
-        itemAllocations,
-        transactionManager,
-      );
-
-      const associatedDonationIdsSet =
-        await this.donationItemsService.getAssociatedDonationIds(
+        const donationItemIds = Array.from(itemAllocations.keys());
+        const donationItems = await this.donationItemsService.getByIds(
           donationItemIds,
         );
 
-      await this.donationService.matchAll(
-        Array.from(associatedDonationIdsSet),
-        transactionManager,
+        const invalidItems = donationItems.filter(
+          (item) => !fmDonationIdSet.has(item.donationId),
+        );
+
+        if (invalidItems.length > 0) {
+          const messages = invalidItems.map(
+            (item) =>
+              `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
+          );
+          throw new BadRequestException(
+            `The following donation items are not associated with the current food manufacturer: ${messages.join(
+              ', ',
+            )}`,
+          );
+        }
+
+        const itemDetails: { quantity: string; product: string }[] = [];
+
+        for (const donationItem of donationItems) {
+          const id = donationItem.itemId;
+          const quantityToAllocate = itemAllocations.get(id)!;
+
+          if (
+            quantityToAllocate >
+            donationItem.quantity - donationItem.reservedQuantity
+          ) {
+            throw new BadRequestException(
+              `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+            );
+          }
+
+          itemDetails.push({
+            quantity: String(quantityToAllocate),
+            product: donationItem.itemName,
+          });
+        }
+
+        const orderTransactionRepo = transactionManager.getRepository(Order);
+
+        const order = orderTransactionRepo.create({
+          requestId: requestId,
+          foodManufacturerId: manufacturerId,
+          status: OrderStatus.PENDING,
+          assigneeId: userId,
+        });
+
+        const savedOrder = await orderTransactionRepo.save(order);
+
+        await this.allocationsService.createMultiple(
+          savedOrder.orderId,
+          itemAllocations,
+          transactionManager,
+        );
+
+        const associatedDonationIdsSet =
+          await this.donationItemsService.getAssociatedDonationIds(
+            donationItemIds,
+          );
+
+        await this.donationService.matchAll(
+          Array.from(associatedDonationIdsSet),
+          transactionManager,
+        );
+
+        const assignee = await this.usersService.findOne(userId);
+
+        return {
+          savedOrder,
+          request,
+          manufacturer,
+          assignee,
+          itemDetails,
+        };
+      });
+
+    const emailErrors: string[] = [];
+
+    try {
+      const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
+        pantryName: request.pantry.pantryName,
+        items: itemDetails,
+        brand: manufacturer.foodManufacturerName,
+        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails(
+        [request.pantry.pantryUser.email],
+        pantryMessage.subject,
+        pantryMessage.bodyHTML,
       );
+    } catch {
+      emailErrors.push(
+        'Failed to send pantry request matched order confirmation email',
+      );
+    }
 
-      const assignee = await this.usersService.findOne(userId);
+    try {
+      const fmMessage = emailTemplates.fmDonationMatchedOrder({
+        manufacturerName: manufacturer.foodManufacturerName,
+        items: itemDetails,
+        pantryName: request.pantry.pantryName,
+        pantryAddress:
+          request.pantry.mailingAddressLine1 +
+          ' ' +
+          request.pantry.mailingAddressCity +
+          ' ' +
+          request.pantry.mailingAddressState +
+          ' ' +
+          request.pantry.mailingAddressZip +
+          ' ' +
+          request.pantry.mailingAddressCountry,
+        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails(
+        [manufacturer.foodManufacturerRepresentative.email],
+        fmMessage.subject,
+        fmMessage.bodyHTML,
+      );
+    } catch {
+      emailErrors.push(
+        'Failed to send food manufacturer donation matched order confirmation email',
+      );
+    }
 
-      try {
-        const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
-          pantryName: request.pantry.pantryName,
-          items: itemDetails,
-          brand: manufacturer.foodManufacturerName,
-          volunteerName: assignee.firstName + ' ' + assignee.lastName,
-          volunteerEmail: assignee.email,
-        });
-        await this.emailsService.sendEmails(
-          [request.pantry.pantryUser.email],
-          pantryMessage.subject,
-          pantryMessage.bodyHTML,
-        );
-      } catch {
-        throw new InternalServerErrorException(
-          'Failed to send pantry request matched order confirmation email to representative',
-        );
-      }
+    if (emailErrors.length > 0) {
+      this.logger.warn(
+        `Order ${
+          savedOrder.orderId
+        } created, but email issues occurred: ${emailErrors.join('; ')}`,
+      );
+    }
 
-      try {
-        const fmMessage = emailTemplates.fmDonationMatchedOrder({
-          manufacturerName: manufacturer.foodManufacturerName,
-          items: itemDetails,
-          pantryName: request.pantry.pantryName,
-          pantryAddress:
-            request.pantry.mailingAddressLine1 +
-            ' ' +
-            request.pantry.mailingAddressCity +
-            ' ' +
-            request.pantry.mailingAddressState +
-            ' ' +
-            request.pantry.mailingAddressZip +
-            ' ' +
-            request.pantry.mailingAddressCountry,
-          volunteerName: assignee.firstName + ' ' + assignee.lastName,
-          volunteerEmail: assignee.email,
-        });
-        await this.emailsService.sendEmails(
-          [manufacturer.foodManufacturerRepresentative.email],
-          fmMessage.subject,
-          fmMessage.bodyHTML,
-        );
-      } catch {
-        throw new InternalServerErrorException(
-          'Failed to send food manufacturer donation matched to order confirmation email to representative',
-        );
-      }
-
-      return savedOrder;
-    });
+    return savedOrder;
   }
 
   async findOne(orderId: number): Promise<Order> {

@@ -155,10 +155,11 @@ export const emailTemplates = {
     </p>
     <p>
       <strong>Matched Items:</strong><br />
-      ${params.items
-        .map((item) => `• ${item.quantity} of ${item.product}`)
-        .join('<br />')}
-      <br /><br />
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
       <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
       <strong>Address:</strong><br />
       ${params.pantryAddress}
