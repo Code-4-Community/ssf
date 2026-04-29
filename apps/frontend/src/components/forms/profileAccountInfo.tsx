@@ -9,7 +9,10 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 import { Pencil } from 'lucide-react';
-import { UpdateProfileFields, User } from 'types/types';
+import { Role, UpdateProfileFields, User } from '../../types/types';
+import { formatPhone } from '@utils/utils';
+import EditablePantryApplication from '@components/forms/editablePantryApplication';
+import EditableFMApplication from '@components/forms/editableFMApplication';
 
 interface ProfileAccountInfoProps {
   profile: User;
@@ -21,10 +24,12 @@ type ProfileFieldProps =
   | {
       label: string;
       value: string;
+      displayValue?: string;
     }
   | {
       label: string;
       value: string;
+      displayValue?: string;
       name: string;
       isEditing: boolean;
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -51,10 +56,11 @@ const ProfileField: React.FC<ProfileFieldProps> = (props) => (
         borderRadius="md"
         width="3/4"
         color="neutral.600"
+        borderColor="neutral.100"
       />
     ) : (
       <Text color="neutral.800" textStyle="p2">
-        {props.value}
+        {props.displayValue ?? props.value}
       </Text>
     )}
   </Box>
@@ -66,9 +72,21 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
   onSave,
 }) => {
   const { firstName, lastName, email, phone } = profile;
+  const [activeTab, setActiveTab] = useState('Account');
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingApplication, setIsEditingApplication] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ firstName, lastName, phone });
+
+  const isCurrentlyEditing =
+    activeTab === 'Account' ? isEditing : isEditingApplication;
+  const toggleCurrentEditing = () => {
+    if (activeTab === 'Account') {
+      setIsEditing((e) => !e);
+    } else {
+      setIsEditingApplication((e) => !e);
+    }
+  };
 
   useEffect(() => {
     setForm({ firstName, lastName, phone });
@@ -108,11 +126,11 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
       cursor="pointer"
       pb={2}
       _hover={{ color: 'neutral.900' }}
-      onClick={() => setIsEditing((e) => !e)}
+      onClick={toggleCurrentEditing}
     >
       <Pencil size={14} />
       <Text fontWeight={600} fontFamily="ibm">
-        {isEditing ? 'Editing' : 'Edit'}
+        {isCurrentlyEditing ? 'Editing' : 'Edit'}
       </Text>
     </HStack>
   );
@@ -139,6 +157,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
           label="Phone Number"
           name="phone"
           value={form.phone}
+          displayValue={formatPhone(form.phone) ?? form.phone}
           isEditing={isEditing}
           onChange={handleChange}
         />
@@ -176,7 +195,12 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
 
   if (showTabs) {
     return (
-      <Tabs.Root defaultValue="Account" variant="line" mx={2}>
+      <Tabs.Root
+        defaultValue="Account"
+        variant="line"
+        mx={2}
+        onValueChange={(e: { value: string }) => setActiveTab(e.value)}
+      >
         <HStack justify="space-between" mb={8}>
           <Tabs.List>
             <Tabs.Trigger
@@ -205,10 +229,17 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
 
         <Tabs.Content value="Account">{fields}</Tabs.Content>
         <Tabs.Content value="Application">
-          {/* TODO: add application tab content */}
-          <Box color="neutral.700" fontSize="sm">
-            Application details coming soon.
-          </Box>
+          {profile.role === Role.FOODMANUFACTURER ? (
+            <EditableFMApplication
+              isEditing={isEditingApplication}
+              onEditingChange={setIsEditingApplication}
+            />
+          ) : (
+            <EditablePantryApplication
+              isEditing={isEditingApplication}
+              onEditingChange={setIsEditingApplication}
+            />
+          )}
         </Tabs.Content>
       </Tabs.Root>
     );

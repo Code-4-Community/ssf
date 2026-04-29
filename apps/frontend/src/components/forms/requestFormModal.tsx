@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import {
   CreateFoodRequestBody,
-  FoodRequest,
+  FoodRequestSummaryDto,
   FoodType,
   RequestSize,
 } from '../../types/types';
@@ -21,9 +21,10 @@ import { FloatingAlert } from '@components/floatingAlert';
 import apiClient from '@api/apiClient';
 import { TagGroup } from './tagGroup';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface FoodRequestFormModalProps {
-  previousRequest?: FoodRequest;
+  previousRequest?: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   pantryId: number;
@@ -37,6 +38,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   pantryId,
   onSuccess,
 }) => {
+  useModalBodyCleanup();
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');

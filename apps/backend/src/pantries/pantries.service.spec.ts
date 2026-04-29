@@ -5,6 +5,7 @@ import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -25,13 +26,11 @@ import { Donation } from '../donations/donations.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../users/users.entity';
-import { AllocationsService } from '../allocations/allocations.service';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
-import { DataSource } from 'typeorm';
-import { Allocation } from '../allocations/allocations.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 jest.setTimeout(60000);
 
@@ -137,6 +136,10 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: getRepositoryToken(FoodManufacturer),
+          useValue: testDataSource.getRepository(FoodManufacturer),
         },
       ],
     }).compile();
@@ -433,7 +436,7 @@ describe('PantriesService', () => {
       );
     });
 
-    it('throws BadRequestException when user is not authorized to update pantry', async () => {
+    it('throws ForbiddenException when user is not authorized to update pantry', async () => {
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
@@ -443,7 +446,7 @@ describe('PantriesService', () => {
       await expect(
         service.updatePantryApplication(1, dto, invalidUserId),
       ).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
         ),
       );

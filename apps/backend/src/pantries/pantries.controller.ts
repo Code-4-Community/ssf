@@ -35,12 +35,15 @@ import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
+import { RequestsService } from '../foodRequests/request.service';
+import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
 @Controller('pantries')
 export class PantriesController {
   constructor(
     private pantriesService: PantriesService,
     private ordersService: OrdersService,
+    private requestsService: RequestsService,
   ) {}
 
   @Roles(Role.ADMIN)
@@ -121,6 +124,14 @@ export class PantriesController {
     @Param('pantryId', ParseIntPipe) pantryId: number,
   ): Promise<Order[]> {
     return this.ordersService.getOrdersByPantry(pantryId);
+  }
+
+  @Roles(Role.PANTRY, Role.ADMIN)
+  @Get('/:pantryId/requests')
+  async getFoodRequests(
+    @Param('pantryId', ParseIntPipe) pantryId: number,
+  ): Promise<FoodRequestSummaryDto[]> {
+    return this.requestsService.findAllForPantry(pantryId);
   }
 
   @ApiBody({
@@ -368,7 +379,7 @@ export class PantriesController {
   }
 
   @Roles(Role.PANTRY)
-  @Patch('/:pantryId/update')
+  @Patch('/:pantryId/application')
   async updatePantryApplication(
     @Req() req: AuthenticatedRequest,
     @Param('pantryId', ParseIntPipe) pantryId: number,

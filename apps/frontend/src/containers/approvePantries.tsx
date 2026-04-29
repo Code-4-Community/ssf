@@ -26,7 +26,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 
 const ApprovePantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);

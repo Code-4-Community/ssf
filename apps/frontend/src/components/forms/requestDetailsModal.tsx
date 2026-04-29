@@ -1,8 +1,8 @@
 import apiClient from '@api/apiClient';
 import {
-  FoodRequest,
   OrderItemDetailsGroupedByFoodType,
   OrderDetails,
+  FoodRequestSummaryDto,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
 import React, { useState, useEffect } from 'react';
@@ -23,9 +23,10 @@ import {
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface RequestDetailsModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -35,6 +36,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const [orderDetailsList, setOrderDetailsList] = useState<OrderDetails[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 

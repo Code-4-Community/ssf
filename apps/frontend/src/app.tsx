@@ -1,10 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
-import PantryPastOrders from '@containers/pantryPastOrders';
-import Pantries from '@containers/pantries';
-import Orders from '@containers/orders';
-import PantryDashboard from '@containers/pantryDashboard';
 import FormRequests from '@containers/formRequests';
 import PantryApplication from '@containers/pantryApplication';
 import ApplicationSubmitted from '@containers/applicationSubmitted';
@@ -12,12 +8,12 @@ import { submitPantryApplicationForm } from '@components/forms/pantryApplication
 import ApprovePantries from '@containers/approvePantries';
 import PantryApplicationDetails from '@containers/pantryApplicationDetails';
 import VolunteerManagement from '@containers/volunteerManagement';
-import FoodManufacturerOrderDashboard from '@containers/foodManufacturerOrderDashboard';
 import AdminDonation from '@containers/adminDonation';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
+import { ROUTES } from './routes';
 import FoodManufacturerDonationManagement from '@containers/foodManufacturerDonationManagement';
 import LoginPage from '@containers/loginPage';
 import SignupPage from '@containers/signupPage';
@@ -35,12 +31,14 @@ import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
+import TestAdminDashboard from '@containers/testAdminDashboard';
+import AdminRequestManagement from '@containers/adminRequestManagement';
 
 Amplify.configure(CognitoAuthConfig);
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: ROUTES.HOME,
     element: <Root />,
     errorElement: <NotFound />,
     children: [
@@ -50,94 +48,37 @@ const router = createBrowserRouter([
         element: <Homepage />,
       },
       {
-        path: '/login',
+        path: ROUTES.LOGIN,
         element: <LoginPage />,
       },
       {
-        path: '/signup',
+        path: ROUTES.SIGNUP,
         element: <SignupPage />,
       },
       {
-        path: '/forgot-password',
+        path: ROUTES.FORGOT_PASSWORD,
         element: <ForgotPasswordPage />,
       },
       {
-        path: '/pantry-application',
+        path: ROUTES.PANTRY_APPLICATION,
         element: <PantryApplication />,
         action: submitPantryApplicationForm,
       },
       {
-        path: '/food-manufacturer-application',
+        path: ROUTES.FOOD_MANUFACTURER_APPLICATION,
         element: <FoodManufacturerApplication />,
         action: submitManufacturerApplicationForm,
       },
       {
-        path: '/application-submitted',
+        path: ROUTES.APPLICATION_SUBMITTED,
         element: <ApplicationSubmitted />,
       },
       {
-        path: '/unauthorized',
+        path: ROUTES.UNAUTHORIZED,
         element: <Unauthorized />,
       },
-      // Private routes (protected by auth)
       {
-        path: '/pantry-past-orders',
-        element: (
-          <ProtectedRoute>
-            <PantryPastOrders />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantries',
-        element: (
-          <ProtectedRoute>
-            <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantry-dashboard',
-        element: (
-          <ProtectedRoute>
-            <PantryDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantry-past-orders',
-        element: (
-          <ProtectedRoute>
-            <PantryPastOrders />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/pantries',
-        element: (
-          <ProtectedRoute>
-            <Pantries />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/food-manufacturer-order-dashboard',
-        element: (
-          <ProtectedRoute>
-            <FoodManufacturerOrderDashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/orders',
-        element: (
-          <ProtectedRoute>
-            <Orders />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/request-form',
+        path: ROUTES.REQUEST_FORM,
         element: (
           <ProtectedRoute>
             <FormRequests />
@@ -145,7 +86,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/fm-donation-management',
+        path: ROUTES.FM_DONATION_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <FoodManufacturerDonationManagement />
@@ -153,7 +94,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-pantries',
+        path: ROUTES.APPROVE_PANTRIES,
         element: (
           <ProtectedRoute>
             <ApprovePantries />
@@ -161,7 +102,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/approve-food-manufacturers',
+        path: ROUTES.APPROVE_FOOD_MANUFACTURERS,
         element: (
           <ProtectedRoute>
             <ApproveFoodManufacturers />
@@ -169,7 +110,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-application-details/:applicationId',
+        path: ROUTES.PANTRY_APPLICATION_DETAILS,
         element: (
           <ProtectedRoute>
             <PantryApplicationDetails />
@@ -177,7 +118,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/food-manufacturer-application-details/:applicationId',
+        path: ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS,
         element: (
           <ProtectedRoute>
             <FoodManufacturerApplicationDetails />
@@ -185,7 +126,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin-donation',
+        path: ROUTES.ADMIN_DONATION,
         element: (
           <ProtectedRoute>
             <AdminDonation />
@@ -193,7 +134,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin-donation-stats',
+        path: ROUTES.ADMIN_DONATION_STATS,
         element: (
           <ProtectedRoute>
             <AdminDonationStats />
@@ -201,7 +142,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/volunteer-management',
+        path: ROUTES.VOLUNTEER_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <VolunteerManagement />
@@ -209,7 +150,23 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/admin-order-management',
+        path: ROUTES.TEST_ADMIN_DASHBOARD,
+        element: (
+          <ProtectedRoute>
+            <TestAdminDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ADMIN_REQUEST_MANAGEMENT,
+        element: (
+          <ProtectedRoute>
+            <AdminRequestManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ADMIN_ORDER_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <AdminOrderManagement />
@@ -217,7 +174,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/pantry-order-management',
+        path: ROUTES.PANTRY_ORDER_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <PantryOrderManagement />
@@ -225,7 +182,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/profile',
+        path: ROUTES.PROFILE,
         element: (
           <ProtectedRoute>
             <ProfilePage />
@@ -233,7 +190,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/volunteer-assigned-pantries',
+        path: ROUTES.VOLUNTEER_ASSIGNED_PANTRIES,
         element: (
           <ProtectedRoute>
             <AssignedPantries />
@@ -241,7 +198,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/volunteer-request-management',
+        path: ROUTES.VOLUNTEER_REQUEST_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <VolunteerRequestManagement />
@@ -249,7 +206,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/volunteer-order-management',
+        path: ROUTES.VOLUNTEER_ORDER_MANAGEMENT,
         element: (
           <ProtectedRoute>
             <VolunteerOrderManagement />
