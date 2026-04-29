@@ -1,4 +1,4 @@
-export type UserStatsDto = {
+export type AdminVolunteerStats = {
   'Food Requests': string;
   Orders: string;
   Donations: string;

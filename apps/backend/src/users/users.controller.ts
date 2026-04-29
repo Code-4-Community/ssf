@@ -16,7 +16,7 @@ import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
-import { UserStatsDto } from './dtos/user-stats.dto';
+import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 
@@ -38,7 +38,7 @@ export class UsersController {
   @Get('/:id/stats')
   async getUserDashboardStats(
     @Param('id', ParseIntPipe) userId: number,
-  ): Promise<UserStatsDto | PantryStatsDto | ManufacturerStatsDto> {
+  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
     return this.usersService.getUserDashboardStats(userId);
   }
 

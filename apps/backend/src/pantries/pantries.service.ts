@@ -587,7 +587,7 @@ export class PantriesService {
     return pantry;
   }
 
-  async getStats(pantryId: number): Promise<PantryStatsDto> {
+  async getDashboardStats(pantryId: number): Promise<PantryStatsDto> {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.repo.findOneBy({ pantryId: pantryId });

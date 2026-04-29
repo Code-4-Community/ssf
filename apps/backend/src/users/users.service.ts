@@ -19,11 +19,11 @@ import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
-import { UserStatsDto } from './dtos/user-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { PantriesService } from '../pantries/pantries.service';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 
 @Injectable()
 export class UsersService {
@@ -188,7 +188,7 @@ export class UsersService {
     return user;
   }
 
-  async getMonthlyAggregatedStats(): Promise<UserStatsDto> {
+  async getAdminVolunteerMonthlyAggregatedStats(): Promise<AdminVolunteerStats> {
     const now = new Date();
     const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endMonth = new Date(
@@ -225,19 +225,19 @@ export class UsersService {
 
   async getUserDashboardStats(
     userId: number,
-  ): Promise<UserStatsDto | PantryStatsDto | ManufacturerStatsDto> {
+  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
     const user = await this.findOne(userId);
 
     if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
-      return this.getMonthlyAggregatedStats();
+      return this.getAdminVolunteerMonthlyAggregatedStats();
     } else if (user.role === Role.PANTRY) {
       const pantry = await this.pantriesService.findByUserId(userId);
-      return this.pantriesService.getStats(pantry.pantryId);
+      return this.pantriesService.getDashboardStats(pantry.pantryId);
     } else if (user.role === Role.FOODMANUFACTURER) {
       const foodManufacturer = await this.foodManufacturersService.findByUserId(
         userId,
       );
-      return this.foodManufacturersService.getStats(
+      return this.foodManufacturersService.getDashboardStats(
         foodManufacturer.foodManufacturerId,
       );
     } else {

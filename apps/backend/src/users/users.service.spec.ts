@@ -346,7 +346,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('getMonthlyAggregatedStats', () => {
+  describe('getAdminVolunteerMonthlyAggregatedStats', () => {
     it('should return correct aggregated counts for the current month', async () => {
       const foodRequestRepo = testDataSource.getRepository(FoodRequest);
 
@@ -378,7 +378,7 @@ describe('UsersService', () => {
       );
       await foodRequestRepo.save(existingRequest);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -421,7 +421,7 @@ describe('UsersService', () => {
       existingRequest2.requestedAt = startOfMonth;
       await foodRequestRepo.save(existingRequest2);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -445,7 +445,7 @@ describe('UsersService', () => {
     });
 
     it('should return just volunteer count if no other fields are relative to current month', async () => {
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -488,7 +488,7 @@ describe('UsersService', () => {
       existingRequest2.requestedAt = startOfCurrentMonth;
       await foodRequestRepo.save(existingRequest2);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -526,7 +526,7 @@ describe('UsersService', () => {
   });
 
   describe('getUserDashboardStats', () => {
-    it('should call getMonthlyAggregatedStats and return admin stats for admin user', async () => {
+    it('should call getAdminVolunteerMonthlyAggregatedStats and return admin stats for admin user', async () => {
       // Populate with dummy data
       const now = new Date();
       const foodRequestRepo = testDataSource.getRepository(FoodRequest);
@@ -559,7 +559,10 @@ describe('UsersService', () => {
         ],
       } as CreateDonationDto);
 
-      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+      const spy = jest.spyOn(
+        service,
+        'getAdminVolunteerMonthlyAggregatedStats',
+      );
       const result = await service.getUserDashboardStats(1);
 
       expect(spy).toHaveBeenCalled();
@@ -571,7 +574,7 @@ describe('UsersService', () => {
       });
     });
 
-    it('should call getMonthlyAggregatedStats and return volunteer stats for volunteer user', async () => {
+    it('should call getAdminVolunteerMonthlyAggregatedStats and return volunteer stats for volunteer user', async () => {
       // Populate with dummy data
       const now = new Date();
       const foodRequestRepo = testDataSource.getRepository(FoodRequest);
@@ -620,7 +623,10 @@ describe('UsersService', () => {
       } as CreateDonationDto);
 
       // Maria Garcia (id=7) is a volunteer
-      const spy = jest.spyOn(service, 'getMonthlyAggregatedStats');
+      const spy = jest.spyOn(
+        service,
+        'getAdminVolunteerMonthlyAggregatedStats',
+      );
       const result = await service.getUserDashboardStats(7);
 
       expect(spy).toHaveBeenCalled();
@@ -634,12 +640,15 @@ describe('UsersService', () => {
 
     it('should call pantriesService.getStats and return pantry stats for pantry user', async () => {
       const findByUserIdSpy = jest.spyOn(pantriesService, 'findByUserId');
-      const getStatsSpy = jest.spyOn(pantriesService, 'getStats');
+      const getDashboardStatsSpy = jest.spyOn(
+        pantriesService,
+        'getDashboardStats',
+      );
 
       const result = await service.getUserDashboardStats(10);
 
       expect(findByUserIdSpy).toHaveBeenCalledWith(10);
-      expect(getStatsSpy).toHaveBeenCalledWith(1);
+      expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
       expect(result).toEqual({
         'Food Requests': '2',
         Orders: '2',
@@ -653,12 +662,15 @@ describe('UsersService', () => {
         foodManufacturersService,
         'findByUserId',
       );
-      const getStatsSpy = jest.spyOn(foodManufacturersService, 'getStats');
+      const getDashboardStatsSpy = jest.spyOn(
+        foodManufacturersService,
+        'getDashboardStats',
+      );
 
       const result = await service.getUserDashboardStats(3);
 
       expect(findByUserIdSpy).toHaveBeenCalledWith(3);
-      expect(getStatsSpy).toHaveBeenCalledWith(1);
+      expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
       expect(result).toEqual({
         Donations: '2',
         'Value Donated': '$925',

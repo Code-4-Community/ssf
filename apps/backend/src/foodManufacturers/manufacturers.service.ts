@@ -344,7 +344,7 @@ export class FoodManufacturersService {
     return foodManufacturer;
   }
 
-  async getStats(id: number): Promise<ManufacturerStatsDto> {
+  async getDashboardStats(id: number): Promise<ManufacturerStatsDto> {
     validateId(id, 'Food Manufacturer');
 
     const manufacturer = await this.repo.findOne({
