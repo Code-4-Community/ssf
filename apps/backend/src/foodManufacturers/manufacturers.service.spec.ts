@@ -677,6 +677,7 @@ describe('FoodManufacturersService', () => {
       const foodManufacturerId = 1;
       const yearlyDate = new Date();
       yearlyDate.setDate(yearlyDate.getDate() + 30);
+      if (yearlyDate.getDate() > 28) yearlyDate.setDate(28);
       const threeYearlyDate = new Date();
       threeYearlyDate.setFullYear(threeYearlyDate.getFullYear() + 3);
 
