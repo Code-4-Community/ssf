@@ -22,6 +22,7 @@ import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface OrderDetailsModalProps {
   orderId: number;
@@ -34,6 +35,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const [foodRequest, setFoodRequest] = useState<FoodRequestSummaryDto | null>(
     null,
   );
@@ -168,7 +170,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         Request {foodRequest.requestId} -
                         <Text as="span" color="neutral.800" textStyle="p2">
                           {' '}
-                          {foodRequest.pantryName}
+                          {foodRequest.pantry.pantryName}
                         </Text>
                       </Text>
                       {foodRequest.status === FoodRequestStatus.CLOSED ? (

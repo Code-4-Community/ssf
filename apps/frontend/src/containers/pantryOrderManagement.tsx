@@ -16,7 +16,7 @@ import {
   Mail,
   CircleCheck,
 } from 'lucide-react';
-import { capitalize, formatDate } from '@utils/utils';
+import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
@@ -68,22 +68,15 @@ const PantryOrderManagement: React.FC = () => {
     Record<OrderStatus, FilterState>
   >({
     [OrderStatus.SHIPPED]: {
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.PENDING]: {
-      sortAsc: true,
+      sortAsc: false,
     },
     [OrderStatus.DELIVERED]: {
-      sortAsc: true,
+      sortAsc: false,
     },
   });
-
-  // Color mapping for statuses, the first color is background, the second is color for status text
-  const STATUS_COLORS = new Map<OrderStatus, [string, string]>([
-    [OrderStatus.SHIPPED, ['yellow.200', 'yellow.hover']],
-    [OrderStatus.PENDING, ['blue.200', 'blue.core']],
-    [OrderStatus.DELIVERED, ['teal.200', 'teal.hover']],
-  ]);
 
   const fetchOrders = async () => {
     try {
@@ -113,7 +106,7 @@ const PantryOrderManagement: React.FC = () => {
         [OrderStatus.DELIVERED]: 1,
       };
       setCurrentPages(initialPages);
-    } catch (error) {
+    } catch {
       setIsAlertError(true);
       setAlertMessage('Failed to fetch orders');
     }
@@ -173,7 +166,7 @@ const PantryOrderManagement: React.FC = () => {
             <OrderStatusSection
               orders={displayedOrders}
               status={status}
-              colors={STATUS_COLORS.get(status)!}
+              colors={ORDER_STATUS_COLORS[status]}
               onOrderSelect={setSelectedOrderId}
               onOrderSelectForAction={setSelectedActionOrder}
               totalOrders={totalFiltered}
@@ -479,6 +472,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         color={colors[1]}
                         display="inline-block"
                         fontWeight="500"
+                        fontSize="12px"
                         my={2}
                         py={1}
                         px={3}

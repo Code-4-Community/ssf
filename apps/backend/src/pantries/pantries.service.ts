@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -389,7 +390,7 @@ export class PantriesService {
     }
 
     if (pantry.pantryUser.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
       );
     }

@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { User } from '../users/users.entity';
 import { VolunteersService } from './volunteers.service';
 import { Pantry } from '../pantries/pantries.entity';
@@ -15,8 +16,12 @@ import { EmailsService } from '../emails/email.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Donation } from '../donations/donations.entity';
-import { DataSource } from 'typeorm';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { OrdersService } from '../orders/order.service';
+import { DonationItemsService } from '../donationItems/donationItems.service';
+import { AllocationsService } from '../allocations/allocations.service';
+import { DonationService } from '../donations/donations.service';
+import { Allocation } from '../allocations/allocations.entity';
 
 jest.setTimeout(60000);
 
@@ -24,10 +29,11 @@ describe('VolunteersService', () => {
   let service: VolunteersService;
 
   beforeAll(async () => {
-    // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
+    await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
+    await testDataSource.query(`CREATE SCHEMA public`);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -35,7 +41,11 @@ describe('VolunteersService', () => {
         UsersService,
         PantriesService,
         RequestsService,
+        OrdersService,
         FoodManufacturersService,
+        DonationItemsService,
+        AllocationsService,
+        DonationService,
         {
           provide: DataSource,
           useValue: testDataSource,
@@ -80,6 +90,10 @@ describe('VolunteersService', () => {
           provide: getRepositoryToken(Donation),
           useValue: testDataSource.getRepository(Donation),
         },
+        {
+          provide: getRepositoryToken(Allocation),
+          useValue: testDataSource.getRepository(Allocation),
+        },
       ],
     }).compile();
 
@@ -93,7 +107,6 @@ describe('VolunteersService', () => {
   });
 
   afterEach(async () => {
-    // Drop the schema completely (cascades all tables)
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
@@ -270,7 +283,7 @@ describe('VolunteersService', () => {
 
       const requests = await service.findRequestsByVolunteer(volunteerId);
       requests.forEach((request) => {
-        expect(assignedPantryIds).toContain(request.pantryId);
+        expect(assignedPantryIds).toContain(request.pantry.pantryId);
       });
     });
 
@@ -295,7 +308,7 @@ describe('VolunteersService', () => {
       const assignedPantries = await service.getVolunteerPantries(volunteerId);
       const assignedPantryIds = assignedPantries.map((p) => p.pantryId);
       await testDataSource.query(
-        `DELETE FROM allocations 
+        `DELETE FROM allocations
       WHERE order_id IN (
         SELECT o.order_id FROM orders o
         JOIN food_requests fr ON o.request_id = fr.request_id
@@ -304,7 +317,7 @@ describe('VolunteersService', () => {
         [assignedPantryIds],
       );
       await testDataSource.query(
-        `DELETE FROM orders 
+        `DELETE FROM orders
       WHERE request_id IN (
         SELECT request_id FROM food_requests WHERE pantry_id = ANY($1)
       )`,
@@ -317,6 +330,49 @@ describe('VolunteersService', () => {
 
       const requests = await service.findRequestsByVolunteer(volunteerId);
       expect(requests).toEqual([]);
+    });
+  });
+
+  describe('getRecentOrders', () => {
+    it('returns empty array when volunteer has no assigned orders', async () => {
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = (SELECT user_id FROM users WHERE role = 'volunteer' AND user_id != 6 LIMIT 1)`,
+      );
+
+      const result = await service.getRecentOrders(6);
+      expect(result).toEqual([]);
+    });
+
+    it('returns at most 2 orders even when volunteer has more', async () => {
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrders(6);
+      expect(result).toHaveLength(2);
+    });
+
+    it('returns correct shape of orders for the volunteer', async () => {
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const result = await service.getRecentOrders(6);
+
+      expect(result[0].createdAt >= result[1].createdAt).toBe(true);
+      result.forEach((order) => {
+        expect(order.pantryName).toBeDefined();
+        expect(order.assignee.id).toBe(6);
+        expect(order.assignee.firstName).toBe('James');
+        expect(order.assignee.lastName).toBe('Thomas');
+        expect(order.orderId).toBeDefined();
+        expect(order.status).toBeDefined();
+        expect(order.createdAt).toBeDefined();
+        expect(order.shippedAt).toBeDefined();
+        expect(order.deliveredAt).toBeDefined();
+      });
+    });
+
+    it('throws when volunteer does not exist', async () => {
+      await expect(service.getRecentOrders(999)).rejects.toThrow(
+        new NotFoundException('Volunteer 999 not found'),
+      );
     });
   });
 });

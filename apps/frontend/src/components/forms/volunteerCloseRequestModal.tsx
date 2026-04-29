@@ -8,14 +8,15 @@ import {
   Flex,
   Dialog,
 } from '@chakra-ui/react';
-import { FoodRequest } from 'types/types';
+import { FoodRequestSummaryDto } from 'types/types';
 import { formatDate } from '@utils/utils';
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface CloseRequestActionModalProps {
-  request: FoodRequest;
+  request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -24,6 +25,7 @@ interface CloseRequestActionModalProps {
 const VolunteerCloseRequestActionModal: React.FC<
   CloseRequestActionModalProps
 > = ({ request, isOpen, onClose, onSuccess }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
   const onCloseRequest = async () => {

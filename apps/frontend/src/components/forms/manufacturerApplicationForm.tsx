@@ -36,6 +36,7 @@ import {
 } from '../../types/manufacturerEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { ROUTES } from '../../routes';
 
 const ManufacturerApplicationForm: React.FC = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
@@ -107,7 +108,7 @@ const ManufacturerApplicationForm: React.FC = () => {
         borderColor="neutral.200"
         rounded="sm"
       >
-        <Form method="post" action="/food-manufacturer-application">
+        <Form method="post" action={ROUTES.FOOD_MANUFACTURER_APPLICATION}>
           <Heading textStyle="h3" mb="1em" color="gray.dark">
             Food Manufacturer Application Form
           </Heading>
@@ -721,7 +722,7 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
 
   try {
     await ApiClient.postManufacturer(data as ManufacturerApplicationDto);
-    return redirect('/application-submitted');
+    return redirect(ROUTES.APPLICATION_SUBMITTED);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       return {

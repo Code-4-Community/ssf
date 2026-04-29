@@ -9,7 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Repository } from 'typeorm';
 import { User } from './users.entity';
-import { Role } from './types';
+import { PendingApplication, Role } from './types';
 import { validateId } from '../utils/validation.utils';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthService } from '../auth/auth.service';
@@ -24,6 +24,9 @@ import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-sta
 import { PantriesService } from '../pantries/pantries.service';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
+import { Pantry } from '../pantries/pantries.entity';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class UsersService {
@@ -36,6 +39,10 @@ export class UsersService {
     private orderRepo: Repository<Order>,
     @InjectRepository(Donation)
     private donationRepo: Repository<Donation>,
+    @InjectRepository(Pantry)
+    private pantryRepo: Repository<Pantry>,
+    @InjectRepository(FoodManufacturer)
+    private fmRepo: Repository<FoodManufacturer>,
     private authService: AuthService,
     private emailsService: EmailsService,
     @Inject(forwardRef(() => PantriesService))
@@ -135,6 +142,42 @@ export class UsersService {
     }
 
     return users;
+  }
+
+  async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    const [pendingPantries, pendingFMs] = await Promise.all([
+      this.pantryRepo.find({
+        where: { status: ApplicationStatus.PENDING },
+        select: ['pantryId', 'pantryName', 'dateApplied'],
+        order: { dateApplied: 'DESC' },
+        take: 4,
+      }),
+      this.fmRepo.find({
+        where: { status: ApplicationStatus.PENDING },
+        select: ['foodManufacturerId', 'foodManufacturerName', 'dateApplied'],
+        order: { dateApplied: 'DESC' },
+        take: 4,
+      }),
+    ]);
+
+    const combined: PendingApplication[] = [
+      ...pendingPantries.map((p) => ({
+        id: p.pantryId,
+        name: p.pantryName,
+        type: 'pantry' as const,
+        dateApplied: p.dateApplied,
+      })),
+      ...pendingFMs.map((fm) => ({
+        id: fm.foodManufacturerId,
+        name: fm.foodManufacturerName,
+        type: 'food_manufacturer' as const,
+        dateApplied: fm.dateApplied,
+      })),
+    ];
+
+    return combined
+      .sort((a, b) => b.dateApplied.getTime() - a.dateApplied.getTime())
+      .slice(0, 4);
   }
 
   async update(id: number, dto: UpdateUserInfoDto): Promise<User> {

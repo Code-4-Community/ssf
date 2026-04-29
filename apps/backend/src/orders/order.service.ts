@@ -121,6 +121,44 @@ export class OrdersService {
     });
   }
 
+  async getRecentOrdersByAssignee(
+    volunteerId: number,
+  ): Promise<VolunteerOrder[]> {
+    validateId(volunteerId, 'Volunteer');
+
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .select([
+        'order.orderId',
+        'order.status',
+        'order.createdAt',
+        'order.shippedAt',
+        'order.deliveredAt',
+        'request.pantryId',
+        'pantry.pantryName',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ])
+      .where('order.assigneeId = :volunteerId', { volunteerId })
+      .orderBy('order.createdAt', 'DESC')
+      .take(2)
+      .getMany();
+
+    return orders.map((o) => ({
+      orderId: o.orderId,
+      status: o.status,
+      createdAt: o.createdAt,
+      shippedAt: o.shippedAt,
+      deliveredAt: o.deliveredAt,
+      pantryName: o.request.pantry.pantryName,
+      assignee: o.assignee,
+    }));
+  }
+
   async getCurrentOrders() {
     return this.repo.find({
       where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
@@ -285,22 +323,6 @@ export class OrdersService {
     };
   }
 
-  async findOrderByRequest(requestId: number): Promise<Order> {
-    validateId(requestId, 'Request');
-
-    const order = await this.repo.findOne({
-      where: { requestId },
-      relations: ['request'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(
-        `Order with request ID ${requestId} not found`,
-      );
-    }
-    return order;
-  }
-
   async findOrderPantry(orderId: number): Promise<Pantry> {
     const request = await this.findOrderFoodRequest(orderId);
     if (!request) {
@@ -308,11 +330,13 @@ export class OrdersService {
     }
 
     const pantry = await this.pantryRepo.findOneBy({
-      pantryId: request.pantryId,
+      pantryId: request.pantry.pantryId,
     });
 
     if (!pantry) {
-      throw new NotFoundException(`Pantry ${request.pantryId} not found`);
+      throw new NotFoundException(
+        `Pantry ${request.pantry.pantryId} not found`,
+      );
     }
 
     return pantry;
@@ -331,13 +355,13 @@ export class OrdersService {
       select: {
         request: {
           requestId: true,
-          pantryId: true,
           requestedSize: true,
           requestedFoodTypes: true,
           additionalInformation: true,
           requestedAt: true,
           status: true,
           pantry: {
+            pantryId: true,
             pantryName: true,
           },
         },
@@ -350,17 +374,15 @@ export class OrdersService {
 
     return {
       requestId: order.request.requestId,
-      pantryId: order.request.pantryId,
-      pantryName: order.request.pantry.pantryName,
-
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
-
       additionalInformation: order.request.additionalInformation ?? null,
-
       requestedAt: order.request.requestedAt,
-
       status: order.request.status,
+      pantry: {
+        pantryId: order.request.pantry.pantryId,
+        pantryName: order.request.pantry.pantryName,
+      },
     };
   }
 
@@ -444,8 +466,11 @@ export class OrdersService {
     const qb = this.repo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.request', 'request')
+      .leftJoin('request.pantry', 'pantry')
+      .addSelect('pantry.pantryName')
       .leftJoinAndSelect('order.allocations', 'allocations')
       .leftJoinAndSelect('allocations.item', 'item')
+      .leftJoinAndSelect('order.assignee', 'assignee')
       .where('request.pantryId = :pantryId', { pantryId });
 
     if (years && years.length > 0) {
