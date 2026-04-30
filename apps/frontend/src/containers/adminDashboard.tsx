@@ -21,55 +21,48 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
 
+  const fetchPendingApplications = async () => {
+    try {
+      const pendingApplications =
+        await ApiClient.getRecentPendingApplications();
+      setPendingApplications(pendingApplications);
+    } catch {
+      setAlertMessage('Error fetching pending applications');
+    }
+  };
+
+  const fetchRecentOrders = async () => {
+    try {
+      const allOrders = await ApiClient.getAllOrders();
+      const sortedOrders = allOrders.sort(
+        (a: OrderSummary, b: OrderSummary) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      const recentOrders = sortedOrders.slice(0, 2);
+      setRecentOrders(recentOrders);
+    } catch {
+      setAlertMessage('Error fetching orders');
+    }
+  };
+
+  const fetchRecentDonations = async () => {
+    try {
+      const allDonations = await ApiClient.getAllDonations();
+      const sortedDonations = allDonations.sort(
+        (a: Donation, b: Donation) =>
+          new Date(b.dateDonated).getTime() - new Date(a.dateDonated).getTime(),
+      );
+      const recentDonations = sortedDonations.slice(0, 2);
+      setRecentDonations(recentDonations);
+    } catch {
+      setAlertMessage('Error fetching donations');
+    }
+  };
+
   useEffect(() => {
-    const fetchPendingApplications = async () => {
-      try {
-        const pendingApplications =
-          await ApiClient.getRecentPendingApplications();
-        setPendingApplications(pendingApplications);
-      } catch {
-        setAlertMessage('Error fetching pending applications');
-      }
-    };
-
-    fetchPendingApplications();
-  }, [setAlertMessage]);
-
-  useEffect(() => {
-    const fetchRecentOrders = async () => {
-      try {
-        const allOrders = await ApiClient.getAllOrders();
-        const sortedOrders = allOrders.sort(
-          (a: OrderSummary, b: OrderSummary) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-        const recentOrders = sortedOrders.slice(0, 2);
-        setRecentOrders(recentOrders);
-      } catch {
-        setAlertMessage('Error fetching orders');
-      }
-    };
-
-    fetchRecentOrders();
-  }, [setAlertMessage]);
-
-  useEffect(() => {
-    const fetchRecentDonations = async () => {
-      try {
-        const allDonations = await ApiClient.getAllDonations();
-        const sortedDonations = allDonations.sort(
-          (a: Donation, b: Donation) =>
-            new Date(b.dateDonated).getTime() -
-            new Date(a.dateDonated).getTime(),
-        );
-        const recentDonations = sortedDonations.slice(0, 2);
-        setRecentDonations(recentDonations);
-      } catch {
-        setAlertMessage('Error fetching donations');
-      }
-    };
-
     fetchRecentDonations();
+    fetchRecentOrders();
+    fetchPendingApplications();
   }, [setAlertMessage]);
 
   return (
