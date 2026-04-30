@@ -1,4 +1,5 @@
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { Center, Spinner, Text } from '@chakra-ui/react';
 
@@ -20,7 +21,7 @@ const ProtectedRoute = ({ children }: Props) => {
   }
 
   if (authStatus !== 'authenticated') {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;
   }
 
   return children ?? <Outlet />;

@@ -214,8 +214,11 @@ describe('VolunteersController', () => {
     });
   });
 
-  describe('GET /:id/my-recent-orders', () => {
+  describe('GET /me/my-recent-orders', () => {
     it('returns the 2 most recent orders for a volunteer', async () => {
+      const req: AuthenticatedRequest = {
+        user: { id: 6 },
+      } as AuthenticatedRequest;
       const assignee = { id: 6, firstName: 'James', lastName: 'Thomas' };
       const recentOrders: Partial<VolunteerOrder>[] = [
         {
@@ -236,7 +239,7 @@ describe('VolunteersController', () => {
         recentOrders as VolunteerOrder[],
       );
 
-      const result = await controller.getRecentOrders(6);
+      const result = await controller.getRecentOrders(req);
 
       expect(result).toEqual(recentOrders);
       expect(result).toHaveLength(2);
@@ -244,9 +247,12 @@ describe('VolunteersController', () => {
     });
 
     it('returns empty array when volunteer has no assigned orders', async () => {
+      const req: AuthenticatedRequest = {
+        user: { id: 6 },
+      } as AuthenticatedRequest;
       mockVolunteersService.getRecentOrders.mockResolvedValueOnce([]);
 
-      const result = await controller.getRecentOrders(6);
+      const result = await controller.getRecentOrders(req);
 
       expect(result).toEqual([]);
       expect(mockVolunteersService.getRecentOrders).toHaveBeenCalledWith(6);

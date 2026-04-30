@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ROUTES } from '../routes';
 import {
   Table,
   Text,
@@ -176,7 +177,7 @@ const VolunteerManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    href={`/pantry-management/${volunteer.id}`}
+                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
                   >
                     View Assigned Pantries
                   </Link>

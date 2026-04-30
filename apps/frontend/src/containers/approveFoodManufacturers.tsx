@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Table,
   Button,
@@ -322,7 +323,10 @@ const ApproveFoodManufacturers: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/food-manufacturer-application-details/${foodManufacturer.foodManufacturerId}`}
+                      href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        String(foodManufacturer.foodManufacturerId),
+                      )}
                     >
                       View Details
                     </Link>

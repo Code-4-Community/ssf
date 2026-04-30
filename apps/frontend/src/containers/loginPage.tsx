@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ROUTES } from '../routes';
 import { signIn, confirmSignIn, fetchAuthSession } from '@aws-amplify/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -17,7 +18,6 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import AuthHeader from '@components/AuthHeader';
-import { ROUTES } from '../routes';
 
 type Step = 'login' | 'new-password';
 
@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || ROUTES.HOME;
 
   const handleLogin = async () => {
     try {
