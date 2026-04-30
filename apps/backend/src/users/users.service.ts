@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -275,11 +276,21 @@ export class UsersService {
       return this.getAdminVolunteerMonthlyAggregatedStats();
     } else if (user.role === Role.PANTRY) {
       const pantry = await this.pantriesService.findByUserId(userId);
+      if (pantry.status != ApplicationStatus.APPROVED) {
+        throw new ForbiddenException(
+          `Pantry with User id ${userId} must be approved`,
+        );
+      }
       return this.pantriesService.getDashboardStats(pantry.pantryId);
     } else if (user.role === Role.FOODMANUFACTURER) {
       const foodManufacturer = await this.foodManufacturersService.findByUserId(
         userId,
       );
+      if (foodManufacturer.status != ApplicationStatus.APPROVED) {
+        throw new ForbiddenException(
+          `Food Manufacturer with User id ${userId} must be approved`,
+        );
+      }
       return this.foodManufacturersService.getDashboardStats(
         foodManufacturer.foodManufacturerId,
       );
