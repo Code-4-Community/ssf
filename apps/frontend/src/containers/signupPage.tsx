@@ -1,11 +1,23 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Text, VStack, Button, Link } from '@chakra-ui/react';
 import loginBackground from '../assets/login_background.png';
 import AuthHeader from '@components/AuthHeader';
 import { ROUTES } from '../routes';
+import { useEffect } from 'react';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
+
+  const from = location.state?.from?.pathname || '/';
+
+  useEffect(() => {
+    if (authStatus === 'authenticated') {
+      navigate(from, { replace: true });
+    }
+  }, [authStatus, from, navigate]);
 
   return (
     <Box minH="100vh" w="full" display="flex" flexDirection="column">
