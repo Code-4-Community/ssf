@@ -14,7 +14,7 @@ import {
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const Homepage: React.FC = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
 
   return (
     <Container maxW="container.md" py={5}>
@@ -171,7 +171,7 @@ const Homepage: React.FC = () => {
           </List.Root>
         </Box>
 
-        {!user && (
+        {authStatus !== 'authenticated' && (
           <Box w="full">
             <Heading as="h3" size="md" mb={3} textAlign="center">
               Other Pages
