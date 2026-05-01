@@ -16,7 +16,6 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
-import { CheckOwnership } from '../auth/ownership.decorator';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -44,19 +43,6 @@ export class VolunteersController {
     return this.volunteersService.findOne(userId);
   }
 
-  @CheckOwnership({
-    idParam: 'id',
-    resolver: async ({ entityId }) => [entityId],
-    bypassRoles: [Role.ADMIN],
-  })
-  @Roles(Role.VOLUNTEER, Role.ADMIN)
-  @Get('/:id/my-recent-orders')
-  async getRecentOrders(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<VolunteerOrder[]> {
-    return this.volunteersService.getRecentOrders(id);
-  }
-
   @Post('/:id/pantries')
   async assignPantries(
     @Param('id', ParseIntPipe) id: number,
@@ -73,6 +59,14 @@ export class VolunteersController {
     const currentUser = req.user;
 
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);
+  }
+
+  @Roles(Role.VOLUNTEER)
+  @Get('/me/my-recent-orders')
+  async getRecentOrders(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<VolunteerOrder[]> {
+    return this.volunteersService.getRecentOrders(req.user.id);
   }
 
   // returns all orders globally

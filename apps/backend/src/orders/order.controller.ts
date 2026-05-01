@@ -82,8 +82,8 @@ export class OrdersController {
     resolver: async ({ entityId, services }) => {
       return pipeNullable(
         () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequest) =>
-          services.get(PantriesService).findOne(request.pantryId),
+        (request: FoodRequestSummaryDto) =>
+          services.get(PantriesService).findOne(request.pantry.pantryId),
         (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },

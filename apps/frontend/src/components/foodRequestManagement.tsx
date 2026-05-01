@@ -24,11 +24,13 @@ import { useAlert } from '../hooks/alert';
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
   enableVolunteerActions?: boolean;
+  initialRequestId?: number;
 }
 
 const RequestManagement: React.FC<RequestManagementProps> = ({
   fetchRequests: fetchData,
   enableVolunteerActions = true,
+  initialRequestId,
 }) => {
   const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
   const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(false);
@@ -67,6 +69,12 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedFilteredPantries]);
+
+  useEffect(() => {
+    if (!initialRequestId || requests.length === 0) return;
+    const match = requests.find((r) => r.requestId === initialRequestId);
+    if (match) setSelectedViewDetailsRequest(match);
+  }, [initialRequestId, requests]);
 
   const pantryOptions = [
     ...new Set(

@@ -18,13 +18,14 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
+import { OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams } from 'react-router-dom';
 
-type OrderWithColor = OrderWithoutFoodManufacturer & { assigneeColor?: string };
+type OrderWithColor = OrderSummary & { assigneeColor?: string };
 const MAX_PER_STATUS = 5;
 
 const PantryOrderManagement: React.FC = () => {
@@ -55,6 +56,7 @@ const PantryOrderManagement: React.FC = () => {
   const [isAlertError, setIsAlertError] = useState<boolean>(false);
 
   const [alertState, setAlertMessage] = useAlert();
+  const [searchParams] = useSearchParams();
 
   // State to hold filter state per status
   type FilterState = {
@@ -115,6 +117,15 @@ const PantryOrderManagement: React.FC = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+    const allOrders = Object.values(statusOrders).flat();
+    if (!orderIdFromUrl || allOrders.length === 0) return;
+
+    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    if (match) setSelectedOrderId(match.orderId);
+  }, [searchParams, statusOrders]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {

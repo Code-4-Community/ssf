@@ -25,6 +25,7 @@ import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams } from 'react-router-dom';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -40,6 +41,7 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
+  const [searchParams] = useSearchParams();
   const [alertState, setAlertMessage] = useAlert();
 
   const pageSize = 10;
@@ -68,6 +70,16 @@ const FormRequests: React.FC = () => {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  useEffect(() => {
+    const requestIdFromUrl = searchParams.get('requestId');
+    if (!requestIdFromUrl || requests.length === 0) return;
+
+    const match = requests.find(
+      (r) => r.requestId === Number(requestIdFromUrl),
+    );
+    if (match) setOpenReadOnlyRequest(match);
+  }, [searchParams, requests]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,

@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
-import {
-  FoodRequestSummaryDto,
-  OrderSummary,
-  PantryWithUser,
-} from '../types/types';
+import { FoodRequestSummaryDto, User, VolunteerOrder } from '../types/types';
 import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
 import { useAlert } from '../hooks/alert';
@@ -13,37 +9,33 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
-const PantryDashboard: React.FC = () => {
+const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
-  const [pantry, setPantry] = useState<PantryWithUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [recentFoodRequests, setRecentFoodRequests] = useState<
     FoodRequestSummaryDto[]
   >([]);
-  const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
+  const [recentOrders, setRecentOrders] = useState<VolunteerOrder[]>([]);
 
-  const fetchRecentFoodRequests = async (pantryId: number) => {
+  const fetchRecentFoodRequests = async () => {
     try {
-      const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
-      const sortedFoodRequests = pantryFoodRequests.sort(
+      const requests = await ApiClient.getVolunteerAssignedRequests();
+      const sorted = requests.sort(
         (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
           new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
       );
-      setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
+      setRecentFoodRequests(sorted.slice(0, 2));
     } catch {
-      setAlertMessage('Error fetching pantry food requests');
+      setAlertMessage('Error fetching food requests');
     }
   };
 
-  const fetchRecentOrders = async (pantryId: number) => {
+  const fetchRecentOrders = async () => {
     try {
-      const pantryOrders = await ApiClient.getPantryOrders(pantryId);
-      const sortedOrders = pantryOrders.sort(
-        (a: OrderSummary, b: OrderSummary) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setRecentOrders(sortedOrders.slice(0, 4));
+      const orders = await ApiClient.getVolunteerRecentOrders();
+      setRecentOrders(orders);
     } catch {
       setAlertMessage('Error fetching orders');
     }
@@ -51,22 +43,20 @@ const PantryDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      let pantryData: PantryWithUser;
       try {
-        const pantryId = await ApiClient.getCurrentUserPantryId();
-        pantryData = await ApiClient.getPantry(pantryId);
-        setPantry(pantryData);
+        const currentUser = await ApiClient.getMe();
+        setUser(currentUser);
       } catch {
-        setAlertMessage('Error fetching pantry information');
+        setAlertMessage('Error fetching user information');
         return;
       }
-      fetchRecentFoodRequests(pantryData.pantryId);
-      fetchRecentOrders(pantryData.pantryId);
+      fetchRecentFoodRequests();
+      fetchRecentOrders();
     };
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!pantry) return;
+  if (!user) return null;
 
   return (
     <Box p={12}>
@@ -79,7 +69,7 @@ const PantryDashboard: React.FC = () => {
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
-        Welcome, {pantry.pantryName}
+        Welcome, {user.firstName} {user.lastName}
       </Heading>
 
       <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
@@ -88,28 +78,32 @@ const PantryDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentFoodRequests.map((fr) => (
           <DashboardCard
+            key={fr.requestId}
             type={DashboardCardType.FOOD_REQUEST}
             title={`Request #${fr.requestId}`}
             date={fr.requestedAt}
-            subtitle={pantry.pantryName}
-            linkText="View Request Details"
+            subtitle={fr.pantry.pantryName}
+            linkText="Fulfill Request"
             onLinkClick={() =>
-              navigate(`${ROUTES.REQUEST_FORM}?requestId=${fr.requestId}`)
+              navigate(
+                `${ROUTES.VOLUNTEER_REQUEST_MANAGEMENT}?requestId=${fr.requestId}`,
+              )
             }
           />
         ))}
       </Box>
 
       <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
-        Recent Orders
+        My Orders
       </Text>
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentOrders.map((order) => (
           <DashboardCard
+            key={order.orderId}
             type={DashboardCardType.ORDER}
             title={`Order #${order.orderId}`}
             date={order.createdAt}
-            subtitle={order.request.pantry.pantryName}
+            subtitle={order.pantryName}
             linkText="View Order Details"
             badge={ORDER_STATUS_BADGE[order.status]}
             assignee={{
@@ -119,7 +113,7 @@ const PantryDashboard: React.FC = () => {
             }}
             onLinkClick={() =>
               navigate(
-                `${ROUTES.PANTRY_ORDER_MANAGEMENT}?orderId=${order.orderId}`,
+                `${ROUTES.VOLUNTEER_ORDER_MANAGEMENT}?orderId=${order.orderId}`,
               )
             }
           />
@@ -129,4 +123,4 @@ const PantryDashboard: React.FC = () => {
   );
 };
 
-export default PantryDashboard;
+export default VolunteerDashboard;

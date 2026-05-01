@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../routes';
 import {
   Box,
   Text,
@@ -59,7 +60,7 @@ const ResetPasswordModal: React.FC = () => {
         confirmationCode: code,
         newPassword: password,
       });
-      navigate('/login');
+      navigate(ROUTES.LOGIN);
     } catch {
       setAlertMessage('Failed to set new password');
     }
@@ -205,7 +206,7 @@ const ResetPasswordModal: React.FC = () => {
         <Link
           textStyle="p2"
           color="neutral.600"
-          onClick={() => navigate('/login')}
+          onClick={() => navigate(ROUTES.LOGIN)}
           variant="underline"
           textDecorationColor="neutral.300"
         >

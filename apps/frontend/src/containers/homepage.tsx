@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Box,
   Container,
@@ -25,7 +26,7 @@ const Homepage: React.FC = () => {
 
         <Box w="full" textAlign="center">
           <Link asChild color="teal.500">
-            <RouterLink to="/profile">Profile View</RouterLink>
+            <RouterLink to={ROUTES.PROFILE}>Profile View</RouterLink>
           </Link>
         </Box>
         <Box w="full">
@@ -35,19 +36,24 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/request-form">Request Form</RouterLink>
+                <RouterLink to={ROUTES.PANTRY_DASHBOARD}>Dasboard</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-application">
+                <RouterLink to={ROUTES.REQUEST_FORM}>Request Form</RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to={ROUTES.PANTRY_APPLICATION}>
                   Pantry Application
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantry-order-management">
+                <RouterLink to={ROUTES.PANTRY_ORDER_MANAGEMENT}>
                   Order Management
                 </RouterLink>
               </Link>
@@ -62,14 +68,14 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/fm-donation-management">
+                <RouterLink to={ROUTES.FM_DONATION_MANAGEMENT}>
                   Donation Management
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/food-manufacturer-application">
+                <RouterLink to={ROUTES.FOOD_MANUFACTURER_APPLICATION}>
                   Food Manufacturer Application
                 </RouterLink>
               </Link>
@@ -84,21 +90,28 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/volunteer-assigned-pantries">
+                <RouterLink to={ROUTES.VOLUNTEER_DASHBOARD}>
+                  Dashboard
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to={ROUTES.VOLUNTEER_ASSIGNED_PANTRIES}>
                   Assigned Pantries
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/volunteer-request-management">
+                <RouterLink to={ROUTES.VOLUNTEER_REQUEST_MANAGEMENT}>
                   Food Request Management
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/volunteer-order-management">
+                <RouterLink to={ROUTES.VOLUNTEER_ORDER_MANAGEMENT}>
                   Order Management
                 </RouterLink>
               </Link>
@@ -113,12 +126,14 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/approve-pantries">Approve Pantries</RouterLink>
+                <RouterLink to={ROUTES.APPROVE_PANTRIES}>
+                  Approve Pantries
+                </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/approve-food-manufacturers">
+                <RouterLink to={ROUTES.APPROVE_FOOD_MANUFACTURERS}>
                   Approve Food Manufacturers
                 </RouterLink>
               </Link>
@@ -129,41 +144,43 @@ const Homepage: React.FC = () => {
               </Link>
             </ListItem>
             <ListItem textAlign="center">
-              <Link asChild href="/volunteer-management" color="teal.500">
-                <RouterLink to="/volunteer-management">
+              <Link asChild color="teal.500">
+                <RouterLink to={ROUTES.VOLUNTEER_MANAGEMENT}>
                   Volunteer Management
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/admin-donation">
+                <RouterLink to={ROUTES.ADMIN_DONATION}>
                   Donation Management
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/admin-donation-stats">
+                <RouterLink to={ROUTES.ADMIN_DONATION_STATS}>
                   Donation Statistics
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/admin-order-management">
+                <RouterLink to={ROUTES.ADMIN_ORDER_MANAGEMENT}>
                   Order Management
                 </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/test-admin-dashboard">Dashboard</RouterLink>
+                <RouterLink to={ROUTES.TEST_ADMIN_DASHBOARD}>
+                  Dashboard
+                </RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/admin-request-management">
+                <RouterLink to={ROUTES.ADMIN_REQUEST_MANAGEMENT}>
                   Food Request Management
                 </RouterLink>
               </Link>
@@ -179,12 +196,12 @@ const Homepage: React.FC = () => {
             <List.Root unstyled gap={2}>
               <ListItem textAlign="center">
                 <Link asChild color="teal.500">
-                  <RouterLink to="/login">Login</RouterLink>
+                  <RouterLink to={ROUTES.LOGIN}>Login</RouterLink>
                 </Link>
               </ListItem>
               <ListItem textAlign="center">
                 <Link asChild color="teal.500">
-                  <RouterLink to="/signup">Sign Up</RouterLink>
+                  <RouterLink to={ROUTES.SIGNUP}>Sign Up</RouterLink>
                 </Link>
               </ListItem>
             </List.Root>

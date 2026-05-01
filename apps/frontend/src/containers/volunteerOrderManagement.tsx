@@ -40,6 +40,7 @@ import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import CompleteRequiredActionsModal from '@components/forms/completeRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams } from 'react-router-dom';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
 
@@ -83,6 +84,7 @@ const VolunteerOrderManagement: React.FC = () => {
 
   const [alertState, setAlertMessage] = useAlert();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [searchParams] = useSearchParams();
 
   type FilterState = {
     selectedPantries: string[];
@@ -166,6 +168,16 @@ const VolunteerOrderManagement: React.FC = () => {
 
     fetchOrders();
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+
+    const allOrders = Object.values(statusOrders).flat();
+    if (!orderIdFromUrl || allOrders.length === 0) return;
+
+    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    if (match) setSelectedOrderId(match.orderId);
+  }, [searchParams, statusOrders]);
 
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));

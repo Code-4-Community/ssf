@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Table,
   Button,
@@ -308,7 +309,10 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/pantry-application-details/${pantry.pantryId}`}
+                      href={ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        String(pantry.pantryId),
+                      )}
                     >
                       View Details
                     </Link>
