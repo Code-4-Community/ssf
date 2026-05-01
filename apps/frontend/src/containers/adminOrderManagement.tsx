@@ -33,6 +33,8 @@ import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -59,7 +61,9 @@ const AdminOrderManagement: React.FC = () => {
     },
   );
 
+  const [searchParams] = useSearchParams();
   const [alertState, setAlertMessage] = useAlert();
+  const navigate = useNavigate();
 
   // State to hold filter state per status
   type FilterState = {
@@ -147,6 +151,24 @@ const AdminOrderManagement: React.FC = () => {
       [status]: page,
     }));
   };
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+
+    // Wait until orders are loaded
+    const allOrders = Object.values(statusOrders).flat();
+    if (allOrders.length === 0) return;
+
+    const matchedOrder = allOrders.find(
+      (order) => order.orderId === Number(orderIdFromUrl),
+    );
+
+    if (matchedOrder) {
+      setSelectedOrderId(Number(orderIdFromUrl));
+    } else {
+      navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusOrders, navigate]);
 
   return (
     <Box p={12}>
@@ -267,6 +289,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const navigate = useNavigate();
 
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
@@ -700,7 +723,10 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             <OrderDetailsModal
               orderId={selectedOrderId}
               isOpen={true}
-              onClose={() => onOrderSelect(null)}
+              onClose={() => {
+                onOrderSelect(null);
+                navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+              }}
             />
           )}
 

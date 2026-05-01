@@ -18,8 +18,13 @@ import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const AdminDonation: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [donations, setDonations] = useState<Donation[]>([]);
   const [sortAsc, setSortAsc] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,6 +53,22 @@ const AdminDonation: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedManufacturers]);
+
+  useEffect(() => {
+    const donationIdFromUrl = searchParams.get('donationId');
+
+    if (donations.length === 0) return;
+
+    const matchedDonation = donations.find(
+      (donation) => donation.donationId === Number(donationIdFromUrl),
+    );
+
+    if (matchedDonation) {
+      setSelectedDonation(matchedDonation);
+    } else {
+      navigate(ROUTES.ADMIN_DONATION, { replace: true });
+    }
+  }, [searchParams, donations, navigate]);
 
   const manufacturerOptions = [
     ...new Set(
@@ -258,7 +279,10 @@ const AdminDonation: React.FC = () => {
         <DonationDetailsModal
           donation={selectedDonation}
           isOpen={selectedDonation !== null}
-          onClose={() => setSelectedDonation(null)}
+          onClose={() => {
+            setSelectedDonation(null);
+            navigate(ROUTES.ADMIN_DONATION, { replace: true });
+          }}
         />
       )}
 
