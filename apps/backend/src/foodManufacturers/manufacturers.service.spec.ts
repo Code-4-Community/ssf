@@ -33,6 +33,11 @@ import { RecurrenceEnum } from '../donations/types';
 
 jest.setTimeout(60000);
 
+const clampDay = (d: Date): Date => {
+  if (d.getDate() > 28) d.setDate(28);
+  return d;
+};
+
 const dto: FoodManufacturerApplicationDto = {
   foodManufacturerName: 'Test Manufacturer',
   foodManufacturerWebsite: 'https://testmanufacturer.com',
@@ -617,8 +622,10 @@ describe('FoodManufacturersService', () => {
     it('returns next two upcoming donation reminders from same donation', async () => {
       const futureDate1 = new Date();
       futureDate1.setDate(futureDate1.getDate() + 30);
+      clampDay(futureDate1);
       const futureDate2 = new Date();
       futureDate2.setDate(futureDate2.getDate() + 60);
+      clampDay(futureDate2);
 
       await testDataSource.query(
         `INSERT INTO public.donations (food_manufacturer_id, recurrence, recurrence_freq, occurrences_remaining, next_donation_dates)
@@ -644,6 +651,7 @@ describe('FoodManufacturersService', () => {
       const foodManufacturerId = 1;
       const monthlyDate = new Date();
       monthlyDate.setDate(monthlyDate.getDate() + 60);
+      clampDay(monthlyDate);
       const yearlyDate = new Date();
       yearlyDate.setFullYear(yearlyDate.getFullYear() + 1);
 
@@ -664,6 +672,7 @@ describe('FoodManufacturersService', () => {
       );
 
       const expectedSecondMonthly = new Date(monthlyDate);
+      clampDay(expectedSecondMonthly);
       expectedSecondMonthly.setMonth(expectedSecondMonthly.getMonth() + 1);
 
       expect(result).toHaveLength(2);
@@ -677,6 +686,7 @@ describe('FoodManufacturersService', () => {
       const foodManufacturerId = 1;
       const yearlyDate = new Date();
       yearlyDate.setDate(yearlyDate.getDate() + 30);
+      clampDay(yearlyDate);
       const threeYearlyDate = new Date();
       threeYearlyDate.setFullYear(threeYearlyDate.getFullYear() + 3);
 
@@ -712,6 +722,7 @@ describe('FoodManufacturersService', () => {
       weeklyDate.setDate(weeklyDate.getDate() + 3);
       const monthlyDate = new Date();
       monthlyDate.setDate(monthlyDate.getDate() + 30);
+      clampDay(monthlyDate);
 
       // FM 1 has donations 1 and 4
       await testDataSource.query(
@@ -742,10 +753,13 @@ describe('FoodManufacturersService', () => {
     it('only returns the next two reminders when more exist', async () => {
       const futureDate1 = new Date();
       futureDate1.setDate(futureDate1.getDate() + 30);
+      clampDay(futureDate1);
       const futureDate2 = new Date();
       futureDate2.setDate(futureDate2.getDate() + 60);
+      clampDay(futureDate2);
       const futureDate3 = new Date();
       futureDate3.setDate(futureDate3.getDate() + 90);
+      clampDay(futureDate3);
 
       await testDataSource.query(
         `INSERT INTO public.donations (food_manufacturer_id, recurrence, recurrence_freq, occurrences_remaining, next_donation_dates)
