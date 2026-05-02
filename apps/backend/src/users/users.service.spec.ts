@@ -533,9 +533,15 @@ describe('UsersService', () => {
         'getAdminVolunteerMonthlyAggregatedStats',
       );
 
-      await service.getUserDashboardStats(1);
+      const result = await service.getUserDashboardStats(1);
 
       expect(spy).toHaveBeenCalled();
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ]);
     });
 
     it('should call getAdminVolunteerMonthlyAggregatedStats for volunteer user', async () => {
@@ -545,9 +551,15 @@ describe('UsersService', () => {
         'getAdminVolunteerMonthlyAggregatedStats',
       );
 
-      await service.getUserDashboardStats(7);
+      const result = await service.getUserDashboardStats(7);
 
       expect(spy).toHaveBeenCalled();
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ]);
     });
 
     it('should call pantriesService.findByUserId and getDashboardStats for pantry user', async () => {
@@ -557,10 +569,16 @@ describe('UsersService', () => {
         'getDashboardStats',
       );
 
-      await service.getUserDashboardStats(10);
+      const result = await service.getUserDashboardStats(10);
 
       expect(findByUserIdSpy).toHaveBeenCalledWith(10);
       expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Items Received',
+        'Value Received',
+      ]);
     });
 
     it('should call foodManufacturersService.findByUserId and getDashboardStats for food manufacturer user', async () => {
@@ -577,10 +595,16 @@ describe('UsersService', () => {
         'getDashboardStats',
       );
 
-      await service.getUserDashboardStats(3);
+      const result = await service.getUserDashboardStats(3);
 
       expect(findByUserIdSpy).toHaveBeenCalledWith(3);
       expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
+      expect(Object.keys(result)).toEqual([
+        'Donations',
+        'Value Donated',
+        'Items Donated',
+        'lbs Donated',
+      ]);
     });
 
     it('should throw NotFoundException for non-existent user', async () => {
