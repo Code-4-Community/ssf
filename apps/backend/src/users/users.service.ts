@@ -276,7 +276,7 @@ export class UsersService {
       return this.getAdminVolunteerMonthlyAggregatedStats();
     } else if (user.role === Role.PANTRY) {
       const pantry = await this.pantriesService.findByUserId(userId);
-      if (pantry.status != ApplicationStatus.APPROVED) {
+      if (pantry.status !== ApplicationStatus.APPROVED) {
         throw new ForbiddenException(
           `Pantry with User id ${userId} must be approved`,
         );
@@ -286,7 +286,7 @@ export class UsersService {
       const foodManufacturer = await this.foodManufacturersService.findByUserId(
         userId,
       );
-      if (foodManufacturer.status != ApplicationStatus.APPROVED) {
+      if (foodManufacturer.status !== ApplicationStatus.APPROVED) {
         throw new ForbiddenException(
           `Food Manufacturer with User id ${userId} must be approved`,
         );
