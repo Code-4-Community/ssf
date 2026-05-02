@@ -24,6 +24,8 @@ export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
     [DonationStatus.FULFILLED]: TEAL_STATUS,
   };
 
+export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
+
 export const formatPhone = (phone?: string | null) => {
   if (!phone) return null;
   let digits = phone.replace(/\D/g, '');
