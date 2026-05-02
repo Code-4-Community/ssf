@@ -9,6 +9,8 @@ import { PantriesService } from '../pantries/pantries.service';
 import { UsersService } from '../users/users.service';
 import { Assignments, VolunteerOrder } from './types';
 import { RequestsService } from '../foodRequests/request.service';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 
@@ -20,6 +22,7 @@ export class VolunteersService {
     private usersService: UsersService,
     private pantriesService: PantriesService,
     private requestsService: RequestsService,
+    private emailsService: EmailsService,
     private ordersService: OrdersService,
   ) {}
 
@@ -85,7 +88,15 @@ export class VolunteersService {
     );
 
     volunteer.pantries = [...existingPantries, ...newPantries];
-    return this.repo.save(volunteer);
+    const saved = await this.repo.save(volunteer);
+
+    const { subject, bodyHTML } =
+      emailTemplates.volunteerPantryAssignmentChanged({
+        volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+      });
+    await this.emailsService.sendEmails([volunteer.email], subject, bodyHTML);
+
+    return saved;
   }
 
   async findRequestsByVolunteer(
