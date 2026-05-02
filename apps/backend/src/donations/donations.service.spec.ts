@@ -1280,24 +1280,23 @@ describe('DonationService', () => {
       );
     });
 
-    it('returns the donation after confirming item details, as well as fulfills donation', async () => {
+    it('updates item details and fulfills donation when all items are confirmed', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 10);
 
       const spy = jest.spyOn(service, 'checkAndFulfillDonation');
 
-      const result = await service.updateDonationItemDetails(donationId, [
-        makeDto(itemId),
-      ]);
+      await service.updateDonationItemDetails(donationId, [makeDto(itemId)]);
 
-      expect(result).toBeDefined();
-      expect(result.donationId).toBe(donationId);
-      expect(result.status).toBe(DonationStatus.FULFILLED);
-      expect(result.donationItems.every((item) => item.detailsConfirmed)).toBe(
-        true,
-      );
       const dbDonation = await service.findOne(donationId);
       expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+
+      const dbItem = await donationItemService.findOne(itemId);
+      expect(dbItem.detailsConfirmed).toBe(true);
+      expect(Number(dbItem.ozPerItem)).toBe(5.0);
+      expect(Number(dbItem.estimatedValue)).toBe(10.0);
+      expect(dbItem.foodRescue).toBe(true);
+
       expect(spy).toHaveBeenCalled();
     });
 
@@ -1307,13 +1306,12 @@ describe('DonationService', () => {
 
       const spy = jest.spyOn(service, 'checkAndFulfillDonation');
 
-      const result = await service.updateDonationItemDetails(donationId, [
+      await service.updateDonationItemDetails(donationId, [
         { itemId, ozPerItem: 5.0 },
       ]);
 
-      expect(result).toBeDefined();
-      expect(result.donationId).toBe(donationId);
-      expect(result.status).toBe(DonationStatus.MATCHED);
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
       expect(spy).not.toHaveBeenCalled();
     });
   });

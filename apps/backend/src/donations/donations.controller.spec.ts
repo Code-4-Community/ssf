@@ -152,16 +152,8 @@ describe('DonationsController', () => {
         },
       ];
 
-      mockDonationService.updateDonationItemDetails.mockResolvedValueOnce(
-        donation1 as Donation,
-      );
+      await controller.updateDonationItemDetails(donationId, body);
 
-      const result = await controller.updateDonationItemDetails(
-        donationId,
-        body,
-      );
-
-      expect(result).toEqual(donation1);
       expect(
         mockDonationService.updateDonationItemDetails,
       ).toHaveBeenCalledWith(donationId, body);
