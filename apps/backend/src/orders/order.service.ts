@@ -458,12 +458,14 @@ export class OrdersService {
       }
     }
 
+    let donation: Donation | null;
+
     await this.dataSource.transaction(async (transactionManager) => {
       const orderTransactionRepo = transactionManager.getRepository(Order);
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
-      const donation = await donationTransactionRepo.findOneBy({
+      donation = await donationTransactionRepo.findOneBy({
         donationId: dto.donationId,
       });
       if (!donation) {
@@ -518,12 +520,8 @@ export class OrdersService {
       await orderTransactionRepo.save(ordersToUpdate);
     });
 
-    const donation = await this.donationRepo.findOneBy({
-      donationId: dto.donationId,
-    });
-    if (donation) {
-      await this.donationService.checkAndFulfillDonation(donation);
-    }
+    // Cast here since we know if we make it out of the transaction that the donation exists
+    await this.donationService.checkAndFulfillDonation(donation!);
   }
 
   async completeVolunteerAction(orderId: number, action: VolunteerAction) {

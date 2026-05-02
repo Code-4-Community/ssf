@@ -1053,6 +1053,9 @@ describe('OrdersService', () => {
       await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
         new NotFoundException('Order 9999 not found'),
       );
+
+      const order4 = await service.findOne(4);
+      expect(order4.shippingCost).toBeNull();
     });
 
     it('throws BadRequestException when one order is not pending', async () => {

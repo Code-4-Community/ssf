@@ -142,16 +142,8 @@ export class DonationItemsService {
         updateData.estimatedValue !== undefined
           ? updateData.estimatedValue
           : item.estimatedValue;
-      const resultingFoodRescue =
-        updateData.foodRescue !== undefined
-          ? updateData.foodRescue
-          : item.foodRescue;
 
-      if (
-        resultingOzPerItem != null &&
-        resultingEstimatedValue != null &&
-        resultingFoodRescue != null
-      ) {
+      if (resultingOzPerItem != null && resultingEstimatedValue != null) {
         updateData.detailsConfirmed = true;
         confirmedDetailsForAnItem = true;
       }

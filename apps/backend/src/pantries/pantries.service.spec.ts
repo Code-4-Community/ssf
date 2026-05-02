@@ -5,6 +5,7 @@ import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -443,7 +444,7 @@ describe('PantriesService', () => {
       await expect(
         service.updatePantryApplication(1, dto, invalidUserId),
       ).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
         ),
       );

@@ -16,8 +16,11 @@ import { DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
@@ -107,6 +110,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   return (
     <Box p={12}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Donation Management
       </Heading>
@@ -145,6 +156,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onSuccess={() => {
             setSelectedActionDonation(null);
             if (manufacturerId !== null) fetchDonations(manufacturerId);
+            setAlertMessage(
+              'Your details have been saved. Actions are complete once all shipment and item details are confirmed',
+            );
           }}
         />
       )}

@@ -376,10 +376,10 @@ export class DonationService {
   async updateDonationItemDetails(
     donationId: number,
     body: UpdateDonationItemDetailsDto[],
-  ): Promise<Donation> {
+  ): Promise<void> {
     validateId(donationId, 'Donation');
 
-    return this.dataSource.transaction(async (transactionManager) => {
+    await this.dataSource.transaction(async (transactionManager) => {
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
@@ -402,14 +402,9 @@ export class DonationService {
           transactionManager,
         );
 
-      if (!confirmedDetailsForAnItem) return donation;
+      if (!confirmedDetailsForAnItem) return;
 
-      const updated = await donationTransactionRepo.findOne({
-        where: { donationId },
-        relations: ['donationItems'],
-      });
-
-      return this.checkAndFulfillDonation(updated!, transactionManager);
+      await this.checkAndFulfillDonation(donation, transactionManager);
     });
   }
 

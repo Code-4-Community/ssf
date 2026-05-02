@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodManufacturer } from './manufacturers.entity';
@@ -91,7 +92,7 @@ export class FoodManufacturersService {
     }
 
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         `User ${currentUserId} is not allowed to access donations for Food Manufacturer ${foodManufacturerId}`,
       );
     }

@@ -203,6 +203,7 @@ export class OrdersController {
     return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
   @Patch('/bulk-update-tracking-cost-info')
   async bulkUpdateTrackingCostInfo(
     @Body(new ValidationPipe()) dto: BulkUpdateTrackingCostDto,

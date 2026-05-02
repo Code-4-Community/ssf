@@ -2,6 +2,7 @@ import { IsNumber, Min, IsBoolean, IsInt, IsOptional } from 'class-validator';
 
 export class UpdateDonationItemDetailsDto {
   @IsInt()
+  @Min(1)
   itemId!: number;
 
   @IsOptional()

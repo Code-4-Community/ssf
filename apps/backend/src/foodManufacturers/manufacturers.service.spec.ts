@@ -5,6 +5,7 @@ import { FoodManufacturer } from './manufacturers.entity';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -393,7 +394,7 @@ describe('FoodManufacturersService', () => {
 
     it('throws BadRequestException when user is not the representative of the food manufacturer', async () => {
       await expect(service.getFMDonations(fmId1, fmRepId2)).rejects.toThrow(
-        new BadRequestException(
+        new ForbiddenException(
           `User ${fmRepId2} is not allowed to access donations for Food Manufacturer ${fmId1}`,
         ),
       );
