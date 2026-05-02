@@ -29,14 +29,20 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
@@ -102,6 +108,10 @@ describe('OrdersService', () => {
           provide: AuthService,
           useValue: {},
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -109,6 +119,7 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -785,10 +796,13 @@ describe('OrdersService', () => {
       ]);
     });
 
-    it('should create a new order successfully', async () => {
+    it('should create a new order successfully and send appropriate emails', async () => {
       const allocationRepo = testDataSource.getRepository(Allocation);
       const donationItemRepo = testDataSource.getRepository(DonationItem);
       const donationRepo = testDataSource.getRepository(Donation);
+      const usersRepo = testDataSource.getRepository(User);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+      const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
 
       parsedAllocations.set(9, 5);
 
@@ -873,6 +887,68 @@ describe('OrdersService', () => {
         where: { donationId: 2 },
       });
       expect(matchedDonation2?.status).toBe(DonationStatus.MATCHED);
+
+      // Testing emails section
+
+      const assignee = await usersRepo.findOne({ where: { id: userId } });
+      const request = await requestRepo.findOne({
+        where: { requestId: validCreateOrderDto.foodRequestId },
+        relations: ['pantry', 'pantry.pantryUser'],
+      });
+      const manufacturer = await manufacturerRepo.findOne({
+        where: { foodManufacturerId: validCreateOrderDto.manufacturerId },
+        relations: ['foodManufacturerRepresentative'],
+      });
+
+      const pantry = request!.pantry;
+      const pantryAddress = [
+        pantry.mailingAddressLine1,
+        pantry.mailingAddressCity,
+        pantry.mailingAddressState,
+        pantry.mailingAddressZip,
+        pantry.mailingAddressCountry,
+      ]
+        .join(' ')
+        .replace(/, ,/g, ', ');
+
+      const itemDetails = [
+        { quantity: '10', product: updatedDonationItem1!.itemName },
+        { quantity: '3', product: updatedDonationItem2!.itemName },
+        { quantity: '5', product: updatedDonationItem3!.itemName },
+      ];
+
+      const { subject: fmSubject, bodyHTML: fmBodyHtml } =
+        emailTemplates.fmDonationMatchedOrder({
+          manufacturerName: manufacturer!.foodManufacturerName,
+          items: itemDetails,
+          pantryName: pantry.pantryName,
+          pantryAddress,
+          volunteerName: assignee!.firstName + ' ' + assignee!.lastName,
+          volunteerEmail: assignee!.email,
+        });
+
+      const { subject: pantrySubject, bodyHTML: pantryBodyHtml } =
+        emailTemplates.pantryRequestMatchedOrder({
+          pantryName: request!.pantry.pantryName,
+          items: itemDetails,
+          brand: manufacturer!.foodManufacturerName,
+          volunteerName: assignee!.firstName + ' ' + assignee!.lastName,
+          volunteerEmail: assignee!.email,
+        });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [request!.pantry.pantryUser.email],
+        pantrySubject,
+        pantryBodyHtml,
+      );
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [manufacturer!.foodManufacturerRepresentative.email],
+        fmSubject,
+        fmBodyHtml,
+      );
     });
 
     it('should throw BadRequestException if request is not active', async () => {

@@ -98,4 +98,90 @@ export const emailTemplates = {
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),
+
+  pantryRequestMatchedOrder: (params: {
+    pantryName: string;
+    items: { quantity: string; product: string }[];
+    brand: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: 'Your Securing Safe Food Request Has Been Matched to a Delivery',
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Good news! Your recent food request through Securing Safe Food has been successfully matched to an order and is now moving forward toward delivery. 
+      </p>
+      <p>
+      <strong>Items you will receive from ${params.brand}:</strong>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+    </p>
+      <p>
+        To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please log into the platform. 
+      </p>
+      <p>
+        If any details change on your end or you have updated availability, please update your request in the system or email your coordinator, ${
+          params.volunteerName
+        } at ${params.volunteerEmail}.
+      </p>
+      <p>
+        We will continue to keep you informed as the order progresses. We’re excited to help support your pantry and looking forward to this donation!
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+    `,
+  }),
+
+  fmDonationMatchedOrder: (params: {
+    manufacturerName: string;
+    items: { quantity: string; product: string }[];
+    pantryName: string;
+    pantryAddress: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject:
+      'Your Securing Safe Food Donation Has Been Matched to a Pantry Order',
+    bodyHTML: `
+    <p>Hi ${params.manufacturerName},</p>
+    <p>
+      Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
+    </p>
+    <p>
+      <strong>Matched Items:</strong><br />
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+      <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
+      <strong>Address:</strong><br />
+      ${params.pantryAddress}
+    </p>
+    <p>
+      Please log into the platform to review the full delivery details, timelines, and any special handling instructions associated with this shipment.
+    </p>
+    <p>
+      Your support plays a direct role in expanding access to allergen-safe foods, and we truly appreciate your commitment to this work.
+    </p>
+    <p>
+      If you have any questions or need assistance, please contact your coordinator, ${
+        params.volunteerName
+      } at ${params.volunteerEmail}.
+    </p>
+    <p>
+      Thank you so much.
+    </p>
+    <p>Best regards,<br />The Securing Safe Food Team</p>
+    <p>
+        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+  `,
+  }),
 };
