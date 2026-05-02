@@ -17,6 +17,9 @@ import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { PendingApplication, Role } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
+import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
+import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { Roles } from '../auth/roles.decorator';
 
 @Controller('users')
@@ -32,6 +35,13 @@ export class UsersController {
   @Get('/:id')
   async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findOne(userId);
+  }
+
+  @Get('/:id/stats')
+  async getUserDashboardStats(
+    @Param('id', ParseIntPipe) userId: number,
+  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
+    return this.usersService.getUserDashboardStats(userId);
   }
 
   @Roles(Role.ADMIN)

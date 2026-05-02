@@ -257,7 +257,7 @@ export class PantriesService {
   }
 
   async getPendingPantries(): Promise<Pantry[]> {
-    return await this.repo.find({
+    return this.repo.find({
       where: { status: ApplicationStatus.PENDING },
       relations: ['pantryUser'],
     });
@@ -397,7 +397,7 @@ export class PantriesService {
 
     Object.assign(pantry, pantryData);
 
-    return await this.repo.save(pantry);
+    return this.repo.save(pantry);
   }
 
   async approve(id: number) {
@@ -579,6 +579,7 @@ export class PantriesService {
 
     const pantry = await this.repo.findOne({
       where: { pantryUser: { id: userId } },
+      relations: ['pantryUser'],
     });
 
     if (!pantry) {
@@ -587,7 +588,7 @@ export class PantriesService {
     return pantry;
   }
 
-  async getStats(pantryId: number): Promise<PantryStatsDto> {
+  async getDashboardStats(pantryId: number): Promise<PantryStatsDto> {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.repo.findOneBy({ pantryId: pantryId });
