@@ -41,12 +41,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
-  const [assignedVolunteers, setAssignedVolunteers] = useState<
-    VolunteerDisplay[]
-  >([]);
-  const [unassignedVolunteers, setUnassignedVolunteers] = useState<
-    VolunteerDisplay[]
-  >([]);
+  const [volunteers, setVolunteers] = useState<VolunteerDisplay[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
@@ -72,24 +67,17 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
           lastName: v.lastName,
         }));
 
-        const assigned = normalized.filter((v) => assignedIds.has(v.userId));
-
-        const unassigned = normalized.filter((v) => !assignedIds.has(v.userId));
-
-        setAssignedVolunteers(assigned);
-        setUnassignedVolunteers(unassigned);
-        setSelectedIds(new Set(pantry.volunteers.map((v) => v.userId)));
+        setVolunteers(normalized);
+        setSelectedIds(new Set(assignedIds));
       } catch {
         setAlertMessage('Error fetching volunteers');
       }
     };
 
     fetchVolunteers();
-  }, [pantry, setAlertMessage]);
+  }, [pantry, setAlertMessage, isOpen]);
 
-  const allVolunteers = [...assignedVolunteers, ...unassignedVolunteers];
-
-  const filteredVolunteers = allVolunteers.filter((v) => {
+  const filteredVolunteers = volunteers.filter((v) => {
     const fullName = `${v.firstName} ${v.lastName}`.toLowerCase();
     return fullName.includes(searchName.toLowerCase());
   });
