@@ -8,7 +8,7 @@ import { FoodType } from './types';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
-import { ConfirmDonationItemDetailsDto } from './dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
 
 jest.setTimeout(60000);
 
@@ -297,8 +297,8 @@ describe('DonationItemsService', () => {
     });
   });
 
-  describe('confirmItemDetails', () => {
-    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+  describe('updateItemDetails', () => {
+    const makeDto = (itemId: number): UpdateDonationItemDetailsDto => ({
       itemId,
       ozPerItem: 5.0,
       estimatedValue: 10.0,
@@ -339,7 +339,7 @@ describe('DonationItemsService', () => {
       const donationId = await insertMatchedDonation();
       await expect(
         testDataSource.transaction((tm) =>
-          service.confirmItemDetails(donationId, [makeDto(99999)], tm),
+          service.updateItemDetails(donationId, [makeDto(99999)], tm),
         ),
       ).rejects.toThrow(new NotFoundException('Donation item 99999 not found'));
     });
@@ -349,7 +349,7 @@ describe('DonationItemsService', () => {
       // Item 1 belongs to donation 1, not the new donation
       await expect(
         testDataSource.transaction((tm) =>
-          service.confirmItemDetails(donationId, [makeDto(1)], tm),
+          service.updateItemDetails(donationId, [makeDto(1)], tm),
         ),
       ).rejects.toThrow(
         new BadRequestException(
@@ -358,30 +358,11 @@ describe('DonationItemsService', () => {
       );
     });
 
-    it('throws BadRequestException when an item in the body is already confirmed', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 10);
-      await testDataSource.query(
-        `UPDATE donation_items SET details_confirmed = true WHERE item_id = $1`,
-        [itemId],
-      );
-
-      await expect(
-        testDataSource.transaction((tm) =>
-          service.confirmItemDetails(donationId, [makeDto(itemId)], tm),
-        ),
-      ).rejects.toThrow(
-        new BadRequestException(
-          `Donation item ${itemId} has already been confirmed`,
-        ),
-      );
-    });
-
     it('updates fields and sets detailsConfirmed to true for a single item', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 5);
 
-      const dto: ConfirmDonationItemDetailsDto = {
+      const dto: UpdateDonationItemDetailsDto = {
         itemId,
         ozPerItem: 8.5,
         estimatedValue: 12.0,
@@ -389,7 +370,7 @@ describe('DonationItemsService', () => {
       };
 
       await testDataSource.transaction((tm) =>
-        service.confirmItemDetails(donationId, [dto], tm),
+        service.updateItemDetails(donationId, [dto], tm),
       );
 
       const item = await testDataSource
@@ -407,7 +388,7 @@ describe('DonationItemsService', () => {
       const itemId2 = await insertDonationItem(donationId, 20, 10);
 
       await testDataSource.transaction((tm) =>
-        service.confirmItemDetails(
+        service.updateItemDetails(
           donationId,
           [
             {
@@ -452,7 +433,7 @@ describe('DonationItemsService', () => {
       // Second dto references item 1 which belongs to donation 1, not ours
       await expect(
         testDataSource.transaction((tm) =>
-          service.confirmItemDetails(
+          service.updateItemDetails(
             donationId,
             [makeDto(itemId), makeDto(1)],
             tm,
@@ -469,6 +450,72 @@ describe('DonationItemsService', () => {
         .findOneBy({ itemId });
       expect(item?.detailsConfirmed).toBe(false);
       expect(item?.ozPerItem).toBeNull();
+    });
+
+    it('returns false and does not confirm when only some fields are provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const result = await testDataSource.transaction((tm) =>
+        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
+      );
+
+      expect(result).toBe(false);
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(8.5);
+      expect(item?.estimatedValue).toBeNull();
+      expect(item?.detailsConfirmed).toBe(false);
+    });
+
+    it('confirms item on a second call that supplies the remaining fields', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const firstResult = await testDataSource.transaction((tm) =>
+        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
+      );
+      expect(firstResult).toBe(false);
+
+      const secondResult = await testDataSource.transaction((tm) =>
+        service.updateItemDetails(
+          donationId,
+          [{ itemId, estimatedValue: 12.0, foodRescue: true }],
+          tm,
+        ),
+      );
+      expect(secondResult).toBe(true);
+
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(8.5);
+      expect(Number(item?.estimatedValue)).toBe(12.0);
+      expect(item?.foodRescue).toBe(true);
+      expect(item?.detailsConfirmed).toBe(true);
+    });
+
+    it('allows updating an already-confirmed item without throwing', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+      await testDataSource.query(
+        `UPDATE donation_items
+         SET details_confirmed = true, oz_per_item = 5.0, estimated_value = 10.0
+         WHERE item_id = $1`,
+        [itemId],
+      );
+
+      const result = await testDataSource.transaction((tm) =>
+        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 9.0 }], tm),
+      );
+
+      expect(result).toBe(true);
+      const item = await testDataSource
+        .getRepository(DonationItem)
+        .findOneBy({ itemId });
+      expect(Number(item?.ozPerItem)).toBe(9.0);
+      expect(item?.detailsConfirmed).toBe(true);
     });
   });
 });

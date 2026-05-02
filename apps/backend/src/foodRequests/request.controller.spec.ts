@@ -101,6 +101,7 @@ describe('RequestsController', () => {
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
           trackingLink: 'examplelink.com',
+          shippingCost: 8.0,
           items: [
             {
               id: 1,
@@ -121,6 +122,7 @@ describe('RequestsController', () => {
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
           trackingLink: 'examplelink.com',
+          shippingCost: 8.0,
           items: [
             {
               id: 1,

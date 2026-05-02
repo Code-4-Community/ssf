@@ -15,9 +15,16 @@ import ApiClient from '@api/apiClient';
 import { DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
+  const [manufacturerId, setManufacturerId] = useState<number | null>(null);
+  const [selectedActionDonation, setSelectedActionDonation] =
+    useState<DonationDetails | null>(null);
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: DonationDetails[];
@@ -44,9 +51,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const MAX_PER_STATUS = 5;
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async () => {
+  const fetchDonations = async (fmId: number) => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(1); // Replace with actual food manufacturer ID
+      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -80,8 +87,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     }
   };
 
+  // On page load, get the food manufacturer id and all appropriate donations
   useEffect(() => {
-    fetchDonations();
+    const init = async () => {
+      try {
+        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+        setManufacturerId(fmId);
+        await fetchDonations(fmId);
+      } catch (error) {
+        alert('Error initializing donation management: ' + error);
+      }
+    };
+    init();
   }, []);
 
   const handlePageChange = (status: DonationStatus, page: number) => {
@@ -93,6 +110,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   return (
     <Box p={12}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="info"
+          timeout={6000}
+        />
+      )}
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Donation Management
       </Heading>
@@ -114,11 +139,27 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         Log New Donation
       </Button>
 
-      {isLogDonationOpen && (
+      {isLogDonationOpen && manufacturerId !== null && (
         <NewDonationFormModal
-          onDonationSuccess={fetchDonations}
+          foodManufacturerId={manufacturerId}
+          onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
+        />
+      )}
+
+      {selectedActionDonation && (
+        <FmCompleteRequiredActionsModal
+          donation={selectedActionDonation}
+          isOpen={true}
+          onClose={() => setSelectedActionDonation(null)}
+          onSuccess={() => {
+            setSelectedActionDonation(null);
+            if (manufacturerId !== null) fetchDonations(manufacturerId);
+            setAlertMessage(
+              'Your details have been saved. Actions are complete once all shipment and item details are confirmed',
+            );
+          }}
         />
       )}
 
@@ -142,6 +183,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
+              onActionSelect={setSelectedActionDonation}
             />
           </Box>
         );
@@ -159,6 +201,7 @@ interface DonationStatusSectionProps {
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
+  onActionSelect: (donation: DonationDetails | null) => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -170,6 +213,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   totalDonations,
   currentPage,
   onPageChange,
+  onActionSelect,
 }) => {
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
@@ -336,7 +380,17 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       textAlign="right"
                       color="neutral.700"
                     >
-                      No Action Required
+                      {donationDetail.associatedPendingOrders.length > 0 ? (
+                        <Link
+                          textDecorationColor="black"
+                          variant="underline"
+                          onClick={() => onActionSelect(donationDetail)}
+                        >
+                          Complete Required Actions
+                        </Link>
+                      ) : (
+                        'No Action Required'
+                      )}
                     </Table.Cell>
                   </Table.Row>
                 );

@@ -8,10 +8,10 @@ import { Repository, In, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { sanitizeUrl, validateId } from '../utils/validation.utils';
+import { validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
@@ -314,6 +314,7 @@ export class OrdersService {
       status: order.status,
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
       trackingLink: order.trackingLink,
+      shippingCost: order.shippingCost,
       items: order.allocations.map((allocation) => ({
         id: allocation.item.itemId,
         name: allocation.item.itemName,
@@ -482,53 +483,86 @@ export class OrdersService {
     return qb.getMany();
   }
 
-  async updateTrackingCostInfo(orderId: number, dto: TrackingCostDto) {
-    validateId(orderId, 'Order');
+  async bulkUpdateTrackingCostInfo(
+    dto: BulkUpdateTrackingCostDto,
+  ): Promise<void> {
+    for (const order of dto.orders) {
+      validateId(order.orderId, 'Order');
 
-    const sanitized = sanitizeUrl(dto.trackingLink);
-    if (!sanitized) {
-      throw new BadRequestException(
-        'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-      );
-    }
-    dto.trackingLink = sanitized;
-
-    const order = await this.repo.findOneBy({ orderId });
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-
-    if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestException(
-        'Can only update tracking info for pending orders',
-      );
-    }
-
-    order.trackingLink = dto.trackingLink;
-    order.shippingCost = dto.shippingCost;
-
-    order.status = OrderStatus.SHIPPED;
-    order.shippedAt = new Date();
-
-    await this.repo.save(order);
-
-    await this.checkAndFulfillDonations(orderId);
-  }
-
-  async checkAndFulfillDonations(orderId: number): Promise<void> {
-    const affectedDonations = await this.donationItemRepo
-      .createQueryBuilder('item')
-      .innerJoin('item.allocations', 'allocation')
-      .where('allocation.orderId = :orderId', { orderId })
-      .select('DISTINCT item.donationId', 'donationId')
-      .getRawMany<{ donationId: number }>();
-
-    for (const { donationId } of affectedDonations) {
-      const donation = await this.donationRepo.findOneBy({ donationId });
-      if (donation) {
-        await this.donationService.checkAndFulfillDonation(donation);
+      if (
+        order.trackingLink === undefined &&
+        order.shippingCost === undefined
+      ) {
+        throw new BadRequestException(
+          `Order ${order.orderId} must include at least a tracking link or shipping cost.`,
+        );
       }
     }
+
+    let donation: Donation | null;
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const orderTransactionRepo = transactionManager.getRepository(Order);
+      const donationTransactionRepo =
+        transactionManager.getRepository(Donation);
+
+      donation = await donationTransactionRepo.findOneBy({
+        donationId: dto.donationId,
+      });
+      if (!donation) {
+        throw new NotFoundException(`Donation ${dto.donationId} not found`);
+      }
+
+      const ordersToUpdate: Order[] = [];
+
+      for (const entry of dto.orders) {
+        const order = await orderTransactionRepo.findOneBy({
+          orderId: entry.orderId,
+        });
+        if (!order) {
+          throw new NotFoundException(`Order ${entry.orderId} not found`);
+        }
+
+        if (order.status !== OrderStatus.PENDING) {
+          throw new BadRequestException(
+            `Can only update tracking info for pending orders. Order ${entry.orderId} is ${order.status}`,
+          );
+        }
+
+        // Can only update orders belonging to the provided donation
+        const relatedCount = await transactionManager
+          .createQueryBuilder(DonationItem, 'item')
+          .innerJoin('item.allocations', 'allocation')
+          .where('allocation.orderId = :orderId', { orderId: entry.orderId })
+          .andWhere('item.donationId = :donationId', {
+            donationId: dto.donationId,
+          })
+          .getCount();
+
+        if (relatedCount === 0) {
+          throw new BadRequestException(
+            `Order ${entry.orderId} does not belong to donation ${dto.donationId}`,
+          );
+        }
+
+        if (entry.trackingLink !== undefined) {
+          order.trackingLink = entry.trackingLink;
+        }
+        if (entry.shippingCost !== undefined) {
+          order.shippingCost = entry.shippingCost;
+        }
+        if (order.trackingLink != null && order.shippingCost != null) {
+          order.status = OrderStatus.SHIPPED;
+          order.shippedAt = new Date();
+        }
+        ordersToUpdate.push(order);
+      }
+
+      await orderTransactionRepo.save(ordersToUpdate);
+    });
+
+    // Cast here since we know if we make it out of the transaction that the donation exists
+    await this.donationService.checkAndFulfillDonation(donation!);
   }
 
   async completeVolunteerAction(orderId: number, action: VolunteerAction) {

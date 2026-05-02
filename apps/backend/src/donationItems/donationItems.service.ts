@@ -9,9 +9,8 @@ import { DonationItem } from './donationItems.entity';
 import { validateId } from '../utils/validation.utils';
 import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
-import { DonationStatus } from '../donations/types';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
-import { ConfirmDonationItemDetailsDto } from './dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -103,13 +102,15 @@ export class DonationItemsService {
     return this.repo.save(donationItem);
   }
 
-  async confirmItemDetails(
+  async updateItemDetails(
     donationId: number,
-    body: ConfirmDonationItemDetailsDto[],
+    body: UpdateDonationItemDetailsDto[],
     transactionManager: EntityManager,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const donationItemTransactionRepo =
       transactionManager.getRepository(DonationItem);
+
+    let confirmedDetailsForAnItem = false;
 
     for (const dto of body) {
       const item = await donationItemTransactionRepo.findOneBy({
@@ -126,19 +127,31 @@ export class DonationItemsService {
         );
       }
 
-      if (item.detailsConfirmed) {
-        throw new BadRequestException(
-          `Donation item ${dto.itemId} has already been confirmed`,
-        );
+      const updateData: Partial<DonationItem> = {};
+      if (dto.ozPerItem !== undefined) updateData.ozPerItem = dto.ozPerItem;
+      if (dto.estimatedValue !== undefined)
+        updateData.estimatedValue = dto.estimatedValue;
+      if (dto.foodRescue !== undefined) updateData.foodRescue = dto.foodRescue;
+
+      // If included in DTO, keep it, otherwise use whatever is in the DB (could be null)
+      const resultingOzPerItem =
+        updateData.ozPerItem !== undefined
+          ? updateData.ozPerItem
+          : item.ozPerItem;
+      const resultingEstimatedValue =
+        updateData.estimatedValue !== undefined
+          ? updateData.estimatedValue
+          : item.estimatedValue;
+
+      if (resultingOzPerItem != null && resultingEstimatedValue != null) {
+        updateData.detailsConfirmed = true;
+        confirmedDetailsForAnItem = true;
       }
 
-      await donationItemTransactionRepo.update(dto.itemId, {
-        ozPerItem: dto.ozPerItem,
-        estimatedValue: dto.estimatedValue,
-        foodRescue: dto.foodRescue,
-        detailsConfirmed: true,
-      });
+      await donationItemTransactionRepo.update(dto.itemId, updateData);
     }
+
+    return confirmedDetailsForAnItem;
   }
 
   async createMultiple(

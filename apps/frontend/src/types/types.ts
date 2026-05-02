@@ -16,39 +16,39 @@ export interface Pantry {
   pantryId: number;
   pantryName: string;
   shipmentAddressLine1: string;
-  shipmentAddressLine2?: string;
+  shipmentAddressLine2: string | null;
   shipmentAddressCity: string;
   shipmentAddressState: string;
   shipmentAddressZip: string;
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry: string | null;
   mailingAddressLine1: string;
-  mailingAddressLine2?: string;
+  mailingAddressLine2: string | null;
   mailingAddressCity: string;
   mailingAddressState: string;
   mailingAddressZip: string;
-  mailingAddressCountry?: string;
+  mailingAddressCountry: string | null;
   allergenClients: string;
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
-  deliveryWindowInstructions?: string;
+  deliveryWindowInstructions: string | null;
   reserveFoodForAllergic: ReserveFoodForAllergic;
-  reservationExplanation?: string;
+  reservationExplanation: string | null;
   dedicatedAllergyFriendly: boolean;
-  clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
-  serveAllergicChildren?: ServeAllergicChildren;
+  clientVisitFrequency: ClientVisitFrequency | null;
+  identifyAllergensConfidence: AllergensConfidence | null;
+  serveAllergicChildren: ServeAllergicChildren | null;
   newsletterSubscription: boolean;
   restrictions: string[];
   hasEmailContact: boolean;
-  emailContactOther?: string;
-  secondaryContactFirstName?: string;
-  secondaryContactLastName?: string;
-  secondaryContactEmail?: string;
-  secondaryContactPhone?: string;
+  emailContactOther: string | null;
+  secondaryContactFirstName: string | null;
+  secondaryContactLastName: string | null;
+  secondaryContactEmail: string | null;
+  secondaryContactPhone: string | null;
   status: ApplicationStatus;
   dateApplied: string;
   activities: Activity[];
-  activitiesComments?: string;
+  activitiesComments: string | null;
   itemsInStock: string;
   needMoreOptions: string;
   volunteers?: User[];
@@ -102,7 +102,7 @@ export interface PantryApplicationDto {
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
-  newsletterSubscription?: string;
+  newsletterSubscription?: boolean;
 }
 
 export interface UpdatePantryApplicationDto {
@@ -182,9 +182,9 @@ export interface Donation {
   status: DonationStatus;
   foodManufacturer?: FoodManufacturer;
   recurrence: RecurrenceEnum;
-  recurrenceFreq?: number;
-  nextDonationDates?: string[];
-  occurrencesRemaining?: number;
+  recurrenceFreq: number | null;
+  nextDonationDates: string[] | null;
+  occurrencesRemaining: number | null;
 }
 
 export interface DonationDetails {
@@ -198,12 +198,19 @@ export interface DonationItemWithAllocatedQuantity {
   itemName: string;
   foodType: FoodType;
   allocatedQuantity: number;
+  detailsConfirmed: boolean;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodRescue: boolean;
 }
 
 export interface DonationOrderDetails {
   orderId: number;
   pantryId: number;
   pantryName: string;
+  trackingLink: string | null;
+  shippingCost: number | null;
+  items: OrderItemDetails[];
 }
 
 export interface DonationItem {
@@ -267,7 +274,7 @@ export interface FoodRequestWithoutRelations {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
-  additionalInformation?: string;
+  additionalInformation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
 }
@@ -302,13 +309,13 @@ export interface OrderWithoutRelations {
   foodManufacturerId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt?: string;
-  deliveredAt?: string;
-  trackingLink?: string;
-  shippingCost?: number;
-  dateReceived?: string;
-  feedback?: string;
-  photos?: string[];
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  trackingLink: string | null;
+  shippingCost: number | null;
+  dateReceived: string | null;
+  feedback: string | null;
+  photos: string[] | null;
 }
 
 export interface OrderItemDetails {
@@ -323,6 +330,7 @@ export interface OrderDetails {
   status: OrderStatus;
   foodManufacturerName: string;
   trackingLink: string | null;
+  shippingCost: number | null;
   items: OrderItemDetails[];
 }
 
@@ -362,10 +370,10 @@ export interface FoodManufacturerWithoutRelations {
   foodManufacturerId: number;
   foodManufacturerName: string;
   foodManufacturerWebsite: string;
-  secondaryContactFirstName?: string;
-  secondaryContactLastName?: string;
-  secondaryContactEmail?: string;
-  secondaryContactPhone?: string;
+  secondaryContactFirstName: string | null;
+  secondaryContactLastName: string | null;
+  secondaryContactEmail: string | null;
+  secondaryContactPhone: string | null;
   unlistedProductAllergens: Allergen[];
   facilityFreeAllergens: Allergen[];
   productsGlutenFree: boolean;
@@ -373,9 +381,9 @@ export interface FoodManufacturerWithoutRelations {
   productsSustainableExplanation: string;
   inKindDonations: boolean;
   donateWastedFood: DonateWastedFood;
-  manufacturerAttribute?: ManufacturerAttribute;
-  additionalComments?: string;
-  newsletterSubscription?: boolean;
+  manufacturerAttribute: ManufacturerAttribute | null;
+  additionalComments: string | null;
+  newsletterSubscription: boolean | null;
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -492,8 +500,8 @@ export interface OrderSummary {
   orderId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt?: string;
-  deliveredAt?: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
   request: {
     pantryId: number;
     pantry: {
@@ -552,3 +560,19 @@ export type OrderItemDetailsGroupedByFoodType = Partial<
 export type DonationItemsGroupedByFoodType = Partial<
   Record<FoodType, DonationItemDetailsDto[]>
 >;
+
+export interface BulkUpdateTrackingCostDto {
+  donationId: number;
+  orders: {
+    orderId: number;
+    trackingLink?: string;
+    shippingCost?: number;
+  }[];
+}
+
+export interface UpdateDonationItemDetailsDto {
+  itemId: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodRescue?: boolean;
+}

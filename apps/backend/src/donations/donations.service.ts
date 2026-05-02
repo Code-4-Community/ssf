@@ -13,7 +13,7 @@ import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -334,13 +334,13 @@ export class DonationService {
     return dates;
   }
 
-  async confirmDonationItemDetails(
+  async updateDonationItemDetails(
     donationId: number,
-    body: ConfirmDonationItemDetailsDto[],
-  ): Promise<Donation> {
+    body: UpdateDonationItemDetailsDto[],
+  ): Promise<void> {
     validateId(donationId, 'Donation');
 
-    return this.dataSource.transaction(async (transactionManager) => {
+    await this.dataSource.transaction(async (transactionManager) => {
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
@@ -356,18 +356,16 @@ export class DonationService {
         );
       }
 
-      await this.donationItemsService.confirmItemDetails(
-        donationId,
-        body,
-        transactionManager,
-      );
+      const confirmedDetailsForAnItem =
+        await this.donationItemsService.updateItemDetails(
+          donationId,
+          body,
+          transactionManager,
+        );
 
-      const updated = await donationTransactionRepo.findOne({
-        where: { donationId },
-        relations: ['donationItems'],
-      });
+      if (!confirmedDetailsForAnItem) return;
 
-      return this.checkAndFulfillDonation(updated!, transactionManager);
+      await this.checkAndFulfillDonation(donation, transactionManager);
     });
   }
 

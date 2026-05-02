@@ -22,6 +22,13 @@ const DonationManagement: React.FC = () => {
   const [donationItemStock, setDonationItemStock] = useState<{
     [key: number]: number;
   }>({});
+  const [manufacturerId, setManufacturerId] = useState<number | null>(null);
+
+  useEffect(() => {
+    ApiClient.getCurrentUserFoodManufacturerId()
+      .then(setManufacturerId)
+      .catch(() => setManufacturerId(null));
+  }, []);
 
   const fetchDonations = async () => {
     try {
@@ -86,11 +93,14 @@ const DonationManagement: React.FC = () => {
   return (
     <Center flexDirection="column" p={4}>
       <Button onClick={onOpen}>Submit new donation</Button>
-      <NewDonationFormModal
-        onDonationSuccess={fetchDonations}
-        isOpen={open}
-        onClose={onClose}
-      />
+      {manufacturerId !== null && (
+        <NewDonationFormModal
+          foodManufacturerId={manufacturerId}
+          onDonationSuccess={fetchDonations}
+          isOpen={open}
+          onClose={onClose}
+        />
+      )}
       <Table.Root variant="line" mt={6} width="80%">
         <Table.Header>
           <Table.Row>
