@@ -16,6 +16,7 @@ import {
   ServeAllergicChildren,
   ApprovedPantryResponse,
   TotalStats,
+  OrderSummary,
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
@@ -359,21 +360,17 @@ describe('PantriesController', () => {
     it('should return orders for a pantry', async () => {
       const pantryId = 24;
 
-      const mockOrders: Partial<Order>[] = [
+      const mockOrders: Partial<OrderSummary>[] = [
         {
           orderId: 26,
-          requestId: 26,
-          foodManufacturerId: 32,
         },
         {
           orderId: 27,
-          requestId: 27,
-          foodManufacturerId: 33,
         },
       ];
 
       mockOrdersService.getOrdersByPantry.mockResolvedValue(
-        mockOrders as Order[],
+        mockOrders as OrderSummary[],
       );
 
       const result = await controller.getOrders(pantryId);
