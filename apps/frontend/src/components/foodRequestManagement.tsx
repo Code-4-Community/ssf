@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +20,8 @@ import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRe
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
@@ -52,7 +54,10 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [alertState, setAlertMessage] = useAlert();
   const [isAlertError, setIsAlertError] = useState<boolean>(true);
 
-  const loadRequests = async () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const loadRequests = useCallback(async () => {
     try {
       const data = await fetchData();
       setRequests(data);
@@ -60,11 +65,11 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       setIsAlertError(true);
       setAlertMessage('Error fetching requests');
     }
-  };
+  }, [fetchData, setAlertMessage]);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -73,8 +78,13 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   useEffect(() => {
     if (!initialRequestId || requests.length === 0) return;
     const match = requests.find((r) => r.requestId === initialRequestId);
-    if (match) setSelectedViewDetailsRequest(match);
-  }, [initialRequestId, requests]);
+
+    if (match) {
+      setSelectedViewDetailsRequest(match);
+    } else {
+      navigate(ROUTES.REQUEST_FORM, { replace: true });
+    }
+  }, [initialRequestId, requests, navigate]);
 
   const pantryOptions = [
     ...new Set(
@@ -369,7 +379,12 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
             <RequestDetailsModal
               request={selectedViewDetailsRequest}
               isOpen={selectedViewDetailsRequest !== null}
-              onClose={() => setSelectedViewDetailsRequest(null)}
+              onClose={() => {
+                setSelectedViewDetailsRequest(null);
+                if (initialRequestId) {
+                  navigate(location.pathname, { replace: true });
+                }
+              }}
             />
           )}
 

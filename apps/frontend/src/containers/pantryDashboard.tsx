@@ -23,45 +23,40 @@ const PantryDashboard: React.FC = () => {
   >([]);
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
 
-  const fetchRecentFoodRequests = async (pantryId: number) => {
-    try {
-      const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
-      const sortedFoodRequests = pantryFoodRequests.sort(
-        (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-          new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
-      );
-      setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
-    } catch {
-      setAlertMessage('Error fetching pantry food requests');
-    }
-  };
-
-  const fetchRecentOrders = async (pantryId: number) => {
-    try {
-      const pantryOrders = await ApiClient.getPantryOrders(pantryId);
-      const sortedOrders = pantryOrders.sort(
-        (a: OrderSummary, b: OrderSummary) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setRecentOrders(sortedOrders.slice(0, 4));
-    } catch {
-      setAlertMessage('Error fetching orders');
-    }
-  };
-
   useEffect(() => {
     const fetchDashboardData = async () => {
-      let pantryData: PantryWithUser;
+      let pantryId: number;
       try {
-        const pantryId = await ApiClient.getCurrentUserPantryId();
-        pantryData = await ApiClient.getPantry(pantryId);
+        pantryId = await ApiClient.getCurrentUserPantryId();
+        const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
       } catch {
         setAlertMessage('Error fetching pantry information');
         return;
       }
-      fetchRecentFoodRequests(pantryData.pantryId);
-      fetchRecentOrders(pantryData.pantryId);
+
+      try {
+        const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
+        const sortedFoodRequests = pantryFoodRequests.sort(
+          (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+            new Date(b.requestedAt).getTime() -
+            new Date(a.requestedAt).getTime(),
+        );
+        setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching pantry food requests');
+      }
+
+      try {
+        const pantryOrders = await ApiClient.getPantryOrders(pantryId);
+        const sortedOrders = pantryOrders.sort(
+          (a: OrderSummary, b: OrderSummary) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        setRecentOrders(sortedOrders.slice(0, 4));
+      } catch {
+        setAlertMessage('Error fetching orders');
+      }
     };
     fetchDashboardData();
   }, [setAlertMessage]);

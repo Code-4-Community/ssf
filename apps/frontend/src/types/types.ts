@@ -492,17 +492,19 @@ export interface OrderSummary {
   orderId: number;
   status: OrderStatus;
   createdAt: string;
-  shippedAt?: string;
-  deliveredAt?: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
   request: {
     pantryId: number;
     pantry: {
       pantryName: string;
-      volunteers?: {
-        id: number;
-        firstName: string;
-        lastName: string;
-      }[];
+      volunteers:
+        | {
+            id: number;
+            firstName: string;
+            lastName: string;
+          }[]
+        | null;
     };
   };
   assignee: {

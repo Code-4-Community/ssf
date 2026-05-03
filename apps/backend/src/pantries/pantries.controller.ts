@@ -27,8 +27,8 @@ import {
   ServeAllergicChildren,
   ApprovedPantryResponse,
   TotalStats,
+  OrderSummary,
 } from './types';
-import { Order } from '../orders/order.entity';
 import { OrdersService } from '../orders/order.service';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
@@ -122,7 +122,7 @@ export class PantriesController {
   @Get('/:pantryId/orders')
   async getOrders(
     @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<Order[]> {
+  ): Promise<OrderSummary[]> {
     return this.ordersService.getOrdersByPantry(pantryId);
   }
 

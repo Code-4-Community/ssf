@@ -31,7 +31,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';

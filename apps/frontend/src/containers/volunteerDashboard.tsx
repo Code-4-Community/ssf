@@ -19,28 +19,6 @@ const VolunteerDashboard: React.FC = () => {
   >([]);
   const [recentOrders, setRecentOrders] = useState<VolunteerOrder[]>([]);
 
-  const fetchRecentFoodRequests = async () => {
-    try {
-      const requests = await ApiClient.getVolunteerAssignedRequests();
-      const sorted = requests.sort(
-        (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-          new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime(),
-      );
-      setRecentFoodRequests(sorted.slice(0, 2));
-    } catch {
-      setAlertMessage('Error fetching food requests');
-    }
-  };
-
-  const fetchRecentOrders = async () => {
-    try {
-      const orders = await ApiClient.getVolunteerRecentOrders();
-      setRecentOrders(orders);
-    } catch {
-      setAlertMessage('Error fetching orders');
-    }
-  };
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -50,8 +28,25 @@ const VolunteerDashboard: React.FC = () => {
         setAlertMessage('Error fetching user information');
         return;
       }
-      fetchRecentFoodRequests();
-      fetchRecentOrders();
+
+      try {
+        const requests = await ApiClient.getVolunteerAssignedRequests();
+        const sorted = requests.sort(
+          (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+            new Date(b.requestedAt).getTime() -
+            new Date(a.requestedAt).getTime(),
+        );
+        setRecentFoodRequests(sorted.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching food requests');
+      }
+
+      try {
+        const orders = await ApiClient.getVolunteerRecentOrders();
+        setRecentOrders(orders);
+      } catch {
+        setAlertMessage('Error fetching orders');
+      }
     };
     fetchDashboardData();
   }, [setAlertMessage]);

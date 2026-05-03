@@ -25,7 +25,6 @@ import {
   ConfirmDeliveryDto,
   OrderWithoutRelations,
   FoodRequestSummaryDto,
-  OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
   PantryStats,
