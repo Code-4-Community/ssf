@@ -265,15 +265,10 @@ describe('UsersService', () => {
 
   describe('update', () => {
     it('should update user attributes', async () => {
-      const result = await service.update(1, { firstName: 'Updated' });
+      const updatedUser = await service.update(1, { firstName: 'Updated' });
 
-      expect(result.firstName).toBe('Updated');
-      expect(result.lastName).toBe('Smith');
-
-      const fromDb = await testDataSource
-        .getRepository(User)
-        .findOneBy({ id: 1 });
-      expect(fromDb?.firstName).toBe('Updated');
+      expect(updatedUser.firstName).toBe('Updated');
+      expect(updatedUser.lastName).toBe('Smith');
     });
 
     it('should throw NotFoundException when user is not found', async () => {

@@ -1,7 +1,6 @@
 import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
-  AxiosResponse,
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
@@ -39,7 +38,6 @@ import {
   DonationDetails,
   VolunteerOrder,
   VolunteerAction,
-  FoodRequestWithoutRelations,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
 } from 'types/types';
@@ -102,12 +100,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async closeFoodRequest(
-    requestId: number,
-  ): Promise<FoodRequestWithoutRelations> {
-    return this.axiosInstance
-      .patch(`/api/requests/${requestId}/close`, {})
-      .then((response) => response.data);
+  public async closeFoodRequest(requestId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/requests/${requestId}/close`, {});
   }
 
   public async getAllDonations(): Promise<Donation[]> {
@@ -127,10 +121,11 @@ export class ApiClient {
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
-  ): Promise<Donation> {
-    return this.axiosInstance
-      .patch(`/api/donations/${donationId}/fulfill`, body ?? {})
-      .then((response) => response.data);
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/donations/${donationId}/fulfill`,
+      body ?? {},
+    );
   }
 
   public async getRepresentativeUser(userId: number): Promise<User> {
@@ -185,10 +180,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postPantry(
-    data: PantryApplicationDto,
-  ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/pantries`, data);
+  public async postPantry(data: PantryApplicationDto): Promise<void> {
+    await this.axiosInstance.post(`/api/pantries`, data);
   }
 
   public async getPantryStats(params?: {
@@ -307,7 +300,7 @@ export class ApiClient {
     orderId: number,
     dto: ConfirmDeliveryDto,
     photos: File[],
-  ): Promise<OrderWithoutRelations> {
+  ): Promise<void> {
     const formData = new FormData();
 
     formData.append('dateReceived', dto.dateReceived);
@@ -319,18 +312,16 @@ export class ApiClient {
       formData.append('photos', file);
     }
 
-    const { data } = await this.axiosInstance.patch(
+    await this.axiosInstance.patch(
       `/api/orders/${orderId}/confirm-delivery`,
       formData,
     );
-
-    return data;
   }
 
   public async postManufacturer(
     data: ManufacturerApplicationDto,
-  ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/manufacturers/application`, data);
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/manufacturers/application`, data);
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {

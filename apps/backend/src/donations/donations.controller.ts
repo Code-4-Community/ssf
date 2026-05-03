@@ -103,8 +103,8 @@ export class DonationsController {
   @Patch('/:donationId/fulfill')
   async fulfillDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<Donation> {
-    return this.donationService.fulfill(donationId);
+  ): Promise<void> {
+    await this.donationService.fulfill(donationId);
   }
 
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
@@ -136,8 +136,8 @@ export class DonationsController {
   async replaceDonationItems(
     @Param('donationId', ParseIntPipe) donationId: number,
     @Body() body: ReplaceDonationItemsDto,
-  ): Promise<Donation> {
-    return this.donationService.replaceDonationItems(donationId, body);
+  ): Promise<void> {
+    await this.donationService.replaceDonationItems(donationId, body);
   }
 
   @Delete('/:donationId')

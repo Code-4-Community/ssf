@@ -7,7 +7,6 @@ import { CreateDonationDto } from './dtos/create-donation.dto';
 import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
-import { DonationItem } from '../donationItems/donationItems.entity';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
 
@@ -122,14 +121,13 @@ describe('DonationsController', () => {
   });
 
   describe('PATCH /:donationId/fulfill', () => {
-    it('should call donationService.fulfill and return updated donation', async () => {
+    it('should call donationService.fulfill', async () => {
       const donationId = 1;
 
-      mockDonationService.fulfill.mockResolvedValueOnce(donation1 as Donation);
+      mockDonationService.fulfill.mockResolvedValueOnce(undefined);
 
-      const result = await controller.fulfillDonation(donationId);
+      await controller.fulfillDonation(donationId);
 
-      expect(result).toEqual(donation1);
       expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
     });
   });
@@ -161,7 +159,7 @@ describe('DonationsController', () => {
   });
 
   describe('PUT /:donationId/items', () => {
-    it('should call donationService.replaceDonationItems and return updated donation', async () => {
+    it('should call donationService.replaceDonationItems', async () => {
       const donationId = 1;
 
       const replaceBody = {
@@ -180,25 +178,13 @@ describe('DonationsController', () => {
         ],
       };
 
-      const updatedDonation: Partial<Donation> = {
-        donationId,
-        donationItems: [
-          { itemId: 1, itemName: 'Apples', quantity: 10 } as DonationItem,
-          { itemId: 2, itemName: 'Oranges', quantity: 5 } as DonationItem,
-        ],
-        status: DonationStatus.AVAILABLE,
-      };
+      mockDonationService.replaceDonationItems.mockResolvedValueOnce(undefined);
 
-      mockDonationService.replaceDonationItems.mockResolvedValueOnce(
-        updatedDonation as Donation,
-      );
-
-      const result = await controller.replaceDonationItems(
+      await controller.replaceDonationItems(
         donationId,
         replaceBody as ReplaceDonationItemsDto,
       );
 
-      expect(result).toEqual(updatedDonation);
       expect(mockDonationService.replaceDonationItems).toHaveBeenCalledWith(
         donationId,
         replaceBody,

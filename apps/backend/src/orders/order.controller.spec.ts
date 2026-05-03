@@ -255,18 +255,9 @@ describe('OrdersController', () => {
       const uploadedUrls = ['https://s3.example.com/photo1.jpg'];
       mockAWSS3Service.upload.mockResolvedValueOnce(uploadedUrls);
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: uploadedUrls,
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body, mockFiles);
+      await controller.confirmDelivery(orderId, body, mockFiles);
 
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(mockFiles);
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -274,7 +265,6 @@ describe('OrdersController', () => {
         body,
         uploadedUrls,
       );
-      expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle no photos being uploaded', async () => {
@@ -284,18 +274,9 @@ describe('OrdersController', () => {
         feedback: 'Delivery without photos',
       };
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: [],
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body);
+      await controller.confirmDelivery(orderId, body);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -303,7 +284,6 @@ describe('OrdersController', () => {
         body,
         [],
       );
-      expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle empty photos array', async () => {
@@ -313,18 +293,9 @@ describe('OrdersController', () => {
         feedback: 'Empty photos',
       };
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: [],
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body, []);
+      await controller.confirmDelivery(orderId, body, []);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -332,7 +303,6 @@ describe('OrdersController', () => {
         body,
         [],
       );
-      expect(result).toEqual(confirmedOrder);
     });
   });
 
@@ -592,21 +562,16 @@ describe('OrdersController', () => {
         action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
       };
 
-      const updatedOrder = {
-        ...mockOrders[0],
-        confirmDonationReceipt: true,
-      };
       mockOrdersService.completeVolunteerAction.mockResolvedValueOnce(
-        updatedOrder as Order,
+        undefined,
       );
 
-      const result = await controller.completeVolunteerAction(orderId, dto);
+      await controller.completeVolunteerAction(orderId, dto);
 
       expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
         orderId,
         VolunteerAction.CONFIRM_DONATION_RECEIPT,
       );
-      expect(result).toEqual(updatedOrder);
     });
   });
 });

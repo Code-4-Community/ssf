@@ -202,11 +202,10 @@ describe('FoodManufacturersController', () => {
         mockUpdateData,
       );
 
+      expect(result).toEqual(mockManufacturer1);
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
       ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 1);
-
-      expect(result).toEqual(mockManufacturer1);
     });
 
     it('should throw error if manufacturer does not exist', async () => {

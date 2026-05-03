@@ -1083,17 +1083,14 @@ describe('DonationService', () => {
       // manually removing allocations for deleted item ids
       await service['allocationRepo'].delete({ itemId: In([2, 3]) });
 
-      const updatedDonation = await service.replaceDonationItems(
+      await service.replaceDonationItems(donationId, body);
+
+      const updatedItems = await donationItemService.getAllDonationItems(
         donationId,
-        body,
       );
+      expect(updatedItems).toHaveLength(2);
 
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(2);
-
-      const updatedItemNames = updatedDonation.donationItems.map(
-        (i) => i.itemName,
-      );
+      const updatedItemNames = updatedItems.map((i) => i.itemName);
       expect(updatedItemNames).toContain('Green Apples'); // updated
       expect(updatedItemNames).toContain('Bananas'); // new
       expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
@@ -1136,13 +1133,12 @@ describe('DonationService', () => {
       // manually removing allocations for deleted item ids
       await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
 
-      const updatedDonation = await service.replaceDonationItems(
-        donationId,
-        body,
-      );
+      await service.replaceDonationItems(donationId, body);
 
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(0);
+      const updatedItems = await donationItemService.getAllDonationItems(
+        donationId,
+      );
+      expect(updatedItems).toHaveLength(0);
     });
 
     it('should throw NotFoundException if donation does not exist', async () => {

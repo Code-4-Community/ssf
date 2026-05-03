@@ -447,18 +447,19 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(
+      await service.confirmDelivery(
         shippedOrder.orderId,
         { dateReceived, feedback },
         photos,
       );
 
-      expect(result.orderId).toBe(shippedOrder.orderId);
-      expect(result.status).toBe(OrderStatus.DELIVERED);
-      expect(result.dateReceived).toEqual(new Date(dateReceived));
-      expect(result.feedback).toBe(feedback);
-      expect(result.photos).toEqual(photos);
-      expect(result.deliveredAt).toBeNull();
+      const updatedOrder = await service.findOne(shippedOrder.orderId);
+      expect(updatedOrder.orderId).toBe(shippedOrder.orderId);
+      expect(updatedOrder.status).toBe(OrderStatus.DELIVERED);
+      expect(updatedOrder.dateReceived).toEqual(new Date(dateReceived));
+      expect(updatedOrder.feedback).toBe(feedback);
+      expect(updatedOrder.photos).toEqual(photos);
+      expect(updatedOrder.deliveredAt).toBeNull();
 
       const updatedRequest = await requestRepo.findOne({
         where: { requestId: shippedOrder.requestId },
@@ -499,17 +500,18 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(
+      await service.confirmDelivery(
         existingShippedOrder.orderId,
         { dateReceived, feedback },
         photos,
       );
 
-      expect(result.orderId).toBe(existingShippedOrder.orderId);
-      expect(result.status).toBe(OrderStatus.DELIVERED);
-      expect(result.dateReceived).toEqual(new Date(dateReceived));
-      expect(result.feedback).toBe(feedback);
-      expect(result.photos).toEqual(photos);
+      const updatedOrder = await service.findOne(existingShippedOrder.orderId);
+      expect(updatedOrder.orderId).toBe(existingShippedOrder.orderId);
+      expect(updatedOrder.status).toBe(OrderStatus.DELIVERED);
+      expect(updatedOrder.dateReceived).toEqual(new Date(dateReceived));
+      expect(updatedOrder.feedback).toBe(feedback);
+      expect(updatedOrder.photos).toEqual(photos);
 
       const updatedRequest = await requestRepo.findOne({
         where: { requestId: existingShippedOrder.requestId },

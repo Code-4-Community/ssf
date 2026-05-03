@@ -111,7 +111,7 @@ export class DonationService {
     });
   }
 
-  async fulfill(donationId: number): Promise<Donation> {
+  async fulfill(donationId: number): Promise<void> {
     validateId(donationId, 'Donation');
 
     const donation = await this.repo.findOneBy({ donationId });
@@ -119,7 +119,8 @@ export class DonationService {
       throw new NotFoundException(`Donation ${donationId} not found`);
     }
     donation.status = DonationStatus.FULFILLED;
-    return this.repo.save(donation);
+
+    await this.repo.save(donation);
   }
 
   async matchAll(
@@ -449,7 +450,7 @@ export class DonationService {
   async replaceDonationItems(
     donationId: number,
     body: ReplaceDonationItemsDto,
-  ): Promise<Donation> {
+  ): Promise<void> {
     validateId(donationId, 'Donation');
 
     const donation = await this.repo.findOne({
@@ -529,8 +530,6 @@ export class DonationService {
         await transactionRepo.save(donation.donationItems);
       }
     });
-
-    return donation;
   }
 
   async delete(donationId: number): Promise<void> {

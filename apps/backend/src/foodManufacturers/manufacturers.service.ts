@@ -259,7 +259,7 @@ export class FoodManufacturersService {
     manufacturerId: number,
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
     currentUserId: number,
-  ) {
+  ): Promise<FoodManufacturer> {
     validateId(manufacturerId, 'Food Manufacturer');
     validateId(currentUserId, 'User');
 

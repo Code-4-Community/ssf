@@ -383,7 +383,7 @@ export class OrdersService {
     orderId: number,
     dto: ConfirmDeliveryDto,
     photos: string[],
-  ): Promise<Order> {
+  ): Promise<void> {
     validateId(orderId, 'Order');
 
     const formattedDate = new Date(dto.dateReceived);
@@ -411,8 +411,6 @@ export class OrdersService {
     const updatedOrder = await this.repo.save(order);
 
     await this.requestsService.updateRequestStatus(order.requestId);
-
-    return updatedOrder;
   }
 
   async getOrdersByPantry(
@@ -524,7 +522,10 @@ export class OrdersService {
     await this.donationService.checkAndFulfillDonation(donation!);
   }
 
-  async completeVolunteerAction(orderId: number, action: VolunteerAction) {
+  async completeVolunteerAction(
+    orderId: number,
+    action: VolunteerAction,
+  ): Promise<void> {
     validateId(orderId, 'Order');
 
     const order = await this.repo.findOneBy({ orderId });
@@ -547,6 +548,6 @@ export class OrdersService {
 
     order[action] = true;
 
-    return this.repo.save(order);
+    await this.repo.save(order);
   }
 }

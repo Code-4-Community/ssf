@@ -117,8 +117,8 @@ export class RequestsController {
   async updateRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
     @Body(new ValidationPipe()) body: UpdateRequestDto,
-  ): Promise<FoodRequest> {
-    return this.requestsService.update(requestId, body);
+  ): Promise<void> {
+    await this.requestsService.update(requestId, body);
   }
 
   @Delete('/:requestId')
@@ -132,7 +132,7 @@ export class RequestsController {
   @Patch('/:requestId/close')
   async closeRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<FoodRequest> {
-    return this.requestsService.closeRequest(requestId);
+  ): Promise<void> {
+    await this.requestsService.closeRequest(requestId);
   }
 }

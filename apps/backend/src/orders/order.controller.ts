@@ -251,13 +251,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
-  ): Promise<Order> {
+  ): Promise<void> {
     try {
       const uploadedPhotoUrls =
         photos && photos.length > 0
           ? await this.awsS3Service.upload(photos)
           : [];
-      return this.ordersService.confirmDelivery(
+      await this.ordersService.confirmDelivery(
         orderId,
         body,
         uploadedPhotoUrls,
@@ -287,7 +287,7 @@ export class OrdersController {
   async completeVolunteerAction(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
-  ) {
-    return this.ordersService.completeVolunteerAction(orderId, dto.action);
+  ): Promise<void> {
+    await this.ordersService.completeVolunteerAction(orderId, dto.action);
   }
 }
