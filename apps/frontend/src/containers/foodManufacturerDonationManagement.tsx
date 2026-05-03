@@ -19,6 +19,8 @@ import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequired
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
+const MAX_PER_STATUS = 5;
+
 const FoodManufacturerDonationManagement: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
@@ -47,8 +49,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
-
-  const MAX_PER_STATUS = 5;
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
@@ -83,7 +83,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch (error) {
-      alert('Error fetching donations: ' + error);
+      setAlertMessage('Error fetching donations: ' + error);
     }
   };
 
@@ -95,7 +95,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         setManufacturerId(fmId);
         await fetchDonations(fmId);
       } catch (error) {
-        alert('Error initializing donation management: ' + error);
+        setAlertMessage('Error initializing donation management: ' + error);
       }
     };
     init();
@@ -215,7 +215,6 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   onPageChange,
   onActionSelect,
 }) => {
-  const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
   const tableHeaderStyles = {
