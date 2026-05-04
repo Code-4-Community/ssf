@@ -1,5 +1,8 @@
 import {
   BadRequestException,
+  ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,7 +20,11 @@ import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Order } from '../orders/order.entity';
 import { Donation } from '../donations/donations.entity';
-import { UserStatsDto } from './dtos/user-stats.dto';
+import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
+import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
+import { PantriesService } from '../pantries/pantries.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ApplicationStatus } from '../shared/types';
@@ -39,6 +46,10 @@ export class UsersService {
     private fmRepo: Repository<FoodManufacturer>,
     private authService: AuthService,
     private emailsService: EmailsService,
+    @Inject(forwardRef(() => PantriesService))
+    private pantriesService: PantriesService,
+    @Inject(forwardRef(() => FoodManufacturersService))
+    private foodManufacturersService: FoodManufacturersService,
   ) {}
 
   async create(createUserDto: userSchemaDto): Promise<User> {
@@ -221,7 +232,7 @@ export class UsersService {
     return user;
   }
 
-  async getMonthlyAggregatedStats(): Promise<UserStatsDto> {
+  async getAdminVolunteerMonthlyAggregatedStats(): Promise<AdminVolunteerStats> {
     const now = new Date();
     const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endMonth = new Date(
@@ -254,5 +265,37 @@ export class UsersService {
       Donations: donationsCount.toString(),
       Volunteers: volunteersCount.toString(),
     };
+  }
+
+  async getUserDashboardStats(
+    userId: number,
+  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
+    const user = await this.findOne(userId);
+
+    if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
+      return this.getAdminVolunteerMonthlyAggregatedStats();
+    } else if (user.role === Role.PANTRY) {
+      const pantry = await this.pantriesService.findByUserId(userId);
+      if (pantry.status !== ApplicationStatus.APPROVED) {
+        throw new ForbiddenException(
+          `Pantry with User id ${userId} must be approved`,
+        );
+      }
+      return this.pantriesService.getDashboardStats(pantry.pantryId);
+    } else if (user.role === Role.FOODMANUFACTURER) {
+      const foodManufacturer = await this.foodManufacturersService.findByUserId(
+        userId,
+      );
+      if (foodManufacturer.status !== ApplicationStatus.APPROVED) {
+        throw new ForbiddenException(
+          `Food Manufacturer with User id ${userId} must be approved`,
+        );
+      }
+      return this.foodManufacturersService.getDashboardStats(
+        foodManufacturer.foodManufacturerId,
+      );
+    } else {
+      throw new BadRequestException(`Unsupported role: ${user.role}`);
+    }
   }
 }
