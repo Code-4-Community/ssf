@@ -335,20 +335,19 @@ export class OrdersService {
     }
 
     try {
+      const pantryAddress = [
+        request.pantry.mailingAddressLine1,
+        `${request.pantry.mailingAddressCity}, ${request.pantry.mailingAddressState} ${request.pantry.mailingAddressZip}`,
+        `[${request.pantry.mailingAddressCountry}]`,
+      ]
+        .filter(Boolean)
+        .join('<br />');
+
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
         pantryName: request.pantry.pantryName,
-        pantryAddress:
-          request.pantry.mailingAddressLine1 +
-          ' ' +
-          request.pantry.mailingAddressCity +
-          ' ' +
-          request.pantry.mailingAddressState +
-          ' ' +
-          request.pantry.mailingAddressZip +
-          ' ' +
-          request.pantry.mailingAddressCountry,
+        pantryAddress: pantryAddress,
         volunteerName: assignee.firstName + ' ' + assignee.lastName,
         volunteerEmail: assignee.email,
       });

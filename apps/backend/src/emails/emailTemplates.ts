@@ -4,7 +4,7 @@ export type EmailTemplate = {
   additionalContent?: string;
 };
 
-export const EMAIL_REDIRECT_URL = 'localhost:4200';
+export const EMAIL_REDIRECT_URL = 'https://localhost:4200';
 // TODO: Change this before production to be the actual ssf email
 export const SSF_PARTNER_EMAIL = 'example@gmail.com';
 
@@ -121,20 +121,19 @@ export const emailTemplates = {
       </ul>
     </p>
       <p>
-        To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please log into the platform. 
+        To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>. 
       </p>
       <p>
         If any details change on your end or you have updated availability, please update your request in the system or email your coordinator, ${
           params.volunteerName
-        } at ${params.volunteerEmail}.
+        } at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a>.
       </p>
       <p>
         We will continue to keep you informed as the order progresses. We’re excited to help support your pantry and looking forward to this donation!
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
-      </p>
     `,
   }),
 
@@ -165,7 +164,7 @@ export const emailTemplates = {
       ${params.pantryAddress}
     </p>
     <p>
-      Please log into the platform to review the full delivery details, timelines, and any special handling instructions associated with this shipment.
+      Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a> to review the full delivery details, timelines, and any special handling instructions associated with this shipment.
     </p>
     <p>
       Your support plays a direct role in expanding access to allergen-safe foods, and we truly appreciate your commitment to this work.
@@ -173,15 +172,14 @@ export const emailTemplates = {
     <p>
       If you have any questions or need assistance, please contact your coordinator, ${
         params.volunteerName
-      } at ${params.volunteerEmail}.
+      } at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a>.
     </p>
     <p>
       Thank you so much.
     </p>
     <p>Best regards,<br />The Securing Safe Food Team</p>
-    <p>
-        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
-      </p>
   `,
   }),
 };
