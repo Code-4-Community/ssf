@@ -4,3 +4,10 @@ export enum Role {
   PANTRY = 'pantry',
   FOODMANUFACTURER = 'food_manufacturer',
 }
+
+export type PendingApplication = {
+  id: number;
+  name: string;
+  type: 'pantry' | 'food_manufacturer';
+  dateApplied: Date;
+};

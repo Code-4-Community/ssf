@@ -26,7 +26,10 @@ export class UpdateFoodManufacturerApplicationDto {
   secondaryContactLastName?: string;
 
   @IsOptional()
-  @IsEmail()
+  @IsEmail(
+    {},
+    { message: 'Secondary contact email must be a valid email address.' },
+  )
   @IsNotEmpty()
   @MaxLength(255)
   secondaryContactEmail?: string;

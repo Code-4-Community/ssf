@@ -12,7 +12,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { PantryWithUser } from 'types/types';
+import { ApplicationStatus, PantryWithUser } from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -20,6 +20,7 @@ import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import ConfirmPantryDecisionModal from '@components/forms/confirmPantryDecisionModal';
 import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -73,7 +74,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               textStyle="p2"
               fontWeight={600}
             >
-              <Link to="/approve-pantries">Return to applications</Link>
+              <Link to={ROUTES.APPROVE_PANTRIES}>Return to applications</Link>
             </Button>
           )}
         </Box>
@@ -163,7 +164,11 @@ const PantryApplicationDetails: React.FC = () => {
       try {
         await ApiClient.updatePantry(application.pantryId, 'approve');
         navigate(
-          '/approve-pantries?action=approved&name=' + application.pantryName,
+          ROUTES.APPROVE_PANTRIES +
+            '?action=' +
+            ApplicationStatus.APPROVED +
+            '&name=' +
+            application.pantryName,
         );
       } catch {
         setAlertMessage('Error approving application');
@@ -176,7 +181,11 @@ const PantryApplicationDetails: React.FC = () => {
       try {
         await ApiClient.updatePantry(application.pantryId, 'deny');
         navigate(
-          '/approve-pantries?action=denied&name=' + application.pantryName,
+          ROUTES.APPROVE_PANTRIES +
+            '?action=' +
+            ApplicationStatus.DENIED +
+            '&name=' +
+            application.pantryName,
         );
       } catch {
         setAlertMessage('Error denying application');

@@ -29,6 +29,7 @@ import { Minus } from 'lucide-react';
 import { generateNextDonationDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -106,6 +107,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const [rows, setRows] = useState<DonationRow[]>([
     {
       id: 1,
@@ -281,471 +283,454 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           timeout={6000}
         />
       )}
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content maxW="75vw" maxH="90vh">
-            <Dialog.CloseTrigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content maxW="75vw" maxH="90vh">
+          <Dialog.CloseTrigger />
 
-            <Dialog.Header asChild>
-              <Dialog.Title fontSize={18} fontWeight={600}>
-                Log New Donation
-              </Dialog.Title>
-            </Dialog.Header>
+          <Dialog.Header asChild>
+            <Dialog.Title fontSize={18} fontWeight={600}>
+              Log New Donation
+            </Dialog.Title>
+          </Dialog.Header>
 
-            <Dialog.Body>
-              <Text mb={4} mt={-4} color="neutral.700">
-                Please fill out the following information to record donation
-                details.
-              </Text>
+          <Dialog.Body>
+            <Text mb={4} mt={-4} color="neutral.700">
+              Please fill out the following information to record donation
+              details.
+            </Text>
 
-              <Box display="block" overflowX="auto" whiteSpace="nowrap">
-                <Table.Root
-                  variant="line"
-                  size="md"
-                  style={{ borderCollapse: 'collapse' }}
-                >
-                  <TableCaption textAlign="left">
-                    <Stack
-                      direction="column"
-                      align="flex-start"
-                      gap={14}
-                      mt={4}
+            <Box display="block" overflowX="auto" whiteSpace="nowrap">
+              <Table.Root
+                variant="line"
+                size="md"
+                style={{ borderCollapse: 'collapse' }}
+              >
+                <TableCaption textAlign="left">
+                  <Stack direction="column" align="flex-start" gap={14} mt={4}>
+                    <Button
+                      display="inline-flex"
+                      alignItems="center"
+                      bg="white"
+                      color="neutral.800"
+                      fontWeight={600}
+                      fontSize={14}
+                      borderRadius={4}
+                      borderColor="neutral.200"
+                      onClick={addRow}
                     >
-                      <Button
-                        display="inline-flex"
-                        alignItems="center"
-                        bg="white"
-                        color="neutral.800"
-                        fontWeight={600}
-                        fontSize={14}
-                        borderRadius={4}
-                        borderColor="neutral.200"
-                        onClick={addRow}
-                      >
-                        Add New Row +
-                      </Button>
-                      <Checkbox.Root
-                        checked={isRecurring}
-                        onCheckedChange={(e: { checked: boolean }) => {
-                          setIsRecurring(!!e.checked);
-                          setRepeatInterval(
-                            e.checked
-                              ? RecurrenceEnum.WEEKLY
-                              : RecurrenceEnum.NONE,
-                          );
-                        }}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label color="neutral.700" fontWeight={400}>
-                          Make Donation Recurring
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                    </Stack>
-                  </TableCaption>
+                      Add New Row +
+                    </Button>
+                    <Checkbox.Root
+                      checked={isRecurring}
+                      onCheckedChange={(e: { checked: boolean }) => {
+                        setIsRecurring(!!e.checked);
+                        setRepeatInterval(
+                          e.checked
+                            ? RecurrenceEnum.WEEKLY
+                            : RecurrenceEnum.NONE,
+                        );
+                      }}
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Label color="neutral.700" fontWeight={400}>
+                        Make Donation Recurring
+                      </Checkbox.Label>
+                    </Checkbox.Root>
+                  </Stack>
+                </TableCaption>
 
-                  <Table.Header>
-                    <Table.Row fontWeight={600}>
-                      <Table.ColumnHeader width="32px" p={1} />
-                      <Table.ColumnHeader width="23%" p={0}>
-                        Food Item
-                        <Text as="span" color="red">
-                          *
-                        </Text>
-                      </Table.ColumnHeader>
-                      <Table.ColumnHeader width="22%">
-                        Food Type
-                        <Text as="span" color="red">
-                          *
-                        </Text>
-                      </Table.ColumnHeader>
-                      <Table.ColumnHeader width="14%">
-                        Quantity
-                        <Text as="span" color="red">
-                          *
-                        </Text>
-                      </Table.ColumnHeader>
-                      <Table.ColumnHeader width="14%">
-                        Oz. per item
-                      </Table.ColumnHeader>
-                      <Table.ColumnHeader width="14%">
-                        Donation Value
-                      </Table.ColumnHeader>
-                      <Table.ColumnHeader
-                        width="20px"
-                        textAlign="left"
-                        px={0}
-                        pl={4}
-                        whiteSpace="normal"
-                        lineHeight="tight"
-                      >
-                        Food Rescue
-                      </Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-
-                  <Table.Body>
-                    {rows.map((row) => (
-                      <Table.Row key={row.id}>
-                        <Table.Cell width="32px" p={0} pr={2}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deleteRow(row.id)}
-                            disabled={rows.length === 1}
-                            borderColor="neutral.300"
-                            borderRadius="md"
-                            bg="white"
-                            _hover={{ bg: 'gray.50' }}
-                            _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                            width="28px"
-                            height="28px"
-                            minW="28px"
-                            padding={0}
-                          >
-                            <Box color="neutral.300">
-                              <Minus
-                                style={{ width: '24px', height: '24px' }}
-                              />
-                            </Box>
-                          </Button>
-                        </Table.Cell>
-
-                        <Table.Cell p={0} pr={4}>
-                          <Input
-                            _placeholder={placeholderStyles}
-                            color="neutral.800"
-                            placeholder="Enter Food"
-                            value={row.foodItem}
-                            onChange={(e) =>
-                              handleChange(row.id, 'foodItem', e.target.value)
-                            }
-                          />
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <NativeSelect.Root size="md" width="100%">
-                            <NativeSelect.Field
-                              color={
-                                row.foodType ? 'neutral.800' : 'neutral.300'
-                              }
-                              placeholder="Select Type"
-                              value={row.foodType}
-                              onChange={(e) =>
-                                handleChange(row.id, 'foodType', e.target.value)
-                              }
-                            >
-                              {Object.values(FoodType).map((type) => (
-                                <option
-                                  key={type}
-                                  value={type}
-                                  style={{
-                                    color: 'var(--chakra-colors-neutral-800)',
-                                  }}
-                                >
-                                  {type}
-                                </option>
-                              ))}
-                            </NativeSelect.Field>
-                            <NativeSelectIndicator />
-                          </NativeSelect.Root>
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <Input
-                            _placeholder={placeholderStyles}
-                            color="neutral.800"
-                            placeholder="Enter #"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={row.numItems}
-                            onChange={(e) =>
-                              handleChange(row.id, 'numItems', e.target.value)
-                            }
-                          />
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <Input
-                            _placeholder={placeholderStyles}
-                            color="neutral.800"
-                            placeholder="Enter #"
-                            type="number"
-                            min={0.01}
-                            step={0.01}
-                            value={row.ozPerItem}
-                            onChange={(e) =>
-                              handleChange(row.id, 'ozPerItem', e.target.value)
-                            }
-                          />
-                        </Table.Cell>
-
-                        <Table.Cell>
-                          <Input
-                            _placeholder={placeholderStyles}
-                            color="neutral.800"
-                            placeholder="Enter $"
-                            type="number"
-                            min={0.01}
-                            step={0.01}
-                            value={row.valuePerItem}
-                            onChange={(e) =>
-                              handleChange(
-                                row.id,
-                                'valuePerItem',
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </Table.Cell>
-
-                        <Table.Cell px={0} pl={6} width="32px">
-                          <Checkbox.Root
-                            checked={row.foodRescue}
-                            size="lg"
-                            borderRadius="2px"
-                            onCheckedChange={(e: { checked: boolean }) =>
-                              handleChange(row.id, 'foodRescue', !!e.checked)
-                            }
-                          >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control
-                              borderRadius="2px"
-                              borderColor="#E4E4E7"
-                            >
-                              <Checkbox.Indicator />
-                            </Checkbox.Control>
-                          </Checkbox.Root>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
-              </Box>
-
-              {isRecurring && (
-                <Box mt={6} color="neutral.800" fontSize="sm">
-                  <Stack
-                    direction="row"
-                    align="flex-start"
-                    gap={4}
-                    mb={4}
-                    flexWrap="wrap"
-                  >
-                    <Box flex="1" minW="200px">
-                      <Text fontWeight={600} mb={3}>
-                        Repeat every
+                <Table.Header>
+                  <Table.Row fontWeight={600}>
+                    <Table.ColumnHeader width="32px" p={1} />
+                    <Table.ColumnHeader width="23%" p={0}>
+                      Food Item
+                      <Text as="span" color="red">
+                        *
                       </Text>
-                      <Flex gap={2} align="center">
-                        <NumberInput.Root
-                          width="98px"
-                          value={repeatEvery}
-                          onValueChange={(e: { value: string }) =>
-                            setRepeatEvery(e.value)
-                          }
-                          min={1}
-                          step={1}
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="22%">
+                      Food Type
+                      <Text as="span" color="red">
+                        *
+                      </Text>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="14%">
+                      Quantity
+                      <Text as="span" color="red">
+                        *
+                      </Text>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="14%">
+                      Oz. per item
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader width="14%">
+                      Donation Value
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      width="20px"
+                      textAlign="left"
+                      px={0}
+                      pl={4}
+                      whiteSpace="normal"
+                      lineHeight="tight"
+                    >
+                      Food Rescue
+                    </Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                  {rows.map((row) => (
+                    <Table.Row key={row.id}>
+                      <Table.Cell width="32px" p={0} pr={2}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteRow(row.id)}
+                          disabled={rows.length === 1}
+                          borderColor="neutral.300"
+                          borderRadius="md"
+                          bg="white"
+                          _hover={{ bg: 'neutral.50' }}
+                          _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
+                          width="28px"
+                          height="28px"
+                          minW="28px"
+                          padding={0}
                         >
-                          <NumberInput.Input />
-                          <NumberInput.Control />
-                        </NumberInput.Root>
-                        <NativeSelect.Root flex="1" size="md">
+                          <Box color="neutral.300">
+                            <Minus style={{ width: '24px', height: '24px' }} />
+                          </Box>
+                        </Button>
+                      </Table.Cell>
+
+                      <Table.Cell p={0} pr={4}>
+                        <Input
+                          _placeholder={placeholderStyles}
+                          color="neutral.800"
+                          placeholder="Enter Food"
+                          value={row.foodItem}
+                          onChange={(e) =>
+                            handleChange(row.id, 'foodItem', e.target.value)
+                          }
+                        />
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <NativeSelect.Root size="md" width="100%">
                           <NativeSelect.Field
-                            value={repeatInterval}
+                            color={row.foodType ? 'neutral.800' : 'neutral.300'}
+                            placeholder="Select Type"
+                            value={row.foodType}
                             onChange={(e) =>
-                              setRepeatInterval(
-                                e.target.value as RecurrenceEnum,
-                              )
+                              handleChange(row.id, 'foodType', e.target.value)
                             }
                           >
-                            {(Object.values(RecurrenceEnum) as RecurrenceEnum[])
-                              .filter((v) => v !== RecurrenceEnum.NONE)
-                              .map((v) =>
-                                repeatEvery === '1' ? (
-                                  <option key={v} value={v}>
-                                    {RECURRENCE_LABELS[v]}
-                                  </option>
-                                ) : (
-                                  <option key={v} value={v}>
-                                    {RECURRENCE_LABELS[v]}s
-                                  </option>
-                                ),
-                              )}
+                            {Object.values(FoodType).map((type) => (
+                              <option
+                                key={type}
+                                value={type}
+                                style={{
+                                  color: 'var(--chakra-colors-neutral-800)',
+                                }}
+                              >
+                                {type}
+                              </option>
+                            ))}
                           </NativeSelect.Field>
                           <NativeSelectIndicator />
                         </NativeSelect.Root>
-                      </Flex>
-                    </Box>
+                      </Table.Cell>
 
-                    <Box flex="1" minW="236px" width="100%">
-                      <Text fontWeight={600} mb={3}>
-                        Repeat on
-                      </Text>
-                      <Menu.Root
-                        closeOnSelect={false}
-                        positioning={{ sameWidth: true }}
+                      <Table.Cell>
+                        <Input
+                          _placeholder={placeholderStyles}
+                          color="neutral.800"
+                          placeholder="Enter #"
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={row.numItems}
+                          onChange={(e) =>
+                            handleChange(row.id, 'numItems', e.target.value)
+                          }
+                        />
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <Input
+                          _placeholder={placeholderStyles}
+                          color="neutral.800"
+                          placeholder="Enter #"
+                          type="number"
+                          min={0.01}
+                          step={0.01}
+                          value={row.ozPerItem}
+                          onChange={(e) =>
+                            handleChange(row.id, 'ozPerItem', e.target.value)
+                          }
+                        />
+                      </Table.Cell>
+
+                      <Table.Cell>
+                        <Input
+                          _placeholder={placeholderStyles}
+                          color="neutral.800"
+                          placeholder="Enter $"
+                          type="number"
+                          min={0.01}
+                          step={0.01}
+                          value={row.valuePerItem}
+                          onChange={(e) =>
+                            handleChange(row.id, 'valuePerItem', e.target.value)
+                          }
+                        />
+                      </Table.Cell>
+
+                      <Table.Cell px={0} pl={6} width="32px">
+                        <Checkbox.Root
+                          checked={row.foodRescue}
+                          size="lg"
+                          borderRadius="2px"
+                          onCheckedChange={(e: { checked: boolean }) =>
+                            handleChange(row.id, 'foodRescue', !!e.checked)
+                          }
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control
+                            borderRadius="2px"
+                            borderColor="#E4E4E7"
+                          >
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                        </Checkbox.Root>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Box>
+
+            {isRecurring && (
+              <Box mt={6} color="neutral.800" fontSize="sm">
+                <Stack
+                  direction="row"
+                  align="flex-start"
+                  gap={4}
+                  mb={4}
+                  flexWrap="wrap"
+                >
+                  <Box flex="1" minW="200px">
+                    <Text fontWeight={600} mb={3}>
+                      Repeat every
+                    </Text>
+                    <Flex gap={2} align="center">
+                      <NumberInput.Root
+                        width="98px"
+                        value={repeatEvery}
+                        onValueChange={(e: { value: string }) =>
+                          setRepeatEvery(e.value)
+                        }
+                        min={1}
+                        step={1}
                       >
-                        {!isRepeatOnDisabled ? (
-                          <Menu.Trigger asChild>
-                            <Box cursor="pointer" width="100%">
-                              <NativeSelect.Root size="md" width="100%">
-                                <NativeSelect.Field
-                                  value={getSelectedDaysText()}
-                                  bg="white"
-                                  readOnly
-                                >
-                                  <option>{getSelectedDaysText()}</option>
-                                </NativeSelect.Field>
-                                <NativeSelectIndicator />
-                              </NativeSelect.Root>
-                            </Box>
-                          </Menu.Trigger>
-                        ) : (
-                          <Box cursor="not-allowed">
-                            <NativeSelect.Root size="md">
+                        <NumberInput.Input />
+                        <NumberInput.Control />
+                      </NumberInput.Root>
+                      <NativeSelect.Root flex="1" size="md">
+                        <NativeSelect.Field
+                          value={repeatInterval}
+                          onChange={(e) =>
+                            setRepeatInterval(e.target.value as RecurrenceEnum)
+                          }
+                        >
+                          {(Object.values(RecurrenceEnum) as RecurrenceEnum[])
+                            .filter((v) => v !== RecurrenceEnum.NONE)
+                            .map((v) =>
+                              repeatEvery === '1' ? (
+                                <option key={v} value={v}>
+                                  {RECURRENCE_LABELS[v]}
+                                </option>
+                              ) : (
+                                <option key={v} value={v}>
+                                  {RECURRENCE_LABELS[v]}s
+                                </option>
+                              ),
+                            )}
+                        </NativeSelect.Field>
+                        <NativeSelectIndicator />
+                      </NativeSelect.Root>
+                    </Flex>
+                  </Box>
+
+                  <Box flex="1" minW="236px" width="100%">
+                    <Text fontWeight={600} mb={3}>
+                      Repeat on
+                    </Text>
+                    <Menu.Root
+                      closeOnSelect={false}
+                      positioning={{ sameWidth: true }}
+                    >
+                      {!isRepeatOnDisabled ? (
+                        <Menu.Trigger asChild>
+                          <Box cursor="pointer" width="100%">
+                            <NativeSelect.Root size="md" width="100%">
                               <NativeSelect.Field
                                 value={getSelectedDaysText()}
                                 bg="white"
-                                disabled
-                                opacity={0.5}
                                 readOnly
-                                pointerEvents="none"
                               >
                                 <option>{getSelectedDaysText()}</option>
                               </NativeSelect.Field>
                               <NativeSelectIndicator />
                             </NativeSelect.Root>
                           </Box>
-                        )}
-                        {!isRepeatOnDisabled && (
-                          <Portal>
-                            <Menu.Positioner>
-                              <Menu.Content
-                                maxH="300px"
-                                color="neutral.800"
-                                zIndex={9999}
-                              >
-                                {(Object.keys(repeatOn) as DayOfWeek[]).map(
-                                  (day) => (
-                                    <Menu.Item
-                                      key={day}
-                                      value={day}
-                                      onClick={() => handleDayToggle(day)}
-                                      p={2}
-                                    >
-                                      <Flex align="center" gap={2}>
-                                        <Checkbox.Root
-                                          checked={repeatOn[day]}
-                                          pointerEvents="none"
-                                        >
-                                          <Checkbox.HiddenInput />
-                                          <Checkbox.Control>
-                                            <Checkbox.Indicator />
-                                          </Checkbox.Control>
-                                        </Checkbox.Root>
-                                        <Text>{day}</Text>
-                                      </Flex>
-                                    </Menu.Item>
-                                  ),
-                                )}
-                              </Menu.Content>
-                            </Menu.Positioner>
-                          </Portal>
-                        )}
-                      </Menu.Root>
-                    </Box>
+                        </Menu.Trigger>
+                      ) : (
+                        <Box cursor="not-allowed">
+                          <NativeSelect.Root size="md">
+                            <NativeSelect.Field
+                              value={getSelectedDaysText()}
+                              bg="white"
+                              disabled
+                              opacity={0.5}
+                              readOnly
+                              pointerEvents="none"
+                            >
+                              <option>{getSelectedDaysText()}</option>
+                            </NativeSelect.Field>
+                            <NativeSelectIndicator />
+                          </NativeSelect.Root>
+                        </Box>
+                      )}
+                      {!isRepeatOnDisabled && (
+                        <Portal>
+                          <Menu.Positioner>
+                            <Menu.Content
+                              maxH="300px"
+                              color="neutral.800"
+                              zIndex={9999}
+                            >
+                              {(Object.keys(repeatOn) as DayOfWeek[]).map(
+                                (day) => (
+                                  <Menu.Item
+                                    key={day}
+                                    value={day}
+                                    onClick={() => handleDayToggle(day)}
+                                    p={2}
+                                  >
+                                    <Flex align="center" gap={2}>
+                                      <Checkbox.Root
+                                        checked={repeatOn[day]}
+                                        pointerEvents="none"
+                                      >
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Control>
+                                          <Checkbox.Indicator />
+                                        </Checkbox.Control>
+                                      </Checkbox.Root>
+                                      <Text>{day}</Text>
+                                    </Flex>
+                                  </Menu.Item>
+                                ),
+                              )}
+                            </Menu.Content>
+                          </Menu.Positioner>
+                        </Portal>
+                      )}
+                    </Menu.Root>
+                  </Box>
 
-                    <Box flex="1" minW="200px">
-                      <Text fontWeight={600} mb={3} fontSize="sm">
-                        Ends after
-                      </Text>
-                      <NumberInput.Root
-                        width="100%"
-                        value={endsAfter}
-                        onValueChange={(e: { value: string }) =>
-                          setEndsAfter(e.value)
-                        }
-                        min={1}
-                        step={1}
-                      >
-                        <Flex position="relative" align="center">
-                          <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
-                          <Text
-                            position="absolute"
-                            left={`calc(16px + ${
-                              endsAfter.length * 0.6
-                            }em + 8px)`}
-                            color="neutral.800"
-                            fontSize="sm"
-                            pointerEvents="none"
-                          >
-                            {parseInt(endsAfter) > 1 ? 'Reminders' : 'Reminder'}
-                          </Text>
-                          <NumberInput.Control />
-                        </Flex>
-                      </NumberInput.Root>
-                    </Box>
-                  </Stack>
-
-                  {(repeatInterval !== RecurrenceEnum.WEEKLY ||
-                    Object.values(repeatOn).some(Boolean)) && (
-                    <Text color="neutral.700" fontStyle="italic" mt={2}>
-                      Next donation reminder scheduled for{' '}
-                      {getNextDonationDateDisplay()}
+                  <Box flex="1" minW="200px">
+                    <Text fontWeight={600} mb={3} fontSize="sm">
+                      Ends after
                     </Text>
-                  )}
-                </Box>
-              )}
+                    <NumberInput.Root
+                      width="100%"
+                      value={endsAfter}
+                      onValueChange={(e: { value: string }) =>
+                        setEndsAfter(e.value)
+                      }
+                      min={1}
+                      step={1}
+                    >
+                      <Flex position="relative" align="center">
+                        <NumberInput.Input pl={4} pr="140px" fontSize="sm" />
+                        <Text
+                          position="absolute"
+                          left={`calc(16px + ${
+                            endsAfter.length * 0.6
+                          }em + 8px)`}
+                          color="neutral.800"
+                          fontSize="sm"
+                          pointerEvents="none"
+                        >
+                          {parseInt(endsAfter) > 1 ? 'Reminders' : 'Reminder'}
+                        </Text>
+                        <NumberInput.Control />
+                      </Flex>
+                    </NumberInput.Root>
+                  </Box>
+                </Stack>
 
-              <Flex
-                justifyContent="flex-end"
-                gap={3}
-                mt={6}
-                pt={4}
-                align="center"
+                {(repeatInterval !== RecurrenceEnum.WEEKLY ||
+                  Object.values(repeatOn).some(Boolean)) && (
+                  <Text color="neutral.700" fontStyle="italic" mt={2}>
+                    Next donation reminder scheduled for{' '}
+                    {getNextDonationDateDisplay()}
+                  </Text>
+                )}
+              </Box>
+            )}
+
+            <Flex
+              justifyContent="flex-end"
+              gap={3}
+              mt={6}
+              pt={4}
+              align="center"
+            >
+              <Button
+                variant="outline"
+                color="gray.700"
+                fontWeight={600}
+                onClick={onClose}
+                size="md"
               >
-                <Button
-                  variant="outline"
-                  color="gray.700"
-                  fontWeight={600}
-                  onClick={onClose}
-                  size="md"
-                >
-                  Cancel
-                </Button>
-                <Tooltip.Root disabled={!isSubmitDisabled} openDelay={0}>
-                  <Tooltip.Trigger asChild>
-                    <Box display="inline-block">
-                      <Button
-                        backgroundColor="blue.ssf"
-                        onClick={validateAndSubmit}
-                        size="md"
-                        fontWeight={600}
-                        disabled={isSubmitDisabled}
-                        _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
-                        pointerEvents={isSubmitDisabled ? 'none' : 'auto'}
-                      >
-                        Submit Donation
-                      </Button>
-                    </Box>
-                  </Tooltip.Trigger>
-                  <Portal>
-                    <Tooltip.Positioner>
-                      <Tooltip.Content>
-                        {firstValidationError ?? ''}
-                      </Tooltip.Content>
-                    </Tooltip.Positioner>
-                  </Portal>
-                </Tooltip.Root>
-              </Flex>
-            </Dialog.Body>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
+                Cancel
+              </Button>
+              <Tooltip.Root disabled={!isSubmitDisabled} openDelay={0}>
+                <Tooltip.Trigger asChild>
+                  <Box display="inline-block">
+                    <Button
+                      backgroundColor="blue.ssf"
+                      onClick={validateAndSubmit}
+                      size="md"
+                      fontWeight={600}
+                      disabled={isSubmitDisabled}
+                      _disabled={{ opacity: 0.4, cursor: 'not-allowed' }}
+                      pointerEvents={isSubmitDisabled ? 'none' : 'auto'}
+                    >
+                      Submit Donation
+                    </Button>
+                  </Box>
+                </Tooltip.Trigger>
+                <Portal>
+                  <Tooltip.Positioner>
+                    <Tooltip.Content>
+                      {firstValidationError ?? ''}
+                    </Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Portal>
+              </Tooltip.Root>
+            </Flex>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog.Positioner>
     </Dialog.Root>
   );
 };

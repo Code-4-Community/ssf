@@ -1,5 +1,6 @@
 import { Dialog, Text, Box, Button, CloseButton } from '@chakra-ui/react';
 import { capitalize } from '@utils/utils';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface ConfirmFoodManufacturerDecisionModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const ConfirmFoodManufacturerDecisionModal: React.FC<
   foodManufacturerName,
   dateApplied,
 }) => {
+  useModalBodyCleanup();
   return (
     <Dialog.Root
       open={isOpen}

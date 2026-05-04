@@ -17,7 +17,7 @@ const PantryApplicationSubmitted: React.FC = () => {
         </Box>
         <Box
           as="section"
-          bg="#FEFEFE"
+          bg="white.core"
           py={32}
           px={6}
           border="1px solid"

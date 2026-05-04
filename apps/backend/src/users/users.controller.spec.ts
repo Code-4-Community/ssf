@@ -1,7 +1,7 @@
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
-import { Role } from './types';
+import { PendingApplication, Role } from './types';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
@@ -29,6 +29,8 @@ describe('UsersController', () => {
     mockUserService.remove.mockReset();
     mockUserService.update.mockReset();
     mockUserService.create.mockReset();
+    mockUserService.getUserDashboardStats.mockReset();
+    mockUserService.getRecentPendingApplications.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
@@ -123,6 +125,23 @@ describe('UsersController', () => {
     });
   });
 
+  describe('GET /:id/stats', () => {
+    it('should call getUserDashboardStats and return the result', async () => {
+      const mockStats = {
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+        Volunteers: '4',
+      };
+      mockUserService.getUserDashboardStats.mockResolvedValue(mockStats);
+
+      const result = await controller.getUserDashboardStats(1);
+
+      expect(result).toEqual(mockStats);
+      expect(mockUserService.getUserDashboardStats).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('POST /api/users', () => {
     it('should create a new user with all required fields', async () => {
       const createUserSchema: userSchemaDto = {
@@ -157,6 +176,48 @@ describe('UsersController', () => {
       await expect(controller.createUser(createUserSchema)).rejects.toThrow(
         error,
       );
+    });
+  });
+
+  describe('GET /admin/recent-pending-applications', () => {
+    it('returns the list of pending applications from the service', async () => {
+      const applications: PendingApplication[] = [
+        {
+          id: 5,
+          name: 'Southside Pantry Network',
+          type: 'pantry',
+          dateApplied: new Date('2024-02-02'),
+        },
+        {
+          id: 6,
+          name: 'Harbor Community Center',
+          type: 'pantry',
+          dateApplied: new Date('2024-02-01'),
+        },
+        {
+          id: 1,
+          name: 'FoodCorp Industries',
+          type: 'food_manufacturer',
+          dateApplied: new Date('2024-01-20'),
+        },
+      ];
+
+      mockUserService.getRecentPendingApplications.mockResolvedValueOnce(
+        applications,
+      );
+
+      const result = await controller.getRecentPendingApplications();
+
+      expect(result).toEqual(applications);
+      expect(mockUserService.getRecentPendingApplications).toHaveBeenCalled();
+    });
+
+    it('returns empty array when there are no pending applications', async () => {
+      mockUserService.getRecentPendingApplications.mockResolvedValueOnce([]);
+
+      const result = await controller.getRecentPendingApplications();
+
+      expect(result).toEqual([]);
     });
   });
 });

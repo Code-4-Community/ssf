@@ -24,7 +24,7 @@ const Homepage: React.FC = () => {
         </Heading>
 
         <Box w="full" textAlign="center">
-          <Link color="teal.500">
+          <Link asChild color="teal.500">
             <RouterLink to="/profile">Profile View</RouterLink>
           </Link>
         </Box>
@@ -33,16 +33,6 @@ const Homepage: React.FC = () => {
             Pantry View
           </Heading>
           <List.Root unstyled gap={2}>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/pantry-dashboard">Pantry Dashboard</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/pantry-past-orders">Past Orders</RouterLink>
-              </Link>
-            </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
                 <RouterLink to="/request-form">Request Form</RouterLink>
@@ -58,7 +48,7 @@ const Homepage: React.FC = () => {
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
                 <RouterLink to="/pantry-order-management">
-                  Pantry Order Management
+                  Order Management
                 </RouterLink>
               </Link>
             </ListItem>
@@ -70,18 +60,6 @@ const Homepage: React.FC = () => {
             Food Manufacturer View
           </Heading>
           <List.Root unstyled gap={2}>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/food-manufacturer-order-dashboard">
-                  Order Dashboard
-                </RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
-                <RouterLink to="/orders">Orders</RouterLink>
-              </Link>
-            </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
                 <RouterLink to="/fm-donation-management">
@@ -115,6 +93,13 @@ const Homepage: React.FC = () => {
               <Link asChild color="teal.500">
                 <RouterLink to="/volunteer-request-management">
                   Food Request Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/volunteer-order-management">
+                  Order Management
                 </RouterLink>
               </Link>
             </ListItem>
@@ -159,8 +144,27 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
+                <RouterLink to="/admin-donation-stats">
+                  Donation Statistics
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
                 <RouterLink to="/admin-order-management">
                   Order Management
+                </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/test-admin-dashboard">Dashboard</RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to="/admin-request-management">
+                  Food Request Management
                 </RouterLink>
               </Link>
             </ListItem>

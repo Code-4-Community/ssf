@@ -32,14 +32,15 @@ import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { ROUTES } from '../../routes';
 
-const otherRestrictionsOptions: string[] = [
+export const otherRestrictionsOptions: string[] = [
   'Other allergy (e.g., yeast, sunflower, etc.)',
   'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
   'Other dietary restriction',
 ];
 
-const dietaryRestrictionOptions = [
+export const dietaryRestrictionOptions = [
   'Egg allergy',
   'Fish allergy',
   'Milk allergy',
@@ -57,7 +58,7 @@ const dietaryRestrictionOptions = [
   'Unsure',
 ];
 
-const activityOptions = [
+export const activityOptions = [
   'Create a labeled, allergy-friendly shelf or shelves',
   'Provide clients and staff/volunteers with educational pamphlets',
   "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
@@ -136,13 +137,13 @@ const PantryApplicationForm: React.FC = () => {
       </Box>
       <Box
         as="section"
-        bg="#FEFEFE"
+        bg="white.core"
         p="2em"
         border="1px solid"
         borderColor="neutral.200"
         rounded="sm"
       >
-        <Form method="post" action="/pantry-application">
+        <Form method="post" action={ROUTES.PANTRY_APPLICATION}>
           <Heading textStyle="h3" mb="1em" color="gray.dark">
             Pantry Application Form
           </Heading>
@@ -1210,7 +1211,7 @@ export const submitPantryApplicationForm: ActionFunction = async ({
 
   try {
     await ApiClient.postPantry(data as PantryApplicationDto);
-    return redirect('/application-submitted');
+    return redirect(ROUTES.APPLICATION_SUBMITTED);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       return {

@@ -41,7 +41,7 @@ describe('OrdersController', () => {
 
   const mockRequestSummary: Partial<FoodRequestSummaryDto> = {
     requestId: 4,
-    pantryName: 'Example Pantry',
+    pantry: { pantryId: 1, pantryName: 'Example Pantry' },
   };
 
   const mockFoodManufacturer: Partial<FoodManufacturer> = {
@@ -210,22 +210,6 @@ describe('OrdersController', () => {
       expect(result).toEqual(mockFoodManufacturer as FoodManufacturer);
       expect(mockOrdersService.findOrderFoodManufacturer).toHaveBeenCalledWith(
         orderId,
-      );
-    });
-  });
-
-  describe('getOrderByRequestId', () => {
-    it('should call ordersService.findOrderByRequest and return order', async () => {
-      const requestId = 1;
-      mockOrdersService.findOrderByRequest.mockResolvedValueOnce(
-        mockOrders[0] as Order,
-      );
-
-      const result = await controller.getOrderByRequestId(requestId);
-
-      expect(result).toEqual(mockOrders[0] as Order);
-      expect(mockOrdersService.findOrderByRequest).toHaveBeenCalledWith(
-        requestId,
       );
     });
   });

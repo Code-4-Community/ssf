@@ -13,6 +13,7 @@ import {
 import { MenuIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { PantryWithUser } from 'types/types';
+import { formatPhone } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 
 const PantryDashboard: React.FC = () => {
@@ -125,7 +126,7 @@ const PantryDashboard: React.FC = () => {
             Name: {pantry?.pantryUser?.firstName} {pantry?.pantryUser?.lastName}
           </Text>
           <Text>Email: {pantry?.pantryUser?.email}</Text>
-          <Text>Phone: {pantry?.pantryUser?.phone}</Text>
+          <Text>Phone: {formatPhone(pantry?.pantryUser?.phone)}</Text>
         </CardBody>
       </Card.Root>
 

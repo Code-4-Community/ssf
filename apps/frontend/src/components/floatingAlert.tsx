@@ -38,6 +38,7 @@ export function FloatingAlert({
       color={status === 'info' ? 'neutral.800' : 'red'}
       status="info"
       bg="white"
+      alignItems="center"
       variant="subtle"
       boxShadow="lg"
       position="fixed"
@@ -48,7 +49,7 @@ export function FloatingAlert({
       maxW="400px"
       p={2}
     >
-      <Alert.Indicator />
+      <Alert.Indicator flexShrink={0} />
       <Alert.Title textStyle="p2" fontWeight={500} whiteSpace="pre-line">
         {message}
       </Alert.Title>
