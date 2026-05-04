@@ -24,6 +24,7 @@ import { DonationStatus } from '../donations/types';
 import { User } from '../users/users.entity';
 import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
+import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
@@ -59,13 +60,8 @@ describe('OrdersService', () => {
         DonationItemsService,
         AllocationsService,
         UsersService,
+        PantriesService,
         DonationService,
-        EmailsService,
-        DonationService,
-        {
-          provide: DataSource,
-          useValue: testDataSource,
-        },
         {
           provide: DataSource,
           useValue: testDataSource,

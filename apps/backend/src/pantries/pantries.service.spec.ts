@@ -26,11 +26,12 @@ import { Donation } from '../donations/donations.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../users/users.entity';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 jest.setTimeout(60000);
 
@@ -107,6 +108,7 @@ describe('PantriesService', () => {
       providers: [
         PantriesService,
         UsersService,
+        FoodManufacturersService,
         {
           provide: AuthService,
           useValue: {
@@ -884,6 +886,12 @@ describe('PantriesService', () => {
         new NotFoundException('Pantry for User 9999 not found'),
       );
     });
+
+    it('findByUserId with existing non-pantry user throws NotFoundException', async () => {
+      await expect(service.findByUserId(1)).rejects.toThrow(
+        new NotFoundException('Pantry for User 1 not found'),
+      );
+    });
   });
 
   describe('getApprovedPantriesWithVolunteers', () => {
@@ -1142,11 +1150,11 @@ describe('PantriesService', () => {
     });
   });
 
-  describe('getStats', () => {
+  describe('getDashboardStats', () => {
     it('returns proper stats for pantry', async () => {
       const pantryId = 1;
 
-      const result = await service.getStats(pantryId);
+      const result = await service.getDashboardStats(pantryId);
 
       const expectedKeys = [
         'Food Requests',
@@ -1167,14 +1175,14 @@ describe('PantriesService', () => {
     });
 
     it('throws NotFoundException for non-existent pantry', async () => {
-      await expect(service.getStats(9999)).rejects.toThrow(
+      await expect(service.getDashboardStats(9999)).rejects.toThrow(
         new NotFoundException('Pantry 9999 not found'),
       );
     });
 
     it('returns zero stats for a pantry with no food requests or orders', async () => {
       const pantryId = 5;
-      const result = await service.getStats(pantryId);
+      const result = await service.getDashboardStats(pantryId);
 
       expect(result['Food Requests']).toBe('0');
       expect(result['Orders']).toBe('0');
