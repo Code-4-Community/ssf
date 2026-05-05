@@ -17,6 +17,9 @@ import {
   ReplaceDonationItemsDto,
 } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
+import { mock } from 'jest-mock-extended';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
 
@@ -132,11 +135,15 @@ const TODAYOfWeek = (iso: string): DayOfWeek => {
   return days[new Date(iso).getDay()];
 };
 
+const mockEmailsService = mock<EmailsService>();
+
 describe('DonationService', () => {
   let service: DonationService;
   let donationItemService: DonationItemsService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -170,7 +177,7 @@ describe('DonationService', () => {
         },
         {
           provide: EmailsService,
-          useValue: { sendEmails: jest.fn() },
+          useValue: mockEmailsService,
         },
       ],
     }).compile();
@@ -181,6 +188,7 @@ describe('DonationService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -631,6 +639,82 @@ describe('DonationService', () => {
           tomorrow.toDateString(),
         );
         expect(donation.occurrencesRemaining).toEqual(3);
+      });
+
+      it('sends fmRecurringDonationReminder email with correct parameters when expired date is processed', async () => {
+        const pastDate = daysAgo(5);
+        await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const { subject, bodyHTML } =
+          emailTemplates.fmRecurringDonationReminder({
+            fmName: manufacturer.foodManufacturerName,
+          });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+          [manufacturer.foodManufacturerRepresentative.email],
+          subject,
+          bodyHTML,
+        );
+      });
+
+      it('continues processing other donations when one donation email send fails', async () => {
+        const pastDate1 = daysAgo(5);
+        const pastDate2 = daysAgo(3);
+
+        const donationId1 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate1],
+          occurrencesRemaining: 3,
+        });
+
+        const donationId2 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate2],
+          occurrencesRemaining: 3,
+        });
+
+        mockEmailsService.sendEmails.mockRejectedValueOnce(
+          new Error('Email failed'),
+        );
+
+        await service.handleRecurringDonations();
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+
+        const donation1 = await service.findOne(donationId1);
+        const donation2 = await service.findOne(donationId2);
+
+        // Exactly one donation should have been updated (occurrences decremented to 2)
+        // In the case where an email send fails, we do not want to decrement anything
+        const updatedCount = [donation1, donation2].filter(
+          (d) => d.occurrencesRemaining === 2,
+        ).length;
+        const unchangedCount = [donation1, donation2].filter(
+          (d) => d.occurrencesRemaining === 3,
+        ).length;
+
+        expect(updatedCount).toBe(1);
+        expect(unchangedCount).toBe(1);
       });
     });
   });

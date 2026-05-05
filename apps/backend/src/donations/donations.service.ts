@@ -50,7 +50,10 @@ export class DonationService {
 
   async getAll(): Promise<Donation[]> {
     return this.repo.find({
-      relations: ['foodManufacturer'],
+      relations: [
+        'foodManufacturer',
+        'foodManufacturer.foodManufacturerRepresentative',
+      ],
     });
   }
 
@@ -206,19 +209,18 @@ export class DonationService {
           break;
         }
 
+        // Successfully send an email first before decrementing the count
         const { subject, bodyHTML } =
           emailTemplates.fmRecurringDonationReminder({
             fmName: donation.foodManufacturer.foodManufacturerName,
           });
 
         try {
-          const fmEmails = [
-            donation.foodManufacturer.secondaryContactEmail,
-          ].filter((e): e is string => e !== null);
-
-          if (fmEmails.length > 0) {
-            await this.emailsService.sendEmails(fmEmails, subject, bodyHTML);
-          }
+          await this.emailsService.sendEmails(
+            [donation.foodManufacturer.foodManufacturerRepresentative.email],
+            subject,
+            bodyHTML,
+          );
         } catch (e) {
           continue;
         }
@@ -237,21 +239,23 @@ export class DonationService {
 
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
-            const { subject: cs, bodyHTML: cb } =
+            const { subject, bodyHTML } =
               emailTemplates.fmRecurringDonationReminder({
                 fmName: donation.foodManufacturer.foodManufacturerName,
               });
 
+            // Successfully send an email first before decrementing the count
             try {
-              const fmEmails = [
-                donation.foodManufacturer.secondaryContactEmail,
-              ].filter((e): e is string => e !== null);
-
-              if (fmEmails.length > 0) {
-                await this.emailsService.sendEmails(fmEmails, cs, cb);
-              }
+              await this.emailsService.sendEmails(
+                [
+                  donation.foodManufacturer.foodManufacturerRepresentative
+                    .email,
+                ],
+                subject,
+                bodyHTML,
+              );
             } catch (e) {
-              break;
+              continue;
             }
 
             occurrences -= 1;

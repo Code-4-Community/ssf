@@ -6,7 +6,11 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -29,14 +33,20 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { DataSource } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
@@ -62,9 +72,7 @@ describe('OrdersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(Order),
@@ -109,6 +117,7 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -530,6 +539,64 @@ describe('OrdersService', () => {
       expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
       expect(updatedOrder.shippedAt).toBeDefined();
     });
+
+    it('sends trackingLinkAvailable email to pantry user when order is shipped', async () => {
+      const orderId = 4;
+      const order = await testDataSource.getRepository(Order).findOne({
+        where: { orderId },
+        relations: [
+          'request',
+          'request.pantry',
+          'request.pantry.pantryUser',
+          'foodManufacturer',
+          'assignee',
+        ],
+      });
+
+      if (!order) throw new Error('Missing order test object');
+
+      const dto: TrackingCostDto = {
+        trackingLink: 'testtracking.com',
+        shippingCost: 5.0,
+      };
+
+      await service.updateTrackingCostInfo(orderId, dto);
+
+      const { subject, bodyHTML } = emailTemplates.trackingLinkAvailable({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        trackingLink: 'https://testtracking.com/',
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [order.request.pantry.pantryUser.email],
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('still updates order to shipped if tracking link email fails to send', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(
+        service.updateTrackingCostInfo(4, {
+          trackingLink: 'testtracking.com',
+          shippingCost: 5.0,
+        }),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new tracking link available email to pantry',
+        ),
+      );
+
+      const order = await service.findOne(4);
+      expect(order.status).toBe(OrderStatus.SHIPPED);
+    });
   });
 
   describe('checkAndFulfillDonations', () => {
@@ -761,6 +828,61 @@ describe('OrdersService', () => {
       ).rejects.toThrow(
         new BadRequestException('Can only confirm delivery for shipped orders'),
       );
+    });
+
+    it('sends pantryConfirmsOrderDelivery email to volunteer when delivery is confirmed', async () => {
+      const orderId = 3;
+      const order = await testDataSource.getRepository(Order).findOne({
+        where: { orderId },
+        relations: [
+          'request',
+          'request.pantry',
+          'foodManufacturer',
+          'assignee',
+        ],
+      });
+
+      if (!order) throw new Error('Missing order test object');
+
+      await service.confirmDelivery(
+        orderId,
+        { dateReceived: new Date().toISOString(), feedback: 'Great!' },
+        [],
+      );
+
+      const { subject, bodyHTML } = emailTemplates.pantryConfirmsOrderDelivery({
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [order.assignee.email],
+        subject,
+        bodyHTML,
+      );
+    });
+
+    it('still updates order to delivered if delivery confirmation email fails to send', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(
+        service.confirmDelivery(
+          3,
+          { dateReceived: new Date().toISOString(), feedback: 'Great!' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send order delivery confirmation email to volunteer',
+        ),
+      );
+
+      const order = await service.findOne(3);
+      expect(order.status).toBe(OrderStatus.DELIVERED);
     });
   });
 

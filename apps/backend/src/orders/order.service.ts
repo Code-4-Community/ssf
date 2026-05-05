@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -419,7 +420,6 @@ export class OrdersService {
       .execute();
   }
 
-  // Updated confirmDelivery()
   async confirmDelivery(
     orderId: number,
     dto: ConfirmDeliveryDto,
@@ -462,11 +462,17 @@ export class OrdersService {
       fmName: order.foodManufacturer.foodManufacturerName,
     });
 
-    await this.emailsService.sendEmails(
-      [order.assignee.email],
-      subject,
-      bodyHTML,
-    );
+    try {
+      await this.emailsService.sendEmails(
+        [order.assignee.email],
+        subject,
+        bodyHTML,
+      );
+    } catch (e) {
+      throw new InternalServerErrorException(
+        'Failed to send order delivery confirmation email to volunteer',
+      );
+    }
 
     return updatedOrder;
   }
@@ -514,7 +520,13 @@ export class OrdersService {
 
     const order = await this.repo.findOne({
       where: { orderId },
-      relations: ['request', 'request.pantry', 'foodManufacturer', 'assignee'],
+      relations: [
+        'request',
+        'request.pantry',
+        'request.pantry.pantryUser',
+        'foodManufacturer',
+        'assignee',
+      ],
     });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -535,6 +547,26 @@ export class OrdersService {
     await this.repo.save(order);
 
     await this.checkAndFulfillDonations(orderId);
+
+    const { subject, bodyHTML } = emailTemplates.trackingLinkAvailable({
+      pantryName: order.request.pantry.pantryName,
+      fmName: order.foodManufacturer.foodManufacturerName,
+      trackingLink: dto.trackingLink,
+      volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+      volunteerEmail: order.assignee.email,
+    });
+
+    try {
+      await this.emailsService.sendEmails(
+        [order.request.pantry.pantryUser.email],
+        subject,
+        bodyHTML,
+      );
+    } catch (e) {
+      throw new InternalServerErrorException(
+        'Failed to send new tracking link available email to pantry',
+      );
+    }
   }
 
   async checkAndFulfillDonations(orderId: number): Promise<void> {

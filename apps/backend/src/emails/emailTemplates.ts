@@ -136,7 +136,7 @@ export const emailTemplates = {
         expected donation.
       </p>
       <p>
-        Tracking Link: <a href="${params.trackingLink}">${params.trackingLink}</a>
+        <strong>Tracking Link:</strong> <a href="${params.trackingLink}">${params.trackingLink}</a>
       </p>
       <p>
         You can use the tracking link above to monitor your shipment, or <a href="${EMAIL_REDIRECT_URL}/login">log into your portal</a> for full order details and updates.
