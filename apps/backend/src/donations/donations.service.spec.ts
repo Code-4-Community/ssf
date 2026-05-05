@@ -675,7 +675,7 @@ describe('DonationService', () => {
         );
       });
 
-      it('continues processing other donations when one donation email send fails', async () => {
+      it('processes all donations when one donation email send fails', async () => {
         const pastDate1 = daysAgo(5);
         const pastDate2 = daysAgo(3);
 
@@ -704,17 +704,9 @@ describe('DonationService', () => {
         const donation1 = await service.findOne(donationId1);
         const donation2 = await service.findOne(donationId2);
 
-        // Exactly one donation should have been updated (occurrences decremented to 2)
-        // In the case where an email send fails, we do not want to decrement anything
-        const updatedCount = [donation1, donation2].filter(
-          (d) => d.occurrencesRemaining === 2,
-        ).length;
-        const unchangedCount = [donation1, donation2].filter(
-          (d) => d.occurrencesRemaining === 3,
-        ).length;
-
-        expect(updatedCount).toBe(1);
-        expect(unchangedCount).toBe(1);
+        // Both donations should be decremented even when an email send fails
+        expect(donation1.occurrencesRemaining).toBe(2);
+        expect(donation2.occurrencesRemaining).toBe(2);
       });
     });
   });

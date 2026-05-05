@@ -209,7 +209,6 @@ export class DonationService {
           break;
         }
 
-        // Successfully send an email first before decrementing the count
         try {
           const message = emailTemplates.fmRecurringDonationReminder({
             fmName: donation.foodManufacturer.foodManufacturerName,
@@ -222,7 +221,7 @@ export class DonationService {
             message.bodyHTML,
           );
         } catch {
-          continue;
+          // email failed — still count as a recurrence and move on
         }
 
         dates.splice(i, 1);
@@ -239,7 +238,6 @@ export class DonationService {
 
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
-            // Successfully send an email first before decrementing the count
             try {
               const message = emailTemplates.fmRecurringDonationReminder({
                 fmName: donation.foodManufacturer.foodManufacturerName,
@@ -255,7 +253,7 @@ export class DonationService {
                 message.bodyHTML,
               );
             } catch {
-              continue;
+              // email failed — still count as a recurrence and move on
             }
 
             occurrences -= 1;
