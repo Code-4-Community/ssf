@@ -213,6 +213,7 @@ export class DonationService {
         const { subject, bodyHTML } =
           emailTemplates.fmRecurringDonationReminder({
             fmName: donation.foodManufacturer.foodManufacturerName,
+            resubmitDonationId: donation.donationId,
           });
 
         try {
@@ -242,6 +243,7 @@ export class DonationService {
             const { subject, bodyHTML } =
               emailTemplates.fmRecurringDonationReminder({
                 fmName: donation.foodManufacturer.foodManufacturerName,
+                resubmitDonationId: donation.donationId,
               });
 
             // Successfully send an email first before decrementing the count

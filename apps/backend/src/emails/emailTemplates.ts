@@ -99,7 +99,10 @@ export const emailTemplates = {
     `,
   }),
 
-  fmRecurringDonationReminder: (params: { fmName: string }): EmailTemplate => ({
+  fmRecurringDonationReminder: (params: {
+    fmName: string;
+    resubmitDonationId: number;
+  }): EmailTemplate => ({
     subject: 'Reminder: Submit Your Scheduled Recurring Donation with SSF',
     bodyHTML: `
       <p>Hi ${params.fmName},</p>
@@ -116,6 +119,9 @@ export const emailTemplates = {
         recurring donations make a meaningful and consistent impact for the communities we serve.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        You can use resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal.</a>
+      </p>
     `,
   }),
 

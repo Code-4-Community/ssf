@@ -12,12 +12,23 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { DonationDetails, DonationStatus } from '../types/types';
+import { DonationDetails, DonationItem, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resubmitDonationId = searchParams.get('resubmitDonationId');
+
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
+  const [prefillItems, setPrefillItems] = useState<DonationItem[] | undefined>(
+    undefined,
+  );
+  const [isResubmit, setIsResubmit] = useState(false);
+
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: DonationDetails[];
@@ -75,6 +86,22 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         [DonationStatus.MATCHED]: 1,
       };
       setCurrentPages(initialPages);
+
+      if (resubmitDonationId) {
+        const id = parseInt(resubmitDonationId, 10);
+        const allDonations: DonationDetails[] = Object.values(grouped).flat();
+        const matchingDetail = allDonations.find(
+          (d) => d.donation.donationId === id,
+        );
+        if (matchingDetail) {
+          const items = await ApiClient.getDonationItemsByDonationId(id);
+          setPrefillItems(items);
+          setIsResubmit(true);
+          setIsLogDonationOpen(true);
+        } else {
+          navigate(ROUTES.FM_DONATION_MANAGEMENT);
+        }
+      }
     } catch (error) {
       alert('Error fetching donations: ' + error);
     }
@@ -83,6 +110,15 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   useEffect(() => {
     fetchDonations();
   }, []);
+
+  const handleModalClose = () => {
+    setIsLogDonationOpen(false);
+    setPrefillItems(undefined);
+    setIsResubmit(false);
+    if (resubmitDonationId) {
+      navigate(ROUTES.FM_DONATION_MANAGEMENT);
+    }
+  };
 
   const handlePageChange = (status: DonationStatus, page: number) => {
     setCurrentPages((prev) => ({
@@ -118,7 +154,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <NewDonationFormModal
           onDonationSuccess={fetchDonations}
           isOpen={isLogDonationOpen}
-          onClose={() => setIsLogDonationOpen(false)}
+          onClose={handleModalClose}
+          prefillItems={prefillItems}
+          hideRecurring={isResubmit}
         />
       )}
 

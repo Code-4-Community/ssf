@@ -643,7 +643,7 @@ describe('DonationService', () => {
 
       it('sends fmRecurringDonationReminder email with correct parameters when expired date is processed', async () => {
         const pastDate = daysAgo(5);
-        await insertDonation({
+        const donationId = await insertDonation({
           recurrence: RecurrenceEnum.WEEKLY,
           recurrenceFreq: 1,
           nextDonationDates: [pastDate],
@@ -665,6 +665,7 @@ describe('DonationService', () => {
         const { subject, bodyHTML } =
           emailTemplates.fmRecurringDonationReminder({
             fmName: manufacturer.foodManufacturerName,
+            resubmitDonationId: donationId,
           });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
