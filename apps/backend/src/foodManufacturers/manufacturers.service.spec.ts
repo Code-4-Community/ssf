@@ -189,7 +189,7 @@ describe('FoodManufacturersService', () => {
       const pending = await service.getPendingManufacturers();
       const manufacturer = pending[0];
       const id = manufacturer.foodManufacturerId;
-      const { subject, bodyHTML } = emailTemplates.pantryFmApplicationApproved({
+      const message = emailTemplates.pantryFmApplicationApproved({
         name: manufacturer.foodManufacturerRepresentative.firstName,
       });
 
@@ -198,8 +198,8 @@ describe('FoodManufacturersService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [manufacturer.foodManufacturerRepresentative.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 

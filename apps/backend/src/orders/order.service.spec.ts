@@ -562,7 +562,7 @@ describe('OrdersService', () => {
 
       await service.updateTrackingCostInfo(orderId, dto);
 
-      const { subject, bodyHTML } = emailTemplates.trackingLinkAvailable({
+      const message = emailTemplates.trackingLinkAvailable({
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
         trackingLink: 'https://testtracking.com/',
@@ -573,8 +573,8 @@ describe('OrdersService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [order.request.pantry.pantryUser.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 
@@ -850,7 +850,7 @@ describe('OrdersService', () => {
         [],
       );
 
-      const { subject, bodyHTML } = emailTemplates.pantryConfirmsOrderDelivery({
+      const message = emailTemplates.pantryConfirmsOrderDelivery({
         volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
@@ -859,8 +859,8 @@ describe('OrdersService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [order.assignee.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 

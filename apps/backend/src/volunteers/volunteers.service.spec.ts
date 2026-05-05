@@ -1,4 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -22,6 +25,10 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
+
+const mockEmailsService = mock<EmailsService>();
 
 jest.setTimeout(60000);
 
@@ -29,6 +36,8 @@ describe('VolunteersService', () => {
   let service: VolunteersService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -58,9 +67,7 @@ describe('VolunteersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(User),
@@ -101,6 +108,7 @@ describe('VolunteersService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -263,6 +271,44 @@ describe('VolunteersService', () => {
       expect(result.pantries).toHaveLength(2);
       const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
+    });
+
+    it('sends volunteerPantryAssignmentChanged email to volunteer when pantries are assigned', async () => {
+      const volunteerId = 7;
+      const volunteer = await testDataSource
+        .getRepository(User)
+        .findOne({ where: { id: volunteerId } });
+
+      if (!volunteer) throw new Error('Missing volunteer test object');
+
+      await service.assignPantriesToVolunteer(volunteerId, [1]);
+
+      const message = emailTemplates.volunteerPantryAssignmentChanged({
+        volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [volunteer.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    });
+
+    it('still assigns pantries if email fails to send', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(service.assignPantriesToVolunteer(6, [2])).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send new food request notification email to volunteers',
+        ),
+      );
+
+      const pantries = await service.getVolunteerPantries(6);
+      const pantryIds = pantries.map((p) => p.pantryId);
+      expect(pantryIds).toContain(2);
     });
   });
 

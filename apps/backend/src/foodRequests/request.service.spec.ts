@@ -250,7 +250,7 @@ describe('RequestsService', () => {
       ]);
 
       if (!pantry) throw new Error('Missing pantry test object');
-      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+      const message = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry.pantryName,
       });
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
@@ -258,8 +258,8 @@ describe('RequestsService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         volunteerEmails,
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 
@@ -277,7 +277,7 @@ describe('RequestsService', () => {
       ]);
 
       if (!pantry) throw new Error('Missing pantry test object');
-      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+      const message = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry.pantryName,
       });
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
@@ -286,8 +286,8 @@ describe('RequestsService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         volunteerEmails,
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 

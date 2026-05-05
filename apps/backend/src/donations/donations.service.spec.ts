@@ -662,17 +662,16 @@ describe('DonationService', () => {
 
         await service.handleRecurringDonations();
 
-        const { subject, bodyHTML } =
-          emailTemplates.fmRecurringDonationReminder({
-            fmName: manufacturer.foodManufacturerName,
-            resubmitDonationId: donationId,
-          });
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
           [manufacturer.foodManufacturerRepresentative.email],
-          subject,
-          bodyHTML,
+          message.subject,
+          message.bodyHTML,
         );
       });
 

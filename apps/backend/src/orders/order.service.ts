@@ -456,17 +456,17 @@ export class OrdersService {
 
     await this.requestsService.updateRequestStatus(order.requestId);
 
-    const { subject, bodyHTML } = emailTemplates.pantryConfirmsOrderDelivery({
-      volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-      pantryName: order.request.pantry.pantryName,
-      fmName: order.foodManufacturer.foodManufacturerName,
-    });
-
     try {
+      const message = emailTemplates.pantryConfirmsOrderDelivery({
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+      });
+
       await this.emailsService.sendEmails(
         [order.assignee.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     } catch (e) {
       throw new InternalServerErrorException(
@@ -548,19 +548,19 @@ export class OrdersService {
 
     await this.checkAndFulfillDonations(orderId);
 
-    const { subject, bodyHTML } = emailTemplates.trackingLinkAvailable({
-      pantryName: order.request.pantry.pantryName,
-      fmName: order.foodManufacturer.foodManufacturerName,
-      trackingLink: dto.trackingLink,
-      volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-      volunteerEmail: order.assignee.email,
-    });
-
     try {
+      const message = emailTemplates.trackingLinkAvailable({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        trackingLink: dto.trackingLink,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
       await this.emailsService.sendEmails(
         [order.request.pantry.pantryUser.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     } catch (e) {
       throw new InternalServerErrorException(

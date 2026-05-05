@@ -204,7 +204,7 @@ describe('PantriesService', () => {
 
     it('sends approval email to pantry user', async () => {
       const pantry = await service.findOne(5);
-      const { subject, bodyHTML } = emailTemplates.pantryFmApplicationApproved({
+      const message = emailTemplates.pantryFmApplicationApproved({
         name: pantry.pantryUser.firstName,
       });
 
@@ -213,8 +213,8 @@ describe('PantriesService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
         [pantry.pantryUser.email],
-        subject,
-        bodyHTML,
+        message.subject,
+        message.bodyHTML,
       );
     });
 

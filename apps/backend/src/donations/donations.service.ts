@@ -210,19 +210,18 @@ export class DonationService {
         }
 
         // Successfully send an email first before decrementing the count
-        const { subject, bodyHTML } =
-          emailTemplates.fmRecurringDonationReminder({
+        try {
+          const message = emailTemplates.fmRecurringDonationReminder({
             fmName: donation.foodManufacturer.foodManufacturerName,
             resubmitDonationId: donation.donationId,
           });
 
-        try {
           await this.emailsService.sendEmails(
             [donation.foodManufacturer.foodManufacturerRepresentative.email],
-            subject,
-            bodyHTML,
+            message.subject,
+            message.bodyHTML,
           );
-        } catch (e) {
+        } catch {
           continue;
         }
 
@@ -240,23 +239,22 @@ export class DonationService {
 
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
-            const { subject, bodyHTML } =
-              emailTemplates.fmRecurringDonationReminder({
+            // Successfully send an email first before decrementing the count
+            try {
+              const message = emailTemplates.fmRecurringDonationReminder({
                 fmName: donation.foodManufacturer.foodManufacturerName,
                 resubmitDonationId: donation.donationId,
               });
 
-            // Successfully send an email first before decrementing the count
-            try {
               await this.emailsService.sendEmails(
                 [
                   donation.foodManufacturer.foodManufacturerRepresentative
                     .email,
                 ],
-                subject,
-                bodyHTML,
+                message.subject,
+                message.bodyHTML,
               );
-            } catch (e) {
+            } catch {
               continue;
             }
 
