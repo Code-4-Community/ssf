@@ -112,14 +112,12 @@ export const emailTemplates = {
       <p>
         Good news! Your recent food request through Securing Safe Food has been successfully matched to an order and is now moving forward toward delivery. 
       </p>
-      <p>
-      <strong>Items you will receive from ${params.brand}:</strong>
+      <p><strong>Items you will receive from ${params.brand}:</strong></p>
       <ul>
         ${params.items
           .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
           .join('')}
       </ul>
-    </p>
       <p>
         To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>. 
       </p>
@@ -152,13 +150,13 @@ export const emailTemplates = {
     <p>
       Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
     </p>
-    <p>
-      <strong>Matched Items:</strong><br />
+    <p><strong>Matched Items:</strong><br />    </p>
       <ul>
         ${params.items
           .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
           .join('')}
       </ul>
+    <p>
       <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
       <strong>Address:</strong><br />
       ${params.pantryAddress}

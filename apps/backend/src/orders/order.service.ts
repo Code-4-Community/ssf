@@ -292,13 +292,8 @@ export class OrdersService {
           transactionManager,
         );
 
-        const associatedDonationIdsSet =
-          await this.donationItemsService.getAssociatedDonationIds(
-            donationItemIds,
-          );
-
         await this.donationService.matchAll(
-          Array.from(associatedDonationIdsSet),
+          [...new Set(donationItems.map((item) => item.donationId))],
           transactionManager,
         );
 
