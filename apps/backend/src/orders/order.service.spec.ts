@@ -903,13 +903,11 @@ describe('OrdersService', () => {
       const pantry = request!.pantry;
       const pantryAddress = [
         pantry.mailingAddressLine1,
-        pantry.mailingAddressCity,
-        pantry.mailingAddressState,
-        pantry.mailingAddressZip,
-        pantry.mailingAddressCountry,
+        `${pantry.mailingAddressCity}, ${pantry.mailingAddressState} ${pantry.mailingAddressZip}`,
+        `[${pantry.mailingAddressCountry}]`,
       ]
-        .join(' ')
-        .replace(/, ,/g, ', ');
+        .filter(Boolean)
+        .join('<br />');
 
       const itemDetails = [
         { quantity: '10', product: updatedDonationItem1!.itemName },
