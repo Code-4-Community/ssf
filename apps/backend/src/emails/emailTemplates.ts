@@ -115,13 +115,13 @@ export const emailTemplates = {
         donation availability so we can continue matching your contributions with pantry requests.
       </p>
       <p>
+        You can use resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal.</a>
+      </p>
+      <p>
         We greatly appreciate your continued generosity and support of our mission. Your
         recurring donations make a meaningful and consistent impact for the communities we serve.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        You can use resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal.</a>
-      </p>
     `,
   }),
 
