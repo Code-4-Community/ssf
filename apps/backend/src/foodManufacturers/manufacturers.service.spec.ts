@@ -549,13 +549,19 @@ describe('FoodManufacturersService', () => {
         new NotFoundException('Food Manufacturer for User 9999 not found'),
       );
     });
+
+    it('findByUserId with existing non-manufacturer user throws NotFoundException', async () => {
+      await expect(service.findByUserId(1)).rejects.toThrow(
+        new NotFoundException('Food Manufacturer for User 1 not found'),
+      );
+    });
   });
 
-  describe('getStats', () => {
+  describe('getDashboardStats', () => {
     it('returns proper stats for manufacturer', async () => {
       const manufacturerId = 1;
 
-      const result = await service.getStats(manufacturerId);
+      const result = await service.getDashboardStats(manufacturerId);
 
       const expectedKeys = [
         'Donations',
@@ -576,7 +582,7 @@ describe('FoodManufacturersService', () => {
     });
 
     it('throws NotFoundException for non-existent manufacturer', async () => {
-      await expect(service.getStats(9999)).rejects.toThrow(
+      await expect(service.getDashboardStats(9999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 9999 not found'),
       );
     });

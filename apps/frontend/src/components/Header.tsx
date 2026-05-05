@@ -1,4 +1,3 @@
-import React from 'react';
 import SignOutButton from './signOutButton';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { Link as RouterLink } from 'react-router-dom';

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -30,6 +31,7 @@ import { DataSource } from 'typeorm';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { PantriesService } from '../pantries/pantries.service';
 
 jest.setTimeout(60000);
 
@@ -42,6 +44,8 @@ describe('UsersService', () => {
   let service: UsersService;
   let foodRequestService: RequestsService;
   let donationService: DonationService;
+  let pantriesService: PantriesService;
+  let foodManufacturersService: FoodManufacturersService;
 
   beforeAll(async () => {
     process.env.SEND_AUTOMATED_EMAILS = 'true';
@@ -62,6 +66,7 @@ describe('UsersService', () => {
         FoodManufacturersService,
         DonationItemsService,
         AllocationsService,
+        PantriesService,
         {
           provide: AuthService,
           useValue: mockAuthService,
@@ -112,6 +117,10 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
     foodRequestService = module.get<RequestsService>(RequestsService);
     donationService = module.get<DonationService>(DonationService);
+    pantriesService = module.get<PantriesService>(PantriesService);
+    foodManufacturersService = module.get<FoodManufacturersService>(
+      FoodManufacturersService,
+    );
   });
 
   beforeEach(async () => {
@@ -338,7 +347,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('getMonthlyAggregatedStats', () => {
+  describe('getAdminVolunteerMonthlyAggregatedStats', () => {
     it('should return correct aggregated counts for the current month', async () => {
       const foodRequestRepo = testDataSource.getRepository(FoodRequest);
 
@@ -370,7 +379,7 @@ describe('UsersService', () => {
       );
       await foodRequestRepo.save(existingRequest);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -413,7 +422,7 @@ describe('UsersService', () => {
       existingRequest2.requestedAt = startOfMonth;
       await foodRequestRepo.save(existingRequest2);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -437,7 +446,7 @@ describe('UsersService', () => {
     });
 
     it('should return just volunteer count if no other fields are relative to current month', async () => {
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -480,7 +489,7 @@ describe('UsersService', () => {
       existingRequest2.requestedAt = startOfCurrentMonth;
       await foodRequestRepo.save(existingRequest2);
 
-      const stats = await service.getMonthlyAggregatedStats();
+      const stats = await service.getAdminVolunteerMonthlyAggregatedStats();
 
       const expectedKeys = [
         'Food Requests',
@@ -513,6 +522,120 @@ describe('UsersService', () => {
     it('findByIds with some non-existent IDs throws NotFoundException', async () => {
       await expect(service.findByIds([1, 9999])).rejects.toThrow(
         new NotFoundException('Users not found: 9999'),
+      );
+    });
+  });
+
+  describe('getUserDashboardStats', () => {
+    it('should call getAdminVolunteerMonthlyAggregatedStats for admin user', async () => {
+      const spy = jest.spyOn(
+        service,
+        'getAdminVolunteerMonthlyAggregatedStats',
+      );
+
+      const result = await service.getUserDashboardStats(1);
+
+      expect(spy).toHaveBeenCalled();
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ]);
+    });
+
+    it('should call getAdminVolunteerMonthlyAggregatedStats for volunteer user', async () => {
+      // Maria Garcia (id=7) is a volunteer
+      const spy = jest.spyOn(
+        service,
+        'getAdminVolunteerMonthlyAggregatedStats',
+      );
+
+      const result = await service.getUserDashboardStats(7);
+
+      expect(spy).toHaveBeenCalled();
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Donations',
+        'Volunteers',
+      ]);
+    });
+
+    it('should call pantriesService.findByUserId and getDashboardStats for pantry user', async () => {
+      const findByUserIdSpy = jest.spyOn(pantriesService, 'findByUserId');
+      const getDashboardStatsSpy = jest.spyOn(
+        pantriesService,
+        'getDashboardStats',
+      );
+
+      const result = await service.getUserDashboardStats(10);
+
+      expect(findByUserIdSpy).toHaveBeenCalledWith(10);
+      expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
+      expect(Object.keys(result)).toEqual([
+        'Food Requests',
+        'Orders',
+        'Items Received',
+        'Value Received',
+      ]);
+    });
+
+    it('should call foodManufacturersService.findByUserId and getDashboardStats for food manufacturer user', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'approved' WHERE food_manufacturer_name = 'FoodCorp Industries'`,
+      );
+
+      const findByUserIdSpy = jest.spyOn(
+        foodManufacturersService,
+        'findByUserId',
+      );
+      const getDashboardStatsSpy = jest.spyOn(
+        foodManufacturersService,
+        'getDashboardStats',
+      );
+
+      const result = await service.getUserDashboardStats(3);
+
+      expect(findByUserIdSpy).toHaveBeenCalledWith(3);
+      expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
+      expect(Object.keys(result)).toEqual([
+        'Donations',
+        'Value Donated',
+        'Items Donated',
+        'lbs Donated',
+      ]);
+    });
+
+    it('should throw NotFoundException for non-existent user', async () => {
+      await expect(service.getUserDashboardStats(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
+      );
+    });
+
+    it('should throw BadRequestException for unsupported role', async () => {
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValueOnce({ role: 'unknown' } as unknown as User);
+
+      await expect(service.getUserDashboardStats(1)).rejects.toThrow(
+        new BadRequestException('Unsupported role: unknown'),
+      );
+    });
+
+    it('should throw ForbiddenException for pantry user with non-approved pantry', async () => {
+      // user 14 = pantry5@ssf.org, Harbor Community Center, status='pending'
+      await expect(service.getUserDashboardStats(14)).rejects.toThrow(
+        new ForbiddenException('Pantry with User id 14 must be approved'),
+      );
+    });
+
+    it('should throw ForbiddenException for food manufacturer user with non-approved food manufacturer', async () => {
+      // user 5 = jennifer.t@organic.com, Organic Suppliers LLC, status='pending'
+      await expect(service.getUserDashboardStats(5)).rejects.toThrow(
+        new ForbiddenException(
+          'Food Manufacturer with User id 5 must be approved',
+        ),
       );
     });
   });

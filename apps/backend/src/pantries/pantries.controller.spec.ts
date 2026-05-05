@@ -5,7 +5,6 @@ import { Pantry } from './pantries.entity';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
-import { Order } from '../orders/order.entity';
 import {
   Activity,
   AllergensConfidence,
