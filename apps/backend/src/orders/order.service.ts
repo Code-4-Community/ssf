@@ -516,10 +516,11 @@ export class OrdersService {
       }
 
       await orderTransactionRepo.save(ordersToUpdate);
+      await this.donationService.checkAndFulfillDonation(
+        donation,
+        transactionManager,
+      );
     });
-
-    // Cast here since we know if we make it out of the transaction that the donation exists
-    await this.donationService.checkAndFulfillDonation(donation!);
   }
 
   async completeVolunteerAction(
