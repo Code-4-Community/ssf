@@ -330,13 +330,14 @@ export class OrdersService {
     }
 
     try {
-      const pantryAddress = [
-        request.pantry.mailingAddressLine1,
-        `${request.pantry.mailingAddressCity}, ${request.pantry.mailingAddressState} ${request.pantry.mailingAddressZip}`,
-        `[${request.pantry.mailingAddressCountry}]`,
-      ]
-        .filter(Boolean)
-        .join('<br />');
+      const pantryAddress = `${request.pantry.shipmentAddressLine1}<br />
+${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
+        request.pantry.shipmentAddressZip
+      }${
+        request.pantry.shipmentAddressCountry
+          ? `<br />[${request.pantry.shipmentAddressCountry}]`
+          : ''
+      }`;
 
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,

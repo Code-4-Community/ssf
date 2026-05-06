@@ -907,13 +907,14 @@ describe('OrdersService', () => {
       })) as FoodManufacturer;
 
       const pantry = request.pantry;
-      const pantryAddress = [
-        pantry.mailingAddressLine1,
-        `${pantry.mailingAddressCity}, ${pantry.mailingAddressState} ${pantry.mailingAddressZip}`,
-        `[${pantry.mailingAddressCountry}]`,
-      ]
-        .filter(Boolean)
-        .join('<br />');
+      const pantryAddress = `${pantry.shipmentAddressLine1}<br />
+${pantry.shipmentAddressCity}, ${pantry.shipmentAddressState} ${
+        pantry.shipmentAddressZip
+      }${
+        pantry.shipmentAddressCountry
+          ? `<br />[${pantry.shipmentAddressCountry}]`
+          : ''
+      }`;
 
       const itemDetails = [
         { quantity: '10', product: updatedDonationItem1.itemName },
