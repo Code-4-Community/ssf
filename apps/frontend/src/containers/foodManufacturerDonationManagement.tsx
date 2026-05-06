@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
+  Flex,
   Table,
   Heading,
   Pagination,
@@ -12,9 +13,10 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { DonationDetails, DonationItem, DonationStatus } from '../types/types';
+import { DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
@@ -24,10 +26,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const resubmitDonationId = searchParams.get('resubmitDonationId');
 
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
-  const [prefillItems, setPrefillItems] = useState<DonationItem[] | undefined>(
-    undefined,
-  );
-  const [isResubmit, setIsResubmit] = useState(false);
+  const [isResubmitOpen, setIsResubmitOpen] = useState(false);
 
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
@@ -55,7 +54,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const MAX_PER_STATUS = 5;
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async () => {
+  const fetchDonations = async (checkResubmit = false) => {
     try {
       const data = await ApiClient.getAllDonationsByFoodManufacturer(1); // Replace with actual food manufacturer ID
 
@@ -87,17 +86,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
 
-      if (resubmitDonationId) {
+      // Only run this on mount, not every single time
+      if (checkResubmit && resubmitDonationId) {
         const id = parseInt(resubmitDonationId, 10);
         const allDonations: DonationDetails[] = Object.values(grouped).flat();
-        const matchingDetail = allDonations.find(
-          (d) => d.donation.donationId === id,
-        );
-        if (matchingDetail) {
-          const items = await ApiClient.getDonationItemsByDonationId(id);
-          setPrefillItems(items);
-          setIsResubmit(true);
-          setIsLogDonationOpen(true);
+        const exists = allDonations.some((d) => d.donation.donationId === id);
+        if (exists) {
+          setIsResubmitOpen(true);
         } else {
           navigate(ROUTES.FM_DONATION_MANAGEMENT);
         }
@@ -108,13 +103,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchDonations();
+    fetchDonations(true);
   }, []);
 
-  const handleModalClose = () => {
-    setIsLogDonationOpen(false);
-    setPrefillItems(undefined);
-    setIsResubmit(false);
+  const handleResubmitClose = () => {
+    setIsResubmitOpen(false);
     if (resubmitDonationId) {
       navigate(ROUTES.FM_DONATION_MANAGEMENT);
     }
@@ -133,30 +126,56 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         Donation Management
       </Heading>
 
-      <Button
-        display="inline-flex"
-        alignItems="center"
-        justifyContent="space-between"
-        backgroundColor="blue.ssf"
-        fontFamily="ibm"
-        fontWeight="semibold"
-        p={3}
-        mb={16}
-        borderRadius="md"
-        minW="fit-content"
-        color="neutral.50"
-        onClick={() => setIsLogDonationOpen(true)}
-      >
-        Log New Donation
-      </Button>
+      <Flex gap={3} mb={16}>
+        <Button
+          display="inline-flex"
+          alignItems="center"
+          justifyContent="space-between"
+          backgroundColor="blue.ssf"
+          fontFamily="ibm"
+          fontWeight="semibold"
+          p={3}
+          borderRadius="md"
+          minW="fit-content"
+          color="neutral.50"
+          onClick={() => setIsLogDonationOpen(true)}
+        >
+          Log New Donation
+        </Button>
+        <Button
+          display="inline-flex"
+          alignItems="center"
+          variant="outline"
+          borderColor="neutral.300"
+          fontFamily="ibm"
+          fontWeight="semibold"
+          p={3}
+          borderRadius="md"
+          minW="fit-content"
+          color="neutral.600"
+          onClick={() => setIsResubmitOpen(true)}
+        >
+          Resubmit Previous
+        </Button>
+      </Flex>
 
       {isLogDonationOpen && (
         <NewDonationFormModal
           onDonationSuccess={fetchDonations}
           isOpen={isLogDonationOpen}
-          onClose={handleModalClose}
-          prefillItems={prefillItems}
-          hideRecurring={isResubmit}
+          onClose={() => setIsLogDonationOpen(false)}
+        />
+      )}
+
+      {isResubmitOpen && (
+        <ResubmitDonationModal
+          isOpen={isResubmitOpen}
+          onClose={handleResubmitClose}
+          onSuccess={fetchDonations}
+          donations={Object.values(statusDonations).flat()}
+          initialDonationId={
+            resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
+          }
         />
       )}
 

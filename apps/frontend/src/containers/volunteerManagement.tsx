@@ -30,7 +30,7 @@ const VolunteerManagement: React.FC = () => {
 
   const pageSize = 8;
 
-  const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
+  const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -67,7 +67,7 @@ const VolunteerManagement: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">
+      <Text textStyle="h1" color="gray.light">
         Volunteer Management
       </Text>
       {alertState && (
@@ -90,7 +90,12 @@ const VolunteerManagement: React.FC = () => {
         <VStack mt={2} mb={7} align="start">
           <Flex justify="space-between" align="center" w="100%">
             <InputGroup
-              startElement={<SearchIcon color="#707070" size={13}></SearchIcon>}
+              startElement={
+                <SearchIcon
+                  color="var(--chakra-colors-neutral-600)"
+                  size={13}
+                ></SearchIcon>
+              }
               maxW={200}
             >
               <Input

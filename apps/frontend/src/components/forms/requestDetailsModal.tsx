@@ -105,7 +105,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text textStyle="p2" color="#111111">
+            <Text textStyle="p2" color="gray.dark">
               {pantryName}
             </Text>
 
@@ -196,16 +196,16 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       {currentOrder.status === OrderStatus.DELIVERED ? (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#EAEDEF"
-                          color="#2B4E60"
+                          bgColor="blue.100"
+                          color="blue.core"
                         >
                           Received
                         </Badge>
                       ) : (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#FEECD1"
-                          color="#9C5D00"
+                          bgColor="yellow.200"
+                          color="yellow.hover"
                         >
                           In Progress
                         </Badge>
