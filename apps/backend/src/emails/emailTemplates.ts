@@ -135,6 +135,33 @@ export const emailTemplates = {
     `,
   }),
 
+  pantryRequestClosed: (params: {
+    pantryName: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: 'Your Securing Safe Food Request Has Been Completed',
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Your recent food request through Securing Safe Food has been marked as complete.
+        We are glad to fulfill your pantry's requests! If you would like to continue receiving
+        donations, please submit a new food request at any time to ensure there is no interruption
+        in future deliveries.
+      </p>
+      <p>
+        To submit a new request or view past orders, please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform here:
+        <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+      <p>
+        If you have any questions or feedback about this order, please do not hesitate to reach out.
+        You can contact your pantry coordinator, ${params.volunteerName}, at
+        <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
   fmDonationMatchedOrder: (params: {
     manufacturerName: string;
     items: { quantity: string; product: string }[];

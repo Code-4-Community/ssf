@@ -16,6 +16,7 @@ import {
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -309,10 +310,18 @@ describe('RequestsController', () => {
         closedRequest as FoodRequest,
       );
 
-      const result = await controller.closeRequest(requestId);
+      const req = { user: { id: 1 } };
+
+      const result = await controller.closeRequest(
+        requestId,
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(closedRequest);
-      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
+      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(
+        requestId,
+        1,
+      );
     });
   });
 });

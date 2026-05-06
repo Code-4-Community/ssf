@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,9 +25,12 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 import { UpdateRequestDto } from './dtos/update-request.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RequestsService {
+  private readonly logger = new Logger(RequestsService.name);
+
   constructor(
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
@@ -36,6 +40,7 @@ export class RequestsService {
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
     private emailsService: EmailsService,
+    private usersService: UsersService,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -279,7 +284,7 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['orders'],
+      relations: ['orders', 'pantry', 'pantry.pantryUser'],
     });
 
     if (!request) {
@@ -298,13 +303,43 @@ export class RequestsService {
       (order) => order.status === OrderStatus.DELIVERED,
     );
 
-    if (request.status !== FoodRequestStatus.CLOSED) {
+    const wasAlreadyClosed = request.status === FoodRequestStatus.CLOSED;
+
+    if (!wasAlreadyClosed) {
       request.status = allDelivered
         ? FoodRequestStatus.CLOSED
         : FoodRequestStatus.ACTIVE;
     }
 
     await this.repo.save(request);
+
+    if (allDelivered && !wasAlreadyClosed) {
+      try {
+        const lastDeliveredOrder = await this.orderRepo.findOne({
+          where: { requestId, status: OrderStatus.DELIVERED },
+          order: { deliveredAt: 'DESC' },
+          relations: ['assignee'],
+        });
+
+        if (lastDeliveredOrder?.assignee) {
+          const { assignee } = lastDeliveredOrder;
+          const message = emailTemplates.pantryRequestClosed({
+            pantryName: request.pantry.pantryName,
+            volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+            volunteerEmail: assignee.email,
+          });
+          await this.emailsService.sendEmails(
+            [request.pantry.pantryUser.email],
+            message.subject,
+            message.bodyHTML,
+          );
+        }
+      } catch {
+        this.logger.warn(
+          `Request ${requestId} auto-closed, but failed to send pantry notification email`,
+        );
+      }
+    }
   }
 
   async update(requestId: number, dto: UpdateRequestDto): Promise<FoodRequest> {
@@ -373,11 +408,15 @@ export class RequestsService {
     await this.repo.remove(request);
   }
 
-  async closeRequest(requestId: number): Promise<FoodRequest> {
+  async closeRequest(
+    requestId: number,
+    actingUserId: number,
+  ): Promise<FoodRequest> {
     validateId(requestId, 'Request');
 
     const request = await this.repo.findOne({
       where: { requestId },
+      relations: ['pantry', 'pantry.pantryUser'],
     });
 
     if (!request) {
@@ -390,7 +429,27 @@ export class RequestsService {
       );
     }
 
+    const assignee = await this.usersService.findOne(actingUserId);
+
     request.status = FoodRequestStatus.CLOSED;
-    return this.repo.save(request);
+    const saved = await this.repo.save(request);
+    try {
+      const message = emailTemplates.pantryRequestClosed({
+        pantryName: request.pantry.pantryName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails(
+        [request.pantry.pantryUser.email],
+        message.subject,
+        message.bodyHTML,
+      );
+    } catch {
+      this.logger.warn(
+        `Request ${requestId} closed, but failed to send pantry notification email`,
+      );
+    }
+
+    return saved;
   }
 }

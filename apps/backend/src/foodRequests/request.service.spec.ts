@@ -20,6 +20,12 @@ import { mock } from 'jest-mock-extended';
 import { emailTemplates } from '../emails/emailTemplates';
 import { Allocation } from '../allocations/allocations.entity';
 import { ApplicationStatus } from '../shared/types';
+import { User } from '../users/users.entity';
+import { UsersService } from '../users/users.service';
+import { Donation } from '../donations/donations.entity';
+import { AuthService } from '../auth/auth.service';
+import { PantriesService } from '../pantries/pantries.service';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
 jest.setTimeout(60000);
 
@@ -38,6 +44,9 @@ describe('RequestsService', () => {
     const module = await Test.createTestingModule({
       providers: [
         RequestsService,
+        UsersService,
+        PantriesService,
+        FoodManufacturersService,
         {
           provide: getRepositoryToken(FoodRequest),
           useValue: testDataSource.getRepository(FoodRequest),
@@ -61,6 +70,20 @@ describe('RequestsService', () => {
         {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: testDataSource.getRepository(User),
+        },
+        {
+          provide: getRepositoryToken(Donation),
+          useValue: testDataSource.getRepository(Donation),
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            adminCreateUser: jest.fn().mockResolvedValue('test-sub'),
+          },
         },
         {
           provide: EmailsService,
@@ -380,6 +403,64 @@ describe('RequestsService', () => {
       await expect(service.updateRequestStatus(requestId)).rejects.toThrow(
         new NotFoundException('Request 999 not found'),
       );
+    });
+
+    it('sends pantry closed email with last delivered order assignee on auto-close', async () => {
+      const requestId = 1;
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId: 1 },
+        relations: ['pantryUser'],
+      });
+      const lastDeliveredOrder = await testDataSource
+        .getRepository(Order)
+        .findOne({
+          where: { requestId, status: OrderStatus.DELIVERED },
+          order: { deliveredAt: 'DESC' },
+          relations: ['assignee'],
+        });
+
+      await service.updateRequestStatus(requestId);
+
+      const assignee = lastDeliveredOrder!.assignee;
+      const expectedMessage = emailTemplates.pantryRequestClosed({
+        pantryName: pantry!.pantryName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+        volunteerEmail: assignee.email,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [pantry!.pantryUser.email],
+        expectedMessage.subject,
+        expectedMessage.bodyHTML,
+      );
+    });
+
+    it('does not send email when not all orders are delivered (request stays active)', async () => {
+      await service.updateRequestStatus(3);
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('does not send email when request was already closed before updateRequestStatus', async () => {
+      await testDataSource.query(
+        `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
+      );
+
+      await service.updateRequestStatus(1);
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('still auto-closes request when email fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SMTP error'),
+      );
+
+      await service.updateRequestStatus(1);
+
+      const request = await service.findOne(1);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
     });
   });
 
@@ -746,8 +827,14 @@ describe('RequestsService', () => {
   });
 
   describe('closeRequest', () => {
+    let volunteerId: number;
+
+    beforeEach(() => {
+      volunteerId = 6;
+    });
+
     it('should close an active request', async () => {
-      const result = await service.closeRequest(3);
+      const result = await service.closeRequest(3, volunteerId);
 
       expect(result.status).toBe(FoodRequestStatus.CLOSED);
 
@@ -756,15 +843,15 @@ describe('RequestsService', () => {
     });
 
     it('should throw BadRequestException when request is already closed', async () => {
-      await service.closeRequest(3);
+      await service.closeRequest(3, volunteerId);
 
-      await expect(service.closeRequest(3)).rejects.toThrow(
+      await expect(service.closeRequest(3, volunteerId)).rejects.toThrow(
         new BadRequestException('Cannot close a request with status: closed'),
       );
     });
 
     it('should throw NotFoundException for non-existent request', async () => {
-      await expect(service.closeRequest(999)).rejects.toThrow(
+      await expect(service.closeRequest(999, volunteerId)).rejects.toThrow(
         new NotFoundException('Request 999 not found'),
       );
     });
@@ -774,7 +861,7 @@ describe('RequestsService', () => {
         .getRepository(Order)
         .find({ where: { requestId: 3 } });
 
-      await service.closeRequest(3);
+      await service.closeRequest(3, volunteerId);
 
       const ordersAfter = await testDataSource
         .getRepository(Order)
@@ -786,11 +873,44 @@ describe('RequestsService', () => {
     });
 
     it('should not reopen a closed request when updateRequestStatus is called', async () => {
-      await service.closeRequest(1);
+      await service.closeRequest(1, volunteerId);
       await service.updateRequestStatus(1);
 
       const fromDb = await service.findOne(1);
       expect(fromDb.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
+    it('sends pantry closed email with acting volunteer info on successful close', async () => {
+      const pantry = await testDataSource.getRepository(Pantry).findOne({
+        where: { pantryId: 3 },
+        relations: ['pantryUser'],
+      });
+
+      await service.closeRequest(3, volunteerId);
+
+      const expectedMessage = emailTemplates.pantryRequestClosed({
+        pantryName: pantry!.pantryName,
+        volunteerName: `James Thomas`,
+        volunteerEmail: `james.t@volunteer.org`,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+        [pantry!.pantryUser.email],
+        expectedMessage.subject,
+        expectedMessage.bodyHTML,
+      );
+    });
+
+    it('still closes request when email fails (manual close)', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SMTP error'),
+      );
+
+      const result = await service.closeRequest(3, volunteerId);
+
+      expect(result.status).toBe(FoodRequestStatus.CLOSED);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
     });
   });
 });
