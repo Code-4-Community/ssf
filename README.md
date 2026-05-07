@@ -1,5 +1,14 @@
 # Securing Safe Food
 
+A full-stack web application built with React (frontend), NestJS (backend), PostgreSQL (database), and AWS (Cognito for auth, S3 for file storage).
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) v18+
+- [Yarn](https://yarnpkg.com/) v1.x
+- [PostgreSQL](https://www.postgresql.org/download/) (see backend setup below)
+- AWS credentials (see backend setup below)
+
 ## Environment Setup
 
 We use yarn for dependency management. Install app dependencies by running this command at the repo root (`ssf`):
@@ -37,16 +46,25 @@ nx run-many -t serve -p frontend backend
 ```
 
 ## CI (GitHub Actions)
+
 On every push and pull request, GitHub Actions runs:
 
-Prettier - checks formatting
-Backend tests - Jest test suite
+- Prettier — checks formatting
+- Backend tests — runs Jest test suites
 
-Local Commands
+### Local commands
+
 Prettier:
-run yarn prettier:check  to verify formatting locally
-run yarn prettier:write to fix formatting locally
+
+```
+yarn prettier:check   # verify formatting
+yarn prettier:write   # fix formatting
+```
+
 Backend tests:
-run 'npx jest` with test DB setup
+
+```
+yarn test
+```
 
 The locally hosted frontend and backend will update live as you make changes to the code. Happy coding!
