@@ -150,7 +150,7 @@ export const emailTemplates = {
         in future deliveries.
       </p>
       <p>
-        To submit a new request or view past orders, please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform here:
+        To submit a new request or view past orders, please log into the platform here:
         <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
       </p>
       <p>
@@ -177,7 +177,7 @@ export const emailTemplates = {
     <p>
       Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
     </p>
-    <p><strong>Matched Items:</strong><br />    </p>
+    <p><strong>Matched Items:</strong><br /></p>
       <ul>
         ${params.items
           .map((item) => `<li>${item.quantity} of ${item.product}</li>`)

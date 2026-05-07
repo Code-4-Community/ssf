@@ -907,9 +907,15 @@ describe('RequestsService', () => {
         new Error('SMTP error'),
       );
 
-      const result = await service.closeRequest(3, volunteerId);
+      await expect(service.closeRequest(3, volunteerId)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send food request closed email to pantry',
+        ),
+      );
 
-      expect(result.status).toBe(FoodRequestStatus.CLOSED);
+      const request = await service.findOne(3);
+
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
     });
   });

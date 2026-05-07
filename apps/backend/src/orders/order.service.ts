@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  Logger,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource } from 'typeorm';
@@ -32,8 +32,6 @@ import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
-  private readonly logger = new Logger(OrdersService.name);
-
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
@@ -330,12 +328,16 @@ export class OrdersService {
     }
 
     try {
-      const pantryAddress = `${request.pantry.shipmentAddressLine1}<br />
+      const pantryAddress = `${request.pantry.shipmentAddressLine1}${
+        request.pantry.shipmentAddressLine2
+          ? `<br />${request.pantry.shipmentAddressLine2}`
+          : ''
+      }<br />
 ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         request.pantry.shipmentAddressZip
       }${
         request.pantry.shipmentAddressCountry
-          ? `<br />[${request.pantry.shipmentAddressCountry}]`
+          ? `<br />${request.pantry.shipmentAddressCountry}`
           : ''
       }`;
 
@@ -359,11 +361,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     }
 
     if (emailErrors.length > 0) {
-      this.logger.warn(
-        `Order ${
-          savedOrder.orderId
-        } created, but email issues occurred: ${emailErrors.join('; ')}`,
-      );
+      throw new InternalServerErrorException(emailErrors.join('; '));
     }
 
     return savedOrder;

@@ -445,8 +445,8 @@ export class RequestsService {
         message.bodyHTML,
       );
     } catch {
-      this.logger.warn(
-        `Request ${requestId} closed, but failed to send pantry notification email`,
+      throw new InternalServerErrorException(
+        'Failed to send food request closed email to pantry',
       );
     }
 

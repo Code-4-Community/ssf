@@ -6,7 +6,11 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TrackingCostDto } from './dtos/tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -907,12 +911,16 @@ describe('OrdersService', () => {
       })) as FoodManufacturer;
 
       const pantry = request.pantry;
-      const pantryAddress = `${pantry.shipmentAddressLine1}<br />
-${pantry.shipmentAddressCity}, ${pantry.shipmentAddressState} ${
-        pantry.shipmentAddressZip
+      const pantryAddress = `${request.pantry.shipmentAddressLine1}${
+        request.pantry.shipmentAddressLine2
+          ? `<br />${request.pantry.shipmentAddressLine2}`
+          : ''
+      }<br />
+${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
+        request.pantry.shipmentAddressZip
       }${
-        pantry.shipmentAddressCountry
-          ? `<br />[${pantry.shipmentAddressCountry}]`
+        request.pantry.shipmentAddressCountry
+          ? `<br />${request.pantry.shipmentAddressCountry}`
           : ''
       }`;
 
@@ -1094,15 +1102,21 @@ ${pantry.shipmentAddressCity}, ${pantry.shipmentAddressState} ${
         new Error('SMTP error'),
       );
 
-      const createdOrder = await service.create(
-        validCreateOrderDto.foodRequestId,
-        validCreateOrderDto.manufacturerId,
-        parsedAllocations,
-        userId,
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry request matched order confirmation email',
+        ),
       );
 
-      expect(createdOrder).toBeDefined();
-      expect(createdOrder.orderId).toBeDefined();
+      const createdOrder = await service.findOne(5);
+
       expect(createdOrder.status).toEqual(OrderStatus.PENDING);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
@@ -1127,15 +1141,20 @@ ${pantry.shipmentAddressCity}, ${pantry.shipmentAddressState} ${
         new Error('SMTP error'),
       );
 
-      const createdOrder = await service.create(
-        validCreateOrderDto.foodRequestId,
-        validCreateOrderDto.manufacturerId,
-        parsedAllocations,
-        userId,
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry request matched order confirmation email; Failed to send food manufacturer donation matched order confirmation email',
+        ),
       );
 
-      expect(createdOrder).toBeDefined();
-      expect(createdOrder.orderId).toBeDefined();
+      const createdOrder = await service.findOne(5);
       expect(createdOrder.status).toEqual(OrderStatus.PENDING);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
