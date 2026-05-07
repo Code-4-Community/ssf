@@ -57,10 +57,6 @@ const LoginPage: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    if (authStatus === 'authenticated') {
-      navigate(from, { replace: true });
-      return;
-    }
     try {
       const result = await signIn({ username: email, password });
       // On temporary password signin, this will trigger the need to create a new password
