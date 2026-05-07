@@ -468,7 +468,7 @@ export class OrdersService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (e) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send order delivery confirmation email to volunteer',
       );
@@ -562,7 +562,7 @@ export class OrdersService {
         message.subject,
         message.bodyHTML,
       );
-    } catch (e) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to send new tracking link available email to pantry',
       );

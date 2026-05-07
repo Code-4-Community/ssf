@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +24,7 @@ import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class DonationService {
+  private readonly logger = new Logger(DonationService.name);
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
     @InjectRepository(Allocation)
@@ -209,8 +212,9 @@ export class DonationService {
           break;
         }
 
+        let message = null;
         try {
-          const message = emailTemplates.fmRecurringDonationReminder({
+          message = emailTemplates.fmRecurringDonationReminder({
             fmName: donation.foodManufacturer.foodManufacturerName,
             resubmitDonationId: donation.donationId,
           });
@@ -221,7 +225,10 @@ export class DonationService {
             message.bodyHTML,
           );
         } catch {
-          // email failed — still count as a recurrence and move on
+          this.logger.warn(
+            `Automated email failed to send. Skipping recurrence update for donation id ${donation.donationId}`,
+          );
+          continue;
         }
 
         dates.splice(i, 1);
@@ -239,11 +246,6 @@ export class DonationService {
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
             try {
-              const message = emailTemplates.fmRecurringDonationReminder({
-                fmName: donation.foodManufacturer.foodManufacturerName,
-                resubmitDonationId: donation.donationId,
-              });
-
               await this.emailsService.sendEmails(
                 [
                   donation.foodManufacturer.foodManufacturerRepresentative
@@ -253,7 +255,11 @@ export class DonationService {
                 message.bodyHTML,
               );
             } catch {
-              // email failed — still count as a recurrence and move on
+              // Early escape to prevent getting stuck in while loop
+              this.logger.warn(
+                `Cascading recalculation of next dates failed for donation id ${donation.donationId}, exiting early`,
+              );
+              break;
             }
 
             occurrences -= 1;

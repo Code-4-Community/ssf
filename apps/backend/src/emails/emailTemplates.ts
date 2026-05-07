@@ -15,8 +15,8 @@ export const emailTemplates = {
       <p>Hi ${params.name},</p>
       <p>
         We're excited to let you know that your Securing Safe Food account has been
-        approved and is now active. You can now log in using the credentials created
-        during registration to begin submitting requests, managing donations, and
+        approved and is now active. You can now <a href="${EMAIL_REDIRECT_URL}/login">log in</a>
+        using the credentials created during registration to begin submitting requests, managing donations, and
         coordinating with our network.
       </p>
       <p>
@@ -91,7 +91,8 @@ export const emailTemplates = {
       <p>Hi,</p>
       <p>
         A new food request has been submitted by ${params.pantryName}. 
-        Please log on to the SSF platform to review these request details and begin coordination when ready.
+        Please  <a href="${EMAIL_REDIRECT_URL}/login">log on to the SSF platform</a>
+        to review these request details and begin coordination when ready.
       </p>
       <p>
         Thank you for your continued support of our network and mission!
@@ -115,7 +116,7 @@ export const emailTemplates = {
         donation availability so we can continue matching your contributions with pantry requests.
       </p>
       <p>
-        You can use resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal.</a>
+        You can resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal</a>.
       </p>
       <p>
         We greatly appreciate your continued generosity and support of our mission. Your
@@ -165,8 +166,8 @@ export const emailTemplates = {
       <p>Hi ${params.volunteerName},</p>
       <p>
         ${params.pantryName} has confirmed receipt of the most recent ${params.fmName}
-        order you are assigned to. Please log into the platform to review the completed
-        request or check for additional information.
+        order you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
+        to review the completed request or check for additional information.
       </p>
       <p>
         Thank you for your coordination and support in helping reach this order to completion!

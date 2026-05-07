@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -6,7 +6,6 @@ import {
   Dialog,
   Flex,
   Portal,
-  Spinner,
   Text,
   VStack,
   Badge,
@@ -67,23 +66,26 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     (d) => d.donation.donationId === selectedDonationId,
   );
 
-  const fetchItemsForDonation = async (donationId: number) => {
-    try {
-      const fetchedItems = await ApiClient.getDonationItemsByDonationId(
-        donationId,
-      );
-      setItems(fetchedItems);
-    } catch {
-      setErrorMessage('Error loading donation details');
-    }
-  };
+  const fetchItemsForDonation = useCallback(
+    async (donationId: number) => {
+      try {
+        const fetchedItems = await ApiClient.getDonationItemsByDonationId(
+          donationId,
+        );
+        setItems(fetchedItems);
+      } catch {
+        setErrorMessage('Error loading donation details');
+      }
+    },
+    [setErrorMessage],
+  );
 
   useEffect(() => {
     if (isOpen && initialDonationId != null) {
       setSelectedDonationId(initialDonationId);
       fetchItemsForDonation(initialDonationId);
     }
-  }, [isOpen, initialDonationId]);
+  }, [isOpen, initialDonationId, fetchItemsForDonation]);
 
   const handleSelect = (donationId: number) => {
     setSelectedDonationId(donationId);
@@ -117,7 +119,6 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
           foodRescue: item.foodRescue,
         })),
       };
-      console.log(dto);
       await ApiClient.postDonation(dto);
       onSuccess();
       handleClose();
@@ -148,7 +149,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
       <Dialog.Backdrop />
       <Portal>
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content minH="360px" display="flex" flexDirection="column">
             <Dialog.CloseTrigger asChild>
               <CloseButton size="lg" />
             </Dialog.CloseTrigger>
@@ -164,8 +165,8 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
               </Dialog.Title>
             </Dialog.Header>
 
-            <Dialog.Body pb={6}>
-              <VStack align="stretch" gap={4} mt={3}>
+            <Dialog.Body pb={6} flex={1} display="flex" flexDirection="column">
+              <VStack align="stretch" gap={4} mt={3} flex={1}>
                 <Box>
                   <Text
                     textStyle="p2"
@@ -239,8 +240,9 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
                           zIndex={20}
                           mt={1}
                           py={1}
-                          maxH="160px"
+                          maxH="120px"
                           overflowY="auto"
+                          bg="white"
                         >
                           {sortedDonations.map((d) => (
                             <Flex
@@ -356,7 +358,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
                   </Box>
                 )}
 
-                <Flex justify="flex-end">
+                <Flex justify="flex-end" mt="auto">
                   <Button
                     bg={
                       selectedDonationId !== null ? 'blue.core' : 'neutral.600'
