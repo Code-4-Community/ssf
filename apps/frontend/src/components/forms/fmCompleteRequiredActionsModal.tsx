@@ -24,6 +24,13 @@ import {
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { isValidUrl } from '../../utils/utils';
+
+// Up to two decimal places, e.g. "0.5", "1", "12.34" — but not "1.234" or "-1"
+const POSITIVE_TWO_DECIMAL_REGEX = /^\d+(\.\d{1,2})?$/;
+
+const isValidShippingCost = (value: string): boolean =>
+  POSITIVE_TWO_DECIMAL_REGEX.test(value) && parseFloat(value) > 0;
 
 type Stage = 'shipping' | 'itemDetails';
 
@@ -109,8 +116,12 @@ const FmCompleteRequiredActionsModal: React.FC<
 > = ({ donation, isOpen, onClose, onSuccess }) => {
   const orders = donation.associatedPendingOrders;
 
-  // Which stage of the two-step modal the user is currently on
-  const [stage, setStage] = useState<Stage>('shipping');
+  // Which stage of the two-step modal the user is currently on. If there are no pending
+  // orders left to update, skip straight to itemDetails so the modal still opens for
+  // any items that still need their details confirmed.
+  const [stage, setStage] = useState<Stage>(
+    orders.length > 0 ? 'shipping' : 'itemDetails',
+  );
   const [currentPage, setCurrentPage] = useState(1);
 
   // Shipping cost and tracking link inputs keyed by orderId, pre-filled from prop and persisted across pagination
@@ -171,6 +182,23 @@ const FmCompleteRequiredActionsModal: React.FC<
       ...prev,
       [orderId]: { ...prev[orderId], [field]: value },
     }));
+  };
+
+  const handleContinue = () => {
+    for (const order of orders) {
+      const { shippingCost, trackingLink } = orderFormData[order.orderId];
+      if (shippingCost !== '' && !isValidShippingCost(shippingCost)) {
+        setAlertMessage(
+          'Shipping cost must be a positive number with up to 2 decimal places.',
+        );
+        return;
+      }
+      if (trackingLink.trim() !== '' && !isValidUrl(trackingLink)) {
+        setAlertMessage('Tracking link must be a valid http or https URL.');
+        return;
+      }
+    }
+    setStage('itemDetails');
   };
 
   const updateItemField = (
@@ -269,8 +297,6 @@ const FmCompleteRequiredActionsModal: React.FC<
       setIsSubmitting(false);
     }
   };
-
-  if (!currentOrder) return null;
 
   // Shared style props applied to every column header in the item details table
   const tableHeaderStyles = {
@@ -457,7 +483,7 @@ const FmCompleteRequiredActionsModal: React.FC<
                     color="neutral.50"
                     fontWeight={600}
                     size="md"
-                    onClick={() => setStage('itemDetails')}
+                    onClick={handleContinue}
                   >
                     Continue
                   </Button>
@@ -592,15 +618,17 @@ const FmCompleteRequiredActionsModal: React.FC<
                 </Box>
 
                 <Flex justify="flex-end" gap={3} mt={6} pt={4}>
-                  <Button
-                    variant="outline"
-                    color="neutral.800"
-                    fontWeight={600}
-                    size="md"
-                    onClick={() => setStage('shipping')}
-                  >
-                    Back
-                  </Button>
+                  {orders.length > 0 && (
+                    <Button
+                      variant="outline"
+                      color="neutral.800"
+                      fontWeight={600}
+                      size="md"
+                      onClick={() => setStage('shipping')}
+                    >
+                      Back
+                    </Button>
+                  )}
                   <Button
                     backgroundColor="blue.ssf"
                     color="neutral.50"

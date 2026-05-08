@@ -1028,6 +1028,53 @@ describe('OrdersService', () => {
       );
     });
 
+    it('does not update orders or call dependent services when given an empty orders array', async () => {
+      const donationId = await insertMatchedDonation();
+      const checkAndFulfillSpy = jest.spyOn(
+        donationService,
+        'checkAndFulfillDonation',
+      );
+
+      const beforeOrder = await service.findOne(4);
+
+      await service.bulkUpdateTrackingCostInfo({ donationId, orders: [] });
+
+      expect(checkAndFulfillSpy).not.toHaveBeenCalled();
+
+      const afterOrder = await service.findOne(4);
+      expect(afterOrder.trackingLink).toEqual(beforeOrder.trackingLink);
+      expect(afterOrder.shippingCost).toEqual(beforeOrder.shippingCost);
+      expect(afterOrder.status).toEqual(beforeOrder.status);
+    });
+
+    it('throws BadRequestException and does not update or call dependent services when duplicate order ids are provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const beforeOrder = await service.findOne(4);
+
+      const duplicateEntry1 = { orderId: 4, shippingCost: 100.0 };
+      const duplicateEntry2 = {
+        orderId: 4,
+        shippingCost: 99.0,
+        trackingLink: 'https://example.com',
+      };
+
+      await expect(
+        service.bulkUpdateTrackingCostInfo({
+          donationId,
+          orders: [duplicateEntry1, duplicateEntry2],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('Cannot update duplicate entries for orders'),
+      );
+
+      const afterOrder = await service.findOne(4);
+      expect(afterOrder.trackingLink).toEqual(beforeOrder.trackingLink);
+      expect(afterOrder.shippingCost).toEqual(beforeOrder.shippingCost);
+    });
+
     it('throws NotFoundException when donation does not exist', async () => {
       const dto: BulkUpdateTrackingCostDto = {
         donationId: 9999,

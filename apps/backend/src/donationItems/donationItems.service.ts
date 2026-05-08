@@ -171,6 +171,7 @@ export class DonationItemsService {
         estimatedValue: item.estimatedValue,
         foodType: item.foodType,
         foodRescue: item.foodRescue,
+        detailsConfirmed: item.ozPerItem != null && item.estimatedValue != null,
       }),
     );
     return transactionRepo.save(donationItems);

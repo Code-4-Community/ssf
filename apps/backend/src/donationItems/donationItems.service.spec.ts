@@ -214,6 +214,7 @@ describe('DonationItemsService', () => {
       expect(Number(beans.estimatedValue)).toEqual(2.99);
       expect(beans.foodType).toEqual(FoodType.DRIED_BEANS);
       expect(beans.foodRescue).toEqual(false);
+      expect(beans.detailsConfirmed).toEqual(true);
 
       expect(rice.itemId).toBeDefined();
       expect(rice.donationId).toEqual(donation.donationId);
@@ -224,6 +225,7 @@ describe('DonationItemsService', () => {
       expect(Number(rice.estimatedValue)).toEqual(4.99);
       expect(rice.foodType).toEqual(FoodType.GRANOLA);
       expect(rice.foodRescue).toEqual(true);
+      expect(rice.detailsConfirmed).toEqual(true);
     });
 
     it('creates items with optional fields omitted', async () => {
@@ -249,6 +251,48 @@ describe('DonationItemsService', () => {
       expect(result[0].itemId).toBeDefined();
       expect(result[0].ozPerItem).toBeNull();
       expect(result[0].estimatedValue).toBeNull();
+      expect(result[0].detailsConfirmed).toEqual(false);
+    });
+
+    it('sets detailsConfirmed to true only when both ozPerItem and estimatedValue are provided', async () => {
+      const donation = await getSeedDonation();
+      const transactionManager = testDataSource.createEntityManager();
+
+      const mixedItems: CreateDonationItemDto[] = [
+        {
+          itemName: 'Both Fields',
+          quantity: 4,
+          ozPerItem: 12,
+          estimatedValue: 3.5,
+          foodType: FoodType.DRIED_BEANS,
+          foodRescue: false,
+        },
+        {
+          itemName: 'Missing Estimated Value',
+          quantity: 2,
+          ozPerItem: 8,
+          foodType: FoodType.DRIED_BEANS,
+          foodRescue: false,
+        },
+        {
+          itemName: 'Missing Oz Per Item',
+          quantity: 6,
+          estimatedValue: 1.99,
+          foodType: FoodType.DRIED_BEANS,
+          foodRescue: false,
+        },
+      ];
+
+      const result = await service.createMultiple(
+        donation,
+        mixedItems,
+        transactionManager,
+      );
+
+      const byName = Object.fromEntries(result.map((i) => [i.itemName, i]));
+      expect(byName['Both Fields'].detailsConfirmed).toEqual(true);
+      expect(byName['Missing Estimated Value'].detailsConfirmed).toEqual(false);
+      expect(byName['Missing Oz Per Item'].detailsConfirmed).toEqual(false);
     });
 
     it('rolls back all items when one fails within a transaction', async () => {

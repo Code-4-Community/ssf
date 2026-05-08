@@ -443,6 +443,17 @@ export class OrdersService {
   async bulkUpdateTrackingCostInfo(
     dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
+    if (dto.orders.length == 0) {
+      return;
+    }
+
+    const orders = new Set(dto.orders.map((o) => o.orderId));
+    if (orders.size != dto.orders.length) {
+      throw new BadRequestException(
+        'Cannot update duplicate entries for orders',
+      );
+    }
+
     for (const order of dto.orders) {
       validateId(order.orderId, 'Order');
 
