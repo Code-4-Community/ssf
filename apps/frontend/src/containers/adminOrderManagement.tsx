@@ -222,7 +222,6 @@ const AdminOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={ORDER_STATUS_COLORS[status]}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
@@ -248,6 +247,17 @@ const AdminOrderManagement: React.FC = () => {
           </Box>
         );
       })}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={true}
+          onClose={() => {
+            setSelectedOrderId(null);
+            navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -257,7 +267,6 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
-  selectedOrderId: number | null;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -279,7 +288,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
-  selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
@@ -289,7 +297,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const navigate = useNavigate();
 
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
@@ -719,16 +726,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
               })}
             </Table.Body>
           </Table.Root>
-          {selectedOrderId && (
-            <OrderDetailsModal
-              orderId={selectedOrderId}
-              isOpen={true}
-              onClose={() => {
-                onOrderSelect(null);
-                navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
-              }}
-            />
-          )}
 
           {totalPages > 1 && (
             <Box mt={4}>
