@@ -443,7 +443,7 @@ export class OrdersService {
   async bulkUpdateTrackingCostInfo(
     dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
-    if (dto.orders.length == 0) {
+    if (dto.orders.length === 0) {
       return;
     }
 

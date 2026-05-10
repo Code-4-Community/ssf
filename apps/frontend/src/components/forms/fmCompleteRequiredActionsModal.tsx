@@ -30,7 +30,7 @@ import { isValidUrl } from '../../utils/utils';
 const POSITIVE_TWO_DECIMAL_REGEX = /^\d+(\.\d{1,2})?$/;
 
 const isValidShippingCost = (value: string): boolean =>
-  POSITIVE_TWO_DECIMAL_REGEX.test(value) && parseFloat(value) > 0;
+  POSITIVE_TWO_DECIMAL_REGEX.test(value) && parseFloat(value) >= 0;
 
 type Stage = 'shipping' | 'itemDetails';
 
@@ -189,12 +189,14 @@ const FmCompleteRequiredActionsModal: React.FC<
       const { shippingCost, trackingLink } = orderFormData[order.orderId];
       if (shippingCost !== '' && !isValidShippingCost(shippingCost)) {
         setAlertMessage(
-          'Shipping cost must be a positive number with up to 2 decimal places.',
+          `Shipping cost for order ${order.orderId} must be a positive number with up to 2 decimal places.`,
         );
         return;
       }
       if (trackingLink.trim() !== '' && !isValidUrl(trackingLink)) {
-        setAlertMessage('Tracking link must be a valid http or https URL.');
+        setAlertMessage(
+          `Tracking link for order ${order.orderId} must be a valid http or https URL.`,
+        );
         return;
       }
     }
