@@ -58,7 +58,7 @@ export type PendingApplication = {
   id: number;
   name: string;
   type: 'pantry' | 'food_manufacturer';
-  dateApplied: Date;
+  dateApplied: string;
 };
 
 export interface ConfirmDeliveryDto {

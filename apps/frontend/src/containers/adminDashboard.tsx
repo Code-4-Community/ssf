@@ -4,7 +4,12 @@ import DashboardCard, {
   ORDER_STATUS_BADGE,
   DONATION_STATUS_BADGE,
 } from '@components/dashboardCard';
-import { PendingApplication, OrderSummary, Donation } from '../types/types';
+import {
+  PendingApplication,
+  OrderSummary,
+  Donation,
+  User,
+} from '../types/types';
 import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
 import { useAlert } from '../hooks/alert';
@@ -20,6 +25,7 @@ const AdminDashboard: React.FC = () => {
   >([]);
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const fetchPendingApplications = async () => {
     try {
@@ -59,7 +65,19 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const fetchMe = async () => {
+    let user: User;
+    try {
+      user = await ApiClient.getMe();
+      setCurrentUser(user);
+    } catch {
+      setAlertMessage('Authentication error. Please log in and try again.');
+      return;
+    }
+  };
+
   useEffect(() => {
+    fetchMe();
     fetchRecentDonations();
     fetchRecentOrders();
     fetchPendingApplications();
@@ -76,7 +94,7 @@ const AdminDashboard: React.FC = () => {
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
-        Welcome, Admin!
+        Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
 
       <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
@@ -87,7 +105,8 @@ const AdminDashboard: React.FC = () => {
           <DashboardCard
             type={DashboardCardType.ACTION}
             title={application.name}
-            date={String(application.dateApplied)}
+            date={application.dateApplied}
+            key={application.id}
             linkText="View Application Details"
             badge={{
               label:
@@ -112,6 +131,7 @@ const AdminDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentOrders.map((order) => (
           <DashboardCard
+            key={order.orderId}
             type={DashboardCardType.ORDER}
             title={`Order #${order.orderId}`}
             date={order.createdAt}
@@ -136,6 +156,7 @@ const AdminDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentDonations.map((donation) => (
           <DashboardCard
+            key={donation.donationId}
             type={DashboardCardType.RECENT_DONATION}
             title={`Donation #${donation.donationId}`}
             date={donation.dateDonated}

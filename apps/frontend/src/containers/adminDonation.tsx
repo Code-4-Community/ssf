@@ -57,6 +57,7 @@ const AdminDonation: React.FC = () => {
   useEffect(() => {
     const donationIdFromUrl = searchParams.get('donationId');
 
+    if (!donationIdFromUrl) return;
     if (donations.length === 0) return;
 
     const matchedDonation = donations.find(
