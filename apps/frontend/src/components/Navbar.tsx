@@ -47,7 +47,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       label: 'Orders',
       children: [
         { label: 'Order Management', to: ROUTES.ADMIN_ORDER_MANAGEMENT },
-        { label: 'Food Requests', to: ROUTES.FOOD_REQUESTS },
+        { label: 'Food Requests', to: ROUTES.ADMIN_REQUEST_MANAGEMENT },
       ],
     },
     {
