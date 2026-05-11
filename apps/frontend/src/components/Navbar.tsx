@@ -269,6 +269,14 @@ const Navbar: React.FC = () => {
     navigate(ROUTES.LOGIN, { replace: true });
   };
 
+  // Should be changed once other dashboards are implmented
+  const ROLE_DASHBOARD_ROUTE: Record<Role, string> = {
+    [Role.ADMIN]: ROUTES.ADMIN_DASHBOARD,
+    [Role.VOLUNTEER]: ROUTES.HOME,
+    [Role.PANTRY]: ROUTES.HOME,
+    [Role.FOODMANUFACTURER]: ROUTES.HOME,
+  };
+
   return (
     <Flex
       direction="column"
@@ -336,9 +344,11 @@ const Navbar: React.FC = () => {
 
       <VStack align="stretch" gap={2} flex={1} overflowY="auto">
         <NavLink
-          to={ROUTES.HOME}
+          to={ROLE_DASHBOARD_ROUTE[currentUser.role]}
           label="Dashboard"
-          isActive={location.pathname === ROUTES.HOME}
+          isActive={
+            location.pathname === ROLE_DASHBOARD_ROUTE[currentUser.role]
+          }
         />
 
         {sections.map((section) =>

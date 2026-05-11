@@ -40,6 +40,7 @@ import {
   VolunteerOrder,
   VolunteerAction,
   FoodRequestWithoutRelations,
+  PendingApplication,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -252,6 +253,12 @@ export class ApiClient {
   public async getVolunteerOrders(userId: number): Promise<VolunteerOrder[]> {
     return this.axiosInstance
       .get(`/api/volunteers/${userId}/orders`)
+      .then((response) => response.data);
+  }
+
+  public async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    return this.axiosInstance
+      .get(`/api/users/admin/recent-pending-applications`)
       .then((response) => response.data);
   }
 
