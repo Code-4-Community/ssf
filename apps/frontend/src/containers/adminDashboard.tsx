@@ -117,7 +117,7 @@ const AdminDashboard: React.FC = () => {
             onLinkClick={() => {
               navigate(
                 application.type === 'pantry'
-                  ? `/pantry-application-details/${application.id}`
+                  ? `/pantry-details/pantry/${application.id}`
                   : `/food-manufacturer-application-details/${application.id}`,
               );
             }}

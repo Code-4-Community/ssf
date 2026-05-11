@@ -12,7 +12,8 @@ export const ROUTES = {
   FOOD_MANUFACTURER_APPLICATION: '/food-manufacturer-application',
   APPLICATION_SUBMITTED: '/application-submitted',
 
-  PANTRY_APPLICATION_DETAILS: '/pantry-application-details/:applicationId',
+  PANTRY_APPLICATION_DETAILS: '/pantry-details/application/:applicationId',
+  PANTRY_MANAGEMENT_DETAILS: '/pantry-details/pantry/:applicationId',
   FOOD_MANUFACTURER_APPLICATION_DETAILS:
     '/food-manufacturer-application-details/:applicationId',
 

@@ -24,8 +24,6 @@ export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
     [DonationStatus.FULFILLED]: TEAL_STATUS,
   };
 
-export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
-
 export const formatPhone = (phone?: string | null) => {
   if (!phone) return null;
   let digits = phone.replace(/\D/g, '');
@@ -108,3 +106,7 @@ export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 
 export const ASSIGNEE_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.ssf'];
+
+export const USER_ICON_COLORS = ASSIGNEE_COLORS.map((color) =>
+  color === 'blue.ssf' ? 'blue.core' : color,
+);

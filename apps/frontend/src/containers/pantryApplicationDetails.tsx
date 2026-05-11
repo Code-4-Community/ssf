@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useMatch } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -85,6 +85,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 
 const PantryApplicationDetails: React.FC = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
+
+  const isApplicationMode = useMatch(ROUTES.PANTRY_APPLICATION_DETAILS);
+
   const navigate = useNavigate();
   const [application, setApplication] = useState<PantryWithUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -232,7 +235,7 @@ const PantryApplicationDetails: React.FC = () => {
     <Box minH="100vh" p={8} mb={8}>
       <Box maxW="1200px" mx="auto">
         <Heading as="h1" textStyle="h1" color="gray.light" mb={8}>
-          Application Details
+          {isApplicationMode ? 'Application Details' : 'Pantry Details'}
         </Heading>
 
         {alertState && (
@@ -433,48 +436,50 @@ const PantryApplicationDetails: React.FC = () => {
               </Text>
             </Box>
 
-            <HStack justify="flex-end" gap={2}>
-              <Button
-                variant="outline"
-                borderColor="neutral.200"
-                color="neutral.800"
-                onClick={() => setShowDenyModal(true)}
-                px={4}
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Deny
-              </Button>
-              <Button
-                bg="blue.hover"
-                color="white"
-                onClick={() => setShowApproveModal(true)}
-                px={4}
-                _hover={{ bg: 'neutral.800' }}
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Approve Application
-              </Button>
+            {isApplicationMode && (
+              <HStack justify="flex-end" gap={2}>
+                <Button
+                  variant="outline"
+                  borderColor="neutral.200"
+                  color="neutral.800"
+                  onClick={() => setShowDenyModal(true)}
+                  px={4}
+                  textStyle="p2"
+                  fontWeight={600}
+                >
+                  Deny
+                </Button>
+                <Button
+                  bg="blue.hover"
+                  color="white"
+                  onClick={() => setShowApproveModal(true)}
+                  px={4}
+                  _hover={{ bg: 'neutral.800' }}
+                  textStyle="p2"
+                  fontWeight={600}
+                >
+                  Approve Application
+                </Button>
 
-              <ConfirmPantryDecisionModal
-                isOpen={showApproveModal}
-                onClose={() => setShowApproveModal(false)}
-                onConfirm={handleApprove}
-                decision="approve"
-                pantryName={application.pantryName}
-                dateApplied={formatDate(application.dateApplied)}
-              />
+                <ConfirmPantryDecisionModal
+                  isOpen={showApproveModal}
+                  onClose={() => setShowApproveModal(false)}
+                  onConfirm={handleApprove}
+                  decision="approve"
+                  pantryName={application.pantryName}
+                  dateApplied={formatDate(application.dateApplied)}
+                />
 
-              <ConfirmPantryDecisionModal
-                isOpen={showDenyModal}
-                onClose={() => setShowDenyModal(false)}
-                onConfirm={handleDeny}
-                decision="deny"
-                pantryName={application.pantryName}
-                dateApplied={formatDate(application.dateApplied)}
-              />
-            </HStack>
+                <ConfirmPantryDecisionModal
+                  isOpen={showDenyModal}
+                  onClose={() => setShowDenyModal(false)}
+                  onConfirm={handleDeny}
+                  decision="deny"
+                  pantryName={application.pantryName}
+                  dateApplied={formatDate(application.dateApplied)}
+                />
+              </HStack>
+            )}
           </VStack>
         </Box>
       </Box>

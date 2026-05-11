@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { ROUTES } from '../routes';
 
 const ApprovePantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
@@ -308,7 +309,10 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/pantry-application-details/${pantry.pantryId}`}
+                      href={ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        pantry.pantryId.toString(),
+                      )}
                     >
                       View Details
                     </Link>

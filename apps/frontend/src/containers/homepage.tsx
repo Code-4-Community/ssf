@@ -160,7 +160,6 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/test-admin-dashboard">Dashboard</RouterLink>
                 <RouterLink to="/admin-dashboard">Dashboard</RouterLink>
               </Link>
             </ListItem>

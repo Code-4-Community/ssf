@@ -22,8 +22,12 @@ import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const AdminPantryManagement: React.FC = () => {
+  const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pantries, setPantries] = useState<ApprovedPantryResponse[]>([]);
   const [searchPantry, setSearchPantry] = useState('');
@@ -253,7 +257,14 @@ const AdminPantryManagement: React.FC = () => {
                     color="gray.dark"
                     variant="underline"
                     textDecorationColor="gray.dark"
-                    onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
+                    onClick={() =>
+                      navigate(
+                        ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
+                          ':applicationId',
+                          pantry.pantryId.toString(),
+                        ),
+                      )
+                    }
                   >
                     {pantry.pantryName}
                   </Link>
@@ -262,6 +273,9 @@ const AdminPantryManagement: React.FC = () => {
                   display="flex"
                   justifyContent="center"
                   alignItems="center"
+                  onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
+                  cursor="pointer"
+                  _hover={{ bg: 'gray.50' }}
                 >
                   <Box display="flex" alignItems="center" minH="33px">
                     {pantry.volunteers && pantry.volunteers.length > 0 ? (
