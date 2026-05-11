@@ -446,8 +446,7 @@ export class OrdersService {
     order.photos = photos;
     order.status = OrderStatus.DELIVERED;
 
-    const updatedOrder = await this.repo.save(order);
-
+    await this.repo.save(order);
     await this.requestsService.updateRequestStatus(order.requestId);
   }
 

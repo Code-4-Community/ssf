@@ -83,8 +83,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         [DonationStatus.MATCHED]: 1,
       };
       setCurrentPages(initialPages);
-    } catch (error) {
-      setErrorMessage('Error fetching donations: ' + error);
+    } catch {
+      setErrorMessage('Error fetching donations');
     }
   };
 
@@ -95,8 +95,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
         await fetchDonations(fmId);
-      } catch (error) {
-        setErrorMessage('Error initializing donation management: ' + error);
+      } catch {
+        setErrorMessage('Error initializing donation management');
       }
     };
     init();

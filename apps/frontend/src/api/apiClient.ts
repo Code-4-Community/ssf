@@ -40,7 +40,6 @@ import {
   VolunteerAction,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
-  FoodRequestWithoutRelations,
   PendingApplication,
 } from 'types/types';
 
