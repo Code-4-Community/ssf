@@ -24,6 +24,7 @@ import {
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { isValidUrl } from '../../utils/utils';
 
 // Up to two decimal places, e.g. "0.5", "1", "12.34" — but not "1.234" or "-1"
@@ -114,6 +115,7 @@ const OrderItemsSection: React.FC<{
 const FmCompleteRequiredActionsModal: React.FC<
   FmCompleteRequiredActionsModalProps
 > = ({ donation, isOpen, onClose, onSuccess }) => {
+  useModalBodyCleanup();
   const orders = donation.associatedPendingOrders;
 
   // Which stage of the two-step modal the user is currently on. If there are no pending
