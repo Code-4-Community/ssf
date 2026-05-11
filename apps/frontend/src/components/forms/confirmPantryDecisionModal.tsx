@@ -1,5 +1,6 @@
 import { Dialog, Text, Box, Button, CloseButton } from '@chakra-ui/react';
 import { capitalize } from '@utils/utils';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface ConfirmPantryDecisionModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const ConfirmPantryDecisionModal: React.FC<ConfirmPantryDecisionModalProps> = ({
   pantryName,
   dateApplied,
 }) => {
+  useModalBodyCleanup();
   return (
     <Dialog.Root
       open={isOpen}

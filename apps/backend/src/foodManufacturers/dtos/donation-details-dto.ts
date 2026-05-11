@@ -32,3 +32,8 @@ export class DonationDetailsDto {
   associatedPendingOrders!: DonationOrderDetailsDto[];
   relevantDonationItems!: DonationItemWithAllocatedQuantityDto[];
 }
+
+export class DonationReminderDto {
+  donation!: Donation;
+  reminderDate!: Date;
+}

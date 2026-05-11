@@ -40,6 +40,8 @@ import {
   VolunteerAction,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
+  FoodRequestWithoutRelations,
+  PendingApplication,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -250,6 +252,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    return this.axiosInstance
+      .get(`/api/users/admin/recent-pending-applications`)
+      .then((response) => response.data);
+  }
+
   public async completeOrderAction(
     orderId: number,
     action: VolunteerAction,
@@ -416,7 +424,7 @@ export class ApiClient {
     pantryId: number,
   ): Promise<FoodRequestSummaryDto[]> {
     return this.axiosInstance
-      .get(`/api/requests/${pantryId}/all`)
+      .get(`/api/pantries/${pantryId}/requests`)
       .then((response) => response.data);
   }
 

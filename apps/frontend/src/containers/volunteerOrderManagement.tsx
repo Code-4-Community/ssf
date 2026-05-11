@@ -759,9 +759,9 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {formatDate(String(order.createdAt))}
+                      {`${formatDate(String(order.createdAt))}-`}
                       {order.deliveredAt &&
-                        `–${formatDate(String(order.deliveredAt))}`}
+                        formatDate(String(order.deliveredAt))}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
@@ -772,7 +772,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       {order.assignee?.id === currentUser?.id &&
                         (needsAction ? (
                           <Link
-                            textDecorationColor="black"
+                            color="neutral.700"
+                            textDecorationColor="neutral.700"
                             variant="underline"
                             onClick={() => onOpenActionModal(order)}
                           >
@@ -785,15 +786,15 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   </Table.Row>
                 );
               })}
-              {selectedOrderId && (
-                <OrderDetailsModal
-                  orderId={selectedOrderId}
-                  isOpen={true}
-                  onClose={() => onOrderSelect(null)}
-                />
-              )}
             </Table.Body>
           </Table.Root>
+          {selectedOrderId && (
+            <OrderDetailsModal
+              orderId={selectedOrderId}
+              isOpen={true}
+              onClose={() => onOrderSelect(null)}
+            />
+          )}
 
           {totalPages > 1 && (
             <Box mt={4}>

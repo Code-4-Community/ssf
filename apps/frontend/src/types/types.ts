@@ -54,6 +54,13 @@ export interface Pantry {
   volunteers?: User[];
 }
 
+export type PendingApplication = {
+  id: number;
+  name: string;
+  type: 'pantry' | 'food_manufacturer';
+  dateApplied: string;
+};
+
 export interface ConfirmDeliveryDto {
   dateReceived: string;
   feedback?: string;

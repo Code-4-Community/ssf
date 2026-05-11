@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, VStack, CloseButton, Text, Dialog } from '@chakra-ui/react';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface VolunteerRequestActionRequiredModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface VolunteerRequestActionRequiredModalProps {
 const VolunteerRequestActionRequiredModal: React.FC<
   VolunteerRequestActionRequiredModalProps
 > = ({ isOpen, onClose, onCloseRequest, onCreateOrder }) => {
+  useModalBodyCleanup();
   const buttonStyles = {
     fontWeight: '600',
     fontSize: '14px',

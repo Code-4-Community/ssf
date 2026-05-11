@@ -2,6 +2,7 @@ import { VStack, Text, Dialog } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import ApiClient from '@api/apiClient';
 import { Allocation, Pantry } from 'types/types';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface OrderInformationModalProps {
   orderId: number;
@@ -14,6 +15,7 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalBodyCleanup();
   const [pantry, setPantry] = useState<Pantry | null>(null);
   const [allocationItems, setAllocationItems] = useState<Allocation[]>([]);
 

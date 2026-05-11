@@ -12,8 +12,10 @@ import {
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 const ResetPasswordModal: React.FC = () => {
+  useModalBodyCleanup();
   const [email, setEmail] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [step, setStep] = useState<'reset' | 'new'>('reset');
@@ -22,6 +24,18 @@ const ResetPasswordModal: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
 
   const navigate = useNavigate();
+
+  const handleSendCodeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && email) {
+      handleSendCode();
+    }
+  };
+
+  const handleResetPasswordKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && password && confirmPassword) {
+      handleResetPassword();
+    }
+  };
 
   const handleSendCode = async () => {
     try {
@@ -134,6 +148,11 @@ const ResetPasswordModal: React.FC = () => {
                 ? (e) => setCode(e.target.value)
                 : (e) => setEmail(e.target.value)
             }
+            onKeyDown={
+              step === 'reset'
+                ? handleSendCodeKeyDown
+                : handleResetPasswordKeyDown
+            }
           />
         </Field.Root>
 
@@ -146,6 +165,7 @@ const ResetPasswordModal: React.FC = () => {
                 placeholder="Enter new password"
                 {...inputStyles}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleResetPasswordKeyDown}
               />
             </Field.Root>
             <Field.Root required>
@@ -155,6 +175,7 @@ const ResetPasswordModal: React.FC = () => {
                 placeholder="Confirm Password"
                 {...inputStyles}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={handleResetPasswordKeyDown}
               />
             </Field.Root>
           </VStack>

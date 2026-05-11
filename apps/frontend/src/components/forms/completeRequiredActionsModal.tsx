@@ -17,6 +17,7 @@ import {
 } from '../../types/types';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface CompleteRequiredActionsModalProps {
   order: VolunteerOrder;
@@ -28,6 +29,7 @@ interface CompleteRequiredActionsModalProps {
 const CompleteRequiredActionsModal: React.FC<
   CompleteRequiredActionsModalProps
 > = ({ order, isOpen, onClose, onActionCompleted }) => {
+  useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
   const [loadingAction, setLoadingAction] = useState<VolunteerAction | null>(
     null,

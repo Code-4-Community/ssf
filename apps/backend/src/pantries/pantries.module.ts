@@ -9,6 +9,7 @@ import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
 import { Order } from '../orders/order.entity';
+import { RequestsModule } from '../foodRequests/request.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Order } from '../orders/order.entity';
     forwardRef(() => UsersModule),
     EmailsModule,
     forwardRef(() => AuthModule),
+    forwardRef(() => RequestsModule),
   ],
   controllers: [PantriesController],
   providers: [PantriesService],

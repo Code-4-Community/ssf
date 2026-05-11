@@ -5,7 +5,7 @@ This part can be a little tricky! If you run into some confusing errors along th
 You'll need to download:
 
 1. [PostgreSQL](https://www.postgresql.org/download/)
-2. [PgAdmin 4](https://www.pgadmin.org/download/) (if PostgreSQL didn't come with it)
+2. [PgAdmin 4](https://www.pgadmin.org/download/) — a GUI that connects directly to PostgreSQL
 
 Then, set up a database called `securing-safe-food`. If you're not familiar with how to do so, it's easy to do through PgAdmin
 
@@ -26,6 +26,14 @@ You can check that your database connection details are correct by running `nx s
 ```
 
 Finally, run `yarn run typeorm:migrate` to load all the tables into your database. If everything is set up correctly, you should see "Migration ... has been executed successfully." in the terminal.
+
+To verify the tables were created and populated, right-click on the `securing-safe-food` database in PgAdmin and select **Query Tool**. Run a select statement on any table, for example:
+
+```sql
+SELECT * FROM users;
+```
+
+You should see rows of dummy data, which means your setup is complete!
 
 # AWS Setup
 

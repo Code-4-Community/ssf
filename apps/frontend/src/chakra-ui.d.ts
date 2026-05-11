@@ -114,4 +114,73 @@ declare module '@chakra-ui/react' {
   export interface TextareaProps extends ComponentPropsStrictChildren {}
   export interface NumberInputInputProps
     extends ComponentPropsLenientChildren {}
+
+  // DatePicker component props
+  export interface DatePickerRootProps extends ComponentPropsLenientChildren {
+    min?: CalendarDate;
+    max?: CalendarDate;
+    value?: CalendarDate[];
+    onValueChange?: (details: {
+      valueAsString: string[];
+      value: CalendarDate[];
+    }) => void;
+    closeOnSelect?: boolean;
+    positioning?: {
+      placement?: string;
+    };
+  }
+
+  export interface DatePickerControlProps
+    extends ComponentPropsStrictChildren {}
+  export interface DatePickerInputProps extends ComponentPropsLenientChildren {}
+  export interface DatePickerIndicatorGroupProps
+    extends ComponentPropsStrictChildren {}
+  export interface DatePickerTriggerProps
+    extends ComponentPropsStrictChildren {}
+  export interface DatePickerPositionerProps
+    extends ComponentPropsStrictChildren {}
+  export interface DatePickerContentProps
+    extends ComponentPropsStrictChildren {}
+  export interface DatePickerViewProps extends ComponentPropsStrictChildren {
+    view: 'day' | 'month' | 'year';
+  }
+  export interface DatePickerHeaderProps
+    extends ComponentPropsLenientChildren {}
+  export interface DatePickerDayTableProps
+    extends ComponentPropsLenientChildren {}
+  export interface DatePickerMonthTableProps
+    extends ComponentPropsLenientChildren {}
+  export interface DatePickerYearTableProps
+    extends ComponentPropsLenientChildren {}
+
+  export const DatePicker: {
+    Root: React.ForwardRefExoticComponent<
+      DatePickerRootProps & React.RefAttributes<HTMLDivElement>
+    >;
+    Control: React.ForwardRefExoticComponent<
+      DatePickerControlProps & React.RefAttributes<HTMLDivElement>
+    >;
+    Input: React.ForwardRefExoticComponent<
+      DatePickerInputProps & React.RefAttributes<HTMLInputElement>
+    >;
+    IndicatorGroup: React.ForwardRefExoticComponent<
+      DatePickerIndicatorGroupProps & React.RefAttributes<HTMLDivElement>
+    >;
+    Trigger: React.ForwardRefExoticComponent<
+      DatePickerTriggerProps & React.RefAttributes<HTMLButtonElement>
+    >;
+    Positioner: React.ForwardRefExoticComponent<
+      DatePickerPositionerProps & React.RefAttributes<HTMLDivElement>
+    >;
+    Content: React.ForwardRefExoticComponent<
+      DatePickerContentProps & React.RefAttributes<HTMLDivElement>
+    >;
+    View: React.ForwardRefExoticComponent<
+      DatePickerViewProps & React.RefAttributes<HTMLDivElement>
+    >;
+    Header: React.FC<DatePickerHeaderProps>;
+    DayTable: React.FC<DatePickerDayTableProps>;
+    MonthTable: React.FC<DatePickerMonthTableProps>;
+    YearTable: React.FC<DatePickerYearTableProps>;
+  };
 }

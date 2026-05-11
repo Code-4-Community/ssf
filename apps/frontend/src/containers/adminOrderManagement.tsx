@@ -33,6 +33,8 @@ import { OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -59,7 +61,9 @@ const AdminOrderManagement: React.FC = () => {
     },
   );
 
+  const [searchParams] = useSearchParams();
   const [alertState, setAlertMessage] = useAlert();
+  const navigate = useNavigate();
 
   // State to hold filter state per status
   type FilterState = {
@@ -148,6 +152,24 @@ const AdminOrderManagement: React.FC = () => {
     }));
   };
 
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+
+    // Wait until orders are loaded
+    const allOrders = Object.values(statusOrders).flat();
+    if (allOrders.length === 0) return;
+
+    const matchedOrder = allOrders.find(
+      (order) => order.orderId === Number(orderIdFromUrl),
+    );
+
+    if (matchedOrder) {
+      setSelectedOrderId(Number(orderIdFromUrl));
+    } else {
+      navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusOrders, navigate]);
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={8}>
@@ -200,7 +222,6 @@ const AdminOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={ORDER_STATUS_COLORS[status]}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
@@ -226,6 +247,17 @@ const AdminOrderManagement: React.FC = () => {
           </Box>
         );
       })}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={true}
+          onClose={() => {
+            setSelectedOrderId(null);
+            navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -235,7 +267,6 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
-  selectedOrderId: number | null;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -257,7 +288,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
-  selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
@@ -694,13 +724,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   </Table.Row>
                 );
               })}
-              {selectedOrderId && (
-                <OrderDetailsModal
-                  orderId={selectedOrderId}
-                  isOpen={true}
-                  onClose={() => onOrderSelect(null)}
-                />
-              )}
             </Table.Body>
           </Table.Root>
 
