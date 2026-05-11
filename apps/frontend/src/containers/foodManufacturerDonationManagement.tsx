@@ -12,12 +12,20 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { DonationDetails, DonationStatus } from '../types/types';
+import { Donation, DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import { useSearchParams } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
+    null,
+  );
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: DonationDetails[];
@@ -26,12 +34,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: [],
     [DonationStatus.FULFILLED]: [],
   });
-
-  // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
-    null,
-  );
-
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<
     Record<DonationStatus, number>
@@ -46,7 +48,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async () => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(1); // Replace with actual food manufacturer ID
+      const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -68,21 +71,30 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setStatusDonations(grouped);
 
-      // Initialize current page for each status
       const initialPages: Record<DonationStatus, number> = {
         [DonationStatus.AVAILABLE]: 1,
         [DonationStatus.FULFILLED]: 1,
         [DonationStatus.MATCHED]: 1,
       };
       setCurrentPages(initialPages);
-    } catch (error) {
-      alert('Error fetching donations: ' + error);
+    } catch {
+      setAlertMessage('Error fetching donations');
     }
   };
 
   useEffect(() => {
     fetchDonations();
   }, []);
+
+  useEffect(() => {
+    const donationIdParam = searchParams.get('donationId');
+    if (!donationIdParam) return;
+
+    const id = Number(donationIdParam);
+    ApiClient.getDonation(id)
+      .then(setSelectedDonation)
+      .catch(() => setAlertMessage('Error loading donation'));
+  }, [searchParams, setAlertMessage]);
 
   const handlePageChange = (status: DonationStatus, page: number) => {
     setCurrentPages((prev) => ({
@@ -91,8 +103,21 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     }));
   };
 
+  const handleCloseModal = () => {
+    setSelectedDonation(null);
+    setSearchParams({});
+  };
+
   return (
     <Box p={12}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status={'error'}
+          timeout={6000}
+        />
+      )}
       <Heading textStyle="h1" color="gray.600" mb={8}>
         Donation Management
       </Heading>
@@ -122,6 +147,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         />
       )}
 
+      {selectedDonation && (
+        <DonationDetailsModal
+          donation={selectedDonation}
+          isOpen={true}
+          onClose={handleCloseModal}
+        />
+      )}
+
       {Object.values(DonationStatus).map((status) => {
         const allDonationsByStatus = statusDonations[status] || [];
 
@@ -137,8 +170,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               donations={displayedDonations}
               status={status}
               colors={DONATION_STATUS_COLORS[status]}
-              selectedDonationId={selectedDonationId}
-              onDonationSelect={setSelectedDonationId}
+              onDonationSelect={setSelectedDonation}
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
@@ -154,8 +186,7 @@ interface DonationStatusSectionProps {
   donations: DonationDetails[];
   status: DonationStatus;
   colors: string[];
-  onDonationSelect: (donationId: number | null) => void;
-  selectedDonationId: number | null;
+  onDonationSelect: (donation: Donation | null) => void;
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -166,7 +197,6 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   status,
   colors,
   onDonationSelect,
-  selectedDonationId,
   totalDonations,
   currentPage,
   onPageChange,
@@ -293,17 +323,10 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       <Link
                         textDecorationColor="black"
                         variant="underline"
-                        onClick={() => onDonationSelect(donation.donationId)}
+                        onClick={() => onDonationSelect(donation)}
                       >
                         {donation.donationId}
                       </Link>
-                      {selectedDonationId === donation.donationId && (
-                        <DonationDetailsModal
-                          donation={donation}
-                          isOpen={true}
-                          onClose={() => onDonationSelect(null)}
-                        />
-                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

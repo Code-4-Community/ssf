@@ -34,4 +34,5 @@ export const ROUTES = {
   REQUEST_FORM: '/request-form',
 
   FM_DONATION_MANAGEMENT: '/fm-donation-management',
+  FM_DASHBOARD: '/fm-dashboard',
 };

@@ -274,7 +274,7 @@ const Navbar: React.FC = () => {
     [Role.ADMIN]: ROUTES.ADMIN_DASHBOARD,
     [Role.VOLUNTEER]: ROUTES.HOME,
     [Role.PANTRY]: ROUTES.HOME,
-    [Role.FOODMANUFACTURER]: ROUTES.HOME,
+    [Role.FOODMANUFACTURER]: ROUTES.FM_DASHBOARD,
   };
 
   return (

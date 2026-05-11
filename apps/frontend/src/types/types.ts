@@ -213,6 +213,11 @@ export interface DonationOrderDetails {
   pantryName: string;
 }
 
+export interface DonationReminderDto {
+  donation: Donation;
+  reminderDate: string;
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
