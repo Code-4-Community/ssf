@@ -30,15 +30,16 @@ const AdminPantryManagement: React.FC = () => {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pantries, setPantries] = useState<ApprovedPantryResponse[]>([]);
+
+  // The pantry searched in the filter
   const [searchPantry, setSearchPantry] = useState('');
 
+  // The pantries selected in the filter
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
 
   const [alertState, setAlertMessage] = useAlert();
-  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
-
+  const [isAlertSuccess, setIsAlertSuccess] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
   const [
     selectedPantryToAssignVolunteers,
     setSelectedPantryToAssignVolunteers,
@@ -51,8 +52,7 @@ const AdminPantryManagement: React.FC = () => {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
-      setSubmitSuccess(false);
-
+      setIsAlertSuccess(false);
       setAlertMessage('Error fetching pantries');
     }
   };
@@ -62,7 +62,7 @@ const AdminPantryManagement: React.FC = () => {
   }, [setAlertMessage]);
 
   const handleAssignVolunteersSuccess = () => {
-    setSubmitSuccess(true);
+    setIsAlertSuccess(true);
     setAlertMessage('Successfully assigned volunteers');
     fetchPantries();
   };
@@ -103,14 +103,14 @@ const AdminPantryManagement: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">
+      <Text textStyle="h1" color="gray.light">
         Pantry Management
       </Text>
       {alertState && (
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={submitSuccess ? 'info' : 'error'}
+          status={isAlertSuccess ? 'info' : 'error'}
           timeout={6000}
         />
       )}
@@ -260,7 +260,7 @@ const AdminPantryManagement: React.FC = () => {
                     onClick={() =>
                       navigate(
                         ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
-                          ':applicationId',
+                          ':pantryId',
                           pantry.pantryId.toString(),
                         ),
                       )

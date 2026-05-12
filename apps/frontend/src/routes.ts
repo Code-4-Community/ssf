@@ -13,7 +13,7 @@ export const ROUTES = {
   APPLICATION_SUBMITTED: '/application-submitted',
 
   PANTRY_APPLICATION_DETAILS: '/pantry-details/application/:applicationId',
-  PANTRY_MANAGEMENT_DETAILS: '/pantry-details/pantry/:applicationId',
+  PANTRY_MANAGEMENT_DETAILS: '/pantry-details/pantry/:pantryId',
   FOOD_MANUFACTURER_APPLICATION_DETAILS:
     '/food-manufacturer-application-details/:applicationId',
 

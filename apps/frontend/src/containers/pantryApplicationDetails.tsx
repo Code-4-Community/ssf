@@ -84,7 +84,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 };
 
 const PantryApplicationDetails: React.FC = () => {
-  const { applicationId } = useParams<{ applicationId: string }>();
+  const { applicationId, pantryId } = useParams<{
+    applicationId?: string;
+    pantryId?: string;
+  }>();
+
+  const id = applicationId ?? pantryId;
 
   const isApplicationMode = useMatch(ROUTES.PANTRY_APPLICATION_DETAILS);
 
@@ -127,16 +132,16 @@ const PantryApplicationDetails: React.FC = () => {
   const fetchApplicationDetails = useCallback(async () => {
     try {
       setLoading(true);
-      if (!applicationId) {
+      if (!id) {
         setError({ type: 'invalid', message: 'Application ID not provided.' });
         return;
-      } else if (isNaN(parseInt(applicationId, 10))) {
+      } else if (isNaN(parseInt(id, 10))) {
         setError({
           type: 'invalid',
           message: 'Application ID is not a number.',
         });
       }
-      const data = await ApiClient.getPantry(parseInt(applicationId, 10));
+      const data = await ApiClient.getPantry(parseInt(id, 10));
       if (!data) {
         setError({
           type: 'not_found',
@@ -156,7 +161,7 @@ const PantryApplicationDetails: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [applicationId]);
+  }, [id]);
 
   useEffect(() => {
     fetchApplicationDetails();
@@ -255,17 +260,25 @@ const PantryApplicationDetails: React.FC = () => {
           p={6}
           boxShadow="sm"
         >
-          <VStack align="stretch" gap={8}>
+          <VStack align="stretch" gap={isApplicationMode ? 8 : 4}>
             <Box>
-              <Heading fontSize="18px" fontWeight={600} mb={2}>
-                Application #{application.pantryId}
-              </Heading>
-              <Text textStyle="p2" color="gray.dark" mb={1}>
-                {application.pantryName}
-              </Text>
-              <Text textStyle="p3" color="neutral.600">
-                Applied {formatDate(application.dateApplied)}
-              </Text>
+              {isApplicationMode ? (
+                <>
+                  <Heading fontSize="18px" fontWeight={600} mb={2}>
+                    Application #{application.pantryId}
+                  </Heading>
+                  <Text textStyle="p2" color="gray.dark" mb={1}>
+                    {application.pantryName}
+                  </Text>
+                  <Text textStyle="p3" color="neutral.600">
+                    Applied {formatDate(application.dateApplied)}
+                  </Text>
+                </>
+              ) : (
+                <Heading fontSize="18px" fontWeight={600}>
+                  {application.pantryName}
+                </Heading>
+              )}
             </Box>
 
             <Grid templateColumns="repeat(2, 1fr)" gap={8}>
