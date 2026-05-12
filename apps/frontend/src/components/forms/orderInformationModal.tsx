@@ -30,8 +30,8 @@ const OrderInformationModal: React.FC<OrderInformationModalProps> = ({
 
           setPantry(pantryData);
           setAllocationItems(allocationItemData);
-        } catch (error) {
-          console.error('Error fetching order details:', error);
+        } catch {
+          console.error('Error fetching order details:');
         }
       };
 

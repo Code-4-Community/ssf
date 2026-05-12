@@ -25,8 +25,8 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
 
-  const [alertState, setAlertMessage] = useAlert();
-  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
 
   const pageSize = 8;
 
@@ -38,12 +38,12 @@ const VolunteerManagement: React.FC = () => {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
       } catch {
-        setAlertMessage('Error fetching volunteers');
+        setErrorMessage('Error fetching volunteers');
       }
     };
 
     fetchVolunteers();
-  }, [setAlertMessage]);
+  }, [setErrorMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -70,11 +70,19 @@ const VolunteerManagement: React.FC = () => {
       <Text textStyle="h1" color="#515151">
         Volunteer Management
       </Text>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status={submitSuccess ? 'info' : 'error'}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
+      {successAlertState && (
+        <FloatingAlert
+          key={successAlertState.id}
+          message={successAlertState.message}
+          status="info"
           timeout={6000}
         />
       )}
@@ -108,12 +116,10 @@ const VolunteerManagement: React.FC = () => {
             </InputGroup>
             <NewVolunteerModal
               onSubmitSuccess={() => {
-                setAlertMessage('Volunteer added.');
-                setSubmitSuccess(true);
+                setSuccessMessage('Volunteer added.');
               }}
               onSubmitFail={() => {
-                setAlertMessage('Volunteer could not be added.');
-                setSubmitSuccess(false);
+                setErrorMessage('Volunteer could not be added.');
               }}
             />
           </Flex>

@@ -19,27 +19,6 @@ export function validateEnv(name: string): string {
   return v;
 }
 
-export function sanitizeUrl(url: string): string | null {
-  try {
-    const trimmed = url.trim();
-    if (!trimmed) return null;
-
-    let fullUrl = trimmed;
-    if (!/^https?:\/\//i.test(trimmed)) {
-      fullUrl = 'https://' + trimmed;
-    }
-
-    const urlObj = new URL(fullUrl);
-
-    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:')
-      return null;
-    if (!urlObj.hostname || !urlObj.hostname.includes('.')) return null;
-    return urlObj.href;
-  } catch {
-    return null;
-  }
-}
-
 export function hasDuplicates<T>(arr: T[]): boolean {
   return new Set(arr).size !== arr.length;
 }
