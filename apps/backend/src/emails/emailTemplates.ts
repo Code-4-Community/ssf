@@ -91,7 +91,7 @@ export const emailTemplates = {
       <p>Hi,</p>
       <p>
         A new food request has been submitted by ${params.pantryName}. 
-        Please  <a href="${EMAIL_REDIRECT_URL}/login">log on to the SSF platform</a>
+        Please <a href="${EMAIL_REDIRECT_URL}/login">log on to the SSF platform</a>
         to review these request details and begin coordination when ready.
       </p>
       <p>
@@ -165,8 +165,8 @@ export const emailTemplates = {
     bodyHTML: `
       <p>Hi ${params.volunteerName},</p>
       <p>
-        ${params.pantryName} has confirmed receipt of the most recent ${params.fmName}
-        order you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
+        ${params.pantryName} has confirmed receipt of one of an order from ${params.fmName}
+        which you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
         to review the completed request or check for additional information.
       </p>
       <p>

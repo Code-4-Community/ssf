@@ -1145,7 +1145,7 @@ describe('DonationService', () => {
     });
 
     it('throws when foodManufacturerId does not exist', async () => {
-      expect(
+      await expect(
         service.create({
           foodManufacturerId: 99999,
           recurrence: RecurrenceEnum.NONE,

@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Body,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Req } from '@nestjs/common';
 import { User } from '../users/users.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
@@ -55,14 +47,6 @@ export class VolunteersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<VolunteerOrder[]> {
     return this.volunteersService.getRecentOrders(id);
-  }
-
-  @Post('/:id/pantries')
-  async assignPantries(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('pantryIds') pantryIds: number[],
-  ): Promise<User> {
-    return this.volunteersService.assignPantriesToVolunteer(id, pantryIds);
   }
 
   @Roles(Role.VOLUNTEER)

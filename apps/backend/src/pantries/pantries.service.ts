@@ -7,6 +7,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -32,6 +33,7 @@ import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Injectable()
 export class PantriesService {
+  private readonly logger = new Logger(PantriesService.name);
   constructor(
     @InjectRepository(Pantry) private repo: Repository<Pantry>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
@@ -555,6 +557,24 @@ export class PantriesService {
 
     pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
     await this.repo.save(pantry);
+
+    for (const volunteer of newVolunteers) {
+      try {
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        await this.emailsService.sendEmails(
+          [volunteer.email],
+          message.subject,
+          message.bodyHTML,
+        );
+      } catch {
+        this.logger.warn(
+          `Automated email failed to send. Skipping recurrence update for volunteer id ${volunteer.id}`,
+        );
+        continue;
+      }
+    }
   }
 
   // given pantryIds should not have duplicates

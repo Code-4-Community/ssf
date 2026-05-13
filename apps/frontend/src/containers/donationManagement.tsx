@@ -87,6 +87,7 @@ const DonationManagement: React.FC = () => {
     <Center flexDirection="column" p={4}>
       <Button onClick={onOpen}>Submit new donation</Button>
       <NewDonationFormModal
+        foodManufacturerId={1}
         onDonationSuccess={fetchDonations}
         isOpen={open}
         onClose={onClose}

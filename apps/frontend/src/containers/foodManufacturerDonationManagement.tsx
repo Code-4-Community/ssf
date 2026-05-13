@@ -23,7 +23,8 @@ import { ROUTES } from '../routes';
 const FoodManufacturerDonationManagement: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const resubmitDonationId = searchParams.get('resubmitDonationId');
+  const resubmitDonationId: string | null =
+    searchParams.get('resubmitDonationId');
 
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
@@ -54,7 +55,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const MAX_PER_STATUS = 5;
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async (checkResubmit = false) => {
+  const fetchDonations = async () => {
     try {
       const data = await ApiClient.getAllDonationsByFoodManufacturer(1); // Replace with actual food manufacturer ID
 
@@ -86,24 +87,30 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
 
-      // Only run this on mount, not every single time
-      if (checkResubmit && resubmitDonationId) {
-        const id = parseInt(resubmitDonationId, 10);
-        const allDonations: DonationDetails[] = Object.values(grouped).flat();
-        const exists = allDonations.some((d) => d.donation.donationId === id);
-        if (exists) {
-          setIsResubmitOpen(true);
-        } else {
-          navigate(ROUTES.FM_DONATION_MANAGEMENT);
-        }
-      }
+      return grouped;
     } catch (error) {
       alert('Error fetching donations: ' + error);
     }
   };
 
+  const openResubmitFromQueryParam = (
+    grouped: Record<DonationStatus, DonationDetails[]>,
+  ) => {
+    if (!resubmitDonationId) return;
+    const id = parseInt(resubmitDonationId, 10);
+    const allDonations: DonationDetails[] = Object.values(grouped).flat();
+    const exists = allDonations.some((d) => d.donation.donationId === id);
+    if (exists) {
+      setIsResubmitOpen(true);
+    } else {
+      navigate(ROUTES.FM_DONATION_MANAGEMENT);
+    }
+  };
+
   useEffect(() => {
-    fetchDonations(true);
+    fetchDonations().then((grouped) => {
+      if (grouped) openResubmitFromQueryParam(grouped);
+    });
   }, []);
 
   const handleResubmitClose = () => {
@@ -161,6 +168,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {isLogDonationOpen && (
         <NewDonationFormModal
+          foodManufacturerId={1}
           onDonationSuccess={fetchDonations}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}

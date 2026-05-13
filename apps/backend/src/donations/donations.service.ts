@@ -257,7 +257,7 @@ export class DonationService {
             } catch {
               // Early escape to prevent getting stuck in while loop
               this.logger.warn(
-                `Cascading recalculation of next dates failed for donation id ${donation.donationId}, exiting early`,
+                `Cascading recalculation of next dates failed for donation id ${donation.donationId} due to an email sending failure, exiting early`,
               );
               break;
             }

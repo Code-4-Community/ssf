@@ -21,7 +21,6 @@ import ApiClient from '@api/apiClient';
 import {
   CreateDonationDto,
   DayOfWeek,
-  DonationItem,
   FoodType,
   RecurrenceEnum,
   RepeatOnState,
@@ -33,11 +32,10 @@ import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface NewDonationFormModalProps {
+  foodManufacturerId: number;
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
-  prefillItems?: DonationItem[];
-  hideRecurring?: boolean;
 }
 
 interface DonationRow {
@@ -106,38 +104,23 @@ const getFirstValidationError = (
 };
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
+  foodManufacturerId,
   onDonationSuccess,
   isOpen,
   onClose,
-  prefillItems,
-  hideRecurring = false,
 }) => {
   useModalBodyCleanup();
-  const [rows, setRows] = useState<DonationRow[]>(() => {
-    if (prefillItems && prefillItems.length > 0) {
-      return prefillItems.map((item, index) => ({
-        id: index + 1,
-        foodItem: item.itemName,
-        foodType: item.foodType,
-        numItems: String(item.quantity),
-        ozPerItem: item.ozPerItem != null ? String(item.ozPerItem) : '',
-        valuePerItem:
-          item.estimatedValue != null ? String(item.estimatedValue) : '',
-        foodRescue: item.foodRescue,
-      }));
-    }
-    return [
-      {
-        id: 1,
-        foodItem: '',
-        foodType: '',
-        numItems: '',
-        ozPerItem: '',
-        valuePerItem: '',
-        foodRescue: false,
-      },
-    ];
-  });
+  const [rows, setRows] = useState<DonationRow[]>([
+    {
+      id: 1,
+      foodItem: '',
+      foodType: '',
+      numItems: '',
+      ozPerItem: '',
+      valuePerItem: '',
+      foodRescue: false,
+    },
+  ]);
 
   const [isRecurring, setIsRecurring] = useState(false);
   const [repeatEvery, setRepeatEvery] = useState('1');
@@ -226,7 +209,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
 
     const donationBody: CreateDonationDto = {
-      foodManufacturerId: 1,
+      foodManufacturerId,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
@@ -340,27 +323,25 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                     >
                       Add New Row +
                     </Button>
-                    {!hideRecurring && (
-                      <Checkbox.Root
-                        checked={isRecurring}
-                        onCheckedChange={(e: { checked: boolean }) => {
-                          setIsRecurring(!!e.checked);
-                          setRepeatInterval(
-                            e.checked
-                              ? RecurrenceEnum.WEEKLY
-                              : RecurrenceEnum.NONE,
-                          );
-                        }}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label color="neutral.700" fontWeight={400}>
-                          Make Donation Recurring
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                    )}
+                    <Checkbox.Root
+                      checked={isRecurring}
+                      onCheckedChange={(e: { checked: boolean }) => {
+                        setIsRecurring(!!e.checked);
+                        setRepeatInterval(
+                          e.checked
+                            ? RecurrenceEnum.WEEKLY
+                            : RecurrenceEnum.NONE,
+                        );
+                      }}
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Label color="neutral.700" fontWeight={400}>
+                        Make Donation Recurring
+                      </Checkbox.Label>
+                    </Checkbox.Root>
                   </Stack>
                 </TableCaption>
 
