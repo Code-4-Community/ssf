@@ -720,22 +720,18 @@ describe('RequestsService', () => {
       );
       await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
 
-      const result = await service.update(1, {
+      await service.update(1, {
         requestedSize: RequestSize.MEDIUM,
       });
 
-      expect(result.requestedSize).toBe(RequestSize.MEDIUM);
-      expect(result.requestedFoodTypes).toEqual([
+      const fromDb = await service.findOne(1);
+      expect(fromDb.requestedSize).toBe(RequestSize.MEDIUM);
+      expect(fromDb.requestedFoodTypes).toEqual([
         FoodType.SEED_BUTTERS,
         FoodType.GLUTEN_FREE_BREAD,
         FoodType.DRIED_BEANS,
         FoodType.DAIRY_FREE_ALTERNATIVES,
       ]);
-
-      const fromDb = await testDataSource
-        .getRepository(FoodRequest)
-        .findOneBy({ requestId: 1 });
-      expect(fromDb?.requestedSize).toBe(RequestSize.MEDIUM);
     });
 
     it('should throw NotFoundException when request is not found', async () => {
@@ -750,22 +746,16 @@ describe('RequestsService', () => {
       );
       await testDataSource.query(`DELETE FROM orders WHERE request_id = 1`);
 
-      const result = await service.update(1, {
+      await service.update(1, {
         requestedSize: RequestSize.SMALL,
         requestedFoodTypes: [FoodType.GRANOLA],
         additionalInformation: 'Updated information',
       });
 
-      expect(result.requestedSize).toBe(RequestSize.SMALL);
-      expect(result.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
-      expect(result.additionalInformation).toBe('Updated information');
-
-      const fromDb = await testDataSource
-        .getRepository(FoodRequest)
-        .findOneBy({ requestId: 1 });
-      expect(fromDb?.requestedSize).toBe(RequestSize.SMALL);
-      expect(fromDb?.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
-      expect(fromDb?.additionalInformation).toBe('Updated information');
+      const fromDb = await service.findOne(1);
+      expect(fromDb.requestedSize).toBe(RequestSize.SMALL);
+      expect(fromDb.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(fromDb.additionalInformation).toBe('Updated information');
     });
 
     it('should throw BadRequestException when request is not active', async () => {

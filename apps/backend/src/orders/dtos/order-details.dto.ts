@@ -13,5 +13,6 @@ export class OrderDetailsDto {
   status!: OrderStatus;
   foodManufacturerName!: string;
   trackingLink!: string | null;
+  shippingCost!: number | null;
   items!: OrderItemDetailsDto[];
 }

@@ -8,7 +8,7 @@ import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DonationItem } from '../donationItems/donationItems.entity';
-import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
@@ -183,6 +183,7 @@ describe('DonationService', () => {
   });
 
   afterEach(async () => {
+    jest.restoreAllMocks();
     await testDataSource.query(`DROP SCHEMA public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
   });
@@ -1082,17 +1083,14 @@ describe('DonationService', () => {
       // manually removing allocations for deleted item ids
       await service['allocationRepo'].delete({ itemId: In([2, 3]) });
 
-      const updatedDonation = await service.replaceDonationItems(
+      await service.replaceDonationItems(donationId, body);
+
+      const updatedItems = await donationItemService.getAllDonationItems(
         donationId,
-        body,
       );
+      expect(updatedItems).toHaveLength(2);
 
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(2);
-
-      const updatedItemNames = updatedDonation.donationItems.map(
-        (i) => i.itemName,
-      );
+      const updatedItemNames = updatedItems.map((i) => i.itemName);
       expect(updatedItemNames).toContain('Green Apples'); // updated
       expect(updatedItemNames).toContain('Bananas'); // new
       expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
@@ -1135,13 +1133,12 @@ describe('DonationService', () => {
       // manually removing allocations for deleted item ids
       await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
 
-      const updatedDonation = await service.replaceDonationItems(
-        donationId,
-        body,
-      );
+      await service.replaceDonationItems(donationId, body);
 
-      expect(updatedDonation).toBeDefined();
-      expect(updatedDonation.donationItems).toHaveLength(0);
+      const updatedItems = await donationItemService.getAllDonationItems(
+        donationId,
+      );
+      expect(updatedItems).toHaveLength(0);
     });
 
     it('should throw NotFoundException if donation does not exist', async () => {
@@ -1254,8 +1251,8 @@ describe('DonationService', () => {
     });
   });
 
-  describe('confirmDonationItemDetails', () => {
-    const makeDto = (itemId: number): ConfirmDonationItemDetailsDto => ({
+  describe('updateDonationItemDetails', () => {
+    const makeDto = (itemId: number): UpdateDonationItemDetailsDto => ({
       itemId,
       ozPerItem: 5.0,
       estimatedValue: 10.0,
@@ -1264,14 +1261,14 @@ describe('DonationService', () => {
 
     it('throws NotFoundException when donation does not exist', async () => {
       await expect(
-        service.confirmDonationItemDetails(9999, [makeDto(1)]),
+        service.updateDonationItemDetails(9999, [makeDto(1)]),
       ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
     });
 
     it('throws BadRequestException when donation status is not MATCHED', async () => {
       // seed donation 1 has status 'available' — status check fires before item lookup
       await expect(
-        service.confirmDonationItemDetails(1, [makeDto(1)]),
+        service.updateDonationItemDetails(1, [makeDto(1)]),
       ).rejects.toThrow(
         new BadRequestException(
           `Donation status must be ${DonationStatus.MATCHED}`,
@@ -1279,25 +1276,39 @@ describe('DonationService', () => {
       );
     });
 
-    it('returns the donation after confirming item details, as well as fulfills donation', async () => {
+    it('updates item details and fulfills donation when all items are confirmed', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 10);
 
       const spy = jest.spyOn(service, 'checkAndFulfillDonation');
 
-      const result = await service.confirmDonationItemDetails(donationId, [
-        makeDto(itemId),
-      ]);
+      await service.updateDonationItemDetails(donationId, [makeDto(itemId)]);
 
-      expect(result).toBeDefined();
-      expect(result.donationId).toBe(donationId);
-      expect(result.status).toBe(DonationStatus.FULFILLED);
-      expect(result.donationItems.every((item) => item.detailsConfirmed)).toBe(
-        true,
-      );
       const dbDonation = await service.findOne(donationId);
       expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+
+      const dbItem = await donationItemService.findOne(itemId);
+      expect(dbItem.detailsConfirmed).toBe(true);
+      expect(Number(dbItem.ozPerItem)).toBe(5.0);
+      expect(Number(dbItem.estimatedValue)).toBe(10.0);
+      expect(dbItem.foodRescue).toBe(true);
+
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('does not call checkAndFulfillDonation when no items are fully confirmed', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId, 10, 5);
+
+      const spy = jest.spyOn(service, 'checkAndFulfillDonation');
+
+      await service.updateDonationItemDetails(donationId, [
+        { itemId, ozPerItem: 5.0 },
+      ]);
+
+      const dbDonation = await service.findOne(donationId);
+      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 

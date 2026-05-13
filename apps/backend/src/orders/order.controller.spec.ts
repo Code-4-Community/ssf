@@ -9,7 +9,7 @@ import { OrderStatus, VolunteerAction } from './types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AWSS3Service } from '../aws/aws-s3.service';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodType } from '../donationItems/types';
 import { BadRequestException } from '@nestjs/common';
@@ -255,18 +255,9 @@ describe('OrdersController', () => {
       const uploadedUrls = ['https://s3.example.com/photo1.jpg'];
       mockAWSS3Service.upload.mockResolvedValueOnce(uploadedUrls);
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: uploadedUrls,
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body, mockFiles);
+      await controller.confirmDelivery(orderId, body, mockFiles);
 
       expect(mockAWSS3Service.upload).toHaveBeenCalledWith(mockFiles);
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -274,7 +265,6 @@ describe('OrdersController', () => {
         body,
         uploadedUrls,
       );
-      expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle no photos being uploaded', async () => {
@@ -284,18 +274,9 @@ describe('OrdersController', () => {
         feedback: 'Delivery without photos',
       };
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: [],
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body);
+      await controller.confirmDelivery(orderId, body);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -303,7 +284,6 @@ describe('OrdersController', () => {
         body,
         [],
       );
-      expect(result).toEqual(confirmedOrder);
     });
 
     it('should handle empty photos array', async () => {
@@ -313,18 +293,9 @@ describe('OrdersController', () => {
         feedback: 'Empty photos',
       };
 
-      const confirmedOrder: Partial<Order> = {
-        orderId,
-        status: OrderStatus.DELIVERED,
-        dateReceived: new Date(body.dateReceived),
-        feedback: body.feedback,
-        photos: [],
-      };
-      mockOrdersService.confirmDelivery.mockResolvedValueOnce(
-        confirmedOrder as Order,
-      );
+      mockOrdersService.confirmDelivery.mockResolvedValueOnce(undefined);
 
-      const result = await controller.confirmDelivery(orderId, body, []);
+      await controller.confirmDelivery(orderId, body, []);
 
       expect(mockAWSS3Service.upload).not.toHaveBeenCalled();
       expect(mockOrdersService.confirmDelivery).toHaveBeenCalledWith(
@@ -332,7 +303,6 @@ describe('OrdersController', () => {
         body,
         [],
       );
-      expect(result).toEqual(confirmedOrder);
     });
   });
 
@@ -359,17 +329,22 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('updateTrackingCostInfo', () => {
-    it('should call ordersService.updateTrackingCostInfo with correct parameters', async () => {
-      const orderId = 1;
-      const trackingLink = 'www.samplelink/samplelink';
-      const shippingCost = 15.99;
-      const dto: TrackingCostDto = { trackingLink, shippingCost };
+  describe('bulkUpdateTrackingCostInfo', () => {
+    it('should call ordersService.bulkUpdateTrackingCostInfo with correct parameters', async () => {
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId: 1,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking.example.com',
+            shippingCost: 15.99,
+          },
+        ],
+      };
 
-      await controller.updateTrackingCostInfo(orderId, dto);
+      await controller.bulkUpdateTrackingCostInfo(dto);
 
-      expect(mockOrdersService.updateTrackingCostInfo).toHaveBeenCalledWith(
-        orderId,
+      expect(mockOrdersService.bulkUpdateTrackingCostInfo).toHaveBeenCalledWith(
         dto,
       );
     });
@@ -587,21 +562,16 @@ describe('OrdersController', () => {
         action: VolunteerAction.CONFIRM_DONATION_RECEIPT,
       };
 
-      const updatedOrder = {
-        ...mockOrders[0],
-        confirmDonationReceipt: true,
-      };
       mockOrdersService.completeVolunteerAction.mockResolvedValueOnce(
-        updatedOrder as Order,
+        undefined,
       );
 
-      const result = await controller.completeVolunteerAction(orderId, dto);
+      await controller.completeVolunteerAction(orderId, dto);
 
       expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
         orderId,
         VolunteerAction.CONFIRM_DONATION_RECEIPT,
       );
-      expect(result).toEqual(updatedOrder);
     });
   });
 });

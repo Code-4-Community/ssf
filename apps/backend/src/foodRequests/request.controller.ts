@@ -111,8 +111,8 @@ export class RequestsController {
   async updateRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
     @Body(new ValidationPipe()) body: UpdateRequestDto,
-  ): Promise<FoodRequest> {
-    return this.requestsService.update(requestId, body);
+  ): Promise<void> {
+    await this.requestsService.update(requestId, body);
   }
 
   @Delete('/:requestId')

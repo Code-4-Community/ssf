@@ -401,7 +401,6 @@ describe('PantriesService', () => {
       };
 
       const updatedPantry = await service.updatePantryApplication(1, dto, 10);
-
       expect(updatedPantry.secondaryContactFirstName).toBe('John');
       expect(updatedPantry.secondaryContactLastName).toBe('Doe');
       expect(updatedPantry.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
@@ -430,7 +429,6 @@ describe('PantriesService', () => {
       };
 
       const updated = await service.updatePantryApplication(2, dto, 11);
-
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
