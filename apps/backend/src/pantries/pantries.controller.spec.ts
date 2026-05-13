@@ -312,9 +312,7 @@ describe('PantriesController', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      mockPantriesService.updatePantryApplication.mockResolvedValue(
-        mockPantry as Pantry,
-      );
+      mockPantriesService.updatePantryApplication.mockResolvedValue(mockPantry);
 
       const result = await controller.updatePantryApplication(
         req as AuthenticatedRequest,
@@ -322,13 +320,12 @@ describe('PantriesController', () => {
         mockUpdateData,
       );
 
+      expect(result).toEqual(mockPantry);
       expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
         pantryId,
         mockUpdateData,
         1,
       );
-
-      expect(result).toEqual(mockPantry);
     });
 
     it('should throw error if pantry does not exist', async () => {

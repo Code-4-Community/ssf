@@ -1,4 +1,3 @@
-import apiClient from '@api/apiClient';
 import { Button, ButtonProps } from '@chakra-ui/react';
 import { signOut } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';

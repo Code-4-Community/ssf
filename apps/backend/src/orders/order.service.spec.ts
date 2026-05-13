@@ -11,7 +11,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import 'multer';
@@ -30,7 +30,7 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
@@ -43,6 +43,7 @@ const mockEmailsService = mock<EmailsService>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
+  let donationService: DonationService;
 
   beforeAll(async () => {
     mockEmailsService.sendEmails.mockResolvedValue(undefined);
@@ -114,6 +115,7 @@ describe('OrdersService', () => {
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
+    donationService = module.get<DonationService>(DonationService);
   });
 
   beforeEach(async () => {
@@ -250,6 +252,7 @@ describe('OrdersService', () => {
         orderId: 1,
         status: OrderStatus.DELIVERED,
         foodManufacturerName: 'FoodCorp Industries',
+        shippingCost: 8.0,
         trackingLink: 'https://www.samplelink.com/samplelink',
         items: [
           {
@@ -460,212 +463,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('updateTrackingCostInfo', () => {
-    it('throws when order is non-existent', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'www.test.com',
-        shippingCost: 5.99,
-      };
-
-      await expect(
-        service.updateTrackingCostInfo(9999, trackingCostDto),
-      ).rejects.toThrow(new NotFoundException('Order 9999 not found'));
-    });
-
-    it('updates both shipping cost and tracking link (sanitized)', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-        shippingCost: 7.5,
-      };
-
-      await service.updateTrackingCostInfo(4, trackingCostDto);
-
-      const order = await service.findOne(4);
-      expect(order.trackingLink).toEqual('https://testtracking.com/');
-      expect(order.shippingCost).toEqual(7.5);
-    });
-
-    it('throws BadRequestException for delivered order', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-        shippingCost: 7.5,
-      };
-      const orderId = 2;
-
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.DELIVERED);
-
-      await expect(
-        service.updateTrackingCostInfo(orderId, trackingCostDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          'Can only update tracking info for pending orders',
-        ),
-      );
-    });
-
-    it('throws when tracking link is invalid', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: `javascript:alert("you've been hacked!")`,
-        shippingCost: 7.5,
-      };
-
-      await expect(
-        service.updateTrackingCostInfo(3, trackingCostDto),
-      ).rejects.toThrow(
-        new BadRequestException(
-          'Invalid tracking link. Only valid HTTP/HTTPS URLs are accepted.',
-        ),
-      );
-    });
-
-    it('sets status to shipped when both fields provided and previous status pending', async () => {
-      const trackingCostDto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-        shippingCost: 5.75,
-      };
-      const orderId = 4;
-
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.PENDING);
-      expect(order.shippedAt).toBeNull();
-
-      await service.updateTrackingCostInfo(orderId, trackingCostDto);
-
-      const updatedOrder = await service.findOne(orderId);
-
-      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
-      expect(updatedOrder.shippedAt).toBeDefined();
-    });
-
-    it('sends trackingLinkAvailable email to pantry user when order is shipped', async () => {
-      const orderId = 4;
-      const order = await testDataSource.getRepository(Order).findOne({
-        where: { orderId },
-        relations: [
-          'request',
-          'request.pantry',
-          'request.pantry.pantryUser',
-          'foodManufacturer',
-          'assignee',
-        ],
-      });
-
-      if (!order) throw new Error('Missing order test object');
-
-      const dto: TrackingCostDto = {
-        trackingLink: 'testtracking.com',
-        shippingCost: 5.0,
-      };
-
-      await service.updateTrackingCostInfo(orderId, dto);
-
-      const message = emailTemplates.trackingLinkAvailable({
-        pantryName: order.request.pantry.pantryName,
-        fmName: order.foodManufacturer.foodManufacturerName,
-        trackingLink: 'https://testtracking.com/',
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-        volunteerEmail: order.assignee.email,
-      });
-
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [order.request.pantry.pantryUser.email],
-        message.subject,
-        message.bodyHTML,
-      );
-    });
-
-    it('still updates order to shipped if tracking link email fails to send', async () => {
-      mockEmailsService.sendEmails.mockRejectedValueOnce(
-        new Error('Email failed'),
-      );
-
-      await expect(
-        service.updateTrackingCostInfo(4, {
-          trackingLink: 'testtracking.com',
-          shippingCost: 5.0,
-        }),
-      ).rejects.toThrow(
-        new InternalServerErrorException(
-          'Failed to send new tracking link available email to pantry',
-        ),
-      );
-
-      const order = await service.findOne(4);
-      expect(order.status).toBe(OrderStatus.SHIPPED);
-    });
-  });
-
-  describe('checkAndFulfillDonations', () => {
-    it('does not fulfill associated donation when items are not fully reserved or confirmed', async () => {
-      // Create a matched donation with an item that is not fully reserved
-      const [{ donation_id }] = await testDataSource.query(`
-        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
-        VALUES (
-          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
-          'matched', 'none', NULL, NULL, NULL
-        )
-        RETURNING donation_id
-      `);
-      const [{ item_id }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES ($1, 'Test Item', 10, 5, 'Granola', false)
-         RETURNING item_id`,
-        [donation_id],
-      );
-      await testDataSource.query(
-        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
-        [item_id],
-      );
-
-      await service.updateTrackingCostInfo(4, {
-        trackingLink: 'testtracking.com',
-        shippingCost: 5.0,
-      });
-
-      const donation = await testDataSource
-        .getRepository(Donation)
-        .findOneBy({ donationId: donation_id });
-      expect(donation?.status).toBe(DonationStatus.MATCHED);
-    });
-
-    it('fulfills associated donation when all items are confirmed, fully reserved, and no pending orders remain', async () => {
-      // Create a matched donation with a fully-reserved confirmed item allocated to order 4
-      const [{ donation_id }] = await testDataSource.query(`
-        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
-        VALUES (
-          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
-          'matched', 'none', NULL, NULL, NULL
-        )
-        RETURNING donation_id
-      `);
-      const [{ item_id }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES ($1, 'Test Item', 10, 10, 'Granola', true)
-         RETURNING item_id`,
-        [donation_id],
-      );
-      // Allocate to order 4 (pending); after updateTrackingCostInfo it becomes shipped → no more pending orders
-      await testDataSource.query(
-        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES (4, $1, 1)`,
-        [item_id],
-      );
-
-      await service.updateTrackingCostInfo(4, {
-        trackingLink: 'testtracking.com',
-        shippingCost: 5.0,
-      });
-
-      const donation = await testDataSource
-        .getRepository(Donation)
-        .findOneBy({ donationId: donation_id });
-      expect(donation?.status).toBe(DonationStatus.FULFILLED);
-    });
-  });
-
   describe('confirmDelivery', () => {
     it('should throw BadRequestException for invalid date format', async () => {
       await expect(
@@ -696,18 +493,19 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(
+      await service.confirmDelivery(
         shippedOrder.orderId,
         { dateReceived, feedback },
         photos,
       );
 
-      expect(result.orderId).toBe(shippedOrder.orderId);
-      expect(result.status).toBe(OrderStatus.DELIVERED);
-      expect(result.dateReceived).toEqual(new Date(dateReceived));
-      expect(result.feedback).toBe(feedback);
-      expect(result.photos).toEqual(photos);
-      expect(result.deliveredAt).toBeNull();
+      const updatedOrder = await service.findOne(shippedOrder.orderId);
+      expect(updatedOrder.orderId).toBe(shippedOrder.orderId);
+      expect(updatedOrder.status).toBe(OrderStatus.DELIVERED);
+      expect(updatedOrder.dateReceived).toEqual(new Date(dateReceived));
+      expect(updatedOrder.feedback).toBe(feedback);
+      expect(updatedOrder.photos).toEqual(photos);
+      expect(updatedOrder.deliveredAt).toBeNull();
 
       const updatedRequest = await requestRepo.findOne({
         where: { requestId: shippedOrder.requestId },
@@ -748,17 +546,18 @@ describe('OrdersService', () => {
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
-      const result = await service.confirmDelivery(
+      await service.confirmDelivery(
         existingShippedOrder.orderId,
         { dateReceived, feedback },
         photos,
       );
 
-      expect(result.orderId).toBe(existingShippedOrder.orderId);
-      expect(result.status).toBe(OrderStatus.DELIVERED);
-      expect(result.dateReceived).toEqual(new Date(dateReceived));
-      expect(result.feedback).toBe(feedback);
-      expect(result.photos).toEqual(photos);
+      const updatedOrder = await service.findOne(existingShippedOrder.orderId);
+      expect(updatedOrder.orderId).toBe(existingShippedOrder.orderId);
+      expect(updatedOrder.status).toBe(OrderStatus.DELIVERED);
+      expect(updatedOrder.dateReceived).toEqual(new Date(dateReceived));
+      expect(updatedOrder.feedback).toBe(feedback);
+      expect(updatedOrder.photos).toEqual(photos);
 
       const updatedRequest = await requestRepo.findOne({
         where: { requestId: existingShippedOrder.requestId },
@@ -1270,6 +1069,418 @@ describe('OrdersService', () => {
           `Action ${action} already completed for Order ${orderId}`,
         ),
       );
+    });
+  });
+
+  describe('bulkUpdateTrackingCostInfo', () => {
+    async function insertMatchedDonation(): Promise<number> {
+      const [{ donation_id }] = await testDataSource.query(`
+        INSERT INTO donations (food_manufacturer_id, status, recurrence, recurrence_freq, next_donation_dates, occurrences_remaining)
+        VALUES (
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'matched', 'none', NULL, NULL, NULL
+        )
+        RETURNING donation_id
+      `);
+      return donation_id;
+    }
+
+    async function insertDonationItem(donationId: number): Promise<number> {
+      const [{ item_id }] = await testDataSource.query(
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, food_rescue, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 'Granola', false, false)
+         RETURNING item_id`,
+        [donationId],
+      );
+      return item_id;
+    }
+
+    async function insertAllocation(
+      orderId: number,
+      itemId: number,
+    ): Promise<void> {
+      await testDataSource.query(
+        `INSERT INTO allocations (order_id, item_id, allocated_quantity) VALUES ($1, $2, 1)`,
+        [orderId, itemId],
+      );
+    }
+
+    async function createPendingOrder(): Promise<number> {
+      const [{ order_id }] = await testDataSource.query(`
+        INSERT INTO orders (request_id, food_manufacturer_id, status, assignee_id)
+        VALUES (
+          (SELECT request_id FROM food_requests LIMIT 1),
+          (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+          'pending',
+          (SELECT user_id FROM users LIMIT 1)
+        )
+        RETURNING order_id
+      `);
+      return order_id;
+    }
+
+    it('throws BadRequestException when neither tracking link nor shipping cost is provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await expect(
+        service.bulkUpdateTrackingCostInfo({
+          donationId,
+          orders: [{ orderId: 4 }],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Order 4 must include at least a tracking link or shipping cost.',
+        ),
+      );
+    });
+
+    it('does not update orders or call dependent services when given an empty orders array', async () => {
+      const donationId = await insertMatchedDonation();
+      const checkAndFulfillSpy = jest.spyOn(
+        donationService,
+        'checkAndFulfillDonation',
+      );
+
+      const beforeOrder = await service.findOne(4);
+
+      await service.bulkUpdateTrackingCostInfo({ donationId, orders: [] });
+
+      expect(checkAndFulfillSpy).not.toHaveBeenCalled();
+
+      const afterOrder = await service.findOne(4);
+      expect(afterOrder.trackingLink).toEqual(beforeOrder.trackingLink);
+      expect(afterOrder.shippingCost).toEqual(beforeOrder.shippingCost);
+      expect(afterOrder.status).toEqual(beforeOrder.status);
+    });
+
+    it('throws BadRequestException and does not update or call dependent services when duplicate order ids are provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const beforeOrder = await service.findOne(4);
+
+      const duplicateEntry1 = { orderId: 4, shippingCost: 100.0 };
+      const duplicateEntry2 = {
+        orderId: 4,
+        shippingCost: 99.0,
+        trackingLink: 'https://example.com',
+      };
+
+      await expect(
+        service.bulkUpdateTrackingCostInfo({
+          donationId,
+          orders: [duplicateEntry1, duplicateEntry2],
+        }),
+      ).rejects.toThrow(
+        new BadRequestException('Cannot update duplicate entries for orders'),
+      );
+
+      const afterOrder = await service.findOne(4);
+      expect(afterOrder.trackingLink).toEqual(beforeOrder.trackingLink);
+      expect(afterOrder.shippingCost).toEqual(beforeOrder.shippingCost);
+    });
+
+    it('throws NotFoundException when donation does not exist', async () => {
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId: 9999,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new NotFoundException('Donation 9999 not found'),
+      );
+    });
+
+    it('throws NotFoundException when one order does not exist', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          { orderId: 4, shippingCost: 5.0 },
+          { orderId: 9999, trackingLink: 'https://tracking2.com' },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new NotFoundException('Order 9999 not found'),
+      );
+
+      const order4 = await service.findOne(4);
+      expect(order4.shippingCost).toBeNull();
+    });
+
+    it('throws BadRequestException when one order is not pending', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId1);
+      await insertAllocation(2, itemId2);
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          { orderId: 4, shippingCost: 5.0 },
+          { orderId: 2, trackingLink: 'https://tracking2.com' },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new BadRequestException(
+          `Can only update tracking info for pending orders. Order 2 is ${OrderStatus.DELIVERED}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when one order does not belong to the donation', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+      const orderId2 = await createPendingOrder();
+      // orderId2 has no allocation to donationId
+
+      const dto: BulkUpdateTrackingCostDto = {
+        donationId,
+        orders: [
+          { orderId: 4, shippingCost: 5.0 },
+          { orderId: orderId2, trackingLink: 'https://tracking2.com' },
+        ],
+      };
+
+      await expect(service.bulkUpdateTrackingCostInfo(dto)).rejects.toThrow(
+        new BadRequestException(
+          `Order ${orderId2} does not belong to donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('updates both fields when tracking link and shipping cost are provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      const after1 = await service.findOne(4);
+      const after2 = await service.findOne(orderId2);
+      expect(after1.trackingLink).toEqual('https://tracking1.com');
+      expect(after1.shippingCost).toEqual(5.0);
+      expect(after1.status).toEqual(OrderStatus.SHIPPED);
+      expect(after1.shippedAt).toBeDefined();
+      expect(after2.trackingLink).toEqual('https://tracking2.com');
+      expect(after2.shippingCost).toEqual(7.5);
+      expect(after2.status).toEqual(OrderStatus.SHIPPED);
+      expect(after2.shippedAt).toBeDefined();
+    });
+
+    it('updates only tracking link when no shipping cost is provided, order stays PENDING', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
+      });
+
+      const after = await service.findOne(4);
+      expect(after.trackingLink).toEqual('https://tracking.com');
+      expect(after.shippingCost).toBeNull();
+      expect(after.status).toEqual(OrderStatus.PENDING);
+      expect(after.shippedAt).toBeNull();
+    });
+
+    it('updates only shipping cost when no tracking link is provided, order stays PENDING', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 12.5 }],
+      });
+
+      const after = await service.findOne(4);
+      expect(after.trackingLink).toBeNull();
+      expect(after.shippingCost).toEqual(12.5);
+      expect(after.status).toEqual(OrderStatus.PENDING);
+      expect(after.shippedAt).toBeNull();
+    });
+
+    it('sets order to SHIPPED when a second partial call completes both fields', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
+      });
+      expect((await service.findOne(4)).status).toEqual(OrderStatus.PENDING);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 10.0 }],
+      });
+
+      const after = await service.findOne(4);
+      expect(after.trackingLink).toEqual('https://tracking.com');
+      expect(after.shippingCost).toEqual(10.0);
+      expect(after.status).toEqual(OrderStatus.SHIPPED);
+      expect(after.shippedAt).toBeDefined();
+    });
+
+    it('calls donationService.checkAndFulfillDonation after updating orders', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const spy = jest.spyOn(donationService, 'checkAndFulfillDonation');
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      });
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('sends trackingLinkAvailable email to pantry user for each updated order with a tracking link', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      const updatedOrders = await testDataSource.getRepository(Order).find({
+        where: { orderId: In([4, orderId2]) },
+        relations: [
+          'request',
+          'request.pantry',
+          'request.pantry.pantryUser',
+          'foodManufacturer',
+          'assignee',
+        ],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        updatedOrders.length,
+      );
+      for (const order of updatedOrders) {
+        const message = emailTemplates.trackingLinkAvailable({
+          pantryName: order.request.pantry.pantryName,
+          fmName: order.foodManufacturer.foodManufacturerName,
+          trackingLink: order.trackingLink!,
+          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+          volunteerEmail: order.assignee.email,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+          [order.request.pantry.pantryUser.email],
+          message.subject,
+          message.bodyHTML,
+        );
+      }
+    });
+
+    it('does not send email for orders without a tracking link', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when one email fails but still updates all orders without throwing', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Automated tracking link email failed to send for order',
+        ),
+      );
+
+      const after1 = await service.findOne(4);
+      const after2 = await service.findOne(orderId2);
+      expect(after1.trackingLink).toEqual('https://tracking1.com');
+      expect(after1.shippingCost).toEqual(5.0);
+      expect(after1.status).toEqual(OrderStatus.SHIPPED);
+      expect(after2.trackingLink).toEqual('https://tracking2.com');
+      expect(after2.shippingCost).toEqual(7.5);
+      expect(after2.status).toEqual(OrderStatus.SHIPPED);
+
+      warnSpy.mockRestore();
     });
   });
 });

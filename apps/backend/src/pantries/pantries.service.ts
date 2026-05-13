@@ -378,7 +378,7 @@ export class PantriesService {
     pantryId: number,
     pantryData: UpdatePantryApplicationDto,
     currentUserId: number,
-  ) {
+  ): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
     validateId(currentUserId, 'User');
 

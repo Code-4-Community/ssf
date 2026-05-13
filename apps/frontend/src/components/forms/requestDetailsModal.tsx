@@ -56,8 +56,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
           .slice()
           .sort((a, b) => b.orderId - a.orderId);
         setOrderDetailsList(sortedData);
-      } catch (error) {
-        console.error('Error fetching order details', error);
+      } catch {
+        console.error('Error fetching order details');
       }
     };
     fetchRequestOrderDetails();

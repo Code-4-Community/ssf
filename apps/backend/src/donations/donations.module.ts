@@ -11,6 +11,7 @@ import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { AllocationModule } from '../allocations/allocations.module';
 import { EmailsModule } from '../emails/email.module';
+import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EmailsModule } from '../emails/email.module';
     DonationItemsModule,
     AllocationModule,
     EmailsModule,
+    ManufacturerModule,
   ],
   controllers: [DonationsController],
   providers: [DonationService, DonationsSchedulerService],
