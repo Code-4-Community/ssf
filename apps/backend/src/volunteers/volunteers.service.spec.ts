@@ -22,9 +22,6 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
 import { Allocation } from '../allocations/allocations.entity';
-import { mock } from 'jest-mock-extended';
-
-const mockEmailsService = mock<EmailsService>();
 
 jest.setTimeout(60000);
 
@@ -32,8 +29,6 @@ describe('VolunteersService', () => {
   let service: VolunteersService;
 
   beforeAll(async () => {
-    mockEmailsService.sendEmails.mockResolvedValue(undefined);
-
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -60,10 +55,6 @@ describe('VolunteersService', () => {
           useValue: {
             adminCreateUser: jest.fn().mockResolvedValue('test-sub'),
           },
-        },
-        {
-          provide: EmailsService,
-          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(User),
@@ -104,7 +95,6 @@ describe('VolunteersService', () => {
   });
 
   beforeEach(async () => {
-    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();

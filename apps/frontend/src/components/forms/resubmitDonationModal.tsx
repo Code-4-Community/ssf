@@ -28,7 +28,9 @@ interface ResubmitDonationModalProps {
   onClose: () => void;
   onSuccess: () => void;
   donations: DonationDetails[];
+  foodManufacturerId: number;
   initialDonationId?: number | null;
+  onSelect: (donationId: number) => void;
 }
 
 const formatDonationDate = (dateString: string) =>
@@ -43,7 +45,9 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
   onClose,
   onSuccess,
   donations,
+  foodManufacturerId,
   initialDonationId,
+  onSelect,
 }) => {
   useModalBodyCleanup();
   const [errorAlertState, setErrorMessage] = useAlert();
@@ -81,15 +85,19 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
   );
 
   useEffect(() => {
-    if (isOpen && initialDonationId != null) {
-      setSelectedDonationId(initialDonationId);
-      fetchItemsForDonation(initialDonationId);
+    if (
+      isOpen &&
+      initialDonationId != null &&
+      initialDonationId !== selectedDonationId
+    ) {
+      handleSelect(initialDonationId);
     }
-  }, [isOpen, initialDonationId, fetchItemsForDonation]);
+  }, [isOpen, initialDonationId, selectedDonationId, fetchItemsForDonation]);
 
   const handleSelect = (donationId: number) => {
     setSelectedDonationId(donationId);
     fetchItemsForDonation(donationId);
+    onSelect(donationId);
   };
 
   const handleClose = () => {
@@ -102,9 +110,8 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
       const dto: CreateDonationDto = {
-        foodManufacturerId: fmId,
+        foodManufacturerId,
         recurrence: RecurrenceEnum.NONE,
         items: items.map((item) => ({
           itemName: item.itemName,
@@ -226,6 +233,10 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
                       <>
                         <Box
                           position="fixed"
+                          top={0}
+                          left={0}
+                          right={0}
+                          bottom={0}
                           onClick={() => setIsDropdownOpen(false)}
                           zIndex={10}
                         />

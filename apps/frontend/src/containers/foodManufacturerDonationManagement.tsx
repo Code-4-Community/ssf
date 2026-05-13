@@ -27,7 +27,7 @@ const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const resubmitDonationId: string | null =
     searchParams.get('resubmitDonationId');
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
@@ -198,7 +198,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         </Button>
       </Flex>
 
-      {isLogDonationOpen && manufacturerId !== null && (
+      {manufacturerId !== null && (
         <NewDonationFormModal
           foodManufacturerId={manufacturerId}
           onDonationSuccess={() => fetchDonations(manufacturerId)}
@@ -207,16 +207,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         />
       )}
 
-      {isResubmitOpen && (
+      {manufacturerId !== null && (
         <ResubmitDonationModal
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => {
-            if (manufacturerId !== null) fetchDonations(manufacturerId);
-          }}
+          onSuccess={() => fetchDonations(manufacturerId)}
           donations={Object.values(statusDonations).flat()}
+          foodManufacturerId={manufacturerId}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
+          }
+          onSelect={(donationId) =>
+            setSearchParams({ resubmitDonationId: String(donationId) })
           }
         />
       )}
