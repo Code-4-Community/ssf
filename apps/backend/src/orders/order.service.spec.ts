@@ -11,8 +11,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -1090,6 +1088,90 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       });
       expect(item1After?.reservedQuantity).toBe(item1Before?.reservedQuantity);
       expect(item2After?.reservedQuantity).toBe(item2Before?.reservedQuantity);
+    });
+
+    it('should rollback transaction and not create order if donation matching fails', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const orderCountBefore = await orderRepo.count();
+      const item1Before = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2Before = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+
+      jest
+        .spyOn((service as any).donationService as DonationService, 'matchAll')
+        .mockRejectedValueOnce(new Error('DB error'));
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow('DB error');
+
+      const orderCountAfter = await orderRepo.count();
+      expect(orderCountAfter).toBe(orderCountBefore);
+
+      const item1After = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2After = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+      expect(item1After?.reservedQuantity).toBe(item1Before?.reservedQuantity);
+      expect(item2After?.reservedQuantity).toBe(item2Before?.reservedQuantity);
+    });
+
+    it('should throw BadRequestException if itemAllocations is empty', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+      const emptyAllocations = new Map<number, number>();
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          emptyAllocations,
+          userId,
+        ),
+      ).rejects.toMatchObject({
+        name: BadRequestException.name,
+        message: 'Cannot create order with no donation items',
+      });
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw NotFoundException if request is not found', async () => {
+      const nonExistentRequestId = 999;
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      await expect(
+        service.create(
+          nonExistentRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toMatchObject({
+        name: NotFoundException.name,
+        message: `Request ${nonExistentRequestId} not found`,
+      });
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
     });
   });
   describe('getAllOrdersForVolunteer', () => {

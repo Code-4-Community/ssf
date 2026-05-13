@@ -230,12 +230,24 @@ export class OrdersService {
           select: ['donationId'],
         });
 
+        if (fmDonations.length === 0) {
+          throw new BadRequestException(
+            `Manufacturer ${manufacturerId} has no donations`,
+          );
+        }
+
         const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
 
         const donationItemIds = Array.from(itemAllocations.keys());
         const donationItems = await this.donationItemsService.getByIds(
           donationItemIds,
         );
+
+        if (donationItems.length === 0) {
+          throw new BadRequestException(
+            'Cannot create order with no donation items',
+          );
+        }
 
         const invalidItems = donationItems.filter(
           (item) => !fmDonationIdSet.has(item.donationId),

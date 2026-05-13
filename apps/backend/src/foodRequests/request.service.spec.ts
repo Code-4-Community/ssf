@@ -443,6 +443,13 @@ describe('RequestsService', () => {
     });
 
     it('does not send email when not all orders are delivered (request stays active)', async () => {
+      const request = (await service.findOne(3)) as FoodRequest;
+
+      expect(request.orders).toBeDefined();
+      expect(
+        request.orders?.some((order) => order.status !== OrderStatus.DELIVERED),
+      ).toBe(true);
+
       await service.updateRequestStatus(3);
 
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();

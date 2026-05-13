@@ -297,7 +297,9 @@ describe('RequestsController', () => {
     it('should call requestsService.closeRequest', async () => {
       const requestId = 1;
 
-      mockRequestsService.closeRequest.mockResolvedValueOnce(undefined);
+      mockRequestsService.closeRequest.mockResolvedValueOnce(
+        foodRequest1 as FoodRequest,
+      );
 
       const req = { user: { id: 1 } };
 
@@ -306,7 +308,7 @@ describe('RequestsController', () => {
         req as AuthenticatedRequest,
       );
 
-      expect(result).toEqual(closedRequest);
+      expect(result).toEqual(foodRequest1);
       expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(
         requestId,
         1,
