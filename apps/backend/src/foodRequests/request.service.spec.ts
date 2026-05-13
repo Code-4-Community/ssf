@@ -407,30 +407,36 @@ describe('RequestsService', () => {
 
     it('sends pantry closed email with last delivered order assignee on auto-close', async () => {
       const requestId = 1;
-      const pantry = await testDataSource.getRepository(Pantry).findOne({
+      const pantry = (await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId: 1 },
         relations: ['pantryUser'],
-      });
-      const lastDeliveredOrder = await testDataSource
+      })) as Pantry;
+      const lastDeliveredOrder = (await testDataSource
         .getRepository(Order)
         .findOne({
           where: { requestId, status: OrderStatus.DELIVERED },
           order: { deliveredAt: 'DESC' },
           relations: ['assignee'],
-        });
+        })) as Order;
+
+      const requestBefore = await service.findOne(1);
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
 
       await service.updateRequestStatus(requestId);
 
-      const assignee = lastDeliveredOrder!.assignee;
+      const request = await service.findOne(1);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
+
+      const assignee = lastDeliveredOrder.assignee;
       const expectedMessage = emailTemplates.pantryRequestClosed({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry!.pantryUser.email],
+        [pantry.pantryUser.email],
         expectedMessage.subject,
         expectedMessage.bodyHTML,
       );
@@ -447,20 +453,31 @@ describe('RequestsService', () => {
         `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
       );
 
+      const request = await service.findOne(1);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
+
       await service.updateRequestStatus(1);
 
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
     it('still auto-closes request when email fails', async () => {
+      const requestBefore = await service.findOne(1);
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
+
       mockEmailsService.sendEmails.mockRejectedValueOnce(
         new Error('SMTP error'),
       );
+
+      const loggerSpy = jest.spyOn(service['logger'], 'warn');
 
       await service.updateRequestStatus(1);
 
       const request = await service.findOne(1);
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Request 1 auto-closed, but failed to send pantry notification email',
+      );
     });
   });
 
@@ -485,13 +502,13 @@ describe('RequestsService', () => {
 
       const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
 
-      const manufacturer = await manufacturerRepo.findOne({
+      const manufacturer = (await manufacturerRepo.findOne({
         where: { foodManufacturerId: 1 },
-      });
+      })) as FoodManufacturer;
 
-      manufacturer!.status = ApplicationStatus.PENDING;
+      manufacturer.status = ApplicationStatus.PENDING;
 
-      await manufacturerRepo.save(manufacturer!);
+      await manufacturerRepo.save(manufacturer);
 
       const resultAfter = await service.getMatchingManufacturers(requestId);
 
@@ -881,22 +898,22 @@ describe('RequestsService', () => {
     });
 
     it('sends pantry closed email with acting volunteer info on successful close', async () => {
-      const pantry = await testDataSource.getRepository(Pantry).findOne({
+      const pantry = (await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId: 3 },
         relations: ['pantryUser'],
-      });
+      })) as Pantry;
 
       await service.closeRequest(3, volunteerId);
 
       const expectedMessage = emailTemplates.pantryRequestClosed({
-        pantryName: pantry!.pantryName,
+        pantryName: pantry.pantryName,
         volunteerName: `James Thomas`,
         volunteerEmail: `james.t@volunteer.org`,
       });
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry!.pantryUser.email],
+        [pantry.pantryUser.email],
         expectedMessage.subject,
         expectedMessage.bodyHTML,
       );

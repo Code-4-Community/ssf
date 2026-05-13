@@ -200,6 +200,7 @@ export class OrdersService {
       await this.dataSource.transaction(async (transactionManager) => {
         validateId(manufacturerId, 'Food Manufacturer');
         validateId(requestId, 'Request');
+        validateId(userId, 'User');
 
         const request = await this.requestRepo.findOne({
           where: { requestId },

@@ -779,7 +779,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('createOrder', () => {
+  describe('create', () => {
     let validCreateOrderDto: CreateOrderDto;
     let parsedAllocations: Map<number, number>;
     const userId = 3;
@@ -815,18 +815,15 @@ describe('OrdersService', () => {
       parsedAllocations.set(9, 5);
 
       // Initial donation items
-      const donationItem1 = await donationItemRepo.findOne({
+      const donationItem1 = (await donationItemRepo.findOne({
         where: { itemId: 1 },
-      });
-      const donationItem2 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const donationItem2 = (await donationItemRepo.findOne({
         where: { itemId: 2 },
-      });
-      const donationItem3 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const donationItem3 = (await donationItemRepo.findOne({
         where: { itemId: 9 },
-      });
-
-      if (!donationItem1 || !donationItem2 || !donationItem3)
-        throw new Error('Missing dummy donation items');
+      })) as DonationItem;
 
       donationItem3.quantity = 100;
 
@@ -859,23 +856,16 @@ describe('OrdersService', () => {
         expect.arrayContaining([10, 3, 5]),
       );
 
-      const updatedDonationItem1 = await donationItemRepo.findOne({
+      const updatedDonationItem1 = (await donationItemRepo.findOne({
         where: { itemId: 1 },
-      });
-      const updatedDonationItem2 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const updatedDonationItem2 = (await donationItemRepo.findOne({
         where: { itemId: 2 },
-      });
-      const updatedDonationItem3 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const updatedDonationItem3 = (await donationItemRepo.findOne({
         where: { itemId: 9 },
-      });
+      })) as DonationItem;
 
-      if (
-        !updatedDonationItem1 ||
-        !updatedDonationItem2 ||
-        !updatedDonationItem3
-      ) {
-        throw new Error('Missing donation item test object');
-      }
       expect(updatedDonationItem1.reservedQuantity).toBe(
         donationItem1.reservedQuantity + 10,
       );
@@ -1177,7 +1167,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(spy).toHaveBeenCalledWith(
         createdOrder.orderId,
         parsedAllocations,
-        expect.anything(),
+        expect.any(EntityManager),
       );
     });
 
