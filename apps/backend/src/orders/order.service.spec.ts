@@ -1435,6 +1435,26 @@ describe('OrdersService', () => {
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
+    it('does not send email for orders that already had a tracking link when only shipping cost is updated', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      mockEmailsService.sendEmails.mockClear();
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
     it('logs a warning when one email fails but still updates all orders without throwing', async () => {
       const donationId = await insertMatchedDonation();
       const itemId1 = await insertDonationItem(donationId);

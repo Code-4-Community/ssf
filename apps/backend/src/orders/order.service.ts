@@ -535,14 +535,14 @@ export class OrdersService {
       }
     }
 
-    let donation: Donation | null;
+    const ordersGainedTrackingLink: Order[] = [];
 
     await this.dataSource.transaction(async (transactionManager) => {
       const orderTransactionRepo = transactionManager.getRepository(Order);
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
-      donation = await donationTransactionRepo.findOneBy({
+      const donation = await donationTransactionRepo.findOneBy({
         donationId: dto.donationId,
       });
       if (!donation) {
@@ -552,8 +552,15 @@ export class OrdersService {
       const ordersToUpdate: Order[] = [];
 
       for (const entry of dto.orders) {
-        const order = await orderTransactionRepo.findOneBy({
-          orderId: entry.orderId,
+        const order = await orderTransactionRepo.findOne({
+          where: { orderId: entry.orderId },
+          relations: [
+            'request',
+            'request.pantry',
+            'request.pantry.pantryUser',
+            'foodManufacturer',
+            'assignee',
+          ],
         });
         if (!order) {
           throw new NotFoundException(`Order ${entry.orderId} not found`);
@@ -581,6 +588,9 @@ export class OrdersService {
           );
         }
 
+        // Check to see if tracking link existed in the first place
+        const hadTrackingLink = !!order.trackingLink;
+
         if (entry.trackingLink !== undefined) {
           order.trackingLink = entry.trackingLink;
         }
@@ -591,6 +601,12 @@ export class OrdersService {
           order.status = OrderStatus.SHIPPED;
           order.shippedAt = new Date();
         }
+
+        // If tracking link didn't exist previous, but does now, add it to the list to send an email
+        if (!hadTrackingLink && !!order.trackingLink) {
+          ordersGainedTrackingLink.push(order);
+        }
+
         ordersToUpdate.push(order);
       }
 
@@ -601,24 +617,12 @@ export class OrdersService {
       );
     });
 
-    const updatedOrders = await this.repo.find({
-      where: { orderId: In(dto.orders.map((o) => o.orderId)) },
-      relations: [
-        'request',
-        'request.pantry',
-        'request.pantry.pantryUser',
-        'foodManufacturer',
-        'assignee',
-      ],
-    });
-
-    for (const order of updatedOrders) {
-      if (!order.trackingLink) continue;
+    for (const order of ordersGainedTrackingLink) {
       try {
         const message = emailTemplates.trackingLinkAvailable({
           pantryName: order.request.pantry.pantryName,
           fmName: order.foodManufacturer.foodManufacturerName,
-          trackingLink: order.trackingLink,
+          trackingLink: order.trackingLink!,
           volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
           volunteerEmail: order.assignee.email,
         });
