@@ -309,7 +309,7 @@ const AdminPantryManagement: React.FC = () => {
                                 justifyContent="center"
                                 color="white"
                                 fontSize="12px"
-                                ml={index === 0 ? 0 : '-10px'}
+                                ml={index === 0 ? 0 : '-4px'}
                                 zIndex={index}
                                 border="1px solid white"
                               >
@@ -331,7 +331,7 @@ const AdminPantryManagement: React.FC = () => {
                                 justifyContent="center"
                                 color="neutral.50"
                                 textStyle="p2"
-                                ml="-10px"
+                                ml="-4px"
                                 zIndex={maxVisible}
                                 border="1px solid white"
                               >

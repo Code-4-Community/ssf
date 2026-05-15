@@ -260,7 +260,7 @@ const PantryApplicationDetails: React.FC = () => {
           p={6}
           boxShadow="sm"
         >
-          <VStack align="stretch" gap={isApplicationMode ? 8 : 4}>
+          <VStack align="stretch" gap={8}>
             <Box>
               {isApplicationMode ? (
                 <>
@@ -275,7 +275,7 @@ const PantryApplicationDetails: React.FC = () => {
                   </Text>
                 </>
               ) : (
-                <Heading fontSize="18px" fontWeight={600}>
+                <Heading fontSize="18px" fontWeight={600} mb={-4}>
                   {application.pantryName}
                 </Heading>
               )}
