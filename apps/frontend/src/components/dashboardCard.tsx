@@ -6,7 +6,7 @@ import {
   getInitials,
   ORDER_STATUS_COLORS,
   DONATION_STATUS_COLORS,
-  ASSIGNEE_COLORS,
+  USER_ICON_COLORS,
 } from '@utils/utils';
 import { OrderAssignee, OrderStatus, DonationStatus } from '../types/types';
 
@@ -192,7 +192,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             w="30px"
             h="30px"
             borderRadius="full"
-            bg={ASSIGNEE_COLORS[assignee.id % ASSIGNEE_COLORS.length]}
+            bg={USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]}
             color="white"
             display="flex"
             alignItems="center"
