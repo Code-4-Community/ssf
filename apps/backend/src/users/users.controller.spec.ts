@@ -88,19 +88,21 @@ describe('UsersController', () => {
 
   describe('PATCH /:id', () => {
     it('should update user info with valid information', async () => {
-      const updatedUser = {
-        ...mockUser1,
-        firstName: 'UpdatedFirstName',
-        lastName: 'UpdatedLastName',
-        phone: '777-777-7777',
-      };
-      mockUserService.update.mockResolvedValue(updatedUser as User);
-
       const updateUserSchema: UpdateUserInfoDto = {
         firstName: 'UpdatedFirstName',
         lastName: 'UpdatedLastName',
         phone: '777-777-7777',
       };
+
+      const updatedUser: Partial<User> = {
+        ...mockUser1,
+        firstName: 'UpdatedFirstName',
+        lastName: 'UpdatedLastName',
+        phone: '777-777-7777',
+      };
+
+      mockUserService.update.mockResolvedValue(updatedUser as User);
+
       const result = await controller.updateInfo(1, updateUserSchema);
 
       expect(result).toEqual(updatedUser);

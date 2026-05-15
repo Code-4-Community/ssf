@@ -10,6 +10,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { AllocationModule } from '../allocations/allocations.module';
+import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AllocationModule } from '../allocations/allocations.module';
     forwardRef(() => AuthModule),
     DonationItemsModule,
     AllocationModule,
+    ManufacturerModule,
   ],
   controllers: [DonationsController],
   providers: [DonationService, DonationsSchedulerService],

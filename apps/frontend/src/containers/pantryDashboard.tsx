@@ -25,8 +25,8 @@ const PantryDashboard: React.FC = () => {
       try {
         const pantryId = await ApiClient.getCurrentUserPantryId();
         setPantryId(pantryId);
-      } catch (error) {
-        console.error('Error fetching pantry ID', error);
+      } catch {
+        console.error('Error fetching pantry ID');
       }
     };
 
@@ -40,8 +40,8 @@ const PantryDashboard: React.FC = () => {
       try {
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
-      } catch (error) {
-        console.error('Error fetching pantry data/SSFRep data', error);
+      } catch {
+        console.error('Error fetching pantry data/SSFRep data');
       }
     };
 

@@ -106,3 +106,12 @@ export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 
 export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
+
+export const isValidUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
