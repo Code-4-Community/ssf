@@ -255,7 +255,7 @@ export class ApiClient {
 
   public async getVolunteerRecentOrders(): Promise<VolunteerOrder[]> {
     return this.axiosInstance
-      .get(`/api/volunteers/me/my-recent-orders`)
+      .get(`/api/volunteers/me/recent-orders`)
       .then((response) => response.data);
   }
 

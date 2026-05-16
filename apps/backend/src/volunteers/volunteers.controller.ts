@@ -62,7 +62,7 @@ export class VolunteersController {
   }
 
   @Roles(Role.VOLUNTEER)
-  @Get('/me/my-recent-orders')
+  @Get('/me/recent-orders')
   async getRecentOrders(
     @Req() req: AuthenticatedRequest,
   ): Promise<VolunteerOrder[]> {

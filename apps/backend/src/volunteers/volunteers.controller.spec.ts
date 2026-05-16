@@ -214,7 +214,7 @@ describe('VolunteersController', () => {
     });
   });
 
-  describe('GET /me/my-recent-orders', () => {
+  describe('GET /me/recent-orders', () => {
     it('returns the 2 most recent orders for a volunteer', async () => {
       const req: AuthenticatedRequest = {
         user: { id: 6 },
