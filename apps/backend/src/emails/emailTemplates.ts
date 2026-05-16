@@ -197,25 +197,4 @@ export const emailTemplates = {
       </p>
     `,
   }),
-
-  volunteerRemovedFromPantry: (params: {
-    volunteerName: string;
-  }): EmailTemplate => ({
-    subject: 'You have been removed from an SSF Pantry Assignment',
-    bodyHTML: `
-      <p>Hi ${params.volunteerName},</p>
-      <p>
-        You have been removed from one of your pantry assignments with SSF. Please log into
-        the platform to review your current assignments.
-      </p>
-      <p>
-        Thank you for your continued support of our partners and mission.
-      </p>
-      <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        To view your pantry assignments, please click the following link:
-        <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries</a>
-      </p>
-    `,
-  }),
 };

@@ -1220,7 +1220,7 @@ describe('PantriesService', () => {
       warnSpy.mockRestore();
     });
 
-    it('sends volunteerRemovedFromPantry email to each removed volunteer', async () => {
+    it('sends volunteerPantryAssignmentChanged email to each removed volunteer', async () => {
       const removeVolunteerIds = [6, 9];
       const volunteers = await testDataSource
         .getRepository(User)
@@ -1237,7 +1237,7 @@ describe('PantriesService', () => {
         removeVolunteerIds.length,
       );
       for (const volunteer of volunteers) {
-        const message = emailTemplates.volunteerRemovedFromPantry({
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
@@ -1276,7 +1276,7 @@ describe('PantriesService', () => {
       );
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Automated email failed to send. Skipping pantry removal notification for volunteer id 6 and pantryId 1`,
+          `Automated email failed to send. Skipping pantry assignment update for volunteer id 6 and pantryId 1`,
         ),
       );
 

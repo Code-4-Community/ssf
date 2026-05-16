@@ -542,18 +542,15 @@ export class PantriesService {
       );
     }
 
-    const volunteersToAdd = users.filter((u) => addSet.has(u.id));
-
     const currentVolunteers = pantry.volunteers ?? [];
     const currentVolunteerIds = new Set(currentVolunteers.map((v) => v.id));
     const volunteersToKeep = currentVolunteers.filter(
       (v) => !removeSet.has(v.id),
     );
 
-    // avoid re-adding volunteers already associated with the pantry
-    const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
-    const newVolunteers = volunteersToAdd.filter(
-      (u) => !existingVolunteerIds.has(u.id),
+    // only notify volunteers who weren't already assigned to the pantry
+    const newVolunteers = users.filter(
+      (u) => addSet.has(u.id) && !currentVolunteerIds.has(u.id),
     );
 
     // only notify volunteers who were actually assigned before being removed
@@ -583,7 +580,7 @@ export class PantriesService {
 
     for (const volunteer of removedVolunteers) {
       try {
-        const message = emailTemplates.volunteerRemovedFromPantry({
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
         await this.emailsService.sendEmails({
@@ -593,7 +590,7 @@ export class PantriesService {
         });
       } catch {
         this.logger.warn(
-          `Automated email failed to send. Skipping pantry removal notification for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
+          `Automated email failed to send. Skipping pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
         );
       }
     }
