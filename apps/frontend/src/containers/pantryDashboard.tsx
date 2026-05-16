@@ -61,7 +61,7 @@ const PantryDashboard: React.FC = () => {
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!pantry) return;
+  if (!pantry) return null;
 
   return (
     <Box p={12}>
@@ -83,6 +83,7 @@ const PantryDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentFoodRequests.map((fr) => (
           <DashboardCard
+            key={fr.requestId}
             type={DashboardCardType.FOOD_REQUEST}
             title={`Request #${fr.requestId}`}
             date={fr.requestedAt}
@@ -101,6 +102,7 @@ const PantryDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {recentOrders.map((order) => (
           <DashboardCard
+            key={order.orderId}
             type={DashboardCardType.ORDER}
             title={`Order #${order.orderId}`}
             date={order.createdAt}

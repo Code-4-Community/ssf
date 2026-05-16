@@ -36,7 +36,7 @@ const Homepage: React.FC = () => {
           <List.Root unstyled gap={2}>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to={ROUTES.PANTRY_DASHBOARD}>Dasboard</RouterLink>
+                <RouterLink to={ROUTES.PANTRY_DASHBOARD}>Dashboard</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
