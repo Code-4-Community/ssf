@@ -15,17 +15,19 @@ import ApiClient from '@api/apiClient';
 import { Donation, DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
-import { useSearchParams } from 'react-router-dom';
-import { useAlert } from '../hooks/alert';
+import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
+
+const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [alertState, setAlertMessage] = useAlert();
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
-  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
-    null,
-  );
+  const [manufacturerId, setManufacturerId] = useState<number | null>(null);
+  const [selectedActionDonation, setSelectedActionDonation] =
+    useState<DonationDetails | null>(null);
   // State to hold donations grouped by status
   const [statusDonations, setStatusDonations] = useState<{
     [key in DonationStatus]: DonationDetails[];
@@ -43,12 +45,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.FULFILLED]: 1,
   });
 
-  const MAX_PER_STATUS = 5;
-
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async () => {
+  const fetchDonations = async (fmId: number) => {
     try {
-      const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
       const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
@@ -78,12 +77,22 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setAlertMessage('Error fetching donations');
+      setErrorMessage('Error fetching donations');
     }
   };
 
+  // On page load, get the food manufacturer id and all appropriate donations
   useEffect(() => {
-    fetchDonations();
+    const init = async () => {
+      try {
+        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+        setManufacturerId(fmId);
+        await fetchDonations(fmId);
+      } catch {
+        setErrorMessage('Error initializing donation management');
+      }
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -110,11 +119,19 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   return (
     <Box p={12}>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status={'error'}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
+      {successAlertState && (
+        <FloatingAlert
+          key={successAlertState.id}
+          message={successAlertState.message}
+          status="info"
           timeout={6000}
         />
       )}
@@ -139,19 +156,27 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         Log New Donation
       </Button>
 
-      {isLogDonationOpen && (
+      {isLogDonationOpen && manufacturerId !== null && (
         <NewDonationFormModal
-          onDonationSuccess={fetchDonations}
+          foodManufacturerId={manufacturerId}
+          onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
         />
       )}
 
-      {selectedDonation && (
-        <DonationDetailsModal
-          donation={selectedDonation}
+      {selectedActionDonation && (
+        <FmCompleteRequiredActionsModal
+          donation={selectedActionDonation}
           isOpen={true}
-          onClose={handleCloseModal}
+          onClose={() => setSelectedActionDonation(null)}
+          onSuccess={() => {
+            setSelectedActionDonation(null);
+            if (manufacturerId !== null) fetchDonations(manufacturerId);
+            setSuccessMessage(
+              'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+            );
+          }}
         />
       )}
 
@@ -174,6 +199,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
+              onActionSelect={setSelectedActionDonation}
             />
           </Box>
         );
@@ -190,6 +216,7 @@ interface DonationStatusSectionProps {
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
+  onActionSelect: (donation: DonationDetails | null) => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -200,8 +227,8 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   totalDonations,
   currentPage,
   onPageChange,
+  onActionSelect,
 }) => {
-  const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
   const tableHeaderStyles = {
@@ -359,7 +386,17 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       textAlign="right"
                       color="neutral.700"
                     >
-                      No Action Required
+                      {donationDetail.associatedPendingOrders.length > 0 ? (
+                        <Link
+                          textDecorationColor="black"
+                          variant="underline"
+                          onClick={() => onActionSelect(donationDetail)}
+                        >
+                          Complete Required Actions
+                        </Link>
+                      ) : (
+                        'No Action Required'
+                      )}
                     </Table.Cell>
                   </Table.Row>
                 );

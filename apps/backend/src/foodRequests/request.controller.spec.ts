@@ -3,7 +3,7 @@ import { RequestsController } from './request.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { FoodRequest } from './request.entity';
-import { FoodRequestStatus, RequestSize } from './types';
+import { RequestSize } from './types';
 import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
@@ -101,6 +101,7 @@ describe('RequestsController', () => {
           status: OrderStatus.DELIVERED,
           foodManufacturerName: 'Test Manufacturer',
           trackingLink: 'examplelink.com',
+          shippingCost: 8.0,
           items: [
             {
               id: 1,
@@ -121,6 +122,7 @@ describe('RequestsController', () => {
           status: OrderStatus.PENDING,
           foodManufacturerName: 'Another Manufacturer',
           trackingLink: 'examplelink.com',
+          shippingCost: 8.0,
           items: [
             {
               id: 1,
@@ -221,20 +223,13 @@ describe('RequestsController', () => {
 
   describe('PATCH /:requestId', () => {
     it('should update request with valid information', async () => {
-      const updatedRequest = {
-        ...foodRequest1,
-        requestedSize: RequestSize.MEDIUM,
-      };
-      mockRequestsService.update.mockResolvedValue(
-        updatedRequest as FoodRequest,
-      );
+      mockRequestsService.update.mockResolvedValue(undefined);
 
       const updateRequestDto: UpdateRequestDto = {
         requestedSize: RequestSize.MEDIUM,
       };
-      const result = await controller.updateRequest(1, updateRequestDto);
+      await controller.updateRequest(1, updateRequestDto);
 
-      expect(result).toEqual(updatedRequest);
       expect(mockRequestsService.update).toHaveBeenCalledWith(
         1,
         updateRequestDto,
@@ -298,20 +293,13 @@ describe('RequestsController', () => {
   });
 
   describe('PATCH /:requestId/close', () => {
-    it('should call requestsService.closeRequest and return the closed food request', async () => {
+    it('should call requestsService.closeRequest', async () => {
       const requestId = 1;
-      const closedRequest: Partial<FoodRequest> = {
-        ...foodRequest1,
-        status: FoodRequestStatus.CLOSED,
-      };
 
-      mockRequestsService.closeRequest.mockResolvedValueOnce(
-        closedRequest as FoodRequest,
-      );
+      mockRequestsService.closeRequest.mockResolvedValueOnce(undefined);
 
-      const result = await controller.closeRequest(requestId);
+      await controller.closeRequest(requestId);
 
-      expect(result).toEqual(closedRequest);
       expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
     });
   });

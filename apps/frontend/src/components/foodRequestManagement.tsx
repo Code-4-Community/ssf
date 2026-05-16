@@ -47,16 +47,15 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
-  const [alertState, setAlertMessage] = useAlert();
-  const [isAlertError, setIsAlertError] = useState<boolean>(true);
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
 
   const loadRequests = async () => {
     try {
       const data = await fetchData();
       setRequests(data);
     } catch {
-      setIsAlertError(true);
-      setAlertMessage('Error fetching requests');
+      setErrorMessage('Error fetching requests');
     }
   };
 
@@ -133,11 +132,19 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status={isAlertError ? 'error' : 'info'}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
+      {successAlertState && (
+        <FloatingAlert
+          key={successAlertState.id}
+          message={successAlertState.message}
+          status="info"
           timeout={6000}
         />
       )}
@@ -384,8 +391,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCloseRequest}
               onSuccess={() => {
-                setIsAlertError(false);
-                setAlertMessage('Request Closed');
+                setSuccessMessage('Request Closed');
                 loadRequests();
               }}
             />
@@ -397,8 +403,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCreateOrder}
               onSuccess={() => {
-                setIsAlertError(false);
-                setAlertMessage('Order Created');
+                setSuccessMessage('Order Created');
                 loadRequests();
               }}
             />

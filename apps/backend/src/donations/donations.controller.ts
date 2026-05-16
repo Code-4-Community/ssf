@@ -15,9 +15,14 @@ import { Donation } from './donations.entity';
 import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
-import { ConfirmDonationItemDetailsDto } from '../donationItems/dtos/confirm-donation-item-details.dto';
+import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { FoodType } from '../donationItems/types';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/types';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Controller('donations')
 export class DonationsController {
@@ -98,25 +103,41 @@ export class DonationsController {
   @Patch('/:donationId/fulfill')
   async fulfillDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<Donation> {
-    return this.donationService.fulfill(donationId);
+  ): Promise<void> {
+    await this.donationService.fulfill(donationId);
   }
 
+  @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(DonationService).findOne(entityId),
+        (donation: Donation) =>
+          services
+            .get(FoodManufacturersService)
+            .findOne(donation.foodManufacturer.foodManufacturerId),
+        (manufacturer: FoodManufacturer) => [
+          manufacturer.foodManufacturerRepresentative.id,
+        ],
+      );
+    },
+  })
   @Patch('/:donationId/item-details')
-  async confirmDonationItemDetails(
+  async updateDonationItemDetails(
     @Param('donationId', ParseIntPipe) donationId: number,
-    @Body(new ParseArrayPipe({ items: ConfirmDonationItemDetailsDto }))
-    body: ConfirmDonationItemDetailsDto[],
-  ): Promise<Donation> {
-    return this.donationService.confirmDonationItemDetails(donationId, body);
+    @Body(new ParseArrayPipe({ items: UpdateDonationItemDetailsDto }))
+    body: UpdateDonationItemDetailsDto[],
+  ): Promise<void> {
+    await this.donationService.updateDonationItemDetails(donationId, body);
   }
 
   @Put('/:donationId/items')
   async replaceDonationItems(
     @Param('donationId', ParseIntPipe) donationId: number,
     @Body() body: ReplaceDonationItemsDto,
-  ): Promise<Donation> {
-    return this.donationService.replaceDonationItems(donationId, body);
+  ): Promise<void> {
+    await this.donationService.replaceDonationItems(donationId, body);
   }
 
   @Delete('/:donationId')

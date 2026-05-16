@@ -129,7 +129,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                         >
                           <Text>
                             {item.quantity - item.reservedQuantity} of{' '}
-                            {item.quantity} remaining
+                            {item.quantity} Remaining
                           </Text>
                         </Box>
                       </Box>

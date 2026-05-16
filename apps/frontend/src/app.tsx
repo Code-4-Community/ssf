@@ -31,6 +31,7 @@ import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
+import AdminPantryManagement from '@containers/adminPantryManagement';
 import AdminRequestManagement from '@containers/adminRequestManagement';
 import AdminDashboard from '@containers/adminDashboard';
 import FoodManufacturerDashboard from '@containers/foodManufacturerDashboard';
@@ -120,6 +121,14 @@ const router = createBrowserRouter([
       },
       {
         path: ROUTES.PANTRY_APPLICATION_DETAILS,
+        element: (
+          <ProtectedRoute>
+            <PantryApplicationDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PANTRY_MANAGEMENT_DETAILS,
         element: (
           <ProtectedRoute>
             <PantryApplicationDetails />
@@ -219,6 +228,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <VolunteerOrderManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PANTRY_MANAGEMENT,
+        element: (
+          <ProtectedRoute>
+            <AdminPantryManagement />
           </ProtectedRoute>
         ),
       },

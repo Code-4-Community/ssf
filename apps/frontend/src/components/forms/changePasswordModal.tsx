@@ -14,6 +14,7 @@ import {
 import { updatePassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
+import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface ChangePasswordModalProps {
@@ -27,6 +28,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  useModalBodyCleanup();
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
