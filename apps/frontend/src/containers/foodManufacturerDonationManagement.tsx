@@ -12,16 +12,18 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { Donation, DonationDetails, DonationStatus } from '../types/types';
-import DonationDetailsModal from '@components/forms/donationDetailsModal';
+import { DonationDetails, DonationStatus } from '../types/types';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams } from 'react-router-dom';
+import DonationDetailsModal from '@components/forms/donationDetailsModal';
 
 const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
@@ -44,6 +46,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
+
+  // State to hold selected donation for details modal
+  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+    null,
+  );
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
@@ -100,21 +107,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     if (!donationIdParam) return;
 
     const id = Number(donationIdParam);
-    ApiClient.getDonation(id)
-      .then(setSelectedDonation)
-      .catch(() => setAlertMessage('Error loading donation'));
-  }, [searchParams, setAlertMessage]);
+    setSelectedDonationId(id);
+  }, [searchParams, setErrorMessage]);
 
   const handlePageChange = (status: DonationStatus, page: number) => {
     setCurrentPages((prev) => ({
       ...prev,
       [status]: page,
     }));
-  };
-
-  const handleCloseModal = () => {
-    setSelectedDonation(null);
-    setSearchParams({});
   };
 
   return (
@@ -195,11 +195,16 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               donations={displayedDonations}
               status={status}
               colors={DONATION_STATUS_COLORS[status]}
-              onDonationSelect={setSelectedDonation}
+              selectedDonationId={selectedDonationId}
+              onDonationSelect={setSelectedDonationId}
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
+              onDonationClose={() => {
+                setSelectedDonationId(null);
+                setSearchParams({});
+              }}
             />
           </Box>
         );
@@ -212,11 +217,13 @@ interface DonationStatusSectionProps {
   donations: DonationDetails[];
   status: DonationStatus;
   colors: string[];
-  onDonationSelect: (donation: Donation | null) => void;
+  onDonationSelect: (donationId: number | null) => void;
+  selectedDonationId: number | null;
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
+  onDonationClose: () => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -226,8 +233,10 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   onDonationSelect,
   totalDonations,
   currentPage,
+  selectedDonationId,
   onPageChange,
   onActionSelect,
+  onDonationClose,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -350,10 +359,17 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       <Link
                         textDecorationColor="black"
                         variant="underline"
-                        onClick={() => onDonationSelect(donation)}
+                        onClick={() => onDonationSelect(donation.donationId)}
                       >
                         {donation.donationId}
                       </Link>
+                      {selectedDonationId === donation.donationId && (
+                        <DonationDetailsModal
+                          donation={donation}
+                          isOpen={true}
+                          onClose={onDonationClose}
+                        />
+                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

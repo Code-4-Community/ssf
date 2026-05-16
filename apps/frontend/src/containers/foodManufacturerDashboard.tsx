@@ -9,12 +9,12 @@ import {
   DonationDetails,
   DonationReminderDto,
   FoodManufacturer,
-  User,
 } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const FoodManufacturerDashboard: React.FC = () => {
       <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
         {upcomingReminders.map((reminder) => (
           <DashboardCard
-            key={reminder.donation.donationId}
+            key={`${reminder.donation.donationId}-${reminder.reminderDate}`}
             type={DashboardCardType.UPCOMING_DONATION}
             title={`Donation #${reminder.donation.donationId}`}
             date={reminder.reminderDate}
@@ -96,7 +96,7 @@ const FoodManufacturerDashboard: React.FC = () => {
             linkText="View Donation Requirements"
             onLinkClick={() =>
               navigate(
-                `/fm-donation-management?donationId=${reminder.donation.donationId}`,
+                `${ROUTES.FM_DONATION_MANAGEMENT}?donationId=${reminder.donation.donationId}`,
               )
             }
           />
@@ -118,7 +118,7 @@ const FoodManufacturerDashboard: React.FC = () => {
             linkText="View Donation Details"
             onLinkClick={() =>
               navigate(
-                `/fm-donation-management?donationId=${donation.donationId}`,
+                `${ROUTES.FM_DONATION_MANAGEMENT}?donationId=${donation.donationId}`,
               )
             }
           />

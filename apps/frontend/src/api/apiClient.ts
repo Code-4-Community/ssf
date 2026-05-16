@@ -40,7 +40,6 @@ import {
   VolunteerAction,
   ApprovedPantryResponse,
   UpdatePantryVolunteersDto,
-  FoodRequestWithoutRelations,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
   PendingApplication,
@@ -480,7 +479,7 @@ export class ApiClient {
       .get(`/api/manufacturers/${foodManufacturerId}/next-two-reminders`)
       .then((response) => response.data);
   }
-  
+
   public async bulkUpdateTrackingCostInfo(
     data: BulkUpdateTrackingCostDto,
   ): Promise<void> {
