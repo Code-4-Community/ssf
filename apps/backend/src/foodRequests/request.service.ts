@@ -253,9 +253,10 @@ export class RequestsService {
       });
 
       await this.emailsService.sendEmails(
-        volunteerEmails,
+        pantry.pantryUser.email,
         message.subject,
         message.bodyHTML,
+        { bccEmails: volunteerEmails },
       );
     } catch {
       throw new InternalServerErrorException(

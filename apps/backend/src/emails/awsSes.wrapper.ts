@@ -11,6 +11,12 @@ export interface EmailAttachment {
   content: Buffer;
 }
 
+export interface SendEmailOptions {
+  ccEmails?: string[];
+  bccEmails?: string[];
+  attachments?: EmailAttachment[];
+}
+
 @Injectable()
 export class AmazonSESWrapper {
   private client: SESv2Client;
@@ -26,25 +32,35 @@ export class AmazonSESWrapper {
   /**
    * Sends an email via Amazon SES.
    *
-   * @param recipientEmails the email addresses of the recipients
+   * @param recipientEmail the email address of the primary recipient
    * @param subject the subject of the email
    * @param bodyHtml the HTML body of the email
-   * @param attachments any attachments to include in the email
+   * @param options optional cc/bcc recipients and attachments
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
   async sendEmails(
-    recipientEmails: string[],
+    recipientEmail: string,
     subject: string,
     bodyHtml: string,
-    attachments?: EmailAttachment[],
+    options: SendEmailOptions = {},
   ) {
+    const { ccEmails, bccEmails, attachments } = options;
+
     const mailOptions: Mail.Options = {
       from: process.env.AWS_SES_SENDER_EMAIL,
-      to: recipientEmails,
+      to: recipientEmail,
       subject: subject,
       html: bodyHtml,
     };
+
+    if (ccEmails && ccEmails.length > 0) {
+      mailOptions.cc = ccEmails;
+    }
+
+    if (bccEmails && bccEmails.length > 0) {
+      mailOptions.bcc = bccEmails;
+    }
 
     if (attachments) {
       mailOptions.attachments = attachments.map((a) => ({
@@ -58,7 +74,9 @@ export class AmazonSESWrapper {
 
     const command = new SendEmailCommand({
       Destination: {
-        ToAddresses: recipientEmails,
+        ToAddresses: [recipientEmail],
+        CcAddresses: ccEmails,
+        BccAddresses: bccEmails,
       },
       Content: {
         Raw: {

@@ -292,7 +292,7 @@ export class FoodManufacturersService {
         });
 
       await this.emailsService.sendEmails(
-        [foodManufacturerContact.email],
+        foodManufacturerContact.email,
         manufacturerMessage.subject,
         manufacturerMessage.bodyHTML,
       );
@@ -305,7 +305,7 @@ export class FoodManufacturersService {
     try {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
       await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
+        SSF_PARTNER_EMAIL,
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
@@ -381,7 +381,7 @@ export class FoodManufacturersService {
       });
 
       await this.emailsService.sendEmails(
-        [newFoodManufacturer.email],
+        newFoodManufacturer.email,
         message.subject,
         message.bodyHTML,
       );

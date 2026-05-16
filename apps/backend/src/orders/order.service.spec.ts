@@ -657,7 +657,7 @@ describe('OrdersService', () => {
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [order.assignee.email],
+        order.assignee.email,
         message.subject,
         message.bodyHTML,
       );
@@ -1415,7 +1415,7 @@ describe('OrdersService', () => {
         });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          [order.request.pantry.pantryUser.email],
+          order.request.pantry.pantryUser.email,
           message.subject,
           message.bodyHTML,
         );

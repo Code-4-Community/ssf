@@ -96,6 +96,7 @@ export const emailTemplates = {
       </p>
       <p>
         Thank you for your continued support of our network and mission!
+      </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),
@@ -165,7 +166,7 @@ export const emailTemplates = {
     bodyHTML: `
       <p>Hi ${params.volunteerName},</p>
       <p>
-        ${params.pantryName} has confirmed receipt of one of an order from ${params.fmName}
+        ${params.pantryName} has confirmed the receipt ofan order from ${params.fmName}
         which you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
         to review the completed request or check for additional information.
       </p>
@@ -185,6 +186,27 @@ export const emailTemplates = {
       <p>
         Your pantry assignment with SSF has been updated. Please log into the platform
         to review your current assignments and any active requests that may require your attention.
+      </p>
+      <p>
+        Thank you for your continued support of our partners and mission.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+      <p>
+        To view your pantry assignments, please click the following link:
+        <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries</a>
+      </p>
+    `,
+  }),
+
+  volunteerRemovedFromPantry: (params: {
+    volunteerName: string;
+  }): EmailTemplate => ({
+    subject: 'You have been removed from an SSF Pantry Assignment',
+    bodyHTML: `
+      <p>Hi ${params.volunteerName},</p>
+      <p>
+        You have been removed from one of your pantry assignments with SSF. Please log into
+        the platform to review your current assignments.
       </p>
       <p>
         Thank you for your continued support of our partners and mission.

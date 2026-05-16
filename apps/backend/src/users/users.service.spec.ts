@@ -159,7 +159,7 @@ describe('UsersService', () => {
       const message = emailTemplates.volunteerAccountCreated();
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [createUserDto.email],
+        createUserDto.email,
         message.subject,
         message.bodyHTML,
       );

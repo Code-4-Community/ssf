@@ -105,7 +105,7 @@ export class UsersService {
       try {
         const message = emailTemplates.volunteerAccountCreated();
         await this.emailsService.sendEmails(
-          [email],
+          email,
           message.subject,
           message.bodyHTML,
         );

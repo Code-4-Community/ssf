@@ -221,7 +221,7 @@ export class DonationService {
           });
 
           await this.emailsService.sendEmails(
-            [donation.foodManufacturer.foodManufacturerRepresentative.email],
+            donation.foodManufacturer.foodManufacturerRepresentative.email,
             message.subject,
             message.bodyHTML,
           );
@@ -248,10 +248,7 @@ export class DonationService {
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
             try {
               await this.emailsService.sendEmails(
-                [
-                  donation.foodManufacturer.foodManufacturerRepresentative
-                    .email,
-                ],
+                donation.foodManufacturer.foodManufacturerRepresentative.email,
                 message.subject,
                 message.bodyHTML,
               );

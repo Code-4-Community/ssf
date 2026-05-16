@@ -237,7 +237,7 @@ describe('RequestsService', () => {
       expect(result.additionalInformation).toBeNull();
     });
 
-    it('should send food request email to pantry volunteers', async () => {
+    it('should send food request email to pantry user with volunteers BCCed', async () => {
       const pantryId = 1;
       const pantry = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId },
@@ -257,13 +257,14 @@ describe('RequestsService', () => {
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        volunteerEmails,
+        pantry.pantryUser.email,
         message.subject,
         message.bodyHTML,
+        { bccEmails: volunteerEmails },
       );
     });
 
-    it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
+    it('should send email to pantry user with empty BCC when pantry has no volunteers', async () => {
       // Harbor Community Center - no volunteers assigned
       const pantryId = 5;
       const pantry = await testDataSource.getRepository(Pantry).findOne({
@@ -285,9 +286,10 @@ describe('RequestsService', () => {
       expect(volunteerEmails).toEqual([]);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        volunteerEmails,
+        pantry.pantryUser.email,
         message.subject,
         message.bodyHTML,
+        { bccEmails: volunteerEmails },
       );
     });
 

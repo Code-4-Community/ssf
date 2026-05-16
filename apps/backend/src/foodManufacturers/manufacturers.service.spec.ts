@@ -197,7 +197,7 @@ describe('FoodManufacturersService', () => {
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [manufacturer.foodManufacturerRepresentative.email],
+        manufacturer.foodManufacturerRepresentative.email,
         message.subject,
         message.bodyHTML,
       );
@@ -368,12 +368,12 @@ describe('FoodManufacturersService', () => {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [dto.contactEmail],
+        dto.contactEmail,
         userMessage.subject,
         userMessage.bodyHTML,
       );
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [SSF_PARTNER_EMAIL],
+        SSF_PARTNER_EMAIL,
         adminMessage.subject,
         adminMessage.bodyHTML,
       );

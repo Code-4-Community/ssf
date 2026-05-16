@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Bottleneck from 'bottleneck';
-import { AmazonSESWrapper, EmailAttachment } from './awsSes.wrapper';
+import { AmazonSESWrapper, SendEmailOptions } from './awsSes.wrapper';
 
 @Injectable()
 export class EmailsService {
@@ -18,29 +18,29 @@ export class EmailsService {
   /**
    * Sends an email.
    *
-   * @param recipientEmail the email address of the recipients
+   * @param recipientEmail the email address of the primary recipient
    * @param subject the subject of the email
    * @param bodyHtml the HTML body of the email
-   * @param attachments any base64 encoded attachments to include in the email
+   * @param options optional cc/bcc recipients and attachments
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
   public async sendEmails(
-    recipientEmails: string[],
+    recipientEmail: string,
     subject: string,
     bodyHTML: string,
-    attachments?: EmailAttachment[],
+    options: SendEmailOptions = {},
   ): Promise<unknown> {
     if (
       process.env.SEND_AUTOMATED_EMAILS &&
       process.env.SEND_AUTOMATED_EMAILS === 'true' &&
-      recipientEmails.length > 0
+      recipientEmail
     ) {
       return this.amazonSESWrapper.sendEmails(
-        recipientEmails,
+        recipientEmail,
         subject,
         bodyHTML,
-        attachments,
+        options,
       );
     }
     this.logger.warn('Automated emails are disabled. Email not sent.');

@@ -350,7 +350,7 @@ export class PantriesService {
       });
 
       await this.emailsService.sendEmails(
-        [pantryContact.email],
+        pantryContact.email,
         pantryMessage.subject,
         pantryMessage.bodyHTML,
       );
@@ -363,7 +363,7 @@ export class PantriesService {
     try {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
       await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
+        SSF_PARTNER_EMAIL,
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
@@ -437,7 +437,7 @@ export class PantriesService {
       });
 
       await this.emailsService.sendEmails(
-        [newPantryUser.email],
+        newPantryUser.email,
         message.subject,
         message.bodyHTML,
       );
@@ -545,6 +545,7 @@ export class PantriesService {
     const volunteersToAdd = users.filter((u) => addSet.has(u.id));
 
     const currentVolunteers = pantry.volunteers ?? [];
+    const currentVolunteerIds = new Set(currentVolunteers.map((v) => v.id));
     const volunteersToKeep = currentVolunteers.filter(
       (v) => !removeSet.has(v.id),
     );
@@ -553,6 +554,11 @@ export class PantriesService {
     const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
     const newVolunteers = volunteersToAdd.filter(
       (u) => !existingVolunteerIds.has(u.id),
+    );
+
+    // only notify volunteers who were actually assigned before being removed
+    const removedVolunteers = users.filter(
+      (u) => removeSet.has(u.id) && currentVolunteerIds.has(u.id),
     );
 
     pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
@@ -564,15 +570,31 @@ export class PantriesService {
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
         await this.emailsService.sendEmails(
-          [volunteer.email],
+          volunteer.email,
           message.subject,
           message.bodyHTML,
         );
       } catch {
         this.logger.warn(
-          `Automated email failed to send. Skipping recurrence update for volunteer id ${volunteer.id}`,
+          `Automated email failed to send. Skipping pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
         );
-        continue;
+      }
+    }
+
+    for (const volunteer of removedVolunteers) {
+      try {
+        const message = emailTemplates.volunteerRemovedFromPantry({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        await this.emailsService.sendEmails(
+          volunteer.email,
+          message.subject,
+          message.bodyHTML,
+        );
+      } catch {
+        this.logger.warn(
+          `Automated email failed to send. Skipping pantry removal notification for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
+        );
       }
     }
   }

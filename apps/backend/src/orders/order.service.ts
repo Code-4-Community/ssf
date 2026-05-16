@@ -467,7 +467,7 @@ export class OrdersService {
       });
 
       await this.emailsService.sendEmails(
-        [order.assignee.email],
+        order.assignee.email,
         message.subject,
         message.bodyHTML,
       );
@@ -516,7 +516,7 @@ export class OrdersService {
     }
 
     const orders = new Set(dto.orders.map((o) => o.orderId));
-    if (orders.size != dto.orders.length) {
+    if (orders.size !== dto.orders.length) {
       throw new BadRequestException(
         'Cannot update duplicate entries for orders',
       );
@@ -597,7 +597,7 @@ export class OrdersService {
         if (entry.shippingCost !== undefined) {
           order.shippingCost = entry.shippingCost;
         }
-        if (order.trackingLink != null && order.shippingCost != null) {
+        if (order.trackingLink !== null && order.shippingCost !== null) {
           order.status = OrderStatus.SHIPPED;
           order.shippedAt = new Date();
         }
@@ -628,7 +628,7 @@ export class OrdersService {
         });
 
         await this.emailsService.sendEmails(
-          [order.request.pantry.pantryUser.email],
+          order.request.pantry.pantryUser.email,
           message.subject,
           message.bodyHTML,
         );

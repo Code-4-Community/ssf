@@ -670,7 +670,7 @@ describe('DonationService', () => {
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          [manufacturer.foodManufacturerRepresentative.email],
+          manufacturer.foodManufacturerRepresentative.email,
           message.subject,
           message.bodyHTML,
         );

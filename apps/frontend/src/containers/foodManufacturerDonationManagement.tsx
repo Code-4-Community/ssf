@@ -95,7 +95,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       return grouped;
     } catch (error) {
-      alert('Error fetching donations: ' + error);
+      setErrorMessage('Error fetching donations: ' + error);
+      return;
     }
   };
 

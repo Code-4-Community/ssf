@@ -214,7 +214,7 @@ describe('PantriesService', () => {
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry.pantryUser.email],
+        pantry.pantryUser.email,
         message.subject,
         message.bodyHTML,
       );
@@ -378,12 +378,12 @@ describe('PantriesService', () => {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [dto.contactEmail],
+        dto.contactEmail,
         userMessage.subject,
         userMessage.bodyHTML,
       );
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [SSF_PARTNER_EMAIL],
+        SSF_PARTNER_EMAIL,
         adminMessage.subject,
         adminMessage.bodyHTML,
       );
@@ -1170,7 +1170,7 @@ describe('PantriesService', () => {
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          [volunteer.email],
+          volunteer.email,
           message.subject,
           message.bodyHTML,
         );
@@ -1205,7 +1205,7 @@ describe('PantriesService', () => {
       );
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Automated email failed to send. Skipping recurrence update for volunteer id 7`,
+          `Automated email failed to send. Skipping pantry assignment update for volunteer id 7 and pantryId 1`,
         ),
       );
 
@@ -1215,6 +1215,77 @@ describe('PantriesService', () => {
       const pantryVolunteerIds = pantry?.volunteers?.map((v) => v.id) ?? [];
       for (const id of addVolunteerIds) {
         expect(pantryVolunteerIds).toContain(id);
+      }
+
+      warnSpy.mockRestore();
+    });
+
+    it('sends volunteerRemovedFromPantry email to each removed volunteer', async () => {
+      const removeVolunteerIds = [6, 9];
+      const volunteers = await testDataSource
+        .getRepository(User)
+        .find({ where: { id: In(removeVolunteerIds) } });
+
+      expect(volunteers).toHaveLength(removeVolunteerIds.length);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        removeVolunteerIds.length,
+      );
+      for (const volunteer of volunteers) {
+        const message = emailTemplates.volunteerRemovedFromPantry({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
+          volunteer.email,
+          message.subject,
+          message.bodyHTML,
+        );
+      }
+    });
+
+    it('does not send email when removing a volunteer not assigned to the pantry', async () => {
+      // volunteer 8 is not assigned to pantry 1
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [8],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when one removal email fails but still removes the others without throwing', async () => {
+      const removeVolunteerIds = [6, 9];
+
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        removeVolunteerIds.length,
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Automated email failed to send. Skipping pantry removal notification for volunteer id 6 and pantryId 1`,
+        ),
+      );
+
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const pantryVolunteerIds = pantry?.volunteers?.map((v) => v.id) ?? [];
+      for (const id of removeVolunteerIds) {
+        expect(pantryVolunteerIds).not.toContain(id);
       }
 
       warnSpy.mockRestore();
