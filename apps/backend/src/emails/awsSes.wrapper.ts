@@ -4,18 +4,8 @@ import MailComposer from 'nodemailer/lib/mail-composer';
 import * as dotenv from 'dotenv';
 import Mail from 'nodemailer/lib/mailer';
 import { AMAZON_SES_CLIENT } from './awsSesClient.factory';
+import { SendEmailDTO } from './dto/send-email.dto';
 dotenv.config();
-
-export interface EmailAttachment {
-  filename: string;
-  content: Buffer;
-}
-
-export interface SendEmailOptions {
-  ccEmails?: string[];
-  bccEmails?: string[];
-  attachments?: EmailAttachment[];
-}
 
 @Injectable()
 export class AmazonSESWrapper {
@@ -32,24 +22,17 @@ export class AmazonSESWrapper {
   /**
    * Sends an email via Amazon SES.
    *
-   * @param recipientEmail the email address of the primary recipient
-   * @param subject the subject of the email
-   * @param bodyHtml the HTML body of the email
-   * @param options optional cc/bcc recipients and attachments
+   * @param email the {@link SendEmailDTO} describing the message to send
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
-  async sendEmails(
-    recipientEmail: string,
-    subject: string,
-    bodyHtml: string,
-    options: SendEmailOptions = {},
-  ) {
-    const { ccEmails, bccEmails, attachments } = options;
+  async sendEmails(email: SendEmailDTO) {
+    const { toEmail, subject, bodyHtml, ccEmails, bccEmails, attachments } =
+      email;
 
     const mailOptions: Mail.Options = {
       from: process.env.AWS_SES_SENDER_EMAIL,
-      to: recipientEmail,
+      to: toEmail,
       subject: subject,
       html: bodyHtml,
     };
@@ -74,7 +57,7 @@ export class AmazonSESWrapper {
 
     const command = new SendEmailCommand({
       Destination: {
-        ToAddresses: [recipientEmail],
+        ToAddresses: [toEmail],
         CcAddresses: ccEmails,
         BccAddresses: bccEmails,
       },

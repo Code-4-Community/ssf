@@ -349,11 +349,11 @@ export class PantriesService {
         name: pantryContact.firstName,
       });
 
-      await this.emailsService.sendEmails(
-        pantryContact.email,
-        pantryMessage.subject,
-        pantryMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: pantryContact.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry application submitted confirmation email to representative',
@@ -362,11 +362,11 @@ export class PantriesService {
 
     try {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
-      await this.emailsService.sendEmails(
-        SSF_PARTNER_EMAIL,
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send new pantry application notification email to SSF',
@@ -436,11 +436,11 @@ export class PantriesService {
         name: newPantryUser.firstName,
       });
 
-      await this.emailsService.sendEmails(
-        newPantryUser.email,
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: newPantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry account approved notification email to representative',
@@ -569,11 +569,11 @@ export class PantriesService {
         const message = emailTemplates.volunteerPantryAssignmentChanged({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
-        await this.emailsService.sendEmails(
-          volunteer.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        await this.emailsService.sendEmails({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       } catch {
         this.logger.warn(
           `Automated email failed to send. Skipping pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
@@ -586,11 +586,11 @@ export class PantriesService {
         const message = emailTemplates.volunteerRemovedFromPantry({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
-        await this.emailsService.sendEmails(
-          volunteer.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        await this.emailsService.sendEmails({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       } catch {
         this.logger.warn(
           `Automated email failed to send. Skipping pantry removal notification for volunteer id ${volunteer.id} and pantryId ${pantryId}`,

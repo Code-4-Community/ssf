@@ -213,11 +213,11 @@ describe('PantriesService', () => {
       await service.approve(5);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        pantry.pantryUser.email,
-        message.subject,
-        message.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('should still update pantry status to approved if email send fails', async () => {
@@ -377,16 +377,16 @@ describe('PantriesService', () => {
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        dto.contactEmail,
-        userMessage.subject,
-        userMessage.bodyHTML,
-      );
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        SSF_PARTNER_EMAIL,
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: dto.contactEmail,
+        subject: userMessage.subject,
+        bodyHtml: userMessage.bodyHTML,
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
     });
   });
@@ -1169,11 +1169,11 @@ describe('PantriesService', () => {
         const message = emailTemplates.volunteerPantryAssignmentChanged({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
-        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          volunteer.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       }
     });
 
@@ -1240,11 +1240,11 @@ describe('PantriesService', () => {
         const message = emailTemplates.volunteerRemovedFromPantry({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
         });
-        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          volunteer.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       }
     });
 

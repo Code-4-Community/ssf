@@ -220,11 +220,12 @@ export class DonationService {
             resubmitDonationId: donation.donationId,
           });
 
-          await this.emailsService.sendEmails(
-            donation.foodManufacturer.foodManufacturerRepresentative.email,
-            message.subject,
-            message.bodyHTML,
-          );
+          await this.emailsService.sendEmails({
+            toEmail:
+              donation.foodManufacturer.foodManufacturerRepresentative.email,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+          });
         } catch {
           this.logger.warn(
             `Automated email failed to send. Skipping recurrence update for donation id ${donation.donationId}`,
@@ -247,11 +248,13 @@ export class DonationService {
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
             try {
-              await this.emailsService.sendEmails(
-                donation.foodManufacturer.foodManufacturerRepresentative.email,
-                message.subject,
-                message.bodyHTML,
-              );
+              await this.emailsService.sendEmails({
+                toEmail:
+                  donation.foodManufacturer.foodManufacturerRepresentative
+                    .email,
+                subject: message.subject,
+                bodyHtml: message.bodyHTML,
+              });
             } catch {
               // Early escape to prevent getting stuck in while loop
               this.logger.warn(

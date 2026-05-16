@@ -6,7 +6,11 @@ import {
   IsArray,
   Length,
 } from 'class-validator';
-import { EmailAttachment } from '../awsSes.wrapper';
+
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+}
 
 export class SendEmailDTO {
   @IsEmail()

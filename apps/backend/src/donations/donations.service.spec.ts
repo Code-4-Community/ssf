@@ -669,11 +669,11 @@ describe('DonationService', () => {
         });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          manufacturer.foodManufacturerRepresentative.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: manufacturer.foodManufacturerRepresentative.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       });
 
       it('skips recurrence update and logs warning when initial email fails', async () => {

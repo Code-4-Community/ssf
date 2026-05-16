@@ -252,12 +252,12 @@ export class RequestsService {
         pantryName: pantry.pantryName,
       });
 
-      await this.emailsService.sendEmails(
-        pantry.pantryUser.email,
-        message.subject,
-        message.bodyHTML,
-        { bccEmails: volunteerEmails },
-      );
+      await this.emailsService.sendEmails({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send new food request notification email to volunteers',

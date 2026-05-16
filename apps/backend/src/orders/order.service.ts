@@ -466,11 +466,11 @@ export class OrdersService {
         fmName: order.foodManufacturer.foodManufacturerName,
       });
 
-      await this.emailsService.sendEmails(
-        order.assignee.email,
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: order.assignee.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send order delivery confirmation email to volunteer',
@@ -627,11 +627,11 @@ export class OrdersService {
           volunteerEmail: order.assignee.email,
         });
 
-        await this.emailsService.sendEmails(
-          order.request.pantry.pantryUser.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        await this.emailsService.sendEmails({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       } catch {
         this.logger.warn(
           `Automated tracking link email failed to send for order ${order.orderId}`,

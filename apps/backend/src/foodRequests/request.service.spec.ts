@@ -256,12 +256,12 @@ describe('RequestsService', () => {
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        pantry.pantryUser.email,
-        message.subject,
-        message.bodyHTML,
-        { bccEmails: volunteerEmails },
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     });
 
     it('should send email to pantry user with empty BCC when pantry has no volunteers', async () => {
@@ -285,12 +285,12 @@ describe('RequestsService', () => {
 
       expect(volunteerEmails).toEqual([]);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        pantry.pantryUser.email,
-        message.subject,
-        message.bodyHTML,
-        { bccEmails: volunteerEmails },
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     });
 
     it('should still save food request to database if email send fails', async () => {

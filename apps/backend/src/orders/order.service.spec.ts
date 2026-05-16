@@ -656,11 +656,11 @@ describe('OrdersService', () => {
       });
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        order.assignee.email,
-        message.subject,
-        message.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: order.assignee.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('still updates order to delivered if delivery confirmation email fails to send', async () => {
@@ -1414,11 +1414,11 @@ describe('OrdersService', () => {
           volunteerEmail: order.assignee.email,
         });
 
-        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-          order.request.pantry.pantryUser.email,
-          message.subject,
-          message.bodyHTML,
-        );
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       }
     });
 
