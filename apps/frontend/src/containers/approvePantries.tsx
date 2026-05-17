@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Table,
   Button,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
-import { ROUTES } from '../routes';
 
 const ApprovePantries: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);

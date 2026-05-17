@@ -538,11 +538,13 @@ export interface OrderSummary {
     pantryId: number;
     pantry: {
       pantryName: string;
-      volunteers?: {
-        id: number;
-        firstName: string;
-        lastName: string;
-      }[];
+      volunteers:
+        | {
+            id: number;
+            firstName: string;
+            lastName: string;
+          }[]
+        | null;
     };
   };
   assignee: {

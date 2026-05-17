@@ -5,6 +5,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { NavigateFunction } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   User,
   Order,
@@ -23,7 +24,6 @@ import {
   ConfirmDeliveryDto,
   OrderWithoutRelations,
   FoodRequestSummaryDto,
-  OrderWithoutFoodManufacturer,
   PantryWithUser,
   Assignments,
   PantryStats,
@@ -80,9 +80,9 @@ export class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 403) {
           if (this.navigate) {
-            this.navigate('/unauthorized');
+            this.navigate(ROUTES.UNAUTHORIZED);
           } else {
-            window.location.replace('/unauthorized');
+            window.location.replace(ROUTES.UNAUTHORIZED);
           }
         }
         return Promise.reject(error);
@@ -176,9 +176,7 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getPantryOrders(
-    pantryId: number,
-  ): Promise<OrderWithoutFoodManufacturer[]> {
+  public async getPantryOrders(pantryId: number): Promise<OrderSummary[]> {
     return this.axiosInstance
       .get(`/api/pantries/${pantryId}/orders`)
       .then((response) => response.data);
@@ -257,6 +255,12 @@ export class ApiClient {
   public async getVolunteerOrders(userId: number): Promise<VolunteerOrder[]> {
     return this.axiosInstance
       .get(`/api/volunteers/${userId}/orders`)
+      .then((response) => response.data);
+  }
+
+  public async getVolunteerRecentOrders(): Promise<VolunteerOrder[]> {
+    return this.axiosInstance
+      .get(`/api/volunteers/me/recent-orders`)
       .then((response) => response.data);
   }
 
