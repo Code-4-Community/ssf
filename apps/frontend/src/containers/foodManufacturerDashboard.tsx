@@ -19,7 +19,7 @@ import { ROUTES } from '../routes';
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [alertState, setAlertMessage] = useAlert();
+  const [errorAlertState, setErrorMessage] = useAlert();
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
   const [upcomingReminders, setUpcomingReminders] = useState<
@@ -35,7 +35,7 @@ const FoodManufacturerDashboard: React.FC = () => {
         const fm = await ApiClient.getFoodManufacturer(fmId);
         setFoodManufacturer(fm);
       } catch {
-        setAlertMessage('Error fetching your manufacturer profile.');
+        setErrorMessage('Error fetching your manufacturer profile.');
         return;
       }
 
@@ -47,7 +47,7 @@ const FoodManufacturerDashboard: React.FC = () => {
       if (reminders.status === 'fulfilled') {
         setUpcomingReminders(reminders.value);
       } else {
-        setAlertMessage('Error fetching upcoming donations.');
+        setErrorMessage('Error fetching upcoming donations.');
       }
 
       if (donations.status === 'fulfilled') {
@@ -61,19 +61,19 @@ const FoodManufacturerDashboard: React.FC = () => {
           .slice(0, 2);
         setRecentDonations(sorted);
       } else {
-        setAlertMessage('Error fetching recent donations.');
+        setErrorMessage('Error fetching recent donations.');
       }
     };
     fetchFmData();
-  }, [setAlertMessage]);
+  }, [setErrorMessage]);
 
   return (
     <Box p={12}>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status={'error'}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
           timeout={6000}
         />
       )}
@@ -92,7 +92,6 @@ const FoodManufacturerDashboard: React.FC = () => {
             title={`Donation #${reminder.donation.donationId}`}
             date={reminder.reminderDate}
             subtitle={reminder.donation.foodManufacturer?.foodManufacturerName}
-            badge={DONATION_STATUS_BADGE[reminder.donation.status]}
             linkText="View Donation Requirements"
             onLinkClick={() =>
               navigate(
@@ -114,7 +113,6 @@ const FoodManufacturerDashboard: React.FC = () => {
             title={`Donation #${donation.donationId}`}
             date={donation.dateDonated}
             subtitle={donation.foodManufacturer?.foodManufacturerName}
-            badge={DONATION_STATUS_BADGE[donation.status]}
             linkText="View Donation Details"
             onLinkClick={() =>
               navigate(

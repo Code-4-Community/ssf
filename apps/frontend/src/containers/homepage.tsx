@@ -82,7 +82,7 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/fm-dashboard">
+                <RouterLink to={ROUTES.FM_DASHBOARD}>
                   Food Manufacturer Dashboard
                 </RouterLink>
               </Link>

@@ -17,12 +17,14 @@ import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
+import { ROUTES } from '../routes';
 
 const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
@@ -203,7 +205,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               onActionSelect={setSelectedActionDonation}
               onDonationClose={() => {
                 setSelectedDonationId(null);
-                setSearchParams({});
+                navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
               }}
             />
           </Box>
