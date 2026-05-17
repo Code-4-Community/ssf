@@ -338,13 +338,13 @@ const Navbar: React.FC = () => {
         <NavLink
           to={ROUTES.HOME}
           label="All Pages"
-          isActive={location.pathname == ROUTES.HOME}
+          isActive={location.pathname === ROUTES.HOME}
         />
 
         <NavLink
           to={ROUTES.HOME}
           label="Dashboard"
-          isActive={location.pathname == ROUTES.HOME}
+          isActive={location.pathname === ROUTES.HOME}
         />
 
         {sections.map((section) =>
