@@ -16,7 +16,11 @@ import {
   Mail,
   CircleCheck,
 } from 'lucide-react';
-import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
+import {
+  formatDate,
+  ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
+} from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
@@ -307,7 +311,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {capitalize(status)}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -331,7 +335,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} orders at this time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -501,7 +506,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={1}
                         px={3}
                       >
-                        {capitalize(order.status)}
+                        {ORDER_STATUS_LABELS[order.status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
