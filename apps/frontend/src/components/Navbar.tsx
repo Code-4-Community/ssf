@@ -38,7 +38,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Pantries',
       children: [
-        { label: 'Pantry Management', to: ROUTES.ADMIN_PANTRY_MANAGEMENT },
+        { label: 'Pantry Management', to: ROUTES.PANTRY_MANAGEMENT },
         { label: 'Application Review', to: ROUTES.APPROVE_PANTRIES },
       ],
     },

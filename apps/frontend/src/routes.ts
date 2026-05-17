@@ -20,12 +20,11 @@ export const ROUTES = {
   APPROVE_PANTRIES: '/approve-pantries',
   APPROVE_FOOD_MANUFACTURERS: '/approve-food-manufacturers',
   VOLUNTEER_MANAGEMENT: '/volunteer-management',
-
+  PANTRY_MANAGEMENT: '/pantry-management',
   ADMIN_ORDER_MANAGEMENT: '/admin-order-management',
   ADMIN_DONATION: '/admin-donation',
   ADMIN_DONATION_STATS: '/admin-donation-stats',
   ADMIN_REQUEST_MANAGEMENT: '/admin-request-management',
-  ADMIN_PANTRY_MANAGEMENT: '/admin-pantry-management',
   ADMIN_DASHBOARD: '/admin-dashboard',
 
   VOLUNTEER_ASSIGNED_PANTRIES: '/volunteer-assigned-pantries',

@@ -181,7 +181,7 @@ const VolunteerManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    href={`${ROUTES.ADMIN_PANTRY_MANAGEMENT}/${volunteer.id}`}
+                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
                   >
                     View Assigned Pantries
                   </Link>
