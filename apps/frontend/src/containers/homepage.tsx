@@ -15,7 +15,7 @@ import {
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const Homepage: React.FC = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
 
   return (
     <Container maxW="container.md" py={5}>
@@ -140,11 +140,6 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to="/pantries">All Pantries</RouterLink>
-              </Link>
-            </ListItem>
-            <ListItem textAlign="center">
-              <Link asChild color="teal.500">
                 <RouterLink to={ROUTES.VOLUNTEER_MANAGEMENT}>
                   Volunteer Management
                 </RouterLink>
@@ -173,9 +168,14 @@ const Homepage: React.FC = () => {
             </ListItem>
             <ListItem textAlign="center">
               <Link asChild color="teal.500">
-                <RouterLink to={ROUTES.TEST_ADMIN_DASHBOARD}>
-                  Dashboard
+                <RouterLink to={ROUTES.ADMIN_PANTRY_MANAGEMENT}>
+                  Pantry Management
                 </RouterLink>
+              </Link>
+            </ListItem>
+            <ListItem textAlign="center">
+              <Link asChild color="teal.500">
+                <RouterLink to={ROUTES.ADMIN_DASHBOARD}>Dashboard</RouterLink>
               </Link>
             </ListItem>
             <ListItem textAlign="center">
@@ -188,7 +188,7 @@ const Homepage: React.FC = () => {
           </List.Root>
         </Box>
 
-        {!user && (
+        {authStatus !== 'authenticated' && (
           <Box w="full">
             <Heading as="h3" size="md" mb={3} textAlign="center">
               Other Pages

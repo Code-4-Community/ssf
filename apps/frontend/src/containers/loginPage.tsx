@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { ROUTES } from '../routes';
+import { useState, useEffect } from 'react';
 import { signIn, confirmSignIn, fetchAuthSession } from '@aws-amplify/auth';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -31,10 +32,29 @@ const LoginPage: React.FC = () => {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [step, setStep] = useState<Step>('login');
   const [alertState, setAlertMessage] = useAlert();
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || ROUTES.HOME;
+
+  useEffect(() => {
+    if (authStatus === 'authenticated') {
+      navigate(from, { replace: true });
+    }
+  }, [authStatus, from, navigate]);
+
+  const handleLoginKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && email && password) {
+      handleLogin();
+    }
+  };
+
+  const handleNewPasswordKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && newPassword && confirmNewPassword) {
+      handleSetNewPassword();
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -48,8 +68,25 @@ const LoginPage: React.FC = () => {
       } else {
         navigate(from, { replace: true });
       }
-    } catch {
-      setAlertMessage('Login failed');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.name === 'UserAlreadyAuthenticatedException') {
+          navigate(from, { replace: true });
+          return;
+        }
+        if (
+          error.name === 'NotAuthorizedException' ||
+          error.name === 'UserNotFoundException'
+        ) {
+          setAlertMessage('Incorrect email or password. Please try again.');
+          return;
+        }
+      }
+      setAlertMessage(
+        navigator.onLine
+          ? 'Login failed. The server may be unavailable. Please try again later.'
+          : 'No internet connection. Please check your network and try again.',
+      );
     }
   };
 
@@ -137,6 +174,7 @@ const LoginPage: React.FC = () => {
                   color="neutral.700"
                   _placeholder={{ ...placeholderStyles }}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={handleLoginKeyDown}
                 />
               </Field.Root>
 
@@ -152,6 +190,7 @@ const LoginPage: React.FC = () => {
                     color="neutral.700"
                     _placeholder={{ ...placeholderStyles }}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleLoginKeyDown}
                   />
                   <IconButton
                     variant="outline"
@@ -200,6 +239,7 @@ const LoginPage: React.FC = () => {
                     color="neutral.700"
                     _placeholder={{ ...placeholderStyles }}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onKeyDown={handleNewPasswordKeyDown}
                   />
                   <IconButton
                     variant="outline"
@@ -228,6 +268,7 @@ const LoginPage: React.FC = () => {
                     color="neutral.700"
                     _placeholder={{ ...placeholderStyles }}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    onKeyDown={handleNewPasswordKeyDown}
                   />
                   <IconButton
                     variant="outline"

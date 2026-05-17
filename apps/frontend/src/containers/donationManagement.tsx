@@ -11,9 +11,12 @@ import ApiClient from '@api/apiClient';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import { formatDate } from '@utils/utils';
 import { Donation, DonationItem } from 'types/types';
+import { FloatingAlert } from '@components/floatingAlert';
+import { useAlert } from '../hooks/alert';
 
 const DonationManagement: React.FC = () => {
   const { open, onOpen, onClose } = useDisclosure();
+  const [alertState, setAlertMessage] = useAlert();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [expandedDonationIds, setExpandedDonationIds] = useState<number[]>([]);
   const [donationItems, setDonationItems] = useState<{
@@ -22,6 +25,13 @@ const DonationManagement: React.FC = () => {
   const [donationItemStock, setDonationItemStock] = useState<{
     [key: number]: number;
   }>({});
+  const [manufacturerId, setManufacturerId] = useState<number | null>(null);
+
+  useEffect(() => {
+    ApiClient.getCurrentUserFoodManufacturerId()
+      .then(setManufacturerId)
+      .catch(() => setManufacturerId(null));
+  }, []);
 
   const fetchDonations = async () => {
     try {
@@ -32,8 +42,8 @@ const DonationManagement: React.FC = () => {
         return 0;
       });
       setDonations(sortedDonations);
-    } catch (error) {
-      alert('Error fetching donations: ' + error);
+    } catch {
+      setAlertMessage('Error fetching donations');
     }
   };
 
@@ -51,8 +61,8 @@ const DonationManagement: React.FC = () => {
           [item.itemId]: item.quantity - item.reservedQuantity,
         }));
       });
-    } catch (error) {
-      alert('Error fetching donation items: ' + error);
+    } catch {
+      setAlertMessage('Error fetching donation items');
     }
   };
 
@@ -69,13 +79,10 @@ const DonationManagement: React.FC = () => {
 
   const fulfillDonation = async (donationId: number) => {
     try {
-      const response = await ApiClient.fulfillDonation(donationId);
-      if (!response) {
-        alert('Error fulfilling donation');
-      }
+      await ApiClient.fulfillDonation(donationId);
       fetchDonations();
-    } catch (error) {
-      alert('Failed to fulfill donation: ' + error);
+    } catch {
+      setAlertMessage('Failed to fulfill donation');
     }
   };
 
@@ -85,12 +92,23 @@ const DonationManagement: React.FC = () => {
 
   return (
     <Center flexDirection="column" p={4}>
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
       <Button onClick={onOpen}>Submit new donation</Button>
-      <NewDonationFormModal
-        onDonationSuccess={fetchDonations}
-        isOpen={open}
-        onClose={onClose}
-      />
+      {manufacturerId !== null && (
+        <NewDonationFormModal
+          foodManufacturerId={manufacturerId}
+          onDonationSuccess={fetchDonations}
+          isOpen={open}
+          onClose={onClose}
+        />
+      )}
       <Table.Root variant="line" mt={6} width="80%">
         <Table.Header>
           <Table.Row>

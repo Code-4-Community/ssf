@@ -26,6 +26,18 @@ const ResetPasswordModal: React.FC = () => {
 
   const navigate = useNavigate();
 
+  const handleSendCodeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && email) {
+      handleSendCode();
+    }
+  };
+
+  const handleResetPasswordKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && password && confirmPassword) {
+      handleResetPassword();
+    }
+  };
+
   const handleSendCode = async () => {
     try {
       await resetPassword({ username: email });
@@ -137,6 +149,11 @@ const ResetPasswordModal: React.FC = () => {
                 ? (e) => setCode(e.target.value)
                 : (e) => setEmail(e.target.value)
             }
+            onKeyDown={
+              step === 'reset'
+                ? handleSendCodeKeyDown
+                : handleResetPasswordKeyDown
+            }
           />
         </Field.Root>
 
@@ -149,6 +166,7 @@ const ResetPasswordModal: React.FC = () => {
                 placeholder="Enter new password"
                 {...inputStyles}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleResetPasswordKeyDown}
               />
             </Field.Root>
             <Field.Root required>
@@ -158,6 +176,7 @@ const ResetPasswordModal: React.FC = () => {
                 placeholder="Confirm Password"
                 {...inputStyles}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={handleResetPasswordKeyDown}
               />
             </Field.Root>
           </VStack>

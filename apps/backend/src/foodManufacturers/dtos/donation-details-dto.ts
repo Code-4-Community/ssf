@@ -6,12 +6,25 @@ export class DonationItemWithAllocatedQuantityDto {
   itemName!: string;
   foodType!: FoodType;
   allocatedQuantity!: number;
+  ozPerItem?: number;
+  estimatedValue?: number;
+  foodRescue!: boolean;
+}
+
+export class PendingOrderItemDto {
+  id!: number;
+  name!: string;
+  quantity!: number;
+  foodType!: FoodType;
 }
 
 export class DonationOrderDetailsDto {
   orderId!: number;
   pantryId!: number;
   pantryName!: string;
+  trackingLink!: string | null;
+  shippingCost!: number | null;
+  items!: PendingOrderItemDto[];
 }
 
 export class DonationDetailsDto {

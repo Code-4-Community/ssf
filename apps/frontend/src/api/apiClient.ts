@@ -1,7 +1,6 @@
 import { fetchAuthSession } from 'aws-amplify/auth';
 import axios, {
   AxiosError,
-  AxiosResponse,
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
@@ -39,7 +38,12 @@ import {
   DonationDetails,
   VolunteerOrder,
   VolunteerAction,
+  ApprovedPantryResponse,
+  UpdatePantryVolunteersDto,
   FoodRequestWithoutRelations,
+  BulkUpdateTrackingCostDto,
+  UpdateDonationItemDetailsDto,
+  PendingApplication,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -100,12 +104,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async closeFoodRequest(
-    requestId: number,
-  ): Promise<FoodRequestWithoutRelations> {
-    return this.axiosInstance
-      .patch(`/api/requests/${requestId}/close`, {})
-      .then((response) => response.data);
+  public async closeFoodRequest(requestId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/requests/${requestId}/close`, {});
   }
 
   public async getAllDonations(): Promise<Donation[]> {
@@ -125,10 +125,11 @@ export class ApiClient {
   public async fulfillDonation(
     donationId: number,
     body?: unknown,
-  ): Promise<Donation> {
-    return this.axiosInstance
-      .patch(`/api/donations/${donationId}/fulfill`, body ?? {})
-      .then((response) => response.data);
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/donations/${donationId}/fulfill`,
+      body ?? {},
+    );
   }
 
   public async getRepresentativeUser(userId: number): Promise<User> {
@@ -163,6 +164,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
+    return this.axiosInstance
+      .get(`/api/pantries/approved`)
+      .then((response) => response.data);
+  }
+
   public async getPantryFromOrder(orderId: number): Promise<Pantry | null> {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/pantry`)
@@ -181,10 +188,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async postPantry(
-    data: PantryApplicationDto,
-  ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/pantries`, data);
+  public async postPantry(data: PantryApplicationDto): Promise<void> {
+    await this.axiosInstance.post(`/api/pantries`, data);
   }
 
   public async getPantryStats(params?: {
@@ -259,6 +264,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getRecentPendingApplications(): Promise<PendingApplication[]> {
+    return this.axiosInstance
+      .get(`/api/users/admin/recent-pending-applications`)
+      .then((response) => response.data);
+  }
+
   public async completeOrderAction(
     orderId: number,
     action: VolunteerAction,
@@ -309,7 +320,7 @@ export class ApiClient {
     orderId: number,
     dto: ConfirmDeliveryDto,
     photos: File[],
-  ): Promise<OrderWithoutRelations> {
+  ): Promise<void> {
     const formData = new FormData();
 
     formData.append('dateReceived', dto.dateReceived);
@@ -321,18 +332,16 @@ export class ApiClient {
       formData.append('photos', file);
     }
 
-    const { data } = await this.axiosInstance.patch(
+    await this.axiosInstance.patch(
       `/api/orders/${orderId}/confirm-delivery`,
       formData,
     );
-
-    return data;
   }
 
   public async postManufacturer(
     data: ManufacturerApplicationDto,
-  ): Promise<AxiosResponse<void>> {
-    return this.axiosInstance.post(`/api/manufacturers/application`, data);
+  ): Promise<void> {
+    await this.axiosInstance.post(`/api/manufacturers/application`, data);
   }
 
   public async getAllOrders(): Promise<OrderSummary[]> {
@@ -411,6 +420,16 @@ export class ApiClient {
     });
   }
 
+  public async updatePantryVolunteers(
+    pantryId: number,
+    body: UpdatePantryVolunteersDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/pantries/${pantryId}/volunteers`,
+      body,
+    );
+  }
+
   public async updateFoodManufacturer(
     manufacturerId: number,
     decision: 'approve' | 'deny',
@@ -455,6 +474,25 @@ export class ApiClient {
     return this.axiosInstance
       .get('/api/manufacturers/my-id')
       .then((response) => response.data);
+  }
+
+  public async bulkUpdateTrackingCostInfo(
+    data: BulkUpdateTrackingCostDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      '/api/orders/bulk-update-tracking-cost-info',
+      data,
+    );
+  }
+
+  public async updateDonationItemDetails(
+    donationId: number,
+    items: UpdateDonationItemDetailsDto[],
+  ): Promise<void> {
+    await this.axiosInstance.patch(
+      `/api/donations/${donationId}/item-details`,
+      items,
+    );
   }
 
   public async updateFoodManufacturerApplicationData(

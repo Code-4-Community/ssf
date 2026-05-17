@@ -27,7 +27,7 @@ import {
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
-  ASSIGNEE_COLORS,
+  USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import {
@@ -146,7 +146,7 @@ const VolunteerOrderManagement: React.FC = () => {
 
           if (order.assignee) {
             orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[order.assignee.id % ASSIGNEE_COLORS.length];
+              USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
           }
 
           grouped[status].push(orderWithColor);

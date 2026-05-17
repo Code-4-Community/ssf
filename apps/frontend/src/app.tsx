@@ -31,10 +31,11 @@ import VolunteerRequestManagement from '@containers/volunteerRequestManagement';
 import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
-import TestAdminDashboard from '@containers/testAdminDashboard';
+import AdminPantryManagement from '@containers/adminPantryManagement';
 import AdminRequestManagement from '@containers/adminRequestManagement';
 import PantryDashboard from '@containers/pantryDashboard';
 import VolunteerDashboard from '@containers/volunteerDashboard';
+import AdminDashboard from '@containers/adminDashboard';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -136,6 +137,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: ROUTES.PANTRY_MANAGEMENT_DETAILS,
+        element: (
+          <ProtectedRoute>
+            <PantryApplicationDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS,
         element: (
           <ProtectedRoute>
@@ -168,10 +177,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ROUTES.TEST_ADMIN_DASHBOARD,
+        path: ROUTES.ADMIN_DASHBOARD,
         element: (
           <ProtectedRoute>
-            <TestAdminDashboard />
+            <AdminDashboard />
           </ProtectedRoute>
         ),
       },
@@ -228,6 +237,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <VolunteerOrderManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ADMIN_PANTRY_MANAGEMENT,
+        element: (
+          <ProtectedRoute>
+            <AdminPantryManagement />
           </ProtectedRoute>
         ),
       },
