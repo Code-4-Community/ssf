@@ -337,8 +337,14 @@ const Navbar: React.FC = () => {
       <VStack align="stretch" gap={2} flex={1} overflowY="auto">
         <NavLink
           to={ROUTES.HOME}
+          label="All Pages"
+          isActive={location.pathname == ROUTES.HOME}
+        />
+
+        <NavLink
+          to={ROUTES.HOME}
           label="Dashboard"
-          isActive={location.pathname === ROUTES.HOME}
+          isActive={location.pathname == ROUTES.HOME}
         />
 
         {sections.map((section) =>
