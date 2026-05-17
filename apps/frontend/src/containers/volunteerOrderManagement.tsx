@@ -75,6 +75,11 @@ const VolunteerOrderManagement: React.FC = () => {
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
+  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
+  const [deeplinkedStatus, setDeeplinkedStatus] = useState<OrderStatus | null>(
+    null,
+  );
+
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
       [OrderStatus.SHIPPED]: 1,
@@ -177,9 +182,27 @@ const VolunteerOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    const id = Number(orderIdFromUrl);
+    const match = allOrders.find((o) => o.orderId === id);
     if (match) {
       setSelectedOrderId(match.orderId);
+
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          setDeeplinkedStatus(status);
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
     }
@@ -282,7 +305,6 @@ const VolunteerOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={ORDER_STATUS_COLORS[status]}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
@@ -317,6 +339,24 @@ const VolunteerOrderManagement: React.FC = () => {
           onActionCompleted={handleActionCompleted}
         />
       )}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={true}
+          onClose={() => {
+            setSelectedOrderId(null);
+            navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+            if (deeplinkedStatus) {
+              setCurrentPages((prev) => ({
+                ...prev,
+                [deeplinkedStatus]: 1,
+              }));
+              setDeeplinkedStatus(null);
+            }
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -326,7 +366,6 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
-  selectedOrderId: number | null;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -350,7 +389,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
-  selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
@@ -362,8 +400,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-
-  const navigate = useNavigate();
 
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
@@ -808,16 +844,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
               })}
             </Table.Body>
           </Table.Root>
-          {selectedOrderId && (
-            <OrderDetailsModal
-              orderId={selectedOrderId}
-              isOpen={true}
-              onClose={() => {
-                onOrderSelect(null);
-                navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
-              }}
-            />
-          )}
 
           {totalPages > 1 && (
             <Box mt={4}>

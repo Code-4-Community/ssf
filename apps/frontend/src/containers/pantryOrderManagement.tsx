@@ -41,6 +41,10 @@ const PantryOrderManagement: React.FC = () => {
 
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
+  const [deeplinkedStatus, setDeeplinkedStatus] = useState<OrderStatus | null>(
+    null,
+  );
 
   const [selectedActionOrder, setSelectedActionOrder] =
     useState<OrderWithColor | null>(null);
@@ -123,9 +127,25 @@ const PantryOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    const id = Number(orderIdFromUrl);
+    const match = allOrders.find((o) => o.orderId === id);
     if (match) {
       setSelectedOrderId(match.orderId);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          setDeeplinkedStatus(status);
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
     }
@@ -216,6 +236,13 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => {
             setSelectedOrderId(null);
             navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
+            if (deeplinkedStatus) {
+              setCurrentPages((prev) => ({
+                ...prev,
+                [deeplinkedStatus]: 1,
+              }));
+              setDeeplinkedStatus(null);
+            }
           }}
         />
       )}

@@ -37,6 +37,8 @@ const FormRequests: React.FC = () => {
 
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequestSummaryDto | null>(null);
+  // Tracks whether the current page was advanced by a deeplink so the close handler knows to revert it back to page 1.
+  const [wasDeeplinked, setWasDeeplinked] = useState(false);
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -73,11 +75,16 @@ const FormRequests: React.FC = () => {
     const requestIdFromUrl = searchParams.get('requestId');
     if (!requestIdFromUrl || requests.length === 0) return;
 
-    const match = requests.find(
-      (r) => r.requestId === Number(requestIdFromUrl),
-    );
+    const id = Number(requestIdFromUrl);
+    const match = requests.find((r) => r.requestId === id);
     if (match) {
       setOpenReadOnlyRequest(match);
+      // Paginate to page that holds the deeplinked request
+      const idx = requests.findIndex((r) => r.requestId === id);
+      if (idx >= 0) {
+        setCurrentPage(Math.floor(idx / pageSize) + 1);
+        setWasDeeplinked(true);
+      }
     } else {
       navigate(ROUTES.REQUEST_FORM, { replace: true });
     }
@@ -229,6 +236,10 @@ const FormRequests: React.FC = () => {
             setOpenReadOnlyRequest(null);
             if (searchParams.get('requestId')) {
               navigate(ROUTES.REQUEST_FORM, { replace: true });
+            }
+            if (wasDeeplinked) {
+              setCurrentPage(1);
+              setWasDeeplinked(false);
             }
           }}
         />

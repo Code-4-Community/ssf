@@ -53,6 +53,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
     null,
   );
+  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
+  const [deeplinkedStatus, setDeeplinkedStatus] =
+    useState<DonationStatus | null>(null);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
@@ -84,6 +87,23 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         [DonationStatus.FULFILLED]: 1,
         [DonationStatus.MATCHED]: 1,
       };
+
+      // Paginate the containing status to the page that holds this donation.
+      const donationIdParam = searchParams.get('donationId');
+      if (donationIdParam) {
+        const id = Number(donationIdParam);
+        for (const status of Object.values(DonationStatus)) {
+          const idx = grouped[status].findIndex(
+            (d) => d.donation.donationId === id,
+          );
+          if (idx >= 0) {
+            initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+            setDeeplinkedStatus(status);
+            break;
+          }
+        }
+      }
+
       setCurrentPages(initialPages);
     } catch {
       setErrorMessage('Error fetching donations');
@@ -206,6 +226,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               onDonationClose={() => {
                 setSelectedDonationId(null);
                 navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+                if (deeplinkedStatus) {
+                  setCurrentPages((prev) => ({
+                    ...prev,
+                    [deeplinkedStatus]: 1,
+                  }));
+                  setDeeplinkedStatus(null);
+                }
               }}
             />
           </Box>

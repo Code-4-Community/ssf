@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
-import DashboardCard, {
-  DONATION_STATUS_BADGE,
-  DashboardCardType,
-} from '@components/dashboardCard';
+import DashboardCard, { DashboardCardType } from '@components/dashboardCard';
 import {
   Donation,
   DonationDetails,

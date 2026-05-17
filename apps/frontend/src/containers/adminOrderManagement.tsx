@@ -51,6 +51,10 @@ const AdminOrderManagement: React.FC = () => {
 
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
+  const [deeplinkedStatus, setDeeplinkedStatus] = useState<OrderStatus | null>(
+    null,
+  );
 
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
@@ -159,12 +163,26 @@ const AdminOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (allOrders.length === 0) return;
 
-    const matchedOrder = allOrders.find(
-      (order) => order.orderId === Number(orderIdFromUrl),
-    );
+    const id = Number(orderIdFromUrl);
+    const matchedOrder = allOrders.find((order) => order.orderId === id);
 
     if (matchedOrder) {
-      setSelectedOrderId(Number(orderIdFromUrl));
+      setSelectedOrderId(id);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          setDeeplinkedStatus(status);
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
@@ -255,6 +273,13 @@ const AdminOrderManagement: React.FC = () => {
           onClose={() => {
             setSelectedOrderId(null);
             navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+            if (deeplinkedStatus) {
+              setCurrentPages((prev) => ({
+                ...prev,
+                [deeplinkedStatus]: 1,
+              }));
+              setDeeplinkedStatus(null);
+            }
           }}
         />
       )}

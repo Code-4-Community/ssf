@@ -36,6 +36,9 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
+  // Tracks whether the current page was advanced by a deeplink so the close handler knows to revert it back to page 1.
+  const [wasDeeplinked, setWasDeeplinked] = useState(false);
+
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
@@ -60,12 +63,22 @@ const AdminDonation: React.FC = () => {
     if (!donationIdFromUrl) return;
     if (donations.length === 0) return;
 
+    const id = Number(donationIdFromUrl);
     const matchedDonation = donations.find(
-      (donation) => donation.donationId === Number(donationIdFromUrl),
+      (donation) => donation.donationId === id,
     );
 
     if (matchedDonation) {
       setSelectedDonation(matchedDonation);
+      // Paginate to the page that contains the deeplinked donation
+      const sortedAtLoad = [...donations].sort((a, b) =>
+        b.dateDonated.localeCompare(a.dateDonated),
+      );
+      const idx = sortedAtLoad.findIndex((d) => d.donationId === id);
+      if (idx >= 0) {
+        setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
+        setWasDeeplinked(true);
+      }
     } else {
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
     }
@@ -283,6 +296,10 @@ const AdminDonation: React.FC = () => {
           onClose={() => {
             setSelectedDonation(null);
             navigate(ROUTES.ADMIN_DONATION, { replace: true });
+            if (wasDeeplinked) {
+              setCurrentPage(1);
+              setWasDeeplinked(false);
+            }
           }}
         />
       )}
