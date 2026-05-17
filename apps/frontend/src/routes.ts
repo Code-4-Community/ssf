@@ -33,6 +33,8 @@ export const ROUTES = {
 
   PANTRY_ORDER_MANAGEMENT: '/pantry-order-management',
   REQUEST_FORM: '/request-form',
+  PANTRY_DASHBOARD: '/pantry-dashboard',
+  VOLUNTEER_DASHBOARD: '/volunteer-dashboard',
 
   FM_DONATION_MANAGEMENT: '/fm-donation-management',
 };

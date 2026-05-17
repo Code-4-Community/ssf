@@ -33,6 +33,8 @@ import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
 import AdminPantryManagement from '@containers/adminPantryManagement';
 import AdminRequestManagement from '@containers/adminRequestManagement';
+import PantryDashboard from '@containers/pantryDashboard';
+import VolunteerDashboard from '@containers/volunteerDashboard';
 import AdminDashboard from '@containers/adminDashboard';
 
 Amplify.configure(CognitoAuthConfig);
@@ -83,6 +85,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <FormRequests />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PANTRY_DASHBOARD,
+        element: (
+          <ProtectedRoute>
+            <PantryDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.VOLUNTEER_DASHBOARD,
+        element: (
+          <ProtectedRoute>
+            <VolunteerDashboard />
           </ProtectedRoute>
         ),
       },

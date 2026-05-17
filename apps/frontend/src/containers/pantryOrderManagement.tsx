@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -18,13 +18,15 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderWithoutFoodManufacturer } from '../types/types';
+import { OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
-type OrderWithColor = OrderWithoutFoodManufacturer & { assigneeColor?: string };
+type OrderWithColor = OrderSummary & { assigneeColor?: string };
 const MAX_PER_STATUS = 5;
 
 const PantryOrderManagement: React.FC = () => {
@@ -52,6 +54,8 @@ const PantryOrderManagement: React.FC = () => {
     },
   );
 
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
 
@@ -77,7 +81,7 @@ const PantryOrderManagement: React.FC = () => {
     },
   });
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const pantryId = await ApiClient.getCurrentUserPantryId();
       const data = await ApiClient.getPantryOrders(pantryId);
@@ -108,11 +112,24 @@ const PantryOrderManagement: React.FC = () => {
     } catch {
       setErrorMessage('Failed to fetch orders');
     }
-  };
+  }, [setErrorMessage]);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+    const allOrders = Object.values(statusOrders).flat();
+    if (!orderIdFromUrl || allOrders.length === 0) return;
+
+    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    if (match) {
+      setSelectedOrderId(match.orderId);
+    } else {
+      navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusOrders, navigate]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
@@ -196,7 +213,10 @@ const PantryOrderManagement: React.FC = () => {
         <OrderDetailsModal
           orderId={selectedOrderId}
           isOpen={true}
-          onClose={() => setSelectedOrderId(null)}
+          onClose={() => {
+            setSelectedOrderId(null);
+            navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
+          }}
         />
       )}
 
