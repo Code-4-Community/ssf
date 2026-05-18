@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Table,
   Button,
@@ -35,7 +36,8 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [alertState, setAlertMessage] = useAlert();
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
 
   useEffect(() => {
     const fetchFoodManufacturers = async () => {
@@ -43,12 +45,12 @@ const ApproveFoodManufacturers: React.FC = () => {
         const data = await ApiClient.getAllPendingFoodManufacturers();
         setFoodManufacturers(data);
       } catch {
-        setAlertMessage('Error fetching food manufacturers');
+        setErrorMessage('Error fetching food manufacturers');
       }
     };
 
     fetchFoodManufacturers();
-  }, [setAlertMessage]);
+  }, [setErrorMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -114,20 +116,28 @@ const ApproveFoodManufacturers: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setAlertMessage(message);
+      setSuccessMessage(message);
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, setAlertMessage]);
+  }, [searchParams, setSearchParams, setErrorMessage, setSuccessMessage]);
 
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Application Review
       </Heading>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
+      {successAlertState && (
+        <FloatingAlert
+          key={successAlertState.id}
+          message={successAlertState.message}
           status="info"
           timeout={6000}
         />
@@ -322,7 +332,10 @@ const ApproveFoodManufacturers: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/food-manufacturer-application-details/${foodManufacturer.foodManufacturerId}`}
+                      href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        String(foodManufacturer.foodManufacturerId),
+                      )}
                     >
                       View Details
                     </Link>

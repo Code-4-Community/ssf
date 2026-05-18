@@ -23,7 +23,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
-import { TrackingCostDto } from './dtos/tracking-cost.dto';
+import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
@@ -31,7 +31,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
@@ -82,8 +81,8 @@ export class OrdersController {
     resolver: async ({ entityId, services }) => {
       return pipeNullable(
         () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequest) =>
-          services.get(PantriesService).findOne(request.pantryId),
+        (request: FoodRequestSummaryDto) =>
+          services.get(PantriesService).findOne(request.pantry.pantryId),
         (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },
@@ -203,13 +202,12 @@ export class OrdersController {
     return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
-  @Patch('/:orderId/update-tracking-cost-info')
-  async updateTrackingCostInfo(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body(new ValidationPipe())
-    dto: TrackingCostDto,
+  @Roles(Role.FOODMANUFACTURER)
+  @Patch('/bulk-update-tracking-cost-info')
+  async bulkUpdateTrackingCostInfo(
+    @Body(new ValidationPipe()) dto: BulkUpdateTrackingCostDto,
   ): Promise<void> {
-    return this.ordersService.updateTrackingCostInfo(orderId, dto);
+    return this.ordersService.bulkUpdateTrackingCostInfo(dto);
   }
 
   @Patch('/:orderId/confirm-delivery')
@@ -252,13 +250,13 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body() body: ConfirmDeliveryDto,
     @UploadedFiles() photos?: Express.Multer.File[],
-  ): Promise<Order> {
+  ): Promise<void> {
     try {
       const uploadedPhotoUrls =
         photos && photos.length > 0
           ? await this.awsS3Service.upload(photos)
           : [];
-      return this.ordersService.confirmDelivery(
+      await this.ordersService.confirmDelivery(
         orderId,
         body,
         uploadedPhotoUrls,
@@ -288,7 +286,7 @@ export class OrdersController {
   async completeVolunteerAction(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
-  ) {
-    return this.ordersService.completeVolunteerAction(orderId, dto.action);
+  ): Promise<void> {
+    await this.ordersService.completeVolunteerAction(orderId, dto.action);
   }
 }

@@ -1,3 +1,4 @@
+import { ROUTES } from '../routes';
 import { useState, useEffect } from 'react';
 import { signIn, confirmSignIn, fetchAuthSession } from '@aws-amplify/auth';
 import { useAuthenticator } from '@aws-amplify/ui-react';
@@ -18,7 +19,6 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import AuthHeader from '@components/AuthHeader';
-import { ROUTES } from '../routes';
 
 type Step = 'login' | 'new-password';
 
@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || ROUTES.HOME;
 
   useEffect(() => {
     if (authStatus === 'authenticated') {

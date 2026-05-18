@@ -5,7 +5,6 @@ import { Pantry } from './pantries.entity';
 import { mock } from 'jest-mock-extended';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
-import { Order } from '../orders/order.entity';
 import {
   Activity,
   AllergensConfidence,
@@ -16,6 +15,7 @@ import {
   ServeAllergicChildren,
   ApprovedPantryResponse,
   TotalStats,
+  OrderSummary,
 } from './types';
 import { EmailsService } from '../emails/email.service';
 import { ApplicationStatus } from '../shared/types';
@@ -312,9 +312,7 @@ describe('PantriesController', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      mockPantriesService.updatePantryApplication.mockResolvedValue(
-        mockPantry as Pantry,
-      );
+      mockPantriesService.updatePantryApplication.mockResolvedValue(mockPantry);
 
       const result = await controller.updatePantryApplication(
         req as AuthenticatedRequest,
@@ -322,13 +320,12 @@ describe('PantriesController', () => {
         mockUpdateData,
       );
 
+      expect(result).toEqual(mockPantry);
       expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
         pantryId,
         mockUpdateData,
         1,
       );
-
-      expect(result).toEqual(mockPantry);
     });
 
     it('should throw error if pantry does not exist', async () => {
@@ -359,21 +356,17 @@ describe('PantriesController', () => {
     it('should return orders for a pantry', async () => {
       const pantryId = 24;
 
-      const mockOrders: Partial<Order>[] = [
+      const mockOrders: Partial<OrderSummary>[] = [
         {
           orderId: 26,
-          requestId: 26,
-          foodManufacturerId: 32,
         },
         {
           orderId: 27,
-          requestId: 27,
-          foodManufacturerId: 33,
         },
       ];
 
       mockOrdersService.getOrdersByPantry.mockResolvedValue(
-        mockOrders as Order[],
+        mockOrders as OrderSummary[],
       );
 
       const result = await controller.getOrders(pantryId);

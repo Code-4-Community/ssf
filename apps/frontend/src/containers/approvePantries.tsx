@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import {
   Table,
   Button,
@@ -31,7 +32,8 @@ const ApprovePantries: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [alertState, setAlertMessage] = useAlert();
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [successAlertState, setSuccessMessage] = useAlert();
 
   useEffect(() => {
     const fetchPantries = async () => {
@@ -39,12 +41,12 @@ const ApprovePantries: React.FC = () => {
         const data = await ApiClient.getAllPendingPantries();
         setPantries(data);
       } catch {
-        setAlertMessage('Error fetching pantries');
+        setErrorMessage('Error fetching pantries');
       }
     };
 
     fetchPantries();
-  }, [setAlertMessage]);
+  }, [setErrorMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -105,20 +107,28 @@ const ApprovePantries: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setAlertMessage(message);
+      setSuccessMessage(message);
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, setAlertMessage]);
+  }, [searchParams, setSearchParams, setErrorMessage, setSuccessMessage]);
 
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Application Review
       </Heading>
-      {alertState && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status="error"
+          timeout={6000}
+        />
+      )}
+      {successAlertState && (
+        <FloatingAlert
+          key={successAlertState.id}
+          message={successAlertState.message}
           status="info"
           timeout={6000}
         />
@@ -308,7 +318,10 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={`/pantry-application-details/${pantry.pantryId}`}
+                      href={ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        pantry.pantryId.toString(),
+                      )}
                     >
                       View Details
                     </Link>

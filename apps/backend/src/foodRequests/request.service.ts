@@ -95,6 +95,7 @@ export class RequestsService {
       status: order.status,
       foodManufacturerName: order.foodManufacturer.foodManufacturerName,
       trackingLink: order.trackingLink,
+      shippingCost: order.shippingCost,
       items: order.allocations.map((allocation) => ({
         id: allocation.item.itemId,
         name: allocation.item.itemName,
@@ -307,7 +308,7 @@ export class RequestsService {
     await this.repo.save(request);
   }
 
-  async update(requestId: number, dto: UpdateRequestDto): Promise<FoodRequest> {
+  async update(requestId: number, dto: UpdateRequestDto): Promise<void> {
     validateId(requestId, 'Request');
 
     if (
@@ -343,7 +344,7 @@ export class RequestsService {
 
     Object.assign(request, dto);
 
-    return this.repo.save(request);
+    await this.repo.save(request);
   }
 
   async delete(requestId: number) {
@@ -373,7 +374,7 @@ export class RequestsService {
     await this.repo.remove(request);
   }
 
-  async closeRequest(requestId: number): Promise<FoodRequest> {
+  async closeRequest(requestId: number): Promise<void> {
     validateId(requestId, 'Request');
 
     const request = await this.repo.findOne({
@@ -391,6 +392,6 @@ export class RequestsService {
     }
 
     request.status = FoodRequestStatus.CLOSED;
-    return this.repo.save(request);
+    await this.repo.save(request);
   }
 }
