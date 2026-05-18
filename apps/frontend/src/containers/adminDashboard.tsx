@@ -15,6 +15,7 @@ import ApiClient from '@api/apiClient';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -117,8 +118,14 @@ const AdminDashboard: React.FC = () => {
             onLinkClick={() => {
               navigate(
                 application.type === 'pantry'
-                  ? `/pantry-application-details/${application.id}`
-                  : `/food-manufacturer-application-details/${application.id}`,
+                  ? ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
+                      ':pantryId',
+                      application.id.toString(),
+                    )
+                  : ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                      ':applicationId',
+                      application.id.toString(),
+                    ),
               );
             }}
           />

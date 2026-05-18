@@ -57,7 +57,7 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchInitialData();
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     // Total stats only displayed on first page, so no need to do anything on page change
@@ -74,7 +74,7 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchTotalStats();
-  }, [selectedYears, currentPage]);
+  }, [setAlertMessage, selectedYears, currentPage]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -90,7 +90,7 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchStats();
-  }, [selectedPantries, selectedYears, currentPage]);
+  }, [setAlertMessage, selectedPantries, selectedYears, currentPage]);
 
   const handlePantryNameFilterChange = (name: string, checked: boolean) => {
     // For simplicity, reset the page

@@ -272,8 +272,8 @@ const Navbar: React.FC = () => {
   // Should be changed once other dashboards are implmented
   const ROLE_DASHBOARD_ROUTE: Record<Role, string> = {
     [Role.ADMIN]: ROUTES.ADMIN_DASHBOARD,
-    [Role.VOLUNTEER]: ROUTES.HOME,
-    [Role.PANTRY]: ROUTES.HOME,
+    [Role.VOLUNTEER]: ROUTES.VOLUNTEER_DASHBOARD,
+    [Role.PANTRY]: ROUTES.PANTRY_DASHBOARD,
     [Role.FOODMANUFACTURER]: ROUTES.HOME,
   };
 

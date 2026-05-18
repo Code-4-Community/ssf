@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ROUTES } from '../routes';
 import {
   Table,
   Text,
@@ -18,7 +19,7 @@ import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import { getInitials } from '@utils/utils';
+import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 
 const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -29,8 +30,6 @@ const VolunteerManagement: React.FC = () => {
   const [successAlertState, setSuccessMessage] = useAlert();
 
   const pageSize = 8;
-
-  const USER_ICON_COLORS = ['#F89E19', '#CC3538', '#2795A5', '#2B4E60'];
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -182,7 +181,7 @@ const VolunteerManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    href={`/pantry-management/${volunteer.id}`}
+                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
                   >
                     View Assigned Pantries
                   </Link>

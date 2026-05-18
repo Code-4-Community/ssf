@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -20,15 +20,19 @@ import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRe
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
   enableVolunteerActions?: boolean;
+  initialRequestId?: number;
 }
 
 const RequestManagement: React.FC<RequestManagementProps> = ({
   fetchRequests: fetchData,
   enableVolunteerActions = true,
+  initialRequestId,
 }) => {
   const [requests, setRequests] = useState<FoodRequestSummaryDto[]>([]);
   const [sortRequestedAtAsc, setSortRequestedAtAsc] = useState(false);
@@ -50,22 +54,36 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
 
-  const loadRequests = async () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const loadRequests = useCallback(async () => {
     try {
       const data = await fetchData();
       setRequests(data);
     } catch {
       setErrorMessage('Error fetching requests');
     }
-  };
+  }, [fetchData, setErrorMessage]);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedFilteredPantries]);
+
+  useEffect(() => {
+    if (!initialRequestId || requests.length === 0) return;
+    const match = requests.find((r) => r.requestId === initialRequestId);
+
+    if (match) {
+      setSelectedViewDetailsRequest(match);
+    } else {
+      navigate(ROUTES.REQUEST_FORM, { replace: true });
+    }
+  }, [initialRequestId, requests, navigate]);
 
   const pantryOptions = [
     ...new Set(
@@ -368,7 +386,12 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
             <RequestDetailsModal
               request={selectedViewDetailsRequest}
               isOpen={selectedViewDetailsRequest !== null}
-              onClose={() => setSelectedViewDetailsRequest(null)}
+              onClose={() => {
+                setSelectedViewDetailsRequest(null);
+                if (initialRequestId) {
+                  navigate(location.pathname, { replace: true });
+                }
+              }}
             />
           )}
 

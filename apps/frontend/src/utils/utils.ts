@@ -105,7 +105,7 @@ export const generateNextDonationDate = (
 export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 
-export const ASSIGNEE_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.ssf'];
+export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
 export const isValidUrl = (url: string): boolean => {
   try {

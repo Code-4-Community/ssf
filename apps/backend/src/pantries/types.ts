@@ -1,8 +1,36 @@
+import { OrderStatus } from '../orders/types';
+
 export interface ApprovedPantryResponse {
   pantryId: number;
   pantryName: string;
   refrigeratedDonation: RefrigeratedDonation;
   volunteers: AssignedVolunteer[];
+}
+
+export interface OrderSummary {
+  orderId: number;
+  status: OrderStatus;
+  createdAt: string;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  request: {
+    pantryId: number;
+    pantry: {
+      pantryName: string;
+      volunteers:
+        | {
+            id: number;
+            firstName: string;
+            lastName: string;
+          }[]
+        | null;
+    };
+  };
+  assignee: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export interface AssignedVolunteer {
