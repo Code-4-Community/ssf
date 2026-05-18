@@ -22,11 +22,12 @@ import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
 const AdminPantryManagement: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pantries, setPantries] = useState<ApprovedPantryResponse[]>([]);
@@ -60,6 +61,39 @@ const AdminPantryManagement: React.FC = () => {
   useEffect(() => {
     fetchPantries();
   }, [setAlertMessage]);
+
+  // Pre-fill pantry filter from url param and then clear the param.
+  useEffect(() => {
+    const volunteerIdFromUrl = searchParams.get('volunteerId');
+    if (!volunteerIdFromUrl) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const assignedPantries = await ApiClient.getVolunteerPantries(
+          Number(volunteerIdFromUrl),
+        );
+        if (cancelled) return;
+        setSelectedPantries(assignedPantries.map((p) => p.pantryName));
+        if (assignedPantries.length === 0) {
+          setIsAlertSuccess(false);
+          setAlertMessage('This volunteer has no assigned pantries.');
+        }
+      } catch {
+        if (cancelled) return;
+        setIsAlertSuccess(false);
+        setAlertMessage('Error fetching volunteer pantries');
+      } finally {
+        if (!cancelled) {
+          navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, navigate, setAlertMessage]);
 
   const handleAssignVolunteersSuccess = () => {
     setIsAlertSuccess(true);
@@ -374,7 +408,12 @@ const AdminPantryManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    // TODO href or some functionality to view orders
+                    cursor="pointer"
+                    onClick={() =>
+                      navigate(
+                        `${ROUTES.ADMIN_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
+                      )
+                    }
                   >
                     View Orders
                   </Link>

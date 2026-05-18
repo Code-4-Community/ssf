@@ -115,6 +115,7 @@ export class OrdersService {
         createdAt: o.createdAt,
         shippedAt: o.shippedAt,
         deliveredAt: o.deliveredAt,
+        pantryId: o.request.pantryId,
         pantryName: o.request.pantry.pantryName,
         assignee: o.assignee,
         actionCompletion,
@@ -155,6 +156,7 @@ export class OrdersService {
       createdAt: o.createdAt,
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));

@@ -185,6 +185,38 @@ const VolunteerOrderManagement: React.FC = () => {
     }
   }, [searchParams, statusOrders, navigate]);
 
+  // Pre-fill pantry filter from url param and then clear the param.
+  useEffect(() => {
+    const pantryIdFromUrl = searchParams.get('pantryId');
+
+    const allOrders = Object.values(statusOrders).flat();
+    if (!pantryIdFromUrl || allOrders.length === 0) return;
+
+    const matchedOrder = allOrders.find(
+      (o) => o.pantryId === Number(pantryIdFromUrl),
+    );
+    const pantryName = matchedOrder?.pantryName;
+
+    if (pantryName) {
+      setFilterStates((prev) => ({
+        [OrderStatus.SHIPPED]: {
+          ...prev[OrderStatus.SHIPPED],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.PENDING]: {
+          ...prev[OrderStatus.PENDING],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.DELIVERED]: {
+          ...prev[OrderStatus.DELIVERED],
+          selectedPantries: [pantryName],
+        },
+      }));
+    }
+
+    navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+  }, [searchParams, statusOrders, navigate]);
+
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
   };

@@ -12,6 +12,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
 import { Roles } from '../auth/roles.decorator';
+import { CheckOwnership } from '../auth/ownership.decorator';
 import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
@@ -71,6 +72,10 @@ export class VolunteersController {
 
   // returns all orders globally
   // only includes actionCompletion for orders assigned to the requesting volunteer
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId }) => [entityId],
+  })
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')
   async getVolunteerOrders(

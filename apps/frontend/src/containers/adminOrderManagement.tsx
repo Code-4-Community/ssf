@@ -157,7 +157,7 @@ const AdminOrderManagement: React.FC = () => {
 
     // Wait until orders are loaded
     const allOrders = Object.values(statusOrders).flat();
-    if (allOrders.length === 0) return;
+    if (!orderIdFromUrl || allOrders.length === 0) return;
 
     const matchedOrder = allOrders.find(
       (order) => order.orderId === Number(orderIdFromUrl),
@@ -168,6 +168,38 @@ const AdminOrderManagement: React.FC = () => {
     } else {
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
+  }, [searchParams, statusOrders, navigate]);
+
+  // Pre-fill pantry filter from url param and then clear the param.
+  useEffect(() => {
+    const pantryIdFromUrl = searchParams.get('pantryId');
+
+    const allOrders = Object.values(statusOrders).flat();
+    if (!pantryIdFromUrl || allOrders.length === 0) return;
+
+    const matchedOrder = allOrders.find(
+      (order) => order.request.pantryId === Number(pantryIdFromUrl),
+    );
+    const pantryName = matchedOrder?.request.pantry.pantryName;
+
+    if (pantryName) {
+      setFilterStates((prev) => ({
+        [OrderStatus.SHIPPED]: {
+          ...prev[OrderStatus.SHIPPED],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.PENDING]: {
+          ...prev[OrderStatus.PENDING],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.DELIVERED]: {
+          ...prev[OrderStatus.DELIVERED],
+          selectedPantries: [pantryName],
+        },
+      }));
+    }
+
+    navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
   }, [searchParams, statusOrders, navigate]);
 
   return (

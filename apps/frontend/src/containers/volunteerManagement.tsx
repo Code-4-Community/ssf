@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
   Table,
@@ -22,6 +23,7 @@ import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 
 const VolunteerManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
@@ -181,7 +183,12 @@ const VolunteerManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
+                    cursor="pointer"
+                    onClick={() =>
+                      navigate(
+                        `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
+                      )
+                    }
                   >
                     View Assigned Pantries
                   </Link>
