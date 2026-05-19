@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,8 +28,6 @@ import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RequestsService {
-  private readonly logger = new Logger(RequestsService.name);
-
   constructor(
     @InjectRepository(FoodRequest) private repo: Repository<FoodRequest>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
@@ -336,7 +333,7 @@ export class RequestsService {
           );
         }
       } catch {
-        this.logger.warn(
+        throw new InternalServerErrorException(
           `Request ${requestId} auto-closed, but failed to send pantry notification email`,
         );
       }

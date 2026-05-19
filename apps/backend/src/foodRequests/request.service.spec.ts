@@ -476,15 +476,14 @@ describe('RequestsService', () => {
         new Error('SMTP error'),
       );
 
-      const loggerSpy = jest.spyOn(service['logger'], 'warn');
-
-      await service.updateRequestStatus(1);
+      await expect(service.updateRequestStatus(1)).rejects.toThrow(
+        new InternalServerErrorException(
+          'Request 1 auto-closed, but failed to send pantry notification email',
+        ),
+      );
 
       const request = await service.findOne(1);
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
-      expect(loggerSpy).toHaveBeenCalledWith(
-        'Request 1 auto-closed, but failed to send pantry notification email',
-      );
     });
   });
 
