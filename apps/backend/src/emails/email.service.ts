@@ -24,14 +24,14 @@ export class EmailsService {
    * @rejects if the email was not sent successfully
    */
   public async sendEmails(email: SendEmailDTO): Promise<unknown> {
-    if (
-      process.env.SEND_AUTOMATED_EMAILS &&
-      process.env.SEND_AUTOMATED_EMAILS === 'true' &&
-      email.toEmail
-    ) {
-      return this.amazonSESWrapper.sendEmails(email);
+    if (!email.toEmail) {
+      this.logger.warn(`Skipping email, recipient address is empty.`);
+      return Promise.resolve();
     }
-    this.logger.warn('Automated emails are disabled. Email not sent.');
-    return Promise.resolve();
+    if (process.env.SEND_AUTOMATED_EMAILS !== 'true') {
+      this.logger.warn('Automated emails are disabled. Email not sent.');
+      return Promise.resolve();
+    }
+    return this.amazonSESWrapper.sendEmails(email);
   }
 }

@@ -166,7 +166,7 @@ export const emailTemplates = {
     bodyHTML: `
       <p>Hi ${params.volunteerName},</p>
       <p>
-        ${params.pantryName} has confirmed the receipt ofan order from ${params.fmName}
+        ${params.pantryName} has confirmed the receipt of an order from ${params.fmName}
         which you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
         to review the completed request or check for additional information.
       </p>

@@ -1205,7 +1205,7 @@ describe('PantriesService', () => {
       );
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Automated email failed to send. Skipping pantry assignment update for volunteer id 7 and pantryId 1`,
+          `Automated email for pantry assignment update for volunteer id 7 and pantryId 1 failed to send.`,
         ),
       );
 
@@ -1276,7 +1276,7 @@ describe('PantriesService', () => {
       );
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Automated email failed to send. Skipping pantry assignment update for volunteer id 6 and pantryId 1`,
+          `Automated email for pantry assignment update for volunteer id 6 and pantryId 1 failed to send.`,
         ),
       );
 

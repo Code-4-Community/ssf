@@ -561,7 +561,7 @@ export class PantriesService {
     pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
     await this.repo.save(pantry);
 
-    for (const volunteer of newVolunteers) {
+    for (const volunteer of [...newVolunteers, ...removedVolunteers]) {
       try {
         const message = emailTemplates.volunteerPantryAssignmentChanged({
           volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
@@ -573,24 +573,7 @@ export class PantriesService {
         });
       } catch {
         this.logger.warn(
-          `Automated email failed to send. Skipping pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
-        );
-      }
-    }
-
-    for (const volunteer of removedVolunteers) {
-      try {
-        const message = emailTemplates.volunteerPantryAssignmentChanged({
-          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
-        });
-        await this.emailsService.sendEmails({
-          toEmail: volunteer.email,
-          subject: message.subject,
-          bodyHtml: message.bodyHTML,
-        });
-      } catch {
-        this.logger.warn(
-          `Automated email failed to send. Skipping pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId}`,
+          `Automated email for pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId} failed to send.`,
         );
       }
     }
