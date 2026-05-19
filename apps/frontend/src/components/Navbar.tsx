@@ -344,6 +344,12 @@ const Navbar: React.FC = () => {
 
       <VStack align="stretch" gap={2} flex={1} overflowY="auto">
         <NavLink
+          to={ROUTES.HOME}
+          label="All Pages"
+          isActive={location.pathname === ROUTES.HOME}
+        />
+
+        <NavLink
           to={ROLE_DASHBOARD_ROUTE[currentUser.role]}
           label="Dashboard"
           isActive={
