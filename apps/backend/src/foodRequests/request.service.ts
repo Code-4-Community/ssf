@@ -244,10 +244,14 @@ export class RequestsService {
 
     await this.repo.save(foodRequest);
 
-    try {
-      const volunteers = pantry.volunteers || [];
-      const volunteerEmails = volunteers.map((v) => v.email);
+    const volunteers = pantry.volunteers || [];
+    const volunteerEmails = volunteers.map((v) => v.email);
 
+    if (volunteerEmails.length === 0) {
+      return foodRequest;
+    }
+
+    try {
       const message = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry.pantryName,
       });

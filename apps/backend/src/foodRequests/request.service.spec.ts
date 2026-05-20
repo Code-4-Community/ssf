@@ -264,7 +264,7 @@ describe('RequestsService', () => {
       });
     });
 
-    it('should send email to pantry user with empty BCC when pantry has no volunteers', async () => {
+    it('should not send email when pantry has no volunteers', async () => {
       // Harbor Community Center - no volunteers assigned
       const pantryId = 5;
       const pantry = await testDataSource.getRepository(Pantry).findOne({
@@ -278,19 +278,10 @@ describe('RequestsService', () => {
       ]);
 
       if (!pantry) throw new Error('Missing pantry test object');
-      const message = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry.pantryName,
-      });
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(volunteerEmails).toEqual([]);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
-        toEmail: pantry.pantryUser.email,
-        subject: message.subject,
-        bodyHtml: message.bodyHTML,
-        bccEmails: volunteerEmails,
-      });
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
     it('should still save food request to database if email send fails', async () => {

@@ -32,8 +32,6 @@ describe('VolunteersService', () => {
   let service: VolunteersService;
 
   beforeAll(async () => {
-    mockEmailsService.sendEmails.mockResolvedValue(undefined);
-
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -104,7 +102,6 @@ describe('VolunteersService', () => {
   });
 
   beforeEach(async () => {
-    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();

@@ -754,6 +754,46 @@ describe('DonationService', () => {
         expect(remaining).toEqual([2, 2, 3]);
       });
 
+      it('sends multiple cascade emails when several replacement dates are also expired', async () => {
+        // 21-day-old weekly date cascades 3 times before landing in the future:
+        // initial send for daysAgo(21), then cascade sends for daysAgo(14),
+        // daysAgo(7), and daysAgo(0) — the next computed date (daysFromNow(7))
+        // exits the while loop. 4 emails total
+        const pastDate = daysAgo(21);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 5,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(4);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.occurrencesRemaining).toBe(1);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
+          daysFromNow(7).toDateString(),
+        );
+      });
+
       it('breaks out of cascade and logs warning when cascade email fails', async () => {
         // 14-day-old weekly date triggers the cascade — its replacement (7daysAgo) is also expired.
         const pastDate = daysAgo(14);

@@ -636,7 +636,6 @@ export class OrdersService {
         this.logger.warn(
           `Automated tracking link email failed to send for order ${order.orderId}`,
         );
-        continue;
       }
     }
   }
