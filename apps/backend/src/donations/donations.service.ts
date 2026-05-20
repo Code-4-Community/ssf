@@ -58,15 +58,18 @@ export class DonationService {
     return this.repo.count();
   }
 
-  async create(donationData: CreateDonationDto): Promise<Donation> {
-    validateId(donationData.foodManufacturerId, 'Food Manufacturer');
+  async create(
+    donationData: CreateDonationDto,
+    foodManufacturerId: number,
+  ): Promise<Donation> {
+    validateId(foodManufacturerId, 'Food Manufacturer');
     const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId: donationData.foodManufacturerId },
+      where: { foodManufacturerId },
     });
 
     if (!manufacturer) {
       throw new NotFoundException(
-        `Food Manufacturer ${donationData.foodManufacturerId} not found`,
+        `Food Manufacturer ${foodManufacturerId} not found`,
       );
     }
 

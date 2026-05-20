@@ -9,6 +9,7 @@ import {
   ParseArrayPipe,
   Put,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -23,10 +24,14 @@ import { Role } from '../users/types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('donations')
 export class DonationsController {
-  constructor(private donationService: DonationService) {}
+  constructor(
+    private donationService: DonationService,
+    private foodManufacturersService: FoodManufacturersService,
+  ) {}
 
   @Get()
   async getAllDonations(): Promise<Donation[]> {
@@ -93,11 +98,16 @@ export class DonationsController {
       },
     },
   })
+  @Roles(Role.FOODMANUFACTURER)
   async createDonation(
-    @Body()
-    body: CreateDonationDto,
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateDonationDto,
   ): Promise<Donation> {
-    return this.donationService.create(body);
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      req.user.id,
+    );
+    const foodManufacturerId = manufacturer.foodManufacturerId;
+    return this.donationService.create(body, foodManufacturerId);
   }
 
   @Patch('/:donationId/fulfill')
