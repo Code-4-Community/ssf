@@ -9,7 +9,10 @@ import { DonationStatus, RecurrenceEnum } from './types';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
+const mockFoodManufacturersService = mock<FoodManufacturersService>();
 const mockDonationService = mock<DonationService>();
 
 const donation1: Partial<Donation> = {
@@ -34,6 +37,10 @@ describe('DonationsController', () => {
         {
           provide: DonationService,
           useValue: mockDonationService,
+        },
+        {
+          provide: FoodManufacturersService,
+          useValue: mockFoodManufacturersService,
         },
       ],
     }).compile();
@@ -100,6 +107,12 @@ describe('DonationsController', () => {
         ] as CreateDonationItemDto[],
       };
 
+      const mockReq = { user: { id: 1 } };
+
+      mockFoodManufacturersService.findByUserId.mockResolvedValueOnce({
+        foodManufacturerId: 1,
+      } as any);
+
       const createdDonation: Partial<Donation> = {
         donationId: 1,
         ...createBody,
@@ -112,11 +125,12 @@ describe('DonationsController', () => {
       );
 
       const result = await controller.createDonation(
+        mockReq as AuthenticatedRequest,
         createBody as CreateDonationDto,
       );
 
       expect(result).toEqual(createdDonation);
-      expect(mockDonationService.create).toHaveBeenCalledWith(createBody);
+      expect(mockDonationService.create).toHaveBeenCalledWith(createBody, 1);
     });
   });
 

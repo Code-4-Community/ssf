@@ -363,7 +363,7 @@ describe('UsersService', () => {
         ],
       };
 
-      await donationService.create(createDonationBody as CreateDonationDto);
+      await donationService.create(createDonationBody as CreateDonationDto, 1);
 
       // updating existing request to have a current month requested at date
       const existingRequest = await foodRequestService.findOne(1);

@@ -924,11 +924,14 @@ describe('DonationService', () => {
     ];
 
     it('successfully creates a donation with items', async () => {
-      const donation = await service.create({
-        foodManufacturerId: 1,
-        recurrence: RecurrenceEnum.NONE,
-        items: validItems,
-      });
+      const donation = await service.create(
+        {
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.NONE,
+          items: validItems,
+        },
+        1,
+      );
 
       expect(donation).toBeDefined();
       expect(donation.donationId).toBeDefined();
@@ -960,13 +963,16 @@ describe('DonationService', () => {
       const before = new Date();
       before.setHours(0, 0, 0, 0);
 
-      const donation = await service.create({
-        foodManufacturerId: 1,
-        recurrence: RecurrenceEnum.MONTHLY,
-        recurrenceFreq: 1,
-        occurrencesRemaining: 3,
-        items: validItems,
-      });
+      const donation = await service.create(
+        {
+          foodManufacturerId: 1,
+          recurrence: RecurrenceEnum.MONTHLY,
+          recurrenceFreq: 1,
+          occurrencesRemaining: 3,
+          items: validItems,
+        },
+        1,
+      );
 
       const rows = await testDataSource.query(
         `SELECT next_donation_dates, occurrences_remaining, recurrence, recurrence_freq
@@ -997,11 +1003,14 @@ describe('DonationService', () => {
 
     it('throws when foodManufacturerId does not exist', async () => {
       expect(
-        service.create({
-          foodManufacturerId: 99999,
-          recurrence: RecurrenceEnum.NONE,
-          items: validItems,
-        }),
+        service.create(
+          {
+            foodManufacturerId: 99999,
+            recurrence: RecurrenceEnum.NONE,
+            items: validItems,
+          },
+          99999,
+        ),
       ).rejects.toThrow(
         new NotFoundException('Food Manufacturer 99999 not found'),
       );
@@ -1011,20 +1020,23 @@ describe('DonationService', () => {
       let donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
       await expect(
-        service.create({
-          foodManufacturerId: 1,
-          recurrence: RecurrenceEnum.WEEKLY,
-          repeatOnDays: {
-            Sunday: false,
-            Monday: true,
-            Tuesday: false,
-            Wednesday: false,
-            Thursday: false,
-            Friday: false,
-            Saturday: false,
+        service.create(
+          {
+            foodManufacturerId: 1,
+            recurrence: RecurrenceEnum.WEEKLY,
+            repeatOnDays: {
+              Sunday: false,
+              Monday: true,
+              Tuesday: false,
+              Wednesday: false,
+              Thursday: false,
+              Friday: false,
+              Saturday: false,
+            },
+            items: validItems,
           },
-          items: validItems,
-        }),
+          1,
+        ),
       ).rejects.toThrow(
         new BadRequestException(
           'recurrenceFreq is required for recurring donations',
@@ -1040,19 +1052,22 @@ describe('DonationService', () => {
       expect(donations).toHaveLength(4);
 
       await expect(
-        service.create({
-          foodManufacturerId: 1,
-          recurrence: RecurrenceEnum.NONE,
-          items: [
-            ...validItems,
-            {
-              itemName: 'a'.repeat(1000),
-              quantity: 5,
-              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-              foodRescue: false,
-            },
-          ],
-        }),
+        service.create(
+          {
+            foodManufacturerId: 1,
+            recurrence: RecurrenceEnum.NONE,
+            items: [
+              ...validItems,
+              {
+                itemName: 'a'.repeat(1000),
+                quantity: 5,
+                foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+                foodRescue: false,
+              },
+            ],
+          },
+          1,
+        ),
       ).rejects.toThrow();
 
       donations = await testDataSource.query(`SELECT * FROM donations`);
