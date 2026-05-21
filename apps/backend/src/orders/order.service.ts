@@ -7,7 +7,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
@@ -33,7 +32,6 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,
@@ -158,18 +156,6 @@ export class OrdersService {
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
-  }
-
-  async getCurrentOrders() {
-    return this.repo.find({
-      where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
-    });
-  }
-
-  async getPastOrders() {
-    return this.repo.find({
-      where: { status: OrderStatus.DELIVERED },
-    });
   }
 
   /*
@@ -386,36 +372,6 @@ export class OrdersService {
         pantryName: order.request.pantry.pantryName,
       },
     };
-  }
-
-  async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['foodManufacturer'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-    return order.foodManufacturer;
-  }
-
-  async updateStatus(orderId: number, newStatus: OrderStatus) {
-    validateId(orderId, 'Order');
-
-    await this.repo
-      .createQueryBuilder()
-      .update(Order)
-      .set({
-        status: newStatus as OrderStatus,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
-        deliveredAt:
-          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
-      })
-      .where('order_id = :orderId', { orderId })
-      .execute();
   }
 
   async confirmDelivery(

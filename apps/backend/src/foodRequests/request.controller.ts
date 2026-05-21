@@ -7,7 +7,6 @@ import {
   Body,
   ValidationPipe,
   Patch,
-  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -23,7 +22,6 @@ import {
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
-import { UpdateRequestDto } from './dtos/update-request.dto';
 
 @Controller('requests')
 export class RequestsController {
@@ -103,21 +101,6 @@ export class RequestsController {
       requestData.requestedFoodTypes,
       requestData.additionalInformation,
     );
-  }
-
-  @Patch('/:requestId')
-  async updateRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Body(new ValidationPipe()) body: UpdateRequestDto,
-  ): Promise<void> {
-    await this.requestsService.update(requestId, body);
-  }
-
-  @Delete('/:requestId')
-  async deleteRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<void> {
-    return this.requestsService.delete(requestId);
   }
 
   @Roles(Role.VOLUNTEER)

@@ -119,17 +119,6 @@ describe('VolunteersController', () => {
     });
   });
 
-  describe('GET /:id', () => {
-    it('should return a user by id', async () => {
-      mockVolunteersService.findOne.mockResolvedValue(mockVolunteer1 as User);
-
-      const result = await controller.getVolunteer(1);
-
-      expect(result).toEqual(mockVolunteer1);
-      expect(mockVolunteersService.findOne).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('GET /:id/pantries', () => {
     it('should return pantries assigned to a user', async () => {
       mockVolunteersService.getVolunteerPantries.mockResolvedValue(
@@ -143,30 +132,6 @@ describe('VolunteersController', () => {
       expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(
         1,
       );
-    });
-  });
-
-  describe('POST /:id/pantries', () => {
-    it('should assign pantries to a volunteer and return result', async () => {
-      const pantryIds = [1, 3];
-      const updatedUser = {
-        ...mockVolunteer3,
-        pantries: [mockPantries[0] as Pantry, mockPantries[2] as Pantry],
-      } as User;
-
-      mockVolunteersService.assignPantriesToVolunteer.mockResolvedValue(
-        updatedUser,
-      );
-
-      const result = await controller.assignPantries(3, pantryIds);
-
-      expect(result).toEqual(updatedUser);
-      expect(result.pantries).toHaveLength(2);
-      expect(result.pantries?.[0].pantryId).toBe(1);
-      expect(result.pantries?.[1].pantryId).toBe(3);
-      expect(
-        mockVolunteersService.assignPantriesToVolunteer,
-      ).toHaveBeenCalledWith(3, pantryIds);
     });
   });
 

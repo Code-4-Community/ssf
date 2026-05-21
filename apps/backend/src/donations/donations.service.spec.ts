@@ -12,10 +12,6 @@ import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donat
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
-import {
-  ReplaceDonationItemDto,
-  ReplaceDonationItemsDto,
-} from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
 
 jest.setTimeout(60000);
@@ -231,13 +227,6 @@ describe('DonationService', () => {
       expect(firstDonation.status).toBe(DonationStatus.MATCHED);
       expect(firstDonation.foodManufacturer.foodManufacturerId).toBe(2);
       expect(firstDonation.recurrence).toBe(RecurrenceEnum.NONE);
-    });
-  });
-
-  describe('getNumberOfDonations', () => {
-    it('returns total number of donations in the database', async () => {
-      const donationCount = await service.getNumberOfDonations();
-      expect(donationCount).toEqual(4);
     });
   });
 
@@ -1057,125 +1046,6 @@ describe('DonationService', () => {
 
       donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
-    });
-  });
-
-  describe('replaceDonationItems', () => {
-    it('should replace donation items for an available donation', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([2, 3]) });
-
-      await service.replaceDonationItems(donationId, body);
-
-      const updatedItems = await donationItemService.getAllDonationItems(
-        donationId,
-      );
-      expect(updatedItems).toHaveLength(2);
-
-      const updatedItemNames = updatedItems.map((i) => i.itemName);
-      expect(updatedItemNames).toContain('Green Apples'); // updated
-      expect(updatedItemNames).toContain('Bananas'); // new
-      expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
-      expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
-    });
-
-    it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow(
-        `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
-      );
-    });
-
-    it('should delete all donation items for an available donation when passed an empty array', async () => {
-      const donationId = 1;
-
-      const body = {
-        items: [],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
-
-      await service.replaceDonationItems(donationId, body);
-
-      const updatedItems = await donationItemService.getAllDonationItems(
-        donationId,
-      );
-      expect(updatedItems).toHaveLength(0);
-    });
-
-    it('should throw NotFoundException if donation does not exist', async () => {
-      const body = { items: [] };
-      await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
-        `Donation 9999 not found`,
-      );
-    });
-
-    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
-      // Donation with status MATCHED
-      const donationId = 2;
-
-      const body = { items: [] };
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow('Only available donations can be updated');
-    });
-
-    it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
-      const donationId = 1;
-
-      const body = {
-        items: [
-          {
-            id: 9999,
-            itemName: 'Nonexistent',
-            quantity: 1,
-          } as Partial<DonationItem>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow(
-        `Donation item 9999 for Donation ${donationId} not found`,
-      );
     });
   });
 

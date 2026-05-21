@@ -18,9 +18,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AllocationsService } from '../allocations/allocations.service';
-import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
@@ -58,16 +56,6 @@ export class OrdersController {
     return this.ordersService.getAll({ status, pantryNames });
   }
 
-  @Get('/get-current-orders')
-  async getCurrentOrders(): Promise<Order[]> {
-    return this.ordersService.getCurrentOrders();
-  }
-
-  @Get('/get-past-orders')
-  async getPastOrders(): Promise<Order[]> {
-    return this.ordersService.getPastOrders();
-  }
-
   @Get('/:orderId/pantry')
   async getPantryFromOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -94,13 +82,6 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequestSummaryDto> {
     return this.ordersService.findOrderFoodRequest(orderId);
-  }
-
-  @Get('/:orderId/manufacturer')
-  async getManufacturerFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodManufacturer> {
-    return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
   @Get('/:orderId')
@@ -189,17 +170,6 @@ export class OrdersController {
       parsedAllocations,
       req.user.id,
     );
-  }
-
-  @Patch('/update-status/:orderId')
-  async updateStatus(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('newStatus') newStatus: string,
-  ): Promise<void> {
-    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
-    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
   @Roles(Role.FOODMANUFACTURER)

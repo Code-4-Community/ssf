@@ -15,7 +15,6 @@ import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
-import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
 
@@ -52,10 +51,6 @@ export class DonationService {
     return this.repo.find({
       relations: ['foodManufacturer'],
     });
-  }
-
-  async getNumberOfDonations(): Promise<number> {
-    return this.repo.count();
   }
 
   async create(donationData: CreateDonationDto): Promise<Donation> {
@@ -406,91 +401,6 @@ export class DonationService {
     });
     donation.status = DonationStatus.FULFILLED;
     return donation;
-  }
-
-  async replaceDonationItems(
-    donationId: number,
-    body: ReplaceDonationItemsDto,
-  ): Promise<void> {
-    validateId(donationId, 'Donation');
-
-    const donation = await this.repo.findOne({
-      where: { donationId },
-      relations: ['donationItems'],
-    });
-
-    if (!donation) {
-      throw new NotFoundException(`Donation ${donationId} not found`);
-    }
-
-    if (donation.status !== DonationStatus.AVAILABLE) {
-      throw new BadRequestException(`Only available donations can be updated`);
-    }
-
-    const existingItems = donation.donationItems || [];
-    const incomingItems = body.items || [];
-
-    const existingMap = new Map(
-      existingItems.map((item) => [item.itemId, item]),
-    );
-
-    const incomingIds = new Set(
-      incomingItems.filter((i) => i.id).map((i) => i.id),
-    );
-
-    const itemsToDelete = existingItems.filter(
-      (item) => !incomingIds.has(item.itemId),
-    );
-
-    donation.donationItems = [];
-
-    for (const incoming of incomingItems) {
-      if (incoming.id) {
-        const existing = existingMap.get(incoming.id);
-        if (!existing) {
-          throw new NotFoundException(
-            `Donation item ${incoming.id} for Donation ${donationId} not found`,
-          );
-        }
-        // Merge the incoming changes into the existing donation item entity by matching ids.
-        donation.donationItems.push(
-          this.donationItemsRepo.merge(existing, incoming),
-        );
-      } else {
-        // Create new item and attach to donation
-        donation.donationItems.push(
-          this.donationItemsRepo.create({ ...incoming, donation }),
-        );
-      }
-    }
-
-    await this.dataSource.transaction(async (transactionManager) => {
-      const transactionRepo = transactionManager.getRepository(DonationItem);
-      const transactionAllocationRepo =
-        transactionManager.getRepository(Allocation);
-
-      if (itemsToDelete.length > 0) {
-        const hasAllocations = await transactionAllocationRepo.exists({
-          where: {
-            item: {
-              itemId: In(itemsToDelete.map((i) => i.itemId)),
-            },
-          },
-        });
-
-        if (hasAllocations) {
-          throw new BadRequestException(
-            `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
-          );
-        }
-
-        await transactionRepo.remove(itemsToDelete);
-      }
-
-      if (donation.donationItems.length > 0) {
-        await transactionRepo.save(donation.donationItems);
-      }
-    });
   }
 
   async delete(donationId: number): Promise<void> {
