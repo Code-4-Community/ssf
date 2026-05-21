@@ -610,10 +610,11 @@ describe('FoodManufacturersService', () => {
     });
 
     it('returns next two upcoming donation reminders from same donation', async () => {
-      const futureDate1 = new Date();
+      const base = new Date();
+      const futureDate1 = new Date(base);
       futureDate1.setDate(futureDate1.getDate() + 30);
       clampDay(futureDate1);
-      const futureDate2 = new Date();
+      const futureDate2 = new Date(base);
       futureDate2.setDate(futureDate2.getDate() + 60);
       clampDay(futureDate2);
 

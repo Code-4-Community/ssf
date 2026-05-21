@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { validateId } from '../utils/validation.utils';
@@ -31,7 +31,6 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(DonationItem)
     private requestsService: RequestsService,
     private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,

@@ -10,16 +10,6 @@ import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donat
 
 const mockDonationService = mock<DonationService>();
 
-const donation1: Partial<Donation> = {
-  donationId: 1,
-  status: DonationStatus.MATCHED,
-};
-
-const donation2: Partial<Donation> = {
-  donationId: 2,
-  status: DonationStatus.FULFILLED,
-};
-
 describe('DonationsController', () => {
   let controller: DonationsController;
 

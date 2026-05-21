@@ -2,13 +2,10 @@ import {
   Controller,
   Post,
   Body,
-  Get,
   Patch,
   Param,
   ParseIntPipe,
   ParseArrayPipe,
-  Put,
-  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
