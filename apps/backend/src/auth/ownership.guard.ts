@@ -44,7 +44,7 @@ export class OwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Specified roles bypass ownership checks
+    // Specified bypass ownership checks for other roles
     if (config.bypassRoles?.includes(user.role as Role)) {
       return true;
     }
@@ -63,6 +63,7 @@ export class OwnershipGuard implements CanActivate {
     const ownerIds = await config.resolver({
       entityId,
       services,
+      user,
     });
 
     if (

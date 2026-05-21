@@ -7,7 +7,6 @@ import {
   Body,
   ValidationPipe,
   Patch,
-  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -23,7 +22,31 @@ import {
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
-import { UpdateRequestDto } from './dtos/update-request.dto';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+import { PantriesService } from '../pantries/pantries.service';
+import { Pantry } from '../pantries/pantries.entity';
+
+// PANTRY users may access requests belonging to their own pantry (matched by
+// pantry representative id). All other non-admin callers (i.e. VOLUNTEER) must
+// be in the pantry's assigned volunteers list. ADMIN bypasses in the guard.
+const resolveRequestAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+  user,
+}) =>
+  pipeNullable(
+    () => services.get(RequestsService).findOne(entityId),
+    (request: FoodRequest) =>
+      services.get(PantriesService).findOne(request.pantryId),
+    (pantry: Pantry) =>
+      user?.role === Role.PANTRY
+        ? [pantry.pantryUser.id]
+        : (pantry.volunteers ?? []).map((v) => v.id),
+  );
 
 @Controller('requests')
 export class RequestsController {
@@ -35,6 +58,10 @@ export class RequestsController {
     return this.requestsService.getAll();
   }
 
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId')
   async getRequest(
@@ -43,6 +70,10 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
@@ -51,7 +82,11 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers')
   async getMatchingManufacturers(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -59,7 +94,11 @@ export class RequestsController {
     return this.requestsService.getMatchingManufacturers(requestId);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
   async getAvailableItemsForManufacturer(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -68,6 +107,7 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
+  @Roles(Role.ADMIN, Role.PANTRY)
   @Post()
   @ApiBody({
     description: 'Details for creating a food request',
@@ -105,21 +145,10 @@ export class RequestsController {
     );
   }
 
-  @Patch('/:requestId')
-  async updateRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-    @Body(new ValidationPipe()) body: UpdateRequestDto,
-  ): Promise<void> {
-    await this.requestsService.update(requestId, body);
-  }
-
-  @Delete('/:requestId')
-  async deleteRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<void> {
-    return this.requestsService.delete(requestId);
-  }
-
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.VOLUNTEER)
   @Patch('/:requestId/close')
   async closeRequest(
