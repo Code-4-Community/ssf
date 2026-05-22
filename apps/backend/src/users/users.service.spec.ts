@@ -349,7 +349,6 @@ describe('UsersService', () => {
       const now = new Date();
 
       const createDonationBody: Partial<CreateDonationDto> = {
-        foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,

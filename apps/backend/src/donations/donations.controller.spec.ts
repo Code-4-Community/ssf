@@ -93,7 +93,6 @@ describe('DonationsController', () => {
   describe('POST /', () => {
     it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
-        foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
