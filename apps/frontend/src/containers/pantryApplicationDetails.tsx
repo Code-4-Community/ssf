@@ -179,7 +179,7 @@ const PantryApplicationDetails: React.FC = () => {
             application.pantryName,
         );
       } catch {
-        setAlertMessage('Error approving application');
+        setAlertMessage('Error approving application', 'error');
       }
     }
   };
@@ -196,7 +196,7 @@ const PantryApplicationDetails: React.FC = () => {
             application.pantryName,
         );
       } catch {
-        setAlertMessage('Error denying application');
+        setAlertMessage('Error denying application', 'error');
       }
     }
   };

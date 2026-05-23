@@ -31,7 +31,7 @@ const PantryDashboard: React.FC = () => {
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
       } catch {
-        setAlertMessage('Error fetching pantry information');
+        setAlertMessage('Error fetching pantry information', 'error');
         return;
       }
 
@@ -44,7 +44,7 @@ const PantryDashboard: React.FC = () => {
         );
         setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching pantry food requests');
+        setAlertMessage('Error fetching pantry food requests', 'error');
       }
 
       try {
@@ -55,7 +55,7 @@ const PantryDashboard: React.FC = () => {
         );
         setRecentOrders(sortedOrders.slice(0, 4));
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching orders', 'error');
       }
     };
     fetchDashboardData();

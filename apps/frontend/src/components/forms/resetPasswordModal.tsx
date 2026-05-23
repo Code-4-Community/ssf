@@ -43,7 +43,7 @@ const ResetPasswordModal: React.FC = () => {
       await resetPassword({ username: email });
       setStep('new');
     } catch {
-      setAlertMessage('Failed to send verification code');
+      setAlertMessage('Failed to send verification code', 'error');
     }
   };
 
@@ -51,18 +51,18 @@ const ResetPasswordModal: React.FC = () => {
     try {
       await resetPassword({ username: email });
     } catch {
-      setAlertMessage('Failed to send verification code');
+      setAlertMessage('Failed to send verification code', 'error');
     }
   };
 
   const handleResetPassword = async () => {
     if (password !== confirmPassword) {
-      setAlertMessage('Passwords need to match');
+      setAlertMessage('Passwords need to match', 'error');
       return;
     }
 
     if (password.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters');
+      setAlertMessage('Password needs to be at least 8 characters', 'error');
       return;
     }
 
@@ -74,7 +74,7 @@ const ResetPasswordModal: React.FC = () => {
       });
       navigate(ROUTES.LOGIN);
     } catch {
-      setAlertMessage('Failed to set new password');
+      setAlertMessage('Failed to set new password', 'error');
     }
   };
 

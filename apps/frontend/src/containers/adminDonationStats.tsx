@@ -46,14 +46,14 @@ const AdminDonationStats: React.FC = () => {
         const names = await ApiClient.getApprovedPantryNames();
         setPantryNameOptions(names);
       } catch {
-        setAlertMessage('Error fetching pantry names');
+        setAlertMessage('Error fetching pantry names', 'error');
       }
 
       try {
         const years = await ApiClient.getPantryOrderYears();
         setAvailableYears(years);
       } catch {
-        setAlertMessage('Error fetching available years');
+        setAlertMessage('Error fetching available years', 'error');
       }
     };
     fetchInitialData();
@@ -70,7 +70,7 @@ const AdminDonationStats: React.FC = () => {
         );
         setTotalStats(stats);
       } catch {
-        setAlertMessage('Error fetching total stats');
+        setAlertMessage('Error fetching total stats', 'error');
       }
     };
     fetchTotalStats();
@@ -86,7 +86,7 @@ const AdminDonationStats: React.FC = () => {
         });
         setPantryStats(stats);
       } catch {
-        setAlertMessage('Error fetching pantry stats');
+        setAlertMessage('Error fetching pantry stats', 'error');
       }
     };
     fetchStats();

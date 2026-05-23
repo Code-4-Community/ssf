@@ -52,7 +52,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch {
-          setAlertMessage('Error fetching food request details');
+          setAlertMessage('Error fetching food request details', 'error');
         }
       };
 
@@ -67,7 +67,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch {
-          setAlertMessage('Error fetching order details');
+          setAlertMessage('Error fetching order details', 'error');
         }
       };
 

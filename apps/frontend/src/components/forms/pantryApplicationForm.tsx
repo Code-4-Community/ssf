@@ -111,7 +111,7 @@ const PantryApplicationForm: React.FC = () => {
 
   useEffect(() => {
     if (actionData?.error) {
-      setAlertMessage(actionData.error);
+      setAlertMessage(actionData.error, 'error');
     }
   }, [actionData, setAlertMessage]);
 

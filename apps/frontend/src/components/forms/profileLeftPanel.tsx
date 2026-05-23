@@ -86,7 +86,9 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
       <ChangePasswordModal
         open={open}
         onClose={onClose}
-        onSuccess={() => setAlertMessage('Password successfully changed')}
+        onSuccess={() =>
+          setAlertMessage('Password successfully changed', 'success')
+        }
       ></ChangePasswordModal>
     </VStack>
   );

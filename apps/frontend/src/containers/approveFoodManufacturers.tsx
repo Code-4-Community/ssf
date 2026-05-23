@@ -36,8 +36,7 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
     const fetchFoodManufacturers = async () => {
@@ -45,12 +44,12 @@ const ApproveFoodManufacturers: React.FC = () => {
         const data = await ApiClient.getAllPendingFoodManufacturers();
         setFoodManufacturers(data);
       } catch {
-        setErrorMessage('Error fetching food manufacturers');
+        setAlertMessage('Error fetching food manufacturers', 'error');
       }
     };
 
     fetchFoodManufacturers();
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -116,29 +115,21 @@ const ApproveFoodManufacturers: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setSuccessMessage(message);
+      setAlertMessage(message, 'success');
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, setErrorMessage, setSuccessMessage]);
+  }, [searchParams, setSearchParams, setAlertMessage]);
 
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Application Review
       </Heading>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}

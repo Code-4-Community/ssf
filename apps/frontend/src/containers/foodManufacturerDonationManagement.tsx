@@ -22,8 +22,7 @@ import { useAlert } from '../hooks/alert';
 const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
@@ -84,8 +83,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setErrorMessage('Error fetching donations');
+      setAlertMessage('Error fetching donations', 'error');
     }
+  };
+
+  const handleLogNewDonationSuccess = () => {
+    setAlertMessage('Successfully logged new donation', 'success');
+    if (manufacturerId !== null) fetchDonations(manufacturerId);
   };
 
   // On page load, get the food manufacturer id and all appropriate donations
@@ -96,7 +100,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         setManufacturerId(fmId);
         await fetchDonations(fmId);
       } catch {
-        setErrorMessage('Error initializing donation management');
+        setAlertMessage('Error initializing donation management', 'error');
       }
     };
     init();
@@ -111,19 +115,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   return (
     <Box p={12}>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}
@@ -151,7 +147,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       {isLogDonationOpen && manufacturerId !== null && (
         <NewDonationFormModal
           foodManufacturerId={manufacturerId}
-          onDonationSuccess={() => fetchDonations(manufacturerId)}
+          onDonationSuccess={handleLogNewDonationSuccess}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
         />
@@ -165,8 +161,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onSuccess={() => {
             setSelectedActionDonation(null);
             if (manufacturerId !== null) fetchDonations(manufacturerId);
-            setSuccessMessage(
+            setAlertMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              'success',
             );
           }}
         />

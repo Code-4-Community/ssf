@@ -62,7 +62,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
         );
         setManufacturers(data);
       } catch {
-        setAlertMessage('Error fetching manufacturers');
+        setAlertMessage('Error fetching manufacturers', 'error');
       }
     };
     fetchManufacturers();
@@ -114,7 +114,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       );
       setManufacturerItems(data);
     } catch {
-      setAlertMessage('Error fetching manufacturer items');
+      setAlertMessage('Error fetching manufacturer items', 'error');
     }
   };
 
@@ -140,7 +140,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Error creating new order');
+      setAlertMessage('Error creating new order', 'error');
     }
   };
 

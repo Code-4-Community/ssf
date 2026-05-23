@@ -44,7 +44,7 @@ const AdminDonation: React.FC = () => {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch {
-        setAlertMessage('Error fetching donations');
+        setAlertMessage('Error fetching donations', 'error');
       }
     };
     fetchDonations();

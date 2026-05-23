@@ -78,7 +78,10 @@ const LoginPage: React.FC = () => {
           error.name === 'NotAuthorizedException' ||
           error.name === 'UserNotFoundException'
         ) {
-          setAlertMessage('Incorrect email or password. Please try again.');
+          setAlertMessage(
+            'Incorrect email or password. Please try again.',
+            'error',
+          );
           return;
         }
       }
@@ -86,6 +89,7 @@ const LoginPage: React.FC = () => {
         navigator.onLine
           ? 'Login failed. The server may be unavailable. Please try again later.'
           : 'No internet connection. Please check your network and try again.',
+        'error',
       );
     }
   };
@@ -93,11 +97,11 @@ const LoginPage: React.FC = () => {
   // Sets the new password for the first time
   const handleSetNewPassword = async () => {
     if (newPassword !== confirmNewPassword) {
-      setAlertMessage('Passwords need to match');
+      setAlertMessage('Passwords need to match', 'error');
       return;
     }
     if (newPassword.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters');
+      setAlertMessage('Password needs to be at least 8 characters', 'error');
       return;
     }
 
@@ -107,7 +111,7 @@ const LoginPage: React.FC = () => {
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
     } catch {
-      setAlertMessage('Failed to set new password');
+      setAlertMessage('Failed to set new password', 'error');
     }
   };
 

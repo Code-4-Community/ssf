@@ -58,10 +58,10 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch {
-        setAlertMessage('Error fetching requests');
+        setAlertMessage('Error fetching requests', 'error');
       }
     } else {
-      setAlertMessage('No pantry associated with this account.');
+      setAlertMessage('No pantry associated with this account.', 'error');
     }
   }, [setAlertMessage]);
 

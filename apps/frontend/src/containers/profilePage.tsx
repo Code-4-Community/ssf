@@ -33,7 +33,7 @@ const ProfilePage: React.FC = () => {
             const pantry = await ApiClient.getPantry(pantryId);
             setOrgName(pantry.pantryName);
           } catch {
-            setAlertMessage('Failed to fetch pantry data.');
+            setAlertMessage('Failed to fetch pantry data.', 'error');
           }
         } else if (user.role === Role.FOODMANUFACTURER) {
           try {
@@ -42,11 +42,14 @@ const ProfilePage: React.FC = () => {
             const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
             setOrgName(fm.foodManufacturerName);
           } catch {
-            setAlertMessage('Failed to fetch food manufacturer data.');
+            setAlertMessage('Failed to fetch food manufacturer data.', 'error');
           }
         }
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          'error',
+        );
       } finally {
         setIsLoading(false);
       }
@@ -56,7 +59,7 @@ const ProfilePage: React.FC = () => {
 
   const handleSave = async (fields: UpdateProfileFields): Promise<boolean> => {
     if (!profile) {
-      setAlertMessage('Profile not found.');
+      setAlertMessage('Profile not found.', 'error');
       return false;
     }
 
@@ -68,14 +71,18 @@ const ProfilePage: React.FC = () => {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status;
         if (status === 400 || status === 404) {
-          setAlertMessage(error.response?.data?.message);
+          setAlertMessage(error.response?.data?.message, 'error');
         } else {
           setAlertMessage(
             'Profile unable to be edited. Please try again later.',
+            'error',
           );
         }
       } else {
-        setAlertMessage('An unexpected error occurred. Please try again.');
+        setAlertMessage(
+          'An unexpected error occurred. Please try again.',
+          'error',
+        );
       }
       return false;
     }

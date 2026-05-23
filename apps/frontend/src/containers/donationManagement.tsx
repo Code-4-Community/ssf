@@ -43,7 +43,7 @@ const DonationManagement: React.FC = () => {
       });
       setDonations(sortedDonations);
     } catch {
-      setAlertMessage('Error fetching donations');
+      setAlertMessage('Error fetching donations', 'error');
     }
   };
 
@@ -62,7 +62,7 @@ const DonationManagement: React.FC = () => {
         }));
       });
     } catch {
-      setAlertMessage('Error fetching donation items');
+      setAlertMessage('Error fetching donation items', 'error');
     }
   };
 
@@ -82,7 +82,7 @@ const DonationManagement: React.FC = () => {
       await ApiClient.fulfillDonation(donationId);
       fetchDonations();
     } catch {
-      setAlertMessage('Failed to fulfill donation');
+      setAlertMessage('Failed to fulfill donation', 'error');
     }
   };
 

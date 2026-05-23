@@ -204,7 +204,10 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       repeatInterval === RecurrenceEnum.WEEKLY &&
       !Object.values(repeatOn).some(Boolean)
     ) {
-      setAlertMessage('Please select at least one day for weekly recurrence.');
+      setAlertMessage(
+        'Please select at least one day for weekly recurrence.',
+        'error',
+      );
       return;
     }
 
@@ -248,7 +251,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       setRepeatInterval(RecurrenceEnum.NONE);
       onClose();
     } catch {
-      setAlertMessage('Error submitting new donation');
+      setAlertMessage('Error submitting new donation', 'error');
     }
   };
 

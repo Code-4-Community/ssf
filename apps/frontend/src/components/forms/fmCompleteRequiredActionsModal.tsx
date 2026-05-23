@@ -192,12 +192,14 @@ const FmCompleteRequiredActionsModal: React.FC<
       if (shippingCost !== '' && !isValidShippingCost(shippingCost)) {
         setAlertMessage(
           `Shipping cost for order ${order.orderId} must be a positive number with up to 2 decimal places.`,
+          'error',
         );
         return;
       }
       if (trackingLink.trim() !== '' && !isValidUrl(trackingLink)) {
         setAlertMessage(
           `Tracking link for order ${order.orderId} must be a valid http or https URL.`,
+          'error',
         );
         return;
       }
@@ -296,6 +298,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         msg
           ? msg.replace(/^orders\.\d+\./, '')
           : 'Error completing required actions. Please try again.',
+        'error',
       );
     } finally {
       setIsSubmitting(false);

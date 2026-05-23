@@ -39,12 +39,12 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleChangePassword = async () => {
     if (password.length < 8) {
-      setAlertMessage('Password must be at least 8 characters');
+      setAlertMessage('Password must be at least 8 characters', 'error');
       return;
     }
 
     if (password !== confirmPassword) {
-      setAlertMessage('Passwords must match');
+      setAlertMessage('Passwords must match', 'error');
       return;
     }
 
@@ -58,11 +58,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       onSuccess();
     } catch (err: any) {
       if (err.name === 'LimitExceededException') {
-        setAlertMessage('Limit exceeded, please try again later');
+        setAlertMessage('Limit exceeded, please try again later', 'error');
       } else if (err.name === 'NotAuthorizedException') {
-        setAlertMessage('Failed to update password, old password is incorrect');
+        setAlertMessage(
+          'Failed to update password, old password is incorrect',
+          'error',
+        );
       } else {
-        setAlertMessage('Failed to update password, please try again');
+        setAlertMessage('Failed to update password, please try again', 'error');
       }
     }
   };
@@ -93,7 +96,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       open={open}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) {
-          setAlertMessage('');
+          setAlertMessage('', 'error');
           onClose();
         }
       }}

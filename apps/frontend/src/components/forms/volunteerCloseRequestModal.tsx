@@ -34,7 +34,7 @@ const VolunteerCloseRequestActionModal: React.FC<
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Error completing action. Please try again.');
+      setAlertMessage('Error completing action. Please try again.', 'error');
     }
   };
 

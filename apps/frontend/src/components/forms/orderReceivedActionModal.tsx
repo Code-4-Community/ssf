@@ -223,7 +223,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     if (words.length <= 250) {
                       setFeedback(e.target.value);
                     } else {
-                      setAlertMessage('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit', 'error');
                     }
                   }}
                 />

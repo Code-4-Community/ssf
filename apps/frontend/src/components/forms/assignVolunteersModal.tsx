@@ -70,7 +70,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
         setVolunteers(normalized);
         setSelectedIds(new Set(assignedIds));
       } catch {
-        setAlertMessage('Error fetching volunteers');
+        setAlertMessage('Error fetching volunteers', 'error');
       }
     };
 
@@ -112,7 +112,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
       onSuccess();
       onClose();
     } catch {
-      setAlertMessage('Error saving volunteer assignments');
+      setAlertMessage('Error saving volunteer assignments', 'error');
     }
   };
 

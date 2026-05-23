@@ -38,7 +38,6 @@ const AdminPantryManagement: React.FC = () => {
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
 
   const [alertState, setAlertMessage] = useAlert();
-  const [isAlertSuccess, setIsAlertSuccess] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [
     selectedPantryToAssignVolunteers,
@@ -52,8 +51,7 @@ const AdminPantryManagement: React.FC = () => {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
-      setIsAlertSuccess(false);
-      setAlertMessage('Error fetching pantries');
+      setAlertMessage('Error fetching pantries', 'error');
     }
   };
 
@@ -62,8 +60,7 @@ const AdminPantryManagement: React.FC = () => {
   }, [setAlertMessage]);
 
   const handleAssignVolunteersSuccess = () => {
-    setIsAlertSuccess(true);
-    setAlertMessage('Successfully assigned volunteers');
+    setAlertMessage('Successfully assigned volunteers', 'success');
     fetchPantries();
   };
 
@@ -110,7 +107,7 @@ const AdminPantryManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={isAlertSuccess ? 'info' : 'error'}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}

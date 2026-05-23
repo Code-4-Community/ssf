@@ -125,7 +125,10 @@ const VolunteerOrderManagement: React.FC = () => {
         userId = user.id;
         setCurrentUser(user);
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          'error',
+        );
         setIsLoading(false);
         return;
       }
@@ -162,7 +165,7 @@ const VolunteerOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch {
-        setAlertMessage('Error fetching assigned orders');
+        setAlertMessage('Error fetching assigned orders', 'error');
       } finally {
         setIsLoading(false);
       }

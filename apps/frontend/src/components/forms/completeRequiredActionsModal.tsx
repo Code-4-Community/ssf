@@ -46,7 +46,7 @@ const CompleteRequiredActionsModal: React.FC<
       await ApiClient.completeOrderAction(order.orderId, action);
       onActionCompleted(order.orderId, action);
     } catch {
-      setAlertMessage('Error completing action. Please try again.');
+      setAlertMessage('Error completing action. Please try again.', 'error');
     } finally {
       setLoadingAction(null);
     }

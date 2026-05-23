@@ -42,8 +42,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
 
@@ -58,10 +57,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         setRequestedSize('');
         setAdditionalNotes('');
       }
-      setErrorMessage('');
-      setSuccessMessage('');
+      setAlertMessage('', 'error');
     }
-  }, [isOpen, previousRequest, setErrorMessage, setSuccessMessage]);
+  }, [isOpen, previousRequest, setAlertMessage]);
 
   const handleSubmit = async () => {
     const foodRequestData: CreateFoodRequestBody = {
@@ -73,11 +71,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setSuccessMessage('Request submitted');
+      setAlertMessage('Request submitted', 'success');
       onClose();
       onSuccess();
     } catch {
-      setErrorMessage('Request could not be submitted.');
+      setAlertMessage('Request could not be submitted.', 'error');
     }
   };
 
@@ -90,19 +88,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}
@@ -283,7 +273,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setErrorMessage('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit', 'error');
                     }
                   }}
                 />

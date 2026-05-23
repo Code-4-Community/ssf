@@ -34,7 +34,7 @@ const AdminDashboard: React.FC = () => {
         await ApiClient.getRecentPendingApplications();
       setPendingApplications(pendingApplications);
     } catch {
-      setAlertMessage('Error fetching pending applications');
+      setAlertMessage('Error fetching pending applications', 'error');
     }
   };
 
@@ -48,7 +48,7 @@ const AdminDashboard: React.FC = () => {
       const recentOrders = sortedOrders.slice(0, 2);
       setRecentOrders(recentOrders);
     } catch {
-      setAlertMessage('Error fetching orders');
+      setAlertMessage('Error fetching orders', 'error');
     }
   };
 
@@ -62,7 +62,7 @@ const AdminDashboard: React.FC = () => {
       const recentDonations = sortedDonations.slice(0, 2);
       setRecentDonations(recentDonations);
     } catch {
-      setAlertMessage('Error fetching donations');
+      setAlertMessage('Error fetching donations', 'error');
     }
   };
 
@@ -72,7 +72,10 @@ const AdminDashboard: React.FC = () => {
       user = await ApiClient.getMe();
       setCurrentUser(user);
     } catch {
-      setAlertMessage('Authentication error. Please log in and try again.');
+      setAlertMessage(
+        'Authentication error. Please log in and try again.',
+        'error',
+      );
       return;
     }
   };

@@ -178,7 +178,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error approving application');
+        setAlertMessage('Error approving application', 'error');
       }
     }
   };
@@ -198,7 +198,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error denying application');
+        setAlertMessage('Error denying application', 'error');
       }
     }
   };

@@ -38,7 +38,10 @@ const AssignedPantries: React.FC = () => {
         user = await ApiClient.getMe();
         userId = user.id;
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          'error',
+        );
         setIsLoading(false);
         return;
       }
@@ -47,7 +50,7 @@ const AssignedPantries: React.FC = () => {
         const data = await ApiClient.getVolunteerPantries(userId);
         setPantries(data);
       } catch {
-        setAlertMessage('Error fetching assigned pantries');
+        setAlertMessage('Error fetching assigned pantries', 'error');
       } finally {
         setIsLoading(false);
       }

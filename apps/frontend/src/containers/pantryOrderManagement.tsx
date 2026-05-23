@@ -56,8 +56,7 @@ const PantryOrderManagement: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   // State to hold filter state per status
   type FilterState = {
@@ -110,9 +109,9 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setErrorMessage('Failed to fetch orders');
+      setAlertMessage('Failed to fetch orders', 'error');
     }
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchOrders();
@@ -149,19 +148,11 @@ const PantryOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}
@@ -228,10 +219,10 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => setSelectedActionOrder(null)}
           onSuccess={() => {
             fetchOrders();
-            setSuccessMessage('Delivery Confirmed');
+            setAlertMessage('Delivery Confirmed', 'success');
           }}
           onError={() => {
-            setErrorMessage('Delivery could not be confirmed.');
+            setAlertMessage('Delivery could not be confirmed.', 'error');
           }}
         />
       )}

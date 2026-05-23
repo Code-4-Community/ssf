@@ -25,7 +25,7 @@ const VolunteerDashboard: React.FC = () => {
         const currentUser = await ApiClient.getMe();
         setUser(currentUser);
       } catch {
-        setAlertMessage('Error fetching user information');
+        setAlertMessage('Error fetching user information', 'error');
         return;
       }
 
@@ -38,14 +38,14 @@ const VolunteerDashboard: React.FC = () => {
         );
         setRecentFoodRequests(sorted.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching food requests');
+        setAlertMessage('Error fetching food requests', 'error');
       }
 
       try {
         const orders = await ApiClient.getVolunteerRecentOrders();
         setRecentOrders(orders);
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching orders', 'error');
       }
     };
     fetchDashboardData();

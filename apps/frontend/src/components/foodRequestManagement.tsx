@@ -51,8 +51,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,9 +61,9 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       const data = await fetchData();
       setRequests(data);
     } catch {
-      setErrorMessage('Error fetching requests');
+      setAlertMessage('Error fetching requests', 'error');
     }
-  }, [fetchData, setErrorMessage]);
+  }, [fetchData, setAlertMessage]);
 
   useEffect(() => {
     loadRequests();
@@ -150,19 +149,11 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status === 'success' ? 'info' : 'error'}
           timeout={6000}
         />
       )}
@@ -414,7 +405,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCloseRequest}
               onSuccess={() => {
-                setSuccessMessage('Request Closed');
+                setAlertMessage('Request Closed', 'success');
                 loadRequests();
               }}
             />
@@ -426,7 +417,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCreateOrder}
               onSuccess={() => {
-                setSuccessMessage('Order Created');
+                setAlertMessage('Order Created', 'success');
                 loadRequests();
               }}
             />

@@ -133,7 +133,7 @@ const AdminOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching orders', 'error');
       }
     };
 
