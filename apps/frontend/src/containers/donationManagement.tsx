@@ -103,7 +103,6 @@ const DonationManagement: React.FC = () => {
       <Button onClick={onOpen}>Submit new donation</Button>
       {manufacturerId !== null && (
         <NewDonationFormModal
-          foodManufacturerId={manufacturerId}
           onDonationSuccess={fetchDonations}
           isOpen={open}
           onClose={onClose}

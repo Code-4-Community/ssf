@@ -32,7 +32,6 @@ import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface NewDonationFormModalProps {
-  foodManufacturerId: number;
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -104,7 +103,6 @@ const getFirstValidationError = (
 };
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
-  foodManufacturerId,
   onDonationSuccess,
   isOpen,
   onClose,
@@ -212,7 +210,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
 
     const donationBody: CreateDonationDto = {
-      foodManufacturerId,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:

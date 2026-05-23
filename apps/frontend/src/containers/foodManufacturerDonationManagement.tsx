@@ -146,7 +146,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {isLogDonationOpen && manufacturerId !== null && (
         <NewDonationFormModal
-          foodManufacturerId={manufacturerId}
           onDonationSuccess={handleLogNewDonationSuccess}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}

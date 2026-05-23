@@ -56,7 +56,6 @@ export class DonationsController {
     schema: {
       type: 'object',
       properties: {
-        foodManufacturerId: { type: 'integer', example: 1 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),
