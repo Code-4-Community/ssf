@@ -347,6 +347,30 @@ describe('OrdersService', () => {
         new NotFoundException('Order 9999 not found'),
       );
     });
+
+    it('throws ConflictException for denied pantry', async () => {
+      const pantryId = 4;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(service.findOrderFoodRequest(1)).rejects.toThrow(
+        new ConflictException(`Pantry ${pantryId} not approved`),
+      );
+    });
+
+    it('throws ConflictException for pending pantry', async () => {
+      const pantryId = 5;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(service.findOrderFoodRequest(1)).rejects.toThrow(
+        new ConflictException(`Pantry ${pantryId} not approved`),
+      );
+    });
   });
 
   describe('findOrderPantry', () => {
