@@ -14,6 +14,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -593,7 +594,16 @@ describe('RequestsService', () => {
     });
 
     it('returns empty matchingItems array for no available matching items', async () => {
-      const result = await service.getAvailableItems(2, 3);
+      // update FM ID 2 to have none of the food types requested in request ID 4
+      await testDataSource.query(`
+        UPDATE donation_items di
+        SET reserved_quantity = quantity
+        FROM donations d
+        WHERE di.donation_id = d.donation_id
+        AND d.food_manufacturer_id = 2
+        AND di.food_type IN ('Whole-Grain Cookies', 'Dairy-Free Alternatives', 'Nut-Free Granola Bars')
+      `);
+      const result = await service.getAvailableItems(4, 2);
       expect(result.matchingItems).toHaveLength(0);
     });
 
@@ -611,6 +621,12 @@ describe('RequestsService', () => {
     it('throws NotFoundException for non-existent manufacturer', async () => {
       await expect(service.getAvailableItems(1, 999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 999 not found'),
+      );
+    });
+
+    it('throws ConflictException for non-approved manufacturer', async () => {
+      await expect(service.getAvailableItems(1, 3)).rejects.toThrow(
+        new ConflictException('Food Manufacturer 3 not approved'),
       );
     });
   });

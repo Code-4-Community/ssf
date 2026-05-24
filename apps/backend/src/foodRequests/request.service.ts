@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -24,6 +25,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 import { UpdateRequestDto } from './dtos/update-request.dto';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class RequestsService {
@@ -182,9 +184,16 @@ export class RequestsService {
     const manufacturer = await this.foodManufacturerRepo.findOne({
       where: { foodManufacturerId },
     });
+
     if (!manufacturer) {
       throw new NotFoundException(
         `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Food Manufacturer ${foodManufacturerId} not approved`,
       );
     }
 

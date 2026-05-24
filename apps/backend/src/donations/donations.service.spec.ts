@@ -1074,7 +1074,7 @@ describe('DonationService', () => {
     });
 
     it('throws ConflictException when foodManufacturerId not approved', async () => {
-      expect(
+      await expect(
         service.create(
           {
             recurrence: RecurrenceEnum.NONE,
