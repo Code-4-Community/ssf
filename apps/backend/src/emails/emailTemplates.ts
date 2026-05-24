@@ -4,7 +4,7 @@ export type EmailTemplate = {
   additionalContent?: string;
 };
 
-export const EMAIL_REDIRECT_URL = 'localhost:4200';
+export const EMAIL_REDIRECT_URL = 'http://localhost:4200';
 // TODO: Change this before production to be the actual ssf email
 export const SSF_PARTNER_EMAIL = 'example@gmail.com';
 
