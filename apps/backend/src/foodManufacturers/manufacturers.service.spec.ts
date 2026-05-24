@@ -30,6 +30,7 @@ import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { RecurrenceEnum } from '../donations/types';
+import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 
 jest.setTimeout(60000);
 
@@ -865,6 +866,21 @@ describe('FoodManufacturersService', () => {
       await expect(service.getUpcomingDonationReminders(3)).rejects.toThrow(
         new ConflictException(
           'Cannot get donation reminders for a pending food manufacturer',
+        ),
+      );
+    });
+  });
+
+  describe(`updateFoodManufacturerApplication`, () => {
+    it('throws ConflictException for non-pending manufacturers', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+      await expect(
+        service.updateFoodManufacturerApplication(1, dto, 3),
+      ).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a(n) approved application. Only pending applications can be updated.',
         ),
       );
     });

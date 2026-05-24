@@ -347,6 +347,12 @@ export class FoodManufacturersService {
       );
     }
 
+    if (manufacturer.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot update application for a(n) ${manufacturer.status} application. Only pending applications can be updated.`,
+      );
+    }
+
     Object.assign(manufacturer, foodManufacturerData);
 
     return this.repo.save(manufacturer);
