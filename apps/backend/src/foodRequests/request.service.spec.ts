@@ -265,8 +265,12 @@ describe('RequestsService', () => {
     });
 
     it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
-      // Harbor Community Center - no volunteers assigned
-      const pantryId = 5;
+      // update the database so that approved pantry 2 has no volunteers
+      const pantryId = 2;
+      await testDataSource.query(`
+        DELETE FROM volunteer_assignments WHERE pantry_id = ${pantryId}
+      `);
+
       const pantry = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId },
         relations: ['pantryUser', 'volunteers'],
@@ -319,6 +323,28 @@ describe('RequestsService', () => {
           'Additional info',
         ),
       ).rejects.toThrow(new NotFoundException('Pantry 999 not found'));
+    });
+
+    it('should throw ConflictException for denied pantry', async () => {
+      await expect(
+        service.create(
+          4,
+          RequestSize.MEDIUM,
+          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          'Additional info',
+        ),
+      ).rejects.toThrow(new ConflictException('Pantry 4 not approved'));
+    });
+
+    it('should throw ConflictException for pending pantry', async () => {
+      await expect(
+        service.create(
+          5,
+          RequestSize.MEDIUM,
+          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          'Additional info',
+        ),
+      ).rejects.toThrow(new ConflictException('Pantry 5 not approved'));
     });
   });
 

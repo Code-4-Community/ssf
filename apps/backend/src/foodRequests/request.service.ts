@@ -240,8 +240,13 @@ export class RequestsService {
       where: { pantryId },
       relations: ['pantryUser', 'volunteers'],
     });
+
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(`Pantry ${pantryId} not approved`);
     }
 
     const foodRequest = this.repo.create({
