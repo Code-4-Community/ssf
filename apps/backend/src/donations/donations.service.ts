@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +19,7 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class DonationService {
@@ -70,6 +72,12 @@ export class DonationService {
     if (!manufacturer) {
       throw new NotFoundException(
         `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Food Manufacturer ${foodManufacturerId} not approved`,
       );
     }
 

@@ -6,7 +6,11 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
@@ -1067,6 +1071,20 @@ describe('DonationService', () => {
 
       donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
+    });
+
+    it('throws ConflictException when foodManufacturerId not approved', async () => {
+      expect(
+        service.create(
+          {
+            recurrence: RecurrenceEnum.NONE,
+            items: validItems,
+          },
+          3,
+        ),
+      ).rejects.toThrow(
+        new ConflictException('Food Manufacturer 3 not approved'),
+      );
     });
   });
 
