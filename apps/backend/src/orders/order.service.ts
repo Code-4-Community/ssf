@@ -372,6 +372,7 @@ export class OrdersService {
           pantry: {
             pantryId: true,
             pantryName: true,
+            status: true,
           },
         },
       },
@@ -379,6 +380,12 @@ export class OrdersService {
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.request.pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Pantry ${order.request.pantry.pantryId} not approved`,
+      );
     }
 
     return {
