@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import SectionEmptyState from '@components/SectionEmptyState';
 import PageEmptyState from '@components/PageEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -20,12 +21,16 @@ const VolunteerDashboard: React.FC = () => {
     FoodRequestSummaryDto[]
   >([]);
   const [recentOrders, setRecentOrders] = useState<VolunteerOrder[]>([]);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const currentUser = await ApiClient.getMe();
         setUser(currentUser);
+
+        const userStats = await ApiClient.getUserStats(currentUser.id);
+        setStats(userStats);
       } catch {
         setAlertMessage('Error fetching user information');
         return;
@@ -71,6 +76,8 @@ const VolunteerDashboard: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {user.firstName} {user.lastName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState

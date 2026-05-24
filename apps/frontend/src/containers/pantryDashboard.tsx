@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import SectionEmptyState from '@components/SectionEmptyState';
 import PageEmptyState from '@components/PageEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 
 const PantryDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const PantryDashboard: React.FC = () => {
     FoodRequestSummaryDto[]
   >([]);
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -32,6 +34,10 @@ const PantryDashboard: React.FC = () => {
         pantryId = await ApiClient.getCurrentUserPantryId();
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
+
+        const user = await ApiClient.getMe();
+        const userStats = await ApiClient.getUserStats(user.id);
+        setStats(userStats);
       } catch {
         setAlertMessage('Error fetching pantry information');
         return;
@@ -96,6 +102,8 @@ const PantryDashboard: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {pantry.pantryName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState

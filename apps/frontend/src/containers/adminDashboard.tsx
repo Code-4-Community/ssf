@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import SectionEmptyState from '@components/SectionEmptyState';
 import PageEmptyState from '@components/PageEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   const fetchPendingApplications = async () => {
     try {
@@ -73,6 +75,9 @@ const AdminDashboard: React.FC = () => {
     try {
       user = await ApiClient.getMe();
       setCurrentUser(user);
+
+      const userStats = await ApiClient.getUserStats(user.id);
+      setStats(userStats);
     } catch {
       setAlertMessage('Authentication error. Please log in and try again.');
       return;
@@ -104,6 +109,8 @@ const AdminDashboard: React.FC = () => {
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState
