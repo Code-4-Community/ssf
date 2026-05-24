@@ -860,5 +860,13 @@ describe('FoodManufacturersService', () => {
         new NotFoundException('Food Manufacturer 9999 not found'),
       );
     });
+
+    it('throws ConflictException for pending manufacturer', async () => {
+      await expect(service.getUpcomingDonationReminders(3)).rejects.toThrow(
+        new ConflictException(
+          'Cannot get donation reminders for a pending food manufacturer',
+        ),
+      );
+    });
   });
 });

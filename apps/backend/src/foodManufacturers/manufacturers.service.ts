@@ -168,6 +168,12 @@ export class FoodManufacturersService {
       );
     }
 
+    if (manufacturer.status != ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot get donation reminders for a ${manufacturer.status} food manufacturer`,
+      );
+    }
+
     const donations = await this.donationsRepo.find({
       where: { foodManufacturer: { foodManufacturerId } },
     });
