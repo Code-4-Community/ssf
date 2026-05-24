@@ -1158,6 +1158,24 @@ describe('PantriesService', () => {
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
+
+    it(`throws ConflictException when updating volunteers for a pending pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(5, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it(`throws ConflictException when updating volunteers for a denied pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(4, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
   });
 
   describe('getDashboardStats', () => {

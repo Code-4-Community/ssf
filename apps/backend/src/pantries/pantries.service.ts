@@ -531,6 +531,10 @@ export class PantriesService {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
     }
 
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(`Pantry with ID ${pantryId} not approved`);
+    }
+
     const uniqueVolunteerIds = new Set([
       ...addVolunteerIds,
       ...removeVolunteerIds,
