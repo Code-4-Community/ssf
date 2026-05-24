@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   ParseArrayPipe,
+  Get,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -23,6 +24,11 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
+
+  @Get()
+  async getAllDonations(): Promise<Donation[]> {
+    return this.donationService.getAll();
+  }
 
   @Post()
   @ApiBody({

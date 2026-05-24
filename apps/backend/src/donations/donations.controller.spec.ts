@@ -10,6 +10,16 @@ import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donat
 
 const mockDonationService = mock<DonationService>();
 
+const donation1: Partial<Donation> = {
+  donationId: 1,
+  status: DonationStatus.MATCHED,
+};
+
+const donation2: Partial<Donation> = {
+  donationId: 2,
+  status: DonationStatus.FULFILLED,
+};
+
 describe('DonationsController', () => {
   let controller: DonationsController;
 
@@ -29,6 +39,20 @@ describe('DonationsController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('GET /', () => {
+    it('should call donationService.getAll and return array of donations', async () => {
+      mockDonationService.getAll.mockResolvedValueOnce([
+        donation1,
+        donation2,
+      ] as Donation[]);
+
+      const result = await controller.getAllDonations();
+
+      expect(result).toEqual([donation1, donation2]);
+      expect(mockDonationService.getAll).toHaveBeenCalled();
+    });
   });
 
   describe('POST /', () => {
