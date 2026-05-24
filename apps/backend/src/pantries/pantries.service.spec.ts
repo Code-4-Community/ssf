@@ -400,7 +400,7 @@ describe('PantriesService', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      const updatedPantry = await service.updatePantryApplication(5, dto, 14);
+      const updatedPantry = await service.updatePantryApplication(1, dto, 10);
       expect(updatedPantry.secondaryContactFirstName).toBe('John');
       expect(updatedPantry.secondaryContactLastName).toBe('Doe');
       expect(updatedPantry.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
@@ -422,13 +422,13 @@ describe('PantriesService', () => {
     });
 
     it('updates only the provided fields and keeps others intact', async () => {
-      const original = await service.findOne(6);
+      const original = await service.findOne(1);
 
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
 
-      const updated = await service.updatePantryApplication(6, dto, 15);
+      const updated = await service.updatePantryApplication(1, dto, 10);
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
@@ -452,14 +452,26 @@ describe('PantriesService', () => {
       );
     });
 
-    it('throws ConflictException when pantry application is not for a pending pantry', async () => {
+    it('throws ConflictException when pantry application is for a denied pantry', async () => {
       const dto: UpdatePantryApplicationDto = {
         secondaryContactFirstName: 'Jane',
       };
 
-      await expect(service.updatePantryApplication(1, dto, 10)).rejects.toThrow(
+      await expect(service.updatePantryApplication(4, dto, 13)).rejects.toThrow(
         new ConflictException(
-          'Cannot update application for a(n) approved application. Only pending applications can be updated.',
+          'Cannot update application for a denied application',
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is for a pending pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(5, dto, 14)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a pending application',
         ),
       );
     });

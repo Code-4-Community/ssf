@@ -395,9 +395,9 @@ export class PantriesService {
       );
     }
 
-    if (pantry.status !== ApplicationStatus.PENDING) {
+    if (pantry.status !== ApplicationStatus.APPROVED) {
       throw new ConflictException(
-        `Cannot update application for a(n) ${pantry.status} application. Only pending applications can be updated.`,
+        `Cannot update application for a ${pantry.status} application`,
       );
     }
 
