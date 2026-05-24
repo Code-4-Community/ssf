@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -338,6 +339,12 @@ export class OrdersService {
     if (!pantry) {
       throw new NotFoundException(
         `Pantry ${request.pantry.pantryId} not found`,
+      );
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Pantry ${request.pantry.pantryId} not approved`,
       );
     }
 
