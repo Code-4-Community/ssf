@@ -400,7 +400,7 @@ describe('PantriesService', () => {
         itemsInStock: 'Canned beans, rice',
       };
 
-      const updatedPantry = await service.updatePantryApplication(1, dto, 10);
+      const updatedPantry = await service.updatePantryApplication(5, dto, 14);
       expect(updatedPantry.secondaryContactFirstName).toBe('John');
       expect(updatedPantry.secondaryContactLastName).toBe('Doe');
       expect(updatedPantry.refrigeratedDonation).toBe(RefrigeratedDonation.YES);
@@ -422,13 +422,13 @@ describe('PantriesService', () => {
     });
 
     it('updates only the provided fields and keeps others intact', async () => {
-      const original = await service.findOne(2);
+      const original = await service.findOne(6);
 
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
 
-      const updated = await service.updatePantryApplication(2, dto, 11);
+      const updated = await service.updatePantryApplication(6, dto, 15);
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
@@ -444,10 +444,22 @@ describe('PantriesService', () => {
       const invalidUserId = 999;
 
       await expect(
-        service.updatePantryApplication(1, dto, invalidUserId),
+        service.updatePantryApplication(5, dto, invalidUserId),
       ).rejects.toThrow(
         new ForbiddenException(
-          `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
+          `User ${invalidUserId} is not allowed to edit application for Pantry 5`,
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is not for a pending pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(1, dto, 10)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a(n) approved application. Only pending applications can be updated.',
         ),
       );
     });

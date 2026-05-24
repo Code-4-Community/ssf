@@ -395,6 +395,12 @@ export class PantriesService {
       );
     }
 
+    if (pantry.status !== ApplicationStatus.PENDING) {
+      throw new ConflictException(
+        `Cannot update application for a(n) ${pantry.status} application. Only pending applications can be updated.`,
+      );
+    }
+
     Object.assign(pantry, pantryData);
 
     return this.repo.save(pantry);
