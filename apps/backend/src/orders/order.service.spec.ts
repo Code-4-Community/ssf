@@ -357,6 +357,34 @@ describe('OrdersService', () => {
       expect(pantry.pantryName).toEqual('Community Food Pantry Downtown');
       expect(pantry.pantryId).toEqual(1);
     });
+
+    it('throws ConflictException for denied pantry', async () => {
+      const orderId = 1;
+      const pantryId = 4;
+      // updates the request's pantry ID to a denied pantry
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(service.findOrderPantry(orderId)).rejects.toThrow(
+        new ConflictException(`Pantry ${pantryId} not approved`),
+      );
+    });
+
+    it('throws ConflictException for pending pantry', async () => {
+      const orderId = 1;
+      const pantryId = 5;
+      // updates the request's pantry ID to a pending pantry
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(service.findOrderPantry(orderId)).rejects.toThrow(
+        new ConflictException(`Pantry ${pantryId} not approved`),
+      );
+    });
   });
 
   describe('findOrderFoodManufacturer', () => {
