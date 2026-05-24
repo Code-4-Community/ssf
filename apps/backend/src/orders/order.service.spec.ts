@@ -6,7 +6,11 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -367,6 +371,14 @@ describe('OrdersService', () => {
     it('throws NotFoundException for non-existent order', async () => {
       await expect(service.findOrderFoodManufacturer(9999)).rejects.toThrow(
         new NotFoundException('Order 9999 not found'),
+      );
+    });
+
+    it('throws ConflictException for orders with a pending manufacturer', async () => {
+      await expect(service.findOrderFoodManufacturer(3)).rejects.toThrow(
+        new ConflictException(
+          'Order 3 does not have an approved food manufacturer',
+        ),
       );
     });
   });

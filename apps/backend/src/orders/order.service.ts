@@ -406,6 +406,13 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
+
+    if (order.foodManufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Order ${orderId} does not have an approved food manufacturer`,
+      );
+    }
+
     return order.foodManufacturer;
   }
 
