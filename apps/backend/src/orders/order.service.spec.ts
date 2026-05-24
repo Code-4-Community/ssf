@@ -516,7 +516,9 @@ describe('OrdersService', () => {
 
       if (!shippedOrder) throw new Error('Missing shipped order test object');
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
@@ -569,7 +571,9 @@ describe('OrdersService', () => {
       });
       await orderRepo.save(secondOrder);
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
