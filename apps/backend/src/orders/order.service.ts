@@ -26,6 +26,7 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { OrderSummary } from '../pantries/types';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class OrdersService {
@@ -40,6 +41,7 @@ export class OrdersService {
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private pantriesService: PantriesService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -207,6 +209,14 @@ export class OrdersService {
       if (manufacturer.status !== ApplicationStatus.APPROVED) {
         throw new BadRequestException(
           `Manufacturer ${manufacturerId} is not approved`,
+        );
+      }
+
+      const pantry = await this.pantriesService.findOne(request.pantryId);
+
+      if (pantry.status !== ApplicationStatus.APPROVED) {
+        throw new BadRequestException(
+          `Pantry ${request.pantryId} is not approved`,
         );
       }
 
