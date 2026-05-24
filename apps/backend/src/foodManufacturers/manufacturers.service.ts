@@ -347,9 +347,9 @@ export class FoodManufacturersService {
       );
     }
 
-    if (manufacturer.status !== ApplicationStatus.PENDING) {
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
       throw new ConflictException(
-        `Cannot update application for a(n) ${manufacturer.status} application. Only pending applications can be updated.`,
+        `Cannot update application for a ${manufacturer.status} manufacturer`,
       );
     }
 

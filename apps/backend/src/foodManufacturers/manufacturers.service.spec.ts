@@ -872,15 +872,15 @@ describe('FoodManufacturersService', () => {
   });
 
   describe(`updateFoodManufacturerApplication`, () => {
-    it('throws ConflictException for non-pending manufacturers', async () => {
+    it('throws ConflictException for a pending manufacturer', async () => {
       const dto: UpdateFoodManufacturerApplicationDto = {
         secondaryContactFirstName: 'Jane',
       };
       await expect(
-        service.updateFoodManufacturerApplication(1, dto, 3),
+        service.updateFoodManufacturerApplication(3, dto, 5),
       ).rejects.toThrow(
         new ConflictException(
-          'Cannot update application for a(n) approved application. Only pending applications can be updated.',
+          'Cannot update application for a pending manufacturer',
         ),
       );
     });
