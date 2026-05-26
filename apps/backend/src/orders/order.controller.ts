@@ -33,6 +33,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
+import { OrderStatus } from './types';
 
 @Controller('orders')
 export class OrdersController {
@@ -170,6 +171,17 @@ export class OrdersController {
       parsedAllocations,
       req.user.id,
     );
+  }
+
+  @Patch('/update-status/:orderId')
+  async updateStatus(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body('newStatus') newStatus: string,
+  ): Promise<void> {
+    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
+      throw new BadRequestException('Invalid status');
+    }
+    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
   @Roles(Role.FOODMANUFACTURER)

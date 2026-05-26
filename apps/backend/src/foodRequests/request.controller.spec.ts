@@ -8,6 +8,7 @@ import { OrderStatus } from '../orders/types';
 import { FoodType } from '../donationItems/types';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { CreateRequestDto } from './dtos/create-request.dto';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 import {
   DonationItemDetailsDto,
   MatchingItemsDto,
@@ -43,6 +44,8 @@ describe('RequestsController', () => {
     mockRequestsService.findOne.mockReset();
     mockRequestsService.create.mockReset();
     mockRequestsService.getOrderDetails.mockReset();
+    mockRequestsService.update.mockReset();
+    mockRequestsService.delete.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RequestsController],
@@ -215,6 +218,33 @@ describe('RequestsController', () => {
       expect(mockRequestsService.getMatchingManufacturers).toHaveBeenCalledWith(
         requestId,
       );
+    });
+  });
+
+  describe('PATCH /:requestId', () => {
+    it('should update request with valid information', async () => {
+      mockRequestsService.update.mockResolvedValue(undefined);
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+      await controller.updateRequest(1, updateRequestDto);
+
+      expect(mockRequestsService.update).toHaveBeenCalledWith(
+        1,
+        updateRequestDto,
+      );
+    });
+  });
+
+  describe('DELETE /:requestId', () => {
+    it('should delete a request by id', async () => {
+      mockRequestsService.delete.mockResolvedValue(undefined);
+
+      const result = await controller.deleteRequest(1);
+
+      expect(result).toBeUndefined();
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
     });
   });
 

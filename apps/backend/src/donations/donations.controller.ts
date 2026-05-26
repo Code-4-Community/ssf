@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   ParseArrayPipe,
   Get,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -115,5 +116,12 @@ export class DonationsController {
     body: UpdateDonationItemDetailsDto[],
   ): Promise<void> {
     await this.donationService.updateDonationItemDetails(donationId, body);
+  }
+
+  @Delete('/:donationId')
+  async deleteDonation(
+    @Param('donationId', ParseIntPipe) donationId: number,
+  ): Promise<void> {
+    return this.donationService.delete(donationId);
   }
 }
