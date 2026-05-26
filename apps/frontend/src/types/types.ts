@@ -66,6 +66,11 @@ export interface ConfirmDeliveryDto {
   feedback?: string;
 }
 
+export interface UpdatePantryVolunteersDto {
+  addVolunteerIds?: number[];
+  removeVolunteerIds?: number[];
+}
+
 export interface PantryWithUser extends Pantry {
   pantryUser: User;
 }
@@ -437,6 +442,21 @@ export interface ManufacturerApplicationDto {
   newsletterSubscription?: boolean;
 }
 
+export interface ApprovedPantryResponse {
+  pantryId: number;
+  pantryName: string;
+  refrigeratedDonation: RefrigeratedDonation;
+  volunteers: AssignedVolunteer[];
+}
+
+export interface AssignedVolunteer {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
@@ -513,11 +533,13 @@ export interface OrderSummary {
     pantryId: number;
     pantry: {
       pantryName: string;
-      volunteers?: {
-        id: number;
-        firstName: string;
-        lastName: string;
-      }[];
+      volunteers:
+        | {
+            id: number;
+            firstName: string;
+            lastName: string;
+          }[]
+        | null;
     };
   };
   assignee: {

@@ -5,6 +5,7 @@ import {
   FoodRequestSummaryDto,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
+import { ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
@@ -199,7 +200,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                           bgColor="blue.100"
                           color="blue.core"
                         >
-                          Received
+                          {ORDER_STATUS_LABELS[currentOrder.status]}
                         </Badge>
                       ) : (
                         <Badge
@@ -207,7 +208,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                           bgColor="yellow.200"
                           color="yellow.hover"
                         >
-                          In Progress
+                          {ORDER_STATUS_LABELS[currentOrder.status]}
                         </Badge>
                       )}
                     </Flex>

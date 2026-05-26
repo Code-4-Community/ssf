@@ -5,8 +5,9 @@ import {
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   DONATION_STATUS_COLORS,
-  ASSIGNEE_COLORS,
+  USER_ICON_COLORS,
 } from '@utils/utils';
 import { OrderAssignee, OrderStatus, DonationStatus } from '../types/types';
 
@@ -42,17 +43,17 @@ export interface DashboardCardBadge {
 
 export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
   [OrderStatus.PENDING]: {
-    label: 'Received',
+    label: ORDER_STATUS_LABELS[OrderStatus.PENDING],
     bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
     color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
   },
   [OrderStatus.SHIPPED]: {
-    label: 'In Progress',
+    label: ORDER_STATUS_LABELS[OrderStatus.SHIPPED],
     bg: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][1],
   },
   [OrderStatus.DELIVERED]: {
-    label: 'Completed',
+    label: ORDER_STATUS_LABELS[OrderStatus.DELIVERED],
     bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
   },
@@ -192,7 +193,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             w="30px"
             h="30px"
             borderRadius="full"
-            bg={ASSIGNEE_COLORS[assignee.id % ASSIGNEE_COLORS.length]}
+            bg={USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]}
             color="white"
             display="flex"
             alignItems="center"

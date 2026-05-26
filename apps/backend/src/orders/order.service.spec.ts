@@ -416,42 +416,14 @@ describe('OrdersService', () => {
       const orders = await service.getOrdersByPantry(pantryId);
 
       expect(orders.length).toBe(2);
-      expect(orders.every((order) => order.request)).toBeDefined();
       expect(orders.every((order) => order.request.pantryId === 1)).toBe(true);
-      expect(orders.every((order) => order.request.pantry)).toBeDefined();
-      expect(orders.every((order) => order.assignee)).toBeDefined();
     });
 
-    it('returns empty list for pantry with no orderes', async () => {
+    it('returns empty list for pantry with no orders', async () => {
       const pantryId = 5;
       const orders = await service.getOrdersByPantry(pantryId);
 
       expect(orders).toEqual([]);
-    });
-
-    it('honors year filter (no results for future year)', async () => {
-      const pantryId = 1;
-      const orders = await service.getOrdersByPantry(pantryId, [2025]);
-      expect(orders).toEqual([]);
-    });
-
-    it('returns orders when a valid year filter is provided', async () => {
-      const pantryId = 1;
-
-      // Change some order dates so we have 2024, 2025 and 2026 values
-      await testDataSource.query(
-        `UPDATE "orders" SET created_at='2025-01-01' WHERE order_id = 1`,
-      );
-      await testDataSource.query(
-        `UPDATE "orders" SET created_at='2026-01-01' WHERE order_id = 2`,
-      );
-
-      const orders = await service.getOrdersByPantry(pantryId, [2024, 2025]);
-      expect(orders.length).toBeGreaterThan(0);
-
-      const years = orders.map((o) => new Date(o.createdAt).getFullYear());
-      expect(years).toContain(2025);
-      expect(years.every((y) => y === 2024 || y === 2025)).toBe(true);
     });
 
     it('throws NotFoundException for non-existent pantry', async () => {
@@ -489,7 +461,9 @@ describe('OrdersService', () => {
 
       if (!shippedOrder) throw new Error('Missing shipped order test object');
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
@@ -542,7 +516,9 @@ describe('OrdersService', () => {
       });
       await orderRepo.save(secondOrder);
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 

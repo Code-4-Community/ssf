@@ -272,8 +272,8 @@ const Navbar: React.FC = () => {
   // Should be changed once other dashboards are implmented
   const ROLE_DASHBOARD_ROUTE: Record<Role, string> = {
     [Role.ADMIN]: ROUTES.ADMIN_DASHBOARD,
-    [Role.VOLUNTEER]: ROUTES.HOME,
-    [Role.PANTRY]: ROUTES.HOME,
+    [Role.VOLUNTEER]: ROUTES.VOLUNTEER_DASHBOARD,
+    [Role.PANTRY]: ROUTES.PANTRY_DASHBOARD,
     [Role.FOODMANUFACTURER]: ROUTES.HOME,
   };
 
@@ -343,6 +343,12 @@ const Navbar: React.FC = () => {
       </RouterLink>
 
       <VStack align="stretch" gap={2} flex={1} overflowY="auto">
+        <NavLink
+          to={ROUTES.HOME}
+          label="All Pages"
+          isActive={location.pathname === ROUTES.HOME}
+        />
+
         <NavLink
           to={ROLE_DASHBOARD_ROUTE[currentUser.role]}
           label="Dashboard"

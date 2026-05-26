@@ -12,7 +12,8 @@ export const ROUTES = {
   FOOD_MANUFACTURER_APPLICATION: '/food-manufacturer-application',
   APPLICATION_SUBMITTED: '/application-submitted',
 
-  PANTRY_APPLICATION_DETAILS: '/pantry-application-details/:applicationId',
+  PANTRY_APPLICATION_DETAILS: '/pantry-details/application/:applicationId',
+  PANTRY_MANAGEMENT_DETAILS: '/pantry-details/pantry/:pantryId',
   FOOD_MANUFACTURER_APPLICATION_DETAILS:
     '/food-manufacturer-application-details/:applicationId',
 
@@ -32,6 +33,8 @@ export const ROUTES = {
 
   PANTRY_ORDER_MANAGEMENT: '/pantry-order-management',
   REQUEST_FORM: '/request-form',
+  PANTRY_DASHBOARD: '/pantry-dashboard',
+  VOLUNTEER_DASHBOARD: '/volunteer-dashboard',
 
   FM_DONATION_MANAGEMENT: '/fm-donation-management',
 };

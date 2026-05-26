@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { User } from '../users/users.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
@@ -36,19 +44,6 @@ export class VolunteersController {
     return this.volunteersService.findOne(userId);
   }
 
-  @CheckOwnership({
-    idParam: 'id',
-    resolver: async ({ entityId }) => [entityId],
-    bypassRoles: [Role.ADMIN],
-  })
-  @Roles(Role.VOLUNTEER, Role.ADMIN)
-  @Get('/:id/my-recent-orders')
-  async getRecentOrders(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<VolunteerOrder[]> {
-    return this.volunteersService.getRecentOrders(id);
-  }
-
   @Roles(Role.VOLUNTEER)
   @Get('/me/assigned-requests')
   async getAssignedRequests(
@@ -57,6 +52,14 @@ export class VolunteersController {
     const currentUser = req.user;
 
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);
+  }
+
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @Get('/me/recent-orders')
+  async getRecentOrders(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<VolunteerOrder[]> {
+    return this.volunteersService.getRecentOrders(req.user.id);
   }
 
   // returns all orders globally

@@ -1,3 +1,5 @@
+import { ROUTES } from '../routes';
+
 export const Unauthorized: React.FC = () => {
   return (
     <div id="error-page">
@@ -6,7 +8,7 @@ export const Unauthorized: React.FC = () => {
       <p>
         Return to{' '}
         <span style={{ color: 'blue' }}>
-          <a href="/">home page</a>
+          <a href={ROUTES.HOME}>home page</a>
         </span>
       </p>
     </div>

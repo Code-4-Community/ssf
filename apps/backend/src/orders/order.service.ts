@@ -28,6 +28,7 @@ import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { OrderSummary } from '../pantries/types';
 
 @Injectable()
 export class OrdersService {
@@ -478,10 +479,7 @@ export class OrdersService {
     }
   }
 
-  async getOrdersByPantry(
-    pantryId: number,
-    years?: number[],
-  ): Promise<Order[]> {
+  async getOrdersByPantry(pantryId: number): Promise<OrderSummary[]> {
     validateId(pantryId, 'Pantry');
 
     const pantry = await this.pantryRepo.findOneBy({ pantryId });
@@ -494,18 +492,35 @@ export class OrdersService {
       .leftJoinAndSelect('order.request', 'request')
       .leftJoin('request.pantry', 'pantry')
       .addSelect('pantry.pantryName')
-      .leftJoinAndSelect('order.allocations', 'allocations')
-      .leftJoinAndSelect('allocations.item', 'item')
       .leftJoinAndSelect('order.assignee', 'assignee')
       .where('request.pantryId = :pantryId', { pantryId });
 
-    if (years && years.length > 0) {
-      qb.andWhere('EXTRACT(YEAR FROM order.createdAt) IN (:...years)', {
-        years,
-      });
-    }
+    const orders = await qb.getMany();
 
-    return qb.getMany();
+    return orders.map((order) => ({
+      orderId: order.orderId,
+      status: order.status,
+      createdAt: order.createdAt.toISOString(),
+      shippedAt: order.shippedAt?.toISOString() ?? null,
+      deliveredAt: order.deliveredAt?.toISOString() ?? null,
+      request: {
+        pantryId: order.request.pantryId,
+        pantry: {
+          pantryName: order.request.pantry.pantryName,
+          volunteers:
+            order.request.pantry.volunteers?.map((v) => ({
+              id: v.id,
+              firstName: v.firstName,
+              lastName: v.lastName,
+            })) ?? null,
+        },
+      },
+      assignee: {
+        id: order.assignee.id,
+        firstName: order.assignee.firstName,
+        lastName: order.assignee.lastName,
+      },
+    }));
   }
 
   async bulkUpdateTrackingCostInfo(

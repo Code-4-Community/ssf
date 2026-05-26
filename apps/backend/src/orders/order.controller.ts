@@ -31,7 +31,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
-import { FoodRequest } from '../foodRequests/request.entity';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
@@ -82,8 +81,8 @@ export class OrdersController {
     resolver: async ({ entityId, services }) => {
       return pipeNullable(
         () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequest) =>
-          services.get(PantriesService).findOne(request.pantryId),
+        (request: FoodRequestSummaryDto) =>
+          services.get(PantriesService).findOne(request.pantry.pantryId),
         (pantry: Pantry) => [pantry.pantryUser.id],
       );
     },

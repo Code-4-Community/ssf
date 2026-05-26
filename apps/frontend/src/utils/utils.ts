@@ -17,6 +17,12 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
   [OrderStatus.DELIVERED]: TEAL_STATUS,
 };
 
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  [OrderStatus.PENDING]: 'Received',
+  [OrderStatus.SHIPPED]: 'In Progress',
+  [OrderStatus.DELIVERED]: 'Completed',
+};
+
 export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
   {
     [DonationStatus.MATCHED]: YELLOW_STATUS,
@@ -105,7 +111,7 @@ export const generateNextDonationDate = (
 export const getInitials = (first: string, last: string) =>
   `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 
-export const ASSIGNEE_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.ssf'];
+export const USER_ICON_COLORS = ['yellow.core', 'red', 'teal.ssf', 'blue.core'];
 
 export const isValidUrl = (url: string): boolean => {
   try {

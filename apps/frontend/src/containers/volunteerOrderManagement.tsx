@@ -23,11 +23,11 @@ import {
   Search,
 } from 'lucide-react';
 import {
-  capitalize,
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
-  ASSIGNEE_COLORS,
+  ORDER_STATUS_LABELS,
+  USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import {
@@ -40,14 +40,10 @@ import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import CompleteRequiredActionsModal from '@components/forms/completeRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
-
-const STATUS_TITLES: Record<OrderStatus, string> = {
-  [OrderStatus.SHIPPED]: 'In Progress',
-  [OrderStatus.PENDING]: 'Received',
-  [OrderStatus.DELIVERED]: 'Completed',
-};
 
 const hasRequiredActions = (order: VolunteerOrder): boolean => {
   if (!order.actionCompletion) return false;
@@ -83,6 +79,8 @@ const VolunteerOrderManagement: React.FC = () => {
 
   const [alertState, setAlertMessage] = useAlert();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   type FilterState = {
     selectedPantries: string[];
@@ -142,7 +140,7 @@ const VolunteerOrderManagement: React.FC = () => {
 
           if (order.assignee) {
             orderWithColor.assigneeColor =
-              ASSIGNEE_COLORS[order.assignee.id % ASSIGNEE_COLORS.length];
+              USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
           }
 
           grouped[status].push(orderWithColor);
@@ -166,6 +164,20 @@ const VolunteerOrderManagement: React.FC = () => {
 
     fetchOrders();
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+
+    const allOrders = Object.values(statusOrders).flat();
+    if (!orderIdFromUrl || allOrders.length === 0) return;
+
+    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    if (match) {
+      setSelectedOrderId(match.orderId);
+    } else {
+      navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusOrders, navigate]);
 
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
@@ -345,6 +357,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
 
@@ -392,7 +406,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {STATUS_TITLES[status]}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -416,8 +430,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {STATUS_TITLES[status].toLowerCase()} orders at this
-            time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -714,7 +728,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={0.5}
                         px={3}
                       >
-                        {capitalize(STATUS_TITLES[status])}
+                        {ORDER_STATUS_LABELS[status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -792,7 +806,10 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             <OrderDetailsModal
               orderId={selectedOrderId}
               isOpen={true}
-              onClose={() => onOrderSelect(null)}
+              onClose={() => {
+                onOrderSelect(null);
+                navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+              }}
             />
           )}
 

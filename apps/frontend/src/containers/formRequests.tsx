@@ -15,16 +15,14 @@ import {
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
-import {
-  FoodRequest,
-  FoodRequestStatus,
-  FoodRequestSummaryDto,
-} from '../types/types';
+import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ROUTES } from '../routes';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -40,6 +38,8 @@ const FormRequests: React.FC = () => {
   const [openReadOnlyRequest, setOpenReadOnlyRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [alertState, setAlertMessage] = useAlert();
 
   const pageSize = 10;
@@ -68,6 +68,20 @@ const FormRequests: React.FC = () => {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  useEffect(() => {
+    const requestIdFromUrl = searchParams.get('requestId');
+    if (!requestIdFromUrl || requests.length === 0) return;
+
+    const match = requests.find(
+      (r) => r.requestId === Number(requestIdFromUrl),
+    );
+    if (match) {
+      setOpenReadOnlyRequest(match);
+    } else {
+      navigate(ROUTES.REQUEST_FORM, { replace: true });
+    }
+  }, [searchParams, requests, navigate]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -211,7 +225,12 @@ const FormRequests: React.FC = () => {
         <RequestDetailsModal
           request={openReadOnlyRequest}
           isOpen={openReadOnlyRequest !== null}
-          onClose={() => setOpenReadOnlyRequest(null)}
+          onClose={() => {
+            setOpenReadOnlyRequest(null);
+            if (searchParams.get('requestId')) {
+              navigate(ROUTES.REQUEST_FORM, { replace: true });
+            }
+          }}
         />
       )}
       <Flex justify="center" mt={12}>
