@@ -327,7 +327,7 @@ export class OrdersService {
         pantryName: request.pantry.pantryName,
         items: itemDetails,
         brand: manufacturer.foodManufacturerName,
-        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
       await this.emailsService.sendEmails(
@@ -360,7 +360,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         items: itemDetails,
         pantryName: request.pantry.pantryName,
         pantryAddress: pantryAddress,
-        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
       await this.emailsService.sendEmails(

@@ -319,7 +319,7 @@ export class RequestsService {
           relations: ['assignee'],
         });
 
-        if (lastDeliveredOrder?.assignee) {
+        if (lastDeliveredOrder) {
           const { assignee } = lastDeliveredOrder;
           const message = emailTemplates.pantryRequestClosed({
             pantryName: request.pantry.pantryName,
@@ -330,6 +330,10 @@ export class RequestsService {
             [request.pantry.pantryUser.email],
             message.subject,
             message.bodyHTML,
+          );
+        } else {
+          throw new InternalServerErrorException(
+            `Request ${requestId} auto-closed, but failed to send pantry notification email`,
           );
         }
       } catch {

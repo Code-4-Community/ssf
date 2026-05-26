@@ -154,7 +154,7 @@ export const emailTemplates = {
         <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
       </p>
       <p>
-        If you have any questions or feedback about this order, please do not hesitate to reach out.
+        If you have any questions or feedback about this request, please do not hesitate to reach out.
         You can contact your pantry coordinator, ${params.volunteerName}, at
         <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>.
       </p>
@@ -177,7 +177,7 @@ export const emailTemplates = {
     <p>
       Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
     </p>
-    <p><strong>Matched Items:</strong><br /></p>
+    <p><strong>Matched Item(s):</strong><br /></p>
       <ul>
         ${params.items
           .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
@@ -185,6 +185,8 @@ export const emailTemplates = {
       </ul>
     <p>
       <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
+    </p>
+    <p>
       <strong>Address:</strong><br />
       ${params.pantryAddress}
     </p>
