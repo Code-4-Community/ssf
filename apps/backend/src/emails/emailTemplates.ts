@@ -40,6 +40,9 @@ export const emailTemplates = {
         to begin supporting pantry coordination, order matching, and delivery logistics.
       </p>
       <p>
+        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+      <p>
         Once logged in, you'll be able to view your assignments, track active requests,
         and collaborate with partner organizations.
       </p>
@@ -48,9 +51,6 @@ export const emailTemplates = {
         increase access to safe food for individuals with dietary restrictions.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
-      </p>
     `,
   }),
 
@@ -60,12 +60,9 @@ export const emailTemplates = {
       <p>Hi,</p>
       <p>
         A new partner application has been submitted through the SSF platform. 
-        Please log in to the dashboard to review and take action. 
+        Please log in to the <a href="${EMAIL_REDIRECT_URL}/approve-pantries">dashboard</a> to review and take action.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        To review this application, please enter the admin pantry approval dashboard: <a href="${EMAIL_REDIRECT_URL}/approve-pantries">${EMAIL_REDIRECT_URL}/approve-pantries</a>
-      </p>
     `,
   }),
 
@@ -185,16 +182,13 @@ export const emailTemplates = {
       <p>Hi ${params.volunteerName},</p>
       <p>
         Your pantry assignment with SSF has been updated. Please log into the platform
-        to review your current assignments and any active requests that may require your attention.
+        to <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">review your current assignments </a>
+        and any active requests that may require your attention.
       </p>
       <p>
         Thank you for your continued support of our partners and mission.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
-      <p>
-        To view your pantry assignments, please click the following link:
-        <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries</a>
-      </p>
     `,
   }),
 };
