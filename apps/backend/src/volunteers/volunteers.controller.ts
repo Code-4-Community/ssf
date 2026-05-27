@@ -16,7 +16,6 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
-import { CheckOwnership } from '../auth/ownership.decorator';
 
 @Controller('volunteers')
 export class VolunteersController {
