@@ -7,6 +7,7 @@ import {
   Body,
   ValidationPipe,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
@@ -29,6 +30,7 @@ import {
 } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
+import { UpdateRequestDto } from './dtos/update-request.dto';
 
 // PANTRY users may access requests belonging to their own pantry (matched by
 // pantry representative id). All other non-admin callers (i.e. VOLUNTEER) must
@@ -143,6 +145,31 @@ export class RequestsController {
       requestData.requestedFoodTypes,
       requestData.additionalInformation,
     );
+  }
+
+  @Roles(Role.PANTRY)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Patch('/:requestId')
+  async updateRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+    @Body(new ValidationPipe()) body: UpdateRequestDto,
+  ): Promise<void> {
+    await this.requestsService.update(requestId, body);
+  }
+
+  @Roles(Role.PANTRY)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Delete('/:requestId')
+  async deleteRequest(
+    @Param('requestId', ParseIntPipe) requestId: number,
+  ): Promise<void> {
+    return this.requestsService.delete(requestId);
   }
 
   @CheckOwnership({

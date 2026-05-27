@@ -221,6 +221,33 @@ describe('RequestsController', () => {
     });
   });
 
+  describe('PATCH /:requestId', () => {
+    it('should update request with valid information', async () => {
+      mockRequestsService.update.mockResolvedValue(undefined);
+
+      const updateRequestDto: UpdateRequestDto = {
+        requestedSize: RequestSize.MEDIUM,
+      };
+      await controller.updateRequest(1, updateRequestDto);
+
+      expect(mockRequestsService.update).toHaveBeenCalledWith(
+        1,
+        updateRequestDto,
+      );
+    });
+  });
+
+  describe('DELETE /:requestId', () => {
+    it('should delete a request by id', async () => {
+      mockRequestsService.delete.mockResolvedValue(undefined);
+
+      const result = await controller.deleteRequest(1);
+
+      expect(result).toBeUndefined();
+      expect(mockRequestsService.delete).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('GET /:requestId/matching-manufacturers/:foodManufacturerId/available-items', () => {
     it('should call requestsService.getAvailableItems and return grouped items', async () => {
       const requestId = 1;
