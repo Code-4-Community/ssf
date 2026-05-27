@@ -16,6 +16,7 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -30,7 +31,16 @@ export class VolunteersController {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 
-  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(VolunteersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+  })
+  @Roles(Role.VOLUNTEER)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
@@ -69,8 +79,15 @@ export class VolunteersController {
     return this.volunteersService.getRecentOrders(req.user.id);
   }
 
-  // returns all orders globally
-  // only includes actionCompletion for orders assigned to the requesting volunteer
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(VolunteersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+  })
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')
   async getVolunteerOrders(

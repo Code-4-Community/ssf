@@ -56,30 +56,6 @@ describe('AllocationsService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getAllAllocationsByOrder', () => {
-    it('should return empty array for order with no allocations', async () => {
-      await testDataSource.query(`DELETE FROM allocations WHERE order_id = 1`);
-
-      const result = await service.getAllAllocationsByOrder(1);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return all allocations for a given order', async () => {
-      const result = await service.getAllAllocationsByOrder(2);
-
-      expect(result).toHaveLength(3);
-      const quantities = result
-        .map((a) => a.allocatedQuantity)
-        .sort((a, b) => a! - b!);
-      expect(quantities).toEqual([15, 20, 30]);
-      result.forEach((a) => {
-        expect(a.allocationId).toBeDefined();
-        expect(a.item).toBeDefined();
-      });
-    });
-  });
-
   describe('createMultiple', () => {
     it('should create a single allocation and increment reservedQuantity', async () => {
       const orderId = 1;

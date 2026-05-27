@@ -19,9 +19,12 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -36,17 +39,40 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 
+// Ownership resolver for order-scoped reads (request + order details).
+// PANTRY users must own the pantry tied to the order's food request.
+// VOLUNTEER users must be the assignee on the order itself.
+// ADMIN bypasses in the guard.
+const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+  user,
+}) => {
+  if (user?.role === Role.VOLUNTEER) {
+    return pipeNullable(
+      () => services.get(OrdersService).findOne(entityId),
+      (order: Order) => [order.assigneeId],
+    );
+  }
+  return pipeNullable(
+    () => services.get(OrdersService).findOrderFoodRequest(entityId),
+    (request: FoodRequestSummaryDto) =>
+      services.get(PantriesService).findOne(request.pantry.pantryId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
+};
+
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
-    private readonly allocationsService: AllocationsService,
     private readonly awsS3Service: AWSS3Service,
   ) {}
 
   // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
   // %20 is the URL encoded space character
   // This gets all orders where the status is pending and the pantry name is either Test Pantry or Test Pantry 2
+  @Roles(Role.ADMIN)
   @Get('/')
   async getAllOrders(
     @Query('status') status?: string,
@@ -68,25 +94,9 @@ export class OrdersController {
     return this.ordersService.getPastOrders();
   }
 
-  @Get('/:orderId/pantry')
-  async getPantryFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Pantry> {
-    return this.ordersService.findOrderPantry(orderId);
-  }
-
-  // Test endpoint for right now
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequestSummaryDto) =>
-          services.get(PantriesService).findOne(request.pantry.pantryId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
-    bypassRoles: [Role.VOLUNTEER, Role.ADMIN],
+    resolver: resolveOrderAuthorizedUserIds,
   })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId/request')
@@ -103,6 +113,11 @@ export class OrdersController {
     return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -110,13 +125,7 @@ export class OrdersController {
     return this.ordersService.findOrderDetails(orderId);
   }
 
-  @Get('/:orderId/allocations')
-  async getAllAllocationsByOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ) {
-    return this.allocationsService.getAllAllocationsByOrder(orderId);
-  }
-
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Post('/')
   @ApiBody({
     description: 'Details for creating a order',
@@ -210,6 +219,18 @@ export class OrdersController {
     return this.ordersService.bulkUpdateTrackingCostInfo(dto);
   }
 
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(OrdersService).findOrderFoodRequest(entityId),
+        (request: FoodRequestSummaryDto) =>
+          services.get(PantriesService).findOne(request.pantry.pantryId),
+        (pantry: Pantry) => [pantry.pantryUser.id],
+      );
+    },
+  })
+  @Roles(Role.PANTRY)
   @Patch('/:orderId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation of order delivery form',

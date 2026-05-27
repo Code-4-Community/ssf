@@ -118,20 +118,20 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
-  @Roles(Role.ADMIN, Role.PANTRY)
-  @Get('/:pantryId/orders')
-  async getOrders(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<OrderSummary[]> {
-    return this.ordersService.getOrdersByPantry(pantryId);
+  @Roles(Role.PANTRY)
+  @Get('/me/orders')
+  async getOrders(@Req() req: AuthenticatedRequest): Promise<OrderSummary[]> {
+    const pantry = await this.pantriesService.findByUserId(req.user.id);
+    return this.ordersService.getOrdersByPantry(pantry.pantryId);
   }
 
-  @Roles(Role.PANTRY, Role.ADMIN)
-  @Get('/:pantryId/requests')
+  @Roles(Role.PANTRY)
+  @Get('/me/requests')
   async getFoodRequests(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Req() req: AuthenticatedRequest,
   ): Promise<FoodRequestSummaryDto[]> {
-    return this.requestsService.findAllForPantry(pantryId);
+    const pantry = await this.pantriesService.findByUserId(req.user.id);
+    return this.requestsService.findAllForPantry(pantry.pantryId);
   }
 
   @ApiBody({
@@ -378,6 +378,15 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
+  @CheckOwnership({
+    idParam: 'pantryId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(PantriesService).findOne(entityId),
+        (pantry: Pantry) => [pantry.pantryUser.id],
+      );
+    },
+  })
   @Roles(Role.PANTRY)
   @Patch('/:pantryId/application')
   async updatePantryApplication(

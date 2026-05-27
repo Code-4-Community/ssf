@@ -36,7 +36,7 @@ const PantryDashboard: React.FC = () => {
       }
 
       try {
-        const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
+        const pantryFoodRequests = await ApiClient.getPantryRequests();
         const sortedFoodRequests = pantryFoodRequests.sort(
           (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
             new Date(b.requestedAt).getTime() -
@@ -48,7 +48,7 @@ const PantryDashboard: React.FC = () => {
       }
 
       try {
-        const pantryOrders = await ApiClient.getPantryOrders(pantryId);
+        const pantryOrders = await ApiClient.getPantryOrders();
         const sortedOrders = pantryOrders.sort(
           (a: OrderSummary, b: OrderSummary) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

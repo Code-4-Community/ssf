@@ -8,7 +8,6 @@ import {
   Body,
   Patch,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
@@ -16,17 +15,16 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { PendingApplication, Role } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { Roles } from '../auth/roles.decorator';
+import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('/me')
   getCurrentUser(@Req() req: AuthenticatedRequest): Promise<User> {
     return this.usersService.findOne(req.user.id);
@@ -37,6 +35,15 @@ export class UsersController {
     return this.usersService.findOne(userId);
   }
 
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(UsersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+  })
   @Get('/:id/stats')
   async getUserDashboardStats(
     @Param('id', ParseIntPipe) userId: number,
@@ -50,11 +57,21 @@ export class UsersController {
     return this.usersService.getRecentPendingApplications();
   }
 
+  @Roles(Role.ADMIN)
   @Delete('/:id')
   removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.remove(userId);
   }
 
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(UsersService).findOne(entityId),
+        (user: User) => [user.id],
+      );
+    },
+  })
   @Patch('/:id')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
@@ -63,6 +80,7 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Roles(Role.ADMIN)
   @Post('/')
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
     return this.usersService.create(createUserDto);

@@ -52,9 +52,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   });
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async (fmId: number) => {
+  const fetchDonations = async () => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
+      const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -94,7 +94,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       try {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
-        await fetchDonations(fmId);
+        await fetchDonations();
       } catch {
         setErrorMessage('Error initializing donation management');
       }
@@ -151,7 +151,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       {isLogDonationOpen && manufacturerId !== null && (
         <NewDonationFormModal
           foodManufacturerId={manufacturerId}
-          onDonationSuccess={() => fetchDonations(manufacturerId)}
+          onDonationSuccess={() => fetchDonations()}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
         />
@@ -164,7 +164,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onClose={() => setSelectedActionDonation(null)}
           onSuccess={() => {
             setSelectedActionDonation(null);
-            if (manufacturerId !== null) fetchDonations(manufacturerId);
+            fetchDonations();
             setSuccessMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
             );

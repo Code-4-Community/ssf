@@ -21,13 +21,12 @@ import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-i
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
+  @Roles(Role.ADMIN)
   @Get()
   async getAllDonations(): Promise<Donation[]> {
     return this.donationService.getAll();
@@ -45,6 +44,7 @@ export class DonationsController {
     return this.donationService.findOne(donationId);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
@@ -100,26 +100,13 @@ export class DonationsController {
     return this.donationService.create(body);
   }
 
-  @Patch('/:donationId/fulfill')
-  async fulfillDonation(
-    @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<void> {
-    await this.donationService.fulfill(donationId);
-  }
-
-  @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
+  @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'donationId',
     resolver: async ({ entityId, services }) => {
       return pipeNullable(
         () => services.get(DonationService).findOne(entityId),
-        (donation: Donation) =>
-          services
-            .get(FoodManufacturersService)
-            .findOne(donation.foodManufacturer.foodManufacturerId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
+        (donation: Donation) => [donation.foodManufacturer.foodManufacturerId],
       );
     },
   })

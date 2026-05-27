@@ -87,8 +87,7 @@ const PantryOrderManagement: React.FC = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const pantryId = await ApiClient.getCurrentUserPantryId();
-      const data = await ApiClient.getPantryOrders(pantryId);
+      const data = await ApiClient.getPantryOrders();
 
       const grouped: Record<OrderStatus, OrderWithColor[]> = {
         [OrderStatus.SHIPPED]: [],

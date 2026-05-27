@@ -120,18 +120,6 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('PATCH /:donationId/fulfill', () => {
-    it('should call donationService.fulfill', async () => {
-      const donationId = 1;
-
-      mockDonationService.fulfill.mockResolvedValueOnce(undefined);
-
-      await controller.fulfillDonation(donationId);
-
-      expect(mockDonationService.fulfill).toHaveBeenCalledWith(donationId);
-    });
-  });
-
   describe('PATCH /:donationId/item-details', () => {
     it('calls updateDonationItemDetails with the correct donationId and body, returns result', async () => {
       const donationId = 1;
