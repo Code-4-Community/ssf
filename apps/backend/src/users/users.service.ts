@@ -104,11 +104,11 @@ export class UsersService {
     if (role === Role.VOLUNTEER) {
       try {
         const message = emailTemplates.volunteerAccountCreated();
-        await this.emailsService.sendEmails(
-          [email],
-          message.subject,
-          message.bodyHTML,
-        );
+        await this.emailsService.sendEmails({
+          toEmail: email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
       } catch {
         throw new InternalServerErrorException(
           'Failed to send account created notification email to volunteer',

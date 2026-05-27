@@ -752,7 +752,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="left"
-                      bg="#FAFAFA"
+                      bg="neutral.50"
                     ></Table.Cell>
                   </Table.Row>
                 );
