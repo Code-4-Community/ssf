@@ -325,17 +325,21 @@ export class RequestsService {
         });
 
         if (lastDeliveredOrder) {
+          const volunteers = request.pantry.volunteers || [];
+          const volunteerEmails = volunteers.map((v) => v.email);
+
           const { assignee } = lastDeliveredOrder;
           const message = emailTemplates.pantryRequestClosed({
             pantryName: request.pantry.pantryName,
             volunteerName: `${assignee.firstName} ${assignee.lastName}`,
             volunteerEmail: assignee.email,
           });
-          await this.emailsService.sendEmails(
-            [request.pantry.pantryUser.email],
-            message.subject,
-            message.bodyHTML,
-          );
+          await this.emailsService.sendEmails({
+            toEmail: request.pantry.pantryUser.email,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+            bccEmails: volunteerEmails,
+          });
         } else {
           throw new InternalServerErrorException(
             `Request ${requestId} auto-closed, but failed to send pantry notification email`,
@@ -441,16 +445,19 @@ export class RequestsService {
     request.status = FoodRequestStatus.CLOSED;
     const saved = await this.repo.save(request);
     try {
+      const volunteers = request.pantry.volunteers || [];
+      const volunteerEmails = volunteers.map((v) => v.email);
       const message = emailTemplates.pantryRequestClosed({
         pantryName: request.pantry.pantryName,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
-      await this.emailsService.sendEmails(
-        [request.pantry.pantryUser.email],
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: request.pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send food request closed email to pantry',

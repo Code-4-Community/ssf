@@ -635,7 +635,7 @@ describe('OrdersService', () => {
         fmName: order.foodManufacturer.foodManufacturerName,
       });
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
         toEmail: order.assignee.email,
         subject: message.subject,
@@ -656,7 +656,7 @@ describe('OrdersService', () => {
         ),
       ).rejects.toThrow(
         new InternalServerErrorException(
-          'Failed to send order delivery confirmation email to volunteer',
+          'Request 3 auto-closed, but failed to send pantry notification email',
         ),
       );
 
@@ -825,17 +825,17 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [request.pantry.pantryUser.email],
-        pantryMessage.subject,
-        pantryMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: request.pantry.pantryUser.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [manufacturer.foodManufacturerRepresentative.email],
-        fmMessage.subject,
-        fmMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: fmMessage.subject,
+        bodyHtml: fmMessage.bodyHTML,
+      });
     });
 
     it('should throw BadRequestException if request is not active', async () => {
@@ -998,15 +998,15 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
 
       const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
-      const manufacturer = await manufacturerRepo.findOne({
+      const manufacturer = (await manufacturerRepo.findOne({
         where: { foodManufacturerId: validCreateOrderDto.manufacturerId },
         relations: ['foodManufacturerRepresentative'],
+      })) as FoodManufacturer;
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: expect.any(String),
+        bodyHtml: expect.any(String),
       });
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [manufacturer!.foodManufacturerRepresentative.email],
-        expect.any(String),
-        expect.any(String),
-      );
     });
 
     it('should still create order when both emails fail', async () => {

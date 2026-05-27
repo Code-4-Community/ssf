@@ -427,12 +427,15 @@ describe('RequestsService', () => {
         volunteerEmail: assignee.email,
       });
 
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
+
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry.pantryUser.email],
-        expectedMessage.subject,
-        expectedMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: expectedMessage.subject,
+        bodyHtml: expectedMessage.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     });
 
     it('does not send email when not all orders are delivered (request stays active)', async () => {
@@ -900,12 +903,15 @@ describe('RequestsService', () => {
         volunteerEmail: `james.t@volunteer.org`,
       });
 
+      const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
+
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry.pantryUser.email],
-        expectedMessage.subject,
-        expectedMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: expectedMessage.subject,
+        bodyHtml: expectedMessage.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     });
 
     it('still closes request when email fails (manual close)', async () => {

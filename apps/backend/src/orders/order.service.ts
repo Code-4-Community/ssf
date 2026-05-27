@@ -4,7 +4,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource } from 'typeorm';
@@ -50,7 +49,6 @@ export class OrdersService {
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
     private donationService: DonationService,
-    private emailsService: EmailsService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
   ) {}
@@ -335,11 +333,11 @@ export class OrdersService {
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
-      await this.emailsService.sendEmails(
-        [request.pantry.pantryUser.email],
-        pantryMessage.subject,
-        pantryMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: request.pantry.pantryUser.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
     } catch {
       emailErrors.push(
         'Failed to send pantry request matched order confirmation email',
@@ -368,11 +366,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
         volunteerEmail: assignee.email,
       });
-      await this.emailsService.sendEmails(
-        [manufacturer.foodManufacturerRepresentative.email],
-        fmMessage.subject,
-        fmMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: fmMessage.subject,
+        bodyHtml: fmMessage.bodyHTML,
+      });
     } catch {
       emailErrors.push(
         'Failed to send food manufacturer donation matched order confirmation email',
