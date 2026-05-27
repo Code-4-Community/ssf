@@ -42,8 +42,6 @@ export class OrdersService {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  // TODO: when order is created, set FM
-
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')

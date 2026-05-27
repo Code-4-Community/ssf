@@ -178,7 +178,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           gap={2}
           color="neutral.600"
           cursor="pointer"
-          // TODO: implement nav accordingly
           onClick={onLinkClick}
           _hover={{ color: 'neutral.700' }}
         >
