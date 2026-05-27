@@ -23,7 +23,22 @@ import {
   DonationDetailsDto,
   DonationReminderDto,
 } from './dtos/donation-details-dto';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+
+const resolveFoodManufacturerAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(FoodManufacturersService).findOne(entityId),
+    (manufacturer: FoodManufacturer) => [
+      manufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
@@ -49,13 +64,7 @@ export class FoodManufacturersController {
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'foodManufacturerId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(FoodManufacturersService).findOne(entityId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
-      ),
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
     bypassRoles: [Role.ADMIN],
   })
   @Get('/:foodManufacturerId')
@@ -225,13 +234,7 @@ export class FoodManufacturersController {
   @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'foodManufacturerId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(FoodManufacturersService).findOne(entityId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
-      ),
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
   })
   @Patch('/:foodManufacturerId/application')
   async updateFoodManufacturerApplication(

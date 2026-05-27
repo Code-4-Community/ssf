@@ -19,7 +19,20 @@ import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { Roles } from '../auth/roles.decorator';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+
+const resolveUserAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(UsersService).findOne(entityId),
+    (user: User) => [user.id],
+  );
 
 @Controller('users')
 export class UsersController {
@@ -37,12 +50,7 @@ export class UsersController {
 
   @CheckOwnership({
     idParam: 'id',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(UsersService).findOne(entityId),
-        (user: User) => [user.id],
-      );
-    },
+    resolver: resolveUserAuthorizedUserIds,
   })
   @Get('/:id/stats')
   async getUserDashboardStats(
@@ -65,12 +73,7 @@ export class UsersController {
 
   @CheckOwnership({
     idParam: 'id',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(UsersService).findOne(entityId),
-        (user: User) => [user.id],
-      );
-    },
+    resolver: resolveUserAuthorizedUserIds,
   })
   @Patch('/:id')
   async updateInfo(

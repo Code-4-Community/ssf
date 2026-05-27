@@ -16,7 +16,20 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+
+const resolveVolunteerAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(VolunteersService).findOne(entityId),
+    (user: User) => [user.id],
+  );
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -33,12 +46,7 @@ export class VolunteersController {
 
   @CheckOwnership({
     idParam: 'id',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(VolunteersService).findOne(entityId),
-        (user: User) => [user.id],
-      );
-    },
+    resolver: resolveVolunteerAuthorizedUserIds,
   })
   @Roles(Role.VOLUNTEER)
   @Get('/:id/pantries')
@@ -81,12 +89,7 @@ export class VolunteersController {
 
   @CheckOwnership({
     idParam: 'id',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(VolunteersService).findOne(entityId),
-        (user: User) => [user.id],
-      );
-    },
+    resolver: resolveVolunteerAuthorizedUserIds,
   })
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')

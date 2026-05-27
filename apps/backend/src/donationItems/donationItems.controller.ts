@@ -10,9 +10,24 @@ import { DonationItem } from './donationItems.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('donation-items')
 @UseGuards(AuthGuard('jwt'))
@@ -21,11 +36,7 @@ export class DonationItemsController {
 
   @CheckOwnership({
     idParam: 'donationId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(DonationService).findOne(entityId),
-        (donation: Donation) => [donation.foodManufacturer.foodManufacturerId],
-      ),
+    resolver: resolveDonationAuthorizedUserIds,
     bypassRoles: [Role.ADMIN],
   })
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)

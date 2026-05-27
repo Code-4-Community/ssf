@@ -39,7 +39,7 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 
-// Ownership resolver for order-scoped reads (request + order details).
+// Ownership resolver for order-scoped endpoints.
 // PANTRY users must own the pantry tied to the order's food request.
 // VOLUNTEER users must be the assignee on the order itself.
 // ADMIN bypasses in the guard.
@@ -203,11 +203,7 @@ export class OrdersController {
   @Roles(Role.VOLUNTEER)
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(OrdersService).findOne(entityId),
-        (order: Order) => [order.assigneeId],
-      ),
+    resolver: resolveOrderAuthorizedUserIds,
   })
   @Patch('/update-status/:orderId')
   async updateStatus(
@@ -230,14 +226,7 @@ export class OrdersController {
 
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequestSummaryDto) =>
-          services.get(PantriesService).findOne(request.pantry.pantryId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
+    resolver: resolveOrderAuthorizedUserIds,
   })
   @Roles(Role.PANTRY)
   @Patch('/:orderId/confirm-delivery')
@@ -305,11 +294,7 @@ export class OrdersController {
 
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(OrdersService).findOne(entityId),
-        (order: Order) => [order.assigneeId],
-      ),
+    resolver: resolveOrderAuthorizedUserIds,
   })
   @Roles(Role.VOLUNTEER)
   @Patch('/:orderId/complete-action')

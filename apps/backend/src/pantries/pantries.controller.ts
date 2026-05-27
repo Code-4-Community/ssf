@@ -30,13 +30,26 @@ import {
   OrderSummary,
 } from './types';
 import { OrdersService } from '../orders/order.service';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+
+const resolvePantryAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(PantriesService).findOne(entityId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
 
 @Controller('pantries')
 export class PantriesController {
@@ -103,12 +116,7 @@ export class PantriesController {
 
   @CheckOwnership({
     idParam: 'pantryId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(PantriesService).findOne(entityId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
+    resolver: resolvePantryAuthorizedUserIds,
   })
   @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:pantryId')
@@ -380,12 +388,7 @@ export class PantriesController {
 
   @CheckOwnership({
     idParam: 'pantryId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(PantriesService).findOne(entityId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
+    resolver: resolvePantryAuthorizedUserIds,
   })
   @Roles(Role.PANTRY)
   @Patch('/:pantryId/application')
