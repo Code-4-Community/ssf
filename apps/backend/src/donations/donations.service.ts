@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -18,11 +19,12 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 @Injectable()
 export class DonationService {
   private readonly logger = new Logger(DonationService.name);
-
   constructor(
     @InjectRepository(Donation) private repo: Repository<Donation>,
     @InjectRepository(Allocation)
@@ -33,6 +35,7 @@ export class DonationService {
     private manufacturerRepo: Repository<FoodManufacturer>,
     private donationItemsService: DonationItemsService,
     @InjectDataSource() private dataSource: DataSource,
+    private emailsService: EmailsService,
   ) {}
 
   async findOne(donationId: number): Promise<Donation> {
@@ -50,7 +53,10 @@ export class DonationService {
 
   async getAll(): Promise<Donation[]> {
     return this.repo.find({
-      relations: ['foodManufacturer'],
+      relations: [
+        'foodManufacturer',
+        'foodManufacturer.foodManufacturerRepresentative',
+      ],
     });
   }
 
@@ -207,13 +213,25 @@ export class DonationService {
           break;
         }
 
-        this.logger.log(`Placeholder for sending automated email`);
+        let message = null;
+        try {
+          message = emailTemplates.fmRecurringDonationReminder({
+            fmName: donation.foodManufacturer.foodManufacturerName,
+            resubmitDonationId: donation.donationId,
+          });
 
-        /**
-         * IMPORTANT: future logic below should only proceed if the email is successfully sent
-         */
-        const emailSent = true;
-        if (!emailSent) continue;
+          await this.emailsService.sendEmails({
+            toEmail:
+              donation.foodManufacturer.foodManufacturerRepresentative.email,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+          });
+        } catch {
+          this.logger.warn(
+            `Automated email failed to send. Skipping recurrence update for donation id ${donation.donationId}`,
+          );
+          continue;
+        }
 
         dates.splice(i, 1);
         i--;
@@ -229,11 +247,21 @@ export class DonationService {
 
           // cascading recalculation of next dates when replacement dates are also expired
           while (nextDate.getTime() <= today.getTime() && occurrences > 0) {
-            this.logger.log(
-              `Placeholder for sending automated email for replacement date`,
-            );
-            const cascadeEmailSent = true;
-            if (!cascadeEmailSent) break;
+            try {
+              await this.emailsService.sendEmails({
+                toEmail:
+                  donation.foodManufacturer.foodManufacturerRepresentative
+                    .email,
+                subject: message.subject,
+                bodyHtml: message.bodyHTML,
+              });
+            } catch {
+              // Early escape to prevent getting stuck in while loop
+              this.logger.warn(
+                `Cascading recalculation of next dates failed for donation id ${donation.donationId} due to an email sending failure, exiting early`,
+              );
+              break;
+            }
 
             occurrences -= 1;
 

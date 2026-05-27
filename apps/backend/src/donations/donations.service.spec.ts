@@ -17,6 +17,9 @@ import {
   ReplaceDonationItemsDto,
 } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
+import { mock } from 'jest-mock-extended';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
 
@@ -132,11 +135,15 @@ const TODAYOfWeek = (iso: string): DayOfWeek => {
   return days[new Date(iso).getDay()];
 };
 
+const mockEmailsService = mock<EmailsService>();
+
 describe('DonationService', () => {
   let service: DonationService;
   let donationItemService: DonationItemsService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -168,6 +175,10 @@ describe('DonationService', () => {
           provide: DataSource,
           useValue: testDataSource,
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -177,6 +188,7 @@ describe('DonationService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -629,6 +641,184 @@ describe('DonationService', () => {
         );
         expect(donation.occurrencesRemaining).toEqual(3);
       });
+
+      it('sends fmRecurringDonationReminder email with correct parameters when expired date is processed', async () => {
+        const pastDate = daysAgo(5);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: manufacturer.foodManufacturerRepresentative.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      });
+
+      it('skips recurrence update and logs warning when initial email fails', async () => {
+        const pastDate = daysAgo(5);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        const warnSpy = jest.spyOn(service['logger'], 'warn');
+        mockEmailsService.sendEmails.mockRejectedValueOnce(
+          new Error('Email failed'),
+        );
+
+        await service.handleRecurringDonations();
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `Automated email failed to send. Skipping recurrence update for donation id ${donationId}`,
+          ),
+        );
+
+        // donation state preserved — failed email means we skipped the update
+        const donation = await service.findOne(donationId);
+        expect(donation.occurrencesRemaining).toBe(3);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
+          pastDate.toDateString(),
+        );
+
+        warnSpy.mockRestore();
+      });
+
+      it("processes other donations when one donation's initial email fails", async () => {
+        // 3 weekly donations whose replacement dates are all in the future
+        // (no cascading), each starting at occurrencesRemaining=3.
+        const donationId1 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(1)],
+          occurrencesRemaining: 3,
+        });
+        const donationId2 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(3)],
+          occurrencesRemaining: 3,
+        });
+        const donationId3 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(5)],
+          occurrencesRemaining: 3,
+        });
+
+        // Reject the first sendEmails call. Whichever donation getAll yields
+        // first will fail; the other two will succeed.
+        mockEmailsService.sendEmails.mockRejectedValueOnce(
+          new Error('Email failed'),
+        );
+
+        await service.handleRecurringDonations();
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(3);
+
+        const donations = await Promise.all([
+          service.findOne(donationId1),
+          service.findOne(donationId2),
+          service.findOne(donationId3),
+        ]);
+
+        // Exactly one donation should be unchanged (the one whose email failed)
+        // and the other two should be decremented from 3 → 2.
+        const remaining = donations.map((d) => d.occurrencesRemaining).sort();
+        expect(remaining).toEqual([2, 2, 3]);
+      });
+
+      it('sends multiple cascade emails when several replacement dates are also expired', async () => {
+        // 21-day-old weekly date cascades 3 times before landing in the future:
+        // initial send for daysAgo(21), then cascade sends for daysAgo(14),
+        // daysAgo(7), and daysAgo(0) — the next computed date (daysFromNow(7))
+        // exits the while loop. 4 emails total
+        const pastDate = daysAgo(21);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 5,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(4);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.occurrencesRemaining).toBe(1);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
+          daysFromNow(7).toDateString(),
+        );
+      });
+
+      it('breaks out of cascade and logs warning when cascade email fails', async () => {
+        // 14-day-old weekly date triggers the cascade — its replacement (7daysAgo) is also expired.
+        const pastDate = daysAgo(14);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 5,
+        });
+
+        const warnSpy = jest.spyOn(service['logger'], 'warn');
+        mockEmailsService.sendEmails
+          .mockResolvedValueOnce(undefined) // initial send (pastDate) succeeds
+          .mockRejectedValueOnce(new Error('Email failed')); // first cascade send fails → break
+
+        await service.handleRecurringDonations();
+
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `Cascading recalculation of next dates failed for donation id ${donationId}`,
+          ),
+        );
+
+        warnSpy.mockRestore();
+      });
     });
   });
 
@@ -996,7 +1186,7 @@ describe('DonationService', () => {
     });
 
     it('throws when foodManufacturerId does not exist', async () => {
-      expect(
+      await expect(
         service.create({
           foodManufacturerId: 99999,
           recurrence: RecurrenceEnum.NONE,
