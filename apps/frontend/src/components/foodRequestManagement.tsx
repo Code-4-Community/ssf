@@ -21,7 +21,6 @@ import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequ
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ROUTES } from '../routes';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
@@ -96,9 +95,9 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         setWasDeeplinked(true);
       }
     } else {
-      navigate(ROUTES.REQUEST_FORM, { replace: true });
+      navigate(location.pathname, { replace: true });
     }
-  }, [initialRequestId, requests, navigate]);
+  }, [initialRequestId, requests, navigate, location]);
 
   const pantryOptions = [
     ...new Set(
@@ -407,7 +406,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                   navigate(location.pathname, { replace: true });
                 }
                 if (wasDeeplinked) {
-                  setCurrentPage(1);
                   setWasDeeplinked(false);
                 }
               }}

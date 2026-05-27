@@ -238,7 +238,6 @@ const FormRequests: React.FC = () => {
               navigate(ROUTES.REQUEST_FORM, { replace: true });
             }
             if (wasDeeplinked) {
-              setCurrentPage(1);
               setWasDeeplinked(false);
             }
           }}

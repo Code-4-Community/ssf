@@ -20,9 +20,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
-import { ROUTES } from '../routes';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 
 const MAX_PER_STATUS = 5;
@@ -157,7 +155,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     const id = Number(donationIdParam);
     setSelectedDonationId(id);
   }, [searchParams, setErrorMessage]);
-  
+
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
     if (resubmitDonationId) {

@@ -41,6 +41,7 @@ const FoodManufacturerDashboard: React.FC = () => {
         ApiClient.getAllDonationsByFoodManufacturer(fmId),
       ]);
 
+      // If reminders is successfully retrieved from API with the Promise.allSettled
       if (reminders.status === 'fulfilled') {
         setUpcomingReminders(reminders.value);
       } else {

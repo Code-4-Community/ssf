@@ -297,7 +297,6 @@ const AdminDonation: React.FC = () => {
             setSelectedDonation(null);
             navigate(ROUTES.ADMIN_DONATION, { replace: true });
             if (wasDeeplinked) {
-              setCurrentPage(1);
               setWasDeeplinked(false);
             }
           }}
