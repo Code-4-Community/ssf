@@ -200,6 +200,15 @@ export class OrdersController {
     );
   }
 
+  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: async ({ entityId, services }) =>
+      pipeNullable(
+        () => services.get(OrdersService).findOne(entityId),
+        (order: Order) => [order.assigneeId],
+      ),
+  })
   @Patch('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,

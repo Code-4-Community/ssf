@@ -127,6 +127,17 @@ export class DonationsController {
     await this.donationService.replaceDonationItems(donationId, body);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: async ({ entityId, services }) => {
+      return pipeNullable(
+        () => services.get(DonationService).findOne(entityId),
+        (donation: Donation) => [donation.foodManufacturer.foodManufacturerId],
+      );
+    },
+  })
+  @Roles(Role.FOODMANUFACTURER)
   @Delete('/:donationId')
   async deleteDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
