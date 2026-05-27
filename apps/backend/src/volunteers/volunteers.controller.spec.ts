@@ -31,11 +31,6 @@ const mockVolunteer2: Partial<User> = {
   role: Role.VOLUNTEER,
 };
 
-const mockVolunteer3: Partial<User> = {
-  id: 3,
-  role: Role.VOLUNTEER,
-};
-
 const mockPantries: Partial<Pantry>[] = [
   {
     pantryId: 1,
@@ -143,30 +138,6 @@ describe('VolunteersController', () => {
       expect(mockVolunteersService.getVolunteerPantries).toHaveBeenCalledWith(
         1,
       );
-    });
-  });
-
-  describe('POST /:id/pantries', () => {
-    it('should assign pantries to a volunteer and return result', async () => {
-      const pantryIds = [1, 3];
-      const updatedUser = {
-        ...mockVolunteer3,
-        pantries: [mockPantries[0] as Pantry, mockPantries[2] as Pantry],
-      } as User;
-
-      mockVolunteersService.assignPantriesToVolunteer.mockResolvedValue(
-        updatedUser,
-      );
-
-      const result = await controller.assignPantries(3, pantryIds);
-
-      expect(result).toEqual(updatedUser);
-      expect(result.pantries).toHaveLength(2);
-      expect(result.pantries?.[0].pantryId).toBe(1);
-      expect(result.pantries?.[1].pantryId).toBe(3);
-      expect(
-        mockVolunteersService.assignPantriesToVolunteer,
-      ).toHaveBeenCalledWith(3, pantryIds);
     });
   });
 

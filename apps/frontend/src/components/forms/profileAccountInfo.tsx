@@ -18,6 +18,7 @@ interface ProfileAccountInfoProps {
   profile: User;
   showTabs: boolean;
   onSave: (fields: UpdateProfileFields) => Promise<boolean>;
+  foodManufacturerId?: number | null;
 }
 
 type ProfileFieldProps =
@@ -70,6 +71,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
   profile,
   showTabs,
   onSave,
+  foodManufacturerId,
 }) => {
   const { firstName, lastName, email, phone } = profile;
   const [activeTab, setActiveTab] = useState('Account');
@@ -230,10 +232,13 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
         <Tabs.Content value="Account">{fields}</Tabs.Content>
         <Tabs.Content value="Application">
           {profile.role === Role.FOODMANUFACTURER ? (
-            <EditableFMApplication
-              isEditing={isEditingApplication}
-              onEditingChange={setIsEditingApplication}
-            />
+            foodManufacturerId != null && (
+              <EditableFMApplication
+                isEditing={isEditingApplication}
+                onEditingChange={setIsEditingApplication}
+                foodManufacturerId={foodManufacturerId}
+              />
+            )
           ) : (
             <EditablePantryApplication
               isEditing={isEditingApplication}
