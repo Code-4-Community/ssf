@@ -22,10 +22,10 @@ import {
   Search,
 } from 'lucide-react';
 import {
-  capitalize,
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -370,7 +370,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {capitalize(status)}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -394,7 +394,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} orders at this time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -691,7 +692,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={0.5}
                         px={3}
                       >
-                        {capitalize(order.status)}
+                        {ORDER_STATUS_LABELS[order.status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -744,7 +745,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="left"
-                      bg="#FAFAFA"
+                      bg="neutral.50"
                     ></Table.Cell>
                   </Table.Row>
                 );

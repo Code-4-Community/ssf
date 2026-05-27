@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
@@ -204,18 +206,18 @@ describe('PantriesService', () => {
 
     it('sends approval email to pantry user', async () => {
       const pantry = await service.findOne(5);
-      const { subject, bodyHTML } = emailTemplates.pantryFmApplicationApproved({
+      const message = emailTemplates.pantryFmApplicationApproved({
         name: pantry.pantryUser.firstName,
       });
 
       await service.approve(5);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [pantry.pantryUser.email],
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('should still update pantry status to approved if email send fails', async () => {
@@ -375,16 +377,16 @@ describe('PantriesService', () => {
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [dto.contactEmail],
-        userMessage.subject,
-        userMessage.bodyHTML,
-      );
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [SSF_PARTNER_EMAIL],
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: dto.contactEmail,
+        subject: userMessage.subject,
+        bodyHtml: userMessage.bodyHTML,
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
     });
   });
@@ -1145,6 +1147,148 @@ describe('PantriesService', () => {
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
+    });
+
+    it('sends volunteerPantryAssignmentChanged email to each newly added volunteer', async () => {
+      const addVolunteerIds = [7, 8];
+      const volunteers = await testDataSource
+        .getRepository(User)
+        .find({ where: { id: In(addVolunteerIds) } });
+
+      expect(volunteers).toHaveLength(addVolunteerIds.length);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds,
+        removeVolunteerIds: [],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        addVolunteerIds.length,
+      );
+      for (const volunteer of volunteers) {
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      }
+    });
+
+    it('does not send email when no new volunteers are added', async () => {
+      // volunteer 6 is already assigned to pantry 1
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [6],
+        removeVolunteerIds: [],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when one email fails but still sends the others without throwing', async () => {
+      const addVolunteerIds = [7, 8];
+
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds,
+        removeVolunteerIds: [],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        addVolunteerIds.length,
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Automated email for pantry assignment update for volunteer id 7 and pantryId 1 failed to send.`,
+        ),
+      );
+
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const pantryVolunteerIds = pantry?.volunteers?.map((v) => v.id) ?? [];
+      for (const id of addVolunteerIds) {
+        expect(pantryVolunteerIds).toContain(id);
+      }
+
+      warnSpy.mockRestore();
+    });
+
+    it('sends volunteerPantryAssignmentChanged email to each removed volunteer', async () => {
+      const removeVolunteerIds = [6, 9];
+      const volunteers = await testDataSource
+        .getRepository(User)
+        .find({ where: { id: In(removeVolunteerIds) } });
+
+      expect(volunteers).toHaveLength(removeVolunteerIds.length);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        removeVolunteerIds.length,
+      );
+      for (const volunteer of volunteers) {
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      }
+    });
+
+    it('does not send email when removing a volunteer not assigned to the pantry', async () => {
+      // volunteer 8 is not assigned to pantry 1
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [8],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when one removal email fails but still removes the others without throwing', async () => {
+      const removeVolunteerIds = [6, 9];
+
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        removeVolunteerIds.length,
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Automated email for pantry assignment update for volunteer id 6 and pantryId 1 failed to send.`,
+        ),
+      );
+
+      const pantry = await testDataSource
+        .getRepository(Pantry)
+        .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
+      const pantryVolunteerIds = pantry?.volunteers?.map((v) => v.id) ?? [];
+      for (const id of removeVolunteerIds) {
+        expect(pantryVolunteerIds).not.toContain(id);
+      }
+
+      warnSpy.mockRestore();
     });
   });
 

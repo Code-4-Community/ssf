@@ -97,7 +97,7 @@ const FormRequests: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">
+      <Text textStyle="h1" color="gray.light">
         Food Request Management
       </Text>
       {alertState && (
@@ -114,7 +114,7 @@ const FormRequests: React.FC = () => {
           fontWeight="semibold"
           fontSize="14px"
           color="neutral.50"
-          bgColor="#2B4E60"
+          bgColor="blue.core"
           onClick={newRequestDisclosure.onOpen}
           px={2}
         >
@@ -185,9 +185,9 @@ const FormRequests: React.FC = () => {
         <Table.Body>
           {paginatedRequests.map((request) => (
             <Table.Row key={request.requestId}>
-              <Table.Cell color="#111111" textStyle="p2">
+              <Table.Cell color="gray.dark" textStyle="p2">
                 <Link
-                  textDecorationColor="#111111"
+                  textDecorationColor="gray.dark"
                   variant="underline"
                   onClick={() => setOpenReadOnlyRequest(request)}
                 >
@@ -197,8 +197,8 @@ const FormRequests: React.FC = () => {
               <Table.Cell>
                 {request.status === FoodRequestStatus.ACTIVE ? (
                   <Badge
-                    bgColor="#D4EAED"
-                    color="#19717D"
+                    bgColor="teal.200"
+                    color="teal.hover"
                     textStyle="p2"
                     fontWeight={500}
                     fontSize={12}
@@ -210,7 +210,7 @@ const FormRequests: React.FC = () => {
                 ) : (
                   <Badge
                     bgColor="neutral.300"
-                    color="#111111"
+                    color="gray.dark"
                     textStyle="p2"
                     fontWeight={500}
                     fontSize={12}

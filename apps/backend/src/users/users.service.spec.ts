@@ -156,13 +156,13 @@ describe('UsersService', () => {
 
       const result = await service.create(createUserDto);
 
-      const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
+      const message = emailTemplates.volunteerAccountCreated();
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [createUserDto.email],
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: createUserDto.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
       expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,

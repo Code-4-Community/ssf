@@ -23,10 +23,10 @@ import {
   Search,
 } from 'lucide-react';
 import {
-  capitalize,
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -44,12 +44,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
-
-const STATUS_TITLES: Record<OrderStatus, string> = {
-  [OrderStatus.SHIPPED]: 'In Progress',
-  [OrderStatus.PENDING]: 'Received',
-  [OrderStatus.DELIVERED]: 'Completed',
-};
 
 const hasRequiredActions = (order: VolunteerOrder): boolean => {
   if (!order.actionCompletion) return false;
@@ -448,7 +442,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {STATUS_TITLES[status]}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -472,8 +466,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {STATUS_TITLES[status].toLowerCase()} orders at this
-            time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -532,7 +526,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
                         size={18}
-                        color="#B8B8B8"
+                        color="var(--chakra-colors-neutral-300)"
                         style={{
                           position: 'absolute',
                           top: '50%',
@@ -770,7 +764,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={0.5}
                         px={3}
                       >
-                        {capitalize(STATUS_TITLES[status])}
+                        {ORDER_STATUS_LABELS[status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -822,7 +816,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="right"
-                      bg="#FAFAFA"
+                      bg="neutral.50"
                       pr={3}
                     >
                       {order.assignee?.id === currentUser?.id &&
