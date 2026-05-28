@@ -6,10 +6,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
@@ -38,8 +37,6 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,
@@ -165,18 +162,6 @@ export class OrdersService {
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
-  }
-
-  async getCurrentOrders() {
-    return this.repo.find({
-      where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
-    });
-  }
-
-  async getPastOrders() {
-    return this.repo.find({
-      where: { status: OrderStatus.DELIVERED },
-    });
   }
 
   /*
@@ -393,20 +378,6 @@ export class OrdersService {
         pantryName: order.request.pantry.pantryName,
       },
     };
-  }
-
-  async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['foodManufacturer'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-    return order.foodManufacturer;
   }
 
   async updateStatus(orderId: number, newStatus: OrderStatus) {

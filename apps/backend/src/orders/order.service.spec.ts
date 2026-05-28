@@ -299,30 +299,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('getCurrentOrders', () => {
-    it(`returns only orders with status 'pending' or 'shipped'`, async () => {
-      const orders = await service.getCurrentOrders();
-      expect(orders).toHaveLength(2);
-      expect(
-        orders.every(
-          (order) =>
-            order.status === OrderStatus.PENDING ||
-            order.status === OrderStatus.SHIPPED,
-        ),
-      ).toBe(true);
-    });
-  });
-
-  describe('getPastOrders', () => {
-    it(`returns only orders with status 'delivered'`, async () => {
-      const orders = await service.getPastOrders();
-      expect(orders).toHaveLength(2);
-      expect(
-        orders.every((order) => order.status === OrderStatus.DELIVERED),
-      ).toBe(true);
-    });
-  });
-
   describe('findOne', () => {
     it('returns order by ID', async () => {
       const orderId = 1;
@@ -361,22 +337,6 @@ describe('OrdersService', () => {
       expect(pantry).toBeDefined();
       expect(pantry.pantryName).toEqual('Community Food Pantry Downtown');
       expect(pantry.pantryId).toEqual(1);
-    });
-  });
-
-  describe('findOrderFoodManufacturer', () => {
-    it('returns FM of order', async () => {
-      const foodManufacturer = await service.findOrderFoodManufacturer(2);
-
-      expect(foodManufacturer).toBeDefined();
-      expect(foodManufacturer.foodManufacturerName).toEqual('Healthy Foods Co');
-      expect(foodManufacturer.foodManufacturerId).toEqual(2);
-    });
-
-    it('throws NotFoundException for non-existent order', async () => {
-      await expect(service.findOrderFoodManufacturer(9999)).rejects.toThrow(
-        new NotFoundException('Order 9999 not found'),
-      );
     });
   });
 
