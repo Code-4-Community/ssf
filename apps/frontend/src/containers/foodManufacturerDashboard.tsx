@@ -48,6 +48,7 @@ const FoodManufacturerDashboard: React.FC = () => {
         setErrorMessage('Error fetching upcoming donations.');
       }
 
+      // If donations is successfully retrieved from API with the Promise.allSettled
       if (donations.status === 'fulfilled') {
         const sorted = donations.value
           .map((d: DonationDetails) => d.donation)
