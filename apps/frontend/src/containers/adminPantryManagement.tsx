@@ -391,14 +391,14 @@ const AdminPantryManagement: React.FC = () => {
                     fontWeight={500}
                     fontSize="12px"
                     bgColor={
-                      pantry.refrigeratedDonation === RefrigeratedDonation.YES
-                        ? 'neutral.100'
-                        : 'neutral.200'
+                      pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                        ? 'neutral.200'
+                        : 'neutral.100'
                     }
                   >
-                    {pantry.refrigeratedDonation === RefrigeratedDonation.YES
-                      ? 'Refrigerator-Friendly'
-                      : 'Not Refrigerator-Friendly'}
+                    {pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                      ? 'Not Refrigerator-Friendly'
+                      : 'Refrigerator-Friendly'}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
