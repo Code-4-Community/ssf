@@ -1,8 +1,6 @@
 import {
   IsNumber,
   IsString,
-  IsArray,
-  ValidateNested,
   Min,
   IsEnum,
   IsNotEmpty,
@@ -11,7 +9,6 @@ import {
   IsInt,
   IsBoolean,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { FoodType } from '../types';
 
 export class CreateDonationItemDto {
@@ -45,17 +42,4 @@ export class CreateDonationItemDto {
 
   @IsBoolean()
   foodRescue!: boolean;
-}
-
-export class ReplaceDonationItemDto extends CreateDonationItemDto {
-  @IsOptional()
-  @IsNumber()
-  id?: number;
-}
-
-export class ReplaceDonationItemsDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ReplaceDonationItemDto)
-  items!: ReplaceDonationItemDto[];
 }

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { AllocationsService } from './allocations.service';
 import { Allocation } from './allocations.entity';
