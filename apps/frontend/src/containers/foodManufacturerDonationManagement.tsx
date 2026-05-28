@@ -23,7 +23,7 @@ import { useAlert } from '../hooks/alert';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 
-const MAX_PER_STATUS = 1;
+const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
   const navigate = useNavigate();
