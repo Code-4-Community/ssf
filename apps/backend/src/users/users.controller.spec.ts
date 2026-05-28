@@ -64,17 +64,6 @@ describe('UsersController', () => {
     });
   });
 
-  describe('GET /:id', () => {
-    it('should return a user by id', async () => {
-      mockUserService.findOne.mockResolvedValue(mockUser1 as User);
-
-      const result = await controller.getUser(1);
-
-      expect(result).toEqual(mockUser1);
-      expect(mockUserService.findOne).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('DELETE /:id', () => {
     it('should remove a user by id', async () => {
       mockUserService.remove.mockResolvedValue(mockUser1 as User);

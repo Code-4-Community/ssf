@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     try {
       const user = await this.usersService.findUserByCognitoId(payload.sub);
       return user;
-    } catch (err) {
+    } catch {
       return null; // Passport treats null as unauthenticated → clean 401
     }
   }

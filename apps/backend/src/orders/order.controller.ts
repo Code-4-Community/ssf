@@ -18,9 +18,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AllocationsService } from '../allocations/allocations.service';
-import { OrderStatus } from './types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
@@ -35,6 +33,7 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
+import { OrderStatus } from './types';
 
 @Controller('orders')
 export class OrdersController {
@@ -56,16 +55,6 @@ export class OrdersController {
       pantryNames = [pantryNames];
     }
     return this.ordersService.getAll({ status, pantryNames });
-  }
-
-  @Get('/get-current-orders')
-  async getCurrentOrders(): Promise<Order[]> {
-    return this.ordersService.getCurrentOrders();
-  }
-
-  @Get('/get-past-orders')
-  async getPastOrders(): Promise<Order[]> {
-    return this.ordersService.getPastOrders();
   }
 
   @Get('/:orderId/pantry')
@@ -94,13 +83,6 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequestSummaryDto> {
     return this.ordersService.findOrderFoodRequest(orderId);
-  }
-
-  @Get('/:orderId/manufacturer')
-  async getManufacturerFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodManufacturer> {
-    return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
   @Get('/:orderId')
