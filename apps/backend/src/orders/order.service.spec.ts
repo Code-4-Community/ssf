@@ -802,9 +802,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const requestRepo = testDataSource.getRepository(FoodRequest);
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
-      const request = await requestRepo.findOne({ where: { requestId: 2 } });
-
-      if (!request) throw new Error('Missing dummy request');
+      const request = (await requestRepo.findOne({
+        where: { requestId: 2 },
+      })) as FoodRequest;
 
       request.status = FoodRequestStatus.CLOSED;
       await requestRepo.save(request);
@@ -817,10 +817,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: BadRequestException.name,
-        message: `Request ${validCreateOrderDto.foodRequestId} is not active`,
-      });
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Request ${validCreateOrderDto.foodRequestId} is not active`,
+        ),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -842,10 +843,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: BadRequestException.name,
-        message: `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
-      });
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
+        ),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -854,10 +856,13 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
-    it('should throw NotFoundException if donation item does not exist', async () => {
+    it('should throw BadRequestException if manufacturer has no donations', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
-      parsedAllocations.set(999, 1);
+      await testDataSource.query(
+        `UPDATE donations SET food_manufacturer_id = 2 WHERE food_manufacturer_id = $1`,
+        [validCreateOrderDto.manufacturerId],
+      );
 
       await expect(
         service.create(
@@ -866,10 +871,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: NotFoundException.name,
-        message: 'Donation items not found for ID(s): 999',
-      });
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Manufacturer ${validCreateOrderDto.manufacturerId} has no donations`,
+        ),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -894,10 +900,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: BadRequestException.name,
-        message: `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
-      });
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
+        ),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -906,7 +913,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
-    it('should throw Error if donation is not associated with manufacturer', async () => {
+    it('should throw BadRequestException if donation is not associated with manufacturer', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
       const donationItemId = 7;
@@ -921,10 +928,11 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: BadRequestException.name,
-        message: `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
-      });
+      ).rejects.toThrow(
+        new BadRequestException(
+          `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
+        ),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -1128,10 +1136,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           emptyAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: BadRequestException.name,
-        message: 'Cannot create order with no donation items',
-      });
+      ).rejects.toThrow(
+        new BadRequestException('Cannot create order with no donation items'),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -1151,10 +1158,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           parsedAllocations,
           userId,
         ),
-      ).rejects.toMatchObject({
-        name: NotFoundException.name,
-        message: `Request ${nonExistentRequestId} not found`,
-      });
+      ).rejects.toThrow(
+        new NotFoundException(`Request ${nonExistentRequestId} not found`),
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
