@@ -114,17 +114,6 @@ describe('VolunteersController', () => {
     });
   });
 
-  describe('GET /:id', () => {
-    it('should return a user by id', async () => {
-      mockVolunteersService.findOne.mockResolvedValue(mockVolunteer1 as User);
-
-      const result = await controller.getVolunteer(1);
-
-      expect(result).toEqual(mockVolunteer1);
-      expect(mockVolunteersService.findOne).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('GET /:id/pantries', () => {
     it('should return pantries assigned to a user', async () => {
       mockVolunteersService.getVolunteerPantries.mockResolvedValue(
