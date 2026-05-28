@@ -35,7 +35,7 @@ import { UpdateRequestDto } from './dtos/update-request.dto';
 // PANTRY users may access requests belonging to their own pantry (matched by
 // pantry representative id). All other non-admin callers (i.e. VOLUNTEER) must
 // be in the pantry's assigned volunteers list. ADMIN bypasses in the guard.
-const resolveRequestAuthorizedUserIds: OwnerIdResolver = ({
+export const resolveRequestAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
   services,
   user,
@@ -48,6 +48,17 @@ const resolveRequestAuthorizedUserIds: OwnerIdResolver = ({
       user?.role === Role.PANTRY
         ? [pantry.pantryUser.id]
         : (pantry.volunteers ?? []).map((v) => v.id),
+  );
+
+// For creating a request, the pantryId comes from the request body and the
+// only authorized non-admin caller is the pantry representative.
+export const resolveCreateRequestAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(PantriesService).findOne(entityId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
   );
 
 @Controller('requests')
@@ -109,6 +120,11 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
+  @CheckOwnership({
+    idParam: 'pantryId',
+    idSource: 'body',
+    resolver: resolveCreateRequestAuthorizedUserIds,
+  })
   @Roles(Role.ADMIN, Role.PANTRY)
   @Post()
   @ApiBody({

@@ -22,8 +22,12 @@ export interface ServiceRegistry {
 }
 
 // Configuration for ownership check
+/**
+ *
+ */
 export interface OwnershipConfig {
   idParam: string;
+  idSource?: 'params' | 'body';
   resolver: OwnerIdResolver;
   bypassRoles?: Role[];
 }
