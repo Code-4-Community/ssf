@@ -22,6 +22,9 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+
+const mockEmailsService = mock<EmailsService>();
 
 jest.setTimeout(60000);
 
@@ -58,9 +61,7 @@ describe('VolunteersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(User),

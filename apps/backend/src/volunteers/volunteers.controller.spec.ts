@@ -31,11 +31,6 @@ const mockVolunteer2: Partial<User> = {
   role: Role.VOLUNTEER,
 };
 
-const mockVolunteer3: Partial<User> = {
-  id: 3,
-  role: Role.VOLUNTEER,
-};
-
 const mockPantries: Partial<Pantry>[] = [
   {
     pantryId: 1,

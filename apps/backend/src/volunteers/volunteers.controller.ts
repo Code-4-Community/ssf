@@ -39,7 +39,7 @@ export class VolunteersController {
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/me/recent-orders')
   async getRecentOrders(
     @Req() req: AuthenticatedRequest,

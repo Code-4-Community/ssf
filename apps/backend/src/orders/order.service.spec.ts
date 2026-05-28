@@ -6,7 +6,11 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -26,18 +30,24 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
+
+const mockEmailsService = mock<EmailsService>();
 
 describe('OrdersService', () => {
   let service: OrdersService;
   let donationService: DonationService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     // Initialize DataSource once
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
@@ -63,9 +73,7 @@ describe('OrdersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(Order),
@@ -111,6 +119,7 @@ describe('OrdersService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -412,7 +421,9 @@ describe('OrdersService', () => {
 
       if (!shippedOrder) throw new Error('Missing shipped order test object');
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
@@ -465,7 +476,9 @@ describe('OrdersService', () => {
       });
       await orderRepo.save(secondOrder);
 
-      const dateReceived = new Date().toISOString();
+      const now = new Date();
+      now.setMilliseconds(0);
+      const dateReceived = now.toISOString();
       const feedback = 'Perfect delivery!';
       const photos = ['photo1.jpg', 'photo2.jpg'];
 
@@ -550,6 +563,61 @@ describe('OrdersService', () => {
       ).rejects.toThrow(
         new BadRequestException('Can only confirm delivery for shipped orders'),
       );
+    });
+
+    it('sends pantryConfirmsOrderDelivery email to volunteer when delivery is confirmed', async () => {
+      const orderId = 3;
+      const order = await testDataSource.getRepository(Order).findOne({
+        where: { orderId },
+        relations: [
+          'request',
+          'request.pantry',
+          'foodManufacturer',
+          'assignee',
+        ],
+      });
+
+      if (!order) throw new Error('Missing order test object');
+
+      await service.confirmDelivery(
+        orderId,
+        { dateReceived: new Date().toISOString(), feedback: 'Great!' },
+        [],
+      );
+
+      const message = emailTemplates.pantryConfirmsOrderDelivery({
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: order.assignee.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+    });
+
+    it('still updates order to delivered if delivery confirmation email fails to send', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+
+      await expect(
+        service.confirmDelivery(
+          3,
+          { dateReceived: new Date().toISOString(), feedback: 'Great!' },
+          [],
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send order delivery confirmation email to volunteer',
+        ),
+      );
+
+      const order = await service.findOne(3);
+      expect(order.status).toBe(OrderStatus.DELIVERED);
     });
   });
 
@@ -1233,6 +1301,142 @@ describe('OrdersService', () => {
       });
 
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('sends trackingLinkAvailable email to pantry user for each updated order with a tracking link', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      const updatedOrders = await testDataSource.getRepository(Order).find({
+        where: { orderId: In([4, orderId2]) },
+        relations: [
+          'request',
+          'request.pantry',
+          'request.pantry.pantryUser',
+          'foodManufacturer',
+          'assignee',
+        ],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        updatedOrders.length,
+      );
+      for (const order of updatedOrders) {
+        const message = emailTemplates.trackingLinkAvailable({
+          pantryName: order.request.pantry.pantryName,
+          fmName: order.foodManufacturer.foodManufacturerName,
+          trackingLink: order.trackingLink!,
+          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+          volunteerEmail: order.assignee.email,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      }
+    });
+
+    it('does not send email for orders without a tracking link', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('does not send email for orders that already had a tracking link when only shipping cost is updated', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, trackingLink: 'https://tracking.com' }],
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      mockEmailsService.sendEmails.mockClear();
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [{ orderId: 4, shippingCost: 5.0 }],
+      });
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when one email fails but still updates all orders without throwing', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId1 = await insertDonationItem(donationId);
+      const itemId2 = await insertDonationItem(donationId);
+      const orderId2 = await createPendingOrder();
+      await insertAllocation(4, itemId1);
+      await insertAllocation(orderId2, itemId2);
+
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('Email failed'),
+      );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            trackingLink: 'https://tracking1.com',
+            shippingCost: 5.0,
+          },
+          {
+            orderId: orderId2,
+            trackingLink: 'https://tracking2.com',
+            shippingCost: 7.5,
+          },
+        ],
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Automated tracking link email failed to send for order',
+        ),
+      );
+
+      const after1 = await service.findOne(4);
+      const after2 = await service.findOne(orderId2);
+      expect(after1.trackingLink).toEqual('https://tracking1.com');
+      expect(after1.shippingCost).toEqual(5.0);
+      expect(after1.status).toEqual(OrderStatus.SHIPPED);
+      expect(after2.trackingLink).toEqual('https://tracking2.com');
+      expect(after2.shippingCost).toEqual(7.5);
+      expect(after2.status).toEqual(OrderStatus.SHIPPED);
+
+      warnSpy.mockRestore();
     });
   });
 });
