@@ -9,10 +9,14 @@ import { Role } from '../users/types';
 // Helper to create a mock execution context with specified user and params
 // Creates the context to determine which user is making the request and what
 // parameters are being passed in, such as the entity ID for ownership checks
-function makeExecutionContext(user: User | null, params: Record<string, any>) {
+function makeExecutionContext(
+  user: User | null,
+  params: Record<string, any>,
+  body: Record<string, any> = {},
+) {
   return {
     switchToHttp: () => ({
-      getRequest: () => ({ user, params }),
+      getRequest: () => ({ user, params, body }),
     }),
     getHandler: () => jest.fn(),
   } as any;
@@ -139,6 +143,31 @@ describe('OwnershipGuard', () => {
     // If the guard correctly extracts and parses pantryId, the resolver will receive 123 and return true
     // If it fails to parse, it will throw ForbiddenException before even calling the resolver.
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
+  });
+
+  it('extracts idParam from request body when idSource is "body"', async () => {
+    const config: OwnershipConfig = {
+      idParam: 'pantryId',
+      idSource: 'body',
+      resolver: async ({ entityId }) => {
+        expect(entityId).toBe(7);
+        return [dummyUser.id];
+      },
+    };
+    const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+    const ctx = makeExecutionContext(dummyUser, {}, { pantryId: 7 });
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+  });
+
+  it('throws ForbiddenException when body idParam is missing', async () => {
+    const config: OwnershipConfig = {
+      idParam: 'pantryId',
+      idSource: 'body',
+      resolver: async () => [dummyUser.id],
+    };
+    const guard = new OwnershipGuard(makeReflector(config), makeModuleRef());
+    const ctx = makeExecutionContext(dummyUser, {}, {});
+    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
   });
 
   describe('OwnershipGuard bypassRoles', () => {
