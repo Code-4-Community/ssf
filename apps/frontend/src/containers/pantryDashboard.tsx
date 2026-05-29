@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
 import {
+  AlertStatus,
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
@@ -31,7 +32,7 @@ const PantryDashboard: React.FC = () => {
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
       } catch {
-        setAlertMessage('Error fetching pantry information', 'error');
+        setAlertMessage('Error fetching pantry information', AlertStatus.ERROR);
         return;
       }
 
@@ -44,7 +45,10 @@ const PantryDashboard: React.FC = () => {
         );
         setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching pantry food requests', 'error');
+        setAlertMessage(
+          'Error fetching pantry food requests',
+          AlertStatus.ERROR,
+        );
       }
 
       try {
@@ -55,7 +59,7 @@ const PantryDashboard: React.FC = () => {
         );
         setRecentOrders(sortedOrders.slice(0, 4));
       } catch {
-        setAlertMessage('Error fetching orders', 'error');
+        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
       }
     };
     fetchDashboardData();
@@ -69,7 +73,7 @@ const PantryDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

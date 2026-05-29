@@ -12,7 +12,7 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { DonationDetails, DonationStatus } from '../types/types';
+import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
@@ -83,12 +83,12 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setAlertMessage('Error fetching donations', 'error');
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
   };
 
   const handleLogNewDonationSuccess = () => {
-    setAlertMessage('Successfully logged new donation', 'success');
+    setAlertMessage('Successfully logged new donation', AlertStatus.INFO);
     if (manufacturerId !== null) fetchDonations(manufacturerId);
   };
 
@@ -100,7 +100,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         setManufacturerId(fmId);
         await fetchDonations(fmId);
       } catch {
-        setAlertMessage('Error initializing donation management', 'error');
+        setAlertMessage(
+          'Error initializing donation management',
+          AlertStatus.ERROR,
+        );
       }
     };
     init();
@@ -119,7 +122,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -162,7 +165,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
             if (manufacturerId !== null) fetchDonations(manufacturerId);
             setAlertMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
-              'success',
+              AlertStatus.INFO,
             );
           }}
         />

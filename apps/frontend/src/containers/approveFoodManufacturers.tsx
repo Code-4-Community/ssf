@@ -14,7 +14,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { FoodManufacturer } from 'types/types';
+import { AlertStatus, FoodManufacturer } from '../types/types';
 import {
   ArrowDownUp,
   ChevronLeft,
@@ -44,7 +44,7 @@ const ApproveFoodManufacturers: React.FC = () => {
         const data = await ApiClient.getAllPendingFoodManufacturers();
         setFoodManufacturers(data);
       } catch {
-        setAlertMessage('Error fetching food manufacturers', 'error');
+        setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
       }
     };
 
@@ -115,7 +115,7 @@ const ApproveFoodManufacturers: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setAlertMessage(message, 'success');
+      setAlertMessage(message, AlertStatus.INFO);
       setSearchParams({});
     }
   }, [searchParams, setSearchParams, setAlertMessage]);
@@ -129,7 +129,7 @@ const ApproveFoodManufacturers: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

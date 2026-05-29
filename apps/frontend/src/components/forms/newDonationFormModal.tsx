@@ -30,6 +30,7 @@ import { generateNextDonationDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
@@ -204,7 +205,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     ) {
       setAlertMessage(
         'Please select at least one day for weekly recurrence.',
-        'error',
+        AlertStatus.ERROR,
       );
       return;
     }
@@ -248,7 +249,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       setRepeatInterval(RecurrenceEnum.NONE);
       onClose();
     } catch {
-      setAlertMessage('Error submitting new donation', 'error');
+      setAlertMessage('Error submitting new donation', AlertStatus.ERROR);
     }
   };
 
@@ -281,7 +282,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

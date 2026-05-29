@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { AlertStatus, OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -109,7 +109,7 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setAlertMessage('Failed to fetch orders', 'error');
+      setAlertMessage('Failed to fetch orders', AlertStatus.ERROR);
     }
   }, [setAlertMessage]);
 
@@ -152,7 +152,7 @@ const PantryOrderManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -219,10 +219,13 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => setSelectedActionOrder(null)}
           onSuccess={() => {
             fetchOrders();
-            setAlertMessage('Delivery Confirmed', 'success');
+            setAlertMessage('Delivery Confirmed', AlertStatus.INFO);
           }}
           onError={() => {
-            setAlertMessage('Delivery could not be confirmed.', 'error');
+            setAlertMessage(
+              'Delivery could not be confirmed.',
+              AlertStatus.ERROR,
+            );
           }}
         />
       )}

@@ -4,6 +4,7 @@ import { LockKeyhole } from 'lucide-react';
 import ChangePasswordModal from './changePasswordModal';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { AlertStatus } from '../../types/types';
 
 interface ProfileLeftPanelProps {
   name: string;
@@ -27,7 +28,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="info"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -87,7 +88,7 @@ const ProfileLeftPanel: React.FC<ProfileLeftPanelProps> = ({
         open={open}
         onClose={onClose}
         onSuccess={() =>
-          setAlertMessage('Password successfully changed', 'success')
+          setAlertMessage('Password successfully changed', AlertStatus.INFO)
         }
       ></ChangePasswordModal>
     </VStack>

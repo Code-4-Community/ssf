@@ -9,6 +9,7 @@ import {
   OrderSummary,
   Donation,
   User,
+  AlertStatus,
 } from '../types/types';
 import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
@@ -34,7 +35,7 @@ const AdminDashboard: React.FC = () => {
         await ApiClient.getRecentPendingApplications();
       setPendingApplications(pendingApplications);
     } catch {
-      setAlertMessage('Error fetching pending applications', 'error');
+      setAlertMessage('Error fetching pending applications', AlertStatus.ERROR);
     }
   };
 
@@ -48,7 +49,7 @@ const AdminDashboard: React.FC = () => {
       const recentOrders = sortedOrders.slice(0, 2);
       setRecentOrders(recentOrders);
     } catch {
-      setAlertMessage('Error fetching orders', 'error');
+      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
     }
   };
 
@@ -62,7 +63,7 @@ const AdminDashboard: React.FC = () => {
       const recentDonations = sortedDonations.slice(0, 2);
       setRecentDonations(recentDonations);
     } catch {
-      setAlertMessage('Error fetching donations', 'error');
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
   };
 
@@ -74,7 +75,7 @@ const AdminDashboard: React.FC = () => {
     } catch {
       setAlertMessage(
         'Authentication error. Please log in and try again.',
-        'error',
+        AlertStatus.ERROR,
       );
       return;
     }
@@ -93,7 +94,7 @@ const AdminDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

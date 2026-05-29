@@ -26,6 +26,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { isValidUrl } from '../../utils/utils';
+import { AlertStatus } from '../../types/types';
 
 // Up to two decimal places, e.g. "0.5", "1", "12.34" — but not "1.234" or "-1"
 const POSITIVE_TWO_DECIMAL_REGEX = /^\d+(\.\d{1,2})?$/;
@@ -192,14 +193,14 @@ const FmCompleteRequiredActionsModal: React.FC<
       if (shippingCost !== '' && !isValidShippingCost(shippingCost)) {
         setAlertMessage(
           `Shipping cost for order ${order.orderId} must be a positive number with up to 2 decimal places.`,
-          'error',
+          AlertStatus.ERROR,
         );
         return;
       }
       if (trackingLink.trim() !== '' && !isValidUrl(trackingLink)) {
         setAlertMessage(
           `Tracking link for order ${order.orderId} must be a valid http or https URL.`,
-          'error',
+          AlertStatus.ERROR,
         );
         return;
       }
@@ -298,7 +299,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         msg
           ? msg.replace(/^orders\.\d+\./, '')
           : 'Error completing required actions. Please try again.',
-        'error',
+        AlertStatus.ERROR,
       );
     } finally {
       setIsSubmitting(false);
@@ -329,7 +330,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

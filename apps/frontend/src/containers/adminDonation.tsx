@@ -12,7 +12,7 @@ import {
   ButtonGroup,
   Link,
 } from '@chakra-ui/react';
-import { Donation } from 'types/types';
+import { AlertStatus, Donation } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
@@ -44,7 +44,7 @@ const AdminDonation: React.FC = () => {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch {
-        setAlertMessage('Error fetching donations', 'error');
+        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
       }
     };
     fetchDonations();
@@ -130,7 +130,7 @@ const AdminDonation: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

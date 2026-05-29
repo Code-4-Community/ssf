@@ -15,13 +15,14 @@ import {
   Input,
 } from '@chakra-ui/react';
 import {
+  AlertStatus,
   DonationItemsGroupedByFoodType,
   FoodManufacturerWithoutRelations,
   FoodRequestSummaryDto,
   FoodType,
   MatchingItemsDto,
   MatchingManufacturersDto,
-} from 'types/types';
+} from '../../types/types';
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -62,7 +63,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
         );
         setManufacturers(data);
       } catch {
-        setAlertMessage('Error fetching manufacturers', 'error');
+        setAlertMessage('Error fetching manufacturers', AlertStatus.ERROR);
       }
     };
     fetchManufacturers();
@@ -114,7 +115,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       );
       setManufacturerItems(data);
     } catch {
-      setAlertMessage('Error fetching manufacturer items', 'error');
+      setAlertMessage('Error fetching manufacturer items', AlertStatus.ERROR);
     }
   };
 
@@ -140,7 +141,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Error creating new order', 'error');
+      setAlertMessage('Error creating new order', AlertStatus.ERROR);
     }
   };
 
@@ -171,7 +172,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

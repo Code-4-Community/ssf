@@ -22,6 +22,7 @@ import apiClient from '@api/apiClient';
 import { TagGroup } from './tagGroup';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 interface FoodRequestFormModalProps {
   previousRequest?: FoodRequestSummaryDto;
@@ -57,7 +58,6 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         setRequestedSize('');
         setAdditionalNotes('');
       }
-      setAlertMessage('', 'error');
     }
   }, [isOpen, previousRequest, setAlertMessage]);
 
@@ -71,11 +71,11 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
     try {
       await apiClient.createFoodRequest(foodRequestData);
-      setAlertMessage('Request submitted', 'success');
+      setAlertMessage('Request submitted', AlertStatus.INFO);
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Request could not be submitted.', 'error');
+      setAlertMessage('Request could not be submitted.', AlertStatus.ERROR);
     }
   };
 
@@ -92,7 +92,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -273,7 +273,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     if (words.length <= 250) {
                       setAdditionalNotes(e.target.value);
                     } else {
-                      setAlertMessage('Exceeded word limit', 'error');
+                      setAlertMessage('Exceeded word limit', AlertStatus.ERROR);
                     }
                   }}
                 />

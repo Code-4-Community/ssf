@@ -25,7 +25,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { TagGroup } from '@components/forms/tagGroup';
-import { ManufacturerApplicationDto } from '../../types/types';
+import { AlertStatus, ManufacturerApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
@@ -76,7 +76,7 @@ const ManufacturerApplicationForm: React.FC = () => {
 
   useEffect(() => {
     if (actionData?.error) {
-      setAlertMessage(actionData.error, 'error');
+      setAlertMessage(actionData.error, AlertStatus.ERROR);
     }
   }, [actionData, setAlertMessage]);
 
@@ -87,7 +87,7 @@ const ManufacturerApplicationForm: React.FC = () => {
           <FloatingAlert
             key={alertState.id}
             message={alertState.message}
-            status="error"
+            status={alertState.status}
             timeout={6000}
           />
         )}

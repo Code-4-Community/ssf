@@ -14,7 +14,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry } from 'types/types';
+import { AlertStatus, Pantry } from '../types/types';
 import {
   ArrowDownUp,
   ChevronLeft,
@@ -40,7 +40,7 @@ const ApprovePantries: React.FC = () => {
         const data = await ApiClient.getAllPendingPantries();
         setPantries(data);
       } catch {
-        setAlertMessage('Error fetching pantries', 'error');
+        setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
       }
     };
 
@@ -106,7 +106,7 @@ const ApprovePantries: React.FC = () => {
           ? `${name} - Application Accepted`
           : `${name} - Application Rejected`;
 
-      setAlertMessage(message, 'success');
+      setAlertMessage(message, AlertStatus.INFO);
       setSearchParams({});
     }
   }, [searchParams, setSearchParams, setAlertMessage]);
@@ -120,7 +120,7 @@ const ApprovePantries: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

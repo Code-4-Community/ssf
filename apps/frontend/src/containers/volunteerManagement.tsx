@@ -14,7 +14,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
-import { User } from '../types/types';
+import { AlertStatus, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -36,7 +36,7 @@ const VolunteerManagement: React.FC = () => {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
       } catch {
-        setAlertMessage('Error fetching volunteers', 'error');
+        setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
       }
     };
 
@@ -72,7 +72,7 @@ const VolunteerManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -106,10 +106,13 @@ const VolunteerManagement: React.FC = () => {
             </InputGroup>
             <NewVolunteerModal
               onSubmitSuccess={() => {
-                setAlertMessage('Volunteer added.', 'success');
+                setAlertMessage('Volunteer added.', AlertStatus.INFO);
               }}
               onSubmitFail={() => {
-                setAlertMessage('Volunteer could not be added.', 'error');
+                setAlertMessage(
+                  'Volunteer could not be added.',
+                  AlertStatus.ERROR,
+                );
               }}
             />
           </Flex>

@@ -12,7 +12,11 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { ApplicationStatus, FoodManufacturer } from '../types/types';
+import {
+  AlertStatus,
+  ApplicationStatus,
+  FoodManufacturer,
+} from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -178,7 +182,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error approving application', 'error');
+        setAlertMessage('Error approving application', AlertStatus.ERROR);
       }
     }
   };
@@ -198,7 +202,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error denying application', 'error');
+        setAlertMessage('Error denying application', AlertStatus.ERROR);
       }
     }
   };
@@ -254,7 +258,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
           <FloatingAlert
             key={alertState.id}
             message={alertState.message}
-            status="error"
+            status={alertState.status}
             timeout={6000}
           />
         )}

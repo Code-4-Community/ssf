@@ -19,6 +19,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import AuthHeader from '@components/AuthHeader';
+import { AlertStatus } from '../types/types';
 
 type Step = 'login' | 'new-password';
 
@@ -80,7 +81,7 @@ const LoginPage: React.FC = () => {
         ) {
           setAlertMessage(
             'Incorrect email or password. Please try again.',
-            'error',
+            AlertStatus.ERROR,
           );
           return;
         }
@@ -89,7 +90,7 @@ const LoginPage: React.FC = () => {
         navigator.onLine
           ? 'Login failed. The server may be unavailable. Please try again later.'
           : 'No internet connection. Please check your network and try again.',
-        'error',
+        AlertStatus.ERROR,
       );
     }
   };
@@ -97,11 +98,14 @@ const LoginPage: React.FC = () => {
   // Sets the new password for the first time
   const handleSetNewPassword = async () => {
     if (newPassword !== confirmNewPassword) {
-      setAlertMessage('Passwords need to match', 'error');
+      setAlertMessage('Passwords need to match', AlertStatus.ERROR);
       return;
     }
     if (newPassword.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters', 'error');
+      setAlertMessage(
+        'Password needs to be at least 8 characters',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
@@ -111,7 +115,7 @@ const LoginPage: React.FC = () => {
       await fetchAuthSession({ forceRefresh: true });
       navigate(from, { replace: true });
     } catch {
-      setAlertMessage('Failed to set new password', 'error');
+      setAlertMessage('Failed to set new password', AlertStatus.ERROR);
     }
   };
 
@@ -145,7 +149,7 @@ const LoginPage: React.FC = () => {
           <FloatingAlert
             key={alertState.id}
             message={alertState.message}
-            status="error"
+            status={alertState.status}
             timeout={6000}
           />
         )}

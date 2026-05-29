@@ -15,7 +15,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Funnel, Search } from 'lucide-react';
-import { ApprovedPantryResponse } from '../types/types';
+import { AlertStatus, ApprovedPantryResponse } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -51,7 +51,7 @@ const AdminPantryManagement: React.FC = () => {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
-      setAlertMessage('Error fetching pantries', 'error');
+      setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
     }
   };
 
@@ -60,7 +60,7 @@ const AdminPantryManagement: React.FC = () => {
   }, [setAlertMessage]);
 
   const handleAssignVolunteersSuccess = () => {
-    setAlertMessage('Successfully assigned volunteers', 'success');
+    setAlertMessage('Successfully assigned volunteers', AlertStatus.INFO);
     fetchPantries();
   };
 
@@ -107,7 +107,7 @@ const AdminPantryManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

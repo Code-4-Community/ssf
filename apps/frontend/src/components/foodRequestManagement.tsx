@@ -22,6 +22,7 @@ import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { AlertStatus } from '../types/types';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
@@ -61,7 +62,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       const data = await fetchData();
       setRequests(data);
     } catch {
-      setAlertMessage('Error fetching requests', 'error');
+      setAlertMessage('Error fetching requests', AlertStatus.ERROR);
     }
   }, [fetchData, setAlertMessage]);
 
@@ -153,7 +154,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -405,7 +406,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCloseRequest}
               onSuccess={() => {
-                setAlertMessage('Request Closed', 'success');
+                setAlertMessage('Request Closed', AlertStatus.INFO);
                 loadRequests();
               }}
             />
@@ -417,7 +418,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCreateOrder}
               onSuccess={() => {
-                setAlertMessage('Order Created', 'success');
+                setAlertMessage('Order Created', AlertStatus.INFO);
                 loadRequests();
               }}
             />

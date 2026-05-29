@@ -17,7 +17,7 @@ import {
   OrderItemDetailsGroupedByFoodType,
   OrderDetails,
 } from 'types/types';
-import { FoodRequestStatus } from '../../types/types';
+import { FoodRequestStatus, AlertStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -52,7 +52,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch {
-          setAlertMessage('Error fetching food request details', 'error');
+          setAlertMessage(
+            'Error fetching food request details',
+            AlertStatus.ERROR,
+          );
         }
       };
 
@@ -67,7 +70,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch {
-          setAlertMessage('Error fetching order details', 'error');
+          setAlertMessage('Error fetching order details', AlertStatus.ERROR);
         }
       };
 
@@ -105,7 +108,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

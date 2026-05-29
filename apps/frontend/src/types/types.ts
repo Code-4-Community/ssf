@@ -604,3 +604,8 @@ export interface UpdateDonationItemDetailsDto {
   estimatedValue?: number;
   foodRescue?: boolean;
 }
+
+export enum AlertStatus {
+  INFO = 'info',
+  ERROR = 'error',
+}
