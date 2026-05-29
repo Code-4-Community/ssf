@@ -69,11 +69,6 @@ const VolunteerOrderManagement: React.FC = () => {
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
-  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
-  const [deeplinkedStatus, setDeeplinkedStatus] = useState<OrderStatus | null>(
-    null,
-  );
-
   const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
     {
       [OrderStatus.SHIPPED]: 1,
@@ -193,7 +188,6 @@ const VolunteerOrderManagement: React.FC = () => {
             ...prev,
             [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
           }));
-          setDeeplinkedStatus(status);
           break;
         }
       }
@@ -341,13 +335,6 @@ const VolunteerOrderManagement: React.FC = () => {
           onClose={() => {
             setSelectedOrderId(null);
             navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
-            if (deeplinkedStatus) {
-              setCurrentPages((prev) => ({
-                ...prev,
-                [deeplinkedStatus]: 1,
-              }));
-              setDeeplinkedStatus(null);
-            }
           }}
         />
       )}

@@ -36,9 +36,6 @@ const AdminDonation: React.FC = () => {
     null,
   );
 
-  // Tracks whether the current page was advanced by a deeplink so the close handler knows to revert it back to page 1.
-  const [wasDeeplinked, setWasDeeplinked] = useState(false);
-
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
@@ -77,7 +74,6 @@ const AdminDonation: React.FC = () => {
       const idx = sortedAtLoad.findIndex((d) => d.donationId === id);
       if (idx >= 0) {
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
-        setWasDeeplinked(true);
       }
     } else {
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
@@ -296,9 +292,6 @@ const AdminDonation: React.FC = () => {
           onClose={() => {
             setSelectedDonation(null);
             navigate(ROUTES.ADMIN_DONATION, { replace: true });
-            if (wasDeeplinked) {
-              setWasDeeplinked(false);
-            }
           }}
         />
       )}

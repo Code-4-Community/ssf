@@ -50,9 +50,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
-  // Tracks whether the current page was advanced by a deeplink so the close handler knows to revert it back to page 1
-  const [wasDeeplinked, setWasDeeplinked] = useState(false);
-
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
 
@@ -92,7 +89,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       );
       if (idx >= 0) {
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
-        setWasDeeplinked(true);
       }
     } else {
       navigate(location.pathname, { replace: true });
@@ -404,9 +400,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                 setSelectedViewDetailsRequest(null);
                 if (initialRequestId) {
                   navigate(location.pathname, { replace: true });
-                }
-                if (wasDeeplinked) {
-                  setWasDeeplinked(false);
                 }
               }}
             />

@@ -45,10 +45,6 @@ const PantryOrderManagement: React.FC = () => {
 
   // State to hold selected order for details modal
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  // Tracks which status had its page advanced by a deeplink so we can revert that single page back to 1 when the modal closes.
-  const [deeplinkedStatus, setDeeplinkedStatus] = useState<OrderStatus | null>(
-    null,
-  );
 
   const [selectedActionOrder, setSelectedActionOrder] =
     useState<OrderWithColor | null>(null);
@@ -146,7 +142,6 @@ const PantryOrderManagement: React.FC = () => {
             ...prev,
             [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
           }));
-          setDeeplinkedStatus(status);
           break;
         }
       }
@@ -240,13 +235,6 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => {
             setSelectedOrderId(null);
             navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
-            if (deeplinkedStatus) {
-              setCurrentPages((prev) => ({
-                ...prev,
-                [deeplinkedStatus]: 1,
-              }));
-              setDeeplinkedStatus(null);
-            }
           }}
         />
       )}
