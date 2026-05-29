@@ -19,6 +19,9 @@ const ROLE_CONFIG: Record<Role, { label: string; avatarBg: string }> = {
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
+  const [foodManufacturerId, setFoodManufacturerId] = useState<number | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [alertState, setAlertMessage] = useAlert();
 
@@ -37,9 +40,9 @@ const ProfilePage: React.FC = () => {
           }
         } else if (user.role === Role.FOODMANUFACTURER) {
           try {
-            const foodManufacturerId =
-              await ApiClient.getCurrentUserFoodManufacturerId();
-            const fm = await ApiClient.getFoodManufacturer(foodManufacturerId);
+            const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+            setFoodManufacturerId(fmId);
+            const fm = await ApiClient.getFoodManufacturer(fmId);
             setOrgName(fm.foodManufacturerName);
           } catch {
             setAlertMessage('Failed to fetch food manufacturer data.');
@@ -141,6 +144,7 @@ const ProfilePage: React.FC = () => {
             profile={profile}
             showTabs={hasTabs}
             onSave={handleSave}
+            foodManufacturerId={foodManufacturerId}
           />
         </Box>
       </Box>

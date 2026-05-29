@@ -189,18 +189,18 @@ describe('FoodManufacturersService', () => {
       const pending = await service.getPendingManufacturers();
       const manufacturer = pending[0];
       const id = manufacturer.foodManufacturerId;
-      const { subject, bodyHTML } = emailTemplates.pantryFmApplicationApproved({
+      const message = emailTemplates.pantryFmApplicationApproved({
         name: manufacturer.foodManufacturerRepresentative.firstName,
       });
 
       await service.approve(id);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [manufacturer.foodManufacturerRepresentative.email],
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('should still update manufacturer status to approved if email send fails', async () => {
@@ -367,16 +367,16 @@ describe('FoodManufacturersService', () => {
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [dto.contactEmail],
-        userMessage.subject,
-        userMessage.bodyHTML,
-      );
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [SSF_PARTNER_EMAIL],
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: dto.contactEmail,
+        subject: userMessage.subject,
+        bodyHtml: userMessage.bodyHTML,
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
     });
   });
@@ -576,8 +576,10 @@ describe('FoodManufacturersService', () => {
     it('returns upcoming donation reminders for food manufacturer', async () => {
       const foodManufacturerId = 1;
       const futureDate1 = new Date();
+      futureDate1.setMilliseconds(0);
       futureDate1.setDate(futureDate1.getDate() + 7);
       const futureDate2 = new Date();
+      futureDate2.setMilliseconds(0);
       futureDate2.setDate(futureDate2.getDate() + 14);
 
       // FM 1 has donations 1 and 4
@@ -611,9 +613,11 @@ describe('FoodManufacturersService', () => {
 
     it('returns next two upcoming donation reminders from same donation', async () => {
       const futureDate1 = new Date();
+      futureDate1.setMilliseconds(0);
       futureDate1.setDate(futureDate1.getDate() + 30);
       clampDay(futureDate1);
       const futureDate2 = new Date();
+      futureDate2.setMilliseconds(0);
       futureDate2.setDate(futureDate2.getDate() + 60);
       clampDay(futureDate2);
 
@@ -640,9 +644,11 @@ describe('FoodManufacturersService', () => {
     it('monthly donation recurs twice before yearly donation', async () => {
       const foodManufacturerId = 1;
       const monthlyDate = new Date();
+      monthlyDate.setMilliseconds(0);
       monthlyDate.setDate(monthlyDate.getDate() + 60);
       clampDay(monthlyDate);
       const yearlyDate = new Date();
+      yearlyDate.setMilliseconds(0);
       yearlyDate.setFullYear(yearlyDate.getFullYear() + 1);
 
       // FM 1 has donations 1 and 4
@@ -675,9 +681,11 @@ describe('FoodManufacturersService', () => {
     it('yearly donation recurs twice before every-3-years donation', async () => {
       const foodManufacturerId = 1;
       const yearlyDate = new Date();
+      yearlyDate.setMilliseconds(0);
       yearlyDate.setDate(yearlyDate.getDate() + 30);
       clampDay(yearlyDate);
       const threeYearlyDate = new Date();
+      threeYearlyDate.setMilliseconds(0);
       threeYearlyDate.setFullYear(threeYearlyDate.getFullYear() + 3);
 
       // FM 1 has donations 1 and 4
@@ -709,8 +717,10 @@ describe('FoodManufacturersService', () => {
     it('generates next weekly occurrence when a later donation would otherwise take its slot', async () => {
       const foodManufacturerId = 1;
       const weeklyDate = new Date();
+      weeklyDate.setMilliseconds(0);
       weeklyDate.setDate(weeklyDate.getDate() + 3);
       const monthlyDate = new Date();
+      monthlyDate.setMilliseconds(0);
       monthlyDate.setDate(monthlyDate.getDate() + 30);
       clampDay(monthlyDate);
 
@@ -742,12 +752,15 @@ describe('FoodManufacturersService', () => {
 
     it('only returns the next two reminders when more exist', async () => {
       const futureDate1 = new Date();
+      futureDate1.setMilliseconds(0);
       futureDate1.setDate(futureDate1.getDate() + 30);
       clampDay(futureDate1);
       const futureDate2 = new Date();
+      futureDate2.setMilliseconds(0);
       futureDate2.setDate(futureDate2.getDate() + 60);
       clampDay(futureDate2);
       const futureDate3 = new Date();
+      futureDate3.setMilliseconds(0);
       futureDate3.setDate(futureDate3.getDate() + 90);
       clampDay(futureDate3);
 
@@ -769,8 +782,10 @@ describe('FoodManufacturersService', () => {
 
     it('caps stored dates to occurrencesRemaining when more dates are stored than occurrences', async () => {
       const date1 = new Date();
+      date1.setMilliseconds(0);
       date1.setDate(date1.getDate() + 3);
       const date2 = new Date();
+      date2.setMilliseconds(0);
       date2.setDate(date2.getDate() + 4);
 
       await testDataSource.query(
@@ -792,6 +807,7 @@ describe('FoodManufacturersService', () => {
 
     it('still returns a past date (unsent reminder that will be retried)', async () => {
       const pastDate = new Date();
+      pastDate.setMilliseconds(0);
       pastDate.setDate(pastDate.getDate() - 1);
 
       await testDataSource.query(
@@ -809,8 +825,10 @@ describe('FoodManufacturersService', () => {
 
     it('past date counts against occurrencesRemaining cap, preventing the future date from showing', async () => {
       const pastDate = new Date();
+      pastDate.setMilliseconds(0);
       pastDate.setDate(pastDate.getDate() - 1);
       const futureDate = new Date();
+      futureDate.setMilliseconds(0);
       futureDate.setDate(futureDate.getDate() + 7);
 
       await testDataSource.query(
@@ -837,6 +855,7 @@ describe('FoodManufacturersService', () => {
 
     it('returns no reminders when occurrencesRemaining is 0 even if dates are stored', async () => {
       const futureDate = new Date();
+      futureDate.setMilliseconds(0);
       futureDate.setDate(futureDate.getDate() + 7);
 
       await testDataSource.query(

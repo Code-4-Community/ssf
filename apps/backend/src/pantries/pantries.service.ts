@@ -7,6 +7,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -32,6 +33,7 @@ import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 
 @Injectable()
 export class PantriesService {
+  private readonly logger = new Logger(PantriesService.name);
   constructor(
     @InjectRepository(Pantry) private repo: Repository<Pantry>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
@@ -347,11 +349,11 @@ export class PantriesService {
         name: pantryContact.firstName,
       });
 
-      await this.emailsService.sendEmails(
-        [pantryContact.email],
-        pantryMessage.subject,
-        pantryMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: pantryContact.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry application submitted confirmation email to representative',
@@ -360,11 +362,11 @@ export class PantriesService {
 
     try {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
-      await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send new pantry application notification email to SSF',
@@ -434,11 +436,11 @@ export class PantriesService {
         name: newPantryUser.firstName,
       });
 
-      await this.emailsService.sendEmails(
-        [newPantryUser.email],
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: newPantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send pantry account approved notification email to representative',
@@ -540,21 +542,41 @@ export class PantriesService {
       );
     }
 
-    const volunteersToAdd = users.filter((u) => addSet.has(u.id));
-
     const currentVolunteers = pantry.volunteers ?? [];
+    const currentVolunteerIds = new Set(currentVolunteers.map((v) => v.id));
     const volunteersToKeep = currentVolunteers.filter(
       (v) => !removeSet.has(v.id),
     );
 
-    // avoid re-adding volunteers already associated with the pantry
-    const existingVolunteerIds = new Set(volunteersToKeep.map((v) => v.id));
-    const newVolunteers = volunteersToAdd.filter(
-      (u) => !existingVolunteerIds.has(u.id),
+    // only notify volunteers who weren't already assigned to the pantry
+    const newVolunteers = users.filter(
+      (u) => addSet.has(u.id) && !currentVolunteerIds.has(u.id),
+    );
+
+    // only notify volunteers who were actually assigned before being removed
+    const removedVolunteers = users.filter(
+      (u) => removeSet.has(u.id) && currentVolunteerIds.has(u.id),
     );
 
     pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
     await this.repo.save(pantry);
+
+    for (const volunteer of [...newVolunteers, ...removedVolunteers]) {
+      try {
+        const message = emailTemplates.volunteerPantryAssignmentChanged({
+          volunteerName: `${volunteer.firstName} ${volunteer.lastName}`,
+        });
+        await this.emailsService.sendEmails({
+          toEmail: volunteer.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn(
+          `Automated email for pantry assignment update for volunteer id ${volunteer.id} and pantryId ${pantryId} failed to send.`,
+        );
+      }
+    }
   }
 
   // given pantryIds should not have duplicates
