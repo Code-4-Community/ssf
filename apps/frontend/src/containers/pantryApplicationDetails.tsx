@@ -12,7 +12,12 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { AlertStatus, ApplicationStatus, PantryWithUser } from '../types/types';
+import {
+  AlertStatus,
+  AlertType,
+  ApplicationStatus,
+  PantryWithUser,
+} from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
@@ -96,13 +101,6 @@ const PantryApplicationDetails: React.FC = () => {
   const navigate = useNavigate();
   const [application, setApplication] = useState<PantryWithUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{
-    type: 'network' | 'not_found' | 'invalid' | null;
-    message: string;
-  }>({
-    type: null,
-    message: '',
-  });
   const [alertState, setAlertMessage] = useAlert();
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
@@ -133,29 +131,36 @@ const PantryApplicationDetails: React.FC = () => {
     try {
       setLoading(true);
       if (!id) {
-        setError({ type: 'invalid', message: 'Application ID not provided.' });
+        setAlertMessage(
+          'Application ID not provided.',
+          AlertStatus.ERROR,
+          AlertType.INVALID,
+        );
         return;
       } else if (isNaN(parseInt(id, 10))) {
-        setError({
-          type: 'invalid',
-          message: 'Application ID is not a number.',
-        });
+        setAlertMessage(
+          'Application ID is not a number.',
+          AlertStatus.ERROR,
+          AlertType.INVALID,
+        );
       }
       const data = await ApiClient.getPantry(parseInt(id, 10));
       if (!data) {
-        setError({
-          type: 'not_found',
-          message: 'Application not found.',
-        });
+        setAlertMessage(
+          'Application not found.',
+          AlertStatus.ERROR,
+          AlertType.NOT_FOUND,
+        );
       }
       setApplication(data);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status !== 404 && err.response?.status !== 400) {
-          setError({
-            type: 'network',
-            message: 'Could not load application details.',
-          });
+          setAlertMessage(
+            'Could not load application details.',
+            AlertStatus.ERROR,
+            AlertType.NETWORK,
+          );
         }
       }
     } finally {
@@ -211,9 +216,9 @@ const PantryApplicationDetails: React.FC = () => {
     );
   }
 
-  if (error.message || !application) {
+  if (alertState?.message || !application) {
     const getIcon = () => {
-      switch (error.type) {
+      switch (alertState?.type) {
         case 'network':
           return <WifiOff />;
         case 'not_found':
@@ -226,9 +231,9 @@ const PantryApplicationDetails: React.FC = () => {
     return (
       <EmptyState
         icon={getIcon()}
-        title={error.message}
+        title={alertState?.message ?? 'Application not found.'}
         subtitle={
-          error.type === 'network' ? 'Please try again later.' : undefined
+          alertState?.type === 'network' ? 'Please try again later.' : undefined
         }
       />
     );

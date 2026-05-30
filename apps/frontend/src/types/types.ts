@@ -609,3 +609,9 @@ export enum AlertStatus {
   INFO = 'info',
   ERROR = 'error',
 }
+
+export enum AlertType {
+  NETWORK = 'network',
+  NOT_FOUND = 'not_found',
+  INVALID = 'invalid',
+}
