@@ -32,11 +32,6 @@ export class UsersController {
     return this.usersService.findOne(req.user.id);
   }
 
-  @Get('/:id')
-  async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.usersService.findOne(userId);
-  }
-
   @Get('/:id/stats')
   async getUserDashboardStats(
     @Param('id', ParseIntPipe) userId: number,
@@ -50,11 +45,6 @@ export class UsersController {
     return this.usersService.getRecentPendingApplications();
   }
 
-  @Delete('/:id')
-  removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.usersService.remove(userId);
-  }
-
   @Patch('/:id')
   async updateInfo(
     @Param('id', ParseIntPipe) id: number,
@@ -63,8 +53,14 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  // Keeping these two as functionality seems useful
   @Post('/')
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
     return this.usersService.create(createUserDto);
+  }
+
+  @Delete('/:id')
+  removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+    return this.usersService.remove(userId);
   }
 }
