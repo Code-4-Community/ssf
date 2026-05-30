@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -34,8 +33,6 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,
@@ -352,12 +349,6 @@ export class OrdersService {
       );
     }
 
-    if (pantry.status !== ApplicationStatus.APPROVED) {
-      throw new ConflictException(
-        `Pantry ${request.pantry.pantryId} not approved`,
-      );
-    }
-
     return pantry;
   }
 
@@ -392,12 +383,6 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    if (order.request.pantry.status !== ApplicationStatus.APPROVED) {
-      throw new ConflictException(
-        `Pantry ${order.request.pantry.pantryId} not approved`,
-      );
-    }
-
     return {
       requestId: order.request.requestId,
       requestedSize: order.request.requestedSize,
@@ -422,12 +407,6 @@ export class OrdersService {
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
-    }
-
-    if (order.foodManufacturer.status !== ApplicationStatus.APPROVED) {
-      throw new ConflictException(
-        `Order ${orderId} does not have an approved food manufacturer`,
-      );
     }
 
     return order.foodManufacturer;

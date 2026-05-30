@@ -6,11 +6,7 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { OrderStatus, VolunteerAction } from './types';
 import { Pantry } from '../pantries/pantries.entity';
 import { OrderDetailsDto } from './dtos/order-details.dto';
-import {
-  BadRequestException,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -347,30 +343,6 @@ describe('OrdersService', () => {
         new NotFoundException('Order 9999 not found'),
       );
     });
-
-    it('throws ConflictException for denied pantry', async () => {
-      const pantryId = 4;
-      await testDataSource.query(`
-        UPDATE food_requests
-        SET pantry_id = ${pantryId}
-        WHERE request_id = 1;
-      `);
-      await expect(service.findOrderFoodRequest(1)).rejects.toThrow(
-        new ConflictException(`Pantry ${pantryId} not approved`),
-      );
-    });
-
-    it('throws ConflictException for pending pantry', async () => {
-      const pantryId = 5;
-      await testDataSource.query(`
-        UPDATE food_requests
-        SET pantry_id = ${pantryId}
-        WHERE request_id = 1;
-      `);
-      await expect(service.findOrderFoodRequest(1)).rejects.toThrow(
-        new ConflictException(`Pantry ${pantryId} not approved`),
-      );
-    });
   });
 
   describe('findOrderPantry', () => {
@@ -380,34 +352,6 @@ describe('OrdersService', () => {
       expect(pantry).toBeDefined();
       expect(pantry.pantryName).toEqual('Community Food Pantry Downtown');
       expect(pantry.pantryId).toEqual(1);
-    });
-
-    it('throws ConflictException for denied pantry', async () => {
-      const orderId = 1;
-      const pantryId = 4;
-      // updates the request's pantry ID to a denied pantry
-      await testDataSource.query(`
-        UPDATE food_requests
-        SET pantry_id = ${pantryId}
-        WHERE request_id = 1;
-      `);
-      await expect(service.findOrderPantry(orderId)).rejects.toThrow(
-        new ConflictException(`Pantry ${pantryId} not approved`),
-      );
-    });
-
-    it('throws ConflictException for pending pantry', async () => {
-      const orderId = 1;
-      const pantryId = 5;
-      // updates the request's pantry ID to a pending pantry
-      await testDataSource.query(`
-        UPDATE food_requests
-        SET pantry_id = ${pantryId}
-        WHERE request_id = 1;
-      `);
-      await expect(service.findOrderPantry(orderId)).rejects.toThrow(
-        new ConflictException(`Pantry ${pantryId} not approved`),
-      );
     });
   });
 
@@ -423,14 +367,6 @@ describe('OrdersService', () => {
     it('throws NotFoundException for non-existent order', async () => {
       await expect(service.findOrderFoodManufacturer(9999)).rejects.toThrow(
         new NotFoundException('Order 9999 not found'),
-      );
-    });
-
-    it('throws ConflictException for orders with a pending manufacturer', async () => {
-      await expect(service.findOrderFoodManufacturer(3)).rejects.toThrow(
-        new ConflictException(
-          'Order 3 does not have an approved food manufacturer',
-        ),
       );
     });
   });
