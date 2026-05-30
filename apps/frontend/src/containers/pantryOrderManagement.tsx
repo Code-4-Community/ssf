@@ -129,9 +129,24 @@ const PantryOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    const id = Number(orderIdFromUrl);
+    const match = allOrders.find((o) => o.orderId === id);
     if (match) {
       setSelectedOrderId(match.orderId);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
     }
