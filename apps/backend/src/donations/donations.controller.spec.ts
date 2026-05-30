@@ -10,9 +10,7 @@ import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donat
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
-const mockFoodManufacturersService = mock<FoodManufacturersService>();
 const mockDonationService = mock<DonationService>();
 
 const donation1: Partial<Donation> = {
@@ -37,10 +35,6 @@ describe('DonationsController', () => {
         {
           provide: DonationService,
           useValue: mockDonationService,
-        },
-        {
-          provide: FoodManufacturersService,
-          useValue: mockFoodManufacturersService,
         },
       ],
     }).compile();
@@ -107,10 +101,6 @@ describe('DonationsController', () => {
       };
 
       const mockReq = { user: { id: 1 } };
-
-      mockFoodManufacturersService.findByUserId.mockResolvedValueOnce({
-        foodManufacturerId: 1,
-      } as any);
 
       const createdDonation: Partial<Donation> = {
         donationId: 1,

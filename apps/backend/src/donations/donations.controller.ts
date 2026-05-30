@@ -28,10 +28,7 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('donations')
 export class DonationsController {
-  constructor(
-    private donationService: DonationService,
-    private foodManufacturersService: FoodManufacturersService,
-  ) {}
+  constructor(private donationService: DonationService) {}
 
   @Get()
   async getAllDonations(): Promise<Donation[]> {
@@ -102,11 +99,7 @@ export class DonationsController {
     @Req() req: AuthenticatedRequest,
     @Body() body: CreateDonationDto,
   ): Promise<Donation> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
-      req.user.id,
-    );
-    const foodManufacturerId = manufacturer.foodManufacturerId;
-    return this.donationService.create(body, foodManufacturerId);
+    return this.donationService.create(body, req.user.id);
   }
 
   @Patch('/:donationId/fulfill')

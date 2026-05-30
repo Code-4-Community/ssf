@@ -12,12 +12,12 @@ import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
 @Injectable()
 export class DonationService {
@@ -29,9 +29,8 @@ export class DonationService {
     private allocationRepo: Repository<Allocation>,
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
-    @InjectRepository(FoodManufacturer)
-    private manufacturerRepo: Repository<FoodManufacturer>,
     private donationItemsService: DonationItemsService,
+    private foodManufacturersService: FoodManufacturersService,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -60,18 +59,11 @@ export class DonationService {
 
   async create(
     donationData: CreateDonationDto,
-    foodManufacturerId: number,
+    userId: number,
   ): Promise<Donation> {
-    validateId(foodManufacturerId, 'Food Manufacturer');
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId },
-    });
-
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${foodManufacturerId} not found`,
-      );
-    }
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      userId,
+    );
 
     let nextDonationDates = null;
 

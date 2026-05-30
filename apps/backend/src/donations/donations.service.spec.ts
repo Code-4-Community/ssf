@@ -17,8 +17,17 @@ import {
   ReplaceDonationItemsDto,
 } from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { UsersService } from '../users/users.service';
+import { EmailsService } from '../emails/email.service';
+import { mock } from 'jest-mock-extended';
 
 jest.setTimeout(60000);
+
+// findByUserId only touches the FoodManufacturer repo, so UsersService and
+// EmailsService are mocked to satisfy FoodManufacturersService's DI.
+const mockUsersService = mock<UsersService>();
+const mockEmailsService = mock<EmailsService>();
 
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
@@ -148,6 +157,7 @@ describe('DonationService', () => {
       providers: [
         DonationService,
         DonationItemsService,
+        FoodManufacturersService,
         {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
@@ -159,6 +169,14 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(DonationItem),
@@ -929,7 +947,7 @@ describe('DonationService', () => {
           recurrence: RecurrenceEnum.NONE,
           items: validItems,
         },
-        1,
+        3,
       );
 
       expect(donation).toBeDefined();
@@ -969,7 +987,7 @@ describe('DonationService', () => {
           occurrencesRemaining: 3,
           items: validItems,
         },
-        1,
+        3,
       );
 
       const rows = await testDataSource.query(
@@ -999,17 +1017,17 @@ describe('DonationService', () => {
       expect(actualDate.getDate()).toEqual(expectedDate.getDate());
     });
 
-    it('throws when foodManufacturerId does not exist', async () => {
+    it('throws when user ID is not a food manufacturer', async () => {
       expect(
         service.create(
           {
             recurrence: RecurrenceEnum.NONE,
             items: validItems,
           },
-          99999,
+          1,
         ),
       ).rejects.toThrow(
-        new NotFoundException('Food Manufacturer 99999 not found'),
+        new NotFoundException('Food Manufacturer for User 1 not found'),
       );
     });
 
@@ -1031,7 +1049,7 @@ describe('DonationService', () => {
             },
             items: validItems,
           },
-          1,
+          3,
         ),
       ).rejects.toThrow(
         new BadRequestException(
@@ -1061,7 +1079,7 @@ describe('DonationService', () => {
               },
             ],
           },
-          1,
+          3,
         ),
       ).rejects.toThrow();
 
