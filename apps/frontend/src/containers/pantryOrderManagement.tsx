@@ -18,8 +18,10 @@ import {
 } from 'lucide-react';
 import {
   formatDate,
+  getInitials,
   ORDER_STATUS_COLORS,
   ORDER_STATUS_LABELS,
+  USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { OrderStatus, OrderSummary } from '../types/types';
@@ -529,7 +531,33 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {/* TODO: Add assignee column handling */}
+                      <Box
+                        display="flex"
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Box
+                          borderRadius="full"
+                          bg={
+                            USER_ICON_COLORS[
+                              order.assignee.id % USER_ICON_COLORS.length
+                            ]
+                          }
+                          width="33px"
+                          height="33px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          p={2}
+                        >
+                          {getInitials(
+                            order.assignee.firstName,
+                            order.assignee.lastName,
+                          )}
+                        </Box>
+                      </Box>
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}
