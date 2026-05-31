@@ -176,12 +176,13 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
       align="center"
       gap={1}
       borderRadius="sm"
-      background="#F4F4F5"
+      color={'gray.800'}
+      background="gray.subtle"
       cursor="pointer"
       _hover={{ background: 'neutral.100' }}
       onClick={() => setIsEditing(true)}
     >
-      <Pencil size={14} color={'#27272A'} />
+      <Pencil size={14} />
     </HStack>
   );
 
@@ -196,12 +197,13 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
       gap={1}
       flexShrink={0}
       borderRadius="sm"
-      background="#FEE2E2"
+      color="red.700"
+      background="red.subtle"
       cursor="pointer"
-      _hover={{ background: '#F7CFCF' }}
+      _hover={{ background: 'red.200' }}
       onClick={onDelete}
     >
-      <Trash2 size={14} color={'#991919'} />
+      <Trash2 size={14} />
     </HStack>
   );
 
