@@ -231,6 +231,7 @@ const FormRequests: React.FC = () => {
               navigate(ROUTES.REQUEST_FORM, { replace: true });
             }
           }}
+          onSuccess={fetchRequests}
         />
       )}
       <Flex justify="center" mt={12}>

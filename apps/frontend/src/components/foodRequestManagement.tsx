@@ -392,6 +392,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                   navigate(location.pathname, { replace: true });
                 }
               }}
+              onSuccess={loadRequests}
             />
           )}
 
