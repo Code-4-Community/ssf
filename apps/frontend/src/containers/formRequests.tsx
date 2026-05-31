@@ -73,11 +73,15 @@ const FormRequests: React.FC = () => {
     const requestIdFromUrl = searchParams.get('requestId');
     if (!requestIdFromUrl || requests.length === 0) return;
 
-    const match = requests.find(
-      (r) => r.requestId === Number(requestIdFromUrl),
-    );
+    const id = Number(requestIdFromUrl);
+    const match = requests.find((r) => r.requestId === id);
     if (match) {
       setOpenReadOnlyRequest(match);
+      // Paginate to page that holds the deeplinked request
+      const idx = requests.findIndex((r) => r.requestId === id);
+      if (idx >= 0) {
+        setCurrentPage(Math.floor(idx / pageSize) + 1);
+      }
     } else {
       navigate(ROUTES.REQUEST_FORM, { replace: true });
     }

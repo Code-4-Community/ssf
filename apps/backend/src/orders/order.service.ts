@@ -46,8 +46,6 @@ export class OrdersService {
     private emailsService: EmailsService,
   ) {}
 
-  // TODO: when order is created, set FM
-
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
       .createQueryBuilder('order')

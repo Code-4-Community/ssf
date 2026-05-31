@@ -36,6 +36,7 @@ import AdminRequestManagement from '@containers/adminRequestManagement';
 import PantryDashboard from '@containers/pantryDashboard';
 import VolunteerDashboard from '@containers/volunteerDashboard';
 import AdminDashboard from '@containers/adminDashboard';
+import FoodManufacturerDashboard from '@containers/foodManufacturerDashboard';
 
 Amplify.configure(CognitoAuthConfig);
 
@@ -109,6 +110,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <FoodManufacturerDonationManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.FM_DASHBOARD,
+        element: (
+          <ProtectedRoute>
+            <FoodManufacturerDashboard />
           </ProtectedRoute>
         ),
       },

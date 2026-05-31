@@ -159,12 +159,25 @@ const AdminOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const matchedOrder = allOrders.find(
-      (order) => order.orderId === Number(orderIdFromUrl),
-    );
+    const id = Number(orderIdFromUrl);
+    const matchedOrder = allOrders.find((order) => order.orderId === id);
 
     if (matchedOrder) {
-      setSelectedOrderId(Number(orderIdFromUrl));
+      setSelectedOrderId(id);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
