@@ -7,7 +7,7 @@ import {
 } from 'types/types';
 import { OrderStatus, RequestSize, FoodType } from '../../types/types';
 import { ORDER_STATUS_LABELS } from '@utils/utils';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Flex,
   Box,
@@ -118,20 +118,49 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     setIsEditing(false);
   };
 
+  // if the user makes back-to-back changes without closing the modal, the request values stay static
+  // comparing against dynamic baseline values allows for these edge cases
+  // e.g. user edits A -> B -> A
+  // without baseline, the last change would be considered no update and only B would persist
+  const baseline = useRef({
+    requestedSize: request.requestedSize,
+    requestedFoodTypes: request.requestedFoodTypes,
+    additionalInformation: request.additionalInformation ?? '',
+  });
+
   const handleUpdate = async () => {
     const changed: UpdateFoodRequestBody = {};
-    if (requestedSize !== request.requestedSize)
+    if (requestedSize !== baseline.current.requestedSize)
       changed.requestedSize = requestedSize;
     const foodTypesChanged =
-      selectedFoodTypes.length !== request.requestedFoodTypes.length ||
-      !selectedFoodTypes.every((t) => request.requestedFoodTypes.includes(t));
+      selectedFoodTypes.length !== baseline.current.requestedFoodTypes.length ||
+      !selectedFoodTypes.every((t) =>
+        baseline.current.requestedFoodTypes.includes(t),
+      );
     if (foodTypesChanged) changed.requestedFoodTypes = selectedFoodTypes;
-    if (additionalNotes !== (request.additionalInformation ?? ''))
-      changed.additionalInformation = additionalNotes;
+    if (additionalNotes !== (baseline.current.additionalInformation ?? ''))
+      changed.additionalInformation =
+        additionalNotes === '' ? null : additionalNotes;
 
-    await apiClient.updateFoodRequest(request.requestId, changed);
-    onSuccess();
-    setIsEditing(false);
+    // allow user to exit the edit view even if they make no updates
+    // NOTE: not sure if this is the design choice we want to go with
+    if (Object.keys(changed).length === 0) {
+      setIsEditing(false);
+      return;
+    }
+
+    try {
+      await apiClient.updateFoodRequest(request.requestId, changed);
+      onSuccess();
+      baseline.current = {
+        requestedSize,
+        requestedFoodTypes: selectedFoodTypes,
+        additionalInformation: additionalNotes,
+      };
+      setIsEditing(false);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const editButton = (

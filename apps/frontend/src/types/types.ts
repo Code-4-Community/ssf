@@ -467,7 +467,7 @@ export interface CreateFoodRequestBody {
 export interface UpdateFoodRequestBody {
   requestedSize?: RequestSize;
   requestedFoodTypes?: FoodType[];
-  additionalInformation?: string;
+  additionalInformation?: string | null;
 }
 
 export interface CreateDonationDto {
