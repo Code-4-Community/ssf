@@ -40,11 +40,11 @@ import {
   VolunteerAction,
   ApprovedPantryResponse,
   UpdatePantryVolunteersDto,
-  FoodRequestWithoutRelations,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
   PendingApplication,
   UpdateFoodRequestBody,
+  DonationReminderDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -443,6 +443,14 @@ export class ApiClient {
   public async getCurrentUserFoodManufacturerId(): Promise<number> {
     return this.axiosInstance
       .get('/api/manufacturers/my-id')
+      .then((response) => response.data);
+  }
+
+  public async getNextTwoDonationReminders(
+    foodManufacturerId: number,
+  ): Promise<DonationReminderDto[]> {
+    return this.axiosInstance
+      .get(`/api/manufacturers/${foodManufacturerId}/next-two-reminders`)
       .then((response) => response.data);
   }
 
