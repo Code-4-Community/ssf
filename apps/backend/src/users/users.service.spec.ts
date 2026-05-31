@@ -37,6 +37,8 @@ jest.setTimeout(60000);
 
 const mockAuthService = {
   adminCreateUser: jest.fn().mockResolvedValue('mock-sub'),
+  addUserToGroup: jest.fn().mockResolvedValue(undefined),
+  removeUserFromGroup: jest.fn().mockResolvedValue(undefined),
 };
 const mockEmailsService = mock<EmailsService>();
 
@@ -125,6 +127,8 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     mockAuthService.adminCreateUser.mockClear();
+    mockAuthService.addUserToGroup.mockClear();
+    mockAuthService.removeUserFromGroup.mockClear();
     mockEmailsService.sendEmails.mockClear();
     await testDataSource.runMigrations();
   });
@@ -728,6 +732,116 @@ describe('UsersService', () => {
       const types = result.map((a) => a.type);
       expect(types).toContain('pantry');
       expect(types).toContain('food_manufacturer');
+    });
+  });
+
+  describe('promoteVolunteerToAdmin', () => {
+    it('should promote volunteer to admin successfully', async () => {
+      const volunteers = await testDataSource.getRepository(User).find({
+        where: { role: Role.VOLUNTEER },
+      });
+      expect(volunteers.length).toBeGreaterThan(0);
+      const volunteer = volunteers[0];
+
+      const result = await service.promoteVolunteerToAdmin(volunteer.id);
+
+      expect(result.role).toBe(Role.ADMIN);
+      expect(result.id).toBe(volunteer.id);
+    });
+
+    it('should clear volunteer pantry assignments after promotion', async () => {
+      const volunteer = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.VOLUNTEER },
+        relations: ['pantries'],
+      });
+      expect(volunteer).toBeDefined();
+
+      await service.promoteVolunteerToAdmin(volunteer!.id);
+
+      const assignments = await testDataSource.query(
+        `SELECT * FROM volunteer_assignments WHERE volunteer_id = $1`,
+        [volunteer!.id],
+      );
+      expect(assignments).toHaveLength(0);
+    });
+
+    it('should call Cognito addUserToGroup and removeUserFromGroup', async () => {
+      const volunteer = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.VOLUNTEER },
+      });
+      expect(volunteer).toBeDefined();
+
+      await service.promoteVolunteerToAdmin(volunteer!.id);
+
+      if (volunteer!.userCognitoSub) {
+        expect(mockAuthService.addUserToGroup).toHaveBeenCalledWith(
+          volunteer!.email,
+          'admin',
+        );
+        expect(mockAuthService.removeUserFromGroup).toHaveBeenCalledWith(
+          volunteer!.email,
+          'volunteer',
+        );
+      }
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      await expect(service.promoteVolunteerToAdmin(99999)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw BadRequestException when user is already admin', async () => {
+      const admin = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.ADMIN },
+      });
+      expect(admin).toBeDefined();
+
+      await expect(service.promoteVolunteerToAdmin(admin!.id)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException when user is pantry', async () => {
+      const pantryUser = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.PANTRY },
+      });
+      expect(pantryUser).toBeDefined();
+
+      await expect(
+        service.promoteVolunteerToAdmin(pantryUser!.id),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when user is food manufacturer', async () => {
+      const fmUser = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.FOODMANUFACTURER },
+      });
+      expect(fmUser).toBeDefined();
+
+      await expect(service.promoteVolunteerToAdmin(fmUser!.id)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should rollback if Cognito fails', async () => {
+      const volunteer = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.VOLUNTEER },
+      });
+      expect(volunteer).toBeDefined();
+
+      mockAuthService.addUserToGroup.mockRejectedValueOnce(
+        new Error('Cognito error'),
+      );
+
+      await expect(
+        service.promoteVolunteerToAdmin(volunteer!.id),
+      ).rejects.toThrow(InternalServerErrorException);
+
+      const userAfter = await testDataSource.getRepository(User).findOne({
+        where: { id: volunteer!.id },
+      });
+      expect(userAfter!.role).toBe(Role.VOLUNTEER);
     });
   });
 });

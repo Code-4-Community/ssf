@@ -8,6 +8,11 @@ import {
   AdminCreateUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
+import {
+  AdminAddUserToGroupCommand,
+  AdminRemoveUserFromGroupCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
+
 import CognitoAuthConfig from './aws-exports';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { createHmac } from 'crypto';
@@ -68,6 +73,41 @@ export class AuthService {
       } else {
         throw new InternalServerErrorException('Failed to create user');
       }
+    }
+  }
+
+  async addUserToGroup(username: string, groupName: string): Promise<void> {
+    const command = new AdminAddUserToGroupCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: username,
+      GroupName: groupName,
+    });
+
+    try {
+      await this.providerClient.send(command);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to add user to group ${groupName}`,
+      );
+    }
+  }
+
+  async removeUserFromGroup(
+    username: string,
+    groupName: string,
+  ): Promise<void> {
+    const command = new AdminRemoveUserFromGroupCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: username,
+      GroupName: groupName,
+    });
+
+    try {
+      await this.providerClient.send(command);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to remove user from group ${groupName}`,
+      );
     }
   }
 }

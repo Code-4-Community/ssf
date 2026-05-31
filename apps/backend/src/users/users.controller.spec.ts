@@ -6,7 +6,8 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
-import { BadRequestException } from '@nestjs/common';
+import { UpdateUserRoleDto } from './dtos/update-user-role.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockUserService = mock<UsersService>();
@@ -31,6 +32,7 @@ describe('UsersController', () => {
     mockUserService.create.mockReset();
     mockUserService.getUserDashboardStats.mockReset();
     mockUserService.getRecentPendingApplications.mockReset();
+    mockUserService.promoteVolunteerToAdmin.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
@@ -209,6 +211,73 @@ describe('UsersController', () => {
       const result = await controller.getRecentPendingApplications();
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('PATCH /:id/role', () => {
+    it('should promote volunteer to admin successfully', async () => {
+      const promotedUser: Partial<User> = {
+        ...mockUser1,
+        role: Role.ADMIN,
+      };
+
+      const dto: UpdateUserRoleDto = { role: Role.ADMIN };
+
+      mockUserService.promoteVolunteerToAdmin.mockResolvedValueOnce(
+        promotedUser as User,
+      );
+
+      const result = await controller.promoteToAdmin(1, dto);
+
+      expect(result).toEqual(promotedUser);
+      expect(result.role).toBe(Role.ADMIN);
+      expect(mockUserService.promoteVolunteerToAdmin).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw BadRequestException when role is not admin', async () => {
+      const dto: UpdateUserRoleDto = { role: Role.VOLUNTEER };
+
+      await expect(controller.promoteToAdmin(1, dto)).rejects.toThrow(
+        new BadRequestException('Only promotion to admin is supported'),
+      );
+
+      expect(mockUserService.promoteVolunteerToAdmin).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when role is pantry', async () => {
+      const dto: UpdateUserRoleDto = { role: Role.PANTRY };
+
+      await expect(controller.promoteToAdmin(1, dto)).rejects.toThrow(
+        new BadRequestException('Only promotion to admin is supported'),
+      );
+
+      expect(mockUserService.promoteVolunteerToAdmin).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException from service when user not found', async () => {
+      const dto: UpdateUserRoleDto = { role: Role.ADMIN };
+
+      mockUserService.promoteVolunteerToAdmin.mockRejectedValueOnce(
+        new NotFoundException('User 999 not found'),
+      );
+
+      await expect(controller.promoteToAdmin(999, dto)).rejects.toThrow(
+        new NotFoundException('User 999 not found'),
+      );
+    });
+
+    it('should throw BadRequestException from service when user is not a volunteer', async () => {
+      const dto: UpdateUserRoleDto = { role: Role.ADMIN };
+
+      mockUserService.promoteVolunteerToAdmin.mockRejectedValueOnce(
+        new BadRequestException(
+          'User 1 is not a volunteer. Current role: admin',
+        ),
+      );
+
+      await expect(controller.promoteToAdmin(1, dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
