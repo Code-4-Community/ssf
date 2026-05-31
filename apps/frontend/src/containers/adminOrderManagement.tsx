@@ -210,8 +210,11 @@ const AdminOrderManagement: React.FC = () => {
           selectedPantries: [pantryName],
         },
       }));
+    } else {
+      setAlertMessage('Selected pantry has no orders');
+      navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   return (
     <Box p={12}>

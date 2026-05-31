@@ -223,8 +223,11 @@ const VolunteerOrderManagement: React.FC = () => {
           selectedPantries: [pantryName],
         },
       }));
+    } else {
+      setAlertMessage('Selected pantry has no orders');
+      navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
@@ -881,18 +884,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                   })}
                 </Table.Body>
               </Table.Root>
-              {selectedOrderId && (
-                <OrderDetailsModal
-                  orderId={selectedOrderId}
-                  isOpen={true}
-                  onClose={() => {
-                    onOrderSelect(null);
-                    navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, {
-                      replace: true,
-                    });
-                  }}
-                />
-              )}
 
               {totalPages > 1 && (
                 <Box mt={4}>
