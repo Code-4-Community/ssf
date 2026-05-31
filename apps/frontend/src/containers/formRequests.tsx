@@ -224,7 +224,7 @@ const FormRequests: React.FC = () => {
           ))}
         </Table.Body>
       </Table.Root>
-      {openReadOnlyRequest && (
+      {openReadOnlyRequest && !deleteRequest && (
         <RequestDetailsModal
           request={openReadOnlyRequest}
           isOpen={openReadOnlyRequest !== null}

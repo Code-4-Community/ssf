@@ -83,6 +83,7 @@ const customConfig = defineConfig({
         red: {
           core: { value: '#CC3538' },
           subtle: { value: '#FEE2E2' },
+          hover: { value: '#972729' },
           // NOTE: not sure if this is the right color or what color we want hover to be for delete buttons
           200: { value: '#FEC9C9' },
           700: { value: '#991919' },

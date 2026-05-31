@@ -58,7 +58,7 @@ const PantryDeleteRequestActionModal: React.FC<
     <Button
       textStyle="p2"
       fontWeight={600}
-      bg={'red'}
+      bg={'red.hover'}
       color={'white'}
       width="92px"
       flexShrink={0}
