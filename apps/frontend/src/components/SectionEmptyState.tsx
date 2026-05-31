@@ -2,10 +2,12 @@ import { Box } from '@chakra-ui/react';
 import { CircleCheck } from 'lucide-react';
 
 interface EmptyStateProps {
-  subtitle: string;
+  entity?: string;
+  subtitle?: string;
 }
 
-const SectionEmptyState: React.FC<EmptyStateProps> = ({ subtitle }) => {
+const SectionEmptyState: React.FC<EmptyStateProps> = ({ entity, subtitle }) => {
+  const message = subtitle ?? `You have no ${entity} at this time.`;
   return (
     <Box
       display="flex"
@@ -26,7 +28,7 @@ const SectionEmptyState: React.FC<EmptyStateProps> = ({ subtitle }) => {
         Nothing to see here.
       </Box>
       <Box color="neutral.700" fontWeight="400">
-        {subtitle}
+        {message}
       </Box>
     </Box>
   );

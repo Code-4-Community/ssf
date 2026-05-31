@@ -107,7 +107,7 @@ const AdminDashboard: React.FC = () => {
 
       {isPageEmpty ? (
         <PageEmptyState
-          subtitle="You have no orders or applications to review at this time."
+          entity="orders or applications to review"
           primaryButtonText="View Pantries"
           primaryButtonLink={ROUTES.PANTRY_MANAGEMENT}
           secondaryButtonText="View Donations"
@@ -120,7 +120,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {pendingApplications.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no pending applications at this time" />
+              <SectionEmptyState entity="pending applications" />
             </Box>
           ) : (
             <Box
@@ -167,7 +167,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {recentOrders.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent orders at this time" />
+              <SectionEmptyState entity="recent orders" />
             </Box>
           ) : (
             <Box
@@ -203,7 +203,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {recentDonations.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent donations at this time" />
+              <SectionEmptyState entity="recent donations" />
             </Box>
           ) : (
             <Box

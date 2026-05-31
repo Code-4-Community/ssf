@@ -4,7 +4,8 @@ import { CircleCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface PageEmptyStateProps {
-  subtitle: string;
+  entity?: string;
+  subtitle?: string;
   primaryButtonText: string;
   primaryButtonLink: string;
   secondaryButtonText: string;
@@ -12,6 +13,7 @@ interface PageEmptyStateProps {
 }
 
 const PageEmptyState: React.FC<PageEmptyStateProps> = ({
+  entity,
   subtitle,
   primaryButtonText,
   primaryButtonLink,
@@ -19,6 +21,7 @@ const PageEmptyState: React.FC<PageEmptyStateProps> = ({
   secondaryButtonLink,
 }) => {
   const navigate = useNavigate();
+  const message = subtitle ?? `You have no ${entity} at this time`;
 
   return (
     <Box
@@ -40,7 +43,7 @@ const PageEmptyState: React.FC<PageEmptyStateProps> = ({
         Nothing to see here.
       </Box>
       <Box color="neutral.700" fontWeight="400">
-        {subtitle}
+        {message}
       </Box>
       <Box display="flex" gap={3} mt={4}>
         <Button

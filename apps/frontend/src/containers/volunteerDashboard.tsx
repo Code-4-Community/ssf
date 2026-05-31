@@ -74,7 +74,7 @@ const VolunteerDashboard: React.FC = () => {
 
       {isPageEmpty ? (
         <PageEmptyState
-          subtitle="You have no food requests or orders at this time."
+          entity="food requests or orders"
           primaryButtonText="View Assigned Pantries"
           primaryButtonLink={ROUTES.VOLUNTEER_ASSIGNED_PANTRIES}
           secondaryButtonText="View Orders"
@@ -87,7 +87,7 @@ const VolunteerDashboard: React.FC = () => {
           </Text>
           {recentFoodRequests.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent food requests at this time" />
+              <SectionEmptyState entity="recent food requests" />
             </Box>
           ) : (
             <Box
@@ -119,7 +119,7 @@ const VolunteerDashboard: React.FC = () => {
           </Text>
           {recentOrders.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no orders at this time" />
+              <SectionEmptyState entity="orders" />
             </Box>
           ) : (
             <Box

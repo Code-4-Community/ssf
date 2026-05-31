@@ -99,7 +99,7 @@ const PantryDashboard: React.FC = () => {
 
       {isPageEmpty ? (
         <PageEmptyState
-          subtitle="You have no food requests or orders at this time."
+          entity="food requests or orders"
           primaryButtonText="Create Food Request"
           primaryButtonLink={ROUTES.REQUEST_FORM}
           secondaryButtonText="View Orders"
@@ -112,7 +112,7 @@ const PantryDashboard: React.FC = () => {
           </Text>
           {recentFoodRequests.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent food requests at this time" />
+              <SectionEmptyState entity="recent food requests" />
             </Box>
           ) : (
             <Box
@@ -142,7 +142,7 @@ const PantryDashboard: React.FC = () => {
           </Text>
           {recentOrders.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent orders at this time" />
+              <SectionEmptyState entity="recent orders" />
             </Box>
           ) : (
             <Box
