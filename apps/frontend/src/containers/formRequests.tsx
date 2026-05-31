@@ -17,6 +17,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -41,6 +42,8 @@ const FormRequests: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [alertState, setAlertMessage] = useAlert();
+  const [deleteRequest, setDeleteRequest] =
+    useState<FoodRequestSummaryDto | null>(null);
 
   const pageSize = 10;
 
@@ -232,6 +235,19 @@ const FormRequests: React.FC = () => {
             }
           }}
           onSuccess={fetchRequests}
+          onDelete={() => setDeleteRequest(openReadOnlyRequest)}
+        />
+      )}
+      {deleteRequest && (
+        <PantryDeleteRequestActionModal
+          request={deleteRequest}
+          isOpen={deleteRequest !== null}
+          onClose={() => setDeleteRequest(null)}
+          onSuccess={() => {
+            setAlertMessage('Successfully deleted food request.');
+            fetchRequests();
+            setOpenReadOnlyRequest(null);
+          }}
         />
       )}
       <Flex justify="center" mt={12}>

@@ -34,7 +34,7 @@ const PantryDeleteRequestActionModal: React.FC<
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Error completing action. Please try again.');
+      setAlertMessage('Food request could not be deleted.');
     }
   };
 
