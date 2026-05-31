@@ -825,10 +825,15 @@ describe('UsersService', () => {
     });
 
     it('should rollback if Cognito fails', async () => {
-      const volunteer = await testDataSource.getRepository(User).findOne({
+      const userRepo = testDataSource.getRepository(User);
+      const volunteer = await userRepo.findOne({
         where: { role: Role.VOLUNTEER },
       });
       expect(volunteer).toBeDefined();
+
+      // Set userCognitoSub so the Cognito code path is triggered
+      volunteer!.userCognitoSub = 'test-cognito-sub';
+      await userRepo.save(volunteer!);
 
       mockAuthService.addUserToGroup.mockRejectedValueOnce(
         new Error('Cognito error'),
@@ -838,7 +843,7 @@ describe('UsersService', () => {
         service.promoteVolunteerToAdmin(volunteer!.id),
       ).rejects.toThrow(InternalServerErrorException);
 
-      const userAfter = await testDataSource.getRepository(User).findOne({
+      const userAfter = await userRepo.findOne({
         where: { id: volunteer!.id },
       });
       expect(userAfter!.role).toBe(Role.VOLUNTEER);

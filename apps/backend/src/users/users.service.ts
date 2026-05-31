@@ -319,29 +319,39 @@ export class UsersService {
       );
     }
 
-    return this.dataSource.transaction(async (transactionManager) => {
-      const userRepo = transactionManager.getRepository(User);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
+    try {
       user.role = Role.ADMIN;
-      const savedUser = await userRepo.save(user);
+      await queryRunner.manager.save(user);
 
-      await transactionManager.query(
+      await queryRunner.query(
         `DELETE FROM volunteer_assignments WHERE volunteer_id = $1`,
         [userId],
       );
 
       if (user.userCognitoSub) {
-        try {
-          await this.authService.addUserToGroup(user.email, 'admin');
-          await this.authService.removeUserFromGroup(user.email, 'volunteer');
-        } catch (error) {
-          throw new InternalServerErrorException(
-            'Failed to update Cognito groups. Please try again.',
-          );
-        }
+        await this.authService.addUserToGroup(user.email, 'admin');
+        await this.authService.removeUserFromGroup(user.email, 'volunteer');
       }
 
-      return savedUser;
-    });
+      await queryRunner.commitTransaction();
+      return user;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to promote volunteer to admin. Please try again.',
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
