@@ -19,20 +19,11 @@ import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { Roles } from '../auth/roles.decorator';
-import {
-  CheckOwnership,
-  OwnerIdResolver,
-  pipeNullable,
-} from '../auth/ownership.decorator';
+import { CheckOwnership, OwnerIdResolver } from '../auth/ownership.decorator';
 
-const resolveUserAuthorizedUserIds: OwnerIdResolver = ({
+const resolveUserAuthorizedUserIds: OwnerIdResolver = async ({ entityId }) => [
   entityId,
-  services,
-}) =>
-  pipeNullable(
-    () => services.get(UsersService).findOne(entityId),
-    (user: User) => [user.id],
-  );
+];
 
 @Controller('users')
 export class UsersController {
@@ -41,11 +32,6 @@ export class UsersController {
   @Get('/me')
   getCurrentUser(@Req() req: AuthenticatedRequest): Promise<User> {
     return this.usersService.findOne(req.user.id);
-  }
-
-  @Get('/:id')
-  async getUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.usersService.findOne(userId);
   }
 
   @CheckOwnership({
@@ -67,7 +53,7 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @Delete('/:id')
-  removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
+  async removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.remove(userId);
   }
 

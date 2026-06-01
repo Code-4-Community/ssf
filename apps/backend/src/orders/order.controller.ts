@@ -18,7 +18,6 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { OrderStatus } from './types';
 import {
   CheckOwnership,
@@ -26,6 +25,10 @@ import {
   pipeNullable,
 } from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
+import { RequestsService } from '../foodRequests/request.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { DonationService } from '../donations/donations.service';
+import { Donation } from '../donations/donations.entity';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -39,10 +42,6 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 
-// Ownership resolver for order-scoped endpoints.
-// PANTRY users must own the pantry tied to the order's food request.
-// VOLUNTEER users must be the assignee on the order itself.
-// ADMIN bypasses in the guard.
 const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
   services,
@@ -61,6 +60,28 @@ const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
     (pantry: Pantry) => [pantry.pantryUser.id],
   );
 };
+
+const resolveCreateOrderAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(RequestsService).findOne(entityId),
+    (request: FoodRequest) =>
+      services.get(PantriesService).findOne(request.pantryId),
+    (pantry: Pantry) => (pantry.volunteers ?? []).map((v) => v.id),
+  );
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('orders')
 export class OrdersController {
@@ -84,16 +105,6 @@ export class OrdersController {
     return this.ordersService.getAll({ status, pantryNames });
   }
 
-  @Get('/get-current-orders')
-  async getCurrentOrders(): Promise<Order[]> {
-    return this.ordersService.getCurrentOrders();
-  }
-
-  @Get('/get-past-orders')
-  async getPastOrders(): Promise<Order[]> {
-    return this.ordersService.getPastOrders();
-  }
-
   @CheckOwnership({
     idParam: 'orderId',
     resolver: resolveOrderAuthorizedUserIds,
@@ -104,13 +115,6 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<FoodRequestSummaryDto> {
     return this.ordersService.findOrderFoodRequest(orderId);
-  }
-
-  @Get('/:orderId/manufacturer')
-  async getManufacturerFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<FoodManufacturer> {
-    return this.ordersService.findOrderFoodManufacturer(orderId);
   }
 
   @CheckOwnership({
@@ -126,6 +130,11 @@ export class OrdersController {
   }
 
   @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'foodRequestId',
+    idSource: 'body',
+    resolver: resolveCreateOrderAuthorizedUserIds,
+  })
   @Post('/')
   @ApiBody({
     description: 'Details for creating a order',
@@ -217,6 +226,11 @@ export class OrdersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    idSource: 'body',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
   @Patch('/bulk-update-tracking-cost-info')
   async bulkUpdateTrackingCostInfo(
     @Body(new ValidationPipe()) dto: BulkUpdateTrackingCostDto,

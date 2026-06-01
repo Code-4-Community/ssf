@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Bottleneck from 'bottleneck';
-import { AmazonSESWrapper, EmailAttachment } from './awsSes.wrapper';
+import { AmazonSESWrapper } from './awsSes.wrapper';
+import { SendEmailDTO } from './dto/send-email.dto';
 
 @Injectable()
 export class EmailsService {
@@ -18,32 +19,19 @@ export class EmailsService {
   /**
    * Sends an email.
    *
-   * @param recipientEmail the email address of the recipients
-   * @param subject the subject of the email
-   * @param bodyHtml the HTML body of the email
-   * @param attachments any base64 encoded attachments to include in the email
+   * @param email the {@link SendEmailDTO} describing the message to send
    * @resolves if the email was sent successfully
    * @rejects if the email was not sent successfully
    */
-  public async sendEmails(
-    recipientEmails: string[],
-    subject: string,
-    bodyHTML: string,
-    attachments?: EmailAttachment[],
-  ): Promise<unknown> {
-    if (
-      process.env.SEND_AUTOMATED_EMAILS &&
-      process.env.SEND_AUTOMATED_EMAILS === 'true' &&
-      recipientEmails.length > 0
-    ) {
-      return this.amazonSESWrapper.sendEmails(
-        recipientEmails,
-        subject,
-        bodyHTML,
-        attachments,
-      );
+  public async sendEmails(email: SendEmailDTO): Promise<unknown> {
+    if (!email.toEmail) {
+      this.logger.warn(`Skipping email, recipient address is empty.`);
+      return Promise.resolve();
     }
-    this.logger.warn('Automated emails are disabled. Email not sent.');
-    return Promise.resolve();
+    if (process.env.SEND_AUTOMATED_EMAILS !== 'true') {
+      this.logger.warn('Automated emails are disabled. Email not sent.');
+      return Promise.resolve();
+    }
+    return this.amazonSESWrapper.sendEmails(email);
   }
 }

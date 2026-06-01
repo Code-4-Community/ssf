@@ -1,5 +1,8 @@
 import { RequestsService } from './request.service';
-import { RequestsController } from './request.controller';
+import {
+  RequestsController,
+  resolveRequestAuthorizedUserIds,
+} from './request.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { FoodRequest } from './request.entity';
@@ -16,6 +19,9 @@ import {
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { PantriesService } from '../pantries/pantries.service';
+import { User } from '../users/users.entity';
+import { Role } from '../users/types';
 
 const mockRequestsService = mock<RequestsService>();
 
@@ -286,6 +292,68 @@ describe('RequestsController', () => {
       await controller.closeRequest(requestId);
 
       expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
+    });
+  });
+
+  describe('resolveRequestAuthorizedUserIds', () => {
+    const mockResolverRequestsService = mock<RequestsService>();
+    const mockResolverPantriesService = mock<PantriesService>();
+
+    const services = {
+      get: <T>(cls: { name: string }): T => {
+        if (cls === RequestsService)
+          return mockResolverRequestsService as unknown as T;
+        if (cls === PantriesService)
+          return mockResolverPantriesService as unknown as T;
+        throw new Error(`unmocked service: ${cls.name}`);
+      },
+    };
+
+    const pantryRep: User = { id: 99, role: Role.PANTRY } as User;
+    const volunteer1: User = { id: 7, role: Role.VOLUNTEER } as User;
+    const volunteer2: User = { id: 8, role: Role.VOLUNTEER } as User;
+
+    const mockRequest = { requestId: 1, pantryId: 5 } as FoodRequest;
+    const mockPantry = {
+      pantryId: 5,
+      pantryUser: pantryRep,
+      volunteers: [volunteer1, volunteer2],
+    } as Pantry;
+
+    beforeEach(() => {
+      mockResolverRequestsService.findOne.mockReset();
+      mockResolverPantriesService.findOne.mockReset();
+      mockResolverRequestsService.findOne.mockResolvedValue(mockRequest);
+      mockResolverPantriesService.findOne.mockResolvedValue(mockPantry);
+    });
+
+    it('PANTRY: looks up request then pantry, returns pantry rep id', async () => {
+      const ids = await resolveRequestAuthorizedUserIds({
+        entityId: 1,
+        services,
+        user: pantryRep,
+      });
+
+      expect(mockResolverRequestsService.findOne).toHaveBeenCalledWith(1);
+      expect(mockResolverPantriesService.findOne).toHaveBeenCalledWith(
+        mockRequest.pantryId,
+      );
+
+      expect(ids).toEqual([pantryRep.id]);
+    });
+
+    it('VOLUNTEER: looks up request then pantry, returns volunteer ids', async () => {
+      const ids = await resolveRequestAuthorizedUserIds({
+        entityId: 1,
+        services,
+        user: volunteer1,
+      });
+
+      expect(mockResolverRequestsService.findOne).toHaveBeenCalledWith(1);
+      expect(mockResolverPantriesService.findOne).toHaveBeenCalledWith(
+        mockRequest.pantryId,
+      );
+      expect(ids).toEqual([volunteer1.id, volunteer2.id]);
     });
   });
 });

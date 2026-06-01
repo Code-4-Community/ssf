@@ -109,6 +109,7 @@ export class PantriesController {
     return this.pantriesService.getPantryAdminStatsOrderYears();
   }
 
+  @Roles(Role.ADMIN)
   @Get('/approved')
   async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
     return this.pantriesService.getApprovedPantriesWithVolunteers();

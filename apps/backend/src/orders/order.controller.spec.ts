@@ -141,33 +141,6 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('getCurrentOrders', () => {
-    it('should call ordersService.getCurrentOrders and return orders', async () => {
-      mockOrdersService.getCurrentOrders.mockResolvedValueOnce([
-        mockOrders[0],
-        mockOrders[2],
-      ] as Order[]);
-
-      const result = await controller.getCurrentOrders();
-
-      expect(result).toEqual([mockOrders[0], mockOrders[2]] as Order[]);
-      expect(mockOrdersService.getCurrentOrders).toHaveBeenCalled();
-    });
-  });
-
-  describe('getPastOrders', () => {
-    it('should call ordersService.getPastOrders and return orders', async () => {
-      mockOrdersService.getPastOrders.mockResolvedValueOnce([
-        mockOrders[1],
-      ] as Order[]);
-
-      const result = await controller.getPastOrders();
-
-      expect(result).toEqual([mockOrders[1]] as Order[]);
-      expect(mockOrdersService.getPastOrders).toHaveBeenCalled();
-    });
-  });
-
   describe('getRequestFromOrder', () => {
     it('should call ordersService.findOrderFoodRequest and return food request', async () => {
       const orderId = 1;
@@ -179,22 +152,6 @@ describe('OrdersController', () => {
 
       expect(result).toEqual(mockRequestSummary as FoodRequestSummaryDto);
       expect(mockOrdersService.findOrderFoodRequest).toHaveBeenCalledWith(
-        orderId,
-      );
-    });
-  });
-
-  describe('getManufacturerFromOrder', () => {
-    it('should call ordersService.findOrderFoodManufacturer and return FM', async () => {
-      const orderId = 1;
-      mockOrdersService.findOrderFoodManufacturer.mockResolvedValueOnce(
-        mockFoodManufacturer as FoodManufacturer,
-      );
-
-      const result = await controller.getManufacturerFromOrder(orderId);
-
-      expect(result).toEqual(mockFoodManufacturer as FoodManufacturer);
-      expect(mockOrdersService.findOrderFoodManufacturer).toHaveBeenCalledWith(
         orderId,
       );
     });

@@ -237,7 +237,7 @@ describe('RequestsService', () => {
       expect(result.additionalInformation).toBeNull();
     });
 
-    it('should send food request email to pantry volunteers', async () => {
+    it('should send food request email to pantry user with volunteers BCCed', async () => {
       const pantryId = 1;
       const pantry = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId },
@@ -250,20 +250,21 @@ describe('RequestsService', () => {
       ]);
 
       if (!pantry) throw new Error('Missing pantry test object');
-      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
+      const message = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry.pantryName,
       });
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        volunteerEmails,
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     });
 
-    it('should send emails to nobody if request creation succeeds wthout any volunteers', async () => {
+    it('should not send email when pantry has no volunteers', async () => {
       // Harbor Community Center - no volunteers assigned
       const pantryId = 5;
       const pantry = await testDataSource.getRepository(Pantry).findOne({
@@ -277,18 +278,10 @@ describe('RequestsService', () => {
       ]);
 
       if (!pantry) throw new Error('Missing pantry test object');
-      const { subject, bodyHTML } = emailTemplates.pantrySubmitsFoodRequest({
-        pantryName: pantry.pantryName,
-      });
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
 
       expect(volunteerEmails).toEqual([]);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        volunteerEmails,
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
     it('should still save food request to database if email send fails', async () => {

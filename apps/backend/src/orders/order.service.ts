@@ -1,13 +1,14 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { validateId } from '../utils/validation.utils';
 import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
@@ -24,25 +25,26 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
+import { EmailsService } from '../emails/email.service';
+import { emailTemplates } from '../emails/emailTemplates';
 import { OrderSummary } from '../pantries/types';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private donationService: DonationService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
     @InjectDataSource() private dataSource: DataSource,
+    private emailsService: EmailsService,
   ) {}
-
-  // TODO: when order is created, set FM
 
   async getAll(filters?: { status?: string; pantryNames?: string[] }) {
     const qb = this.repo
@@ -158,18 +160,6 @@ export class OrdersService {
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
-  }
-
-  async getCurrentOrders() {
-    return this.repo.find({
-      where: { status: In([OrderStatus.PENDING, OrderStatus.SHIPPED]) },
-    });
-  }
-
-  async getPastOrders() {
-    return this.repo.find({
-      where: { status: OrderStatus.DELIVERED },
-    });
   }
 
   /*
@@ -388,20 +378,6 @@ export class OrdersService {
     };
   }
 
-  async findOrderFoodManufacturer(orderId: number): Promise<FoodManufacturer> {
-    validateId(orderId, 'Order');
-
-    const order = await this.repo.findOne({
-      where: { orderId },
-      relations: ['foodManufacturer'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
-    return order.foodManufacturer;
-  }
-
   async updateStatus(orderId: number, newStatus: OrderStatus) {
     validateId(orderId, 'Order');
 
@@ -430,7 +406,10 @@ export class OrdersService {
       throw new BadRequestException('Invalid date format for dateReceived');
     }
 
-    const order = await this.repo.findOneBy({ orderId });
+    const order = await this.repo.findOne({
+      where: { orderId },
+      relations: ['request', 'request.pantry', 'foodManufacturer', 'assignee'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -449,6 +428,24 @@ export class OrdersService {
 
     await this.repo.save(order);
     await this.requestsService.updateRequestStatus(order.requestId);
+
+    try {
+      const message = emailTemplates.pantryConfirmsOrderDelivery({
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+      });
+
+      await this.emailsService.sendEmails({
+        toEmail: order.assignee.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to send order delivery confirmation email to volunteer',
+      );
+    }
   }
 
   async getOrdersByPantry(pantryId: number): Promise<OrderSummary[]> {
@@ -503,7 +500,7 @@ export class OrdersService {
     }
 
     const orders = new Set(dto.orders.map((o) => o.orderId));
-    if (orders.size != dto.orders.length) {
+    if (orders.size !== dto.orders.length) {
       throw new BadRequestException(
         'Cannot update duplicate entries for orders',
       );
@@ -522,14 +519,14 @@ export class OrdersService {
       }
     }
 
-    let donation: Donation | null;
+    const ordersGainedTrackingLink: Order[] = [];
 
     await this.dataSource.transaction(async (transactionManager) => {
       const orderTransactionRepo = transactionManager.getRepository(Order);
       const donationTransactionRepo =
         transactionManager.getRepository(Donation);
 
-      donation = await donationTransactionRepo.findOneBy({
+      const donation = await donationTransactionRepo.findOneBy({
         donationId: dto.donationId,
       });
       if (!donation) {
@@ -539,8 +536,15 @@ export class OrdersService {
       const ordersToUpdate: Order[] = [];
 
       for (const entry of dto.orders) {
-        const order = await orderTransactionRepo.findOneBy({
-          orderId: entry.orderId,
+        const order = await orderTransactionRepo.findOne({
+          where: { orderId: entry.orderId },
+          relations: [
+            'request',
+            'request.pantry',
+            'request.pantry.pantryUser',
+            'foodManufacturer',
+            'assignee',
+          ],
         });
         if (!order) {
           throw new NotFoundException(`Order ${entry.orderId} not found`);
@@ -568,16 +572,25 @@ export class OrdersService {
           );
         }
 
+        // Check to see if tracking link existed in the first place
+        const hadTrackingLink = !!order.trackingLink;
+
         if (entry.trackingLink !== undefined) {
           order.trackingLink = entry.trackingLink;
         }
         if (entry.shippingCost !== undefined) {
           order.shippingCost = entry.shippingCost;
         }
-        if (order.trackingLink != null && order.shippingCost != null) {
+        if (order.trackingLink !== null && order.shippingCost !== null) {
           order.status = OrderStatus.SHIPPED;
           order.shippedAt = new Date();
         }
+
+        // If tracking link didn't exist previous, but does now, add it to the list to send an email
+        if (!hadTrackingLink && !!order.trackingLink) {
+          ordersGainedTrackingLink.push(order);
+        }
+
         ordersToUpdate.push(order);
       }
 
@@ -587,6 +600,28 @@ export class OrdersService {
         transactionManager,
       );
     });
+
+    for (const order of ordersGainedTrackingLink) {
+      try {
+        const message = emailTemplates.trackingLinkAvailable({
+          pantryName: order.request.pantry.pantryName,
+          fmName: order.foodManufacturer.foodManufacturerName,
+          trackingLink: order.trackingLink!,
+          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+          volunteerEmail: order.assignee.email,
+        });
+
+        await this.emailsService.sendEmails({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn(
+          `Automated tracking link email failed to send for order ${order.orderId}`,
+        );
+      }
+    }
   }
 
   async completeVolunteerAction(

@@ -65,7 +65,6 @@ export class FoodManufacturersController {
   @CheckOwnership({
     idParam: 'foodManufacturerId',
     resolver: resolveFoodManufacturerAuthorizedUserIds,
-    bypassRoles: [Role.ADMIN],
   })
   @Get('/:foodManufacturerId')
   async getFoodManufacturer(
