@@ -1171,7 +1171,7 @@ describe('PantriesService', () => {
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
 
-    it(`throws ConflictException when updating volunteers for a pending pantry`, async () => {
+    it(`throws 'Pantry with ID {pantryId} not approved' ConflictException when updating volunteers for a pending pantry`, async () => {
       await expect(
         service.updatePantryVolunteers(5, {
           addVolunteerIds: [6],

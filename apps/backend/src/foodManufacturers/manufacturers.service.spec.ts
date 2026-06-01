@@ -889,6 +889,71 @@ describe('FoodManufacturersService', () => {
   });
 
   describe(`updateFoodManufacturerApplication`, () => {
+    it('updates an existing food manufacturer successfully', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'John',
+        secondaryContactLastName: 'Doe',
+        secondaryContactEmail: 'johndoe@gmail.com',
+        secondaryContactPhone: '1234567890',
+      };
+
+      const updatedFoodManufacturer =
+        await service.updateFoodManufacturerApplication(1, dto, 3);
+      expect(updatedFoodManufacturer.secondaryContactFirstName).toBe('John');
+      expect(updatedFoodManufacturer.secondaryContactLastName).toBe('Doe');
+      expect(updatedFoodManufacturer.secondaryContactEmail).toBe(
+        'johndoe@gmail.com',
+      );
+      expect(updatedFoodManufacturer.secondaryContactPhone).toBe('1234567890');
+    });
+
+    it('throws NotFoundException when food manufacturer does not exist', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(
+        service.updateFoodManufacturerApplication(9999, dto, 3),
+      ).rejects.toThrow(
+        new NotFoundException('Food Manufacturer 9999 not found'),
+      );
+    });
+
+    it('updates only the provided fields and keeps others intact', async () => {
+      const original = await service.findOne(1);
+
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        unlistedProductAllergens: [Allergen.MILK],
+      };
+
+      const updated = await service.updateFoodManufacturerApplication(
+        1,
+        dto,
+        3,
+      );
+      expect(updated.unlistedProductAllergens).toStrictEqual([Allergen.MILK]);
+      expect(updated.foodManufacturerName).toBe(original.foodManufacturerName);
+      expect(updated.secondaryContactEmail).toBe(
+        original.secondaryContactEmail,
+      );
+    });
+
+    it('throws ForbiddenException when user is not authorized to update pantry', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        foodManufacturerName: 'FoodCorp Industries LLC',
+      };
+
+      const invalidUserId = 999;
+
+      await expect(
+        service.updateFoodManufacturerApplication(1, dto, invalidUserId),
+      ).rejects.toThrow(
+        new ForbiddenException(
+          `User ${invalidUserId} is not allowed to edit application for Food Manufacturer 1`,
+        ),
+      );
+    });
+
     it('throws ConflictException for a pending manufacturer', async () => {
       const dto: UpdateFoodManufacturerApplicationDto = {
         secondaryContactFirstName: 'Jane',
