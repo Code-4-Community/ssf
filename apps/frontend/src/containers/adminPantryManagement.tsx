@@ -62,7 +62,9 @@ const AdminPantryManagement: React.FC = () => {
     fetchPantries();
   }, [setAlertMessage]);
 
-  // Pre-fill pantry filter from url param and then clear the param.
+  // Pre-fill pantry filter from the volunteerId url param. The param is kept on
+  // success so the filter is reapplied on reload/back/refresh, and only cleared
+  // when the volunteer has no pantries or the fetch fails.
   useEffect(() => {
     const volunteerIdFromUrl = searchParams.get('volunteerId');
     if (!volunteerIdFromUrl) return;
@@ -74,19 +76,18 @@ const AdminPantryManagement: React.FC = () => {
           Number(volunteerIdFromUrl),
         );
         if (cancelled) return;
-        setSelectedPantries(assignedPantries.map((p) => p.pantryName));
         if (assignedPantries.length === 0) {
           setIsAlertSuccess(false);
           setAlertMessage('This volunteer has no assigned pantries.');
+          navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
+          return;
         }
+        setSelectedPantries(assignedPantries.map((p) => p.pantryName));
       } catch {
         if (cancelled) return;
         setIsAlertSuccess(false);
         setAlertMessage('Error fetching volunteer pantries');
-      } finally {
-        if (!cancelled) {
-          navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
-        }
+        navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
       }
     })();
 
