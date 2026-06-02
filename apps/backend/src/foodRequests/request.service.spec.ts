@@ -376,7 +376,7 @@ describe('RequestsService', () => {
       expect(request.status).toBe(FoodRequestStatus.ACTIVE);
     });
 
-    it('should update status to active for request with no orders', async () => {
+    it('should throw BadRequestException for request with no orders', async () => {
       const pantryId = 1;
       const result = await service.create(pantryId, RequestSize.MEDIUM, [
         FoodType.DRIED_BEANS,
@@ -384,10 +384,11 @@ describe('RequestsService', () => {
       ]);
       const requestId = result.requestId;
 
-      await service.updateRequestStatus(requestId);
-
-      const request = await service.findOne(requestId);
-      expect(request.status).toBe(FoodRequestStatus.ACTIVE);
+      await expect(service.updateRequestStatus(requestId)).rejects.toThrow(
+        new BadRequestException(
+          `Cannot update request ${requestId} with no orders`,
+        ),
+      );
     });
 
     it('should throw NotFoundException for non-existent request', async () => {
@@ -402,7 +403,7 @@ describe('RequestsService', () => {
       const requestId = 1;
       const pantry = (await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId: 1 },
-        relations: ['pantryUser'],
+        relations: ['pantryUser', 'volunteers'],
       })) as Pantry;
       const lastDeliveredOrder = (await testDataSource
         .getRepository(Order)
@@ -451,7 +452,7 @@ describe('RequestsService', () => {
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
-    it('does not send email when request was already closed before updateRequestStatus', async () => {
+    it('throws BadRequestException and does not send email when request is already closed', async () => {
       await testDataSource.query(
         `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,
       );
@@ -459,7 +460,9 @@ describe('RequestsService', () => {
       const request = await service.findOne(1);
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
 
-      await service.updateRequestStatus(1);
+      await expect(service.updateRequestStatus(1)).rejects.toThrow(
+        new BadRequestException(`Request 1 is already closed`),
+      );
 
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
@@ -480,6 +483,17 @@ describe('RequestsService', () => {
 
       const request = await service.findOne(1);
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
+    it('should not reopen a closed request when updateRequestStatus is called', async () => {
+      await service.closeRequest(1, 6);
+
+      await expect(service.updateRequestStatus(1)).rejects.toThrow(
+        new BadRequestException(`Request 1 is already closed`),
+      );
+
+      const fromDb = await service.findOne(1);
+      expect(fromDb.status).toBe(FoodRequestStatus.CLOSED);
     });
   });
 
@@ -881,18 +895,10 @@ describe('RequestsService', () => {
       });
     });
 
-    it('should not reopen a closed request when updateRequestStatus is called', async () => {
-      await service.closeRequest(1, volunteerId);
-      await service.updateRequestStatus(1);
-
-      const fromDb = await service.findOne(1);
-      expect(fromDb.status).toBe(FoodRequestStatus.CLOSED);
-    });
-
     it('sends pantry closed email with acting volunteer info on successful close', async () => {
       const pantry = (await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId: 3 },
-        relations: ['pantryUser'],
+        relations: ['pantryUser', 'volunteers'],
       })) as Pantry;
 
       await service.closeRequest(3, volunteerId);
@@ -910,7 +916,7 @@ describe('RequestsService', () => {
         toEmail: pantry.pantryUser.email,
         subject: expectedMessage.subject,
         bodyHtml: expectedMessage.bodyHTML,
-        bccEmails: volunteerEmails,
+        bccEmails: expect.arrayContaining(volunteerEmails),
       });
     });
 

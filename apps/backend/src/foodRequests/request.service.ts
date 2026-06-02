@@ -287,7 +287,7 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['orders', 'pantry', 'pantry.pantryUser'],
+      relations: ['orders', 'pantry', 'pantry.pantryUser', 'pantry.volunteers'],
     });
 
     if (!request) {
@@ -297,26 +297,26 @@ export class RequestsService {
     const orders = request.orders || [];
 
     if (!orders.length) {
-      request.status = FoodRequestStatus.ACTIVE;
-      await this.repo.save(request);
-      return;
+      throw new BadRequestException(
+        `Cannot update request ${requestId} with no orders`,
+      );
+    }
+
+    if (request.status === FoodRequestStatus.CLOSED) {
+      throw new BadRequestException(`Request ${requestId} is already closed`);
     }
 
     const allDelivered = orders.every(
       (order) => order.status === OrderStatus.DELIVERED,
     );
 
-    const wasAlreadyClosed = request.status === FoodRequestStatus.CLOSED;
-
-    if (!wasAlreadyClosed) {
-      request.status = allDelivered
-        ? FoodRequestStatus.CLOSED
-        : FoodRequestStatus.ACTIVE;
-    }
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
 
     await this.repo.save(request);
 
-    if (allDelivered && !wasAlreadyClosed) {
+    if (allDelivered) {
       try {
         const lastDeliveredOrder = await this.orderRepo.findOne({
           where: { requestId, status: OrderStatus.DELIVERED },
@@ -427,7 +427,7 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['pantry', 'pantry.pantryUser'],
+      relations: ['pantry', 'pantry.pantryUser', 'pantry.volunteers'],
     });
 
     if (!request) {
@@ -447,6 +447,7 @@ export class RequestsService {
     try {
       const volunteers = request.pantry.volunteers || [];
       const volunteerEmails = volunteers.map((v) => v.email);
+      console.log(volunteerEmails);
       const message = emailTemplates.pantryRequestClosed({
         pantryName: request.pantry.pantryName,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
