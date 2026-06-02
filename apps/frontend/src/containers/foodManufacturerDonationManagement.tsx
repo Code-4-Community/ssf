@@ -14,13 +14,13 @@ import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { DonationDetails, DonationStatus } from '../types/types';
-import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 
 const MAX_PER_STATUS = 5;
@@ -45,12 +45,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: [],
     [DonationStatus.FULFILLED]: [],
   });
-
-  // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
-    null,
-  );
-
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<
     Record<DonationStatus, number>
@@ -59,6 +53,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
+
+  // State to hold selected donation for details modal
+  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+    null,
+  );
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
@@ -85,12 +84,27 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setStatusDonations(grouped);
 
-      // Initialize current page for each status
       const initialPages: Record<DonationStatus, number> = {
         [DonationStatus.AVAILABLE]: 1,
         [DonationStatus.FULFILLED]: 1,
         [DonationStatus.MATCHED]: 1,
       };
+
+      // Paginate the containing status to the page that holds this donation.
+      const donationIdParam = searchParams.get('donationId');
+      if (donationIdParam) {
+        const id = Number(donationIdParam);
+        for (const status of Object.values(DonationStatus)) {
+          const idx = grouped[status].findIndex(
+            (d) => d.donation.donationId === id,
+          );
+          if (idx >= 0) {
+            initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+            break;
+          }
+        }
+      }
+
       setCurrentPages(initialPages);
 
       return grouped;
@@ -129,6 +143,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    const donationIdParam = searchParams.get('donationId');
+    if (!donationIdParam) return;
+
+    const id = Number(donationIdParam);
+    setSelectedDonationId(id);
+  }, [searchParams, setErrorMessage]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -260,6 +282,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
+              onDonationClose={() => {
+                setSelectedDonationId(null);
+                navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+              }}
             />
           </Box>
         );
@@ -278,6 +304,7 @@ interface DonationStatusSectionProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
+  onDonationClose: () => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -285,11 +312,12 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   status,
   colors,
   onDonationSelect,
-  selectedDonationId,
   totalDonations,
   currentPage,
+  selectedDonationId,
   onPageChange,
   onActionSelect,
+  onDonationClose,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -420,7 +448,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                         <DonationDetailsModal
                           donation={donation}
                           isOpen={true}
-                          onClose={() => onDonationSelect(null)}
+                          onClose={onDonationClose}
                         />
                       )}
                     </Table.Cell>
