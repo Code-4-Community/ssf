@@ -447,7 +447,6 @@ export class RequestsService {
     try {
       const volunteers = request.pantry.volunteers || [];
       const volunteerEmails = volunteers.map((v) => v.email);
-      console.log(volunteerEmails);
       const message = emailTemplates.pantryRequestClosed({
         pantryName: request.pantry.pantryName,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
