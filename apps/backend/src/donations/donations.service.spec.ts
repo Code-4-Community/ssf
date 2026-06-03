@@ -9,6 +9,7 @@ import { testDataSource } from '../config/typeormTestDataSource';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
@@ -1438,6 +1439,79 @@ describe('DonationService', () => {
       expect(result.status).toBe(DonationStatus.FULFILLED);
       const dbDonation = await service.findOne(donationId);
       expect(dbDonation.status).toBe(DonationStatus.FULFILLED);
+    });
+  });
+
+  describe('editDonationItems', () => {
+    const makeItem = (
+      overrides: Partial<ReplaceDonationItemDto> = {},
+    ): ReplaceDonationItemDto => ({
+      itemName: 'Edited Item',
+      quantity: 20,
+      ozPerItem: 8,
+      estimatedValue: 3.5,
+      foodType: FoodType.QUINOA,
+      foodRescue: true,
+      ...overrides,
+    });
+
+    const donationId = 3;
+    const itemA = 7;
+    const itemB = 8;
+
+    beforeEach(async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE item_id IN ($1, $2)`,
+        [itemA, itemB],
+      );
+    });
+
+    it('replaces the donation items for an available donation', async () => {
+      await service.editDonationItems(donationId, [
+        makeItem({ itemId: itemA, itemName: 'Item A Updated' }),
+        makeItem({ itemName: 'Brand New Item' }),
+      ]);
+
+      const items = await donationItemService.getAllDonationItems(donationId);
+      expect(items).toHaveLength(2);
+      const names = items.map((i) => i.itemName).sort();
+      expect(names).toEqual(['Brand New Item', 'Item A Updated']);
+    });
+
+    it('throws BadRequestException when donation status is MATCHED', async () => {
+      await expect(service.editDonationItems(2, [makeItem()])).rejects.toThrow(
+        new BadRequestException(
+          'Donation 2 items can only be edited while the donation is AVAILABLE',
+        ),
+      );
+    });
+
+    it('throws BadRequestException when donation status is FULFILLED', async () => {
+      await expect(service.editDonationItems(4, [makeItem()])).rejects.toThrow(
+        new BadRequestException(
+          'Donation 4 items can only be edited while the donation is AVAILABLE',
+        ),
+      );
+    });
+
+    it('throws BadRequestException when orders have already drawn from the donation', async () => {
+      await expect(service.editDonationItems(1, [makeItem()])).rejects.toThrow(
+        new BadRequestException(
+          'Cannot edit items for donation 1 because orders have already drawn from it',
+        ),
+      );
+    });
+
+    it('throws BadRequestException when the resulting item list would be empty', async () => {
+      await expect(service.editDonationItems(donationId, [])).rejects.toThrow(
+        new BadRequestException('A donation must have at least one item'),
+      );
+    });
+
+    it('throws NotFoundException when the donation does not exist', async () => {
+      await expect(
+        service.editDonationItems(9999, [makeItem()]),
+      ).rejects.toThrow(new NotFoundException('Donation 9999 not found'));
     });
   });
 });
