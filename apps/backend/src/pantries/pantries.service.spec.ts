@@ -1332,4 +1332,90 @@ describe('PantriesService', () => {
       expect(result['Value Received']).toBe('$0');
     });
   });
+
+  describe('sendFoodRequestReminderToApprovedPantries', () => {
+    const SENDER_EMAIL = 'sender@securingsafefood.org';
+    const originalSenderEmail = process.env.AWS_SES_SENDER_EMAIL;
+
+    afterEach(() => {
+      process.env.AWS_SES_SENDER_EMAIL = originalSenderEmail;
+      jest.restoreAllMocks();
+    });
+
+    it('logs a warning and sends no emails when there are no approved pantries', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { status: ApplicationStatus.APPROVED },
+          { status: ApplicationStatus.DENIED },
+        );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No approved food pantries, skipping email sending.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning and sends no emails when the sender email is not set', async () => {
+      delete process.env.AWS_SES_SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Skipping food request reminder: AWS_SES_SENDER_EMAIL is not set.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when sending the reminder email fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SES failure'),
+      );
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries.',
+        ),
+      );
+    });
+
+    it('sends a single email to the sender with all approved pantry emails as bcc', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const expectedBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SENDER_EMAIL,
+        bccEmails: expectedBccEmails,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
 });
