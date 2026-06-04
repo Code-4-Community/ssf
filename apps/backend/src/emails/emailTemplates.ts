@@ -1,5 +1,3 @@
-import { EmailsModule } from './email.module';
-
 export type EmailTemplate = {
   subject: string;
   bodyHTML: string;
