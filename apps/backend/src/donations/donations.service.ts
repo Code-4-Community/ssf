@@ -42,7 +42,10 @@ export class DonationService {
 
     const donation = await this.repo.findOne({
       where: { donationId },
-      relations: ['foodManufacturer'],
+      relations: [
+        'foodManufacturer',
+        'foodManufacturer.foodManufacturerRepresentative',
+      ],
     });
     if (!donation) {
       throw new NotFoundException(`Donation ${donationId} not found`);
