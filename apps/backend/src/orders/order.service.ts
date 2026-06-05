@@ -23,6 +23,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { Allocation } from '../allocations/allocations.entity';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
@@ -748,5 +749,38 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     order[action] = true;
 
     await this.repo.save(order);
+  }
+
+  async closeOrder(orderId: number): Promise<void> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(`Order ${orderId} must be pending`);
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      // Capture which donations are affected before allocations are removed
+      const allocations = await transactionManager
+        .getRepository(Allocation)
+        .find({ where: { orderId }, relations: ['item'] });
+      const donationIds = [
+        ...new Set(allocations.map((allocation) => allocation.item.donationId)),
+      ];
+
+      await this.allocationsService.freeAllByOrder(orderId, transactionManager);
+
+      // Donation should always have items matched to it
+      await this.donationService.matchAll(donationIds, transactionManager);
+
+      await transactionManager
+        .getRepository(Order)
+        .update({ orderId }, { status: OrderStatus.CLOSED });
+    });
   }
 }

@@ -30,7 +30,13 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { DataSource, EntityManager, In } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  In,
+  ObjectLiteral,
+  Repository,
+} from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
@@ -1169,6 +1175,173 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
   });
+
+  describe('closeOrder', () => {
+    const userId = 3;
+    let validCreateOrderDto: CreateOrderDto;
+    let parsedAllocations: Map<number, number>;
+
+    beforeEach(() => {
+      validCreateOrderDto = {
+        foodRequestId: 1,
+        manufacturerId: 1,
+        itemAllocations: {
+          1: 10,
+          2: 3,
+        },
+      };
+
+      parsedAllocations = new Map<number, number>([
+        [1, 10],
+        [2, 3],
+      ]);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    // Creates a pending order (reserving items 1 and 2) and returns the
+    // post-create state so rollback tests can assert nothing changed.
+    const createPendingOrder = async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const createdOrder = await service.create(
+        validCreateOrderDto.foodRequestId,
+        validCreateOrderDto.manufacturerId,
+        parsedAllocations,
+        userId,
+      );
+
+      const allocationsBefore = await allocationRepo.find({
+        where: { orderId: createdOrder.orderId },
+      });
+      const item1Before = (await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      })) as DonationItem;
+      const item2Before = (await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      })) as DonationItem;
+
+      return {
+        orderId: createdOrder.orderId,
+        allocationRepo,
+        donationItemRepo,
+        allocationsBefore,
+        item1Before,
+        item2Before,
+      };
+    };
+
+    it('sets the order status to CLOSED when everything succeeds', async () => {
+      const { orderId } = await createPendingOrder();
+
+      await service.closeOrder(orderId);
+
+      expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
+    });
+
+    it('throws NotFoundException if the order does not exist', async () => {
+      const nonExistentOrderId = 999;
+      await expect(service.closeOrder(nonExistentOrderId)).rejects.toThrow(
+        new NotFoundException(`Order ${nonExistentOrderId} not found`),
+      );
+    });
+
+    it('throws BadRequestException if the order is not pending', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const { orderId } = await createPendingOrder();
+
+      await orderRepo.update({ orderId }, { status: OrderStatus.SHIPPED });
+
+      await expect(service.closeOrder(orderId)).rejects.toThrow(
+        new BadRequestException(`Order ${orderId} must be pending`),
+      );
+
+      expect((await service.findOne(orderId)).status).not.toBe(
+        OrderStatus.CLOSED,
+      );
+    });
+
+    it('rolls back all changes when matchAll fails', async () => {
+      const {
+        orderId,
+        allocationRepo,
+        donationItemRepo,
+        allocationsBefore,
+        item1Before,
+        item2Before,
+      } = await createPendingOrder();
+
+      jest
+        .spyOn((service as any).donationService as DonationService, 'matchAll')
+        .mockRejectedValueOnce(new Error('DB error'));
+
+      await expect(service.closeOrder(orderId)).rejects.toThrow('DB error');
+
+      const orderAfter = await service.findOne(orderId);
+      expect(orderAfter.status).not.toBe(OrderStatus.CLOSED);
+      expect(orderAfter.status).toBe(OrderStatus.PENDING);
+      expect(await allocationRepo.find({ where: { orderId } })).toHaveLength(
+        allocationsBefore.length,
+      );
+
+      const item1After = (await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      })) as DonationItem;
+      const item2After = (await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      })) as DonationItem;
+      expect(item1After.reservedQuantity).toBe(item1Before.reservedQuantity);
+      expect(item2After.reservedQuantity).toBe(item2Before.reservedQuantity);
+    });
+
+    it('rolls back all changes when the order status update fails', async () => {
+      const {
+        orderId,
+        allocationRepo,
+        donationItemRepo,
+        allocationsBefore,
+        item1Before,
+        item2Before,
+      } = await createPendingOrder();
+
+      const originalUpdate = Repository.prototype.update;
+      jest
+        .spyOn(Repository.prototype, 'update')
+        .mockImplementation(function (
+          this: Repository<ObjectLiteral>,
+          ...args: Parameters<typeof Repository.prototype.update>
+        ) {
+          if (this.metadata.target === Order) {
+            return Promise.reject(new Error('DB error'));
+          }
+          return originalUpdate.apply(this, args);
+        });
+
+      await expect(service.closeOrder(orderId)).rejects.toThrow('DB error');
+
+      jest.restoreAllMocks();
+
+      const orderAfter = await service.findOne(orderId);
+      expect(orderAfter.status).not.toBe(OrderStatus.CLOSED);
+      expect(orderAfter.status).toBe(OrderStatus.PENDING);
+      expect(await allocationRepo.find({ where: { orderId } })).toHaveLength(
+        allocationsBefore.length,
+      );
+
+      const item1After = (await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      })) as DonationItem;
+      const item2After = (await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      })) as DonationItem;
+      expect(item1After.reservedQuantity).toBe(item1Before.reservedQuantity);
+      expect(item2After.reservedQuantity).toBe(item2Before.reservedQuantity);
+    });
+  });
+
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;

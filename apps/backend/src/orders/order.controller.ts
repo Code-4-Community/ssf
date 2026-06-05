@@ -19,7 +19,11 @@ import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
 import { AllocationsService } from '../allocations/allocations.service';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
@@ -34,6 +38,25 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { OrderStatus } from './types';
+
+const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+  user,
+}) => {
+  if (user?.role === Role.VOLUNTEER) {
+    return pipeNullable(
+      () => services.get(OrdersService).findOne(entityId),
+      (order: Order) => [order.assigneeId],
+    );
+  }
+  return pipeNullable(
+    () => services.get(OrdersService).findOrderFoodRequest(entityId),
+    (request: FoodRequestSummaryDto) =>
+      services.get(PantriesService).findOne(request.pantry.pantryId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
+};
 
 @Controller('orders')
 export class OrdersController {
@@ -270,5 +293,17 @@ export class OrdersController {
     @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
   ): Promise<void> {
     await this.ordersService.completeVolunteerAction(orderId, dto.action);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/close')
+  async closeOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<void> {
+    await this.ordersService.closeOrder(orderId);
   }
 }

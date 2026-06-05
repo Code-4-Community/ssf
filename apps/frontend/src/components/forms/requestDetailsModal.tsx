@@ -4,7 +4,7 @@ import {
   OrderDetails,
   FoodRequestSummaryDto,
 } from 'types/types';
-import { OrderStatus } from '../../types/types';
+import { OpenOrderStatus } from '../../types/types';
 import { ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
@@ -194,7 +194,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                           Fulfilled by {currentOrder.foodManufacturerName}
                         </Text>
                       </Text>
-                      {currentOrder.status === OrderStatus.DELIVERED ? (
+                      {currentOrder.status === OpenOrderStatus.DELIVERED ? (
                         <Badge
                           {...badgeStyles}
                           bgColor="blue.100"

@@ -9,7 +9,7 @@ import {
   DONATION_STATUS_COLORS,
   USER_ICON_COLORS,
 } from '@utils/utils';
-import { OrderAssignee, OrderStatus, DonationStatus } from '../types/types';
+import { OrderAssignee, OpenOrderStatus, DonationStatus } from '../types/types';
 
 export enum DashboardCardType {
   UPCOMING_DONATION,
@@ -41,21 +41,21 @@ export interface DashboardCardBadge {
   color: string;
 }
 
-export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
-  [OrderStatus.PENDING]: {
-    label: ORDER_STATUS_LABELS[OrderStatus.PENDING],
-    bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
-    color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
+export const ORDER_STATUS_BADGE: Record<OpenOrderStatus, DashboardCardBadge> = {
+  [OpenOrderStatus.PENDING]: {
+    label: ORDER_STATUS_LABELS[OpenOrderStatus.PENDING],
+    bg: ORDER_STATUS_COLORS[OpenOrderStatus.PENDING][0],
+    color: ORDER_STATUS_COLORS[OpenOrderStatus.PENDING][1],
   },
-  [OrderStatus.SHIPPED]: {
-    label: ORDER_STATUS_LABELS[OrderStatus.SHIPPED],
-    bg: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][0],
-    color: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][1],
+  [OpenOrderStatus.SHIPPED]: {
+    label: ORDER_STATUS_LABELS[OpenOrderStatus.SHIPPED],
+    bg: ORDER_STATUS_COLORS[OpenOrderStatus.SHIPPED][0],
+    color: ORDER_STATUS_COLORS[OpenOrderStatus.SHIPPED][1],
   },
-  [OrderStatus.DELIVERED]: {
-    label: ORDER_STATUS_LABELS[OrderStatus.DELIVERED],
-    bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
-    color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
+  [OpenOrderStatus.DELIVERED]: {
+    label: ORDER_STATUS_LABELS[OpenOrderStatus.DELIVERED],
+    bg: ORDER_STATUS_COLORS[OpenOrderStatus.DELIVERED][0],
+    color: ORDER_STATUS_COLORS[OpenOrderStatus.DELIVERED][1],
   },
 };
 

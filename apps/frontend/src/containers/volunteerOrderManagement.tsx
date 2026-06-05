@@ -31,7 +31,7 @@ import {
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import {
-  OrderStatus,
+  OpenOrderStatus,
   VolunteerOrder,
   VolunteerAction,
   User,
@@ -47,7 +47,7 @@ type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
 
 const hasRequiredActions = (order: VolunteerOrder): boolean => {
   if (!order.actionCompletion) return false;
-  if (order.status !== OrderStatus.SHIPPED) return false;
+  if (order.status !== OpenOrderStatus.SHIPPED) return false;
   return (
     !order.actionCompletion.confirmDonationReceipt ||
     !order.actionCompletion.notifyPantry
@@ -58,24 +58,24 @@ const VolunteerOrderManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [statusOrders, setStatusOrders] = useState<
-    Record<OrderStatus, VolunteerOrderWithColor[]>
+    Record<OpenOrderStatus, VolunteerOrderWithColor[]>
   >({
-    [OrderStatus.SHIPPED]: [],
-    [OrderStatus.PENDING]: [],
-    [OrderStatus.DELIVERED]: [],
+    [OpenOrderStatus.SHIPPED]: [],
+    [OpenOrderStatus.PENDING]: [],
+    [OpenOrderStatus.DELIVERED]: [],
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
-  const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
-    {
-      [OrderStatus.SHIPPED]: 1,
-      [OrderStatus.PENDING]: 1,
-      [OrderStatus.DELIVERED]: 1,
-    },
-  );
+  const [currentPages, setCurrentPages] = useState<
+    Record<OpenOrderStatus, number>
+  >({
+    [OpenOrderStatus.SHIPPED]: 1,
+    [OpenOrderStatus.PENDING]: 1,
+    [OpenOrderStatus.DELIVERED]: 1,
+  });
 
   const [alertState, setAlertMessage] = useAlert();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -89,19 +89,19 @@ const VolunteerOrderManagement: React.FC = () => {
   };
 
   const [filterStates, setFilterStates] = useState<
-    Record<OrderStatus, FilterState>
+    Record<OpenOrderStatus, FilterState>
   >({
-    [OrderStatus.SHIPPED]: {
+    [OpenOrderStatus.SHIPPED]: {
       selectedPantries: [],
       searchPantry: '',
       sortAsc: false,
     },
-    [OrderStatus.PENDING]: {
+    [OpenOrderStatus.PENDING]: {
       selectedPantries: [],
       searchPantry: '',
       sortAsc: false,
     },
-    [OrderStatus.DELIVERED]: {
+    [OpenOrderStatus.DELIVERED]: {
       selectedPantries: [],
       searchPantry: '',
       sortAsc: false,
@@ -127,10 +127,10 @@ const VolunteerOrderManagement: React.FC = () => {
       try {
         const data = await ApiClient.getVolunteerOrders(userId);
 
-        const grouped: Record<OrderStatus, VolunteerOrderWithColor[]> = {
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.DELIVERED]: [],
+        const grouped: Record<OpenOrderStatus, VolunteerOrderWithColor[]> = {
+          [OpenOrderStatus.SHIPPED]: [],
+          [OpenOrderStatus.PENDING]: [],
+          [OpenOrderStatus.DELIVERED]: [],
         };
 
         for (const order of data) {
@@ -149,10 +149,10 @@ const VolunteerOrderManagement: React.FC = () => {
         setStatusOrders(grouped);
 
         // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.DELIVERED]: 1,
+        const initialPages: Record<OpenOrderStatus, number> = {
+          [OpenOrderStatus.SHIPPED]: 1,
+          [OpenOrderStatus.PENDING]: 1,
+          [OpenOrderStatus.DELIVERED]: 1,
         };
         setCurrentPages(initialPages);
       } catch {
@@ -177,7 +177,7 @@ const VolunteerOrderManagement: React.FC = () => {
       setSelectedOrderId(match.orderId);
 
       // Paginate the containing status to the page that holds this order.
-      for (const status of Object.values(OrderStatus)) {
+      for (const status of Object.values(OpenOrderStatus)) {
         const sorted = [...statusOrders[status]].sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -196,11 +196,11 @@ const VolunteerOrderManagement: React.FC = () => {
     }
   }, [searchParams, statusOrders, navigate]);
 
-  const resetPageForStatus = (status: OrderStatus) => {
+  const resetPageForStatus = (status: OpenOrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
   };
 
-  const handlePageChange = (status: OrderStatus, page: number) => {
+  const handlePageChange = (status: OpenOrderStatus, page: number) => {
     setCurrentPages((prev) => ({ ...prev, [status]: page }));
   };
 
@@ -208,7 +208,7 @@ const VolunteerOrderManagement: React.FC = () => {
   const handleActionCompleted = (orderId: number, action: VolunteerAction) => {
     setStatusOrders((prev) => {
       const updated = { ...prev };
-      for (const status of Object.values(OrderStatus)) {
+      for (const status of Object.values(OpenOrderStatus)) {
         updated[status] = updated[status].map((o) => {
           if (o.orderId !== orderId) return o;
           const completion = o.actionCompletion ?? {
@@ -258,7 +258,7 @@ const VolunteerOrderManagement: React.FC = () => {
         />
       )}
 
-      {Object.values(OrderStatus).map((status) => {
+      {Object.values(OpenOrderStatus).map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
@@ -344,7 +344,7 @@ const VolunteerOrderManagement: React.FC = () => {
 
 interface OrderStatusSectionProps {
   orders: VolunteerOrderWithColor[];
-  status: OrderStatus;
+  status: OpenOrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
   totalOrders: number;

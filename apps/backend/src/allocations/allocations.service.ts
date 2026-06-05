@@ -65,4 +65,37 @@ export class AllocationsService {
 
     return targetAllocationRepo.save(allocations);
   }
+
+  async freeAllByOrder(
+    orderId: number,
+    transactionManager?: EntityManager,
+  ): Promise<void> {
+    const allocationTransactionRepo = transactionManager
+      ? transactionManager.getRepository(Allocation)
+      : undefined;
+    const itemTransactionRepo = transactionManager
+      ? transactionManager.getRepository(DonationItem)
+      : undefined;
+    const targetAllocationRepo = allocationTransactionRepo
+      ? allocationTransactionRepo
+      : this.repo;
+    const targetItemRepo = itemTransactionRepo
+      ? itemTransactionRepo
+      : this.donationItemRepo;
+
+    validateId(orderId, 'Order');
+
+    // All orders have allocations so this will have something.
+    const allocations = await targetAllocationRepo.find({ where: { orderId } });
+
+    for (const allocation of allocations) {
+      await targetItemRepo.decrement(
+        { itemId: allocation.itemId },
+        'reservedQuantity',
+        allocation.allocatedQuantity,
+      );
+    }
+
+    await targetAllocationRepo.remove(allocations);
+  }
 }

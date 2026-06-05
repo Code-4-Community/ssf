@@ -222,4 +222,100 @@ describe('AllocationsService', () => {
       expect(Number(allocationCountAfter)).toBe(Number(allocationCountBefore));
     });
   });
+
+  describe('freeAllByOrder', () => {
+    // Order 2 is seeded with 3 allocations (see getAllAllocationsByOrder above).
+    const orderId = 2;
+
+    it('should remove all allocations for an order and decrement each reservedQuantity by the allocated amount', async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const allocations = await allocationRepo.find({ where: { orderId } });
+      expect(allocations.length).toBeGreaterThan(0);
+
+      // Sum the allocated quantity per item and capture reserved-before
+      const allocatedByItem = new Map<number, number>();
+      const reservedBefore = new Map<number, number>();
+      for (const allocation of allocations) {
+        allocatedByItem.set(
+          allocation.itemId,
+          (allocatedByItem.get(allocation.itemId) ?? 0) +
+            allocation.allocatedQuantity,
+        );
+        if (!reservedBefore.has(allocation.itemId)) {
+          const item = (await donationItemRepo.findOne({
+            where: { itemId: allocation.itemId },
+          })) as DonationItem;
+          reservedBefore.set(allocation.itemId, item.reservedQuantity);
+        }
+      }
+
+      await service.freeAllByOrder(orderId);
+
+      expect(await allocationRepo.find({ where: { orderId } })).toHaveLength(0);
+
+      for (const [itemId, allocated] of allocatedByItem) {
+        const item = (await donationItemRepo.findOne({
+          where: { itemId },
+        })) as DonationItem;
+        expect(item.reservedQuantity).toBe(
+          (reservedBefore.get(itemId) as number) - allocated,
+        );
+      }
+    });
+
+    it('should work with a given transaction manager', async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+
+      expect(
+        (await allocationRepo.find({ where: { orderId } })).length,
+      ).toBeGreaterThan(0);
+
+      await testDataSource.transaction(async (manager) => {
+        await service.freeAllByOrder(orderId, manager);
+      });
+
+      expect(await allocationRepo.find({ where: { orderId } })).toHaveLength(0);
+    });
+
+    it('should rollback all changes if an error occurs during the transaction', async () => {
+      const allocationRepo = testDataSource.getRepository(Allocation);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const allocationsBefore = await allocationRepo.find({
+        where: { orderId },
+      });
+      const allocationCountBefore = await allocationRepo.count();
+      const itemIds = [...new Set(allocationsBefore.map((a) => a.itemId))];
+      const reservedBefore = new Map<number, number>();
+      for (const itemId of itemIds) {
+        const item = (await donationItemRepo.findOne({
+          where: { itemId },
+        })) as DonationItem;
+        reservedBefore.set(itemId, item.reservedQuantity);
+      }
+
+      await expect(
+        testDataSource.transaction(async (manager) => {
+          await service.freeAllByOrder(orderId, manager);
+          throw new Error('Simulated failure');
+        }),
+      ).rejects.toThrow('Simulated failure');
+
+      // Nothing was removed and no reservedQuantity changed.
+      expect(await allocationRepo.count()).toBe(allocationCountBefore);
+      expect(await allocationRepo.find({ where: { orderId } })).toHaveLength(
+        allocationsBefore.length,
+      );
+      for (const itemId of itemIds) {
+        const item = (await donationItemRepo.findOne({
+          where: { itemId },
+        })) as DonationItem;
+        expect(item.reservedQuantity).toBe(
+          reservedBefore.get(itemId) as number,
+        );
+      }
+    });
+  });
 });
