@@ -1229,6 +1229,8 @@ describe('DonationService', () => {
               quantity: 5,
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
               foodRescue: false,
+              ozPerItem: 3.4,
+              estimatedValue: 3.4,
             },
           ],
         }),

@@ -481,8 +481,8 @@ export interface CreateDonationDto {
 export interface CreateDonationItemDto {
   itemName: string;
   quantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }

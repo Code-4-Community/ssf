@@ -110,7 +110,7 @@ export class DonationItemsService {
         updateData.estimatedValue = dto.estimatedValue;
       if (dto.foodRescue !== undefined) updateData.foodRescue = dto.foodRescue;
 
-      // If included in DTO, keep it, otherwise use whatever is in the DB (could be null)
+      // If included in DTO, keep it, otherwise use whatever is in the DB
       const resultingOzPerItem =
         updateData.ozPerItem !== undefined
           ? updateData.ozPerItem
@@ -148,7 +148,7 @@ export class DonationItemsService {
         estimatedValue: item.estimatedValue,
         foodType: item.foodType,
         foodRescue: item.foodRescue,
-        detailsConfirmed: item.ozPerItem != null && item.estimatedValue != null,
+        detailsConfirmed: true,
       }),
     );
     return transactionRepo.save(donationItems);
