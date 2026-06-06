@@ -9,6 +9,7 @@ export type VolunteerOrder = {
   createdAt: Date;
   shippedAt: Date | null;
   deliveredAt: Date | null;
+  pantryId: number;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;
