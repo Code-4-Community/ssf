@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button } from '@chakra-ui/react';
+import { Box, Button, Text } from '@chakra-ui/react';
 import { CircleCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,23 +30,21 @@ const PageEmptyState: React.FC<PageEmptyStateProps> = ({
       alignItems="center"
       justifyContent="center"
       textAlign="center"
-      fontFamily="'Inter', sans-serif"
-      fontSize="sm"
-      color="neutral.600"
       py={10}
       gap={2}
     >
       <Box mb={2}>
-        <CircleCheck size={24} color="#262626" />
+        <CircleCheck size={24} color="var(--chakra-colors-neutral-800)" />
       </Box>
-      <Box fontWeight="600" fontSize="lg" color="neutral.800">
-        Nothing to see here.
-      </Box>
-      <Box color="neutral.700" fontWeight="400">
+      <Text fontWeight="600" textStyle="p" color="neutral.800">
+        Nothing to see here!
+      </Text>
+      <Text textStyle="p2" color="neutral.700" fontWeight="400">
         {message}
-      </Box>
+      </Text>
       <Box display="flex" gap={3} mt={4}>
         <Button
+          size="sm"
           bg="neutral.700"
           color="white"
           _hover={{ bg: 'neutral.800' }}
@@ -55,7 +53,9 @@ const PageEmptyState: React.FC<PageEmptyStateProps> = ({
           {primaryButtonText}
         </Button>
         <Button
-          bg="neutral.300"
+          size="sm"
+          variant="outline"
+          borderColor="neutral.200"
           color="neutral.700"
           _hover={{ bg: 'neutral.50' }}
           onClick={() => navigate(secondaryButtonLink)}

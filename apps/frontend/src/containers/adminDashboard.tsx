@@ -16,8 +16,8 @@ import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/SectionEmptyState';
-import PageEmptyState from '@components/PageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import PageEmptyState from '@components/pageEmptyState';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();

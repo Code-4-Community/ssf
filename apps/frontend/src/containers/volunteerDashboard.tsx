@@ -8,8 +8,8 @@ import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/SectionEmptyState';
-import PageEmptyState from '@components/PageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import PageEmptyState from '@components/pageEmptyState';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -75,9 +75,9 @@ const VolunteerDashboard: React.FC = () => {
       {isPageEmpty ? (
         <PageEmptyState
           entity="food requests or orders"
-          primaryButtonText="View Assigned Pantries"
+          primaryButtonText="View Pantries"
           primaryButtonLink={ROUTES.VOLUNTEER_ASSIGNED_PANTRIES}
-          secondaryButtonText="View Orders"
+          secondaryButtonText="View Past Orders"
           secondaryButtonLink={ROUTES.VOLUNTEER_ORDER_MANAGEMENT}
         />
       ) : (

@@ -12,8 +12,8 @@ import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/SectionEmptyState';
-import PageEmptyState from '@components/PageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import PageEmptyState from '@components/pageEmptyState';
 
 const PantryDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -63,22 +63,7 @@ const PantryDashboard: React.FC = () => {
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!pantry) {
-    return (
-      <Box p={12}>
-        <Heading textStyle="h1" color="gray.600" mb={6}>
-          Pantry Dashboard
-        </Heading>
-        <PageEmptyState
-          subtitle="Unable to load pantry information. Your pantry may not be set up yet."
-          primaryButtonText="Create Food Request"
-          primaryButtonLink={ROUTES.REQUEST_FORM}
-          secondaryButtonText="View Orders"
-          secondaryButtonLink={ROUTES.PANTRY_ORDER_MANAGEMENT}
-        />
-      </Box>
-    );
-  }
+  if (!pantry) return null;
 
   const isPageEmpty =
     recentFoodRequests.length === 0 && recentOrders.length === 0;
