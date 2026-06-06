@@ -196,4 +196,115 @@ export const emailTemplates = {
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),
+
+  pantryRequestMatchedOrder: (params: {
+    pantryName: string;
+    items: { quantity: string; product: string }[];
+    brand: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: 'Your Securing Safe Food Request Has Been Matched to a Delivery',
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Good news! Your recent food request through Securing Safe Food has been successfully matched to an order and is now moving forward toward delivery. 
+      </p>
+      <p><strong>Items you will receive from ${params.brand}:</strong></p>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+      <p>
+        To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>. 
+      </p>
+      <p>
+        If any details change on your end or you have updated availability, please update your request in the system or email your coordinator, ${
+          params.volunteerName
+        } at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a>.
+      </p>
+      <p>
+        We will continue to keep you informed as the order progresses. We’re excited to help support your pantry and looking forward to this donation!
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  pantryRequestClosed: (params: {
+    pantryName: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: 'Your Securing Safe Food Request Has Been Completed',
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Your recent food request through Securing Safe Food has been marked as complete.
+        We are glad to fulfill your pantry's requests! If you would like to continue receiving
+        donations, please submit a new food request at any time to ensure there is no interruption
+        in future deliveries.
+      </p>
+      <p>
+        To submit a new request or view past orders, please log into the platform here:
+        <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+      <p>
+        If you have any questions or feedback about this request, please do not hesitate to reach out.
+        You can contact your pantry coordinator, ${params.volunteerName}, at
+        <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  fmDonationMatchedOrder: (params: {
+    manufacturerName: string;
+    items: { quantity: string; product: string }[];
+    pantryName: string;
+    pantryAddress: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject:
+      'Your Securing Safe Food Donation Has Been Matched to a Pantry Order',
+    bodyHTML: `
+    <p>Hi ${params.manufacturerName},</p>
+    <p>
+      Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is moving forward towards fulfillment.
+    </p>
+    <p><strong>Matched Item(s):</strong><br /></p>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+    <p>
+      <strong>Recipient Pantry:</strong> ${params.pantryName}<br />
+    </p>
+    <p>
+      <strong>Address:</strong><br />
+      ${params.pantryAddress}
+    </p>
+    <p>
+      Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a> to review the full delivery details, timelines, and any special handling instructions associated with this shipment.
+    </p>
+    <p>
+      Your support plays a direct role in expanding access to allergen-safe foods, and we truly appreciate your commitment to this work.
+    </p>
+    <p>
+      If you have any questions or need assistance, please contact your coordinator, ${
+        params.volunteerName
+      } at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a>.
+    </p>
+    <p>
+      Thank you so much.
+    </p>
+    <p>Best regards,<br />The Securing Safe Food Team</p>
+  `,
+  }),
 };

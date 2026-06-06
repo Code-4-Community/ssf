@@ -8,7 +8,9 @@ import {
   ValidationPipe,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
@@ -196,7 +198,8 @@ export class RequestsController {
   @Patch('/:requestId/close')
   async closeRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<void> {
-    await this.requestsService.closeRequest(requestId);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId, req.user.id);
   }
 }
