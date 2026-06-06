@@ -196,7 +196,7 @@ const VolunteerOrderManagement: React.FC = () => {
     }
   }, [searchParams, statusOrders, navigate]);
 
-  // Pre-fill pantry filter from url param and then clear the param.
+  // Pre-fill pantry filter from url param, url is kept for back/forward navigation
   useEffect(() => {
     const pantryIdFromUrl = searchParams.get('pantryId');
 
