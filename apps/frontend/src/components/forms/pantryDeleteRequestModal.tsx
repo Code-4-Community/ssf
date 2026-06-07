@@ -38,38 +38,6 @@ const PantryDeleteRequestActionModal: React.FC<
     }
   };
 
-  const cancelButton = (
-    <Button
-      textStyle="p2"
-      fontWeight={600}
-      color="neutral.800"
-      variant="outline"
-      width={16}
-      flexShrink={0}
-      textAlign="center"
-      lineHeight="28px"
-      onClick={onClose}
-    >
-      Cancel
-    </Button>
-  );
-
-  const deleteButton = (
-    <Button
-      textStyle="p2"
-      fontWeight={600}
-      bg={'red.hover'}
-      color={'white'}
-      width="92px"
-      flexShrink={0}
-      textAlign="center"
-      lineHeight="28px"
-      onClick={onCloseRequest}
-    >
-      Delete
-    </Button>
-  );
-
   return (
     <Dialog.Root
       open={isOpen}
@@ -108,8 +76,8 @@ const PantryDeleteRequestActionModal: React.FC<
               <Box
                 borderWidth={1}
                 p={6}
-                borderColor={'neutral.100'}
-                borderRadius={5}
+                borderColor={'gray.200'}
+                borderRadius={6}
               >
                 <Text textStyle="p2" color="gray.dark">
                   Request #{request.requestId}
@@ -119,8 +87,32 @@ const PantryDeleteRequestActionModal: React.FC<
                 </Text>
               </Box>
               <Flex justifyContent="flex-end" gap={2.5}>
-                {cancelButton}
-                {deleteButton}
+                <Button
+                  textStyle="p2"
+                  fontWeight={600}
+                  color="neutral.800"
+                  variant="outline"
+                  width={16}
+                  flexShrink={0}
+                  textAlign="center"
+                  lineHeight="28px"
+                  onClick={onClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  textStyle="p2"
+                  fontWeight={600}
+                  bg={'red.hover'}
+                  color={'white'}
+                  width="92px"
+                  flexShrink={0}
+                  textAlign="center"
+                  lineHeight="28px"
+                  onClick={onCloseRequest}
+                >
+                  Delete
+                </Button>
               </Flex>
             </VStack>
           </Dialog.Body>

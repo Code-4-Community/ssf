@@ -109,6 +109,7 @@ const customConfig = defineConfig({
           light: { value: '#515151' },
           dark: { value: '#111' },
           subtle: { value: '#F4F4F5' },
+          200: { value: '#E4E4E7' },
           800: { value: '#27272A' },
         },
         teal: {

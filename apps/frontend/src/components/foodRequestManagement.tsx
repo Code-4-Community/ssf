@@ -395,7 +395,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
             </Table.Row>
           ))}
 
-          {selectedViewDetailsRequest && !deleteRequest && (
+          {selectedViewDetailsRequest && (
             <RequestDetailsModal
               request={selectedViewDetailsRequest}
               isOpen={selectedViewDetailsRequest !== null}

@@ -3,11 +3,11 @@ import {
   OrderItemDetailsGroupedByFoodType,
   OrderDetails,
   FoodRequestSummaryDto,
-  UpdateFoodRequestBody,
-} from 'types/types';
+  FoodRequestStatus,
+} from '../../types/types';
 import { OrderStatus, RequestSize, FoodType } from '../../types/types';
 import { ORDER_STATUS_LABELS } from '@utils/utils';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Flex,
   Box,
@@ -121,91 +121,20 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
     setIsEditing(false);
   };
 
-  // if the user makes back-to-back changes without closing the modal, the request values stay static
-  // comparing against dynamic baseline values allows for these edge cases
-  // e.g. user edits A -> B -> A
-  // without baseline, the last change would be considered no update and only B would persist
-  const baseline = useRef({
-    requestedSize: request.requestedSize,
-    requestedFoodTypes: request.requestedFoodTypes,
-    additionalInformation: request.additionalInformation ?? '',
-  });
-
   const handleUpdate = async () => {
-    const changed: UpdateFoodRequestBody = {};
-    if (requestedSize !== baseline.current.requestedSize)
-      changed.requestedSize = requestedSize;
-    const foodTypesChanged =
-      selectedFoodTypes.length !== baseline.current.requestedFoodTypes.length ||
-      !selectedFoodTypes.every((t) =>
-        baseline.current.requestedFoodTypes.includes(t),
-      );
-    if (foodTypesChanged) changed.requestedFoodTypes = selectedFoodTypes;
-    if (additionalNotes !== (baseline.current.additionalInformation ?? ''))
-      changed.additionalInformation =
-        additionalNotes === '' ? null : additionalNotes;
-
-    // allow user to exit the edit view even if they make no updates
-    // NOTE: not sure if this is the design choice we want to go with
-    if (Object.keys(changed).length === 0) {
-      setIsEditing(false);
-      return;
-    }
-
     try {
-      await apiClient.updateFoodRequest(request.requestId, changed);
-      onSuccess();
-      baseline.current = {
+      await apiClient.updateFoodRequest(request.requestId, {
         requestedSize,
         requestedFoodTypes: selectedFoodTypes,
-        additionalInformation: additionalNotes,
-      };
+        additionalInformation: additionalNotes === '' ? null : additionalNotes,
+      });
+      onSuccess();
       setAlertMessage('Successfully updated food request.');
       setIsEditing(false);
-    } catch (e) {
+    } catch {
       setAlertMessage('Food request could not be updated.');
     }
   };
-
-  const editButton = (
-    <HStack
-      height={6}
-      minWidth={6}
-      padding={0.5}
-      justify="center"
-      align="center"
-      gap={1}
-      borderRadius="sm"
-      color={'gray.800'}
-      background="gray.subtle"
-      cursor="pointer"
-      _hover={{ background: 'neutral.100' }}
-      onClick={() => setIsEditing(true)}
-    >
-      <Pencil size={14} />
-    </HStack>
-  );
-
-  const deleteButton = (
-    <HStack
-      width={6}
-      height={6}
-      minWidth={6}
-      padding={0.5}
-      justify="center"
-      align="center"
-      gap={1}
-      flexShrink={0}
-      borderRadius="sm"
-      color="red.700"
-      background="red.subtle"
-      cursor="pointer"
-      _hover={{ background: 'red.200' }}
-      onClick={onDelete}
-    >
-      <Trash2 size={14} />
-    </HStack>
-  );
 
   return (
     <>
@@ -235,10 +164,43 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               <Dialog.Title fontSize="lg" fontWeight={600} fontFamily="inter">
                 Food Request #{request.requestId}
               </Dialog.Title>
-              {!isEditing && (
+              {!isEditing && request.status === FoodRequestStatus.ACTIVE && (
                 <>
-                  {editButton}
-                  {deleteButton}
+                  <HStack
+                    height={6}
+                    minWidth={6}
+                    padding={0.5}
+                    justify="center"
+                    align="center"
+                    gap={1}
+                    borderRadius="sm"
+                    color={'gray.800'}
+                    background="gray.subtle"
+                    cursor="pointer"
+                    _hover={{ background: 'neutral.100' }}
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Pencil size={14} />
+                  </HStack>
+
+                  <HStack
+                    width={6}
+                    height={6}
+                    minWidth={6}
+                    padding={0.5}
+                    justify="center"
+                    align="center"
+                    gap={1}
+                    flexShrink={0}
+                    borderRadius="sm"
+                    color="red.700"
+                    background="red.subtle"
+                    cursor="pointer"
+                    _hover={{ background: 'red.200' }}
+                    onClick={onDelete}
+                  >
+                    <Trash2 size={14} />
+                  </HStack>
                 </>
               )}
             </Dialog.Header>
