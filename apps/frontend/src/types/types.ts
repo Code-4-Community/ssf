@@ -610,24 +610,3 @@ export interface UpdateDonationItemDetailsDto {
   estimatedValue?: number;
   foodRescue?: boolean;
 }
-
-export interface AdminVolunteerStats {
-  'Food Requests': string;
-  Orders: string;
-  Donations: string;
-  Volunteers: string;
-}
-
-export interface PantryDashboardStats {
-  'Food Requests': string;
-  Orders: string;
-  'Items Received': string;
-  'Value Received': string;
-}
-
-export interface ManufacturerDashboardStats {
-  Donations: string;
-  'Value Donated': string;
-  'Items Donated': string;
-  'lbs Donated': string;
-}
