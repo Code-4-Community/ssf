@@ -149,7 +149,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                     >
                       {requestedSize || 'Select size'}
-                      <ChevronDownIcon stroke="#B8B8B8"></ChevronDownIcon>
+                      <Box color="neutral.300">
+                        <ChevronDownIcon />
+                      </Box>
                     </Button>
                   </Menu.Trigger>
 

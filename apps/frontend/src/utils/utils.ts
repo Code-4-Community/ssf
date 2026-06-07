@@ -17,6 +17,12 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
   [OrderStatus.DELIVERED]: TEAL_STATUS,
 };
 
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  [OrderStatus.PENDING]: 'Received',
+  [OrderStatus.SHIPPED]: 'In Progress',
+  [OrderStatus.DELIVERED]: 'Completed',
+};
+
 export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =
   {
     [DonationStatus.MATCHED]: YELLOW_STATUS,

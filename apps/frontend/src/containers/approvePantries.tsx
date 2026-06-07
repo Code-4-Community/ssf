@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ROUTES } from '../routes';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Table,
   Button,
@@ -24,8 +23,10 @@ import {
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { ROUTES } from '../routes';
 
 const ApprovePantries: React.FC = () => {
+  const navigate = useNavigate();
   const [pantries, setPantries] = useState<Pantry[]>([]);
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
@@ -108,9 +109,9 @@ const ApprovePantries: React.FC = () => {
           : `${name} - Application Rejected`;
 
       setSuccessMessage(message);
-      setSearchParams({});
+      navigate(ROUTES.APPROVE_PANTRIES, { replace: true });
     }
-  }, [searchParams, setSearchParams, setErrorMessage, setSuccessMessage]);
+  }, [searchParams, navigate, setErrorMessage, setSuccessMessage]);
 
   return (
     <Box p={12}>

@@ -1,13 +1,17 @@
 import { SetMetadata, Type } from '@nestjs/common';
 import { Role } from '../users/types';
+import { User } from '../users/users.entity';
 
 // Resolver function type to get the owner user ID for a given entity ID
 // Should return the user IDs of the users who are authorized to call the
-// endpoint that the decorator is attached to
+// endpoint that the decorator is attached to. The current authenticated user
+// is optionally provided so resolvers can branch on role when different roles
+// need different ownership rules (e.g. PANTRY -> pantry rep, VOLUNTEER -> assigned volunteers).
 // If the resolver returns null, it will be treated as if the user is not authorized
 export type OwnerIdResolver = (params: {
   entityId: number;
   services: ServiceRegistry;
+  user?: User;
 }) => Promise<number[] | null>;
 
 // Registry of services that can be easily resolved
@@ -18,8 +22,12 @@ export interface ServiceRegistry {
 }
 
 // Configuration for ownership check
+/**
+ *
+ */
 export interface OwnershipConfig {
   idParam: string;
+  idSource?: 'params' | 'body';
   resolver: OwnerIdResolver;
   bypassRoles?: Role[];
 }

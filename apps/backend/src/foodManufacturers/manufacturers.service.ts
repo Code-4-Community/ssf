@@ -291,11 +291,11 @@ export class FoodManufacturersService {
           name: foodManufacturerContact.firstName,
         });
 
-      await this.emailsService.sendEmails(
-        [foodManufacturerContact.email],
-        manufacturerMessage.subject,
-        manufacturerMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: foodManufacturerContact.email,
+        subject: manufacturerMessage.subject,
+        bodyHtml: manufacturerMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send food manufacturer application submitted confirmation email to representative',
@@ -304,11 +304,11 @@ export class FoodManufacturersService {
 
     try {
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
-      await this.emailsService.sendEmails(
-        [SSF_PARTNER_EMAIL],
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send new food manufacturer application notification email to SSF',
@@ -380,11 +380,11 @@ export class FoodManufacturersService {
         name: newFoodManufacturer.firstName,
       });
 
-      await this.emailsService.sendEmails(
-        [newFoodManufacturer.email],
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: newFoodManufacturer.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send food manufacturer account approved notification email to representative',

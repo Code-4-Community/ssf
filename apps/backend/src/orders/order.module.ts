@@ -18,6 +18,7 @@ import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { Donation } from '../donations/donations.entity';
 import { PantriesModule } from '../pantries/pantries.module';
+import { EmailsModule } from '../emails/email.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { PantriesModule } from '../pantries/pantries.module';
     DonationItemsModule,
     DonationModule,
     forwardRef(() => PantriesModule),
+    EmailsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
