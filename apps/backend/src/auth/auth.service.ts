@@ -6,9 +6,6 @@ import {
 import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
-} from '@aws-sdk/client-cognito-identity-provider';
-
-import {
   AdminAddUserToGroupCommand,
   AdminRemoveUserFromGroupCommand,
 } from '@aws-sdk/client-cognito-identity-provider';

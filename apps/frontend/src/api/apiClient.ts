@@ -282,10 +282,8 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async promoteVolunteerToAdmin(userId: number): Promise<User> {
-    return this.axiosInstance
-      .patch(`/api/users/${userId}/role`, { role: 'admin' })
-      .then((response) => response.data);
+  public async promoteVolunteerToAdmin(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/promote-volunteer`);
   }
 
   public async getFoodRequest(requestId: number): Promise<FoodRequest> {

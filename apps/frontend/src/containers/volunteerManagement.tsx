@@ -177,6 +177,7 @@ const VolunteerManagement: React.FC = () => {
               >
                 Actions
               </Table.ColumnHeader>
+              <Table.ColumnHeader width="50px" />
             </Table.Row>
           </Table.Header>
           <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
@@ -204,44 +205,44 @@ const VolunteerManagement: React.FC = () => {
                 </Table.Cell>
                 <Table.Cell>{volunteer.email}</Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Flex gap={2} justify="flex-end" align="center">
-                    <Link
-                      color="neutral.700"
-                      fontWeight={400}
-                      textStyle="p2"
-                      variant="underline"
-                      textDecorationColor="neutral.700"
-                      href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
-                    >
-                      View Assigned Pantries
-                    </Link>
-                    <Menu.Root>
-                      <Menu.Trigger asChild>
-                        <IconButton
-                          variant="ghost"
-                          size="sm"
-                          aria-label="More actions"
-                        >
-                          <EllipsisVertical size={18} />
-                        </IconButton>
-                      </Menu.Trigger>
-                      <Portal>
-                        <Menu.Positioner>
-                          <Menu.Content>
-                            <Menu.Item
-                              value="promote"
-                              onClick={() => {
-                                setSelectedVolunteer(volunteer);
-                                setIsPromoteModalOpen(true);
-                              }}
-                            >
-                              Promote to Admin
-                            </Menu.Item>
-                          </Menu.Content>
-                        </Menu.Positioner>
-                      </Portal>
-                    </Menu.Root>
-                  </Flex>
+                  <Link
+                    color="neutral.700"
+                    fontWeight={400}
+                    textStyle="p2"
+                    variant="underline"
+                    textDecorationColor="neutral.700"
+                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
+                  >
+                    View Assigned Pantries
+                  </Link>
+                </Table.Cell>
+                <Table.Cell>
+                  <Menu.Root>
+                    <Menu.Trigger asChild>
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        aria-label="More actions"
+                      >
+                        <EllipsisVertical size={18} />
+                      </IconButton>
+                    </Menu.Trigger>
+                    <Portal>
+                      <Menu.Positioner>
+                        <Menu.Content>
+                          <Menu.Item
+                            value="promote"
+                            onClick={() => {
+                              setSelectedVolunteer(volunteer);
+                              setIsPromoteModalOpen(true);
+                            }}
+                          >
+                            Promote to Admin
+                          </Menu.Item>
+                        </Menu.Content>
+                      </Menu.Positioner>
+                    </Portal>
+                  </Menu.Root>
                 </Table.Cell>
               </Table.Row>
             ))}

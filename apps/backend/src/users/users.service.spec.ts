@@ -737,16 +737,19 @@ describe('UsersService', () => {
 
   describe('promoteVolunteerToAdmin', () => {
     it('should promote volunteer to admin successfully', async () => {
-      const volunteers = await testDataSource.getRepository(User).find({
+      const userRepo = testDataSource.getRepository(User);
+      const volunteers = await userRepo.find({
         where: { role: Role.VOLUNTEER },
       });
       expect(volunteers.length).toBeGreaterThan(0);
       const volunteer = volunteers[0];
 
-      const result = await service.promoteVolunteerToAdmin(volunteer.id);
+      await service.promoteVolunteerToAdmin(volunteer.id);
 
-      expect(result.role).toBe(Role.ADMIN);
-      expect(result.id).toBe(volunteer.id);
+      const updatedUser = await userRepo.findOne({
+        where: { id: volunteer.id },
+      });
+      expect(updatedUser!.role).toBe(Role.ADMIN);
     });
 
     it('should clear volunteer pantry assignments after promotion', async () => {
@@ -765,24 +768,40 @@ describe('UsersService', () => {
       expect(assignments).toHaveLength(0);
     });
 
-    it('should call Cognito addUserToGroup and removeUserFromGroup', async () => {
-      const volunteer = await testDataSource.getRepository(User).findOne({
+    it('should call Cognito addUserToGroup and removeUserFromGroup when user has Cognito account', async () => {
+      const userRepo = testDataSource.getRepository(User);
+      const volunteer = await userRepo.findOne({
         where: { role: Role.VOLUNTEER },
       });
       expect(volunteer).toBeDefined();
 
+      // Set userCognitoSub to simulate a user with a Cognito account
+      volunteer!.userCognitoSub = 'test-cognito-sub';
+      await userRepo.save(volunteer!);
+
       await service.promoteVolunteerToAdmin(volunteer!.id);
 
-      if (volunteer!.userCognitoSub) {
-        expect(mockAuthService.addUserToGroup).toHaveBeenCalledWith(
-          volunteer!.email,
-          'admin',
-        );
-        expect(mockAuthService.removeUserFromGroup).toHaveBeenCalledWith(
-          volunteer!.email,
-          'volunteer',
-        );
-      }
+      expect(mockAuthService.addUserToGroup).toHaveBeenCalledWith(
+        volunteer!.email,
+        'admin',
+      );
+      expect(mockAuthService.removeUserFromGroup).toHaveBeenCalledWith(
+        volunteer!.email,
+        'volunteer',
+      );
+    });
+
+    it('should not call Cognito methods when user has no Cognito account', async () => {
+      const volunteer = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.VOLUNTEER },
+      });
+      expect(volunteer).toBeDefined();
+      expect(volunteer!.userCognitoSub).toBeNull();
+
+      await service.promoteVolunteerToAdmin(volunteer!.id);
+
+      expect(mockAuthService.addUserToGroup).not.toHaveBeenCalled();
+      expect(mockAuthService.removeUserFromGroup).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
@@ -836,7 +855,7 @@ describe('UsersService', () => {
       await userRepo.save(volunteer!);
 
       mockAuthService.addUserToGroup.mockRejectedValueOnce(
-        new Error('Cognito error'),
+        new InternalServerErrorException('Cognito error'),
       );
 
       await expect(

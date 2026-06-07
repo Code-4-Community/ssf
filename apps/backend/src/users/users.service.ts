@@ -301,7 +301,7 @@ export class UsersService {
     }
   }
 
-  async promoteVolunteerToAdmin(userId: number): Promise<User> {
+  async promoteVolunteerToAdmin(userId: number): Promise<void> {
     validateId(userId, 'User');
 
     const user = await this.repo.findOne({
@@ -319,39 +319,18 @@ export class UsersService {
       );
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await this.dataSource.transaction(async (transactionManager) => {
+      const userRepo = transactionManager.getRepository(User);
 
-    try {
       user.role = Role.ADMIN;
-      await queryRunner.manager.save(user);
+      user.pantries = [];
+      await userRepo.save(user);
 
-      await queryRunner.query(
-        `DELETE FROM volunteer_assignments WHERE volunteer_id = $1`,
-        [userId],
-      );
-
+      // Only update Cognito groups if user has a Cognito account
       if (user.userCognitoSub) {
         await this.authService.addUserToGroup(user.email, 'admin');
         await this.authService.removeUserFromGroup(user.email, 'volunteer');
       }
-
-      await queryRunner.commitTransaction();
-      return user;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        'Failed to promote volunteer to admin. Please try again.',
-      );
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 }

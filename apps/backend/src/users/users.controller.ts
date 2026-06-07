@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   Delete,
   Get,
@@ -15,7 +14,6 @@ import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { userSchemaDto } from './dtos/userSchema.dto';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
-import { UpdateUserRoleDto } from './dtos/update-user-role.dto';
 import { PendingApplication, Role } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -55,16 +53,10 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
-  @Patch('/:id/role')
+  @Patch('/:id/promote-volunteer')
   @Roles(Role.ADMIN)
-  async promoteToAdmin(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateUserRoleDto,
-  ): Promise<User> {
-    if (dto.role !== Role.ADMIN) {
-      throw new BadRequestException('Only promotion to admin is supported');
-    }
-    return this.usersService.promoteVolunteerToAdmin(id);
+  async promoteToAdmin(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.usersService.promoteVolunteerToAdmin(id);
   }
 
   // Keeping these two as functionality seems useful
