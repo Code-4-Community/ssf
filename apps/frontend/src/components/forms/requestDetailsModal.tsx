@@ -5,7 +5,13 @@ import {
   FoodRequestSummaryDto,
   FoodRequestStatus,
 } from '../../types/types';
-import { OrderStatus, RequestSize, FoodType } from '../../types/types';
+import {
+  OrderStatus,
+  RequestSize,
+  FoodType,
+  User,
+  Role,
+} from '../../types/types';
 import { ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
@@ -37,6 +43,7 @@ import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '../floatingAlert';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 interface RequestDetailsModalProps {
   request: FoodRequestSummaryDto;
@@ -54,6 +61,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   onDelete,
 }) => {
   useModalBodyCleanup();
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
   const [alertState, setAlertMessage] = useAlert();
 
   const [orderDetailsList, setOrderDetailsList] = useState<OrderDetails[]>([]);
@@ -68,6 +78,17 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState<string>(
     request.additionalInformation ?? '',
   );
+
+  useEffect(() => {
+    if (authStatus === 'authenticated') {
+      apiClient
+        .getMe()
+        .then(setCurrentUser)
+        .catch(() => setCurrentUser(null));
+    } else {
+      setCurrentUser(null);
+    }
+  }, [authStatus]);
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
@@ -166,23 +187,24 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               </Dialog.Title>
               {!isEditing && request.status === FoodRequestStatus.ACTIVE && (
                 <>
-                  <HStack
-                    height={6}
-                    minWidth={6}
-                    padding={0.5}
-                    justify="center"
-                    align="center"
-                    gap={1}
-                    borderRadius="sm"
-                    color={'gray.800'}
-                    background="gray.subtle"
-                    cursor="pointer"
-                    _hover={{ background: 'neutral.100' }}
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Pencil size={14} />
-                  </HStack>
-
+                  {currentUser?.role === Role.PANTRY && (
+                    <HStack
+                      height={6}
+                      minWidth={6}
+                      padding={0.5}
+                      justify="center"
+                      align="center"
+                      gap={1}
+                      borderRadius="sm"
+                      color={'gray.800'}
+                      background="gray.subtle"
+                      cursor="pointer"
+                      _hover={{ background: 'neutral.100' }}
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Pencil size={14} />
+                    </HStack>
+                  )}
                   <HStack
                     width={6}
                     height={6}
