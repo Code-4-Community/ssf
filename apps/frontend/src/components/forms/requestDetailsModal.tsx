@@ -27,23 +27,17 @@ import {
   Pagination,
   ButtonGroup,
   IconButton,
-  HStack,
   Button,
   Textarea,
 } from '@chakra-ui/react';
-import {
-  ChevronRight,
-  ChevronLeft,
-  Pencil,
-  Trash2,
-  ChevronDownIcon,
-} from 'lucide-react';
+import { ChevronRight, ChevronLeft, ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '../floatingAlert';
 import { useAuthenticator } from '@aws-amplify/ui-react';
+import { EditButton, DeleteButton } from '@components/editDeleteButtons';
 
 interface RequestDetailsModalProps {
   request: FoodRequestSummaryDto;
@@ -188,41 +182,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               {!isEditing && request.status === FoodRequestStatus.ACTIVE && (
                 <>
                   {currentUser?.role === Role.PANTRY && (
-                    <HStack
-                      height={6}
-                      minWidth={6}
-                      padding={0.5}
-                      justify="center"
-                      align="center"
-                      gap={1}
-                      borderRadius="sm"
-                      color={'neutral.800'}
-                      background="neutral.50"
-                      cursor="pointer"
-                      _hover={{ background: 'neutral.200' }}
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Pencil size={14} />
-                    </HStack>
+                    <EditButton onClick={() => setIsEditing(true)}></EditButton>
                   )}
-                  <HStack
-                    width={6}
-                    height={6}
-                    minWidth={6}
-                    padding={0.5}
-                    justify="center"
-                    align="center"
-                    gap={1}
-                    flexShrink={0}
-                    borderRadius="sm"
-                    color="red.hover"
-                    background="red.200"
-                    cursor="pointer"
-                    _hover={{ background: 'red.300' }}
-                    onClick={onDelete}
-                  >
-                    <Trash2 size={14} />
-                  </HStack>
+                  <DeleteButton onClick={onDelete}></DeleteButton>
                 </>
               )}
             </Dialog.Header>
