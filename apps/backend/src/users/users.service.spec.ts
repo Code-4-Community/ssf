@@ -793,10 +793,9 @@ describe('UsersService', () => {
 
     it('should not call Cognito methods when user has no Cognito account', async () => {
       const volunteer = await testDataSource.getRepository(User).findOne({
-        where: { role: Role.VOLUNTEER },
+        where: { role: Role.VOLUNTEER, userCognitoSub: null },
       });
       expect(volunteer).toBeDefined();
-      expect(volunteer!.userCognitoSub).toBeNull();
 
       await service.promoteVolunteerToAdmin(volunteer!.id);
 
