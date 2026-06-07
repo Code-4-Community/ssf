@@ -228,71 +228,17 @@ describe('DonationItemsService', () => {
       expect(rice.detailsConfirmed).toEqual(true);
     });
 
-    it('creates items with optional fields omitted', async () => {
+    it('sets detailsConfirmed to true since ozPerItem and estimatedValue are required', async () => {
       const donation = await getSeedDonation();
       const transactionManager = testDataSource.createEntityManager();
 
-      const minimalItems: CreateDonationItemDto[] = [
-        {
-          itemName: 'Plain Item',
-          quantity: 3,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: true,
-        },
-      ];
-
       const result = await service.createMultiple(
         donation,
-        minimalItems,
+        validItems,
         transactionManager,
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].itemId).toBeDefined();
-      expect(result[0].ozPerItem).toBeNull();
-      expect(result[0].estimatedValue).toBeNull();
-      expect(result[0].detailsConfirmed).toEqual(false);
-    });
-
-    it('sets detailsConfirmed to true only when both ozPerItem and estimatedValue are provided', async () => {
-      const donation = await getSeedDonation();
-      const transactionManager = testDataSource.createEntityManager();
-
-      const mixedItems: CreateDonationItemDto[] = [
-        {
-          itemName: 'Both Fields',
-          quantity: 4,
-          ozPerItem: 12,
-          estimatedValue: 3.5,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-        {
-          itemName: 'Missing Estimated Value',
-          quantity: 2,
-          ozPerItem: 8,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-        {
-          itemName: 'Missing Oz Per Item',
-          quantity: 6,
-          estimatedValue: 1.99,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-      ];
-
-      const result = await service.createMultiple(
-        donation,
-        mixedItems,
-        transactionManager,
-      );
-
-      const byName = Object.fromEntries(result.map((i) => [i.itemName, i]));
-      expect(byName['Both Fields'].detailsConfirmed).toEqual(true);
-      expect(byName['Missing Estimated Value'].detailsConfirmed).toEqual(false);
-      expect(byName['Missing Oz Per Item'].detailsConfirmed).toEqual(false);
+      expect(result.every((item) => item.detailsConfirmed)).toBe(true);
     });
 
     it('rolls back all items when one fails within a transaction', async () => {
@@ -308,6 +254,8 @@ describe('DonationItemsService', () => {
         {
           itemName: 'a'.repeat(1000),
           quantity: 5,
+          ozPerItem: 10,
+          estimatedValue: 2.5,
           foodType: FoodType.DRIED_BEANS,
           foodRescue: false,
         },
@@ -496,50 +444,6 @@ describe('DonationItemsService', () => {
       expect(item?.ozPerItem).toBeNull();
     });
 
-    it('returns false and does not confirm when only some fields are provided', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-
-      expect(result).toBe(false);
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(item?.estimatedValue).toBeNull();
-      expect(item?.detailsConfirmed).toBe(false);
-    });
-
-    it('confirms item on a second call that supplies the remaining fields', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const firstResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-      expect(firstResult).toBe(false);
-
-      const secondResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(
-          donationId,
-          [{ itemId, estimatedValue: 12.0, foodRescue: true }],
-          tm,
-        ),
-      );
-      expect(secondResult).toBe(true);
-
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(Number(item?.estimatedValue)).toBe(12.0);
-      expect(item?.foodRescue).toBe(true);
-      expect(item?.detailsConfirmed).toBe(true);
-    });
-
     it('allows updating an already-confirmed item without throwing', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 5);
@@ -551,7 +455,18 @@ describe('DonationItemsService', () => {
       );
 
       const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 9.0 }], tm),
+        service.updateItemDetails(
+          donationId,
+          [
+            {
+              itemId,
+              ozPerItem: 9.0,
+              estimatedValue: 10.0,
+              foodRescue: true,
+            },
+          ],
+          tm,
+        ),
       );
 
       expect(result).toBe(true);

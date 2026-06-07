@@ -358,6 +358,8 @@ describe('UsersService', () => {
             itemName: 'Test Item',
             quantity: 10,
             foodType: FoodType.GRANOLA,
+            ozPerItem: 3.4,
+            estimatedValue: 3.4,
             foodRescue: false,
           },
         ],

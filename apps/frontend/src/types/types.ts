@@ -482,8 +482,8 @@ export interface CreateDonationDto {
 export interface CreateDonationItemDto {
   itemName: string;
   quantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
@@ -607,7 +607,7 @@ export interface BulkUpdateTrackingCostDto {
 
 export interface UpdateDonationItemDetailsDto {
   itemId: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
-  foodRescue?: boolean;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodRescue: boolean;
 }
