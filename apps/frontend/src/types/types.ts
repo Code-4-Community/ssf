@@ -225,6 +225,11 @@ export interface DonationOrderDetails {
   items: OrderItemDetails[];
 }
 
+export interface DonationReminderDto {
+  donation: Donation;
+  reminderDate: string;
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;

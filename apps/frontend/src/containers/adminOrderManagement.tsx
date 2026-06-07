@@ -22,10 +22,10 @@ import {
   Search,
 } from 'lucide-react';
 import {
-  capitalize,
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -159,12 +159,25 @@ const AdminOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (allOrders.length === 0) return;
 
-    const matchedOrder = allOrders.find(
-      (order) => order.orderId === Number(orderIdFromUrl),
-    );
+    const id = Number(orderIdFromUrl);
+    const matchedOrder = allOrders.find((order) => order.orderId === id);
 
     if (matchedOrder) {
-      setSelectedOrderId(Number(orderIdFromUrl));
+      setSelectedOrderId(id);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
@@ -345,7 +358,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {capitalize(status)}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -369,7 +382,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} orders at this time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -666,7 +680,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={0.5}
                         px={3}
                       >
-                        {capitalize(order.status)}
+                        {ORDER_STATUS_LABELS[order.status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -719,7 +733,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Table.Cell
                       {...tableCellStyles}
                       textAlign="left"
-                      bg="#FAFAFA"
+                      bg="neutral.50"
                     ></Table.Cell>
                   </Table.Row>
                 );

@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Body,
-  Req,
-} from '@nestjs/common';
-import { User } from '../users/users.entity';
+import { Controller, Get, Param, ParseIntPipe, Req } from '@nestjs/common';
 import { Pantry } from '../pantries/pantries.entity';
 import { VolunteersService } from './volunteers.service';
 import { Role } from '../users/types';
@@ -38,19 +29,6 @@ export class VolunteersController {
     return this.volunteersService.getVolunteerPantries(id);
   }
 
-  @Get('/:id')
-  async getVolunteer(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.volunteersService.findOne(userId);
-  }
-
-  @Post('/:id/pantries')
-  async assignPantries(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('pantryIds') pantryIds: number[],
-  ): Promise<User> {
-    return this.volunteersService.assignPantriesToVolunteer(id, pantryIds);
-  }
-
   @Roles(Role.VOLUNTEER)
   @Get('/me/assigned-requests')
   async getAssignedRequests(
@@ -61,7 +39,7 @@ export class VolunteersController {
     return this.volunteersService.findRequestsByVolunteer(currentUser.id);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/me/recent-orders')
   async getRecentOrders(
     @Req() req: AuthenticatedRequest,

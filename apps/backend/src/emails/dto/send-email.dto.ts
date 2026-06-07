@@ -6,13 +6,16 @@ import {
   IsArray,
   Length,
 } from 'class-validator';
-import { EmailAttachment } from '../awsSes.wrapper';
+
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+}
 
 export class SendEmailDTO {
-  @IsArray()
-  @IsEmail({}, { each: true })
-  @Length(1, 255, { each: true })
-  toEmails!: string[];
+  @IsEmail()
+  @Length(1, 255)
+  toEmail!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -22,6 +25,18 @@ export class SendEmailDTO {
   @IsString()
   @IsNotEmpty()
   bodyHtml!: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsEmail({}, { each: true })
+  @Length(1, 255, { each: true })
+  ccEmails?: string[];
+
+  @IsArray()
+  @IsOptional()
+  @IsEmail({}, { each: true })
+  @Length(1, 255, { each: true })
+  bccEmails?: string[];
 
   @IsArray()
   @IsOptional()

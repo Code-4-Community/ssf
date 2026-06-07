@@ -37,4 +37,5 @@ export const ROUTES = {
   VOLUNTEER_DASHBOARD: '/volunteer-dashboard',
 
   FM_DONATION_MANAGEMENT: '/fm-donation-management',
+  FM_DASHBOARD: '/fm-dashboard',
 };
