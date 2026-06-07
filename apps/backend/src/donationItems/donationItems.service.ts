@@ -104,26 +104,15 @@ export class DonationItemsService {
         );
       }
 
-      const updateData: Partial<DonationItem> = {};
-      if (dto.ozPerItem !== undefined) updateData.ozPerItem = dto.ozPerItem;
-      if (dto.estimatedValue !== undefined)
-        updateData.estimatedValue = dto.estimatedValue;
-      if (dto.foodRescue !== undefined) updateData.foodRescue = dto.foodRescue;
-
-      // If included in DTO, keep it, otherwise use whatever is in the DB
-      const resultingOzPerItem =
-        updateData.ozPerItem !== undefined
-          ? updateData.ozPerItem
-          : item.ozPerItem;
-      const resultingEstimatedValue =
-        updateData.estimatedValue !== undefined
-          ? updateData.estimatedValue
-          : item.estimatedValue;
-
-      if (resultingOzPerItem != null && resultingEstimatedValue != null) {
-        updateData.detailsConfirmed = true;
-        confirmedDetailsForAnItem = true;
-      }
+      // ozPerItem, estimatedValue, and foodRescue are required on the DTO, so an
+      // update always supplies the full set of details and confirms the item.
+      const updateData: Partial<DonationItem> = {
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      };
+      confirmedDetailsForAnItem = true;
 
       await donationItemTransactionRepo.update(dto.itemId, updateData);
     }

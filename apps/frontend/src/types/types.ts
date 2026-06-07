@@ -606,7 +606,7 @@ export interface BulkUpdateTrackingCostDto {
 
 export interface UpdateDonationItemDetailsDto {
   itemId: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
-  foodRescue?: boolean;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodRescue: boolean;
 }

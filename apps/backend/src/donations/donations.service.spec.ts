@@ -1357,21 +1357,6 @@ describe('DonationService', () => {
 
       expect(spy).toHaveBeenCalled();
     });
-
-    it('does not call checkAndFulfillDonation when no items are fully confirmed', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const spy = jest.spyOn(service, 'checkAndFulfillDonation');
-
-      await service.updateDonationItemDetails(donationId, [
-        { itemId, ozPerItem: 5.0 },
-      ]);
-
-      const dbDonation = await service.findOne(donationId);
-      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
-      expect(spy).not.toHaveBeenCalled();
-    });
   });
 
   describe('checkAndFulfillDonation', () => {

@@ -233,14 +233,14 @@ const FmCompleteRequiredActionsModal: React.FC<
           })
           .map((item) => {
             const formData = itemFormData[item.itemId];
+            // Submit is gated on ozPerItem and estimatedValue being filled for every
+            // item, so all required fields are guaranteed present here.
             const dto: UpdateDonationItemDetailsDto = {
               itemId: item.itemId,
+              ozPerItem: parseFloat(formData.ozPerItem),
+              estimatedValue: parseFloat(formData.estimatedValue),
               foodRescue: formData.foodRescue,
             };
-            if (formData.ozPerItem !== '')
-              dto.ozPerItem = parseFloat(formData.ozPerItem);
-            if (formData.estimatedValue !== '')
-              dto.estimatedValue = parseFloat(formData.estimatedValue);
             return dto;
           });
 

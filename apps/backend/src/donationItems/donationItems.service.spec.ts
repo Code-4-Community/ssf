@@ -444,50 +444,6 @@ describe('DonationItemsService', () => {
       expect(item?.ozPerItem).toBeNull();
     });
 
-    it('returns false and does not confirm when only some fields are provided', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-
-      expect(result).toBe(false);
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(item?.estimatedValue).toBeNull();
-      expect(item?.detailsConfirmed).toBe(false);
-    });
-
-    it('confirms item on a second call that supplies the remaining fields', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const firstResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-      expect(firstResult).toBe(false);
-
-      const secondResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(
-          donationId,
-          [{ itemId, estimatedValue: 12.0, foodRescue: true }],
-          tm,
-        ),
-      );
-      expect(secondResult).toBe(true);
-
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(Number(item?.estimatedValue)).toBe(12.0);
-      expect(item?.foodRescue).toBe(true);
-      expect(item?.detailsConfirmed).toBe(true);
-    });
-
     it('allows updating an already-confirmed item without throwing', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId, 10, 5);
@@ -499,7 +455,18 @@ describe('DonationItemsService', () => {
       );
 
       const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 9.0 }], tm),
+        service.updateItemDetails(
+          donationId,
+          [
+            {
+              itemId,
+              ozPerItem: 9.0,
+              estimatedValue: 10.0,
+              foodRescue: true,
+            },
+          ],
+          tm,
+        ),
       );
 
       expect(result).toBe(true);
