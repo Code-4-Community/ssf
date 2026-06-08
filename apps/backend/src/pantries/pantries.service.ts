@@ -313,7 +313,7 @@ export class PantriesService {
     pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
     pantry.shipmentAddressState = pantryData.shipmentAddressState;
     pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
-    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? null;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? 'US';
 
     // mailing address information
     pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
@@ -321,7 +321,7 @@ export class PantriesService {
     pantry.mailingAddressCity = pantryData.mailingAddressCity;
     pantry.mailingAddressState = pantryData.mailingAddressState;
     pantry.mailingAddressZip = pantryData.mailingAddressZip;
-    pantry.mailingAddressCountry = pantryData.mailingAddressCountry ?? null;
+    pantry.mailingAddressCountry = pantryData.mailingAddressCountry ?? 'US';
 
     // pantry details information
     pantry.pantryName = pantryData.pantryName;

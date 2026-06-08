@@ -49,9 +49,9 @@ export class Pantry {
     name: 'shipment_address_country',
     type: 'varchar',
     length: 255,
-    nullable: true,
+    default: 'US',
   })
-  shipmentAddressCountry!: string | null;
+  shipmentAddressCountry!: string;
 
   @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
   mailingAddressLine1!: string;
@@ -77,9 +77,9 @@ export class Pantry {
     name: 'mailing_address_country',
     type: 'varchar',
     length: 255,
-    nullable: true,
+    default: 'US',
   })
-  mailingAddressCountry!: string | null;
+  mailingAddressCountry!: string;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients!: string;
