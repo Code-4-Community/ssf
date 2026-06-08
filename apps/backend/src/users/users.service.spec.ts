@@ -768,16 +768,11 @@ describe('UsersService', () => {
       expect(assignments).toHaveLength(0);
     });
 
-    it('should call Cognito addUserToGroup and removeUserFromGroup when user has Cognito account', async () => {
-      const userRepo = testDataSource.getRepository(User);
-      const volunteer = await userRepo.findOne({
+    it('should call Cognito addUserToGroup and removeUserFromGroup', async () => {
+      const volunteer = await testDataSource.getRepository(User).findOne({
         where: { role: Role.VOLUNTEER },
       });
       expect(volunteer).toBeDefined();
-
-      // Set userCognitoSub to simulate a user with a Cognito account
-      volunteer!.userCognitoSub = 'test-cognito-sub';
-      await userRepo.save(volunteer!);
 
       await service.promoteVolunteerToAdmin(volunteer!.id);
 
@@ -789,21 +784,6 @@ describe('UsersService', () => {
         volunteer!.email,
         'volunteer',
       );
-    });
-
-    it('should not call Cognito methods when user has no Cognito account', async () => {
-      const userRepo = testDataSource.getRepository(User);
-      const volunteer = await userRepo.findOneBy({ role: Role.VOLUNTEER });
-      expect(volunteer).toBeDefined();
-
-      // Ensure userCognitoSub is null
-      volunteer!.userCognitoSub = null;
-      await userRepo.save(volunteer!);
-
-      await service.promoteVolunteerToAdmin(volunteer!.id);
-
-      expect(mockAuthService.addUserToGroup).not.toHaveBeenCalled();
-      expect(mockAuthService.removeUserFromGroup).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
@@ -851,10 +831,6 @@ describe('UsersService', () => {
         where: { role: Role.VOLUNTEER },
       });
       expect(volunteer).toBeDefined();
-
-      // Set userCognitoSub so the Cognito code path is triggered
-      volunteer!.userCognitoSub = 'test-cognito-sub';
-      await userRepo.save(volunteer!);
 
       mockAuthService.addUserToGroup.mockRejectedValueOnce(
         new InternalServerErrorException('Cognito error'),

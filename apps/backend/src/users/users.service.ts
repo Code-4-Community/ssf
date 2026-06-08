@@ -326,11 +326,8 @@ export class UsersService {
       user.pantries = [];
       await userRepo.save(user);
 
-      // Only update Cognito groups if user has a Cognito account
-      if (user.userCognitoSub) {
-        await this.authService.addUserToGroup(user.email, 'admin');
-        await this.authService.removeUserFromGroup(user.email, 'volunteer');
-      }
+      await this.authService.addUserToGroup(user.email, 'admin');
+      await this.authService.removeUserFromGroup(user.email, 'volunteer');
     });
   }
 }
