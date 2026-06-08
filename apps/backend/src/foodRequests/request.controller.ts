@@ -151,7 +151,7 @@ export class RequestsController {
     );
   }
 
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @Roles(Role.PANTRY)
   @CheckOwnership({
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,
@@ -164,7 +164,7 @@ export class RequestsController {
     await this.requestsService.update(requestId, body);
   }
 
-  @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @Roles(Role.ADMIN, Role.VOLUNTEER, Role.PANTRY)
   @CheckOwnership({
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,
