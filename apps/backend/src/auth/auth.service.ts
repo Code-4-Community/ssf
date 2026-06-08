@@ -6,6 +6,8 @@ import {
 import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
+  AdminDisableUserCommand,
+  AdminEnableUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
@@ -68,6 +70,34 @@ export class AuthService {
       } else {
         throw new InternalServerErrorException('Failed to create user');
       }
+    }
+  }
+
+  // Disables the user's Cognito account so they can no longer log in.
+  async adminDisableUser(email: string): Promise<void> {
+    const disableUserCommand = new AdminDisableUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+    });
+
+    try {
+      await this.providerClient.send(disableUserCommand);
+    } catch {
+      throw new InternalServerErrorException('Failed to disable user');
+    }
+  }
+
+  // Re-enables a previously disabled Cognito account so login works again.
+  async adminEnableUser(email: string): Promise<void> {
+    const enableUserCommand = new AdminEnableUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+    });
+
+    try {
+      await this.providerClient.send(enableUserCommand);
+    } catch {
+      throw new InternalServerErrorException('Failed to enable user');
     }
   }
 }

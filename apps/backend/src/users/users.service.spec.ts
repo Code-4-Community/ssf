@@ -37,6 +37,8 @@ jest.setTimeout(60000);
 
 const mockAuthService = {
   adminCreateUser: jest.fn().mockResolvedValue('mock-sub'),
+  adminDisableUser: jest.fn().mockResolvedValue(undefined),
+  adminEnableUser: jest.fn().mockResolvedValue(undefined),
 };
 const mockEmailsService = mock<EmailsService>();
 
@@ -125,6 +127,8 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     mockAuthService.adminCreateUser.mockClear();
+    mockAuthService.adminDisableUser.mockClear();
+    mockAuthService.adminEnableUser.mockClear();
     mockEmailsService.sendEmails.mockClear();
     await testDataSource.runMigrations();
   });
@@ -293,31 +297,88 @@ describe('UsersService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should remove a user by id', async () => {
+  // Seeded volunteer: id=6, james.t@volunteer.org
+  describe('deactivate / reactivate', () => {
+    it('deactivates an active volunteer: sets active=false and disables Cognito', async () => {
       await testDataSource.query(
-        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE assignee_id = 6)`,
+        `UPDATE users SET user_cognito_sub = 'cognito-sub-6' WHERE user_id = 6`,
       );
-      await testDataSource.query(`DELETE FROM orders WHERE assignee_id = 6`);
 
-      const result = await service.remove(6);
+      const result = await service.deactivate(6);
 
-      expect(result.email).toBe('james.t@volunteer.org');
+      expect(result.active).toBe(false);
+      expect(mockAuthService.adminDisableUser).toHaveBeenCalledWith(
+        'james.t@volunteer.org',
+      );
 
       const fromDb = await testDataSource
         .getRepository(User)
         .findOneBy({ id: 6 });
-      expect(fromDb).toBeNull();
+      expect(fromDb?.active).toBe(false);
     });
 
-    it('should throw NotFoundException when user is not found', async () => {
-      await expect(service.remove(9999)).rejects.toThrow(
+    it('reactivates a deactivated volunteer: sets active=true and enables Cognito', async () => {
+      await testDataSource.query(
+        `UPDATE users SET user_cognito_sub = 'cognito-sub-6' WHERE user_id = 6`,
+      );
+      await service.deactivate(6);
+      mockAuthService.adminEnableUser.mockClear();
+
+      const result = await service.reactivate(6);
+
+      expect(result.active).toBe(true);
+      expect(mockAuthService.adminEnableUser).toHaveBeenCalledWith(
+        'james.t@volunteer.org',
+      );
+
+      const fromDb = await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 });
+      expect(fromDb?.active).toBe(true);
+    });
+
+    it('skips the Cognito call when the user has no Cognito account', async () => {
+      // seeded volunteer id=6 has an empty user_cognito_sub
+      const result = await service.deactivate(6);
+
+      expect(result.active).toBe(false);
+      expect(mockAuthService.adminDisableUser).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when deactivating an already-inactive user', async () => {
+      await service.deactivate(6);
+
+      await expect(service.deactivate(6)).rejects.toThrow(
+        new BadRequestException('User 6 is already inactive'),
+      );
+    });
+
+    it('throws BadRequestException when reactivating an already-active user', async () => {
+      await expect(service.reactivate(6)).rejects.toThrow(
+        new BadRequestException('User 6 is already active'),
+      );
+    });
+
+    it('deactivate throws NotFoundException when user is not found', async () => {
+      await expect(service.deactivate(9999)).rejects.toThrow(
         new NotFoundException('User 9999 not found'),
       );
     });
 
-    it('should throw error for invalid id', async () => {
-      await expect(service.remove(-1)).rejects.toThrow(
+    it('reactivate throws NotFoundException when user is not found', async () => {
+      await expect(service.reactivate(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
+      );
+    });
+
+    it('deactivate throws BadRequestException for invalid id', async () => {
+      await expect(service.deactivate(-1)).rejects.toThrow(
+        new BadRequestException('Invalid User ID'),
+      );
+    });
+
+    it('reactivate throws BadRequestException for invalid id', async () => {
+      await expect(service.reactivate(-1)).rejects.toThrow(
         new BadRequestException('Invalid User ID'),
       );
     });
