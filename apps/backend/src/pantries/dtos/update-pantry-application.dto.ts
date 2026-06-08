@@ -14,7 +14,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ClientVisitFrequency,
-  AllergensConfidence,
+  DedicatedAllergyFriendly,
   ServeAllergicChildren,
   Activity,
 } from '../types';
@@ -156,17 +156,20 @@ export class UpdatePantryApplicationDto {
   @IsString()
   reservationExplanation?: string | null;
 
-  @IsBoolean()
   @IsOptional()
-  dedicatedAllergyFriendly?: boolean;
+  @IsEnum(DedicatedAllergyFriendly)
+  dedicatedAllergyFriendly?: DedicatedAllergyFriendly;
+
+  @ArrayNotEmpty()
+  @IsOptional()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @MaxLength(255, { each: true })
+  languages?: string[];
 
   @IsOptional()
   @IsEnum(ClientVisitFrequency)
   clientVisitFrequency?: ClientVisitFrequency;
-
-  @IsOptional()
-  @IsEnum(AllergensConfidence)
-  identifyAllergensConfidence?: AllergensConfidence;
 
   @IsOptional()
   @IsEnum(ServeAllergicChildren)
@@ -194,8 +197,4 @@ export class UpdatePantryApplicationDto {
   @IsNotEmpty()
   @Length(1, 255)
   needMoreOptions?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  newsletterSubscription?: boolean;
 }

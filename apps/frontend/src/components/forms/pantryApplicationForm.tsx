@@ -58,7 +58,6 @@ export const dietaryRestrictionOptions = [
 export const activityOptions = [
   'Create a labeled, allergy-friendly shelf or shelves',
   'Provide clients and staff/volunteers with educational pamphlets',
-  "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month",
   'Post allergen-free resource flyers throughout pantry',
   'Survey your clients to determine their medical dietary needs',
   'Collect feedback from allergen-avoidant clients on SSF foods',
@@ -267,6 +266,10 @@ const PantryApplicationForm: React.FC = () => {
             </RadioGroup.Root>
           </Field.Root>
           <Field.Root required={otherEmailContact} mb="2.5em">
+            <Field.Label {...fieldHeaderStyles}>
+              If you selected "Other," please specify:
+              <Field.RequiredIndicator color="red" />
+            </Field.Label>
             <Input
               name="emailContactOther"
               type="text"
@@ -320,7 +323,7 @@ const PantryApplicationForm: React.FC = () => {
 
           <Separator size="sm" color="neutral.100" mb="3em" />
 
-          <Text {...sectionTitleStyles} mb="0">
+          <Text {...sectionTitleStyles} mb="2em">
             What is your pantry's address for food shipments?
           </Text>
           <Separator size="sm" color="neutral.100" mb="3em" />
@@ -526,9 +529,10 @@ const PantryApplicationForm: React.FC = () => {
 
           <Separator size="sm" color="neutral.100" my="3em" />
 
-          <Field.Root mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Please note any delivery window restrictions.
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <Textarea
               name="deliveryWindowInstructions"
@@ -589,7 +593,7 @@ const PantryApplicationForm: React.FC = () => {
           {allergenClients === allergenClientsExactOption && (
             <Field.Root required mb="2em">
               <Field.Label {...fieldHeaderStyles}>
-                Please provide the exact number, if known
+                Please provide the exact number
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -809,11 +813,12 @@ const PantryApplicationForm: React.FC = () => {
           </Field.Root>
 
           {reserveFoodForAllergic === 'Yes' && (
-            <Field.Root mb="2em">
+            <Field.Root required mb="2em">
               <Field.Label {...fieldHeaderStyles}>
                 How would you work to ensure that allergen-friendly foods are
                 distributed to clients with food allergies or other adverse
                 reactions to foods?
+                <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Textarea
                 name="reservationExplanation"
@@ -824,9 +829,10 @@ const PantryApplicationForm: React.FC = () => {
           )}
 
           {reserveFoodForAllergic === 'Some' && (
-            <Field.Root mb="2em">
+            <Field.Root required mb="2em">
               <Field.Label {...fieldHeaderStyles}>
                 Please explain why you selected "Some."
+                <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Textarea
                 name="reservationExplanation"
@@ -1116,14 +1122,14 @@ const PantryApplicationForm: React.FC = () => {
               options?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
+            <Field.HelperText color="neutral.600">
+              Please share any feedback you have received.
+            </Field.HelperText>
             <Textarea
               name="needMoreOptions"
               borderColor="neutral.100"
               autoresize
             />
-            <Field.HelperText color="neutral.600">
-              Please share any feedback you have received.
-            </Field.HelperText>
           </Field.Root>
 
           <Field.Root required mb="2em">
@@ -1224,8 +1230,6 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   form.delete('restrictions');
   form.delete('restrictionsOther');
 
-  // Languages: keep the selected options (excluding the "Other" placeholder)
-  // and append the free-text value provided for "Other"
   const languages = form
     .getAll('languages')
     .filter((language) => language !== languageOtherOption);

@@ -18,7 +18,7 @@ import {
   ServeAllergicChildren,
   ReserveFoodForAllergic,
   Activity,
-  AllergensConfidence,
+  DedicatedAllergyFriendly,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
@@ -56,10 +56,14 @@ const makePantryDto = (i: number): PantryApplicationDto =>
     mailingAddressZip: '00000',
     allergenClients: 'none',
     restrictions: ['none'],
+    languages: ['English'],
     refrigeratedDonation: RefrigeratedDonation.NO,
     acceptFoodDeliveries: false,
+    deliveryWindowInstructions: 'none',
     reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-    dedicatedAllergyFriendly: false,
+    dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
+    clientVisitFrequency: ClientVisitFrequency.ONCE_A_WEEK,
+    serveAllergicChildren: ServeAllergicChildren.NO,
     activities: [Activity.CREATE_LABELED_SHELF],
     itemsInStock: 'none',
     needMoreOptions: 'none',
@@ -82,10 +86,14 @@ const dto: PantryApplicationDto = {
   mailingAddressZip: '11111',
   allergenClients: 'none',
   restrictions: ['none'],
+  languages: ['English'],
   refrigeratedDonation: RefrigeratedDonation.NO,
   acceptFoodDeliveries: false,
+  deliveryWindowInstructions: 'none',
   reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-  dedicatedAllergyFriendly: false,
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
+  clientVisitFrequency: ClientVisitFrequency.ONCE_A_WEEK,
+  serveAllergicChildren: ServeAllergicChildren.NO,
   activities: [Activity.CREATE_LABELED_SHELF],
   itemsInStock: 'none',
   needMoreOptions: 'none',
@@ -310,13 +318,11 @@ describe('PantriesService', () => {
         deliveryWindowInstructions: 'Weekdays 9am-5pm',
         reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
         reservationExplanation: 'We have a dedicated section',
-        dedicatedAllergyFriendly: true,
+        dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
         clientVisitFrequency: ClientVisitFrequency.DAILY,
-        identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
         serveAllergicChildren: ServeAllergicChildren.YES_MANY,
         activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
         activitiesComments: 'We are committed to allergen management',
-        newsletterSubscription: true,
       };
 
       await service.addPantry(optionalDto);
@@ -398,7 +404,6 @@ describe('PantriesService', () => {
         secondaryContactLastName: 'Doe',
         refrigeratedDonation: RefrigeratedDonation.YES,
         reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
-        newsletterSubscription: true,
         itemsInStock: 'Canned beans, rice',
       };
 
@@ -409,7 +414,6 @@ describe('PantriesService', () => {
       expect(updatedPantry.reserveFoodForAllergic).toBe(
         ReserveFoodForAllergic.SOME,
       );
-      expect(updatedPantry.newsletterSubscription).toBe(true);
       expect(updatedPantry.itemsInStock).toBe('Canned beans, rice');
     });
 
