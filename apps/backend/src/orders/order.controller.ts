@@ -120,6 +120,7 @@ export class OrdersController {
   @CheckOwnership({
     idParam: 'orderId',
     resolver: resolveOrderAuthorizedUserIds,
+    bypassRoles: [Role.VOLUNTEER],
   })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId')

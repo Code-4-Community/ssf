@@ -37,7 +37,6 @@ export class DonationItemsController {
   @CheckOwnership({
     idParam: 'donationId',
     resolver: resolveDonationAuthorizedUserIds,
-    bypassRoles: [Role.ADMIN],
   })
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
   @Get('/:donationId/all')

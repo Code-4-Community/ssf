@@ -140,7 +140,6 @@ export class DonationsController {
     idParam: 'donationId',
     resolver: resolveDonationAuthorizedUserIds,
   })
-  @Roles(Role.FOODMANUFACTURER)
   @Delete('/:donationId')
   async deleteDonation(
     @Param('donationId', ParseIntPipe) donationId: number,
