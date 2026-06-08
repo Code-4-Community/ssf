@@ -271,7 +271,7 @@ export class PantriesService {
       relations: ['pantryUser'],
     });
 
-    if (pantries.length == 0) {
+    if (pantries.length === 0) {
       this.logger.warn('No approved food pantries, skipping email sending.');
       return;
     }
