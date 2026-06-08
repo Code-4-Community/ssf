@@ -27,7 +27,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
-import { DataSource, IsNull } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
@@ -792,10 +792,13 @@ describe('UsersService', () => {
     });
 
     it('should not call Cognito methods when user has no Cognito account', async () => {
-      const volunteer = await testDataSource.getRepository(User).findOne({
-        where: { role: Role.VOLUNTEER, userCognitoSub: IsNull() },
-      });
+      const userRepo = testDataSource.getRepository(User);
+      const volunteer = await userRepo.findOneBy({ role: Role.VOLUNTEER });
       expect(volunteer).toBeDefined();
+
+      // Ensure userCognitoSub is null
+      volunteer!.userCognitoSub = null;
+      await userRepo.save(volunteer!);
 
       await service.promoteVolunteerToAdmin(volunteer!.id);
 
