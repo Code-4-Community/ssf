@@ -55,7 +55,6 @@ type FormState = {
   donateWastedFood: string;
   manufacturerAttribute: string;
   additionalComments: string;
-  newsletterSubscription: string;
 };
 
 function buildFormState(app: FoodManufacturer): FormState {
@@ -75,12 +74,6 @@ function buildFormState(app: FoodManufacturer): FormState {
     donateWastedFood: app.donateWastedFood ?? '',
     manufacturerAttribute: app.manufacturerAttribute ?? '',
     additionalComments: app.additionalComments ?? '',
-    newsletterSubscription:
-      app.newsletterSubscription != null
-        ? app.newsletterSubscription
-          ? 'Yes'
-          : 'No'
-        : '',
   };
 }
 
@@ -170,9 +163,6 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         manufacturerAttribute:
           (form.manufacturerAttribute as ManufacturerAttribute) || undefined,
         additionalComments: form.additionalComments || undefined,
-        newsletterSubscription: form.newsletterSubscription
-          ? form.newsletterSubscription === 'Yes'
-          : undefined,
       };
       const updated = await ApiClient.updateFoodManufacturerApplicationData(
         application.foodManufacturerId,
@@ -315,16 +305,6 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
           <Field
             label="Additional Information"
             value={application.additionalComments}
-          />
-          <Field
-            label="Subscribed to Newsletter"
-            value={
-              application.newsletterSubscription != null
-                ? application.newsletterSubscription
-                  ? 'Yes'
-                  : 'No'
-                : undefined
-            }
           />
         </Section>
       </VStack>
@@ -480,14 +460,6 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
           value={form.additionalComments}
           onChange={(v) => setField('additionalComments', v)}
           textarea
-        />
-
-        <EditRadio
-          label="Subscribed to Newsletter"
-          name="newsletterSubscription"
-          value={form.newsletterSubscription}
-          options={['Yes', 'No']}
-          onChange={(v) => setField('newsletterSubscription', v)}
         />
 
         {error && (

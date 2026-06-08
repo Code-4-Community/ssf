@@ -127,21 +127,9 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>{pantry.clientVisitFrequency ?? ''}</GridItem>
 
               <GridItem>
-                <Text fontWeight="bold">Identify Allergens Confidence</Text>
-              </GridItem>
-              <GridItem>{pantry.identifyAllergensConfidence ?? ''}</GridItem>
-
-              <GridItem>
                 <Text fontWeight="bold">Serve Allergic Children</Text>
               </GridItem>
               <GridItem>{pantry.serveAllergicChildren ?? ''}</GridItem>
-
-              <GridItem>
-                <Text fontWeight="bold">Newsletter Subscription</Text>
-              </GridItem>
-              <GridItem>
-                {pantry.newsletterSubscription ? 'Yes' : 'No'}
-              </GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Restrictions</Text>

@@ -111,11 +111,10 @@ export class PantryApplicationDto {
   @Length(1, 255)
   shipmentAddressZip!: string;
 
-  @IsOptional()
   @IsString()
-  @MaxLength(255)
   @IsNotEmpty()
-  shipmentAddressCountry?: string;
+  @Length(1, 255)
+  shipmentAddressCountry!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -143,11 +142,10 @@ export class PantryApplicationDto {
   @Length(1, 255)
   mailingAddressZip!: string;
 
-  @IsOptional()
   @IsString()
-  @MaxLength(255)
   @IsNotEmpty()
-  mailingAddressCountry?: string;
+  @Length(1, 255)
+  mailingAddressCountry!: string;
 
   @IsString()
   @IsNotEmpty()

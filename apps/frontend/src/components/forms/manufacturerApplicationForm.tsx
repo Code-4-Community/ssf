@@ -14,6 +14,7 @@ import {
   Separator,
   Checkbox,
   Menu,
+  Link,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -81,7 +82,7 @@ const ManufacturerApplicationForm: React.FC = () => {
   }, [actionData, setAlertMessage]);
 
   return (
-    <Box width="100%" mx="11em" my="4em">
+    <Box width="100%" mx="8em" my="4em">
       <Box as="section" mb="2.75em">
         {alertState && (
           <FloatingAlert
@@ -615,40 +616,53 @@ const ManufacturerApplicationForm: React.FC = () => {
 
           <Separator size="sm" color="neutral.100" mb="1.5em" />
 
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Would you like to subscribe to our quarterly newsletter?
-            </Field.Label>
-            <RadioGroup.Root name="newsletterSubscription" variant="solid">
-              <Stack>
-                {['Yes', 'No'].map((value) => (
-                  <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
-                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
-                      <RadioGroup.ItemIndicator
-                        border="1px solid"
-                        borderColor="neutral.100"
-                      />
-                    </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
-                    </RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                ))}
-              </Stack>
-            </RadioGroup.Root>
-          </Field.Root>
-          <Field.Root required mb="4em">
+          <Field.Root required mb="2em">
             <Checkbox.Root>
-              <Checkbox.HiddenInput />
+              <Checkbox.HiddenInput required />
               <Checkbox.Control
                 border="1px solid"
                 borderColor="neutral.100"
                 _checked={{ bg: 'neutral.800' }}
               />
               <Checkbox.Label {...fieldHeaderStyles}>
-                By submitting this form, you agree to our Privacy Policy.{' '}
-                <Field.RequiredIndicator color="red" />
+                By submitting this form, you agree to our{' '}
+                <Link
+                  href="https://www.securingsafefood.org/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="https://www.securingsafefood.org/terms-of-use"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Use
+                </Link>
+                . <Field.RequiredIndicator color="red" />
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </Field.Root>
+          <Field.Root required mb="4em">
+            <Checkbox.Root>
+              <Checkbox.HiddenInput required />
+              <Checkbox.Control
+                border="1px solid"
+                borderColor="neutral.100"
+                _checked={{ bg: 'neutral.800' }}
+              />
+              <Checkbox.Label {...fieldHeaderStyles}>
+                By submitting this form, you agree to receive automated emails
+                from Securing Safe Food (SSF) Corp. should your pantry be
+                enrolled in our program. <Field.RequiredIndicator color="red" />
               </Checkbox.Label>
             </Checkbox.Root>
           </Field.Root>
@@ -698,14 +712,9 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
     'inKindDonations',
     form.get('inKindDonations') === 'Yes',
   );
-  manufacturerApplicationData.set(
-    'newsletterSubscription',
-    form.get('newsletterSubscription') === 'Yes',
-  );
   form.delete('productsGlutenFree');
   form.delete('productsContainSulfites');
   form.delete('inKindDonations');
-  form.delete('newsletterSubscription');
   form.delete('unlistedProductAllergens');
   form.delete('facilityFreeAllergens');
 

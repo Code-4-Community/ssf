@@ -3,8 +3,8 @@ import {
   ReserveFoodForAllergic,
   ClientVisitFrequency,
   ServeAllergicChildren,
-  AllergensConfidence,
   Activity,
+  DedicatedAllergyFriendly,
 } from './pantryEnums';
 import {
   DonateWastedFood,
@@ -33,11 +33,9 @@ export interface Pantry {
   deliveryWindowInstructions: string | null;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation: string | null;
-  dedicatedAllergyFriendly: boolean;
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly;
   clientVisitFrequency: ClientVisitFrequency | null;
-  identifyAllergensConfidence: AllergensConfidence | null;
   serveAllergicChildren: ServeAllergicChildren | null;
-  newsletterSubscription: boolean;
   restrictions: string[];
   hasEmailContact: boolean;
   emailContactOther: string | null;
@@ -92,29 +90,28 @@ export interface PantryApplicationDto {
   shipmentAddressCity: string;
   shipmentAddressState: string;
   shipmentAddressZip: string;
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
   mailingAddressState: string;
   mailingAddressZip: string;
-  mailingAddressCountry?: string;
+  mailingAddressCountry: string;
   allergenClients: string;
   restrictions: string[];
+  languages: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
   deliveryWindowInstructions?: string;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
-  dedicatedAllergyFriendly: boolean;
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly;
   clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
   activities: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface UpdatePantryApplicationDto {
@@ -139,17 +136,15 @@ export interface UpdatePantryApplicationDto {
   allergenClients?: string;
   restrictions?: string[];
   refrigeratedDonation?: RefrigeratedDonation;
-  dedicatedAllergyFriendly?: boolean;
+  dedicatedAllergyFriendly?: DedicatedAllergyFriendly;
   reserveFoodForAllergic?: ReserveFoodForAllergic;
   reservationExplanation?: string | null;
   clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
   activities?: Activity[];
   activitiesComments?: string;
   itemsInStock?: string;
   needMoreOptions?: string;
-  newsletterSubscription?: boolean;
 }
 
 export enum DonationStatus {
@@ -400,7 +395,6 @@ export interface FoodManufacturerWithoutRelations {
   donateWastedFood: DonateWastedFood;
   manufacturerAttribute: ManufacturerAttribute | null;
   additionalComments: string | null;
-  newsletterSubscription: boolean | null;
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -421,7 +415,6 @@ export interface UpdateFoodManufacturerApplicationDto {
   donateWastedFood?: DonateWastedFood;
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface ManufacturerApplicationDto {
@@ -444,7 +437,6 @@ export interface ManufacturerApplicationDto {
   donateWastedFood: DonateWastedFood;
   manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface ApprovedPantryResponse {

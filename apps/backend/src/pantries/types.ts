@@ -70,7 +70,6 @@ export enum ServeAllergicChildren {
 export enum Activity {
   CREATE_LABELED_SHELF = 'Create labeled shelf',
   PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide educational pamphlets',
-  TRACK_DIETARY_NEEDS = 'Spreadsheet to track dietary needs',
   POST_RESOURCE_FLYERS = 'Post allergen-free resource flyers',
   SURVEY_CLIENTS = 'Survey clients to determine medical dietary needs',
   COLLECT_FEEDBACK = 'Collect feedback from allergen-avoidant clients',

@@ -380,9 +380,7 @@ const PantryApplicationDetails: React.FC = () => {
                   Dedicated section for allergy-friendly items?
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.dedicatedAllergyFriendly
-                    ? 'Yes, we have a dedicated shelf or box'
-                    : 'No'}
+                  {application.dedicatedAllergyFriendly ?? 'Not specified'}
                 </Text>
               </GridItem>
               <GridItem>
@@ -396,14 +394,6 @@ const PantryApplicationDetails: React.FC = () => {
             </Grid>
 
             <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-              <GridItem>
-                <Text {...fieldHeaderStyles}>
-                  Confidence in Identifying the Top 9 Allergens
-                </Text>
-                <Text {...fieldContentStyles}>
-                  {application.identifyAllergensConfidence ?? 'Not specified'}
-                </Text>
-              </GridItem>
               <GridItem>
                 <Text {...fieldHeaderStyles}>
                   Serves Allergen-Avoidant Children
@@ -440,13 +430,6 @@ const PantryApplicationDetails: React.FC = () => {
             <Box>
               <Heading {...fieldHeaderStyles}>Client Requests</Heading>
               <Text {...fieldContentStyles}>{application.needMoreOptions}</Text>
-            </Box>
-
-            <Box>
-              <Heading {...fieldHeaderStyles}>Subscribed to Newsletter</Heading>
-              <Text {...fieldContentStyles}>
-                {application.newsletterSubscription ? 'Yes' : 'No'}
-              </Text>
             </Box>
 
             {isApplicationMode && (

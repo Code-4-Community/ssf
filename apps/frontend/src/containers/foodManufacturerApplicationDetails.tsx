@@ -416,13 +416,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                     {application.additionalComments || '-'}
                   </Text>
                 </Box>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>Subscribed to Newsletter</Text>
-                  <Text {...fieldContentStyles}>
-                    {application.newsletterSubscription ? 'Yes' : 'No'}
-                  </Text>
-                </Box>
               </VStack>
             </Box>
 

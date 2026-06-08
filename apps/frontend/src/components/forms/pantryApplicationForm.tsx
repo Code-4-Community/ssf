@@ -14,6 +14,7 @@ import {
   Separator,
   Checkbox,
   Menu,
+  Link,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -26,7 +27,7 @@ import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
 import { PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
-import { Activity } from '../../types/pantryEnums';
+import { Activity, DedicatedAllergyFriendly } from '../../types/pantryEnums';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
@@ -34,28 +35,24 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { ROUTES } from '../../routes';
 
-export const otherRestrictionsOptions: string[] = [
-  'Other allergy (e.g., yeast, sunflower, etc.)',
-  'Other allergic illness (e.g., eosinophilic esophagitis, FPIES, oral allergy syndrome)',
-  'Other dietary restriction',
-];
+export const restrictionsOtherOption =
+  "Other (e.g., irritable bowel syndrome, Crohn's disease, fruit/vegetable sensitivities)";
 
 export const dietaryRestrictionOptions = [
-  'Egg allergy',
-  'Fish allergy',
   'Milk allergy',
-  'Lactose intolerance/dairy sensitivity',
+  'Lactose intolerance',
+  'Egg allergy',
   'Peanut allergy',
+  'Tree nut allergy',
+  'Fish allergy',
   'Shellfish allergy',
+  'Celiac disease',
+  'Gluten intolerance or sensitivity',
+  'Wheat allergy',
   'Soy allergy',
   'Sesame allergy',
-  'Tree nut allergy',
-  'Wheat allergy',
-  'Celiac disease',
-  'Gluten sensitivity (not celiac disease)',
-  "Gastrointestinal illness (IBS, Crohn's, gastroparesis, etc.)",
-  ...otherRestrictionsOptions,
-  'Unsure',
+  "I'm not sure",
+  restrictionsOtherOption,
 ];
 
 export const activityOptions = [
@@ -65,7 +62,16 @@ export const activityOptions = [
   'Post allergen-free resource flyers throughout pantry',
   'Survey your clients to determine their medical dietary needs',
   'Collect feedback from allergen-avoidant clients on SSF foods',
-  'Something else',
+];
+
+export const languageOtherOption = 'Other (please specify)';
+
+export const languageOptions = [
+  'English',
+  'Spanish',
+  'Mandarin',
+  'Russian',
+  languageOtherOption,
 ];
 
 const PantryApplicationForm: React.FC = () => {
@@ -77,6 +83,7 @@ const PantryApplicationForm: React.FC = () => {
 
   const [allergenClients, setAllergenClients] = useState<string | undefined>();
   const [restrictions, setRestrictions] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
   const [reserveFoodForAllergic, setReserveFoodForAllergic] =
     useState<string>();
   const [differentMailingAddress, setDifferentMailingAddress] = useState<
@@ -116,7 +123,7 @@ const PantryApplicationForm: React.FC = () => {
   }, [actionData, setAlertMessage]);
 
   return (
-    <Box width="100%" mx="11em" my="4em">
+    <Box width="100%" mx="8em" my="4em">
       <Box as="section" mb="2.75em">
         {alertState && (
           <FloatingAlert
@@ -167,7 +174,18 @@ const PantryApplicationForm: React.FC = () => {
             <Separator size="sm" color="neutral.100" />
           </Stack>
 
-          <Text {...sectionTitleStyles}>Primary Contact Information</Text>
+          <Field.Root required mb="2em">
+            <Field.Label asChild>
+              <Text {...fieldHeaderStyles}>
+                Food Pantry Name
+                <Field.RequiredIndicator color="red" />
+              </Text>
+            </Field.Label>
+            <Input name="pantryName" type="text" borderColor="neutral.100" />
+          </Field.Root>
+
+          <Text {...sectionTitleStyles}>Primary Contact</Text>
+          <Separator size="sm" color="neutral.100" my="3em" />
           <SimpleGrid columns={2} columnGap={9} rowGap={10} mb="2.5em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
@@ -207,7 +225,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                Email Address
+                Email
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -259,9 +277,8 @@ const PantryApplicationForm: React.FC = () => {
             />
           </Field.Root>
 
+          <Text {...sectionTitleStyles}>Secondary Contact</Text>
           <Separator size="sm" color="neutral.100" mb="3em" />
-
-          <Text {...sectionTitleStyles}>Secondary Contact Information</Text>
           <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
             <Field.Root>
               <Field.Label {...fieldHeaderStyles}>First Name</Field.Label>
@@ -292,7 +309,7 @@ const PantryApplicationForm: React.FC = () => {
               />
             </Field.Root>
             <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Email Address</Field.Label>
+              <Field.Label {...fieldHeaderStyles}>Email</Field.Label>
               <Input
                 name="secondaryContactEmail"
                 type="email"
@@ -304,11 +321,9 @@ const PantryApplicationForm: React.FC = () => {
           <Separator size="sm" color="neutral.100" mb="3em" />
 
           <Text {...sectionTitleStyles} mb="0">
-            Food Shipment Address
+            What is your pantry's address for food shipments?
           </Text>
-          <Text {...sectionSubtitleStyles}>
-            Please list your address for <b>food shipments</b>.
-          </Text>
+          <Separator size="sm" color="neutral.100" mb="3em" />
           <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="2em">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
@@ -331,7 +346,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                City/Town
+                City
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -342,18 +357,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>
-                State/Region/Province
-                <Field.RequiredIndicator color="red" />
-              </Field.Label>
-              <Input
-                name="shipmentAddressState"
-                type="text"
-                borderColor="neutral.100"
-              />
-            </Field.Root>
-            <Field.Root required>
-              <Field.Label {...fieldHeaderStyles}>
-                Zip/Post Code
+                Zip Code
                 <Field.RequiredIndicator color="red" />
               </Field.Label>
               <Input
@@ -362,19 +366,35 @@ const PantryApplicationForm: React.FC = () => {
                 borderColor="neutral.100"
               />
             </Field.Root>
-            <Field.Root>
-              <Field.Label {...fieldHeaderStyles}>Country</Field.Label>
+            <Field.Root required>
+              <Field.Label {...fieldHeaderStyles}>
+                Country
+                <Field.RequiredIndicator color="red" />
+              </Field.Label>
               <Input
                 name="shipmentAddressCountry"
                 type="text"
                 borderColor="neutral.100"
               />
             </Field.Root>
+            <Field.Root required>
+              <Field.Label {...fieldHeaderStyles}>
+                State
+                <Field.RequiredIndicator color="red" />
+              </Field.Label>
+              <Input
+                name="shipmentAddressState"
+                type="text"
+                borderColor="neutral.100"
+              />
+            </Field.Root>
           </SimpleGrid>
+          <Separator size="sm" color="neutral.100" mb="3em" />
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
               Does this address differ from your pantry's mailing address for
-              documents? <Field.RequiredIndicator color="red" />
+              documents (e.g., 11" by 17" poster resources)?{' '}
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root
               variant="solid"
@@ -401,6 +421,83 @@ const PantryApplicationForm: React.FC = () => {
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
+
+          {differentMailingAddress && (
+            <>
+              <Text {...sectionTitleStyles} mb="3em">
+                Please provide your pantry's mailing address for documents.
+              </Text>
+              <Separator size="sm" color="neutral.100" mb="3em" />
+              <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Address Line 1
+                    <Field.RequiredIndicator color="red" />
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressLine1"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Address Line 2
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressLine2"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    City
+                    <Field.RequiredIndicator color="red" />
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressCity"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Zip Code
+                    <Field.RequiredIndicator color="red" />
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressZip"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    Country
+                    <Field.RequiredIndicator color="red" />
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressCountry"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+                <Field.Root required={differentMailingAddress}>
+                  <Field.Label {...fieldHeaderStyles}>
+                    State
+                    <Field.RequiredIndicator color="red" />
+                  </Field.Label>
+                  <Input
+                    name="mailingAddressState"
+                    type="text"
+                    borderColor="neutral.100"
+                  />
+                </Field.Root>
+              </SimpleGrid>
+            </>
+          )}
+
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles} mb=".5em">
               Would your pantry be able to accept food deliveries during
@@ -426,7 +523,10 @@ const PantryApplicationForm: React.FC = () => {
               </Stack>
             </RadioGroup.Root>
           </Field.Root>
-          <Field.Root mb="4em">
+
+          <Separator size="sm" color="neutral.100" my="3em" />
+
+          <Field.Root mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Please note any delivery window restrictions.
             </Field.Label>
@@ -436,101 +536,30 @@ const PantryApplicationForm: React.FC = () => {
             />
           </Field.Root>
 
-          <Separator size="sm" color="neutral.100" my="3em" />
-
-          {differentMailingAddress && (
-            <>
-              <Text {...sectionTitleStyles} mb="0">
-                Mailing Address
-              </Text>
-              <Text {...sectionSubtitleStyles}>
-                Please list your mailing address for <b>documents</b>.
-              </Text>
-              <SimpleGrid columns={2} columnGap={9} rowGap={9} mb="4em">
-                <Field.Root required={differentMailingAddress}>
-                  <Field.Label {...fieldHeaderStyles}>
-                    Address Line 1
-                    <Field.RequiredIndicator color="red" />
-                  </Field.Label>
-                  <Input
-                    name="mailingAddressLine1"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-                <Field.Root>
-                  <Field.Label {...fieldHeaderStyles}>
-                    Address Line 2
-                  </Field.Label>
-                  <Input
-                    name="mailingAddressLine2"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-                <Field.Root required={differentMailingAddress}>
-                  <Field.Label {...fieldHeaderStyles}>
-                    City/Town
-                    <Field.RequiredIndicator color="red" />
-                  </Field.Label>
-                  <Input
-                    name="mailingAddressCity"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-                <Field.Root required={differentMailingAddress}>
-                  <Field.Label {...fieldHeaderStyles}>
-                    State/Region/Province
-                    <Field.RequiredIndicator color="red" />
-                  </Field.Label>
-                  <Input
-                    name="mailingAddressState"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-                <Field.Root required={differentMailingAddress}>
-                  <Field.Label {...fieldHeaderStyles}>
-                    Zip/Post Code
-                    <Field.RequiredIndicator color="red" />
-                  </Field.Label>
-                  <Input
-                    name="mailingAddressZip"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-                <Field.Root>
-                  <Field.Label {...fieldHeaderStyles}>Country</Field.Label>
-                  <Input
-                    name="mailingAddressCountry"
-                    type="text"
-                    borderColor="neutral.100"
-                  />
-                </Field.Root>
-              </SimpleGrid>
-
-              <Separator size="sm" color="neutral.100" my="3em" />
-            </>
-          )}
-
-          <Text {...sectionTitleStyles}>Pantry Details</Text>
-          <Field.Root required mb="2em">
-            <Field.Label asChild>
-              <Text {...fieldHeaderStyles}>
-                Pantry Name
-                <Field.RequiredIndicator color="red" />
-              </Text>
-            </Field.Label>
-            <Input name="pantryName" type="text" borderColor="neutral.100" />
-          </Field.Root>
           <Field.Root required mb="2em" invalid={!allergenClients}>
             <Field.Label {...fieldHeaderStyles}>
-              Approximately how many allergen-avoidant clients does your pantry
-              serve?
+              How many clients with food allergies or other adverse reactions to
+              foods does your pantry serve?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
+            <Field.HelperText color="neutral.600" mb=".75em">
+              <Text as="span" fontWeight="bold">
+                Please note:{' '}
+              </Text>
+              SSF-provided foods are tailored for individuals with adverse
+              reactions to foods, such as food allergies, celiac disease,
+              lactose intolerance, and gluten sensitivity. They are not tailored
+              for lifestyle diets (such as vegan), religious dietary laws (such
+              as kosher or halal), or other health-related diets (such as those
+              for heart disease, high blood pressure, or diabetes).{' '}
+              <Text as="span" fontStyle="italic">
+                However, we aim to provide culturally relevant foods for those{' '}
+                <Text as="span" fontWeight="bold" fontStyle="italic">
+                  avoiding allergens. Many of our foods are kosher if clients
+                  with food allergies also adhere to kosher laws.
+                </Text>
+              </Text>
+            </Field.HelperText>
             <NativeSelect.Root>
               <NativeSelect.Field
                 value={allergenClients}
@@ -541,11 +570,11 @@ const PantryApplicationForm: React.FC = () => {
                 name="allergenClients"
               >
                 {[
-                  '< 10',
+                  'Less than 10',
                   '10 to 20',
                   '20 to 50',
                   '50 to 100',
-                  '> 100',
+                  'Greater than 100',
                   "I'm not sure",
                   allergenClientsExactOption,
                 ].map((value) => (
@@ -674,15 +703,8 @@ const PantryApplicationForm: React.FC = () => {
             />
           </Field.Root>
 
-          {restrictions.find((option) =>
-            otherRestrictionsOptions.includes(option),
-          ) && (
-            <Field.Root
-              required={restrictions.find((option) =>
-                otherRestrictionsOptions.includes(option),
-              )}
-              mb="2em"
-            >
+          {restrictions.includes(restrictionsOtherOption) && (
+            <Field.Root required mb="2em">
               <Field.Label {...fieldHeaderStyles}>
                 If you selected "Other," please specify:
                 <Field.RequiredIndicator color="red" />
@@ -723,12 +745,12 @@ const PantryApplicationForm: React.FC = () => {
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               Do you have a dedicated shelf or section of your pantry for
-              allergy-friendly items?
+              allergen-friendly items?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root name="dedicatedAllergyFriendly" variant="solid">
               <Stack>
-                {['Yes', 'No'].map((value) => (
+                {Object.values(DedicatedAllergyFriendly).map((value) => (
                   <RadioGroup.Item key={value} value={value}>
                     <RadioGroup.ItemHiddenInput required />
                     <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
@@ -753,9 +775,12 @@ const PantryApplicationForm: React.FC = () => {
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <Field.HelperText color="neutral.600" mb=".5em">
-              For example, grouping allergen-friendly items on a separate shelf
-              or in separate bins and encouraging non-allergic clients to save
-              these items for clients who do not have other safe food options.
+              <Text as="span" fontWeight="bold">
+                For example
+              </Text>
+              , grouping allergen-friendly items on a separate shelf or in
+              separate bins and encouraging non-allergic clients to save these
+              items for clients who do not have other safe food options.
             </Field.HelperText>
             <RadioGroup.Root
               name="reserveFoodForAllergic"
@@ -811,12 +836,14 @@ const PantryApplicationForm: React.FC = () => {
             </Field.Root>
           )}
 
-          <Field.Root mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
               How often do allergen-avoidant clients visit your food pantry?
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <NativeSelect.Root>
               <NativeSelect.Field
+                required
                 placeholder="Select an option"
                 name="clientVisitFrequency"
                 borderColor="neutral.100"
@@ -837,42 +864,14 @@ const PantryApplicationForm: React.FC = () => {
               <NativeSelectIndicator />
             </NativeSelect.Root>
           </Field.Root>
-          <Field.Root mb="2em">
+          <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Are you confident in identifying the top 9 allergens in an
-              ingredient list?
+              Does your pantry serve allergen-avoidant children?
+              <Field.RequiredIndicator color="red" />
             </Field.Label>
             <NativeSelect.Root>
               <NativeSelect.Field
-                placeholder="Select an option"
-                name="identifyAllergensConfidence"
-                borderColor="neutral.100"
-                color="neutral.800"
-              >
-                {[
-                  'Very confident',
-                  'Somewhat confident',
-                  'Not very confident (we need more education!)',
-                ].map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </NativeSelect.Field>
-              <NativeSelectIndicator />
-            </NativeSelect.Root>
-            <Field.HelperText color="neutral.600">
-              The top 9 allergens are milk, egg, peanut, tree nuts, wheat, soy,
-              fish, shellfish, and sesame.
-            </Field.HelperText>
-          </Field.Root>
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Do you serve allergen-avoidant or food-allergic children at your
-              pantry?
-            </Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
+                required
                 placeholder="Select an option"
                 name="serveAllergicChildren"
                 borderColor="neutral.100"
@@ -888,15 +887,121 @@ const PantryApplicationForm: React.FC = () => {
               </NativeSelect.Field>
               <NativeSelectIndicator />
             </NativeSelect.Root>
-            <Field.HelperText color="neutral.600">
-              "Children" is defined as any individual under the age of 18 either
-              living independently or as part of a household.
-            </Field.HelperText>
           </Field.Root>
+
+          <Separator size="sm" color="neutral.100" my="3em" />
+
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              What activities are you open to doing with SSF?
+              What languages do allergen-avoidant clients at your pantry speak?
               <Field.RequiredIndicator color="red" />
+            </Field.Label>
+
+            {languages.map((value) => (
+              <input type="hidden" name="languages" key={value} value={value} />
+            ))}
+
+            <Menu.Root closeOnSelect={false}>
+              <Menu.Trigger asChild>
+                <Button
+                  pl={3}
+                  pr={2}
+                  w="full"
+                  bgColor="white"
+                  color="neutral.800"
+                  borderColor="neutral.100"
+                  justifyContent="space-between"
+                  textStyle="p2"
+                  size="sm"
+                >
+                  {languages.length > 0
+                    ? `Select more languages`
+                    : 'Select languages'}
+                  <ChevronDownIcon />
+
+                  <input
+                    type="text"
+                    name="languages-required"
+                    value={languages.length > 0 ? 'selected' : ''}
+                    required
+                    style={{
+                      position: 'absolute',
+                      opacity: 0,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                </Button>
+              </Menu.Trigger>
+
+              <Menu.Positioner w="full">
+                <Menu.Content maxH="500px" overflowY="auto">
+                  {languageOptions.map((value) => {
+                    const isChecked = languages.includes(value);
+                    return (
+                      <Menu.CheckboxItem
+                        key={value}
+                        checked={isChecked}
+                        onCheckedChange={(checked: boolean) => {
+                          setLanguages((prev) =>
+                            checked
+                              ? [...prev, value]
+                              : prev.filter((i) => i !== value),
+                          );
+                        }}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Box
+                          position="absolute"
+                          left={1}
+                          ml={0.5}
+                          w={5}
+                          h={5}
+                          borderWidth="1px"
+                          borderRadius="4px"
+                          borderColor="neutral.200"
+                        />
+                        <Menu.ItemIndicator />
+                        <Text
+                          ml={0.5}
+                          color="neutral.800"
+                          fontWeight={500}
+                          fontFamily="Inter"
+                        >
+                          {value}
+                        </Text>
+                      </Menu.CheckboxItem>
+                    );
+                  })}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Menu.Root>
+
+            <TagGroup
+              values={languages}
+              onRemove={(value) =>
+                setLanguages((prev) => prev.filter((item) => item !== value))
+              }
+              blueVariant={true}
+            />
+          </Field.Root>
+
+          {languages.includes(languageOtherOption) && (
+            <Field.Root required mb="2em">
+              <Field.Label {...fieldHeaderStyles}>
+                If you selected "Other," please specify:
+                <Field.RequiredIndicator color="red" />
+              </Field.Label>
+              <Input maxW="20em" name="languagesOther" type="text" />
+            </Field.Root>
+          )}
+          <Field.Root mb="2em">
+            <Field.Label {...fieldHeaderStyles}>
+              Which of the following activities would you be willing to do with
+              SSF?{' '}
+              <Text as="span" fontStyle="italic">
+                Check all that apply.
+              </Text>
             </Field.Label>
 
             {activities.map((value) => (
@@ -925,18 +1030,6 @@ const PantryApplicationForm: React.FC = () => {
                     ? `Select more activities`
                     : 'Select activities'}
                   <ChevronDownIcon />
-
-                  <input
-                    type="text"
-                    name="activities-required"
-                    value={activities.length > 0 ? 'selected' : ''}
-                    required
-                    style={{
-                      position: 'absolute',
-                      opacity: 0,
-                      pointerEvents: 'none',
-                    }}
-                  />
                 </Button>
               </Menu.Trigger>
 
@@ -991,28 +1084,19 @@ const PantryApplicationForm: React.FC = () => {
               }
               blueVariant={true}
             />
-            <Field.HelperText color="neutral.600">
-              Food donations are one part of being a partner pantry. The
-              following are additional ways to help us better support you!
-              Please select all that apply.
-            </Field.HelperText>
           </Field.Root>
-          <Field.Root required={activities.includes('Something else')} mb="2em">
+
+          <Separator size="sm" color="neutral.100" my="3em" />
+
+          <Field.Root mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              Please list any comments/concerns related to the previous
-              question.
-              {activities.includes('Something else') && (
-                <Field.RequiredIndicator color="red" />
-              )}
+              Please share any comments about your answer.
             </Field.Label>
             <Textarea
               name="activitiesComments"
               borderColor="neutral.100"
               autoresize
             />
-            <Field.HelperText color="neutral.600">
-              If you answered "Something Else," please elaborate.
-            </Field.HelperText>
           </Field.Root>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
@@ -1025,15 +1109,11 @@ const PantryApplicationForm: React.FC = () => {
               borderColor="neutral.100"
               autoresize
             />
-            <Field.HelperText color="neutral.600">
-              For example, gluten-free breads, sunflower seed butters, nondairy
-              beverages, etc.
-            </Field.HelperText>
           </Field.Root>
           <Field.Root required mb="4em">
             <Field.Label {...fieldHeaderStyles}>
-              Do allergen-avoidant clients at your pantry ever request a greater
-              variety of items or not have enough options? Please explain.
+              Have allergen-avoidant clients at your pantry requested more food
+              options?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <Textarea
@@ -1041,44 +1121,58 @@ const PantryApplicationForm: React.FC = () => {
               borderColor="neutral.100"
               autoresize
             />
+            <Field.HelperText color="neutral.600">
+              Please share any feedback you have received.
+            </Field.HelperText>
           </Field.Root>
 
-          <Separator size="sm" color="neutral.100" my="3em" />
-
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Would you like to subscribe to our quarterly newsletter?
-            </Field.Label>
-            <RadioGroup.Root name="newsletterSubscription" variant="solid">
-              <Stack>
-                {['Yes', 'No'].map((value) => (
-                  <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
-                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
-                      <RadioGroup.ItemIndicator
-                        border="1px solid"
-                        borderColor="neutral.100"
-                      />
-                    </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
-                    </RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                ))}
-              </Stack>
-            </RadioGroup.Root>
-          </Field.Root>
-          <Field.Root required mb="4em">
+          <Field.Root required mb="2em">
             <Checkbox.Root>
-              <Checkbox.HiddenInput />
+              <Checkbox.HiddenInput required />
               <Checkbox.Control
                 border="1px solid"
                 borderColor="neutral.100"
                 _checked={{ bg: 'neutral.800' }}
               />
               <Checkbox.Label {...fieldHeaderStyles}>
-                By submitting this form, you agree to our Privacy Policy.{' '}
-                <Field.RequiredIndicator color="red" />
+                By submitting this form, you agree to our{' '}
+                <Link
+                  href="https://www.securingsafefood.org/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="https://www.securingsafefood.org/terms-of-use"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Use
+                </Link>
+                . <Field.RequiredIndicator color="red" />
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </Field.Root>
+          <Field.Root required mb="4em">
+            <Checkbox.Root>
+              <Checkbox.HiddenInput required />
+              <Checkbox.Control
+                border="1px solid"
+                borderColor="neutral.100"
+                _checked={{ bg: 'neutral.800' }}
+              />
+              <Checkbox.Label {...fieldHeaderStyles}>
+                By submitting this form, you agree to receive automated emails
+                from Securing Safe Food (SSF) Corp. should your pantry be
+                enrolled in our program. <Field.RequiredIndicator color="red" />
               </Checkbox.Label>
             </Checkbox.Root>
           </Field.Root>
@@ -1113,15 +1207,12 @@ export const submitPantryApplicationForm: ActionFunction = async ({
       Activity.CREATE_LABELED_SHELF,
     'Provide clients and staff/volunteers with educational pamphlets':
       Activity.PROVIDE_EDUCATIONAL_PAMPHLETS,
-    "Use a spreadsheet to track clients' medical dietary needs and distribution of SSF items per month":
-      Activity.TRACK_DIETARY_NEEDS,
     'Post allergen-free resource flyers throughout pantry':
       Activity.POST_RESOURCE_FLYERS,
     'Survey your clients to determine their medical dietary needs':
       Activity.SURVEY_CLIENTS,
     'Collect feedback from allergen-avoidant clients on SSF foods':
       Activity.COLLECT_FEEDBACK,
-    'Something else': Activity.SOMETHING_ELSE,
   };
 
   const restrictions = form.getAll('restrictions');
@@ -1133,6 +1224,19 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   form.delete('restrictions');
   form.delete('restrictionsOther');
 
+  // Languages: keep the selected options (excluding the "Other" placeholder)
+  // and append the free-text value provided for "Other"
+  const languages = form
+    .getAll('languages')
+    .filter((language) => language !== languageOtherOption);
+  const languagesOther = form.get('languagesOther');
+  if (languagesOther !== null && languagesOther !== '') {
+    languages.push(languagesOther as string);
+  }
+  pantryApplicationData.set('languages', languages);
+  form.delete('languages');
+  form.delete('languagesOther');
+
   const selectedActivities = form.getAll('activities') as string[];
   const convertedActivities = selectedActivities.map(
     (activity) => ActivityStorageMap[activity],
@@ -1141,24 +1245,14 @@ export const submitPantryApplicationForm: ActionFunction = async ({
   form.delete('activities');
 
   pantryApplicationData.set(
-    'newsletterSubscription',
-    form.get('newsletterSubscription') === 'Yes',
-  );
-  pantryApplicationData.set(
     'acceptFoodDeliveries',
     form.get('acceptFoodDeliveries') === 'Yes',
-  );
-  pantryApplicationData.set(
-    'dedicatedAllergyFriendly',
-    form.get('dedicatedAllergyFriendly') === 'Yes',
   );
   pantryApplicationData.set(
     'hasEmailContact',
     form.get('hasEmailContact') === 'Yes',
   );
-  form.delete('newsletterSubscription');
   form.delete('acceptFoodDeliveries');
-  form.delete('dedicatedAllergyFriendly');
   form.delete('hasEmailContact');
 
   // Handle mailing address
