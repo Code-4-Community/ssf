@@ -17,6 +17,7 @@ import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { Donation } from '../donations/donations.entity';
+import { PantriesModule } from '../pantries/pantries.module';
 import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
@@ -41,6 +42,7 @@ import { UsersModule } from '../users/users.module';
     ManufacturerModule,
     DonationItemsModule,
     DonationModule,
+    forwardRef(() => PantriesModule),
     EmailsModule,
     forwardRef(() => UsersModule),
   ],

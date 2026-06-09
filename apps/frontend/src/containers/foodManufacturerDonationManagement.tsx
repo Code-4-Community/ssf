@@ -10,7 +10,7 @@ import {
   ButtonGroup,
   Link,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Mail } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { DonationDetails, DonationStatus } from '../types/types';
@@ -22,6 +22,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const MAX_PER_STATUS = 5;
 
@@ -364,28 +365,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
       </Box>
 
       {donations.length === 0 ? (
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
-          fontFamily="'Inter', sans-serif"
-          fontSize="sm"
-          color="neutral.600"
-          py={10}
-          gap={2}
-        >
-          <Box mb={2}>
-            <CircleCheck size={24} color="#262626" />
-          </Box>
-          <Box fontWeight="600" fontSize="lg" color="neutral.800">
-            No Donations
-          </Box>
-          <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} donations at this time.
-          </Box>
-        </Box>
+        <SectionEmptyState entity={`${status.toLowerCase()} donations`} />
       ) : (
         <>
           <Table.Root>
