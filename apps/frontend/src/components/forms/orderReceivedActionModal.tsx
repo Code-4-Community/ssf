@@ -135,6 +135,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   <Text textStyle="p2" fontWeight={600} color="neutral.800">
                     Date Received
                   </Text>
+                  <Field.RequiredIndicator color="red" />
                 </Field.Label>
                 <DatePicker.Root
                   min={parseDate(minDate)}
