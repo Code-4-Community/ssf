@@ -11,6 +11,7 @@ import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
 import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from './dtos/replace-donation-item.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -129,6 +130,60 @@ export class DonationItemsService {
     }
 
     return confirmedDetailsForAnItem;
+  }
+
+  async editItems(
+    donationId: number,
+    body: ReplaceDonationItemDto[],
+    transactionManager: EntityManager,
+  ): Promise<void> {
+    const itemRepo = transactionManager.getRepository(DonationItem);
+
+    const existingItems = await itemRepo.find({ where: { donationId } });
+    const existingIds = new Set(existingItems.map((item) => item.itemId));
+
+    const providedIds = new Set<number>();
+    for (const dto of body) {
+      if (dto.itemId === undefined) continue;
+
+      if (providedIds.has(dto.itemId)) {
+        throw new BadRequestException(
+          `Duplicate itemId ${dto.itemId} in request`,
+        );
+      }
+      providedIds.add(dto.itemId);
+
+      if (!existingIds.has(dto.itemId)) {
+        throw new BadRequestException(
+          `Donation item ${dto.itemId} does not belong to Donation ${donationId}`,
+        );
+      }
+    }
+
+    const idsToDelete = existingItems
+      .map((item) => item.itemId)
+      .filter((id) => !providedIds.has(id));
+
+    if (idsToDelete.length > 0) {
+      await itemRepo.delete({ itemId: In(idsToDelete) });
+    }
+
+    const itemsToSave = body.map((dto) =>
+      itemRepo.create({
+        ...(dto.itemId !== undefined
+          ? { itemId: dto.itemId }
+          : { donationId, reservedQuantity: 0 }),
+        itemName: dto.itemName,
+        quantity: dto.quantity,
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodType: dto.foodType,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      }),
+    );
+
+    await itemRepo.save(itemsToSave);
   }
 
   async createMultiple(

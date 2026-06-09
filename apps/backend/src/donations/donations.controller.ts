@@ -15,12 +15,28 @@ import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { FoodType } from '../donationItems/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('donations')
 export class DonationsController {
@@ -116,6 +132,20 @@ export class DonationsController {
     body: UpdateDonationItemDetailsDto[],
   ): Promise<void> {
     await this.donationService.updateDonationItemDetails(donationId, body);
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
+  @Patch('/:donationId/item')
+  async editDonationItems(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body(new ParseArrayPipe({ items: ReplaceDonationItemDto }))
+    body: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.donationService.editDonationItems(donationId, body);
   }
 
   @Delete('/:donationId')
