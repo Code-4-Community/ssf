@@ -139,7 +139,7 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
               <GridItem>
                 <Text fontWeight="bold">Activities</Text>
               </GridItem>
-              <GridItem>{pantry.activities.join(', ')}</GridItem>
+              <GridItem>{pantry.activities?.join(', ') ?? ''}</GridItem>
 
               <GridItem>
                 <Text fontWeight="bold">Activities Comments</Text>

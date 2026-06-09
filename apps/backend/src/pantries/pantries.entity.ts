@@ -215,8 +215,9 @@ export class Pantry {
     enum: Activity,
     enumName: 'activity_enum',
     array: true,
+    nullable: true,
   })
-  activities!: Activity[];
+  activities!: Activity[] | null;
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
   activitiesComments!: string | null;

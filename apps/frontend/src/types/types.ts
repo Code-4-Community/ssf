@@ -46,7 +46,7 @@ export interface Pantry {
   secondaryContactPhone: string | null;
   status: ApplicationStatus;
   dateApplied: string;
-  activities: Activity[];
+  activities: Activity[] | null;
   activitiesComments: string | null;
   itemsInStock: string;
   needMoreOptions: string;
@@ -109,7 +109,7 @@ export interface PantryApplicationDto {
   dedicatedAllergyFriendly: DedicatedAllergyFriendly;
   clientVisitFrequency: ClientVisitFrequency;
   serveAllergicChildren: ServeAllergicChildren;
-  activities: Activity[];
+  activities?: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;

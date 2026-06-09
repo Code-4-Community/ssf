@@ -192,9 +192,9 @@ export class PantryApplicationDto {
   @IsEnum(ServeAllergicChildren)
   serveAllergicChildren!: ServeAllergicChildren;
 
-  @ArrayNotEmpty()
+  @IsOptional()
   @IsEnum(Activity, { each: true })
-  activities!: Activity[];
+  activities?: Activity[];
 
   @IsOptional()
   @IsString()

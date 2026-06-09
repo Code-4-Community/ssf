@@ -71,7 +71,8 @@ export class UpdatePantryFMApplicationInfo1780913024514
 
       ALTER TABLE pantries
         ALTER COLUMN activities TYPE "activity_enum"[]
-          USING activities::text[]::"activity_enum"[];
+          USING activities::text[]::"activity_enum"[],
+        ALTER COLUMN activities DROP NOT NULL;
 
       DROP TYPE "activity_enum_old";
     `);
@@ -94,6 +95,13 @@ export class UpdatePantryFMApplicationInfo1780913024514
       ALTER TABLE pantries
         ALTER COLUMN activities TYPE "activity_enum"[]
           USING activities::text[]::"activity_enum"[];
+
+      UPDATE pantries
+      SET activities = ARRAY['Create labeled shelf']::"activity_enum"[]
+      WHERE activities IS NULL;
+
+      ALTER TABLE pantries
+        ALTER COLUMN activities SET NOT NULL;
 
       DROP TYPE "activity_enum_old";
     `);

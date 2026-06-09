@@ -365,7 +365,6 @@ export class PantriesController {
         'dedicatedAllergyFriendly',
         'clientVisitFrequency',
         'serveAllergicChildren',
-        'activities',
         'itemsInStock',
         'needMoreOptions',
       ],

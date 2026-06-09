@@ -336,7 +336,7 @@ export class PantriesService {
     pantry.reservationExplanation = pantryData.reservationExplanation ?? null;
     pantry.clientVisitFrequency = pantryData.clientVisitFrequency;
     pantry.serveAllergicChildren = pantryData.serveAllergicChildren;
-    pantry.activities = pantryData.activities;
+    pantry.activities = pantryData.activities ?? null;
     pantry.activitiesComments = pantryData.activitiesComments ?? null;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
