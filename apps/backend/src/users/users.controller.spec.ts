@@ -6,7 +6,7 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockUserService = mock<UsersService>();
@@ -31,6 +31,7 @@ describe('UsersController', () => {
     mockUserService.create.mockReset();
     mockUserService.getUserDashboardStats.mockReset();
     mockUserService.getRecentPendingApplications.mockReset();
+    mockUserService.promoteVolunteerToAdmin.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
@@ -209,6 +210,38 @@ describe('UsersController', () => {
       const result = await controller.getRecentPendingApplications();
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('PATCH /:id/promote-volunteer', () => {
+    it('should promote volunteer to admin successfully', async () => {
+      mockUserService.promoteVolunteerToAdmin.mockResolvedValueOnce(undefined);
+
+      await controller.promoteToAdmin(1);
+
+      expect(mockUserService.promoteVolunteerToAdmin).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException from service when user not found', async () => {
+      mockUserService.promoteVolunteerToAdmin.mockRejectedValueOnce(
+        new NotFoundException('User 999 not found'),
+      );
+
+      await expect(controller.promoteToAdmin(999)).rejects.toThrow(
+        new NotFoundException('User 999 not found'),
+      );
+    });
+
+    it('should throw BadRequestException from service when user is not a volunteer', async () => {
+      mockUserService.promoteVolunteerToAdmin.mockRejectedValueOnce(
+        new BadRequestException(
+          'User 1 is not a volunteer. Current role: admin',
+        ),
+      );
+
+      await expect(controller.promoteToAdmin(1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

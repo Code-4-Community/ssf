@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { FoodRequest } from './request.entity';
 import { RequestsService } from './request.service';
 import { Pantry } from '../pantries/pantries.entity';
@@ -88,6 +89,10 @@ describe('RequestsService', () => {
         {
           provide: EmailsService,
           useValue: mockEmailsService,
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();

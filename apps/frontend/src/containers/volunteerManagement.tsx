@@ -13,11 +13,19 @@ import {
   ButtonGroup,
   IconButton,
   Link,
+  Menu,
+  Portal,
 } from '@chakra-ui/react';
-import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import {
+  SearchIcon,
+  ChevronRight,
+  ChevronLeft,
+  EllipsisVertical,
+} from 'lucide-react';
 import { User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
+import PromoteVolunteerModal from '@components/forms/promoteVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
@@ -27,28 +35,44 @@ const VolunteerManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
+  const [selectedVolunteer, setSelectedVolunteer] = useState<User | null>(null);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
 
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
 
   const pageSize = 8;
 
-  useEffect(() => {
-    const fetchVolunteers = async () => {
-      try {
-        const allVolunteers = await ApiClient.getVolunteers();
-        setVolunteers(allVolunteers);
-      } catch {
-        setErrorMessage('Error fetching volunteers');
-      }
-    };
+  const fetchVolunteers = async () => {
+    try {
+      const allVolunteers = await ApiClient.getVolunteers();
+      setVolunteers(allVolunteers);
+    } catch {
+      setErrorMessage('Error fetching volunteers');
+    }
+  };
 
+  useEffect(() => {
     fetchVolunteers();
   }, [setErrorMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchName]);
+
+  const handlePromote = async () => {
+    if (!selectedVolunteer) return;
+
+    try {
+      await ApiClient.promoteVolunteerToAdmin(selectedVolunteer.id);
+      setSuccessMessage(
+        `${selectedVolunteer.firstName} ${selectedVolunteer.lastName} has been promoted to admin.`,
+      );
+      fetchVolunteers(); // Refresh list - promoted user will disappear
+    } catch {
+      setErrorMessage('Failed to promote volunteer to admin.');
+    }
+  };
 
   const filteredVolunteers = volunteers.filter((a) => {
     const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
@@ -155,6 +179,7 @@ const VolunteerManagement: React.FC = () => {
               >
                 Actions
               </Table.ColumnHeader>
+              <Table.ColumnHeader width="50px" />
             </Table.Row>
           </Table.Header>
           <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
@@ -197,6 +222,34 @@ const VolunteerManagement: React.FC = () => {
                   >
                     View Assigned Pantries
                   </Link>
+                </Table.Cell>
+                <Table.Cell>
+                  <Menu.Root>
+                    <Menu.Trigger asChild>
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        aria-label="More actions"
+                      >
+                        <EllipsisVertical size={18} />
+                      </IconButton>
+                    </Menu.Trigger>
+                    <Portal>
+                      <Menu.Positioner>
+                        <Menu.Content>
+                          <Menu.Item
+                            value="promote"
+                            onClick={() => {
+                              setSelectedVolunteer(volunteer);
+                              setIsPromoteModalOpen(true);
+                            }}
+                          >
+                            Promote to Admin
+                          </Menu.Item>
+                        </Menu.Content>
+                      </Menu.Positioner>
+                    </Portal>
+                  </Menu.Root>
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -256,6 +309,18 @@ const VolunteerManagement: React.FC = () => {
           </Pagination.Root>
         </Flex>
       </Box>
+
+      {selectedVolunteer && (
+        <PromoteVolunteerModal
+          isOpen={isPromoteModalOpen}
+          onClose={() => {
+            setIsPromoteModalOpen(false);
+            setSelectedVolunteer(null);
+          }}
+          onConfirm={handlePromote}
+          volunteerName={`${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`}
+        />
+      )}
     </Box>
   );
 };
