@@ -6,11 +6,7 @@ import {
   Activity,
   DedicatedAllergyFriendly,
 } from './pantryEnums';
-import {
-  DonateWastedFood,
-  Allergen,
-  ManufacturerAttribute,
-} from './manufacturerEnums';
+import { DonateWastedFood, Allergen } from './manufacturerEnums';
 
 export interface Pantry {
   pantryId: number;
@@ -391,11 +387,9 @@ export interface FoodManufacturerWithoutRelations {
   unlistedProductAllergens: Allergen[];
   facilityFreeAllergens: Allergen[];
   productsGlutenFree: boolean;
-  productsContainSulfites: boolean;
   productsSustainableExplanation: string;
   inKindDonations: boolean;
   donateWastedFood: DonateWastedFood;
-  manufacturerAttribute: ManufacturerAttribute | null;
   additionalComments: string | null;
   status: ApplicationStatus;
   dateApplied: string;
@@ -411,11 +405,9 @@ export interface UpdateFoodManufacturerApplicationDto {
   unlistedProductAllergens?: Allergen[];
   facilityFreeAllergens?: Allergen[];
   productsGlutenFree?: boolean;
-  productsContainSulfites?: boolean;
   productsSustainableExplanation?: string;
   inKindDonations?: boolean;
   donateWastedFood?: DonateWastedFood;
-  manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
 }
 
@@ -433,11 +425,9 @@ export interface ManufacturerApplicationDto {
   unlistedProductAllergens: Allergen[];
   facilityFreeAllergens: Allergen[];
   productsGlutenFree: boolean;
-  productsContainSulfites: boolean;
   productsSustainableExplanation: string;
   inKindDonations: boolean;
   donateWastedFood: DonateWastedFood;
-  manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
 }
 

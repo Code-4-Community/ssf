@@ -76,9 +76,92 @@ export class UpdatePantryFMApplicationInfo1780913024514
 
       DROP TYPE "activity_enum_old";
     `);
+
+    await queryRunner.query(`
+      ALTER TABLE food_manufacturers
+        DROP COLUMN products_contain_sulfites,
+        DROP COLUMN manufacturer_attribute,
+        DROP COLUMN newsletter_subscription;
+    `);
+
+    await queryRunner.query(`DROP TYPE "manufacturer_attribute_enum";`);
+
+    await queryRunner.query(`
+      ALTER TABLE food_manufacturers
+        ALTER COLUMN unlisted_product_allergens DROP DEFAULT,
+        ALTER COLUMN facility_free_allergens DROP DEFAULT;
+
+      UPDATE food_manufacturers
+      SET
+        unlisted_product_allergens = array_remove(unlisted_product_allergens, 'Gluten'),
+        facility_free_allergens = array_remove(facility_free_allergens, 'Gluten')
+      WHERE 'Gluten' = ANY(unlisted_product_allergens)
+        OR 'Gluten' = ANY(facility_free_allergens);
+
+      ALTER TYPE "allergen_enum" RENAME TO "allergen_enum_old";
+
+      CREATE TYPE "allergen_enum" AS ENUM (
+        'Milk',
+        'Egg',
+        'Peanut',
+        'Tree nuts',
+        'Wheat',
+        'Soy',
+        'Fish',
+        'Shellfish',
+        'Sesame'
+      );
+
+      ALTER TABLE food_manufacturers
+        ALTER COLUMN unlisted_product_allergens TYPE "allergen_enum"[]
+          USING unlisted_product_allergens::text[]::"allergen_enum"[],
+        ALTER COLUMN facility_free_allergens TYPE "allergen_enum"[]
+          USING facility_free_allergens::text[]::"allergen_enum"[];
+
+      DROP TYPE "allergen_enum_old";
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      ALTER TYPE "allergen_enum" RENAME TO "allergen_enum_old";
+
+      CREATE TYPE "allergen_enum" AS ENUM (
+        'Milk',
+        'Egg',
+        'Peanut',
+        'Tree nuts',
+        'Wheat',
+        'Soy',
+        'Fish',
+        'Shellfish',
+        'Sesame',
+        'Gluten'
+      );
+
+      ALTER TABLE food_manufacturers
+        ALTER COLUMN unlisted_product_allergens TYPE "allergen_enum"[]
+          USING unlisted_product_allergens::text[]::"allergen_enum"[],
+        ALTER COLUMN facility_free_allergens TYPE "allergen_enum"[]
+          USING facility_free_allergens::text[]::"allergen_enum"[];
+
+      DROP TYPE "allergen_enum_old";
+    `);
+
+    await queryRunner.query(`
+      CREATE TYPE "manufacturer_attribute_enum" AS ENUM (
+        'Female-founded or women-led',
+        'Non-GMO Project Verified',
+        'USDA Certified Organic',
+        'None of the above'
+      );
+
+      ALTER TABLE food_manufacturers
+        ADD COLUMN products_contain_sulfites BOOLEAN NOT NULL DEFAULT false,
+        ADD COLUMN manufacturer_attribute manufacturer_attribute_enum,
+        ADD COLUMN newsletter_subscription BOOLEAN;
+    `);
+
     await queryRunner.query(`
       ALTER TYPE "activity_enum" RENAME TO "activity_enum_old";
 

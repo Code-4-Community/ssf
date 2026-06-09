@@ -270,18 +270,12 @@ export class FoodManufacturersService {
       foodManufacturerData.facilityFreeAllergens;
     foodManufacturer.productsGlutenFree =
       foodManufacturerData.productsGlutenFree;
-    foodManufacturer.productsContainSulfites =
-      foodManufacturerData.productsContainSulfites;
     foodManufacturer.productsSustainableExplanation =
       foodManufacturerData.productsSustainableExplanation;
     foodManufacturer.inKindDonations = foodManufacturerData.inKindDonations;
     foodManufacturer.donateWastedFood = foodManufacturerData.donateWastedFood;
-    foodManufacturer.manufacturerAttribute =
-      foodManufacturerData.manufacturerAttribute ?? null;
     foodManufacturer.additionalComments =
       foodManufacturerData.additionalComments ?? null;
-    foodManufacturer.newsletterSubscription =
-      foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
 
