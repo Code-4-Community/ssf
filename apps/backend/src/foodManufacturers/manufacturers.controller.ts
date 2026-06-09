@@ -13,7 +13,7 @@ import { FoodManufacturersService } from './manufacturers.service';
 import { FoodManufacturer } from './manufacturers.entity';
 import { FoodManufacturerApplicationDto } from './dtos/manufacturer-application.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { Allergen, DonateWastedFood } from './types';
 import { Public } from '../auth/public.decorator';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { Roles } from '../auth/roles.decorator';
@@ -155,10 +155,6 @@ export class FoodManufacturersController {
           type: 'boolean',
           example: true,
         },
-        productsContainSulfites: {
-          type: 'boolean',
-          example: false,
-        },
         productsSustainableExplanation: {
           type: 'string',
           example: 'Our products are environmentally conscious.',
@@ -172,18 +168,9 @@ export class FoodManufacturersController {
           enum: Object.values(DonateWastedFood),
           example: DonateWastedFood.ALWAYS,
         },
-        manufacturerAttribute: {
-          type: 'string',
-          enum: Object.values(ManufacturerAttribute),
-          example: ManufacturerAttribute.ORGANIC,
-        },
         additionalComments: {
           type: 'string',
           example: 'Nope!',
-        },
-        newsletterSubscription: {
-          type: 'boolean',
-          example: true,
         },
       },
       required: [
@@ -196,7 +183,6 @@ export class FoodManufacturersController {
         'unlistedProductAllergens',
         'facilityFreeAllergens',
         'productsGlutenFree',
-        'productsContainSulfites',
         'productsSustainableExplanation',
         'inKindDonations',
         'donateWastedFood',

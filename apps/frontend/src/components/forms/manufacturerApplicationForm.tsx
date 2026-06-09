@@ -9,11 +9,10 @@ import {
   Field,
   Textarea,
   SimpleGrid,
-  NativeSelect,
-  NativeSelectIndicator,
   Separator,
   Checkbox,
   Menu,
+  Link,
 } from '@chakra-ui/react';
 import {
   ActionFunction,
@@ -29,11 +28,7 @@ import { ManufacturerApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import axios from 'axios';
 import { ChevronDownIcon } from 'lucide-react';
-import {
-  Allergen,
-  DonateWastedFood,
-  ManufacturerAttribute,
-} from '../../types/manufacturerEnums';
+import { Allergen, DonateWastedFood } from '../../types/manufacturerEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { ROUTES } from '../../routes';
@@ -81,7 +76,7 @@ const ManufacturerApplicationForm: React.FC = () => {
   }, [actionData, setAlertMessage]);
 
   return (
-    <Box width="100%" mx="11em" my="4em">
+    <Box width="100%" mx="8em" my="4em">
       <Box as="section" mb="2.75em">
         {alertState && (
           <FloatingAlert
@@ -257,7 +252,7 @@ const ManufacturerApplicationForm: React.FC = () => {
           <Text {...sectionTitleStyles}>Product Details</Text>
           <Field.Root required mb="2em">
             <Field.Label {...fieldHeaderStyles}>
-              What allergen(s) are not listed in your products' ingredients?
+              Which allergen(s) are not listed in your products' ingredients?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
 
@@ -361,7 +356,7 @@ const ManufacturerApplicationForm: React.FC = () => {
 
           <Field.Root required mb="3em">
             <Field.Label {...fieldHeaderStyles}>
-              What allergen(s) is your facility free from?
+              Which allergen(s) is your facility free from?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
 
@@ -461,39 +456,14 @@ const ManufacturerApplicationForm: React.FC = () => {
             />
           </Field.Root>
 
-          <Field.Root required mb="2em">
+          <Field.Root required mb="4em">
             <Field.Label {...fieldHeaderStyles}>
-              Are your products certified gluten-free?
+              Do your products have gluten-free certification?
               <Field.RequiredIndicator color="red" />
             </Field.Label>
             <RadioGroup.Root name="productsGlutenFree" variant="solid">
               <Stack>
                 {['Yes, always', 'No'].map((value) => (
-                  <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput required />
-                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
-                      <RadioGroup.ItemIndicator
-                        border="1px solid"
-                        borderColor="neutral.100"
-                      />
-                    </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
-                    </RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                ))}
-              </Stack>
-            </RadioGroup.Root>
-          </Field.Root>
-
-          <Field.Root required mb="4em">
-            <Field.Label {...fieldHeaderStyles}>
-              Do your products contain sulfites?
-              <Field.RequiredIndicator color="red" />
-            </Field.Label>
-            <RadioGroup.Root name="productsContainSulfites" variant="solid">
-              <Stack>
-                {['Yes', 'No'].map((value) => (
                   <RadioGroup.Item key={value} value={value}>
                     <RadioGroup.ItemHiddenInput required />
                     <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
@@ -582,26 +552,6 @@ const ManufacturerApplicationForm: React.FC = () => {
             </RadioGroup.Root>
           </Field.Root>
 
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>Are you:</Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
-                placeholder="Select an option"
-                name="manufacturerAttribute"
-                borderColor="neutral.100"
-                color="neutral.800"
-                textStyle="p2"
-              >
-                {Object.values(ManufacturerAttribute).map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </NativeSelect.Field>
-              <NativeSelectIndicator />
-            </NativeSelect.Root>
-          </Field.Root>
-
           <Field.Root mb="4em">
             <Field.Label {...fieldHeaderStyles}>
               Anything else we should know?
@@ -615,40 +565,53 @@ const ManufacturerApplicationForm: React.FC = () => {
 
           <Separator size="sm" color="neutral.100" mb="1.5em" />
 
-          <Field.Root mb="2em">
-            <Field.Label {...fieldHeaderStyles}>
-              Would you like to subscribe to our quarterly newsletter?
-            </Field.Label>
-            <RadioGroup.Root name="newsletterSubscription" variant="solid">
-              <Stack>
-                {['Yes', 'No'].map((value) => (
-                  <RadioGroup.Item key={value} value={value}>
-                    <RadioGroup.ItemHiddenInput />
-                    <RadioGroup.ItemControl _checked={{ bg: 'neutral.800' }}>
-                      <RadioGroup.ItemIndicator
-                        border="1px solid"
-                        borderColor="neutral.100"
-                      />
-                    </RadioGroup.ItemControl>
-                    <RadioGroup.ItemText color="neutral.700" textStyle="p2">
-                      {value}
-                    </RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                ))}
-              </Stack>
-            </RadioGroup.Root>
-          </Field.Root>
-          <Field.Root required mb="4em">
+          <Field.Root required mb="2em">
             <Checkbox.Root>
-              <Checkbox.HiddenInput />
+              <Checkbox.HiddenInput required />
               <Checkbox.Control
                 border="1px solid"
                 borderColor="neutral.100"
                 _checked={{ bg: 'neutral.800' }}
               />
               <Checkbox.Label {...fieldHeaderStyles}>
-                By submitting this form, you agree to our Privacy Policy.{' '}
-                <Field.RequiredIndicator color="red" />
+                By submitting this form, you agree to our{' '}
+                <Link
+                  href="https://www.securingsafefood.org/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="https://www.securingsafefood.org/terms-of-use"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="blue.hover"
+                  textDecoration="underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Use
+                </Link>
+                . <Field.RequiredIndicator color="red" />
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </Field.Root>
+          <Field.Root required mb="4em">
+            <Checkbox.Root>
+              <Checkbox.HiddenInput required />
+              <Checkbox.Control
+                border="1px solid"
+                borderColor="neutral.100"
+                _checked={{ bg: 'neutral.800' }}
+              />
+              <Checkbox.Label {...fieldHeaderStyles}>
+                By submitting this form, you agree to receive automated emails
+                from Securing Safe Food (SSF) Corp. should your pantry be
+                enrolled in our program. <Field.RequiredIndicator color="red" />
               </Checkbox.Label>
             </Checkbox.Root>
           </Field.Root>
@@ -691,21 +654,11 @@ export const submitManufacturerApplicationForm: ActionFunction = async ({
     form.get('productsGlutenFree') === 'Yes, always',
   );
   manufacturerApplicationData.set(
-    'productsContainSulfites',
-    form.get('productsContainSulfites') === 'Yes',
-  );
-  manufacturerApplicationData.set(
     'inKindDonations',
     form.get('inKindDonations') === 'Yes',
   );
-  manufacturerApplicationData.set(
-    'newsletterSubscription',
-    form.get('newsletterSubscription') === 'Yes',
-  );
   form.delete('productsGlutenFree');
-  form.delete('productsContainSulfites');
   form.delete('inKindDonations');
-  form.delete('newsletterSubscription');
   form.delete('unlistedProductAllergens');
   form.delete('facilityFreeAllergens');
 

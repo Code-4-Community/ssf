@@ -41,6 +41,7 @@ import { MakeFoodRescueRequired1773889925002 } from '../migrations/1773889925002
 import { AddDonationItemConfirmation1774140453305 } from '../migrations/1774140453305-AddDonationItemConfirmation';
 import { DonationItemsOnDeleteCascade1774214910101 } from '../migrations/1774214910101-DonationItemsOnDeleteCascade';
 import { OrdersVolunteerActions1774883880543 } from '../migrations/1774883880543-OrdersVolunteerActions';
+import { UpdatePantryFMApplicationInfo1780913024514 } from '../migrations/1780913024514-UpdatePantryFMApplicationInfo';
 
 const schemaMigrations = [
   User1725726359198,
@@ -86,6 +87,7 @@ const schemaMigrations = [
   AddDonationItemConfirmation1774140453305,
   DonationItemsOnDeleteCascade1774214910101,
   OrdersVolunteerActions1774883880543,
+  UpdatePantryFMApplicationInfo1780913024514,
 ];
 
 export default schemaMigrations;

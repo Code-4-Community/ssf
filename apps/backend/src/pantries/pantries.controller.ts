@@ -19,8 +19,8 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import {
   Activity,
-  AllergensConfidence,
   ClientVisitFrequency,
+  DedicatedAllergyFriendly,
   PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
@@ -270,6 +270,11 @@ export class PantriesController {
           items: { type: 'string' },
           example: ['Egg allergy', 'Fish allergy'],
         },
+        languages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['English', 'Spanish'],
+        },
         refrigeratedDonation: {
           type: 'string',
           enum: Object.values(RefrigeratedDonation),
@@ -294,18 +299,14 @@ export class PantriesController {
             'We keep a dedicated section for clients with severe allergies',
         },
         dedicatedAllergyFriendly: {
-          type: 'boolean',
-          example: true,
+          type: 'string',
+          enum: Object.values(DedicatedAllergyFriendly),
+          example: DedicatedAllergyFriendly.YES,
         },
         clientVisitFrequency: {
           type: 'string',
           enum: Object.values(ClientVisitFrequency),
           example: ClientVisitFrequency.DAILY,
-        },
-        identifyAllergensConfidence: {
-          type: 'string',
-          enum: Object.values(AllergensConfidence),
-          example: AllergensConfidence.NOT_VERY_CONFIDENT,
         },
         serveAllergicChildren: {
           type: 'string',
@@ -338,10 +339,6 @@ export class PantriesController {
           maxLength: 255,
           example: 'Quite often',
         },
-        newsletterSubscription: {
-          type: 'boolean',
-          example: true,
-        },
       },
       required: [
         'contactFirstName',
@@ -359,11 +356,15 @@ export class PantriesController {
         'mailingAddressState',
         'mailingAddressZip',
         'allergenClients',
+        'restrictions',
+        'languages',
         'refrigeratedDonation',
         'acceptFoodDeliveries',
+        'deliveryWindowInstructions',
         'reserveFoodForAllergic',
         'dedicatedAllergyFriendly',
-        'activities',
+        'clientVisitFrequency',
+        'serveAllergicChildren',
         'itemsInStock',
         'needMoreOptions',
       ],

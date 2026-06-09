@@ -313,7 +313,7 @@ export class PantriesService {
     pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
     pantry.shipmentAddressState = pantryData.shipmentAddressState;
     pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
-    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? null;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry;
 
     // mailing address information
     pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
@@ -321,25 +321,25 @@ export class PantriesService {
     pantry.mailingAddressCity = pantryData.mailingAddressCity;
     pantry.mailingAddressState = pantryData.mailingAddressState;
     pantry.mailingAddressZip = pantryData.mailingAddressZip;
-    pantry.mailingAddressCountry = pantryData.mailingAddressCountry ?? null;
+    pantry.mailingAddressCountry = pantryData.mailingAddressCountry;
 
     // pantry details information
     pantry.pantryName = pantryData.pantryName;
     pantry.allergenClients = pantryData.allergenClients;
     pantry.restrictions = pantryData.restrictions;
+    pantry.languages = pantryData.languages;
     pantry.refrigeratedDonation = pantryData.refrigeratedDonation;
+    pantry.acceptFoodDeliveries = pantryData.acceptFoodDeliveries;
+    pantry.deliveryWindowInstructions = pantryData.deliveryWindowInstructions;
     pantry.dedicatedAllergyFriendly = pantryData.dedicatedAllergyFriendly;
     pantry.reserveFoodForAllergic = pantryData.reserveFoodForAllergic;
     pantry.reservationExplanation = pantryData.reservationExplanation ?? null;
-    pantry.clientVisitFrequency = pantryData.clientVisitFrequency ?? null;
-    pantry.identifyAllergensConfidence =
-      pantryData.identifyAllergensConfidence ?? null;
-    pantry.serveAllergicChildren = pantryData.serveAllergicChildren ?? null;
-    pantry.activities = pantryData.activities;
+    pantry.clientVisitFrequency = pantryData.clientVisitFrequency;
+    pantry.serveAllergicChildren = pantryData.serveAllergicChildren;
+    pantry.activities = pantryData.activities ?? null;
     pantry.activitiesComments = pantryData.activitiesComments ?? null;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
-    pantry.newsletterSubscription = pantryData.newsletterSubscription ?? null;
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
