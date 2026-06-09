@@ -109,7 +109,7 @@ export class PopulateDummyData1768501812134 implements MigrationInterface {
         true,
         ARRAY['Celiac disease', 'Gluten sensitivity (not celiac disease)'],
         (SELECT user_id FROM public.users WHERE email = 'pantry2@ssf.org' LIMIT 1),
-        ARRAY['Create labeled shelf', 'Post allergen-free resource flyers']::"activity_enum"[],
+        ARRAY['Spreadsheet to track dietary needs', 'Post allergen-free resource flyers']::"activity_enum"[],
         'Bread, canned vegetables, soup',
         'Gluten-free options',
         'approved',

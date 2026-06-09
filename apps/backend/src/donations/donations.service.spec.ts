@@ -235,10 +235,12 @@ describe('DonationService', () => {
         expect(d.foodManufacturer).toBeDefined();
       });
 
-      const firstDonation = donations[0];
-      expect(firstDonation.status).toBe(DonationStatus.MATCHED);
-      expect(firstDonation.foodManufacturer.foodManufacturerId).toBe(2);
-      expect(firstDonation.recurrence).toBe(RecurrenceEnum.NONE);
+      const matchedDonation = donations.find(
+        (d) => d.status === DonationStatus.MATCHED,
+      );
+      expect(matchedDonation).toBeDefined();
+      expect(matchedDonation?.foodManufacturer.foodManufacturerId).toBe(2);
+      expect(matchedDonation?.recurrence).toBe(RecurrenceEnum.NONE);
     });
   });
 
