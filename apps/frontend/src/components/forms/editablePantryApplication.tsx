@@ -299,8 +299,6 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
     setIsSaving(true);
     setError(null);
     try {
-      // Mirror the application form: restrictions keep the "Other" marker and
-      // append the specified text, while languages drop the "Other" marker.
       const restrictions = [...form.restrictions];
       if (
         form.restrictions.includes(restrictionsOtherOption) &&
