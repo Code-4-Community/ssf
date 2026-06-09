@@ -19,9 +19,24 @@ import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-i
 import { FoodType } from '../donationItems/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('donations')
 export class DonationsController {
@@ -122,18 +137,7 @@ export class DonationsController {
   @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'donationId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(DonationService).findOne(entityId),
-        (donation: Donation) =>
-          services
-            .get(FoodManufacturersService)
-            .findOne(donation.foodManufacturer.foodManufacturerId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
-      );
-    },
+    resolver: resolveDonationAuthorizedUserIds,
   })
   @Patch('/:donationId/item')
   async editDonationItems(

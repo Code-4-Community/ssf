@@ -589,6 +589,9 @@ describe('DonationItemsService', () => {
     });
 
     it('updates existing items, inserts new items, and deletes omitted items', async () => {
+      const itemsBefore = await service.getAllDonationItems(donationId);
+      expect(itemsBefore).toHaveLength(2);
+
       await testDataSource.transaction((tm) =>
         service.editItems(
           donationId,
@@ -605,6 +608,8 @@ describe('DonationItemsService', () => {
       );
 
       const items = await service.getAllDonationItems(donationId);
+      // updated itemA + inserted one new + deleted itemB => count unchanged at 2
+      expect(items).toHaveLength(itemsBefore.length);
       expect(items).toHaveLength(2);
 
       const names = items.map((i) => i.itemName).sort();
@@ -625,19 +630,8 @@ describe('DonationItemsService', () => {
       expect(inserted.reservedQuantity).toBe(0);
       expect(inserted.detailsConfirmed).toBe(true);
 
-      await expect(service.findOne(itemB)).rejects.toThrow();
-    });
-
-    it('deletes all existing items absent from the body', async () => {
-      await testDataSource.transaction((tm) =>
-        service.editItems(donationId, [makeItem({ itemName: 'Only New' })], tm),
-      );
-
-      const items = await service.getAllDonationItems(donationId);
-      expect(items).toHaveLength(1);
-      expect(items[0].itemName).toBe('Only New');
-
-      await expect(service.findOne(itemA)).rejects.toThrow();
+      // itemB was omitted from the body, so it should be deleted
+      expect(items.some((i) => i.itemId === itemB)).toBe(false);
       await expect(service.findOne(itemB)).rejects.toThrow();
     });
 

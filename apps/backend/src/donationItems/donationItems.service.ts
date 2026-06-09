@@ -168,32 +168,22 @@ export class DonationItemsService {
       await itemRepo.delete({ itemId: In(idsToDelete) });
     }
 
-    for (const dto of body) {
-      if (dto.itemId !== undefined) {
-        await itemRepo.update(dto.itemId, {
-          itemName: dto.itemName,
-          quantity: dto.quantity,
-          ozPerItem: dto.ozPerItem,
-          estimatedValue: dto.estimatedValue,
-          foodType: dto.foodType,
-          foodRescue: dto.foodRescue,
-          detailsConfirmed: true,
-        });
-      } else {
-        const newItem = itemRepo.create({
-          donationId,
-          itemName: dto.itemName,
-          quantity: dto.quantity,
-          reservedQuantity: 0,
-          ozPerItem: dto.ozPerItem,
-          estimatedValue: dto.estimatedValue,
-          foodType: dto.foodType,
-          foodRescue: dto.foodRescue,
-          detailsConfirmed: true,
-        });
-        await itemRepo.save(newItem);
-      }
-    }
+    const itemsToSave = body.map((dto) =>
+      itemRepo.create({
+        ...(dto.itemId !== undefined
+          ? { itemId: dto.itemId }
+          : { donationId, reservedQuantity: 0 }),
+        itemName: dto.itemName,
+        quantity: dto.quantity,
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodType: dto.foodType,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      }),
+    );
+
+    await itemRepo.save(itemsToSave);
   }
 
   async createMultiple(
