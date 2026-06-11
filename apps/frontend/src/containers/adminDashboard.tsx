@@ -16,6 +16,9 @@ import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import SectionEmptyState from '@components/sectionEmptyState';
+import PageEmptyState from '@components/pageEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +30,7 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   const fetchPendingApplications = async () => {
     try {
@@ -75,6 +79,13 @@ const AdminDashboard: React.FC = () => {
       setAlertMessage('Authentication error. Please log in and try again.');
       return;
     }
+
+    try {
+      const userStats = await ApiClient.getUserStats(user.id);
+      setStats(userStats);
+    } catch {
+      setAlertMessage('Error fetching dashboard statistics');
+    }
   };
 
   useEffect(() => {
@@ -83,6 +94,11 @@ const AdminDashboard: React.FC = () => {
     fetchRecentOrders();
     fetchPendingApplications();
   }, [setAlertMessage]);
+
+  const isPageEmpty =
+    pendingApplications.length === 0 &&
+    recentOrders.length === 0 &&
+    recentDonations.length === 0;
 
   return (
     <Box p={12}>
@@ -98,84 +114,135 @@ const AdminDashboard: React.FC = () => {
         Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
 
-      <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
-        Pending Actions
-      </Text>
-      <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
-        {pendingApplications.map((application) => (
-          <DashboardCard
-            type={DashboardCardType.ACTION}
-            title={application.name}
-            date={application.dateApplied}
-            key={application.id}
-            linkText="View Application Details"
-            badge={{
-              label:
-                application.type === 'pantry' ? 'Pantry' : 'Food Manufacturer',
-              bg: 'neutral.100',
-              color: 'neutral.600',
-            }}
-            onLinkClick={() => {
-              navigate(
-                application.type === 'pantry'
-                  ? ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
-                      ':pantryId',
-                      application.id.toString(),
+      {stats && <DashboardStats stats={stats} />}
+
+      {isPageEmpty ? (
+        <PageEmptyState
+          subtitle="You have no orders or applications to review at this time."
+          primaryButtonText="View Pantries"
+          primaryButtonLink={ROUTES.PANTRY_MANAGEMENT}
+          secondaryButtonText="View Donations"
+          secondaryButtonLink={ROUTES.ADMIN_DONATION}
+        />
+      ) : (
+        <>
+          <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
+            Pending Actions
+          </Text>
+          {pendingApplications.length === 0 ? (
+            <Box mb={16}>
+              <SectionEmptyState subtitle="You have no pending applications at this time" />
+            </Box>
+          ) : (
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, 1fr)"
+              gap={4}
+              mb={16}
+            >
+              {pendingApplications.map((application) => (
+                <DashboardCard
+                  type={DashboardCardType.ACTION}
+                  title={application.name}
+                  date={application.dateApplied}
+                  key={application.id}
+                  linkText="View Application Details"
+                  badge={{
+                    label:
+                      application.type === 'pantry'
+                        ? 'Pantry'
+                        : 'Food Manufacturer',
+                    bg: 'neutral.100',
+                    color: 'neutral.600',
+                  }}
+                  onLinkClick={() => {
+                    navigate(
+                      application.type === 'pantry'
+                        ? ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
+                            ':pantryId',
+                            application.id.toString(),
+                          )
+                        : ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                            ':applicationId',
+                            application.id.toString(),
+                          ),
+                    );
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+
+          <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
+            Recent Orders
+          </Text>
+          {recentOrders.length === 0 ? (
+            <Box mb={16}>
+              <SectionEmptyState subtitle="You have no recent orders at this time" />
+            </Box>
+          ) : (
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, 1fr)"
+              gap={4}
+              mb={16}
+            >
+              {recentOrders.map((order) => (
+                <DashboardCard
+                  key={order.orderId}
+                  type={DashboardCardType.ORDER}
+                  title={`Order #${order.orderId}`}
+                  date={order.createdAt}
+                  subtitle={order.request.pantry.pantryName}
+                  linkText="View Order Details"
+                  badge={ORDER_STATUS_BADGE[order.status]}
+                  assignee={{
+                    id: order.assignee.id,
+                    firstName: order.assignee.firstName,
+                    lastName: order.assignee.lastName,
+                  }}
+                  onLinkClick={() =>
+                    navigate(`/admin-order-management?orderId=${order.orderId}`)
+                  }
+                />
+              ))}
+            </Box>
+          )}
+
+          <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
+            Recent Donations
+          </Text>
+          {recentDonations.length === 0 ? (
+            <Box mb={16}>
+              <SectionEmptyState subtitle="You have no recent donations at this time" />
+            </Box>
+          ) : (
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, 1fr)"
+              gap={4}
+              mb={16}
+            >
+              {recentDonations.map((donation) => (
+                <DashboardCard
+                  key={donation.donationId}
+                  type={DashboardCardType.RECENT_DONATION}
+                  title={`Donation #${donation.donationId}`}
+                  date={donation.dateDonated}
+                  subtitle={donation.foodManufacturer?.foodManufacturerName}
+                  linkText="View Donation Details"
+                  badge={DONATION_STATUS_BADGE[donation.status]}
+                  onLinkClick={() =>
+                    navigate(
+                      `/admin-donation?donationId=${donation.donationId}`,
                     )
-                  : ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
-                      ':applicationId',
-                      application.id.toString(),
-                    ),
-              );
-            }}
-          />
-        ))}
-      </Box>
-
-      <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
-        Recent Orders
-      </Text>
-      <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
-        {recentOrders.map((order) => (
-          <DashboardCard
-            key={order.orderId}
-            type={DashboardCardType.ORDER}
-            title={`Order #${order.orderId}`}
-            date={order.createdAt}
-            subtitle={order.request.pantry.pantryName}
-            linkText="View Order Details"
-            badge={ORDER_STATUS_BADGE[order.status]}
-            assignee={{
-              id: order.assignee.id,
-              firstName: order.assignee.firstName,
-              lastName: order.assignee.lastName,
-            }}
-            onLinkClick={() =>
-              navigate(`/admin-order-management?orderId=${order.orderId}`)
-            }
-          />
-        ))}
-      </Box>
-
-      <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
-        Recent Donations
-      </Text>
-      <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={4} mb={16}>
-        {recentDonations.map((donation) => (
-          <DashboardCard
-            key={donation.donationId}
-            type={DashboardCardType.RECENT_DONATION}
-            title={`Donation #${donation.donationId}`}
-            date={donation.dateDonated}
-            subtitle={donation.foodManufacturer?.foodManufacturerName}
-            linkText="View Donation Details"
-            badge={DONATION_STATUS_BADGE[donation.status]}
-            onLinkClick={() =>
-              navigate(`/admin-donation?donationId=${donation.donationId}`)
-            }
-          />
-        ))}
-      </Box>
+                  }
+                />
+              ))}
+            </Box>
+          )}
+        </>
+      )}
     </Box>
   );
 };
