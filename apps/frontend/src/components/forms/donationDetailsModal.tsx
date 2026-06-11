@@ -6,6 +6,7 @@ import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -36,7 +37,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
         setItems(itemsData);
       } catch {
-        setAlertMessage('Error fetching donation details');
+        setAlertMessage('Error fetching donation details', AlertStatus.ERROR);
       }
     };
 
@@ -63,7 +64,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

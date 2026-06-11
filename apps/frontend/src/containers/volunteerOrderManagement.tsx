@@ -35,6 +35,7 @@ import {
   VolunteerOrder,
   VolunteerAction,
   User,
+  AlertStatus,
 } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import CompleteRequiredActionsModal from '@components/forms/completeRequiredActionsModal';
@@ -119,7 +120,10 @@ const VolunteerOrderManagement: React.FC = () => {
         userId = user.id;
         setCurrentUser(user);
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          AlertStatus.ERROR,
+        );
         setIsLoading(false);
         return;
       }
@@ -156,7 +160,7 @@ const VolunteerOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch {
-        setAlertMessage('Error fetching assigned orders');
+        setAlertMessage('Error fetching assigned orders', AlertStatus.ERROR);
       } finally {
         setIsLoading(false);
       }
@@ -224,7 +228,7 @@ const VolunteerOrderManagement: React.FC = () => {
         },
       }));
     } else {
-      setAlertMessage('Selected pantry has no orders');
+      setAlertMessage('Selected pantry has no orders', AlertStatus.ERROR);
       navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
     }
   }, [searchParams, statusOrders, navigate, setAlertMessage]);
@@ -286,7 +290,7 @@ const VolunteerOrderManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

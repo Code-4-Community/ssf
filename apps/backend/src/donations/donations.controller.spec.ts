@@ -7,6 +7,7 @@ import { CreateDonationDto } from './dtos/create-donation.dto';
 import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const mockDonationService = mock<DonationService>();
 
@@ -58,7 +59,6 @@ describe('DonationsController', () => {
   describe('POST /', () => {
     it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
-        foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
@@ -72,6 +72,8 @@ describe('DonationsController', () => {
         ] as CreateDonationItemDto[],
       };
 
+      const mockReq = { user: { id: 1 } };
+
       const createdDonation: Partial<Donation> = {
         donationId: 1,
         ...createBody,
@@ -84,11 +86,12 @@ describe('DonationsController', () => {
       );
 
       const result = await controller.createDonation(
+        mockReq as AuthenticatedRequest,
         createBody as CreateDonationDto,
       );
 
       expect(result).toEqual(createdDonation);
-      expect(mockDonationService.create).toHaveBeenCalledWith(createBody);
+      expect(mockDonationService.create).toHaveBeenCalledWith(createBody, 1);
     });
   });
 

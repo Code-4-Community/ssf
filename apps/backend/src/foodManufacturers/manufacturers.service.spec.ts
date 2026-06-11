@@ -616,6 +616,7 @@ describe('FoodManufacturersService', () => {
       futureDate1.setMilliseconds(0);
       futureDate1.setDate(futureDate1.getDate() + 30);
       clampDay(futureDate1);
+
       const futureDate2 = new Date();
       futureDate2.setMilliseconds(0);
       futureDate2.setDate(futureDate2.getDate() + 60);

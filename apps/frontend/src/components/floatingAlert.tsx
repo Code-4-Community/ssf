@@ -1,9 +1,10 @@
 import { Alert } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { AlertStatus } from '../types/types';
 
 type FloatingAlertProps = {
   message?: string | null;
-  status?: 'info' | 'error';
+  status?: AlertStatus;
   timeout?: number;
 };
 
@@ -35,7 +36,7 @@ export function FloatingAlert({
 
   return (
     <Alert.Root
-      color={status === 'info' ? 'neutral.800' : 'red'}
+      color={status === AlertStatus.INFO ? 'neutral.800' : 'red'}
       status="info"
       bg="white"
       alignItems="center"

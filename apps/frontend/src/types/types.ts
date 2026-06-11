@@ -471,7 +471,6 @@ export interface CreateFoodRequestBody {
 }
 
 export interface CreateDonationDto {
-  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
@@ -610,4 +609,9 @@ export interface UpdateDonationItemDetailsDto {
   ozPerItem?: number;
   estimatedValue?: number;
   foodRescue?: boolean;
+}
+
+export enum AlertStatus {
+  INFO = 'info',
+  ERROR = 'error',
 }

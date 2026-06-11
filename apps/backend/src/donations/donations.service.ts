@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,11 +12,11 @@ import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 
@@ -30,9 +29,8 @@ export class DonationService {
     private allocationRepo: Repository<Allocation>,
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
-    @InjectRepository(FoodManufacturer)
-    private manufacturerRepo: Repository<FoodManufacturer>,
     private donationItemsService: DonationItemsService,
+    private foodManufacturersService: FoodManufacturersService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
   ) {}
@@ -59,17 +57,13 @@ export class DonationService {
     });
   }
 
-  async create(donationData: CreateDonationDto): Promise<Donation> {
-    validateId(donationData.foodManufacturerId, 'Food Manufacturer');
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId: donationData.foodManufacturerId },
-    });
-
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${donationData.foodManufacturerId} not found`,
-      );
-    }
+  async create(
+    donationData: CreateDonationDto,
+    userId: number,
+  ): Promise<Donation> {
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      userId,
+    );
 
     let nextDonationDates = null;
 
