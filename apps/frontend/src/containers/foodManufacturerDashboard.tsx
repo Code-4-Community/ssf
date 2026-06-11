@@ -33,12 +33,10 @@ const FoodManufacturerDashboard: React.FC = () => {
   useEffect(() => {
     const fetchFmData = async () => {
       let fmId: number;
+      let currentUser: User;
       try {
-        const currentUser = await ApiClient.getMe();
+        currentUser = await ApiClient.getMe();
         setUser(currentUser);
-
-        const userStats = await ApiClient.getUserStats(currentUser.id);
-        setStats(userStats);
 
         fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         const fm = await ApiClient.getFoodManufacturer(fmId);
@@ -46,6 +44,13 @@ const FoodManufacturerDashboard: React.FC = () => {
       } catch {
         setErrorMessage('Error fetching your manufacturer profile.');
         return;
+      }
+
+      try {
+        const userStats = await ApiClient.getUserStats(currentUser.id);
+        setStats(userStats);
+      } catch {
+        setErrorMessage('Error fetching dashboard statistics');
       }
 
       const [reminders, donations] = await Promise.allSettled([

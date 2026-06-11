@@ -75,12 +75,16 @@ const AdminDashboard: React.FC = () => {
     try {
       user = await ApiClient.getMe();
       setCurrentUser(user);
-
-      const userStats = await ApiClient.getUserStats(user.id);
-      setStats(userStats);
     } catch {
       setAlertMessage('Authentication error. Please log in and try again.');
       return;
+    }
+
+    try {
+      const userStats = await ApiClient.getUserStats(user.id);
+      setStats(userStats);
+    } catch {
+      setAlertMessage('Error fetching dashboard statistics');
     }
   };
 

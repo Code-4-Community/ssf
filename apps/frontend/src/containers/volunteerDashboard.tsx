@@ -25,15 +25,20 @@ const VolunteerDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      let currentUser: User;
       try {
-        const currentUser = await ApiClient.getMe();
+        currentUser = await ApiClient.getMe();
         setUser(currentUser);
-
-        const userStats = await ApiClient.getUserStats(currentUser.id);
-        setStats(userStats);
       } catch {
         setAlertMessage('Error fetching user information');
         return;
+      }
+
+      try {
+        const userStats = await ApiClient.getUserStats(currentUser.id);
+        setStats(userStats);
+      } catch {
+        setAlertMessage('Error fetching dashboard statistics');
       }
 
       try {

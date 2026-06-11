@@ -34,13 +34,17 @@ const PantryDashboard: React.FC = () => {
         pantryId = await ApiClient.getCurrentUserPantryId();
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
+      } catch {
+        setAlertMessage('Error fetching pantry information');
+        return;
+      }
 
+      try {
         const user = await ApiClient.getMe();
         const userStats = await ApiClient.getUserStats(user.id);
         setStats(userStats);
       } catch {
-        setAlertMessage('Error fetching pantry information');
-        return;
+        setAlertMessage('Error fetching dashboard statistics');
       }
 
       try {
