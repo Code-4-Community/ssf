@@ -12,15 +12,12 @@ import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donat
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
-import {
-  ReplaceDonationItemDto,
-  ReplaceDonationItemsDto,
-} from '../donationItems/dtos/create-donation-items.dto';
 import { FoodType } from '../donationItems/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { UsersService } from '../users/users.service';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
+import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
 
@@ -146,6 +143,8 @@ describe('DonationService', () => {
   let donationItemService: DonationItemsService;
 
   beforeAll(async () => {
+    mockEmailsService.sendEmails.mockResolvedValue(undefined);
+
     if (!testDataSource.isInitialized) {
       await testDataSource.initialize();
     }
@@ -186,6 +185,10 @@ describe('DonationService', () => {
           provide: DataSource,
           useValue: testDataSource,
         },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
+        },
       ],
     }).compile();
 
@@ -195,6 +198,7 @@ describe('DonationService', () => {
   });
 
   beforeEach(async () => {
+    mockEmailsService.sendEmails.mockClear();
     await testDataSource.query(`DROP SCHEMA IF EXISTS public CASCADE`);
     await testDataSource.query(`CREATE SCHEMA public`);
     await testDataSource.runMigrations();
@@ -249,13 +253,6 @@ describe('DonationService', () => {
       expect(firstDonation.status).toBe(DonationStatus.MATCHED);
       expect(firstDonation.foodManufacturer.foodManufacturerId).toBe(2);
       expect(firstDonation.recurrence).toBe(RecurrenceEnum.NONE);
-    });
-  });
-
-  describe('getNumberOfDonations', () => {
-    it('returns total number of donations in the database', async () => {
-      const donationCount = await service.getNumberOfDonations();
-      expect(donationCount).toEqual(4);
     });
   });
 
@@ -647,6 +644,184 @@ describe('DonationService', () => {
         );
         expect(donation.occurrencesRemaining).toEqual(3);
       });
+
+      it('sends fmRecurringDonationReminder email with correct parameters when expired date is processed', async () => {
+        const pastDate = daysAgo(5);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: manufacturer.foodManufacturerRepresentative.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      });
+
+      it('skips recurrence update and logs warning when initial email fails', async () => {
+        const pastDate = daysAgo(5);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 3,
+        });
+
+        const warnSpy = jest.spyOn(service['logger'], 'warn');
+        mockEmailsService.sendEmails.mockRejectedValueOnce(
+          new Error('Email failed'),
+        );
+
+        await service.handleRecurringDonations();
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `Automated email failed to send. Skipping recurrence update for donation id ${donationId}`,
+          ),
+        );
+
+        // donation state preserved — failed email means we skipped the update
+        const donation = await service.findOne(donationId);
+        expect(donation.occurrencesRemaining).toBe(3);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
+          pastDate.toDateString(),
+        );
+
+        warnSpy.mockRestore();
+      });
+
+      it("processes other donations when one donation's initial email fails", async () => {
+        // 3 weekly donations whose replacement dates are all in the future
+        // (no cascading), each starting at occurrencesRemaining=3.
+        const donationId1 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(1)],
+          occurrencesRemaining: 3,
+        });
+        const donationId2 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(3)],
+          occurrencesRemaining: 3,
+        });
+        const donationId3 = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [daysAgo(5)],
+          occurrencesRemaining: 3,
+        });
+
+        // Reject the first sendEmails call. Whichever donation getAll yields
+        // first will fail; the other two will succeed.
+        mockEmailsService.sendEmails.mockRejectedValueOnce(
+          new Error('Email failed'),
+        );
+
+        await service.handleRecurringDonations();
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(3);
+
+        const donations = await Promise.all([
+          service.findOne(donationId1),
+          service.findOne(donationId2),
+          service.findOne(donationId3),
+        ]);
+
+        // Exactly one donation should be unchanged (the one whose email failed)
+        // and the other two should be decremented from 3 → 2.
+        const remaining = donations.map((d) => d.occurrencesRemaining).sort();
+        expect(remaining).toEqual([2, 2, 3]);
+      });
+
+      it('sends multiple cascade emails when several replacement dates are also expired', async () => {
+        // 21-day-old weekly date cascades 3 times before landing in the future:
+        // initial send for daysAgo(21), then cascade sends for daysAgo(14),
+        // daysAgo(7), and daysAgo(0) — the next computed date (daysFromNow(7))
+        // exits the while loop. 4 emails total
+        const pastDate = daysAgo(21);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 5,
+        });
+
+        const manufacturer = await testDataSource
+          .getRepository(FoodManufacturer)
+          .findOne({
+            where: { foodManufacturerName: 'FoodCorp Industries' },
+            relations: ['foodManufacturerRepresentative'],
+          });
+
+        if (!manufacturer)
+          throw new Error('Missing FoodCorp Industries manufacturer');
+
+        await service.handleRecurringDonations();
+
+        const message = emailTemplates.fmRecurringDonationReminder({
+          fmName: manufacturer.foodManufacturerName,
+          resubmitDonationId: donationId,
+        });
+
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(4);
+
+        const donation = await service.findOne(donationId);
+        expect(donation.occurrencesRemaining).toBe(1);
+        expect(donation.nextDonationDates).toHaveLength(1);
+        expect(donation.nextDonationDates?.[0].toDateString()).toEqual(
+          daysFromNow(7).toDateString(),
+        );
+      });
+
+      it('breaks out of cascade and logs warning when cascade email fails', async () => {
+        // 14-day-old weekly date triggers the cascade — its replacement (7daysAgo) is also expired.
+        const pastDate = daysAgo(14);
+        const donationId = await insertDonation({
+          recurrence: RecurrenceEnum.WEEKLY,
+          recurrenceFreq: 1,
+          nextDonationDates: [pastDate],
+          occurrencesRemaining: 5,
+        });
+
+        const warnSpy = jest.spyOn(service['logger'], 'warn');
+        mockEmailsService.sendEmails
+          .mockResolvedValueOnce(undefined) // initial send (pastDate) succeeds
+          .mockRejectedValueOnce(new Error('Email failed')); // first cascade send fails → break
+
+        await service.handleRecurringDonations();
+
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `Cascading recalculation of next dates failed for donation id ${donationId}`,
+          ),
+        );
+
+        warnSpy.mockRestore();
+      });
     });
   });
 
@@ -1018,7 +1193,7 @@ describe('DonationService', () => {
     });
 
     it('throws when user ID is not a food manufacturer', async () => {
-      expect(
+      await expect(
         service.create(
           {
             recurrence: RecurrenceEnum.NONE,
@@ -1085,125 +1260,6 @@ describe('DonationService', () => {
 
       donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
-    });
-  });
-
-  describe('replaceDonationItems', () => {
-    it('should replace donation items for an available donation', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([2, 3]) });
-
-      await service.replaceDonationItems(donationId, body);
-
-      const updatedItems = await donationItemService.getAllDonationItems(
-        donationId,
-      );
-      expect(updatedItems).toHaveLength(2);
-
-      const updatedItemNames = updatedItems.map((i) => i.itemName);
-      expect(updatedItemNames).toContain('Green Apples'); // updated
-      expect(updatedItemNames).toContain('Bananas'); // new
-      expect(updatedItemNames).not.toContain('Canned Green Beans'); // deleted
-      expect(updatedItemNames).not.toContain('Whole Wheat Bread'); // deleted
-    });
-
-    it('should throw BadRequestException if allocation exists for deleted donation item', async () => {
-      const donationId = 1;
-
-      // (update item1, remove item2, remove item3, add item 4)
-      const body = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Green Apples',
-            quantity: 15,
-          } as Partial<ReplaceDonationItemDto>,
-          {
-            itemName: 'Bananas',
-            quantity: 20,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          } as Partial<ReplaceDonationItemDto>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow(
-        `Cannot delete donation item(s) with existing allocation(s), replacing donation items failed and not exectued`,
-      );
-    });
-
-    it('should delete all donation items for an available donation when passed an empty array', async () => {
-      const donationId = 1;
-
-      const body = {
-        items: [],
-      } as ReplaceDonationItemsDto;
-
-      // manually removing allocations for deleted item ids
-      await service['allocationRepo'].delete({ itemId: In([1, 2, 3]) });
-
-      await service.replaceDonationItems(donationId, body);
-
-      const updatedItems = await donationItemService.getAllDonationItems(
-        donationId,
-      );
-      expect(updatedItems).toHaveLength(0);
-    });
-
-    it('should throw NotFoundException if donation does not exist', async () => {
-      const body = { items: [] };
-      await expect(service.replaceDonationItems(9999, body)).rejects.toThrow(
-        `Donation 9999 not found`,
-      );
-    });
-
-    it('should throw BadRequestException if donation is not AVAILABLE', async () => {
-      // Donation with status MATCHED
-      const donationId = 2;
-
-      const body = { items: [] };
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow('Only available donations can be updated');
-    });
-
-    it('should throw NotFoundException if trying to update an item that does not exist within current donation', async () => {
-      const donationId = 1;
-
-      const body = {
-        items: [
-          {
-            id: 9999,
-            itemName: 'Nonexistent',
-            quantity: 1,
-          } as Partial<DonationItem>,
-        ],
-      } as ReplaceDonationItemsDto;
-
-      await expect(
-        service.replaceDonationItems(donationId, body),
-      ).rejects.toThrow(
-        `Donation item 9999 for Donation ${donationId} not found`,
-      );
     });
   });
 

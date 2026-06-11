@@ -121,7 +121,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text textStyle="p2" color="#111111">
+            <Text textStyle="p2" color="gray.dark">
               Fulfilled by {orderDetails?.foodManufacturerName}
             </Text>
 
@@ -179,8 +179,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {foodRequest.status === FoodRequestStatus.CLOSED ? (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#FEECD1"
-                          color="#9C5D00"
+                          bgColor="yellow.200"
+                          color="yellow.hover"
                         >
                           Closed
                         </Badge>
@@ -188,7 +188,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <Badge
                           {...badgeStyles}
                           bgColor="teal.200"
-                          color="#19717D"
+                          color="teal.hover"
                         >
                           Active
                         </Badge>
@@ -282,7 +282,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 {orderDetails?.trackingLink ? (
                   <Link
                     href={orderDetails.trackingLink}
-                    color="#2795A5"
+                    color="teal.ssf"
                     variant="underline"
                     mt="3"
                     mb="3"

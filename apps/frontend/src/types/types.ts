@@ -225,6 +225,11 @@ export interface DonationOrderDetails {
   items: OrderItemDetails[];
 }
 
+export interface DonationReminderDto {
+  donation: Donation;
+  reminderDate: string;
+}
+
 export interface DonationItem {
   itemId: number;
   donationId: number;
@@ -357,6 +362,7 @@ export type VolunteerOrder = {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+  pantryId: number;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;

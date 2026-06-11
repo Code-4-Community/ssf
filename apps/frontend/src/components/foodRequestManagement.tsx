@@ -21,7 +21,6 @@ import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequ
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ROUTES } from '../routes';
 import { AlertStatus } from '../types/types';
 
 interface RequestManagementProps {
@@ -80,10 +79,21 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
 
     if (match) {
       setSelectedViewDetailsRequest(match);
+
+      // Paginate to the page that contains the deeplinked request
+      const sortedAtLoad = [...requests].sort((a, b) =>
+        b.requestedAt.localeCompare(a.requestedAt),
+      );
+      const idx = sortedAtLoad.findIndex(
+        (r) => r.requestId === initialRequestId,
+      );
+      if (idx >= 0) {
+        setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
+      }
     } else {
-      navigate(ROUTES.REQUEST_FORM, { replace: true });
+      navigate(location.pathname, { replace: true });
     }
-  }, [initialRequestId, requests, navigate]);
+  }, [initialRequestId, requests, navigate, location]);
 
   const pantryOptions = [
     ...new Set(

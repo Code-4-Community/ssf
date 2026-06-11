@@ -365,7 +365,11 @@ const AssignedPantries: React.FC = () => {
                     >
                       <Box display="flex" justifyContent="flex-end" pr={2}>
                         <Box
-                          bg="neutral.200"
+                          bg={
+                            isRefrigeratorFriendly(pantry)
+                              ? 'neutral.100'
+                              : 'neutral.200'
+                          }
                           px={3}
                           py={1}
                           borderRadius="md"
@@ -387,7 +391,9 @@ const AssignedPantries: React.FC = () => {
                         color="neutral.700"
                         textStyle="p2"
                         onClick={() =>
-                          navigate(ROUTES.VOLUNTEER_REQUEST_MANAGEMENT)
+                          navigate(
+                            `${ROUTES.VOLUNTEER_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
+                          )
                         }
                         p={0}
                         height="auto"

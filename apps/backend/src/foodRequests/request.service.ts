@@ -24,6 +24,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 import { UpdateRequestDto } from './dtos/update-request.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RequestsService {
@@ -36,6 +37,7 @@ export class RequestsService {
     @InjectRepository(DonationItem)
     private donationItemRepo: Repository<DonationItem>,
     private emailsService: EmailsService,
+    private usersService: UsersService,
   ) {}
 
   async findOne(requestId: number): Promise<FoodRequest> {
@@ -244,19 +246,24 @@ export class RequestsService {
 
     await this.repo.save(foodRequest);
 
-    try {
-      const volunteers = pantry.volunteers || [];
-      const volunteerEmails = volunteers.map((v) => v.email);
+    const volunteers = pantry.volunteers || [];
+    const volunteerEmails = volunteers.map((v) => v.email);
 
+    if (volunteerEmails.length === 0) {
+      return foodRequest;
+    }
+
+    try {
       const message = emailTemplates.pantrySubmitsFoodRequest({
         pantryName: pantry.pantryName,
       });
 
-      await this.emailsService.sendEmails(
-        volunteerEmails,
-        message.subject,
-        message.bodyHTML,
-      );
+      await this.emailsService.sendEmails({
+        toEmail: pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
     } catch {
       throw new InternalServerErrorException(
         'Failed to send new food request notification email to volunteers',
@@ -280,7 +287,7 @@ export class RequestsService {
 
     const request = await this.repo.findOne({
       where: { requestId },
-      relations: ['orders'],
+      relations: ['orders', 'pantry', 'pantry.pantryUser', 'pantry.volunteers'],
     });
 
     if (!request) {
@@ -290,22 +297,60 @@ export class RequestsService {
     const orders = request.orders || [];
 
     if (!orders.length) {
-      request.status = FoodRequestStatus.ACTIVE;
-      await this.repo.save(request);
-      return;
+      throw new BadRequestException(
+        `Cannot update request ${requestId} with no orders`,
+      );
+    }
+
+    if (request.status === FoodRequestStatus.CLOSED) {
+      throw new BadRequestException(`Request ${requestId} is already closed`);
     }
 
     const allDelivered = orders.every(
       (order) => order.status === OrderStatus.DELIVERED,
     );
 
-    if (request.status !== FoodRequestStatus.CLOSED) {
-      request.status = allDelivered
-        ? FoodRequestStatus.CLOSED
-        : FoodRequestStatus.ACTIVE;
-    }
+    request.status = allDelivered
+      ? FoodRequestStatus.CLOSED
+      : FoodRequestStatus.ACTIVE;
 
     await this.repo.save(request);
+
+    if (allDelivered) {
+      try {
+        const lastDeliveredOrder = await this.orderRepo.findOne({
+          where: { requestId, status: OrderStatus.DELIVERED },
+          order: { deliveredAt: 'DESC' },
+          relations: ['assignee'],
+        });
+
+        if (lastDeliveredOrder) {
+          const volunteers = request.pantry.volunteers || [];
+          const volunteerEmails = volunteers.map((v) => v.email);
+
+          const { assignee } = lastDeliveredOrder;
+          const message = emailTemplates.pantryRequestClosed({
+            pantryName: request.pantry.pantryName,
+            volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+            volunteerEmail: assignee.email,
+          });
+          await this.emailsService.sendEmails({
+            toEmail: request.pantry.pantryUser.email,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+            bccEmails: volunteerEmails,
+          });
+        } else {
+          throw new InternalServerErrorException(
+            `Request ${requestId} auto-closed, but failed to send pantry notification email`,
+          );
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          `Request ${requestId} auto-closed, but failed to send pantry notification email`,
+        );
+      }
+    }
   }
 
   async update(requestId: number, dto: UpdateRequestDto): Promise<void> {
@@ -374,11 +419,15 @@ export class RequestsService {
     await this.repo.remove(request);
   }
 
-  async closeRequest(requestId: number): Promise<void> {
+  async closeRequest(
+    requestId: number,
+    actingUserId: number,
+  ): Promise<FoodRequest> {
     validateId(requestId, 'Request');
 
     const request = await this.repo.findOne({
       where: { requestId },
+      relations: ['pantry', 'pantry.pantryUser', 'pantry.volunteers'],
     });
 
     if (!request) {
@@ -391,7 +440,30 @@ export class RequestsService {
       );
     }
 
+    const assignee = await this.usersService.findOne(actingUserId);
+
     request.status = FoodRequestStatus.CLOSED;
-    await this.repo.save(request);
+    const saved = await this.repo.save(request);
+    try {
+      const volunteers = request.pantry.volunteers || [];
+      const volunteerEmails = volunteers.map((v) => v.email);
+      const message = emailTemplates.pantryRequestClosed({
+        pantryName: request.pantry.pantryName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails({
+        toEmail: request.pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+        bccEmails: volunteerEmails,
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to send food request closed email to pantry',
+      );
+    }
+
+    return saved;
   }
 }

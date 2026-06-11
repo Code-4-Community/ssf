@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ROUTES } from '../routes';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Table,
   Button,
@@ -24,8 +23,10 @@ import {
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { ROUTES } from '../routes';
 
 const ApproveFoodManufacturers: React.FC = () => {
+  const navigate = useNavigate();
   const [foodManufacturers, setFoodManufacturers] = useState<
     FoodManufacturer[]
   >([]);
@@ -116,9 +117,9 @@ const ApproveFoodManufacturers: React.FC = () => {
           : `${name} - Application Rejected`;
 
       setAlertMessage(message, AlertStatus.INFO);
-      setSearchParams({});
+      navigate(ROUTES.APPROVE_FOOD_MANUFACTURERS, { replace: true });
     }
-  }, [searchParams, setSearchParams, setAlertMessage]);
+  }, [searchParams, setAlertMessage, navigate]);
 
   return (
     <Box p={12}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
+  Flex,
   Table,
   Heading,
   Pagination,
@@ -15,14 +16,22 @@ import ApiClient from '@api/apiClient';
 import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
-import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ROUTES } from '../routes';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 
 const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resubmitDonationId: string | null =
+    searchParams.get('resubmitDonationId');
+  const [isResubmitOpen, setIsResubmitOpen] = useState(false);
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
@@ -35,12 +44,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: [],
     [DonationStatus.FULFILLED]: [],
   });
-
-  // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
-    null,
-  );
-
   // State to hold current page per status
   const [currentPages, setCurrentPages] = useState<
     Record<DonationStatus, number>
@@ -49,6 +52,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.AVAILABLE]: 1,
     [DonationStatus.FULFILLED]: 1,
   });
+
+  // State to hold selected donation for details modal
+  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
+    null,
+  );
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
@@ -75,13 +83,31 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setStatusDonations(grouped);
 
-      // Initialize current page for each status
       const initialPages: Record<DonationStatus, number> = {
         [DonationStatus.AVAILABLE]: 1,
         [DonationStatus.FULFILLED]: 1,
         [DonationStatus.MATCHED]: 1,
       };
+
+      // Paginate the containing status to the page that holds this donation.
+      const donationIdParam = searchParams.get('donationId');
+      if (donationIdParam) {
+        const id = Number(donationIdParam);
+        for (const status of Object.values(DonationStatus)) {
+          const idx = grouped[status].findIndex(
+            (d) => d.donation.donationId === id,
+          );
+          if (idx >= 0) {
+            initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+            break;
+          }
+        }
+      }
+
       setCurrentPages(initialPages);
+
+      // On page load, get the food manufacturer id and all appropriate donations
+      return grouped;
     } catch {
       setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
@@ -92,13 +118,29 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     if (manufacturerId !== null) fetchDonations(manufacturerId);
   };
 
-  // On page load, get the food manufacturer id and all appropriate donations
+  const openResubmitFromQueryParam = (
+    grouped: Record<DonationStatus, DonationDetails[]>,
+  ) => {
+    if (!resubmitDonationId) return;
+    const id = parseInt(resubmitDonationId, 10);
+    const allDonations: DonationDetails[] = Object.values(grouped).flat();
+    const exists = allDonations.some((d) => d.donation.donationId === id);
+    if (exists) {
+      setIsResubmitOpen(true);
+    } else {
+      navigate(ROUTES.FM_DONATION_MANAGEMENT);
+    }
+  };
+
+  // On page load, get the food manufacturer id, fetch its donations,
+  // and open the resubmit modal if the URL specifies one.
   useEffect(() => {
     const init = async () => {
       try {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
-        await fetchDonations(fmId);
+        const grouped = await fetchDonations(fmId);
+        if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
         setAlertMessage(
           'Error initializing donation management',
@@ -108,6 +150,21 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    const donationIdParam = searchParams.get('donationId');
+    if (!donationIdParam) return;
+
+    const id = Number(donationIdParam);
+    setSelectedDonationId(id);
+  }, [searchParams, setAlertMessage]);
+
+  const handleResubmitClose = () => {
+    setIsResubmitOpen(false);
+    if (resubmitDonationId) {
+      navigate(ROUTES.FM_DONATION_MANAGEMENT);
+    }
+  };
 
   const handlePageChange = (status: DonationStatus, page: number) => {
     setCurrentPages((prev) => ({
@@ -130,28 +187,60 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         Donation Management
       </Heading>
 
-      <Button
-        display="inline-flex"
-        alignItems="center"
-        justifyContent="space-between"
-        backgroundColor="blue.ssf"
-        fontFamily="ibm"
-        fontWeight="semibold"
-        p={3}
-        mb={16}
-        borderRadius="md"
-        minW="fit-content"
-        color="neutral.50"
-        onClick={() => setIsLogDonationOpen(true)}
-      >
-        Log New Donation
-      </Button>
+      <Flex gap={3} mb={16}>
+        <Button
+          display="inline-flex"
+          alignItems="center"
+          justifyContent="space-between"
+          backgroundColor="blue.ssf"
+          fontFamily="ibm"
+          fontWeight="semibold"
+          p={3}
+          borderRadius="md"
+          minW="fit-content"
+          color="neutral.50"
+          onClick={() => setIsLogDonationOpen(true)}
+        >
+          Log New Donation
+        </Button>
+        <Button
+          display="inline-flex"
+          alignItems="center"
+          variant="outline"
+          borderColor="neutral.300"
+          fontFamily="ibm"
+          fontWeight="semibold"
+          p={3}
+          borderRadius="md"
+          minW="fit-content"
+          color="neutral.600"
+          onClick={() => setIsResubmitOpen(true)}
+        >
+          Resubmit Previous
+        </Button>
+      </Flex>
 
-      {isLogDonationOpen && manufacturerId !== null && (
+      {manufacturerId !== null && (
         <NewDonationFormModal
           onDonationSuccess={handleLogNewDonationSuccess}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
+        />
+      )}
+
+      {manufacturerId !== null && (
+        <ResubmitDonationModal
+          isOpen={isResubmitOpen}
+          onClose={handleResubmitClose}
+          onSuccess={() => fetchDonations(manufacturerId)}
+          donations={Object.values(statusDonations).flat()}
+          foodManufacturerId={manufacturerId}
+          initialDonationId={
+            resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
+          }
+          onSelect={(donationId) =>
+            setSearchParams({ resubmitDonationId: String(donationId) })
+          }
         />
       )}
 
@@ -192,6 +281,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
+              onDonationClose={() => {
+                setSelectedDonationId(null);
+                navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+              }}
             />
           </Box>
         );
@@ -210,6 +303,7 @@ interface DonationStatusSectionProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
+  onDonationClose: () => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -217,11 +311,12 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   status,
   colors,
   onDonationSelect,
-  selectedDonationId,
   totalDonations,
   currentPage,
+  selectedDonationId,
   onPageChange,
   onActionSelect,
+  onDonationClose,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -352,7 +447,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                         <DonationDetailsModal
                           donation={donation}
                           isOpen={true}
-                          onClose={() => onDonationSelect(null)}
+                          onClose={onDonationClose}
                         />
                       )}
                     </Table.Cell>

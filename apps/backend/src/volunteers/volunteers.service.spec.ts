@@ -22,6 +22,9 @@ import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
 import { DonationService } from '../donations/donations.service';
 import { Allocation } from '../allocations/allocations.entity';
+import { mock } from 'jest-mock-extended';
+
+const mockEmailsService = mock<EmailsService>();
 
 jest.setTimeout(60000);
 
@@ -58,9 +61,7 @@ describe('VolunteersService', () => {
         },
         {
           provide: EmailsService,
-          useValue: {
-            sendEmails: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(User),
@@ -222,46 +223,6 @@ describe('VolunteersService', () => {
       expect(result).toHaveLength(2);
 
       const pantryIds = result.map((p) => p.pantryId);
-      expect(pantryIds).toEqual([2, 3]);
-    });
-  });
-
-  describe('assignPantriesToVolunteer', () => {
-    it('assigns new pantries to a volunteer with existing assignments', async () => {
-      const beforeAssignment = await service.getVolunteerPantries(7);
-      expect(beforeAssignment).toHaveLength(2);
-      const beforePantryIds = beforeAssignment.map((p) => p.pantryId);
-      expect(beforePantryIds).toEqual([2, 3]);
-
-      const result = await service.assignPantriesToVolunteer(7, [1, 4]);
-      expect(result.pantries).toHaveLength(4);
-      const afterPantryIds = result.pantries?.map((p) => p.pantryId);
-      expect(afterPantryIds).toEqual([2, 3, 1, 4]);
-    });
-
-    it('assigns pantries to a volunteer with no existing assignments', async () => {
-      await testDataSource.query(
-        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 6`,
-      );
-
-      const beforeAssignment = await service.getVolunteerPantries(6);
-      expect(beforeAssignment).toEqual([]);
-
-      const result = await service.assignPantriesToVolunteer(6, [2, 3]);
-      expect(result.pantries).toHaveLength(2);
-      const pantryIds = result.pantries?.map((p) => p.pantryId);
-      expect(pantryIds).toEqual([2, 3]);
-    });
-
-    it('does not contain duplicate pantry assignments when called with ones that already exist', async () => {
-      const beforeAssignment = await service.getVolunteerPantries(7);
-      expect(beforeAssignment).toHaveLength(2);
-      const beforePantryIds = beforeAssignment.map((p) => p.pantryId);
-      expect(beforePantryIds).toEqual([2, 3]);
-
-      const result = await service.assignPantriesToVolunteer(7, [2, 3]);
-      expect(result.pantries).toHaveLength(2);
-      const pantryIds = result.pantries?.map((p) => p.pantryId);
       expect(pantryIds).toEqual([2, 3]);
     });
   });

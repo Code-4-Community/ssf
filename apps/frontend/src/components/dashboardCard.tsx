@@ -5,6 +5,7 @@ import {
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   DONATION_STATUS_COLORS,
   USER_ICON_COLORS,
 } from '@utils/utils';
@@ -42,17 +43,17 @@ export interface DashboardCardBadge {
 
 export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
   [OrderStatus.PENDING]: {
-    label: 'Received',
+    label: ORDER_STATUS_LABELS[OrderStatus.PENDING],
     bg: ORDER_STATUS_COLORS[OrderStatus.PENDING][0],
     color: ORDER_STATUS_COLORS[OrderStatus.PENDING][1],
   },
   [OrderStatus.SHIPPED]: {
-    label: 'In Progress',
+    label: ORDER_STATUS_LABELS[OrderStatus.SHIPPED],
     bg: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.SHIPPED][1],
   },
   [OrderStatus.DELIVERED]: {
-    label: 'Completed',
+    label: ORDER_STATUS_LABELS[OrderStatus.DELIVERED],
     bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
   },
@@ -177,7 +178,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           gap={2}
           color="neutral.600"
           cursor="pointer"
-          // TODO: implement nav accordingly
           onClick={onLinkClick}
           _hover={{ color: 'neutral.700' }}
         >

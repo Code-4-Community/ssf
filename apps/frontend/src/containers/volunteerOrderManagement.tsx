@@ -23,10 +23,10 @@ import {
   Search,
 } from 'lucide-react';
 import {
-  capitalize,
   formatDate,
   getInitials,
   ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
@@ -45,12 +45,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
-
-const STATUS_TITLES: Record<OrderStatus, string> = {
-  [OrderStatus.SHIPPED]: 'In Progress',
-  [OrderStatus.PENDING]: 'Received',
-  [OrderStatus.DELIVERED]: 'Completed',
-};
 
 const hasRequiredActions = (order: VolunteerOrder): boolean => {
   if (!order.actionCompletion) return false;
@@ -181,13 +175,63 @@ const VolunteerOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    const id = Number(orderIdFromUrl);
+    const match = allOrders.find((o) => o.orderId === id);
     if (match) {
       setSelectedOrderId(match.orderId);
+
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
     }
   }, [searchParams, statusOrders, navigate]);
+
+  // Pre-fill pantry filter from url param, url is kept for back/forward navigation
+  useEffect(() => {
+    const pantryIdFromUrl = searchParams.get('pantryId');
+
+    const allOrders = Object.values(statusOrders).flat();
+    if (!pantryIdFromUrl || allOrders.length === 0) return;
+
+    const matchedOrder = allOrders.find(
+      (o) => o.pantryId === Number(pantryIdFromUrl),
+    );
+    const pantryName = matchedOrder?.pantryName;
+
+    if (pantryName) {
+      setFilterStates((prev) => ({
+        [OrderStatus.SHIPPED]: {
+          ...prev[OrderStatus.SHIPPED],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.PENDING]: {
+          ...prev[OrderStatus.PENDING],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.DELIVERED]: {
+          ...prev[OrderStatus.DELIVERED],
+          selectedPantries: [pantryName],
+        },
+      }));
+    } else {
+      setAlertMessage('Selected pantry has no orders', AlertStatus.ERROR);
+      navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
@@ -286,7 +330,6 @@ const VolunteerOrderManagement: React.FC = () => {
               orders={displayedOrders}
               status={status}
               colors={ORDER_STATUS_COLORS[status]}
-              selectedOrderId={selectedOrderId}
               onOrderSelect={setSelectedOrderId}
               totalOrders={totalFiltered}
               currentPage={currentPage}
@@ -321,6 +364,17 @@ const VolunteerOrderManagement: React.FC = () => {
           onActionCompleted={handleActionCompleted}
         />
       )}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          orderId={selectedOrderId}
+          isOpen={true}
+          onClose={() => {
+            setSelectedOrderId(null);
+            navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -330,7 +384,6 @@ interface OrderStatusSectionProps {
   status: OrderStatus;
   colors: string[];
   onOrderSelect: (orderId: number | null) => void;
-  selectedOrderId: number | null;
   totalOrders: number;
   currentPage: number;
   onPageChange: (page: number) => void;
@@ -354,7 +407,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   status,
   colors,
   onOrderSelect,
-  selectedOrderId,
   totalOrders,
   currentPage,
   onPageChange,
@@ -366,8 +418,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-
-  const navigate = useNavigate();
 
   const MAX_PER_STATUS = 5;
   const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
@@ -416,11 +466,11 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {STATUS_TITLES[status]}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
-      {orders.length === 0 ? (
+      {orders.length === 0 && filterState.selectedPantries.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -440,8 +490,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {STATUS_TITLES[status].toLowerCase()} orders at this
-            time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -500,7 +550,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                     <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
                       <Search
                         size={18}
-                        color="#B8B8B8"
+                        color="var(--chakra-colors-neutral-300)"
                         style={{
                           position: 'absolute',
                           top: '50%',
@@ -647,239 +697,259 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
               )}
             </Box>
           </Box>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="10%"
-                >
-                  Order #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="10%"
-                >
-                  Status
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="7%"
-                  textAlign="center"
-                >
-                  Assignee
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="30%"
-                >
-                  Pantry
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="20%"
-                >
-                  Dates
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="23%"
-                >
-                  Action Required
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {orders.map((order, index) => {
-                const needsAction = hasRequiredActions(order);
-
-                return (
-                  <Table.Row
-                    key={`${order.orderId}-${index}`}
-                    _hover={{ bg: 'gray.50' }}
-                  >
-                    <Table.Cell
-                      {...tableCellStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      <Link
-                        textDecorationColor="black"
-                        variant="underline"
-                        onClick={() => onOrderSelect(order.orderId)}
-                      >
-                        {order.orderId}
-                      </Link>
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      <Box
-                        borderRadius="md"
-                        bg={colors[0]}
-                        color={colors[1]}
-                        display="inline-block"
-                        fontWeight="500"
-                        fontSize="12px"
-                        my={3}
-                        py={0.5}
-                        px={3}
-                      >
-                        {capitalize(STATUS_TITLES[status])}
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Box
-                          borderRadius="full"
-                          bg={order.assigneeColor || 'gray'}
-                          width="33px"
-                          height="33px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          color="white"
-                          p={2}
-                        >
-                          {getInitials(
-                            order.assignee.firstName,
-                            order.assignee.lastName,
-                          )}
-                        </Box>
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      {order.pantryName}
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      textAlign="left"
-                      color="neutral.700"
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                    >
-                      {`${formatDate(String(order.createdAt))}-`}
-                      {order.deliveredAt &&
-                        formatDate(String(order.deliveredAt))}
-                    </Table.Cell>
-                    <Table.Cell
-                      {...tableCellStyles}
-                      textAlign="right"
-                      bg="#FAFAFA"
-                      pr={3}
-                    >
-                      {order.assignee?.id === currentUser?.id &&
-                        (needsAction ? (
-                          <Link
-                            color="neutral.700"
-                            textDecorationColor="neutral.700"
-                            variant="underline"
-                            onClick={() => onOpenActionModal(order)}
-                          >
-                            Complete Required Actions
-                          </Link>
-                        ) : (
-                          'No Action Required'
-                        ))}
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table.Root>
-          {selectedOrderId && (
-            <OrderDetailsModal
-              orderId={selectedOrderId}
-              isOpen={true}
-              onClose={() => {
-                onOrderSelect(null);
-                navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
-              }}
-            />
-          )}
-
-          {totalPages > 1 && (
-            <Box mt={4}>
-              <Pagination.Root
-                count={totalOrders}
-                pageSize={MAX_PER_STATUS}
-                page={currentPage}
-                onPageChange={(e: { page: number }) => onPageChange(e.page)}
-              >
-                <ButtonGroup
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  variant="outline"
-                  size="sm"
-                >
-                  <Pagination.PrevTrigger
-                    color="neutral.800"
-                    _hover={{ color: 'black' }}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft
-                      size={16}
-                      style={{
-                        cursor: currentPage !== 1 ? 'pointer' : 'default',
-                      }}
-                    />
-                  </Pagination.PrevTrigger>
-
-                  <Pagination.Items
-                    render={(page) => (
-                      <IconButton
-                        borderColor={{
-                          base: 'neutral.100',
-                          _selected: 'neutral.600',
-                        }}
-                      >
-                        {page.value}
-                      </IconButton>
-                    )}
-                  />
-
-                  <Pagination.NextTrigger
-                    color="neutral.800"
-                    _hover={{ color: 'black' }}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight
-                      size={16}
-                      style={{
-                        cursor:
-                          currentPage !== totalPages ? 'pointer' : 'default',
-                      }}
-                    />
-                  </Pagination.NextTrigger>
-                </ButtonGroup>
-              </Pagination.Root>
+          {orders.length === 0 ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              fontFamily="'Inter', sans-serif"
+              fontSize="sm"
+              color="neutral.600"
+              py={10}
+              gap={2}
+            >
+              <Box mb={2}>
+                <CircleCheck size={24} color="#262626" />
+              </Box>
+              <Box fontWeight="600" fontSize="lg" color="neutral.800">
+                No Orders
+              </Box>
+              <Box color="neutral.700" fontWeight="400">
+                You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders
+                at this time.
+              </Box>
             </Box>
+          ) : (
+            <>
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      width="10%"
+                    >
+                      Order #
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      width="10%"
+                    >
+                      Status
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      width="7%"
+                      textAlign="center"
+                    >
+                      Assignee
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      width="30%"
+                    >
+                      Pantry
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      width="20%"
+                    >
+                      Dates
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...tableHeaderStyles}
+                      textAlign="right"
+                      width="23%"
+                    >
+                      Action Required
+                    </Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {orders.map((order, index) => {
+                    const needsAction = hasRequiredActions(order);
+
+                    return (
+                      <Table.Row
+                        key={`${order.orderId}-${index}`}
+                        _hover={{ bg: 'gray.50' }}
+                      >
+                        <Table.Cell
+                          {...tableCellStyles}
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                        >
+                          <Link
+                            textDecorationColor="black"
+                            variant="underline"
+                            onClick={() => onOrderSelect(order.orderId)}
+                          >
+                            {order.orderId}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell
+                          {...tableCellStyles}
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                        >
+                          <Box
+                            borderRadius="md"
+                            bg={colors[0]}
+                            color={colors[1]}
+                            display="inline-block"
+                            fontWeight="500"
+                            fontSize="12px"
+                            my={3}
+                            py={0.5}
+                            px={3}
+                          >
+                            {ORDER_STATUS_LABELS[status]}
+                          </Box>
+                        </Table.Cell>
+                        <Table.Cell
+                          {...tableCellStyles}
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                        >
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            <Box
+                              borderRadius="full"
+                              bg={order.assigneeColor || 'gray'}
+                              width="33px"
+                              height="33px"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              color="white"
+                              p={2}
+                            >
+                              {getInitials(
+                                order.assignee.firstName,
+                                order.assignee.lastName,
+                              )}
+                            </Box>
+                          </Box>
+                        </Table.Cell>
+                        <Table.Cell
+                          {...tableCellStyles}
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                        >
+                          {order.pantryName}
+                        </Table.Cell>
+                        <Table.Cell
+                          {...tableCellStyles}
+                          textAlign="left"
+                          color="neutral.700"
+                          borderRight="1px solid"
+                          borderRightColor="neutral.100"
+                        >
+                          {`${formatDate(String(order.createdAt))}-`}
+                          {order.deliveredAt &&
+                            formatDate(String(order.deliveredAt))}
+                        </Table.Cell>
+                        <Table.Cell
+                          {...tableCellStyles}
+                          textAlign="right"
+                          bg="neutral.50"
+                          pr={3}
+                        >
+                          {order.assignee?.id === currentUser?.id &&
+                            (needsAction ? (
+                              <Link
+                                color="neutral.700"
+                                textDecorationColor="neutral.700"
+                                variant="underline"
+                                onClick={() => onOpenActionModal(order)}
+                              >
+                                Complete Required Actions
+                              </Link>
+                            ) : (
+                              'No Action Required'
+                            ))}
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table.Root>
+
+              {totalPages > 1 && (
+                <Box mt={4}>
+                  <Pagination.Root
+                    count={totalOrders}
+                    pageSize={MAX_PER_STATUS}
+                    page={currentPage}
+                    onPageChange={(e: { page: number }) => onPageChange(e.page)}
+                  >
+                    <ButtonGroup
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Pagination.PrevTrigger
+                        color="neutral.800"
+                        _hover={{ color: 'black' }}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft
+                          size={16}
+                          style={{
+                            cursor: currentPage !== 1 ? 'pointer' : 'default',
+                          }}
+                        />
+                      </Pagination.PrevTrigger>
+
+                      <Pagination.Items
+                        render={(page) => (
+                          <IconButton
+                            borderColor={{
+                              base: 'neutral.100',
+                              _selected: 'neutral.600',
+                            }}
+                          >
+                            {page.value}
+                          </IconButton>
+                        )}
+                      />
+
+                      <Pagination.NextTrigger
+                        color="neutral.800"
+                        _hover={{ color: 'black' }}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight
+                          size={16}
+                          style={{
+                            cursor:
+                              currentPage !== totalPages
+                                ? 'pointer'
+                                : 'default',
+                          }}
+                        />
+                      </Pagination.NextTrigger>
+                    </ButtonGroup>
+                  </Pagination.Root>
+                </Box>
+              )}
+            </>
           )}
         </>
       )}

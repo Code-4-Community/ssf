@@ -104,11 +104,13 @@ function validateRequired(form: FormState): boolean {
 interface EditableFMApplicationProps {
   isEditing: boolean;
   onEditingChange: (v: boolean) => void;
+  foodManufacturerId: number;
 }
 
 const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
   isEditing,
   onEditingChange,
+  foodManufacturerId,
 }) => {
   const [application, setApplication] = useState<FoodManufacturer | null>(null);
   const [alertState, setAlertMessage] = useAlert();
@@ -117,19 +119,16 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
 
   const fetchApplication = useCallback(async () => {
     try {
-      const manufacturerId = await ApiClient.getCurrentUserFoodManufacturerId();
-      if (manufacturerId) {
-        const data = await ApiClient.getFoodManufacturer(manufacturerId);
-        setApplication(data);
-        setForm(buildFormState(data));
-      }
+      const data = await ApiClient.getFoodManufacturer(foodManufacturerId);
+      setApplication(data);
+      setForm(buildFormState(data));
     } catch {
       setAlertMessage(
         'Could not load application details. Please try again later.',
         AlertStatus.ERROR,
       );
     }
-  }, []);
+  }, [foodManufacturerId]);
 
   useEffect(() => {
     fetchApplication();
