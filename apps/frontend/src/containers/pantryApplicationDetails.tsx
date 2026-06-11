@@ -12,15 +12,10 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import {
-  AlertStatus,
-  AlertType,
-  ApplicationStatus,
-  PantryWithUser,
-} from '../types/types';
+import { AlertStatus, ApplicationStatus, PantryWithUser } from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
-import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import ConfirmPantryDecisionModal from '@components/forms/confirmPantryDecisionModal';
@@ -131,26 +126,14 @@ const PantryApplicationDetails: React.FC = () => {
     try {
       setLoading(true);
       if (!id) {
-        setAlertMessage(
-          'Application ID not provided.',
-          AlertStatus.ERROR,
-          AlertType.INVALID,
-        );
+        setAlertMessage('Application ID not provided.', AlertStatus.ERROR);
         return;
       } else if (isNaN(parseInt(id, 10))) {
-        setAlertMessage(
-          'Application ID is not a number.',
-          AlertStatus.ERROR,
-          AlertType.INVALID,
-        );
+        setAlertMessage('Application ID is not a number.', AlertStatus.ERROR);
       }
       const data = await ApiClient.getPantry(parseInt(id, 10));
       if (!data) {
-        setAlertMessage(
-          'Application not found.',
-          AlertStatus.ERROR,
-          AlertType.NOT_FOUND,
-        );
+        setAlertMessage('Application not found.', AlertStatus.ERROR);
       }
       setApplication(data);
     } catch (err: unknown) {
@@ -159,7 +142,6 @@ const PantryApplicationDetails: React.FC = () => {
           setAlertMessage(
             'Could not load application details.',
             AlertStatus.ERROR,
-            AlertType.NETWORK,
           );
         }
       }
@@ -217,24 +199,10 @@ const PantryApplicationDetails: React.FC = () => {
   }
 
   if (alertState?.message || !application) {
-    const getIcon = () => {
-      switch (alertState?.type) {
-        case 'network':
-          return <WifiOff />;
-        case 'not_found':
-          return <FileX />;
-        default:
-          return <TriangleAlert />;
-      }
-    };
-
     return (
       <EmptyState
-        icon={getIcon()}
+        icon={<TriangleAlert />}
         title={alertState?.message ?? 'Application not found.'}
-        subtitle={
-          alertState?.type === 'network' ? 'Please try again later.' : undefined
-        }
       />
     );
   }
