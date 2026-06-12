@@ -324,7 +324,7 @@ export interface OrderWithoutRelations {
   orderId: number;
   requestId: number;
   foodManufacturerId: number;
-  status: OpenOrderStatus;
+  status: OrderStatus;
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
@@ -344,7 +344,7 @@ export interface OrderItemDetails {
 
 export interface OrderDetails {
   orderId: number;
-  status: OpenOrderStatus;
+  status: OrderStatus;
   foodManufacturerName: string;
   trackingLink: string | null;
   shippingCost: number | null;
@@ -358,7 +358,7 @@ export interface FoodManufacturer extends FoodManufacturerWithoutRelations {
 
 export type VolunteerOrder = {
   orderId: number;
-  status: OpenOrderStatus;
+  status: OrderStatus;
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
@@ -502,10 +502,11 @@ export enum Role {
   FOODMANUFACTURER = 'food_manufacturer',
 }
 
-export enum OpenOrderStatus {
+export enum OrderStatus {
   SHIPPED = 'shipped',
   PENDING = 'pending',
   DELIVERED = 'delivered',
+  CLOSED = 'closed',
 }
 
 export enum RequestSize {
@@ -530,7 +531,7 @@ export enum DonationFrequency {
 
 export interface OrderSummary {
   orderId: number;
-  status: OpenOrderStatus;
+  status: OrderStatus;
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;

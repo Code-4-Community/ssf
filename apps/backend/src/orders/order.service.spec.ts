@@ -30,6 +30,7 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import {
   DataSource,
   EntityManager,
@@ -50,6 +51,7 @@ const mockEmailsService = mock<EmailsService>();
 describe('OrdersService', () => {
   let service: OrdersService;
   let donationService: DonationService;
+  let allocationsService: AllocationsService;
 
   beforeAll(async () => {
     mockEmailsService.sendEmails.mockResolvedValue(undefined);
@@ -126,6 +128,7 @@ describe('OrdersService', () => {
 
     service = module.get<OrdersService>(OrdersService);
     donationService = module.get<DonationService>(DonationService);
+    allocationsService = module.get<AllocationsService>(AllocationsService);
   });
 
   beforeEach(async () => {
@@ -1342,6 +1345,73 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     });
   });
 
+  describe('updateAllocations', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    const sampleDto: UpdateAllocationsDto = {
+      allocations: [{ donationItemId: 1, allocatedQuantity: 1 }],
+    };
+
+    const insertPendingOrder = async (): Promise<number> => {
+      const [{ order_id }] = await testDataSource.query(
+        `INSERT INTO orders (request_id, food_manufacturer_id, status, assignee_id)
+         VALUES ((SELECT request_id FROM food_requests LIMIT 1),
+                 (SELECT food_manufacturer_id FROM food_manufacturers LIMIT 1),
+                 'pending',
+                 (SELECT user_id FROM users LIMIT 1))
+         RETURNING order_id`,
+      );
+      return order_id;
+    };
+
+    it('throws BadRequestException when no allocations are provided', async () => {
+      await expect(
+        service.updateAllocations(1, { allocations: [] }),
+      ).rejects.toThrow(
+        new BadRequestException('Must add or edit at least one allocation'),
+      );
+    });
+
+    it('throws NotFoundException when the order does not exist', async () => {
+      const missingOrderId = 999999;
+      await expect(
+        service.updateAllocations(missingOrderId, sampleDto),
+      ).rejects.toThrow(
+        new NotFoundException(`Order ${missingOrderId} not found`),
+      );
+    });
+
+    it('throws BadRequestException when the order is not pending', async () => {
+      const orderId = await insertPendingOrder();
+      await testDataSource
+        .getRepository(Order)
+        .update({ orderId }, { status: OrderStatus.SHIPPED });
+
+      await expect(
+        service.updateAllocations(orderId, sampleDto),
+      ).rejects.toThrow(
+        new BadRequestException(`Order ${orderId} must be pending`),
+      );
+    });
+
+    it('delegates to allocationsService.updateOrderAllocations with the order, dto, and transaction manager', async () => {
+      const orderId = await insertPendingOrder();
+      const updateOrderAllocationsSpy = jest
+        .spyOn(allocationsService, 'updateOrderAllocations')
+        .mockResolvedValue(undefined);
+
+      await service.updateAllocations(orderId, sampleDto);
+
+      expect(updateOrderAllocationsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ orderId, status: OrderStatus.PENDING }),
+        sampleDto,
+        expect.anything(),
+      );
+    });
+  });
+
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;
@@ -1364,15 +1434,15 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     it('should map the rest of the data correctly', async () => {
       const volunteerId = 6;
       const result = await service.getAllOrdersForVolunteer(volunteerId);
-      const firstOrder = result[0];
+      const order = result.find((o) => o.orderId === 4);
 
-      expect(firstOrder.orderId).toBe(4);
-      expect(firstOrder.status).toBe(OrderStatus.PENDING);
-      expect(firstOrder).toHaveProperty('createdAt');
-      expect(firstOrder).toHaveProperty('shippedAt');
-      expect(firstOrder).toHaveProperty('deliveredAt');
-      expect(firstOrder.pantryName).toBe('Community Food Pantry Downtown');
-      expect(firstOrder.assignee.id).toBe(volunteerId);
+      expect(order).toBeDefined();
+      expect(order?.status).toBe(OrderStatus.PENDING);
+      expect(order).toHaveProperty('createdAt');
+      expect(order).toHaveProperty('shippedAt');
+      expect(order).toHaveProperty('deliveredAt');
+      expect(order?.pantryName).toBe('Community Food Pantry Downtown');
+      expect(order?.assignee.id).toBe(volunteerId);
     });
   });
 

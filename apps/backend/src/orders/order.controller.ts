@@ -34,6 +34,7 @@ import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
@@ -305,5 +306,18 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<void> {
     await this.ordersService.closeOrder(orderId);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/allocations')
+  async editAllocations(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body(new ValidationPipe()) dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.ordersService.updateAllocations(orderId, dto);
   }
 }

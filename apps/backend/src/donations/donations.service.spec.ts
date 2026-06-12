@@ -206,6 +206,49 @@ describe('DonationService', () => {
     expect(service).toBeDefined();
   });
 
+  describe('recheckDonationAllocationStatus', () => {
+    it('does not update any donations for an empty list', async () => {
+      const donationRepo = testDataSource.getRepository(Donation);
+      const updateSpy = jest.spyOn(donationRepo, 'update');
+
+      await service.recheckDonationAllocationStatus([]);
+
+      expect(updateSpy).not.toHaveBeenCalled();
+    });
+
+    it('sets a donation with allocations to MATCHED and one without to AVAILABLE', async () => {
+      const donationRepo = testDataSource.getRepository(Donation);
+
+      const toMatchId = await insertDonation({
+        recurrence: RecurrenceEnum.NONE,
+        recurrenceFreq: null,
+        nextDonationDates: null,
+        occurrencesRemaining: null,
+      });
+      const matchedItemId = await insertDonationItem(toMatchId, 10, 1);
+      await insertAllocation(4, matchedItemId);
+
+      const toFreeId = await insertMatchedDonation();
+      await insertDonationItem(toFreeId, 10, 0);
+
+      const before = await donationRepo.findBy({
+        donationId: In([toMatchId, toFreeId]),
+      });
+      const beforeById = new Map(before.map((d) => [d.donationId, d.status]));
+      expect(beforeById.get(toMatchId)).toBe(DonationStatus.AVAILABLE);
+      expect(beforeById.get(toFreeId)).toBe(DonationStatus.MATCHED);
+
+      await service.recheckDonationAllocationStatus([toMatchId, toFreeId]);
+
+      const after = await donationRepo.findBy({
+        donationId: In([toMatchId, toFreeId]),
+      });
+      const afterById = new Map(after.map((d) => [d.donationId, d.status]));
+      expect(afterById.get(toMatchId)).toBe(DonationStatus.MATCHED);
+      expect(afterById.get(toFreeId)).toBe(DonationStatus.AVAILABLE);
+    });
+  });
+
   describe('findOne', () => {
     it('should return a donation with the corresponding id', async () => {
       const donationId = 1;

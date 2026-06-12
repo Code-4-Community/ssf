@@ -4,8 +4,7 @@ import {
   OrderDetails,
   FoodRequestSummaryDto,
 } from 'types/types';
-import { OpenOrderStatus } from '../../types/types';
-import { ORDER_STATUS_LABELS } from '@utils/utils';
+import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
@@ -194,23 +193,13 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                           Fulfilled by {currentOrder.foodManufacturerName}
                         </Text>
                       </Text>
-                      {currentOrder.status === OpenOrderStatus.DELIVERED ? (
-                        <Badge
-                          {...badgeStyles}
-                          bgColor="blue.100"
-                          color="blue.core"
-                        >
-                          {ORDER_STATUS_LABELS[currentOrder.status]}
-                        </Badge>
-                      ) : (
-                        <Badge
-                          {...badgeStyles}
-                          bgColor="yellow.200"
-                          color="yellow.hover"
-                        >
-                          {ORDER_STATUS_LABELS[currentOrder.status]}
-                        </Badge>
-                      )}
+                      <Badge
+                        {...badgeStyles}
+                        bgColor={ORDER_STATUS_COLORS[currentOrder.status][0]}
+                        color={ORDER_STATUS_COLORS[currentOrder.status][1]}
+                      >
+                        {ORDER_STATUS_LABELS[currentOrder.status]}
+                      </Badge>
                     </Flex>
                     {Object.entries(groupedOrderItemsByType).map(
                       ([foodType, items]) => (

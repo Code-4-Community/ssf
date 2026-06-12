@@ -14,6 +14,7 @@ import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
@@ -781,6 +782,35 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       await transactionManager
         .getRepository(Order)
         .update({ orderId }, { status: OrderStatus.CLOSED });
+    });
+  }
+
+  async updateAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    validateId(orderId, 'Order');
+
+    if (dto.allocations.length == 0) {
+      throw new BadRequestException('Must add or edit at least one allocation');
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const order = await transactionManager
+        .getRepository(Order)
+        .findOneBy({ orderId });
+      if (!order) {
+        throw new NotFoundException(`Order ${orderId} not found`);
+      }
+      if (order.status !== OrderStatus.PENDING) {
+        throw new BadRequestException(`Order ${orderId} must be pending`);
+      }
+
+      await this.allocationsService.updateOrderAllocations(
+        order,
+        dto,
+        transactionManager,
+      );
     });
   }
 }

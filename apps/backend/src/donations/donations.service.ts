@@ -431,6 +431,32 @@ export class DonationService {
     return donation;
   }
 
+  async recheckDonationAllocationStatus(
+    donationIds: number[],
+    transactionManager?: EntityManager,
+  ): Promise<void> {
+    const donationRepo = transactionManager
+      ? transactionManager.getRepository(Donation)
+      : this.repo;
+    const allocationRepo = transactionManager
+      ? transactionManager.getRepository(Allocation)
+      : this.allocationRepo;
+
+    for (const donationId of donationIds) {
+      validateId(donationId, 'Donation');
+
+      const hasAllocations = await allocationRepo.exists({
+        where: { item: { donation: { donationId } } },
+      });
+
+      await donationRepo.update(donationId, {
+        status: hasAllocations
+          ? DonationStatus.MATCHED
+          : DonationStatus.AVAILABLE,
+      });
+    }
+  }
+
   async delete(donationId: number): Promise<void> {
     validateId(donationId, 'Donation');
 

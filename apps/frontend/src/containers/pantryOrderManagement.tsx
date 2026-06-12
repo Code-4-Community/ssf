@@ -24,7 +24,7 @@ import {
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OpenOrderStatus, OrderSummary } from '../types/types';
+import { OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -38,11 +38,12 @@ const MAX_PER_STATUS = 5;
 const PantryOrderManagement: React.FC = () => {
   // State to hold orders grouped by status
   const [statusOrders, setStatusOrders] = useState<
-    Record<OpenOrderStatus, OrderWithColor[]>
+    Record<OrderStatus, OrderWithColor[]>
   >({
-    [OpenOrderStatus.SHIPPED]: [],
-    [OpenOrderStatus.PENDING]: [],
-    [OpenOrderStatus.DELIVERED]: [],
+    [OrderStatus.SHIPPED]: [],
+    [OrderStatus.PENDING]: [],
+    [OrderStatus.DELIVERED]: [],
+    [OrderStatus.CLOSED]: [],
   });
 
   // State to hold selected order for details modal
@@ -52,13 +53,14 @@ const PantryOrderManagement: React.FC = () => {
     useState<OrderWithColor | null>(null);
 
   // State to hold current page per status
-  const [currentPages, setCurrentPages] = useState<
-    Record<OpenOrderStatus, number>
-  >({
-    [OpenOrderStatus.SHIPPED]: 1,
-    [OpenOrderStatus.PENDING]: 1,
-    [OpenOrderStatus.DELIVERED]: 1,
-  });
+  const [currentPages, setCurrentPages] = useState<Record<OrderStatus, number>>(
+    {
+      [OrderStatus.SHIPPED]: 1,
+      [OrderStatus.PENDING]: 1,
+      [OrderStatus.DELIVERED]: 1,
+      [OrderStatus.CLOSED]: 1,
+    },
+  );
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -74,15 +76,18 @@ const PantryOrderManagement: React.FC = () => {
   // sortAsc indicates whether the sorting is ascending (oldest first) or descending (newest first)
   // We store all these here to determine what orders to display for each status
   const [filterStates, setFilterStates] = useState<
-    Record<OpenOrderStatus, FilterState>
+    Record<OrderStatus, FilterState>
   >({
-    [OpenOrderStatus.SHIPPED]: {
+    [OrderStatus.SHIPPED]: {
       sortAsc: false,
     },
-    [OpenOrderStatus.PENDING]: {
+    [OrderStatus.PENDING]: {
       sortAsc: false,
     },
-    [OpenOrderStatus.DELIVERED]: {
+    [OrderStatus.DELIVERED]: {
+      sortAsc: false,
+    },
+    [OrderStatus.CLOSED]: {
       sortAsc: false,
     },
   });
@@ -92,10 +97,11 @@ const PantryOrderManagement: React.FC = () => {
       const pantryId = await ApiClient.getCurrentUserPantryId();
       const data = await ApiClient.getPantryOrders(pantryId);
 
-      const grouped: Record<OpenOrderStatus, OrderWithColor[]> = {
-        [OpenOrderStatus.SHIPPED]: [],
-        [OpenOrderStatus.PENDING]: [],
-        [OpenOrderStatus.DELIVERED]: [],
+      const grouped: Record<OrderStatus, OrderWithColor[]> = {
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.DELIVERED]: [],
+        [OrderStatus.CLOSED]: [],
       };
 
       for (const order of data) {
@@ -109,10 +115,11 @@ const PantryOrderManagement: React.FC = () => {
       setStatusOrders(grouped);
 
       // Initialize current page for each status
-      const initialPages: Record<OpenOrderStatus, number> = {
-        [OpenOrderStatus.SHIPPED]: 1,
-        [OpenOrderStatus.PENDING]: 1,
-        [OpenOrderStatus.DELIVERED]: 1,
+      const initialPages: Record<OrderStatus, number> = {
+        [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.PENDING]: 1,
+        [OrderStatus.DELIVERED]: 1,
+        [OrderStatus.CLOSED]: 1,
       };
       setCurrentPages(initialPages);
     } catch {
@@ -134,7 +141,7 @@ const PantryOrderManagement: React.FC = () => {
     if (match) {
       setSelectedOrderId(match.orderId);
       // Paginate the containing status to the page that holds this order.
-      for (const status of Object.values(OpenOrderStatus)) {
+      for (const status of Object.values(OrderStatus)) {
         const sorted = [...statusOrders[status]].sort((a, b) =>
           b.createdAt.localeCompare(a.createdAt),
         );
@@ -153,11 +160,11 @@ const PantryOrderManagement: React.FC = () => {
   }, [searchParams, statusOrders, navigate]);
 
   // Helper to reset page for a specific status
-  const resetPageForStatus = (status: OpenOrderStatus) => {
+  const resetPageForStatus = (status: OrderStatus) => {
     setCurrentPages((prev) => ({ ...prev, [status]: 1 }));
   };
 
-  const handlePageChange = (status: OpenOrderStatus, page: number) => {
+  const handlePageChange = (status: OrderStatus, page: number) => {
     setCurrentPages((prev) => ({
       ...prev,
       [status]: page,
@@ -187,7 +194,7 @@ const PantryOrderManagement: React.FC = () => {
         />
       )}
 
-      {Object.values(OpenOrderStatus).map((status) => {
+      {Object.values(OrderStatus).map((status) => {
         const allOrders = statusOrders[status] || [];
         const filterState = filterStates[status];
 
@@ -262,7 +269,7 @@ const PantryOrderManagement: React.FC = () => {
 
 interface OrderStatusSectionProps {
   orders: OrderWithColor[];
-  status: OpenOrderStatus;
+  status: OrderStatus;
   colors: [string, string];
   onOrderSelect: (orderId: number | null) => void;
   onOrderSelectForAction: (order: OrderWithColor | null) => void;
@@ -574,13 +581,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       textAlign="right"
                       color="neutral.700"
                       bgColor={
-                        order.status !== OpenOrderStatus.SHIPPED
+                        order.status !== OrderStatus.SHIPPED
                           ? 'neutral.50'
                           : 'white'
                       }
                       pr={0}
                     >
-                      {order.status === OpenOrderStatus.SHIPPED && (
+                      {order.status === OrderStatus.SHIPPED && (
                         <Button
                           variant="plain"
                           fontWeight="400"
