@@ -1,38 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { DashboardCardType } from '@components/dashboardCard';
-import { Donation, DonationDetails, FoodManufacturer } from '../types/types';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
 import SectionEmptyState from '@components/sectionEmptyState';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
+import { Donation, DonationDetails, FoodManufacturer } from '../types/types';
 
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [errorAlertState, setErrorMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
 
   useEffect(() => {
     const fetchFmData = async () => {
-      let fmId: number;
       try {
-        fmId = await ApiClient.getCurrentUserFoodManufacturerId();
-        const fm = await ApiClient.getFoodManufacturer(fmId);
-        setFoodManufacturer(fm);
-      } catch {
-        setErrorMessage('Error fetching your manufacturer profile.');
-        return;
-      }
+        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+        const [fm, donations] = await Promise.all([
+          ApiClient.getFoodManufacturer(fmId),
+          ApiClient.getAllDonationsByFoodManufacturer(fmId),
+        ]);
 
-      try {
-        const donations = await ApiClient.getAllDonationsByFoodManufacturer(
-          fmId,
-        );
+        setFoodManufacturer(fm);
+
         const sorted = donations
           .map((d: DonationDetails) => d.donation)
           .sort(
@@ -43,13 +39,15 @@ const FoodManufacturerDashboard: React.FC = () => {
           .slice(0, 2);
         setRecentDonations(sorted);
       } catch {
-        setErrorMessage('Error fetching recent donations.');
+        setErrorMessage('Error fetching dashboard data');
+      } finally {
+        setLoading(false);
       }
     };
     fetchFmData();
   }, [setErrorMessage]);
 
-  if (!foodManufacturer) return null;
+  if (loading) return null;
 
   return (
     <Box p={12}>

@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Heading, Text } from '@chakra-ui/react';
-import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
-import { FoodRequestSummaryDto, User, VolunteerOrder } from '../types/types';
-import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
+import { Box, Heading, Text } from '@chakra-ui/react';
+import DashboardCard, {
+  DashboardCardType,
+  ORDER_STATUS_BADGE,
+} from '@components/dashboardCard';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
 import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
+import { FoodRequestSummaryDto, User, VolunteerOrder } from '../types/types';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [recentFoodRequests, setRecentFoodRequests] = useState<
     FoodRequestSummaryDto[]
@@ -26,34 +29,29 @@ const VolunteerDashboard: React.FC = () => {
       try {
         const currentUser = await ApiClient.getMe();
         setUser(currentUser);
-      } catch {
-        setAlertMessage('Error fetching user information');
-        return;
-      }
 
-      try {
-        const requests = await ApiClient.getVolunteerAssignedRequests();
+        const [requests, orders] = await Promise.all([
+          ApiClient.getVolunteerAssignedRequests(),
+          ApiClient.getVolunteerRecentOrders(),
+        ]);
+
         const sorted = requests.sort(
           (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
             new Date(b.requestedAt).getTime() -
             new Date(a.requestedAt).getTime(),
         );
         setRecentFoodRequests(sorted.slice(0, 2));
-      } catch {
-        setAlertMessage('Error fetching food requests');
-      }
-
-      try {
-        const orders = await ApiClient.getVolunteerRecentOrders();
         setRecentOrders(orders);
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching dashboard data');
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!user) return null;
+  if (loading || !user) return null;
 
   const isPageEmpty =
     recentFoodRequests.length === 0 && recentOrders.length === 0;

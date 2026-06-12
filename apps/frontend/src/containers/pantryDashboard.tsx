@@ -1,24 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
-import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
+import DashboardCard, {
+  DashboardCardType,
+  ORDER_STATUS_BADGE,
+} from '@components/dashboardCard';
+import { FloatingAlert } from '@components/floatingAlert';
+import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 import {
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
 } from '../types/types';
-import { DashboardCardType } from '@components/dashboardCard';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
-import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
-import PageEmptyState from '@components/pageEmptyState';
 
 const PantryDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [pantry, setPantry] = useState<PantryWithUser | null>(null);
   const [recentFoodRequests, setRecentFoodRequests] = useState<
     FoodRequestSummaryDto[]
@@ -27,43 +30,39 @@ const PantryDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      let pantryId: number;
       try {
-        pantryId = await ApiClient.getCurrentUserPantryId();
-        const pantryData = await ApiClient.getPantry(pantryId);
-        setPantry(pantryData);
-      } catch {
-        setAlertMessage('Error fetching pantry information');
-        return;
-      }
+        const pantryId = await ApiClient.getCurrentUserPantryId();
+        const [pantryData, pantryFoodRequests, pantryOrders] =
+          await Promise.all([
+            ApiClient.getPantry(pantryId),
+            ApiClient.getPantryRequests(pantryId),
+            ApiClient.getPantryOrders(pantryId),
+          ]);
 
-      try {
-        const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
+        setPantry(pantryData);
+
         const sortedFoodRequests = pantryFoodRequests.sort(
           (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
             new Date(b.requestedAt).getTime() -
             new Date(a.requestedAt).getTime(),
         );
         setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
-      } catch {
-        setAlertMessage('Error fetching pantry food requests');
-      }
 
-      try {
-        const pantryOrders = await ApiClient.getPantryOrders(pantryId);
         const sortedOrders = pantryOrders.sort(
           (a: OrderSummary, b: OrderSummary) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         setRecentOrders(sortedOrders.slice(0, 4));
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching dashboard data');
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!pantry) return null;
+  if (loading || !pantry) return null;
 
   const isPageEmpty =
     recentFoodRequests.length === 0 && recentOrders.length === 0;

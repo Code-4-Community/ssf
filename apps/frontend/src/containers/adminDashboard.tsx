@@ -1,28 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, {
-  ORDER_STATUS_BADGE,
+  DashboardCardType,
   DONATION_STATUS_BADGE,
+  ORDER_STATUS_BADGE,
 } from '@components/dashboardCard';
+import { FloatingAlert } from '@components/floatingAlert';
+import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 import {
-  PendingApplication,
-  OrderSummary,
   Donation,
+  OrderSummary,
+  PendingApplication,
   User,
 } from '../types/types';
-import { DashboardCardType } from '@components/dashboardCard';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
-import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
-import PageEmptyState from '@components/pageEmptyState';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [pendingApplications, setPendingApplications] = useState<
     PendingApplication[]
   >([]);
@@ -30,61 +31,44 @@ const AdminDashboard: React.FC = () => {
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const fetchPendingApplications = async () => {
-    try {
-      const pendingApplications =
-        await ApiClient.getRecentPendingApplications();
-      setPendingApplications(pendingApplications);
-    } catch {
-      setAlertMessage('Error fetching pending applications');
-    }
-  };
-
-  const fetchRecentOrders = async () => {
-    try {
-      const allOrders = await ApiClient.getAllOrders();
-      const sortedOrders = allOrders.sort(
-        (a: OrderSummary, b: OrderSummary) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      const recentOrders = sortedOrders.slice(0, 2);
-      setRecentOrders(recentOrders);
-    } catch {
-      setAlertMessage('Error fetching orders');
-    }
-  };
-
-  const fetchRecentDonations = async () => {
-    try {
-      const allDonations = await ApiClient.getAllDonations();
-      const sortedDonations = allDonations.sort(
-        (a: Donation, b: Donation) =>
-          new Date(b.dateDonated).getTime() - new Date(a.dateDonated).getTime(),
-      );
-      const recentDonations = sortedDonations.slice(0, 2);
-      setRecentDonations(recentDonations);
-    } catch {
-      setAlertMessage('Error fetching donations');
-    }
-  };
-
-  const fetchMe = async () => {
-    let user: User;
-    try {
-      user = await ApiClient.getMe();
-      setCurrentUser(user);
-    } catch {
-      setAlertMessage('Authentication error. Please log in and try again.');
-      return;
-    }
-  };
-
   useEffect(() => {
-    fetchMe();
-    fetchRecentDonations();
-    fetchRecentOrders();
-    fetchPendingApplications();
+    const fetchDashboardData = async () => {
+      try {
+        const [user, applications, allOrders, allDonations] = await Promise.all(
+          [
+            ApiClient.getMe(),
+            ApiClient.getRecentPendingApplications(),
+            ApiClient.getAllOrders(),
+            ApiClient.getAllDonations(),
+          ],
+        );
+
+        setCurrentUser(user);
+        setPendingApplications(applications);
+
+        const sortedOrders = allOrders.sort(
+          (a: OrderSummary, b: OrderSummary) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        setRecentOrders(sortedOrders.slice(0, 2));
+
+        const sortedDonations = allDonations.sort(
+          (a: Donation, b: Donation) =>
+            new Date(b.dateDonated).getTime() -
+            new Date(a.dateDonated).getTime(),
+        );
+        setRecentDonations(sortedDonations.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, [setAlertMessage]);
+
+  if (loading) return null;
 
   const isPageEmpty =
     pendingApplications.length === 0 &&
