@@ -12,7 +12,7 @@ import {
   Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/types';
+import { AlertStatus, Pantry, User } from '../types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +38,10 @@ const AssignedPantries: React.FC = () => {
         user = await ApiClient.getMe();
         userId = user.id;
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          AlertStatus.ERROR,
+        );
         setIsLoading(false);
         return;
       }
@@ -47,7 +50,7 @@ const AssignedPantries: React.FC = () => {
         const data = await ApiClient.getVolunteerPantries(userId);
         setPantries(data);
       } catch {
-        setAlertMessage('Error fetching assigned pantries');
+        setAlertMessage('Error fetching assigned pantries', AlertStatus.ERROR);
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +122,7 @@ const AssignedPantries: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

@@ -6,18 +6,29 @@ import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { RecurrenceEnum, DayOfWeek, DonationStatus } from './types';
 import { RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { testDataSource } from '../config/typeormTestDataSource';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { DataSource, In } from 'typeorm';
 import { FoodType } from '../donationItems/types';
-import { mock } from 'jest-mock-extended';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { UsersService } from '../users/users.service';
 import { EmailsService } from '../emails/email.service';
+import { mock } from 'jest-mock-extended';
 import { emailTemplates } from '../emails/emailTemplates';
 
 jest.setTimeout(60000);
+
+// findByUserId only touches the FoodManufacturer repo, so UsersService and
+// EmailsService are mocked to satisfy FoodManufacturersService's DI.
+const mockUsersService = mock<UsersService>();
+const mockEmailsService = mock<EmailsService>();
 
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
@@ -131,8 +142,6 @@ const TODAYOfWeek = (iso: string): DayOfWeek => {
   return days[new Date(iso).getDay()];
 };
 
-const mockEmailsService = mock<EmailsService>();
-
 describe('DonationService', () => {
   let service: DonationService;
   let donationItemService: DonationItemsService;
@@ -151,6 +160,7 @@ describe('DonationService', () => {
       providers: [
         DonationService,
         DonationItemsService,
+        FoodManufacturersService,
         {
           provide: getRepositoryToken(Allocation),
           useValue: testDataSource.getRepository(Allocation),
@@ -162,6 +172,14 @@ describe('DonationService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
         },
         {
           provide: getRepositoryToken(DonationItem),
@@ -1103,11 +1121,13 @@ describe('DonationService', () => {
     ];
 
     it('successfully creates a donation with items', async () => {
-      const donation = await service.create({
-        foodManufacturerId: 1,
-        recurrence: RecurrenceEnum.NONE,
-        items: validItems,
-      });
+      const donation = await service.create(
+        {
+          recurrence: RecurrenceEnum.NONE,
+          items: validItems,
+        },
+        3,
+      );
 
       expect(donation).toBeDefined();
       expect(donation.donationId).toBeDefined();
@@ -1139,13 +1159,15 @@ describe('DonationService', () => {
       const before = new Date();
       before.setHours(0, 0, 0, 0);
 
-      const donation = await service.create({
-        foodManufacturerId: 1,
-        recurrence: RecurrenceEnum.MONTHLY,
-        recurrenceFreq: 1,
-        occurrencesRemaining: 3,
-        items: validItems,
-      });
+      const donation = await service.create(
+        {
+          recurrence: RecurrenceEnum.MONTHLY,
+          recurrenceFreq: 1,
+          occurrencesRemaining: 3,
+          items: validItems,
+        },
+        3,
+      );
 
       const rows = await testDataSource.query(
         `SELECT next_donation_dates, occurrences_remaining, recurrence, recurrence_freq
@@ -1174,15 +1196,17 @@ describe('DonationService', () => {
       expect(actualDate.getDate()).toEqual(expectedDate.getDate());
     });
 
-    it('throws when foodManufacturerId does not exist', async () => {
+    it('throws when user ID is not a food manufacturer', async () => {
       await expect(
-        service.create({
-          foodManufacturerId: 99999,
-          recurrence: RecurrenceEnum.NONE,
-          items: validItems,
-        }),
+        service.create(
+          {
+            recurrence: RecurrenceEnum.NONE,
+            items: validItems,
+          },
+          1,
+        ),
       ).rejects.toThrow(
-        new NotFoundException('Food Manufacturer 99999 not found'),
+        new NotFoundException('Food Manufacturer for User 1 not found'),
       );
     });
 
@@ -1190,20 +1214,22 @@ describe('DonationService', () => {
       let donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
       await expect(
-        service.create({
-          foodManufacturerId: 1,
-          recurrence: RecurrenceEnum.WEEKLY,
-          repeatOnDays: {
-            Sunday: false,
-            Monday: true,
-            Tuesday: false,
-            Wednesday: false,
-            Thursday: false,
-            Friday: false,
-            Saturday: false,
+        service.create(
+          {
+            recurrence: RecurrenceEnum.WEEKLY,
+            repeatOnDays: {
+              Sunday: false,
+              Monday: true,
+              Tuesday: false,
+              Wednesday: false,
+              Thursday: false,
+              Friday: false,
+              Saturday: false,
+            },
+            items: validItems,
           },
-          items: validItems,
-        }),
+          3,
+        ),
       ).rejects.toThrow(
         new BadRequestException(
           'recurrenceFreq is required for recurring donations',
@@ -1219,23 +1245,39 @@ describe('DonationService', () => {
       expect(donations).toHaveLength(4);
 
       await expect(
-        service.create({
-          foodManufacturerId: 1,
-          recurrence: RecurrenceEnum.NONE,
-          items: [
-            ...validItems,
-            {
-              itemName: 'a'.repeat(1000),
-              quantity: 5,
-              foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-              foodRescue: false,
-            },
-          ],
-        }),
+        service.create(
+          {
+            recurrence: RecurrenceEnum.NONE,
+            items: [
+              ...validItems,
+              {
+                itemName: 'a'.repeat(1000),
+                quantity: 5,
+                foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
+                foodRescue: false,
+              },
+            ],
+          },
+          3,
+        ),
       ).rejects.toThrow();
 
       donations = await testDataSource.query(`SELECT * FROM donations`);
       expect(donations).toHaveLength(4);
+    });
+
+    it('throws ConflictException when foodManufacturerId not approved', async () => {
+      await expect(
+        service.create(
+          {
+            recurrence: RecurrenceEnum.NONE,
+            items: validItems,
+          },
+          5,
+        ),
+      ).rejects.toThrow(
+        new ConflictException('Food Manufacturer for User 5 not approved'),
+      );
     });
   });
 

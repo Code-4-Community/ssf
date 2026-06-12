@@ -15,7 +15,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Funnel, Search } from 'lucide-react';
-import { ApprovedPantryResponse } from '../types/types';
+import { AlertStatus, ApprovedPantryResponse } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -39,7 +39,6 @@ const AdminPantryManagement: React.FC = () => {
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
 
   const [alertState, setAlertMessage] = useAlert();
-  const [isAlertSuccess, setIsAlertSuccess] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [
     selectedPantryToAssignVolunteers,
@@ -53,8 +52,7 @@ const AdminPantryManagement: React.FC = () => {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
-      setIsAlertSuccess(false);
-      setAlertMessage('Error fetching pantries');
+      setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
     }
   };
 
@@ -77,16 +75,17 @@ const AdminPantryManagement: React.FC = () => {
         );
         if (cancelled) return;
         if (assignedPantries.length === 0) {
-          setIsAlertSuccess(false);
-          setAlertMessage('This volunteer has no assigned pantries.');
+          setAlertMessage(
+            'This volunteer has no assigned pantries.',
+            AlertStatus.ERROR,
+          );
           navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
           return;
         }
         setSelectedPantries(assignedPantries.map((p) => p.pantryName));
       } catch {
         if (cancelled) return;
-        setIsAlertSuccess(false);
-        setAlertMessage('Error fetching volunteer pantries');
+        setAlertMessage('Error fetching volunteer pantries', AlertStatus.ERROR);
         navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
       }
     })();
@@ -97,8 +96,7 @@ const AdminPantryManagement: React.FC = () => {
   }, [searchParams, navigate, setAlertMessage]);
 
   const handleAssignVolunteersSuccess = () => {
-    setIsAlertSuccess(true);
-    setAlertMessage('Successfully assigned volunteers');
+    setAlertMessage('Successfully assigned volunteers', AlertStatus.INFO);
     fetchPantries();
   };
 
@@ -145,7 +143,7 @@ const AdminPantryManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={isAlertSuccess ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

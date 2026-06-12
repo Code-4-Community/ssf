@@ -1169,7 +1169,46 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       });
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
+
+    it('throw BadRequestException if pantry is denied', async () => {
+      const pantryId = 4;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
+
+    it('throw BadRequestException if pantry is pending', async () => {
+      const pantryId = 5;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
   });
+
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;
