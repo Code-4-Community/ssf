@@ -12,7 +12,7 @@ import {
   ButtonGroup,
   Link,
 } from '@chakra-ui/react';
-import { Donation } from 'types/types';
+import { AlertStatus, Donation } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
@@ -44,7 +44,7 @@ const AdminDonation: React.FC = () => {
         const data = await ApiClient.getAllDonations();
         setDonations(data);
       } catch {
-        setAlertMessage('Error fetching donations', 'error');
+        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
       }
     };
     fetchDonations();
@@ -60,12 +60,21 @@ const AdminDonation: React.FC = () => {
     if (!donationIdFromUrl) return;
     if (donations.length === 0) return;
 
+    const id = Number(donationIdFromUrl);
     const matchedDonation = donations.find(
-      (donation) => donation.donationId === Number(donationIdFromUrl),
+      (donation) => donation.donationId === id,
     );
 
     if (matchedDonation) {
       setSelectedDonation(matchedDonation);
+      // Paginate to the page that contains the deeplinked donation
+      const sortedAtLoad = [...donations].sort((a, b) =>
+        b.dateDonated.localeCompare(a.dateDonated),
+      );
+      const idx = sortedAtLoad.findIndex((d) => d.donationId === id);
+      if (idx >= 0) {
+        setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
+      }
     } else {
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
     }
@@ -130,7 +139,7 @@ const AdminDonation: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

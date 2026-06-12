@@ -16,9 +16,15 @@ import {
   Mail,
   CircleCheck,
 } from 'lucide-react';
-import { capitalize, formatDate, ORDER_STATUS_COLORS } from '@utils/utils';
+import {
+  formatDate,
+  getInitials,
+  ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
+  USER_ICON_COLORS,
+} from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { AlertStatus, OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -109,7 +115,7 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setAlertMessage('Failed to fetch orders', 'error');
+      setAlertMessage('Failed to fetch orders', AlertStatus.ERROR);
     }
   }, [setAlertMessage]);
 
@@ -122,9 +128,24 @@ const PantryOrderManagement: React.FC = () => {
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
-    const match = allOrders.find((o) => o.orderId === Number(orderIdFromUrl));
+    const id = Number(orderIdFromUrl);
+    const match = allOrders.find((o) => o.orderId === id);
     if (match) {
       setSelectedOrderId(match.orderId);
+      // Paginate the containing status to the page that holds this order.
+      for (const status of Object.values(OrderStatus)) {
+        const sorted = [...statusOrders[status]].sort((a, b) =>
+          b.createdAt.localeCompare(a.createdAt),
+        );
+        const idx = sorted.findIndex((o) => o.orderId === id);
+        if (idx >= 0) {
+          setCurrentPages((prev) => ({
+            ...prev,
+            [status]: Math.floor(idx / MAX_PER_STATUS) + 1,
+          }));
+          break;
+        }
+      }
     } else {
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
     }
@@ -152,7 +173,7 @@ const PantryOrderManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -219,10 +240,13 @@ const PantryOrderManagement: React.FC = () => {
           onClose={() => setSelectedActionOrder(null)}
           onSuccess={() => {
             fetchOrders();
-            setAlertMessage('Delivery Confirmed', 'success');
+            setAlertMessage('Delivery Confirmed', AlertStatus.INFO);
           }}
           onError={() => {
-            setAlertMessage('Delivery could not be confirmed.', 'error');
+            setAlertMessage(
+              'Delivery could not be confirmed.',
+              AlertStatus.ERROR,
+            );
           }}
         />
       )}
@@ -298,7 +322,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
           fontWeight="semibold"
           color="neutral.700"
         >
-          {capitalize(status)}
+          {ORDER_STATUS_LABELS[status]}
         </Box>
       </Box>
 
@@ -322,7 +346,8 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             No Orders
           </Box>
           <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} orders at this time.
+            You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders at
+            this time.
           </Box>
         </Box>
       ) : (
@@ -492,7 +517,7 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         py={1}
                         px={3}
                       >
-                        {capitalize(order.status)}
+                        {ORDER_STATUS_LABELS[order.status]}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
@@ -500,7 +525,33 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                       borderRight="1px solid"
                       borderRightColor="neutral.100"
                     >
-                      {/* TODO: Add assignee column handling */}
+                      <Box
+                        display="flex"
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Box
+                          borderRadius="full"
+                          bg={
+                            USER_ICON_COLORS[
+                              order.assignee.id % USER_ICON_COLORS.length
+                            ]
+                          }
+                          width="33px"
+                          height="33px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          p={2}
+                        >
+                          {getInitials(
+                            order.assignee.firstName,
+                            order.assignee.lastName,
+                          )}
+                        </Box>
+                      </Box>
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

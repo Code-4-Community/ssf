@@ -156,13 +156,13 @@ describe('UsersService', () => {
 
       const result = await service.create(createUserDto);
 
-      const { subject, bodyHTML } = emailTemplates.volunteerAccountCreated();
+      const message = emailTemplates.volunteerAccountCreated();
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [createUserDto.email],
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: createUserDto.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
       expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
@@ -362,7 +362,7 @@ describe('UsersService', () => {
         ],
       };
 
-      await donationService.create(createDonationBody as CreateDonationDto, 1);
+      await donationService.create(createDonationBody as CreateDonationDto, 3);
 
       // updating existing request to have a current month requested at date
       const existingRequest = await foodRequestService.findOne(1);

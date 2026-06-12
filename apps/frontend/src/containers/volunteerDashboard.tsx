@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
-import { FoodRequestSummaryDto, User, VolunteerOrder } from '../types/types';
+import {
+  AlertStatus,
+  FoodRequestSummaryDto,
+  User,
+  VolunteerOrder,
+} from '../types/types';
 import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
 import { useAlert } from '../hooks/alert';
@@ -25,7 +30,7 @@ const VolunteerDashboard: React.FC = () => {
         const currentUser = await ApiClient.getMe();
         setUser(currentUser);
       } catch {
-        setAlertMessage('Error fetching user information', 'error');
+        setAlertMessage('Error fetching user information', AlertStatus.ERROR);
         return;
       }
 
@@ -38,14 +43,14 @@ const VolunteerDashboard: React.FC = () => {
         );
         setRecentFoodRequests(sorted.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching food requests', 'error');
+        setAlertMessage('Error fetching food requests', AlertStatus.ERROR);
       }
 
       try {
         const orders = await ApiClient.getVolunteerRecentOrders();
         setRecentOrders(orders);
       } catch {
-        setAlertMessage('Error fetching orders', 'error');
+        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
       }
     };
     fetchDashboardData();
@@ -59,7 +64,7 @@ const VolunteerDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

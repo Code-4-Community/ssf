@@ -190,18 +190,18 @@ describe('FoodManufacturersService', () => {
       const pending = await service.getPendingManufacturers();
       const manufacturer = pending[0];
       const id = manufacturer.foodManufacturerId;
-      const { subject, bodyHTML } = emailTemplates.pantryFmApplicationApproved({
+      const message = emailTemplates.pantryFmApplicationApproved({
         name: manufacturer.foodManufacturerRepresentative.firstName,
       });
 
       await service.approve(id);
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [manufacturer.foodManufacturerRepresentative.email],
-        subject,
-        bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('should still update manufacturer status to approved if email send fails', async () => {
@@ -368,16 +368,16 @@ describe('FoodManufacturersService', () => {
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [dto.contactEmail],
-        userMessage.subject,
-        userMessage.bodyHTML,
-      );
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith(
-        [SSF_PARTNER_EMAIL],
-        adminMessage.subject,
-        adminMessage.bodyHTML,
-      );
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: dto.contactEmail,
+        subject: userMessage.subject,
+        bodyHtml: userMessage.bodyHTML,
+      });
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SSF_PARTNER_EMAIL,
+        subject: adminMessage.subject,
+        bodyHtml: adminMessage.bodyHTML,
+      });
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
     });
   });

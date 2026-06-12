@@ -40,10 +40,10 @@ import {
   VolunteerAction,
   ApprovedPantryResponse,
   UpdatePantryVolunteersDto,
-  FoodRequestWithoutRelations,
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
   PendingApplication,
+  DonationReminderDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -130,12 +130,6 @@ export class ApiClient {
       `/api/donations/${donationId}/fulfill`,
       body ?? {},
     );
-  }
-
-  public async getRepresentativeUser(userId: number): Promise<User> {
-    return this.axiosInstance
-      .get(`/api/users/${userId}`)
-      .then((response) => response.data);
   }
 
   public async postUser(data: UserDto): Promise<User> {
@@ -294,25 +288,11 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getDonation(donationId: number): Promise<Donation> {
-    return this.axiosInstance
-      .get(`/api/donations/${donationId}`)
-      .then((response) => response.data);
-  }
-
   public async getDonationItemsByDonationId(
     donationId: number,
   ): Promise<DonationItem[]> {
     return this.axiosInstance
       .get(`/api/donation-items/${donationId}/all`)
-      .then((response) => response.data);
-  }
-
-  public async getManufacturerFromOrder(
-    orderId: number,
-  ): Promise<FoodManufacturer | null> {
-    return this.axiosInstance
-      .get(`/api/orders/${orderId}/manufacturer`)
       .then((response) => response.data);
   }
 
@@ -350,18 +330,6 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
-  public async getCurrentOrders(): Promise<Order[]> {
-    return this.axiosInstance
-      .get('/api/orders/get-current-orders')
-      .then((response) => response.data);
-  }
-
-  public async getPastOrders(): Promise<Order[]> {
-    return this.axiosInstance
-      .get('/api/orders/get-past-orders')
-      .then((response) => response.data);
-  }
-
   public async getOrderDetailsListFromRequest(
     requestId: number,
   ): Promise<OrderDetails[]> {
@@ -382,16 +350,6 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}/allocations`)
       .then((response) => response.data);
-  }
-
-  public async updateOrderStatus(
-    orderId: number,
-    newStatus: 'shipped' | 'delivered',
-  ): Promise<void> {
-    await this.axiosInstance.patch(`/api/orders/update-status/${orderId}`, {
-      orderId,
-      newStatus,
-    });
   }
 
   public async updatePantryApplicationData(
@@ -473,6 +431,14 @@ export class ApiClient {
   public async getCurrentUserFoodManufacturerId(): Promise<number> {
     return this.axiosInstance
       .get('/api/manufacturers/my-id')
+      .then((response) => response.data);
+  }
+
+  public async getNextTwoDonationReminders(
+    foodManufacturerId: number,
+  ): Promise<DonationReminderDto[]> {
+    return this.axiosInstance
+      .get(`/api/manufacturers/${foodManufacturerId}/next-two-reminders`)
       .then((response) => response.data);
   }
 

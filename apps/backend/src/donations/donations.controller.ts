@@ -2,12 +2,11 @@ import {
   Controller,
   Post,
   Body,
-  Get,
   Patch,
   Param,
   ParseIntPipe,
   ParseArrayPipe,
-  Put,
+  Get,
   Delete,
   Req,
 } from '@nestjs/common';
@@ -18,7 +17,6 @@ import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { FoodType } from '../donationItems/types';
-import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
@@ -28,26 +26,11 @@ import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 @Controller('donations')
 export class DonationsController {
-  constructor(
-    private donationService: DonationService,
-    private foodManufacturersService: FoodManufacturersService,
-  ) {}
+  constructor(private donationService: DonationService) {}
 
   @Get()
   async getAllDonations(): Promise<Donation[]> {
     return this.donationService.getAll();
-  }
-
-  @Get('/count')
-  async getNumberOfDonations(): Promise<number> {
-    return this.donationService.getNumberOfDonations();
-  }
-
-  @Get('/:donationId')
-  async getDonation(
-    @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<Donation> {
-    return this.donationService.findOne(donationId);
   }
 
   @Post()
@@ -102,11 +85,7 @@ export class DonationsController {
     @Req() req: AuthenticatedRequest,
     @Body() body: CreateDonationDto,
   ): Promise<Donation> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
-      req.user.id,
-    );
-    const foodManufacturerId = manufacturer.foodManufacturerId;
-    return this.donationService.create(body, foodManufacturerId);
+    return this.donationService.create(body, req.user.id);
   }
 
   @Patch('/:donationId/fulfill')
@@ -139,14 +118,6 @@ export class DonationsController {
     body: UpdateDonationItemDetailsDto[],
   ): Promise<void> {
     await this.donationService.updateDonationItemDetails(donationId, body);
-  }
-
-  @Put('/:donationId/items')
-  async replaceDonationItems(
-    @Param('donationId', ParseIntPipe) donationId: number,
-    @Body() body: ReplaceDonationItemsDto,
-  ): Promise<void> {
-    await this.donationService.replaceDonationItems(donationId, body);
   }
 
   @Delete('/:donationId')

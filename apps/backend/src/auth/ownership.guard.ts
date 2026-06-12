@@ -44,13 +44,17 @@ export class OwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Specified roles bypass ownership checks
+    // Specified bypass ownership checks for other roles
     if (config.bypassRoles?.includes(user.role as Role)) {
       return true;
     }
 
-    // Get the id from the parameters
-    const entityId = Number(req.params[config.idParam]);
+    // Get the id from the configured source (URL params by default, request body opt-in)
+    const rawId =
+      config.idSource === 'body'
+        ? req.body?.[config.idParam]
+        : req.params[config.idParam];
+    const entityId = Number(rawId);
 
     if (isNaN(entityId)) {
       throw new ForbiddenException(`Invalid ${config.idParam}`);
@@ -63,6 +67,7 @@ export class OwnershipGuard implements CanActivate {
     const ownerIds = await config.resolver({
       entityId,
       services,
+      user,
     });
 
     if (

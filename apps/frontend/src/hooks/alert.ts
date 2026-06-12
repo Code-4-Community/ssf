@@ -1,20 +1,21 @@
 import { useCallback, useRef, useState } from 'react';
+import { AlertStatus } from '../types/types';
 
 export interface AlertState {
   message: string;
-  status: 'success' | 'error';
+  status: AlertStatus;
   id: number;
 }
 
 export function useAlert(): [
   AlertState | null,
-  (message: string, status: 'success' | 'error') => void,
+  (message: string, status: AlertStatus) => void,
 ] {
   const [alertState, setAlertState] = useState<AlertState | null>(null);
   const idRef = useRef<number>(0);
 
   const setAlertMessage = useCallback(
-    (message: string, status: 'success' | 'error') => {
+    (message: string, status: AlertStatus) => {
       setAlertState({ message, status, id: idRef.current++ });
     },
     [],

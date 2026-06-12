@@ -24,7 +24,7 @@ import {
 } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
-import { PantryApplicationDto } from '../../types/types';
+import { AlertStatus, PantryApplicationDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import { Activity } from '../../types/pantryEnums';
 import axios from 'axios';
@@ -111,7 +111,7 @@ const PantryApplicationForm: React.FC = () => {
 
   useEffect(() => {
     if (actionData?.error) {
-      setAlertMessage(actionData.error, 'error');
+      setAlertMessage(actionData.error, AlertStatus.ERROR);
     }
   }, [actionData, setAlertMessage]);
 
@@ -122,7 +122,7 @@ const PantryApplicationForm: React.FC = () => {
           <FloatingAlert
             key={alertState.id}
             message={alertState.message}
-            status="error"
+            status={alertState.status}
             timeout={6000}
           />
         )}

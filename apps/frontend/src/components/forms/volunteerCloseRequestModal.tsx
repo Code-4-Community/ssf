@@ -8,7 +8,7 @@ import {
   Flex,
   Dialog,
 } from '@chakra-ui/react';
-import { FoodRequestSummaryDto } from 'types/types';
+import { AlertStatus, FoodRequestSummaryDto } from '../../types/types';
 import { formatDate } from '@utils/utils';
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
@@ -34,7 +34,10 @@ const VolunteerCloseRequestActionModal: React.FC<
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Error completing action. Please try again.', 'error');
+      setAlertMessage(
+        'Error completing action. Please try again.',
+        AlertStatus.ERROR,
+      );
     }
   };
 
@@ -51,7 +54,7 @@ const VolunteerCloseRequestActionModal: React.FC<
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

@@ -7,8 +7,6 @@ import { CreateDonationDto } from './dtos/create-donation.dto';
 import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-items.dto';
 import { DonationStatus, RecurrenceEnum } from './types';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
-import { ReplaceDonationItemsDto } from '../donationItems/dtos/create-donation-items.dto';
-import { FoodType } from '../donationItems/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
@@ -29,8 +27,6 @@ describe('DonationsController', () => {
   let controller: DonationsController;
 
   beforeEach(async () => {
-    mockDonationService.getNumberOfDonations.mockReset();
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DonationsController],
       providers: [
@@ -66,30 +62,6 @@ describe('DonationsController', () => {
     });
   });
 
-  describe('GET /count', () => {
-    it.each([[0], [5]])('should return %i donations', async (count) => {
-      mockDonationService.getNumberOfDonations.mockResolvedValue(count);
-
-      const result = await controller.getNumberOfDonations();
-
-      expect(result).toBe(count);
-      expect(mockDonationService.getNumberOfDonations).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /:donationId', () => {
-    it('should return a donation for a given donation ID', async () => {
-      const mockDonation: Partial<Donation> = { donationId: 1 };
-
-      mockDonationService.findOne.mockResolvedValue(mockDonation as Donation);
-
-      const result = await controller.getDonation(1);
-
-      expect(result).toBe(mockDonation);
-      expect(mockDonationService.findOne).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('POST /', () => {
     it('should call donationService.create and return the created donation', async () => {
       const createBody: Partial<CreateDonationDto> = {
@@ -107,10 +79,6 @@ describe('DonationsController', () => {
       };
 
       const mockReq = { user: { id: 1 } };
-
-      mockFoodManufacturersService.findByUserId.mockResolvedValueOnce({
-        foodManufacturerId: 1,
-      } as any);
 
       const createdDonation: Partial<Donation> = {
         donationId: 1,
@@ -168,40 +136,6 @@ describe('DonationsController', () => {
       expect(
         mockDonationService.updateDonationItemDetails,
       ).toHaveBeenCalledWith(donationId, body);
-    });
-  });
-
-  describe('PUT /:donationId/items', () => {
-    it('should call donationService.replaceDonationItems', async () => {
-      const donationId = 1;
-
-      const replaceBody = {
-        items: [
-          {
-            id: 1,
-            itemName: 'Apples',
-            quantity: 10,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          },
-          {
-            itemName: 'Oranges',
-            quantity: 5,
-            foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
-          },
-        ],
-      };
-
-      mockDonationService.replaceDonationItems.mockResolvedValueOnce(undefined);
-
-      await controller.replaceDonationItems(
-        donationId,
-        replaceBody as ReplaceDonationItemsDto,
-      );
-
-      expect(mockDonationService.replaceDonationItems).toHaveBeenCalledWith(
-        donationId,
-        replaceBody,
-      );
     });
   });
 

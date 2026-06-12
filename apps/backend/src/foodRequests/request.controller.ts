@@ -8,7 +8,9 @@ import {
   ValidationPipe,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
@@ -23,7 +25,43 @@ import {
   MatchingItemsDto,
   MatchingManufacturersDto,
 } from './dtos/matching.dto';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+import { PantriesService } from '../pantries/pantries.service';
+import { Pantry } from '../pantries/pantries.entity';
 import { UpdateRequestDto } from './dtos/update-request.dto';
+
+// PANTRY users may access requests belonging to their own pantry (matched by
+// pantry representative id). All other non-admin callers (i.e. VOLUNTEER) must
+// be in the pantry's assigned volunteers list. ADMIN bypasses in the guard.
+export const resolveRequestAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+  user,
+}) =>
+  pipeNullable(
+    () => services.get(RequestsService).findOne(entityId),
+    (request: FoodRequest) =>
+      services.get(PantriesService).findOne(request.pantryId),
+    (pantry: Pantry) =>
+      user?.role === Role.PANTRY
+        ? [pantry.pantryUser.id]
+        : (pantry.volunteers ?? []).map((v) => v.id),
+  );
+
+// For creating a request, the pantryId comes from the request body and the
+// only authorized non-admin caller is the pantry representative.
+export const resolveCreateRequestAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(PantriesService).findOne(entityId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
 
 @Controller('requests')
 export class RequestsController {
@@ -35,6 +73,10 @@ export class RequestsController {
     return this.requestsService.getAll();
   }
 
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId')
   async getRequest(
@@ -43,6 +85,10 @@ export class RequestsController {
     return this.requestsService.findOne(requestId);
   }
 
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
@@ -51,7 +97,11 @@ export class RequestsController {
     return this.requestsService.getOrderDetails(requestId);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers')
   async getMatchingManufacturers(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -59,7 +109,11 @@ export class RequestsController {
     return this.requestsService.getMatchingManufacturers(requestId);
   }
 
-  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
   @Get('/:requestId/matching-manufacturers/:manufacturerId/available-items')
   async getAvailableItemsForManufacturer(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -68,6 +122,12 @@ export class RequestsController {
     return this.requestsService.getAvailableItems(requestId, manufacturerId);
   }
 
+  @CheckOwnership({
+    idParam: 'pantryId',
+    idSource: 'body',
+    resolver: resolveCreateRequestAuthorizedUserIds,
+  })
+  @Roles(Role.ADMIN, Role.PANTRY)
   @Post()
   @ApiBody({
     description: 'Details for creating a food request',
@@ -105,6 +165,11 @@ export class RequestsController {
     );
   }
 
+  @Roles(Role.PANTRY)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Patch('/:requestId')
   async updateRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -113,6 +178,11 @@ export class RequestsController {
     await this.requestsService.update(requestId, body);
   }
 
+  @Roles(Role.PANTRY)
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Delete('/:requestId')
   async deleteRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
@@ -120,11 +190,16 @@ export class RequestsController {
     return this.requestsService.delete(requestId);
   }
 
+  @CheckOwnership({
+    idParam: 'requestId',
+    resolver: resolveRequestAuthorizedUserIds,
+  })
   @Roles(Role.VOLUNTEER)
   @Patch('/:requestId/close')
   async closeRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<void> {
-    await this.requestsService.closeRequest(requestId);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId, req.user.id);
   }
 }

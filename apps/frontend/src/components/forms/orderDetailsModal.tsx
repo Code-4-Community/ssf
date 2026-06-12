@@ -17,7 +17,7 @@ import {
   OrderItemDetailsGroupedByFoodType,
   OrderDetails,
 } from 'types/types';
-import { FoodRequestStatus } from '../../types/types';
+import { FoodRequestStatus, AlertStatus } from '../../types/types';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -52,7 +52,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           );
           setFoodRequest(foodRequestData);
         } catch {
-          setAlertMessage('Error fetching food request details', 'error');
+          setAlertMessage(
+            'Error fetching food request details',
+            AlertStatus.ERROR,
+          );
         }
       };
 
@@ -67,7 +70,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           const orderDetailsData = await ApiClient.getOrder(orderId);
           setOrderDetails(orderDetailsData);
         } catch {
-          setAlertMessage('Error fetching order details', 'error');
+          setAlertMessage('Error fetching order details', AlertStatus.ERROR);
         }
       };
 
@@ -105,7 +108,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -118,7 +121,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text textStyle="p2" color="#111111">
+            <Text textStyle="p2" color="gray.dark">
               Fulfilled by {orderDetails?.foodManufacturerName}
             </Text>
 
@@ -176,8 +179,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {foodRequest.status === FoodRequestStatus.CLOSED ? (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#FEECD1"
-                          color="#9C5D00"
+                          bgColor="yellow.200"
+                          color="yellow.hover"
                         >
                           Closed
                         </Badge>
@@ -185,7 +188,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <Badge
                           {...badgeStyles}
                           bgColor="teal.200"
-                          color="#19717D"
+                          color="teal.hover"
                         >
                           Active
                         </Badge>
@@ -279,7 +282,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 {orderDetails?.trackingLink ? (
                   <Link
                     href={orderDetails.trackingLink}
-                    color="#2795A5"
+                    color="teal.ssf"
                     variant="underline"
                     mt="3"
                     mb="3"

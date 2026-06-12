@@ -14,6 +14,7 @@ import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 const ResetPasswordModal: React.FC = () => {
   useModalBodyCleanup();
@@ -43,7 +44,7 @@ const ResetPasswordModal: React.FC = () => {
       await resetPassword({ username: email });
       setStep('new');
     } catch {
-      setAlertMessage('Failed to send verification code', 'error');
+      setAlertMessage('Failed to send verification code', AlertStatus.ERROR);
     }
   };
 
@@ -51,18 +52,21 @@ const ResetPasswordModal: React.FC = () => {
     try {
       await resetPassword({ username: email });
     } catch {
-      setAlertMessage('Failed to send verification code', 'error');
+      setAlertMessage('Failed to send verification code', AlertStatus.ERROR);
     }
   };
 
   const handleResetPassword = async () => {
     if (password !== confirmPassword) {
-      setAlertMessage('Passwords need to match', 'error');
+      setAlertMessage('Passwords need to match', AlertStatus.ERROR);
       return;
     }
 
     if (password.length < 8) {
-      setAlertMessage('Password needs to be at least 8 characters', 'error');
+      setAlertMessage(
+        'Password needs to be at least 8 characters',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
@@ -74,7 +78,7 @@ const ResetPasswordModal: React.FC = () => {
       });
       navigate(ROUTES.LOGIN);
     } catch {
-      setAlertMessage('Failed to set new password', 'error');
+      setAlertMessage('Failed to set new password', AlertStatus.ERROR);
     }
   };
 
@@ -112,7 +116,7 @@ const ResetPasswordModal: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

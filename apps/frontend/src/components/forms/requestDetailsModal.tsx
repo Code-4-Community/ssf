@@ -5,6 +5,7 @@ import {
   FoodRequestSummaryDto,
 } from 'types/types';
 import { OrderStatus } from '../../types/types';
+import { ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
@@ -105,7 +106,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
             </Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text textStyle="p2" color="#111111">
+            <Text textStyle="p2" color="gray.dark">
               {pantryName}
             </Text>
 
@@ -196,18 +197,18 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       {currentOrder.status === OrderStatus.DELIVERED ? (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#EAEDEF"
-                          color="#2B4E60"
+                          bgColor="blue.100"
+                          color="blue.core"
                         >
-                          Received
+                          {ORDER_STATUS_LABELS[currentOrder.status]}
                         </Badge>
                       ) : (
                         <Badge
                           {...badgeStyles}
-                          bgColor="#FEECD1"
-                          color="#9C5D00"
+                          bgColor="yellow.200"
+                          color="yellow.hover"
                         >
-                          In Progress
+                          {ORDER_STATUS_LABELS[currentOrder.status]}
                         </Badge>
                       )}
                     </Flex>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
   Table,
@@ -14,7 +15,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
-import { User } from '../types/types';
+import { AlertStatus, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -22,6 +23,7 @@ import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 
 const VolunteerManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
@@ -36,7 +38,7 @@ const VolunteerManagement: React.FC = () => {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
       } catch {
-        setAlertMessage('Error fetching volunteers', 'error');
+        setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
       }
     };
 
@@ -65,14 +67,14 @@ const VolunteerManagement: React.FC = () => {
 
   return (
     <Box flexDirection="column" p={12}>
-      <Text textStyle="h1" color="#515151">
+      <Text textStyle="h1" color="gray.light">
         Volunteer Management
       </Text>
       {alertState && (
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={alertState.status === 'success' ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -88,7 +90,12 @@ const VolunteerManagement: React.FC = () => {
         <VStack mt={2} mb={7} align="start">
           <Flex justify="space-between" align="center" w="100%">
             <InputGroup
-              startElement={<SearchIcon color="#707070" size={13}></SearchIcon>}
+              startElement={
+                <SearchIcon
+                  color="var(--chakra-colors-neutral-600)"
+                  size={13}
+                ></SearchIcon>
+              }
               maxW={200}
             >
               <Input
@@ -106,10 +113,13 @@ const VolunteerManagement: React.FC = () => {
             </InputGroup>
             <NewVolunteerModal
               onSubmitSuccess={() => {
-                setAlertMessage('Volunteer added.', 'success');
+                setAlertMessage('Volunteer added.', AlertStatus.INFO);
               }}
               onSubmitFail={() => {
-                setAlertMessage('Volunteer could not be added.', 'error');
+                setAlertMessage(
+                  'Volunteer could not be added.',
+                  AlertStatus.ERROR,
+                );
               }}
             />
           </Flex>
@@ -172,7 +182,12 @@ const VolunteerManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    href={`${ROUTES.PANTRY_MANAGEMENT}/${volunteer.id}`}
+                    cursor="pointer"
+                    onClick={() =>
+                      navigate(
+                        `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
+                      )
+                    }
                   >
                     View Assigned Pantries
                   </Link>
