@@ -1,6 +1,5 @@
 import {
   Controller,
-  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -53,14 +52,20 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
-  // Keeping these two as functionality seems useful
+  @Roles(Role.ADMIN)
+  @Patch('/:id/deactivate')
+  async deactivateUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    return this.usersService.deactivate(id);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch('/:id/reactivate')
+  async reactivateUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    return this.usersService.reactivate(id);
+  }
+
   @Post('/')
   async createUser(@Body() createUserDto: userSchemaDto): Promise<User> {
     return this.usersService.create(createUserDto);
-  }
-
-  @Delete('/:id')
-  removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.usersService.remove(userId);
   }
 }
