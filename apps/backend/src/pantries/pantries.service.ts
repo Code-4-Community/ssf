@@ -397,6 +397,12 @@ export class PantriesService {
       );
     }
 
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot update application for a ${pantry.status} application`,
+      );
+    }
+
     Object.assign(pantry, pantryData);
 
     return this.repo.save(pantry);
@@ -525,6 +531,10 @@ export class PantriesService {
 
     if (!pantry) {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(`Pantry with ID ${pantryId} not approved`);
     }
 
     const uniqueVolunteerIds = new Set([

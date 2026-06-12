@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
@@ -19,6 +20,7 @@ import { Allocation } from '../allocations/allocations.entity';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class DonationService {
@@ -64,6 +66,12 @@ export class DonationService {
     const manufacturer = await this.foodManufacturersService.findByUserId(
       userId,
     );
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Food Manufacturer for User ${userId} not approved`,
+      );
+    }
 
     let nextDonationDates = null;
 

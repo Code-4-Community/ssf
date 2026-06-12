@@ -8,7 +8,9 @@ import { CreateDonationItemDto } from '../donationItems/dtos/create-donation-ite
 import { DonationStatus, RecurrenceEnum } from './types';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 
+const mockFoodManufacturersService = mock<FoodManufacturersService>();
 const mockDonationService = mock<DonationService>();
 
 const donation1: Partial<Donation> = {
@@ -31,6 +33,10 @@ describe('DonationsController', () => {
         {
           provide: DonationService,
           useValue: mockDonationService,
+        },
+        {
+          provide: FoodManufacturersService,
+          useValue: mockFoodManufacturersService,
         },
       ],
     }).compile();
