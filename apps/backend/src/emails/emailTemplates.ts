@@ -307,4 +307,20 @@ export const emailTemplates = {
     <p>Best regards,<br />The Securing Safe Food Team</p>
   `,
   }),
+
+  pantryReceiveNewFoodRequest: (): EmailTemplate => ({
+    subject: 'Allergen-Friendly Food Request Form',
+    bodyHTML: `
+    <p><strong>Receive a New Food Delivery Through Securing Safe Food</strong></p>
+    <p>
+      Fill out our food request form to be placed on our waiting list at <a href="${EMAIL_REDIRECT_URL}/request-form">${EMAIL_REDIRECT_URL}/request-form</a>
+    </p>
+    <p>
+      If you submitted a request last cycle and did not receive a shipment, thank you for your patience.
+      We match available resources to food pantries based on product type, allergens, size, and shipping restrictions.
+      You are welcome to submit another form to update your request.
+    </p>
+    <p>Best regards,<br />The Securing Safe Food Team</p>
+  `,
+  }),
 };

@@ -265,6 +265,41 @@ export class PantriesService {
     });
   }
 
+  async sendFoodRequestReminderToApprovedPantries(): Promise<void> {
+    const pantries = await this.repo.find({
+      where: { status: ApplicationStatus.APPROVED },
+      relations: ['pantryUser'],
+    });
+
+    if (pantries.length === 0) {
+      this.logger.warn('No approved food pantries, skipping email sending.');
+      return;
+    }
+
+    const senderEmail = process.env.AWS_SES_SENDER_EMAIL;
+    if (!senderEmail) {
+      this.logger.warn(
+        'Skipping food request reminder: AWS_SES_SENDER_EMAIL is not set.',
+      );
+      return;
+    }
+
+    const bccEmails = pantries.map((pantry) => pantry.pantryUser.email);
+
+    const message = emailTemplates.pantryReceiveNewFoodRequest();
+
+    try {
+      await this.emailsService.sendEmails({
+        toEmail: senderEmail,
+        bccEmails,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+    } catch {
+      this.logger.warn('Failed to send food request reminder to pantries.');
+    }
+  }
+
   async getApprovedPantryNames(): Promise<string[]> {
     const pantries = await this.repo.find({
       select: ['pantryName'],
