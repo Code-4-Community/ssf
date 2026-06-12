@@ -4,6 +4,7 @@ import {
   OrderDetails,
   FoodRequestSummaryDto,
   FoodRequestStatus,
+  AlertStatus,
 } from '../../types/types';
 import {
   OrderStatus,
@@ -144,10 +145,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         additionalInformation: additionalNotes === '' ? null : additionalNotes,
       });
       onSuccess();
-      setAlertMessage('Successfully updated food request.');
+      setAlertMessage('Successfully updated food request.', AlertStatus.INFO);
       setIsEditing(false);
     } catch {
-      setAlertMessage('Food request could not be updated.');
+      setAlertMessage('Food request could not be updated.', AlertStatus.ERROR);
     }
   };
 
@@ -160,7 +161,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="info"
+          status={alertState.status}
           timeout={6000}
         />
       )}
