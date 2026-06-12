@@ -307,4 +307,33 @@ export const emailTemplates = {
     <p>Best regards,<br />The Securing Safe Food Team</p>
   `,
   }),
+
+  pantryConfirmDeliveryReminder: (params: {
+    pantryName: string;
+    fmName: string;
+    confirmDeliveryLink: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: `${params.fmName} Donation Confirmation Reminder`,
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        This is a friendly reminder to confirm receipt of your recent donation from ${params.fmName}.
+      </p>
+      <p>
+        To confirm delivery receipt, please scan the QR code included on your donation packing slip
+        (if included in shipment) or <a href="${params.confirmDeliveryLink}">click here</a> and complete
+        the brief confirmation process. Confirming receipt helps us verify successful delivery, track the
+        impact of donations, and ensure our food partners receive acknowledgment of their contributions.
+      </p>
+      <p>If you have already submitted your confirmation, thank you and please disregard this message.</p>
+      <p>
+        If you have any questions or need assistance, please contact your coordinator, ${params.volunteerName},
+        at <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a> or email partners@securingsafefood.org.
+      </p>
+      <p>Thank you for partnering with Securing Safe Food!</p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
 };
