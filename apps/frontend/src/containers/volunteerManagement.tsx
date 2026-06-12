@@ -15,7 +15,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { SearchIcon, ChevronRight, ChevronLeft } from 'lucide-react';
-import { User } from '../types/types';
+import { AlertStatus, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -28,8 +28,7 @@ const VolunteerManagement: React.FC = () => {
   const [volunteers, setVolunteers] = useState<User[]>([]);
   const [searchName, setSearchName] = useState<string>('');
 
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   const pageSize = 8;
 
@@ -39,12 +38,12 @@ const VolunteerManagement: React.FC = () => {
         const allVolunteers = await ApiClient.getVolunteers();
         setVolunteers(allVolunteers);
       } catch {
-        setErrorMessage('Error fetching volunteers');
+        setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
       }
     };
 
     fetchVolunteers();
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -71,19 +70,11 @@ const VolunteerManagement: React.FC = () => {
       <Text textStyle="h1" color="gray.light">
         Volunteer Management
       </Text>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -122,10 +113,13 @@ const VolunteerManagement: React.FC = () => {
             </InputGroup>
             <NewVolunteerModal
               onSubmitSuccess={() => {
-                setSuccessMessage('Volunteer added.');
+                setAlertMessage('Volunteer added.', AlertStatus.INFO);
               }}
               onSubmitFail={() => {
-                setErrorMessage('Volunteer could not be added.');
+                setAlertMessage(
+                  'Volunteer could not be added.',
+                  AlertStatus.ERROR,
+                );
               }}
             />
           </Flex>

@@ -9,11 +9,13 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { Role, UserDto } from '../../types/types';
+import { AlertStatus, Role, UserDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import { USPhoneInput } from './usPhoneInput';
 import { PlusIcon } from 'lucide-react';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { useAlert } from '../../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface NewVolunteerModalProps {
   onSubmitSuccess?: () => void;
@@ -32,15 +34,13 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const [error, setError] = useState('');
+  const [alertState, setAlertMessage] = useAlert();
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !phone || phone === '+1') {
-      setError('Please fill in all fields. *');
+      setAlertMessage('Please fill in all fields. *', AlertStatus.ERROR);
       return;
     }
-
-    setError('');
 
     const newVolunteer: UserDto = {
       firstName,
@@ -80,9 +80,12 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
       }
 
       if (hasEmailError) {
-        setError('Please specify a valid email. *');
+        setAlertMessage('Please specify a valid email. *', AlertStatus.ERROR);
       } else if (hasPhoneError) {
-        setError('Please specify a valid phone number. *');
+        setAlertMessage(
+          'Please specify a valid phone number. *',
+          AlertStatus.ERROR,
+        );
       } else {
         if (onSubmitFail) onSubmitFail();
         handleClear();
@@ -95,7 +98,6 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
     setLastName('');
     setEmail('');
     setPhone('');
-    setError('');
     setIsOpen(false);
   };
 
@@ -200,16 +202,13 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                 }}
               />
             </Field.Root>
-            {error && (
-              <Text
-                color="red"
-                mb={3}
-                fontWeight={400}
-                fontSize="12px"
-                fontFamily="Inter"
-              >
-                {error}
-              </Text>
+            {alertState && (
+              <FloatingAlert
+                key={alertState.id}
+                message={alertState.message}
+                status={alertState.status}
+                timeout={6000}
+              />
             )}
             <Flex justifyContent="flex-end" mt={10} gap={2.5}>
               <Button
