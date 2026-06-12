@@ -297,7 +297,6 @@ describe('UsersService', () => {
     });
   });
 
-  // Seeded volunteer: id=6, james.t@volunteer.org
   describe('deactivate / reactivate', () => {
     it('deactivates an active volunteer: sets active=false and disables Cognito', async () => {
       await testDataSource.query(
@@ -338,7 +337,6 @@ describe('UsersService', () => {
     });
 
     it('skips the Cognito call when the user has no Cognito account', async () => {
-      // seeded volunteer id=6 has an empty user_cognito_sub
       const result = await service.deactivate(6);
 
       expect(result.active).toBe(false);

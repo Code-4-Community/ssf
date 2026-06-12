@@ -73,7 +73,6 @@ export class AuthService {
     }
   }
 
-  // Disables the user's Cognito account so they can no longer log in.
   async adminDisableUser(email: string): Promise<void> {
     const disableUserCommand = new AdminDisableUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
@@ -87,7 +86,6 @@ export class AuthService {
     }
   }
 
-  // Re-enables a previously disabled Cognito account so login works again.
   async adminEnableUser(email: string): Promise<void> {
     const enableUserCommand = new AdminEnableUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,

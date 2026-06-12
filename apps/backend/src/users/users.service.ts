@@ -212,7 +212,7 @@ export class UsersService {
       throw new BadRequestException(`User ${id} is already inactive`);
     }
 
-    // Disable the Cognito account first so a failure leaves `active` unchanged.
+    // Disable the Cognito account first so a failure leaves active field unchanged.
     // Users without a Cognito account (empty sub) have nothing to disable.
     if (user.userCognitoSub) {
       await this.authService.adminDisableUser(user.email);
@@ -229,7 +229,7 @@ export class UsersService {
       throw new BadRequestException(`User ${id} is already active`);
     }
 
-    // Re-enable the Cognito account first so a failure leaves `active` unchanged.
+    // Re-enable the Cognito account first so a failure leaves active field unchanged.
     // Users without a Cognito account (empty sub) have nothing to enable.
     if (user.userCognitoSub) {
       await this.authService.adminEnableUser(user.email);

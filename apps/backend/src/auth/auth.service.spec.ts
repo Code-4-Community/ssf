@@ -23,7 +23,6 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
 
-    // Spy on the underlying Cognito client so no real AWS calls are made
     sendSpy = jest
       .spyOn(
         (service as unknown as { providerClient: { send: jest.Mock } })
