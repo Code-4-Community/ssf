@@ -46,6 +46,7 @@ export class OrdersController {
   // Called like: /?status=pending&pantryName=Test%20Pantry&pantryName=Test%20Pantry%202
   // %20 is the URL encoded space character
   // This gets all orders where the status is pending and the pantry name is either Test Pantry or Test Pantry 2
+  @Roles(Role.ADMIN)
   @Get('/')
   async getAllOrders(
     @Query('status') status?: string,

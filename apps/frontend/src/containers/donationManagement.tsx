@@ -10,7 +10,7 @@ import {
 import ApiClient from '@api/apiClient';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import { formatDate } from '@utils/utils';
-import { Donation, DonationItem } from 'types/types';
+import { AlertStatus, Donation, DonationItem } from '../types/types';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 
@@ -43,7 +43,7 @@ const DonationManagement: React.FC = () => {
       });
       setDonations(sortedDonations);
     } catch {
-      setAlertMessage('Error fetching donations');
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
   };
 
@@ -62,7 +62,7 @@ const DonationManagement: React.FC = () => {
         }));
       });
     } catch {
-      setAlertMessage('Error fetching donation items');
+      setAlertMessage('Error fetching donation items', AlertStatus.ERROR);
     }
   };
 
@@ -82,7 +82,7 @@ const DonationManagement: React.FC = () => {
       await ApiClient.fulfillDonation(donationId);
       fetchDonations();
     } catch {
-      setAlertMessage('Failed to fulfill donation');
+      setAlertMessage('Failed to fulfill donation', AlertStatus.ERROR);
     }
   };
 
@@ -96,14 +96,13 @@ const DonationManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
       <Button onClick={onOpen}>Submit new donation</Button>
       {manufacturerId !== null && (
         <NewDonationFormModal
-          foodManufacturerId={manufacturerId}
           onDonationSuccess={fetchDonations}
           isOpen={open}
           onClose={onClose}

@@ -12,7 +12,7 @@ import {
   Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Pantry, User } from 'types/types';
+import { AlertStatus, Pantry, User } from '../types/types';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +38,10 @@ const AssignedPantries: React.FC = () => {
         user = await ApiClient.getMe();
         userId = user.id;
       } catch {
-        setAlertMessage('Authentication error. Please log in and try again.');
+        setAlertMessage(
+          'Authentication error. Please log in and try again.',
+          AlertStatus.ERROR,
+        );
         setIsLoading(false);
         return;
       }
@@ -47,7 +50,7 @@ const AssignedPantries: React.FC = () => {
         const data = await ApiClient.getVolunteerPantries(userId);
         setPantries(data);
       } catch {
-        setAlertMessage('Error fetching assigned pantries');
+        setAlertMessage('Error fetching assigned pantries', AlertStatus.ERROR);
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +122,7 @@ const AssignedPantries: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -362,7 +365,11 @@ const AssignedPantries: React.FC = () => {
                     >
                       <Box display="flex" justifyContent="flex-end" pr={2}>
                         <Box
-                          bg="neutral.200"
+                          bg={
+                            isRefrigeratorFriendly(pantry)
+                              ? 'neutral.100'
+                              : 'neutral.200'
+                          }
                           px={3}
                           py={1}
                           borderRadius="md"
@@ -384,7 +391,9 @@ const AssignedPantries: React.FC = () => {
                         color="neutral.700"
                         textStyle="p2"
                         onClick={() =>
-                          navigate(ROUTES.VOLUNTEER_REQUEST_MANAGEMENT)
+                          navigate(
+                            `${ROUTES.VOLUNTEER_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
+                          )
                         }
                         p={0}
                         height="auto"

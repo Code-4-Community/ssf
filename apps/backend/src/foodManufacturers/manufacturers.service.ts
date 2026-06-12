@@ -168,6 +168,12 @@ export class FoodManufacturersService {
       );
     }
 
+    if (manufacturer.status != ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot get donation reminders for a ${manufacturer.status} food manufacturer`,
+      );
+    }
+
     const donations = await this.donationsRepo.find({
       where: { foodManufacturer: { foodManufacturerId } },
     });
@@ -338,6 +344,12 @@ export class FoodManufacturersService {
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
       throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
+      );
+    }
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot update application for a ${manufacturer.status} manufacturer`,
       );
     }
 

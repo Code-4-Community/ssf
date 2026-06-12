@@ -362,6 +362,7 @@ export type VolunteerOrder = {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+  pantryId: number;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;
@@ -476,7 +477,6 @@ export interface UpdateFoodRequestBody {
 }
 
 export interface CreateDonationDto {
-  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
@@ -615,4 +615,9 @@ export interface UpdateDonationItemDetailsDto {
   ozPerItem?: number;
   estimatedValue?: number;
   foodRescue?: boolean;
+}
+
+export enum AlertStatus {
+  INFO = 'info',
+  ERROR = 'error',
 }
