@@ -424,13 +424,13 @@ describe('PantriesService', () => {
     });
 
     it('updates only the provided fields and keeps others intact', async () => {
-      const original = await service.findOne(2);
+      const original = await service.findOne(1);
 
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
 
-      const updated = await service.updatePantryApplication(2, dto, 11);
+      const updated = await service.updatePantryApplication(1, dto, 10);
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
@@ -446,10 +446,34 @@ describe('PantriesService', () => {
       const invalidUserId = 999;
 
       await expect(
-        service.updatePantryApplication(1, dto, invalidUserId),
+        service.updatePantryApplication(5, dto, invalidUserId),
       ).rejects.toThrow(
         new ForbiddenException(
-          `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
+          `User ${invalidUserId} is not allowed to edit application for Pantry 5`,
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is for a denied pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(4, dto, 13)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a denied application',
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is for a pending pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(5, dto, 14)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a pending application',
         ),
       );
     });
@@ -1147,6 +1171,24 @@ describe('PantriesService', () => {
         .getRepository(Pantry)
         .findOne({ where: { pantryId: 1 }, relations: ['volunteers'] });
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
+    });
+
+    it(`throws 'Pantry with ID {pantryId} not approved' ConflictException when updating volunteers for a pending pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(5, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it(`throws ConflictException when updating volunteers for a denied pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(4, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('sends volunteerPantryAssignmentChanged email to each newly added volunteer', async () => {

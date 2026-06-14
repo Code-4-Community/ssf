@@ -8,6 +8,7 @@ import {
   ParseArrayPipe,
   Get,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -25,6 +26,7 @@ import {
 } from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
@@ -72,7 +74,6 @@ export class DonationsController {
     schema: {
       type: 'object',
       properties: {
-        foodManufacturerId: { type: 'integer', example: 1 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),
@@ -114,11 +115,12 @@ export class DonationsController {
       },
     },
   })
+  @Roles(Role.FOODMANUFACTURER)
   async createDonation(
-    @Body()
-    body: CreateDonationDto,
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateDonationDto,
   ): Promise<Donation> {
-    return this.donationService.create(body);
+    return this.donationService.create(body, req.user.id);
   }
 
   @Roles(Role.FOODMANUFACTURER)
