@@ -59,9 +59,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   );
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async (fmId: number) => {
+  const fetchDonations = async () => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
+      const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -115,7 +115,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   const handleLogNewDonationSuccess = () => {
     setAlertMessage('Successfully logged new donation', AlertStatus.INFO);
-    if (manufacturerId !== null) fetchDonations(manufacturerId);
+    if (manufacturerId !== null) fetchDonations();
   };
 
   const openResubmitFromQueryParam = (
@@ -139,7 +139,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       try {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
-        const grouped = await fetchDonations(fmId);
+        const grouped = await fetchDonations();
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
         setAlertMessage(
@@ -232,7 +232,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <ResubmitDonationModal
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => fetchDonations(manufacturerId)}
+          onSuccess={() => fetchDonations()}
           donations={Object.values(statusDonations).flat()}
           foodManufacturerId={manufacturerId}
           initialDonationId={
@@ -251,7 +251,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onClose={() => setSelectedActionDonation(null)}
           onSuccess={() => {
             setSelectedActionDonation(null);
-            if (manufacturerId !== null) fetchDonations(manufacturerId);
+            fetchDonations();
             setAlertMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
               AlertStatus.INFO,

@@ -44,7 +44,7 @@ export class OwnershipGuard implements CanActivate {
       return true;
     }
 
-    // Specified bypass ownership checks for other roles
+    // Specified roles bypass ownership checks for other roles
     if (config.bypassRoles?.includes(user.role as Role)) {
       return true;
     }

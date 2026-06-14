@@ -18,9 +18,17 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
-import { AllocationsService } from '../allocations/allocations.service';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import { OrderStatus } from './types';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { PantriesService } from '../pantries/pantries.service';
+import { RequestsService } from '../foodRequests/request.service';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { DonationService } from '../donations/donations.service';
+import { Donation } from '../donations/donations.entity';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
@@ -33,13 +41,52 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { OrderStatus } from './types';
+
+const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+  user,
+}) => {
+  if (user?.role === Role.VOLUNTEER) {
+    return pipeNullable(
+      () => services.get(OrdersService).findOne(entityId),
+      (order: Order) => [order.assigneeId],
+    );
+  }
+  return pipeNullable(
+    () => services.get(OrdersService).findOrderFoodRequest(entityId),
+    (request: FoodRequestSummaryDto) =>
+      services.get(PantriesService).findOne(request.pantry.pantryId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
+};
+
+const resolveCreateOrderAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(RequestsService).findOne(entityId),
+    (request: FoodRequest) =>
+      services.get(PantriesService).findOne(request.pantryId),
+    (pantry: Pantry) => (pantry.volunteers ?? []).map((v) => v.id),
+  );
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
-    private readonly allocationsService: AllocationsService,
     private readonly awsS3Service: AWSS3Service,
   ) {}
 
@@ -58,25 +105,10 @@ export class OrdersController {
     return this.ordersService.getAll({ status, pantryNames });
   }
 
-  @Get('/:orderId/pantry')
-  async getPantryFromOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ): Promise<Pantry> {
-    return this.ordersService.findOrderPantry(orderId);
-  }
-
-  // Test endpoint for right now
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(OrdersService).findOrderFoodRequest(entityId),
-        (request: FoodRequestSummaryDto) =>
-          services.get(PantriesService).findOne(request.pantry.pantryId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
-    bypassRoles: [Role.VOLUNTEER, Role.ADMIN],
+    resolver: resolveOrderAuthorizedUserIds,
+    bypassRoles: [Role.VOLUNTEER],
   })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId/request')
@@ -86,6 +118,12 @@ export class OrdersController {
     return this.ordersService.findOrderFoodRequest(orderId);
   }
 
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+    bypassRoles: [Role.VOLUNTEER],
+  })
+  @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:orderId')
   async getOrder(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -93,13 +131,12 @@ export class OrdersController {
     return this.ordersService.findOrderDetails(orderId);
   }
 
-  @Get('/:orderId/allocations')
-  async getAllAllocationsByOrder(
-    @Param('orderId', ParseIntPipe) orderId: number,
-  ) {
-    return this.allocationsService.getAllAllocationsByOrder(orderId);
-  }
-
+  @Roles(Role.ADMIN, Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'foodRequestId',
+    idSource: 'body',
+    resolver: resolveCreateOrderAuthorizedUserIds,
+  })
   @Post('/')
   @ApiBody({
     description: 'Details for creating a order',
@@ -174,6 +211,11 @@ export class OrdersController {
     );
   }
 
+  @Roles(Role.VOLUNTEER)
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
   @Patch('/update-status/:orderId')
   async updateStatus(
     @Param('orderId', ParseIntPipe) orderId: number,
@@ -186,6 +228,11 @@ export class OrdersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    idSource: 'body',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
   @Patch('/bulk-update-tracking-cost-info')
   async bulkUpdateTrackingCostInfo(
     @Body(new ValidationPipe()) dto: BulkUpdateTrackingCostDto,
@@ -193,6 +240,11 @@ export class OrdersController {
     return this.ordersService.bulkUpdateTrackingCostInfo(dto);
   }
 
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.PANTRY)
   @Patch('/:orderId/confirm-delivery')
   @ApiBody({
     description: 'Details for a confirmation of order delivery form',
@@ -258,11 +310,7 @@ export class OrdersController {
 
   @CheckOwnership({
     idParam: 'orderId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(OrdersService).findOne(entityId),
-        (order: Order) => [order.assigneeId],
-      ),
+    resolver: resolveOrderAuthorizedUserIds,
   })
   @Roles(Role.VOLUNTEER)
   @Patch('/:orderId/complete-action')
