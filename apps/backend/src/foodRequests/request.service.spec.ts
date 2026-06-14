@@ -137,7 +137,7 @@ describe('RequestsService', () => {
       const firstRequest = sorted[0];
       expect(firstRequest.requestedSize).toBe(RequestSize.LARGE);
       expect(firstRequest.requestedFoodTypes).toEqual([
-        FoodType.SEED_BUTTERS,
+        FoodType.SPREADS_SEED_BUTTERS,
         FoodType.GLUTEN_FREE_BREAD,
         FoodType.DRIED_BEANS,
         FoodType.DAIRY_FREE_ALTERNATIVES,
@@ -174,13 +174,13 @@ describe('RequestsService', () => {
           id: 1,
           name: 'Peanut Butter (16oz)',
           quantity: 10,
-          foodType: 'Seed Butters (Peanut Butter Alternative)',
+          foodType: 'Spreads/Seed Butters (Peanut Butter Alternative)',
         },
         {
           id: 3,
           name: 'Canned Green Beans',
           quantity: 5,
-          foodType: 'Refrigerated Meals',
+          foodType: 'Frozen Meals',
         },
         {
           id: 2,
@@ -211,11 +211,12 @@ describe('RequestsService', () => {
 
     it('should return empty list if no associated orders', async () => {
       const result = await testDataSource.query(`
-        INSERT INTO food_requests (pantry_id, requested_size, requested_food_types, requested_at)
+        INSERT INTO food_requests (pantry_id, requested_size, requested_food_types, location, requested_at)
         VALUES (
           (SELECT pantry_id FROM pantries LIMIT 1),
           'Small (2-5 boxes)',
           ARRAY[]::food_type_enum[],
+          'Boston, MA',
           NOW()
         )
         RETURNING request_id
@@ -232,33 +233,40 @@ describe('RequestsService', () => {
       const result = await service.create(
         pantryId,
         RequestSize.MEDIUM,
-        [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+        [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+        'Boston, MA',
         'Additional info',
+        'Prior donation was great',
       );
       expect(result).toBeDefined();
       expect(result.pantryId).toBe(pantryId);
       expect(result.requestedSize).toBe(RequestSize.MEDIUM);
       expect(result.requestedFoodTypes).toEqual([
         FoodType.DRIED_BEANS,
-        FoodType.REFRIGERATED_MEALS,
+        FoodType.FROZEN_MEALS,
       ]);
+      expect(result.location).toBe('Boston, MA');
       expect(result.additionalInformation).toBe('Additional info');
+      expect(result.feedbackOnPriorDonation).toBe('Prior donation was great');
     });
 
     it('should successfully create and return new food request w/o additional info', async () => {
       const pantryId = 1;
-      const result = await service.create(pantryId, RequestSize.LARGE, [
-        FoodType.GRANOLA,
-        FoodType.NUT_FREE_GRANOLA_BARS,
-      ]);
+      const result = await service.create(
+        pantryId,
+        RequestSize.LARGE,
+        [FoodType.GRANOLA, FoodType.GRANOLA_BARS],
+        'Boston, MA',
+      );
       expect(result).toBeDefined();
       expect(result.pantryId).toBe(pantryId);
       expect(result.requestedSize).toBe(RequestSize.LARGE);
       expect(result.requestedFoodTypes).toEqual([
         FoodType.GRANOLA,
-        FoodType.NUT_FREE_GRANOLA_BARS,
+        FoodType.GRANOLA_BARS,
       ]);
       expect(result.additionalInformation).toBeNull();
+      expect(result.feedbackOnPriorDonation).toBeNull();
     });
 
     it('should send food request email to pantry user with volunteers BCCed', async () => {
@@ -268,10 +276,12 @@ describe('RequestsService', () => {
         relations: ['pantryUser', 'volunteers'],
       });
 
-      await service.create(pantryId, RequestSize.MEDIUM, [
-        FoodType.DRIED_BEANS,
-        FoodType.REFRIGERATED_MEALS,
-      ]);
+      await service.create(
+        pantryId,
+        RequestSize.MEDIUM,
+        [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+        'Boston, MA',
+      );
 
       if (!pantry) throw new Error('Missing pantry test object');
       const message = emailTemplates.pantrySubmitsFoodRequest({
@@ -300,10 +310,12 @@ describe('RequestsService', () => {
         relations: ['pantryUser', 'volunteers'],
       });
 
-      await service.create(pantryId, RequestSize.MEDIUM, [
-        FoodType.DRIED_BEANS,
-        FoodType.REFRIGERATED_MEALS,
-      ]);
+      await service.create(
+        pantryId,
+        RequestSize.MEDIUM,
+        [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+        'Boston, MA',
+      );
 
       if (!pantry) throw new Error('Missing pantry test object');
       const volunteerEmails = (pantry.volunteers ?? []).map((v) => v.email);
@@ -319,7 +331,12 @@ describe('RequestsService', () => {
 
       const pantryId = 1;
       await expect(
-        service.create(pantryId, RequestSize.MEDIUM, [FoodType.DRIED_BEANS]),
+        service.create(
+          pantryId,
+          RequestSize.MEDIUM,
+          [FoodType.DRIED_BEANS],
+          'Boston, MA',
+        ),
       ).rejects.toThrow(
         new InternalServerErrorException(
           'Failed to send new food request notification email to volunteers',
@@ -335,7 +352,8 @@ describe('RequestsService', () => {
         service.create(
           999,
           RequestSize.MEDIUM,
-          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+          'Boston, MA',
           'Additional info',
         ),
       ).rejects.toThrow(new NotFoundException('Pantry 999 not found'));
@@ -346,7 +364,8 @@ describe('RequestsService', () => {
         service.create(
           4,
           RequestSize.MEDIUM,
-          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+          'Boston, MA',
           'Additional info',
         ),
       ).rejects.toThrow(new ConflictException('Pantry 4 not approved'));
@@ -357,7 +376,8 @@ describe('RequestsService', () => {
         service.create(
           5,
           RequestSize.MEDIUM,
-          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+          'Boston, MA',
           'Additional info',
         ),
       ).rejects.toThrow(new ConflictException('Pantry 5 not approved'));
@@ -405,10 +425,12 @@ describe('RequestsService', () => {
 
     it('should throw BadRequestException for request with no orders', async () => {
       const pantryId = 1;
-      const result = await service.create(pantryId, RequestSize.MEDIUM, [
-        FoodType.DRIED_BEANS,
-        FoodType.REFRIGERATED_MEALS,
-      ]);
+      const result = await service.create(
+        pantryId,
+        RequestSize.MEDIUM,
+        [FoodType.DRIED_BEANS, FoodType.FROZEN_MEALS],
+        'Boston, MA',
+      );
       const requestId = result.requestId;
 
       await expect(service.updateRequestStatus(requestId)).rejects.toThrow(
@@ -741,7 +763,7 @@ describe('RequestsService', () => {
         FROM donations d
         WHERE di.donation_id = d.donation_id
         AND d.food_manufacturer_id = 2
-        AND di.food_type IN ('Whole-Grain Cookies', 'Dairy-Free Alternatives', 'Nut-Free Granola Bars')
+        AND di.food_type IN ('Non-GMO Cookies', 'Dairy-Free Alternatives', 'Granola Bars')
       `);
       const result = await service.getAvailableItems(4, 2);
       expect(result.matchingItems).toHaveLength(0);
@@ -785,7 +807,7 @@ describe('RequestsService', () => {
       const fromDb = await service.findOne(1);
       expect(fromDb.requestedSize).toBe(RequestSize.MEDIUM);
       expect(fromDb.requestedFoodTypes).toEqual([
-        FoodType.SEED_BUTTERS,
+        FoodType.SPREADS_SEED_BUTTERS,
         FoodType.GLUTEN_FREE_BREAD,
         FoodType.DRIED_BEANS,
         FoodType.DAIRY_FREE_ALTERNATIVES,
@@ -807,13 +829,17 @@ describe('RequestsService', () => {
       await service.update(1, {
         requestedSize: RequestSize.SMALL,
         requestedFoodTypes: [FoodType.GRANOLA],
+        location: 'Cambridge, MA',
         additionalInformation: 'Updated information',
+        feedbackOnPriorDonation: 'Updated feedback',
       });
 
       const fromDb = await service.findOne(1);
       expect(fromDb.requestedSize).toBe(RequestSize.SMALL);
       expect(fromDb.requestedFoodTypes).toEqual([FoodType.GRANOLA]);
+      expect(fromDb.location).toBe('Cambridge, MA');
       expect(fromDb.additionalInformation).toBe('Updated information');
+      expect(fromDb.feedbackOnPriorDonation).toBe('Updated feedback');
     });
 
     it('should throw BadRequestException when request is not active', async () => {

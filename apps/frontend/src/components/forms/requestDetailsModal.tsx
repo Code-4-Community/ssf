@@ -43,7 +43,9 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   const requestedSize = request.requestedSize;
   const selectedFoodTypes = request.requestedFoodTypes;
+  const location = request.location;
   const additionalNotes = request.additionalInformation;
+  const feedbackOnPriorDonation = request.feedbackOnPriorDonation;
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
@@ -157,6 +159,28 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   </Field.Label>
 
                   <TagGroup values={selectedFoodTypes} />
+                </Field.Root>
+
+                <Field.Root mb={4}>
+                  <Field.Label>
+                    <Text {...sectionTitleStyles} mt={3}>
+                      Location
+                    </Text>
+                  </Field.Label>
+                  <Text textStyle="p2" color="neutral.800" mt={3}>
+                    {location}
+                  </Text>
+                </Field.Root>
+
+                <Field.Root mb={4}>
+                  <Field.Label>
+                    <Text {...sectionTitleStyles} mt={3}>
+                      Feedback on Prior Donation
+                    </Text>
+                  </Field.Label>
+                  <Text textStyle="p2" color="neutral.800" mt={3}>
+                    {feedbackOnPriorDonation}
+                  </Text>
                 </Field.Root>
 
                 <Field.Root mb={4}>

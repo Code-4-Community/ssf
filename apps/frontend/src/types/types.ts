@@ -244,19 +244,22 @@ export interface DonationItem {
 
 export enum FoodType {
   DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
-  DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
+  DRIED_BEANS = 'Dried Beans',
+  FROZEN_MEALS = 'Frozen Meals',
   GLUTEN_FREE_BAKING_PANCAKE_MIXES = 'Gluten-Free Baking/Pancake Mixes',
   GLUTEN_FREE_BREAD = 'Gluten-Free Bread',
-  GLUTEN_FREE_TORTILLAS = 'Gluten-Free Tortillas',
+  GLUTEN_FREE_PASTA = 'Gluten-Free Pasta',
+  GLUTEN_FREE_TORTILLAS_FROZEN = 'Gluten-Free Tortillas (Frozen)',
   GRANOLA = 'Granola',
+  GRANOLA_BARS = 'Granola Bars',
   MASA_HARINA_FLOUR = 'Masa Harina Flour',
-  NUT_FREE_GRANOLA_BARS = 'Nut-Free Granola Bars',
+  NON_GMO_COOKIES = 'Non-GMO Cookies',
   OLIVE_OIL = 'Olive Oil',
-  REFRIGERATED_MEALS = 'Refrigerated Meals',
-  RICE_NOODLES = 'Rice Noodles',
-  SEED_BUTTERS = 'Seed Butters (Peanut Butter Alternative)',
-  WHOLE_GRAIN_COOKIES = 'Whole-Grain Cookies',
   QUINOA = 'Quinoa',
+  RICE_CERTIFIED_GLUTEN_FREE = 'Rice (Certified Gluten Free)',
+  SPREADS_SEED_BUTTERS = 'Spreads/Seed Butters (Peanut Butter Alternative)',
+  SNACKS = 'Snacks',
+  TEFF_FLOUR = 'Teff Flour',
 }
 
 export interface User {
@@ -291,7 +294,9 @@ export interface FoodRequestWithoutRelations {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
 }
@@ -300,7 +305,9 @@ export interface FoodRequestSummaryDto {
   requestId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
   pantry: FoodRequestPantry;
@@ -467,7 +474,9 @@ export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation?: string;
+  feedbackOnPriorDonation?: string;
 }
 
 export interface CreateDonationDto {
