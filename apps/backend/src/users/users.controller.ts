@@ -50,12 +50,6 @@ export class UsersController {
     return this.usersService.getRecentPendingApplications();
   }
 
-  @Roles(Role.ADMIN)
-  @Delete('/:id')
-  async removeUser(@Param('id', ParseIntPipe) userId: number): Promise<User> {
-    return this.usersService.remove(userId);
-  }
-
   @CheckOwnership({
     idParam: 'id',
     resolver: resolveUserAuthorizedUserIds,
@@ -70,13 +64,13 @@ export class UsersController {
 
   @Roles(Role.ADMIN)
   @Patch('/:id/deactivate')
-  async deactivateUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  async deactivateUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.usersService.deactivate(id);
   }
 
   @Roles(Role.ADMIN)
   @Patch('/:id/reactivate')
-  async reactivateUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  async reactivateUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.usersService.reactivate(id);
   }
 

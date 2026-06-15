@@ -67,24 +67,20 @@ describe('UsersController', () => {
 
   describe('PATCH /:id/deactivate', () => {
     it('should deactivate a user by id', async () => {
-      const deactivatedUser = { ...mockUser1, active: false } as User;
-      mockUserService.deactivate.mockResolvedValue(deactivatedUser);
+      mockUserService.deactivate.mockResolvedValue(undefined);
 
-      const result = await controller.deactivateUser(1);
+      await controller.deactivateUser(1);
 
-      expect(result).toEqual(deactivatedUser);
       expect(mockUserService.deactivate).toHaveBeenCalledWith(1);
     });
   });
 
   describe('PATCH /:id/reactivate', () => {
     it('should reactivate a user by id', async () => {
-      const reactivatedUser = { ...mockUser1, active: true } as User;
-      mockUserService.reactivate.mockResolvedValue(reactivatedUser);
+      mockUserService.reactivate.mockResolvedValue(undefined);
 
-      const result = await controller.reactivateUser(1);
+      await controller.reactivateUser(1);
 
-      expect(result).toEqual(reactivatedUser);
       expect(mockUserService.reactivate).toHaveBeenCalledWith(1);
     });
   });
