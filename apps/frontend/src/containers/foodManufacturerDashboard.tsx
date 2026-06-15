@@ -41,8 +41,8 @@ const FoodManufacturerDashboard: React.FC = () => {
       }
 
       const [reminders, donations] = await Promise.allSettled([
-        ApiClient.getNextTwoDonationReminders(fmId),
-        ApiClient.getAllDonationsByFoodManufacturer(fmId),
+        ApiClient.getNextTwoDonationReminders(),
+        ApiClient.getAllDonationsByFoodManufacturer(),
       ]);
 
       // If reminders is successfully retrieved from API with the Promise.allSettled
