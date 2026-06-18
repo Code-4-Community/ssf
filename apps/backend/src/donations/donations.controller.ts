@@ -53,17 +53,6 @@ const resolveCreateDonationAuthorizedUserIds: OwnerIdResolver = ({
     ],
   );
 
-const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
-  entityId,
-  services,
-}) =>
-  pipeNullable(
-    () => services.get(DonationService).findOne(entityId),
-    (donation: Donation) => [
-      donation.foodManufacturer.foodManufacturerRepresentative.id,
-    ],
-  );
-
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
@@ -163,6 +152,11 @@ export class DonationsController {
     await this.donationService.editDonationItems(donationId, body);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
   @Delete('/:donationId')
   async deleteDonation(
     @Param('donationId', ParseIntPipe) donationId: number,

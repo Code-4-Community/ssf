@@ -139,8 +139,14 @@ export class DonationItemsService {
   ): Promise<void> {
     const itemRepo = transactionManager.getRepository(DonationItem);
 
-    const existingItems = await itemRepo.find({ where: { donationId } });
-    const existingIds = new Set(existingItems.map((item) => item.itemId));
+    const existingIds = new Set(
+      (
+        await itemRepo.find({
+          where: { donationId },
+          select: { itemId: true },
+        })
+      ).map((item) => item.itemId),
+    );
 
     const providedIds = new Set<number>();
     for (const dto of body) {
@@ -160,9 +166,7 @@ export class DonationItemsService {
       }
     }
 
-    const idsToDelete = existingItems
-      .map((item) => item.itemId)
-      .filter((id) => !providedIds.has(id));
+    const idsToDelete = [...existingIds].filter((id) => !providedIds.has(id));
 
     if (idsToDelete.length > 0) {
       await itemRepo.delete({ itemId: In(idsToDelete) });
