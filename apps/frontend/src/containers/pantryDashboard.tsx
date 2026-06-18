@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
 import {
+  AlertStatus,
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
@@ -31,12 +32,12 @@ const PantryDashboard: React.FC = () => {
         const pantryData = await ApiClient.getPantry(pantryId);
         setPantry(pantryData);
       } catch {
-        setAlertMessage('Error fetching pantry information');
+        setAlertMessage('Error fetching pantry information', AlertStatus.ERROR);
         return;
       }
 
       try {
-        const pantryFoodRequests = await ApiClient.getPantryRequests(pantryId);
+        const pantryFoodRequests = await ApiClient.getPantryRequests();
         const sortedFoodRequests = pantryFoodRequests.sort(
           (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
             new Date(b.requestedAt).getTime() -
@@ -44,18 +45,21 @@ const PantryDashboard: React.FC = () => {
         );
         setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching pantry food requests');
+        setAlertMessage(
+          'Error fetching pantry food requests',
+          AlertStatus.ERROR,
+        );
       }
 
       try {
-        const pantryOrders = await ApiClient.getPantryOrders(pantryId);
+        const pantryOrders = await ApiClient.getPantryOrders();
         const sortedOrders = pantryOrders.sort(
           (a: OrderSummary, b: OrderSummary) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         setRecentOrders(sortedOrders.slice(0, 4));
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
       }
     };
     fetchDashboardData();
@@ -69,7 +73,7 @@ const PantryDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

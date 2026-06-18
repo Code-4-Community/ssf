@@ -77,18 +77,6 @@ export class RequestsController {
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,
   })
-  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
-  @Get('/:requestId')
-  async getRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<FoodRequest> {
-    return this.requestsService.findOne(requestId);
-  }
-
-  @CheckOwnership({
-    idParam: 'requestId',
-    resolver: resolveRequestAuthorizedUserIds,
-  })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
@@ -178,7 +166,7 @@ export class RequestsController {
     await this.requestsService.update(requestId, body);
   }
 
-  @Roles(Role.PANTRY)
+  @Roles(Role.ADMIN, Role.VOLUNTEER, Role.PANTRY)
   @CheckOwnership({
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,

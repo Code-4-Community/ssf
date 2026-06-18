@@ -16,6 +16,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { Eye, EyeOff } from 'lucide-react';
+import { AlertStatus } from '../../types/types';
 
 interface ChangePasswordModalProps {
   open: boolean;
@@ -39,12 +40,15 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleChangePassword = async () => {
     if (password.length < 8) {
-      setAlertMessage('Password must be at least 8 characters');
+      setAlertMessage(
+        'Password must be at least 8 characters',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      setAlertMessage('Passwords must match');
+      setAlertMessage('Passwords must match', AlertStatus.ERROR);
       return;
     }
 
@@ -58,11 +62,20 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       onSuccess();
     } catch (err: any) {
       if (err.name === 'LimitExceededException') {
-        setAlertMessage('Limit exceeded, please try again later');
+        setAlertMessage(
+          'Limit exceeded, please try again later',
+          AlertStatus.ERROR,
+        );
       } else if (err.name === 'NotAuthorizedException') {
-        setAlertMessage('Failed to update password, old password is incorrect');
+        setAlertMessage(
+          'Failed to update password, old password is incorrect',
+          AlertStatus.ERROR,
+        );
       } else {
-        setAlertMessage('Failed to update password, please try again');
+        setAlertMessage(
+          'Failed to update password, please try again',
+          AlertStatus.ERROR,
+        );
       }
     }
   };
@@ -93,7 +106,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       open={open}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) {
-          setAlertMessage('');
           onClose();
         }
       }}
@@ -109,7 +121,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 <FloatingAlert
                   key={alertState.id}
                   message={alertState.message}
-                  status="error"
+                  status={alertState.status}
                   timeout={6000}
                 />
               )}

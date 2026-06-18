@@ -349,7 +349,6 @@ describe('UsersService', () => {
       const now = new Date();
 
       const createDonationBody: Partial<CreateDonationDto> = {
-        foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
@@ -363,7 +362,7 @@ describe('UsersService', () => {
         ],
       };
 
-      await donationService.create(createDonationBody as CreateDonationDto);
+      await donationService.create(createDonationBody as CreateDonationDto, 3);
 
       // updating existing request to have a current month requested at date
       const existingRequest = await foodRequestService.findOne(1);

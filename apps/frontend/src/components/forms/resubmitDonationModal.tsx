@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronDown } from 'lucide-react';
 import {
+  AlertStatus,
   CreateDonationDto,
   DonationDetails,
   DonationItem,
@@ -50,7 +51,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
   onSelect,
 }) => {
   useModalBodyCleanup();
-  const [errorAlertState, setErrorMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
   const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
     null,
   );
@@ -78,10 +79,10 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
         );
         setItems(fetchedItems);
       } catch {
-        setErrorMessage('Error loading donation details');
+        setAlertMessage('Error loading donation details', AlertStatus.ERROR);
       }
     },
-    [setErrorMessage],
+    [setAlertMessage],
   );
 
   useEffect(() => {
@@ -111,7 +112,6 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     setIsSubmitting(true);
     try {
       const dto: CreateDonationDto = {
-        foodManufacturerId,
         recurrence: RecurrenceEnum.NONE,
         items: items.map((item) => ({
           itemName: item.itemName,
@@ -130,7 +130,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
       onSuccess();
       handleClose();
     } catch {
-      setErrorMessage('Error submitting donation');
+      setAlertMessage('Error submitting donation', AlertStatus.ERROR);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,11 +145,11 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
       }}
       closeOnInteractOutside
     >
-      {errorAlertState && (
+      {alertState?.status === AlertStatus.ERROR && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}

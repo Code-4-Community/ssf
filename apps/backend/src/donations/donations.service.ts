@@ -1,9 +1,9 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
@@ -13,14 +13,15 @@ import { DayOfWeek, DonationStatus, RecurrenceEnum } from './types';
 import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
 import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
+import { ApplicationStatus } from '../shared/types';
 
 @Injectable()
 export class DonationService {
@@ -31,9 +32,8 @@ export class DonationService {
     private allocationRepo: Repository<Allocation>,
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
-    @InjectRepository(FoodManufacturer)
-    private manufacturerRepo: Repository<FoodManufacturer>,
     private donationItemsService: DonationItemsService,
+    private foodManufacturersService: FoodManufacturersService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
   ) {}
@@ -43,7 +43,10 @@ export class DonationService {
 
     const donation = await this.repo.findOne({
       where: { donationId },
-      relations: ['foodManufacturer'],
+      relations: [
+        'foodManufacturer',
+        'foodManufacturer.foodManufacturerRepresentative',
+      ],
     });
     if (!donation) {
       throw new NotFoundException(`Donation ${donationId} not found`);
@@ -60,15 +63,17 @@ export class DonationService {
     });
   }
 
-  async create(donationData: CreateDonationDto): Promise<Donation> {
-    validateId(donationData.foodManufacturerId, 'Food Manufacturer');
-    const manufacturer = await this.manufacturerRepo.findOne({
-      where: { foodManufacturerId: donationData.foodManufacturerId },
-    });
+  async create(
+    donationData: CreateDonationDto,
+    userId: number,
+  ): Promise<Donation> {
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      userId,
+    );
 
-    if (!manufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer ${donationData.foodManufacturerId} not found`,
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Food Manufacturer for User ${userId} not approved`,
       );
     }
 

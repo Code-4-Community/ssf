@@ -17,7 +17,7 @@ import {
   Input,
 } from '@chakra-ui/react';
 import { Upload, Calendar } from 'lucide-react';
-import { ConfirmDeliveryDto } from 'types/types';
+import { AlertStatus, ConfirmDeliveryDto } from '../../types/types';
 import apiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
@@ -49,7 +49,6 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [invalidPhotoExists, setInvalidPhotoExists] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const isFormValid = dateReceived !== '' && !invalidPhotoExists;
 
@@ -100,7 +99,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -224,7 +223,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                     if (words.length <= 250) {
                       setFeedback(e.target.value);
                     } else {
-                      setAlertMessage('Exceeded word limit');
+                      setAlertMessage('Exceeded word limit', AlertStatus.ERROR);
                     }
                   }}
                 />
@@ -250,8 +249,9 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                       (file) => file.size > MAX_FILE_SIZE,
                     );
                     if (oversized) {
-                      setErrorMessage(
+                      setAlertMessage(
                         `${oversized.name} exceeds the 5MB size limit.`,
+                        AlertStatus.ERROR,
                       );
                       setInvalidPhotoExists(true);
                       return;
@@ -285,7 +285,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   </FileUpload.Dropzone>
                   {invalidPhotoExists && (
                     <Text color="red" textStyle="p2" mt={1}>
-                      {errorMessage}
+                      {alertState?.message}
                     </Text>
                   )}
                   <FileUpload.List clearable />

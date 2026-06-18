@@ -23,12 +23,28 @@ import {
   DonationDetailsDto,
   DonationReminderDto,
 } from './dtos/donation-details-dto';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
+
+const resolveFoodManufacturerAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(FoodManufacturersService).findOne(entityId),
+    (manufacturer: FoodManufacturer) => [
+      manufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('manufacturers')
 export class FoodManufacturersController {
   constructor(private foodManufacturersService: FoodManufacturersService) {}
 
+  @Roles(Role.ADMIN)
   @Get('/pending')
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
     return this.foodManufacturersService.getPendingManufacturers();
@@ -45,6 +61,11 @@ export class FoodManufacturersController {
     return manufacturer.foodManufacturerId;
   }
 
+  @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
+  })
   @Get('/:foodManufacturerId')
   async getFoodManufacturer(
     @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
@@ -53,34 +74,29 @@ export class FoodManufacturersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @Get('/:foodManufacturerId/donations')
+  @Get('/me/donations')
   async getFoodManufacturerDonations(
     @Req() req: AuthenticatedRequest,
-    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<DonationDetailsDto[]> {
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      req.user.id,
+    );
     return this.foodManufacturersService.getFMDonations(
-      foodManufacturerId,
+      manufacturer.foodManufacturerId,
       req.user.id,
     );
   }
 
-  @CheckOwnership({
-    idParam: 'foodManufacturerId',
-    resolver: async ({ entityId, services }) =>
-      pipeNullable(
-        () => services.get(FoodManufacturersService).findOne(entityId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
-      ),
-  })
   @Roles(Role.FOODMANUFACTURER)
-  @Get('/:foodManufacturerId/next-two-reminders')
+  @Get('/me/next-two-reminders')
   async getNextTwoDonationReminders(
-    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
+    @Req() req: AuthenticatedRequest,
   ): Promise<DonationReminderDto[]> {
+    const manufacturer = await this.foodManufacturersService.findByUserId(
+      req.user.id,
+    );
     return this.foodManufacturersService.getUpcomingDonationReminders(
-      foodManufacturerId,
+      manufacturer.foodManufacturerId,
     );
   }
 
@@ -215,31 +231,37 @@ export class FoodManufacturersController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @Patch('/:manufacturerId/application')
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
+  })
+  @Patch('/:foodManufacturerId/application')
   async updateFoodManufacturerApplication(
     @Req() req: AuthenticatedRequest,
-    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
     @Body(new ValidationPipe())
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
   ): Promise<FoodManufacturer> {
     return this.foodManufacturersService.updateFoodManufacturerApplication(
-      manufacturerId,
+      foodManufacturerId,
       foodManufacturerData,
       req.user.id,
     );
   }
 
-  @Patch('/:manufacturerId/approve')
+  @Roles(Role.ADMIN)
+  @Patch('/:foodManufacturerId/approve')
   async approveManufacturer(
-    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<void> {
-    return this.foodManufacturersService.approve(manufacturerId);
+    return this.foodManufacturersService.approve(foodManufacturerId);
   }
 
-  @Patch('/:manufacturerId/deny')
+  @Roles(Role.ADMIN)
+  @Patch('/:foodManufacturerId/deny')
   async denyManufacturer(
-    @Param('manufacturerId', ParseIntPipe) manufacturerId: number,
+    @Param('foodManufacturerId', ParseIntPipe) foodManufacturerId: number,
   ): Promise<void> {
-    return this.foodManufacturersService.deny(manufacturerId);
+    return this.foodManufacturersService.deny(foodManufacturerId);
   }
 }

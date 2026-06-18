@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { DashboardCardType } from '@components/dashboardCard';
 import {
+  AlertStatus,
   Donation,
   DonationDetails,
   DonationReminderDto,
@@ -16,7 +17,7 @@ import { ROUTES } from '../routes';
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [errorAlertState, setErrorMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
   const [upcomingReminders, setUpcomingReminders] = useState<
@@ -32,20 +33,26 @@ const FoodManufacturerDashboard: React.FC = () => {
         const fm = await ApiClient.getFoodManufacturer(fmId);
         setFoodManufacturer(fm);
       } catch {
-        setErrorMessage('Error fetching your manufacturer profile.');
+        setAlertMessage(
+          'Error fetching your manufacturer profile.',
+          AlertStatus.ERROR,
+        );
         return;
       }
 
       const [reminders, donations] = await Promise.allSettled([
-        ApiClient.getNextTwoDonationReminders(fmId),
-        ApiClient.getAllDonationsByFoodManufacturer(fmId),
+        ApiClient.getNextTwoDonationReminders(),
+        ApiClient.getAllDonationsByFoodManufacturer(),
       ]);
 
       // If reminders is successfully retrieved from API with the Promise.allSettled
       if (reminders.status === 'fulfilled') {
         setUpcomingReminders(reminders.value);
       } else {
-        setErrorMessage('Error fetching upcoming donations.');
+        setAlertMessage(
+          'Error fetching upcoming donations.',
+          AlertStatus.ERROR,
+        );
       }
 
       // If donations is successfully retrieved from API with the Promise.allSettled
@@ -60,19 +67,19 @@ const FoodManufacturerDashboard: React.FC = () => {
           .slice(0, 2);
         setRecentDonations(sorted);
       } else {
-        setErrorMessage('Error fetching recent donations.');
+        setAlertMessage('Error fetching recent donations.', AlertStatus.ERROR);
       }
     };
     fetchFmData();
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   return (
     <Box p={12}>
-      {errorAlertState && (
+      {alertState?.status === AlertStatus.ERROR && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}

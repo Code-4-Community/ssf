@@ -18,7 +18,7 @@ import {
   ButtonGroup,
   Input,
 } from '@chakra-ui/react';
-import { PantryStats, TotalStats } from 'types/types';
+import { AlertStatus, PantryStats, TotalStats } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -46,14 +46,14 @@ const AdminDonationStats: React.FC = () => {
         const names = await ApiClient.getApprovedPantryNames();
         setPantryNameOptions(names);
       } catch {
-        setAlertMessage('Error fetching pantry names');
+        setAlertMessage('Error fetching pantry names', AlertStatus.ERROR);
       }
 
       try {
         const years = await ApiClient.getPantryOrderYears();
         setAvailableYears(years);
       } catch {
-        setAlertMessage('Error fetching available years');
+        setAlertMessage('Error fetching available years', AlertStatus.ERROR);
       }
     };
     fetchInitialData();
@@ -70,7 +70,7 @@ const AdminDonationStats: React.FC = () => {
         );
         setTotalStats(stats);
       } catch {
-        setAlertMessage('Error fetching total stats');
+        setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
       }
     };
     fetchTotalStats();
@@ -86,7 +86,7 @@ const AdminDonationStats: React.FC = () => {
         });
         setPantryStats(stats);
       } catch {
-        setAlertMessage('Error fetching pantry stats');
+        setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
       }
     };
     fetchStats();
@@ -141,7 +141,7 @@ const AdminDonationStats: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

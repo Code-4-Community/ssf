@@ -29,7 +29,7 @@ import {
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { AlertStatus, OrderStatus, OrderSummary } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -133,7 +133,7 @@ const AdminOrderManagement: React.FC = () => {
         };
         setCurrentPages(initialPages);
       } catch {
-        setAlertMessage('Error fetching orders');
+        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
       }
     };
 
@@ -211,7 +211,7 @@ const AdminOrderManagement: React.FC = () => {
         },
       }));
     } else {
-      setAlertMessage('Selected pantry has no orders');
+      setAlertMessage('Selected pantry has no orders', AlertStatus.ERROR);
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
   }, [searchParams, statusOrders, navigate, setAlertMessage]);
@@ -226,7 +226,7 @@ const AdminOrderManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

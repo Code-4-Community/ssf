@@ -20,6 +20,7 @@ import { Donation } from '../donations/donations.entity';
 import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
+import { PantriesModule } from '../pantries/pantries.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UsersModule } from '../users/users.module';
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     forwardRef(() => RequestsModule),
+    forwardRef(() => PantriesModule),
     ManufacturerModule,
     DonationItemsModule,
     DonationModule,
