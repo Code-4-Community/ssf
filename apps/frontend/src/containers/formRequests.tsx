@@ -53,7 +53,7 @@ const FormRequests: React.FC = () => {
     setPantryId(pantryId);
     if (pantryId) {
       try {
-        const data = await ApiClient.getPantryRequests(pantryId);
+        const data = await ApiClient.getPantryRequests();
         const sortedData = data
           .slice()
           .sort((a, b) => b.requestId - a.requestId);

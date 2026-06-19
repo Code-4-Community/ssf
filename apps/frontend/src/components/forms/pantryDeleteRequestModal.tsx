@@ -8,7 +8,7 @@ import {
   Flex,
   Dialog,
 } from '@chakra-ui/react';
-import { AlertStatus, FoodRequestSummaryDto } from 'types/types';
+import { AlertStatus, FoodRequestSummaryDto } from '../../types/types';
 import { formatDate } from '@utils/utils';
 import apiClient from '@api/apiClient';
 import { useAlert } from '../../hooks/alert';
