@@ -92,7 +92,8 @@ const PantryDeleteRequestActionModal: React.FC<
                   fontWeight={600}
                   color="neutral.800"
                   variant="outline"
-                  width={16}
+                  h="36px"
+                  px={3}
                   flexShrink={0}
                   textAlign="center"
                   lineHeight="28px"
@@ -106,9 +107,10 @@ const PantryDeleteRequestActionModal: React.FC<
                   bg={'red.hover'}
                   color={'white'}
                   width="92px"
+                  h="36px"
+                  px={5}
                   flexShrink={0}
                   textAlign="center"
-                  lineHeight="28px"
                   onClick={onCloseRequest}
                 >
                   Delete

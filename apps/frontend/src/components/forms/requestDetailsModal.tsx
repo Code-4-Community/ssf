@@ -37,7 +37,6 @@ import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '../floatingAlert';
-import { useAuthenticator } from '@aws-amplify/ui-react';
 import { EditButton, DeleteButton } from '@components/editDeleteButtons';
 
 interface RequestDetailsModalProps {
@@ -56,7 +55,6 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   onDelete,
 }) => {
   useModalBodyCleanup();
-  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
@@ -75,15 +73,16 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   );
 
   useEffect(() => {
-    if (authStatus === 'authenticated') {
-      apiClient
-        .getMe()
-        .then(setCurrentUser)
-        .catch(() => setCurrentUser(null));
-    } else {
-      setCurrentUser(null);
-    }
-  }, [authStatus]);
+    const fetchUser = async () => {
+      try {
+        const user = await apiClient.getMe();
+        setCurrentUser(user);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchRequestOrderDetails = async () => {
@@ -154,9 +153,6 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   return (
     <>
-      {/*
-       * TODO: hard-coded as 'info' for now because I worked on another ticket that refactored alertState to have a status
-       */}
       {alertState && (
         <FloatingAlert
           key={alertState.id}
@@ -180,14 +176,20 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
               <Dialog.Title fontSize="lg" fontWeight={600} fontFamily="inter">
                 Food Request #{request.requestId}
               </Dialog.Title>
-              {!isEditing && request.status === FoodRequestStatus.ACTIVE && (
-                <>
-                  {currentUser?.role === Role.PANTRY && (
-                    <EditButton onClick={() => setIsEditing(true)}></EditButton>
-                  )}
-                  <DeleteButton onClick={onDelete}></DeleteButton>
-                </>
-              )}
+              {!isEditing &&
+                request.status === FoodRequestStatus.ACTIVE &&
+                orderDetailsList.length == 0 && (
+                  <>
+                    {currentUser?.role === Role.PANTRY && (
+                      <EditButton
+                        onClick={() => setIsEditing(true)}
+                      ></EditButton>
+                    )}
+                    {currentUser?.role !== Role.FOODMANUFACTURER && (
+                      <DeleteButton onClick={onDelete}></DeleteButton>
+                    )}
+                  </>
+                )}
             </Dialog.Header>
             <Dialog.Body>
               <Text textStyle="p2" color="gray.dark">
@@ -353,6 +355,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Button>
                     <Button
                       onClick={handleUpdate}
+                      disabled={selectedFoodTypes.length === 0}
                       bg="blue.hover"
                       color="white"
                     >

@@ -8,15 +8,17 @@ interface EditDeleteButtonProps {
 export const EditButton: React.FC<EditDeleteButtonProps> = ({ onClick }) => {
   return (
     <HStack
+      width={6}
       height={6}
       minWidth={6}
       padding={0.5}
       justify="center"
       align="center"
       gap={1}
+      flexShrink={0}
       borderRadius="sm"
-      color={'neutral.800'}
-      background="neutral.50"
+      color={'gray.800'}
+      background="gray.subtle"
       cursor="pointer"
       _hover={{ background: 'neutral.200' }}
       onClick={onClick}
@@ -38,8 +40,8 @@ export const DeleteButton: React.FC<EditDeleteButtonProps> = ({ onClick }) => {
       gap={1}
       flexShrink={0}
       borderRadius="sm"
-      color="red.hover"
-      background="red.200"
+      color="red.700"
+      background="red.subtle"
       cursor="pointer"
       _hover={{ background: 'red.300' }}
       onClick={onClick}

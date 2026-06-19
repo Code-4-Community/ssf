@@ -83,8 +83,9 @@ const customConfig = defineConfig({
         red: {
           core: { value: '#CC3538' },
           hover: { value: '#972729' },
-          200: { value: '#FEC9C9' },
+          subtle: { value: '#FEE2E2' },
           300: { value: '#F0C2C3' },
+          700: { value: '#991919' },
         },
         yellow: {
           core: { value: '#F89E19' },
@@ -106,7 +107,9 @@ const customConfig = defineConfig({
         gray: {
           light: { value: '#515151' },
           dark: { value: '#111' },
+          subtle: { value: '#F4F4F5' },
           200: { value: '#E4E4E7' },
+          800: { value: '#27272A' },
         },
         teal: {
           ssf: { value: '#2795A5' },
