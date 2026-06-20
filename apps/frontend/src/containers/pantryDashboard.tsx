@@ -32,29 +32,49 @@ const PantryDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         const pantryId = await ApiClient.getCurrentUserPantryId();
-        const [pantryData, pantryFoodRequests, pantryOrders] =
-          await Promise.all([
-            ApiClient.getPantry(pantryId),
-            ApiClient.getPantryRequests(pantryId),
-            ApiClient.getPantryOrders(pantryId),
-          ]);
 
-        setPantry(pantryData);
+        const fetchPantry = async () => {
+          try {
+            const pantryData = await ApiClient.getPantry(pantryId);
+            setPantry(pantryData);
+          } catch {
+            setAlertMessage('Error fetching pantry data');
+          }
+        };
 
-        const sortedFoodRequests = pantryFoodRequests.sort(
-          (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-            new Date(b.requestedAt).getTime() -
-            new Date(a.requestedAt).getTime(),
-        );
-        setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
+        const fetchFoodRequests = async () => {
+          try {
+            const pantryFoodRequests = await ApiClient.getPantryRequests(
+              pantryId,
+            );
+            const sortedFoodRequests = pantryFoodRequests.sort(
+              (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+                new Date(b.requestedAt).getTime() -
+                new Date(a.requestedAt).getTime(),
+            );
+            setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
+          } catch {
+            setAlertMessage('Error fetching food requests');
+          }
+        };
 
-        const sortedOrders = pantryOrders.sort(
-          (a: OrderSummary, b: OrderSummary) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-        setRecentOrders(sortedOrders.slice(0, 4));
+        const fetchOrders = async () => {
+          try {
+            const pantryOrders = await ApiClient.getPantryOrders(pantryId);
+            const sortedOrders = pantryOrders.sort(
+              (a: OrderSummary, b: OrderSummary) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            );
+            setRecentOrders(sortedOrders.slice(0, 4));
+          } catch {
+            setAlertMessage('Error fetching orders');
+          }
+        };
+
+        await Promise.all([fetchPantry(), fetchFoodRequests(), fetchOrders()]);
       } catch {
-        setAlertMessage('Error fetching dashboard data');
+        setAlertMessage('Error fetching pantry ID');
       } finally {
         setLoading(false);
       }

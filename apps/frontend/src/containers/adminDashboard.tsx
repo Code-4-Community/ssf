@@ -32,26 +32,40 @@ const AdminDashboard: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchMe = async () => {
       try {
-        const [user, applications, allOrders, allDonations] = await Promise.all(
-          [
-            ApiClient.getMe(),
-            ApiClient.getRecentPendingApplications(),
-            ApiClient.getAllOrders(),
-            ApiClient.getAllDonations(),
-          ],
-        );
-
+        const user = await ApiClient.getMe();
         setCurrentUser(user);
-        setPendingApplications(applications);
+      } catch {
+        setAlertMessage('Error fetching user data');
+      }
+    };
 
+    const fetchPendingApplications = async () => {
+      try {
+        const applications = await ApiClient.getRecentPendingApplications();
+        setPendingApplications(applications);
+      } catch {
+        setAlertMessage('Error fetching pending applications');
+      }
+    };
+
+    const fetchRecentOrders = async () => {
+      try {
+        const allOrders = await ApiClient.getAllOrders();
         const sortedOrders = allOrders.sort(
           (a: OrderSummary, b: OrderSummary) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         setRecentOrders(sortedOrders.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching recent orders');
+      }
+    };
 
+    const fetchRecentDonations = async () => {
+      try {
+        const allDonations = await ApiClient.getAllDonations();
         const sortedDonations = allDonations.sort(
           (a: Donation, b: Donation) =>
             new Date(b.dateDonated).getTime() -
@@ -59,13 +73,24 @@ const AdminDashboard: React.FC = () => {
         );
         setRecentDonations(sortedDonations.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching dashboard data');
+        setAlertMessage('Error fetching recent donations');
+      }
+    };
+
+    const load = async () => {
+      try {
+        await Promise.all([
+          fetchMe(),
+          fetchPendingApplications(),
+          fetchRecentOrders(),
+          fetchRecentDonations(),
+        ]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    load();
   }, [setAlertMessage]);
 
   if (loading) return null;

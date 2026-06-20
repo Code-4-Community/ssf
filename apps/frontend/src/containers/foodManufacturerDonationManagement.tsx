@@ -32,6 +32,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const resubmitDonationId: string | null =
     searchParams.get('resubmitDonationId');
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
@@ -140,6 +141,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
         setErrorMessage('Error initializing donation management');
+      } finally {
+        setLoading(false);
       }
     };
     init();
@@ -166,6 +169,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       [status]: page,
     }));
   };
+
+  if (loading) return null;
 
   return (
     <Box p={12}>
