@@ -13,6 +13,7 @@ import {
 import CognitoAuthConfig from './aws-exports';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { createHmac } from 'crypto';
+import { Role } from '../users/types';
 import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
@@ -46,7 +47,8 @@ export class AuthService {
     firstName,
     lastName,
     email,
-  }: Omit<SignUpDto, 'password' | 'phone'>): Promise<string> {
+    role,
+  }: Omit<SignUpDto, 'password' | 'phone'> & { role: Role }): Promise<string> {
     const createUserCommand = new AdminCreateUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
       Username: email,
@@ -63,6 +65,10 @@ export class AuthService {
       const sub = response.User?.Attributes?.find(
         (attr) => attr.Name === 'sub',
       )?.Value;
+
+      // Add user to the appropriate Cognito group based on their role
+      await this.addUserToGroup(email, role);
+
       return sub ?? '';
     } catch (error) {
       if (error instanceof Error && error.name == 'UsernameExistsException') {

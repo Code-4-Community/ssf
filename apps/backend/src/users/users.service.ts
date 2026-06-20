@@ -81,6 +81,7 @@ export class UsersService {
         firstName,
         lastName,
         email,
+        role,
       });
       return this.repo.save(existingUser);
     }
@@ -90,6 +91,7 @@ export class UsersService {
       firstName,
       lastName,
       email,
+      role,
     });
     const user = this.repo.create({
       role,

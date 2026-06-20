@@ -171,6 +171,7 @@ describe('UsersService', () => {
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         email: createUserDto.email,
+        role: createUserDto.role,
       });
       expect(result.id).toBeDefined();
       expect(result.userCognitoSub).toBe('mock-sub');
@@ -250,6 +251,7 @@ describe('UsersService', () => {
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
         email: createUserDto.email,
+        role: createUserDto.role,
       });
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
