@@ -54,29 +54,6 @@ export class DonationItemsService {
     return items;
   }
 
-  async getAssociatedDonationIds(
-    donationItemIds: number[],
-  ): Promise<Set<number>> {
-    donationItemIds.forEach((id) => validateId(id, 'Donation Item'));
-
-    const items = await this.repo.find({
-      where: { itemId: In(donationItemIds) },
-      select: ['itemId', 'donationId'],
-    });
-
-    const foundIds = new Set(items.map((i) => i.itemId));
-
-    const missingIds = donationItemIds.filter((id) => !foundIds.has(id));
-
-    if (missingIds.length > 0) {
-      throw new NotFoundException(
-        `Donation items not found for ID(s): ${missingIds.join(', ')}`,
-      );
-    }
-
-    return new Set(items.map((i) => i.donationId));
-  }
-
   async create(
     donationId: number,
     itemName: string,

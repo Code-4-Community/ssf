@@ -9,6 +9,7 @@ import {
   OrderSummary,
   Donation,
   User,
+  AlertStatus,
 } from '../types/types';
 import { DashboardCardType } from '@components/dashboardCard';
 import ApiClient from '@api/apiClient';
@@ -38,7 +39,7 @@ const AdminDashboard: React.FC = () => {
         await ApiClient.getRecentPendingApplications();
       setPendingApplications(pendingApplications);
     } catch {
-      setAlertMessage('Error fetching pending applications');
+      setAlertMessage('Error fetching pending applications', AlertStatus.ERROR);
     }
   };
 
@@ -52,7 +53,7 @@ const AdminDashboard: React.FC = () => {
       const recentOrders = sortedOrders.slice(0, 2);
       setRecentOrders(recentOrders);
     } catch {
-      setAlertMessage('Error fetching orders');
+      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
     }
   };
 
@@ -66,7 +67,7 @@ const AdminDashboard: React.FC = () => {
       const recentDonations = sortedDonations.slice(0, 2);
       setRecentDonations(recentDonations);
     } catch {
-      setAlertMessage('Error fetching donations');
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
   };
 
@@ -76,7 +77,10 @@ const AdminDashboard: React.FC = () => {
       user = await ApiClient.getMe();
       setCurrentUser(user);
     } catch {
-      setAlertMessage('Authentication error. Please log in and try again.');
+      setAlertMessage(
+        'Authentication error. Please log in and try again.',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
@@ -84,7 +88,7 @@ const AdminDashboard: React.FC = () => {
       const userStats = await ApiClient.getUserStats(user.id);
       setStats(userStats);
     } catch {
-      setAlertMessage('Error fetching dashboard statistics');
+      setAlertMessage('Error fetching dashboard statistics', AlertStatus.ERROR);
     }
   };
 
@@ -106,7 +110,7 @@ const AdminDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}

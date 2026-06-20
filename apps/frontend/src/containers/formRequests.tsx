@@ -23,6 +23,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { AlertStatus } from '../types/types';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -49,7 +50,7 @@ const FormRequests: React.FC = () => {
     setPantryId(pantryId);
     if (pantryId) {
       try {
-        const data = await ApiClient.getPantryRequests(pantryId);
+        const data = await ApiClient.getPantryRequests();
         const sortedData = data
           .slice()
           .sort((a, b) => b.requestId - a.requestId);
@@ -58,10 +59,13 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch {
-        setAlertMessage('Error fetching requests');
+        setAlertMessage('Error fetching requests', AlertStatus.ERROR);
       }
     } else {
-      setAlertMessage('No pantry associated with this account.');
+      setAlertMessage(
+        'No pantry associated with this account.',
+        AlertStatus.ERROR,
+      );
     }
   }, [setAlertMessage]);
 
@@ -101,7 +105,7 @@ const FormRequests: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { DashboardCardType } from '@components/dashboardCard';
 import {
+  AlertStatus,
   Donation,
   DonationDetails,
   DonationReminderDto,
@@ -20,7 +21,7 @@ import { DashboardStats } from '@components/dashboardStats';
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [errorAlertState, setErrorMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +43,10 @@ const FoodManufacturerDashboard: React.FC = () => {
         const fm = await ApiClient.getFoodManufacturer(fmId);
         setFoodManufacturer(fm);
       } catch {
-        setErrorMessage('Error fetching your manufacturer profile.');
+        setAlertMessage(
+          'Error fetching your manufacturer profile.',
+          AlertStatus.ERROR,
+        );
         return;
       }
 
@@ -50,18 +54,24 @@ const FoodManufacturerDashboard: React.FC = () => {
         const userStats = await ApiClient.getUserStats(currentUser.id);
         setStats(userStats);
       } catch {
-        setErrorMessage('Error fetching dashboard statistics');
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
       }
 
       const [reminders, donations] = await Promise.allSettled([
-        ApiClient.getNextTwoDonationReminders(fmId),
-        ApiClient.getAllDonationsByFoodManufacturer(fmId),
+        ApiClient.getNextTwoDonationReminders(),
+        ApiClient.getAllDonationsByFoodManufacturer(),
       ]);
 
       if (reminders.status === 'fulfilled') {
         setUpcomingReminders(reminders.value);
       } else {
-        setErrorMessage('Error fetching upcoming donations.');
+        setAlertMessage(
+          'Error fetching upcoming donations.',
+          AlertStatus.ERROR,
+        );
       }
 
       if (donations.status === 'fulfilled') {
@@ -75,11 +85,11 @@ const FoodManufacturerDashboard: React.FC = () => {
           .slice(0, 2);
         setRecentDonations(sorted);
       } else {
-        setErrorMessage('Error fetching recent donations.');
+        setAlertMessage('Error fetching recent donations.', AlertStatus.ERROR);
       }
     };
     fetchFmData();
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   if (!foodManufacturer) return null;
 
@@ -88,11 +98,11 @@ const FoodManufacturerDashboard: React.FC = () => {
 
   return (
     <Box p={12}>
-      {errorAlertState && (
+      {alertState?.status === AlertStatus.ERROR && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}
