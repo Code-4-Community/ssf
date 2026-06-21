@@ -71,8 +71,8 @@ async function insertDonationItem(
 ): Promise<number> {
   const result = await testDataSource.query(
     `INSERT INTO donation_items
-      (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-     VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+      (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 3.4, 3.4, 'Granola', false)
      RETURNING item_id`,
     [donationId, qty, reserved],
   );
@@ -1410,8 +1410,8 @@ describe('DonationService', () => {
     ): Promise<number> {
       const result = await testDataSource.query(
         `INSERT INTO donation_items
-          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES ($1, 'Test Item', $2, $3, 'Granola', true)
+          (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 3.4, 3.4, 'Granola', true)
          RETURNING item_id`,
         [donationId, qty, reserved],
       );

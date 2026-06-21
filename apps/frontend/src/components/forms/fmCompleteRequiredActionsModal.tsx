@@ -499,8 +499,12 @@ const FmCompleteRequiredActionsModal: React.FC<
             {stage === 'itemDetails' && (
               <>
                 <Text fontSize="sm" color="neutral.700" mt={1}>
-                  Please fill out the missing fields information to record
-                  donation details.
+                  Please confirm the following information to record donation
+                  details.
+                </Text>
+                <Text fontSize="sm" color="neutral.700" mt={1}>
+                  Please do not include shipping/delivery costs in Food Donation
+                  Value.
                 </Text>
 
                 <Box mt={4} display="block" overflowX="auto">
@@ -511,15 +515,22 @@ const FmCompleteRequiredActionsModal: React.FC<
                   >
                     <Table.Header>
                       <Table.Row>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="40%">
+                        <Table.ColumnHeader {...tableHeaderStyles} width="30%">
                           Food Item
                         </Table.ColumnHeader>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="18%">
+                        <Table.ColumnHeader {...tableHeaderStyles} width="23%">
                           Oz. per item
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="18%">
-                          Donation Value
+                        <Table.ColumnHeader {...tableHeaderStyles} width="23%">
+                          Donation Value (Fair Market Value of Food Only)
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
+
                         <Table.ColumnHeader
                           {...tableHeaderStyles}
                           width="24%"

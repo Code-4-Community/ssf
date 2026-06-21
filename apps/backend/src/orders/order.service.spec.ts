@@ -1331,8 +1331,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
     async function insertDonationItem(donationId: number): Promise<number> {
       const [{ item_id }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, food_rescue, details_confirmed)
-         VALUES ($1, 'Test Item', 10, 10, 'Granola', false, false)
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, food_rescue, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 3.4, 3.4, 'Granola', false, false)
          RETURNING item_id`,
         [donationId],
       );
