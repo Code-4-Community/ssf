@@ -415,7 +415,6 @@ export class DonationService {
 
       const donation = await donationTransactionRepo.findOne({
         where: { donationId },
-        relations: ['donationItems'],
       });
 
       if (!donation) {
