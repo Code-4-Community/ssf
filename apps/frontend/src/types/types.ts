@@ -267,6 +267,7 @@ export interface User {
   email: string;
   phone: string;
   pantries?: Pantry[];
+  active: boolean;
 }
 
 export type UpdateProfileFields = Partial<
