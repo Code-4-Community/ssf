@@ -82,7 +82,7 @@ const PantryDashboard: React.FC = () => {
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (loading || !pantry) return null;
+  if (loading) return null;
 
   const isPageEmpty =
     recentFoodRequests.length === 0 && recentOrders.length === 0;
@@ -98,7 +98,7 @@ const PantryDashboard: React.FC = () => {
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
-        Welcome, {pantry.pantryName}
+        Welcome, {pantry?.pantryName}
       </Heading>
 
       {isPageEmpty ? (
@@ -131,7 +131,7 @@ const PantryDashboard: React.FC = () => {
                   type={DashboardCardType.FOOD_REQUEST}
                   title={`Request #${fr.requestId}`}
                   date={fr.requestedAt}
-                  subtitle={pantry.pantryName}
+                  subtitle={pantry?.pantryName}
                   linkText="View Request Details"
                   onLinkClick={() =>
                     navigate(`${ROUTES.REQUEST_FORM}?requestId=${fr.requestId}`)
