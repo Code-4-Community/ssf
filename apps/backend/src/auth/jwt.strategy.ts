@@ -32,6 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: CognitoJwtPayload): Promise<User | null> {
     try {
       const user = await this.usersService.findUserByCognitoId(payload.sub);
+      if (!user.active) {
+        return null;
+      }
       return user;
     } catch {
       return null; // Passport treats null as unauthenticated → clean 401
