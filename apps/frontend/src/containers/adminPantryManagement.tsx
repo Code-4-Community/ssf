@@ -15,18 +15,19 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, Funnel, Search } from 'lucide-react';
-import { ApprovedPantryResponse } from '../types/types';
+import { AlertStatus, ApprovedPantryResponse } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { RefrigeratedDonation } from '../types/pantryEnums';
 import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 
 const AdminPantryManagement: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pantries, setPantries] = useState<ApprovedPantryResponse[]>([]);
@@ -38,7 +39,6 @@ const AdminPantryManagement: React.FC = () => {
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
 
   const [alertState, setAlertMessage] = useAlert();
-  const [isAlertSuccess, setIsAlertSuccess] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [
     selectedPantryToAssignVolunteers,
@@ -52,8 +52,7 @@ const AdminPantryManagement: React.FC = () => {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
-      setIsAlertSuccess(false);
-      setAlertMessage('Error fetching pantries');
+      setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
     }
   };
 
@@ -61,9 +60,43 @@ const AdminPantryManagement: React.FC = () => {
     fetchPantries();
   }, [setAlertMessage]);
 
+  // Pre-fill pantry filter from the volunteerId url param. The param is kept on
+  // success so the filter is reapplied on reload/back/refresh, and only cleared
+  // when the volunteer has no pantries or the fetch fails.
+  useEffect(() => {
+    const volunteerIdFromUrl = searchParams.get('volunteerId');
+    if (!volunteerIdFromUrl) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const assignedPantries = await ApiClient.getVolunteerPantries(
+          Number(volunteerIdFromUrl),
+        );
+        if (cancelled) return;
+        if (assignedPantries.length === 0) {
+          setAlertMessage(
+            'This volunteer has no assigned pantries.',
+            AlertStatus.ERROR,
+          );
+          navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
+          return;
+        }
+        setSelectedPantries(assignedPantries.map((p) => p.pantryName));
+      } catch {
+        if (cancelled) return;
+        setAlertMessage('Error fetching volunteer pantries', AlertStatus.ERROR);
+        navigate(ROUTES.PANTRY_MANAGEMENT, { replace: true });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, navigate, setAlertMessage]);
+
   const handleAssignVolunteersSuccess = () => {
-    setIsAlertSuccess(true);
-    setAlertMessage('Successfully assigned volunteers');
+    setAlertMessage('Successfully assigned volunteers', AlertStatus.INFO);
     fetchPantries();
   };
 
@@ -110,7 +143,7 @@ const AdminPantryManagement: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={isAlertSuccess ? 'info' : 'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -357,14 +390,14 @@ const AdminPantryManagement: React.FC = () => {
                     fontWeight={500}
                     fontSize="12px"
                     bgColor={
-                      pantry.refrigeratedDonation === RefrigeratedDonation.YES
-                        ? 'neutral.100'
-                        : 'neutral.200'
+                      pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                        ? 'neutral.200'
+                        : 'neutral.100'
                     }
                   >
-                    {pantry.refrigeratedDonation === RefrigeratedDonation.YES
-                      ? 'Refrigerator-Friendly'
-                      : 'Not Refrigerator-Friendly'}
+                    {pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                      ? 'Not Refrigerator-Friendly'
+                      : 'Refrigerator-Friendly'}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
@@ -374,7 +407,12 @@ const AdminPantryManagement: React.FC = () => {
                     textStyle="p2"
                     variant="underline"
                     textDecorationColor="neutral.700"
-                    // TODO href or some functionality to view orders
+                    cursor="pointer"
+                    onClick={() =>
+                      navigate(
+                        `${ROUTES.ADMIN_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
+                      )
+                    }
                   >
                     View Orders
                   </Link>

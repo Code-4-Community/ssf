@@ -267,6 +267,7 @@ export interface User {
   email: string;
   phone: string;
   pantries?: Pantry[];
+  active: boolean;
 }
 
 export type UpdateProfileFields = Partial<
@@ -362,6 +363,7 @@ export type VolunteerOrder = {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+  pantryId: number;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;
@@ -470,7 +472,6 @@ export interface CreateFoodRequestBody {
 }
 
 export interface CreateDonationDto {
-  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
@@ -609,4 +610,9 @@ export interface UpdateDonationItemDetailsDto {
   ozPerItem: number;
   estimatedValue: number;
   foodRescue: boolean;
+}
+
+export enum AlertStatus {
+  INFO = 'info',
+  ERROR = 'error',
 }

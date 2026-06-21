@@ -30,9 +30,9 @@ import { generateNextDonationDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 interface NewDonationFormModalProps {
-  foodManufacturerId: number;
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -110,7 +110,6 @@ const getFirstValidationError = (
 };
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
-  foodManufacturerId,
   onDonationSuccess,
   isOpen,
   onClose,
@@ -210,12 +209,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       repeatInterval === RecurrenceEnum.WEEKLY &&
       !Object.values(repeatOn).some(Boolean)
     ) {
-      setAlertMessage('Please select at least one day for weekly recurrence.');
+      setAlertMessage(
+        'Please select at least one day for weekly recurrence.',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
     const donationBody: CreateDonationDto = {
-      foodManufacturerId,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
@@ -252,7 +253,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       setRepeatInterval(RecurrenceEnum.NONE);
       onClose();
     } catch {
-      setAlertMessage('Error submitting new donation');
+      setAlertMessage('Error submitting new donation', AlertStatus.ERROR);
     }
   };
 
@@ -285,7 +286,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
