@@ -123,6 +123,8 @@ describe('FoodManufacturersController', () => {
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
               allocatedQuantity: 10,
               foodRescue: false,
+              estimatedValue: 3.4,
+              ozPerItem: 3.4,
             },
           ],
         },

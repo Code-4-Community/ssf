@@ -150,8 +150,8 @@ const FmCompleteRequiredActionsModal: React.FC<
       donation.relevantDonationItems.map((item) => [
         item.itemId,
         {
-          ozPerItem: item.ozPerItem?.toString() ?? '',
-          estimatedValue: item.estimatedValue?.toString() ?? '',
+          ozPerItem: item.ozPerItem.toString(),
+          estimatedValue: item.estimatedValue.toString(),
           foodRescue: item.foodRescue,
         },
       ]),
@@ -167,8 +167,8 @@ const FmCompleteRequiredActionsModal: React.FC<
       donation.relevantDonationItems.length > 0 &&
       donation.relevantDonationItems.every(
         (item) =>
-          (itemFormData[item.itemId]?.ozPerItem ?? '') !== '' &&
-          (itemFormData[item.itemId]?.estimatedValue ?? '') !== '',
+          itemFormData[item.itemId].ozPerItem !== '' &&
+          itemFormData[item.itemId].estimatedValue !== '',
       ),
     [itemFormData],
   );
@@ -228,16 +228,13 @@ const FmCompleteRequiredActionsModal: React.FC<
           .filter((item) => {
             const formData = itemFormData[item.itemId];
             return (
-              formData.ozPerItem !== (item.ozPerItem?.toString() ?? '') ||
-              formData.estimatedValue !==
-                (item.estimatedValue?.toString() ?? '') ||
+              formData.ozPerItem !== item.ozPerItem.toString() ||
+              formData.estimatedValue !== item.estimatedValue.toString() ||
               formData.foodRescue !== item.foodRescue
             );
           })
           .map((item) => {
             const formData = itemFormData[item.itemId];
-            // Submit is gated on ozPerItem and estimatedValue being filled for every
-            // item, so all required fields are guaranteed present here.
             const dto: UpdateDonationItemDetailsDto = {
               itemId: item.itemId,
               ozPerItem: parseFloat(formData.ozPerItem),

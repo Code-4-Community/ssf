@@ -211,8 +211,8 @@ export interface DonationItemWithAllocatedQuantity {
   foodType: FoodType;
   allocatedQuantity: number;
   detailsConfirmed: boolean;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodRescue: boolean;
 }
 
@@ -236,8 +236,8 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
