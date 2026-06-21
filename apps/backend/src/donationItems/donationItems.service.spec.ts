@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
 import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from './dtos/replace-donation-item.dto';
 
 jest.setTimeout(60000);
 
@@ -560,6 +561,133 @@ describe('DonationItemsService', () => {
         .findOneBy({ itemId });
       expect(Number(item?.ozPerItem)).toBe(9.0);
       expect(item?.detailsConfirmed).toBe(true);
+    });
+  });
+
+  describe('editItems', () => {
+    const makeItem = (
+      overrides: Partial<ReplaceDonationItemDto> = {},
+    ): ReplaceDonationItemDto => ({
+      itemName: 'Edited Item',
+      quantity: 20,
+      ozPerItem: 8,
+      estimatedValue: 3.5,
+      foodType: FoodType.QUINOA,
+      foodRescue: true,
+      ...overrides,
+    });
+
+    const donationId = 3;
+    const itemA = 7;
+    const itemB = 8;
+
+    beforeEach(async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE item_id IN ($1, $2)`,
+        [itemA, itemB],
+      );
+    });
+
+    it('updates existing items, inserts new items, and deletes omitted items', async () => {
+      const itemsBefore = await service.getAllDonationItems(donationId);
+      expect(itemsBefore).toHaveLength(2);
+
+      await testDataSource.transaction((tm) =>
+        service.editItems(
+          donationId,
+          [
+            makeItem({
+              itemId: itemA,
+              itemName: 'Item A Updated',
+              quantity: 99,
+            }),
+            makeItem({ itemName: 'Brand New Item' }),
+          ],
+          tm,
+        ),
+      );
+
+      const items = await service.getAllDonationItems(donationId);
+      // updated itemA + inserted one new + deleted itemB => count unchanged at 2
+      expect(items).toHaveLength(itemsBefore.length);
+      expect(items).toHaveLength(2);
+
+      const names = items.map((i) => i.itemName).sort();
+      expect(names).toEqual(['Brand New Item', 'Item A Updated']);
+
+      const updated = items.find((i) => i.itemId === itemA) as DonationItem;
+      expect(updated.quantity).toBe(99);
+      expect(updated.foodRescue).toBe(true);
+      expect(updated.foodType).toBe(FoodType.QUINOA);
+      expect(Number(updated.ozPerItem)).toBe(8);
+      expect(Number(updated.estimatedValue)).toBe(3.5);
+      expect(updated.detailsConfirmed).toBe(true);
+
+      const inserted = items.find(
+        (i) => i.itemName === 'Brand New Item',
+      ) as DonationItem;
+      expect(inserted.donationId).toBe(donationId);
+      expect(inserted.reservedQuantity).toBe(0);
+      expect(inserted.detailsConfirmed).toBe(true);
+
+      // itemB was omitted from the body, so it should be deleted
+      expect(items.some((i) => i.itemId === itemB)).toBe(false);
+      await expect(service.findOne(itemB)).rejects.toThrow();
+    });
+
+    it('throws BadRequestException when an itemId does not belong to the donation', async () => {
+      const foreignItemId = 11;
+
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [makeItem({ itemId: foreignItemId })],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${foreignItemId} does not belong to Donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when the same itemId appears twice', async () => {
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [makeItem({ itemId: itemA }), makeItem({ itemId: itemA })],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Duplicate itemId ${itemA} in request`),
+      );
+    });
+
+    it('rolls back all changes when one item fails to persist within the transaction', async () => {
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [
+              makeItem({ itemId: itemA, itemName: 'Item A Updated' }),
+              makeItem({ itemName: 'a'.repeat(1000) }), // exceeds varchar(255)
+            ],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow();
+
+      const items = await service.getAllDonationItems(donationId);
+      expect(items).toHaveLength(2);
+
+      const a = items.find((i) => i.itemId === itemA);
+      expect(a?.itemName).toBe('Rice (5lb bag)');
+      const b = items.find((i) => i.itemId === itemB);
+      expect(b).toBeDefined();
     });
   });
 });
