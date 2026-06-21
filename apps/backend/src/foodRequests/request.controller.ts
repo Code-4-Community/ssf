@@ -133,10 +133,19 @@ export class RequestsController {
           items: { type: 'string', enum: Object.values(FoodType) },
           example: [FoodType.DAIRY_FREE_ALTERNATIVES, FoodType.DRIED_BEANS],
         },
+        location: {
+          type: 'string',
+          example: 'Boston, MA',
+        },
         additionalInformation: {
           type: 'string',
           nullable: true,
           example: 'Urgent request',
+        },
+        feedbackOnPriorDonation: {
+          type: 'string',
+          nullable: true,
+          example: 'The last donation was well received by our clients.',
         },
       },
     },
@@ -149,7 +158,9 @@ export class RequestsController {
       requestData.pantryId,
       requestData.requestedSize,
       requestData.requestedFoodTypes,
+      requestData.location,
       requestData.additionalInformation,
+      requestData.feedbackOnPriorDonation,
     );
   }
 

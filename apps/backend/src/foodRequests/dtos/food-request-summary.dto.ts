@@ -10,7 +10,9 @@ export class FoodRequestSummaryDto {
   requestId!: number;
   requestedSize!: RequestSize;
   requestedFoodTypes!: FoodType[];
+  location!: string;
   additionalInformation!: string | null;
+  feedbackOnPriorDonation!: string | null;
   requestedAt!: Date;
   status!: FoodRequestStatus;
   pantry!: FoodRequestPantry;

@@ -3,6 +3,7 @@ import {
   Flex,
   Button,
   Textarea,
+  Input,
   Menu,
   Text,
   Dialog,
@@ -42,21 +43,46 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   useModalBodyCleanup();
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>([]);
   const [requestedSize, setRequestedSize] = useState<string>('');
+  const [locationCity, setLocationCity] = useState<string>('');
+  const [locationState, setLocationState] = useState<string>('');
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [feedbackOnPriorDonation, setFeedbackOnPriorDonation] =
+    useState<string>('');
   const [alertState, setAlertMessage] = useAlert();
 
-  const isFormValid = requestedSize !== '' && selectedFoodTypes.length > 0;
+  const isFormValid =
+    requestedSize !== '' &&
+    selectedFoodTypes.length > 0 &&
+    locationCity.trim() !== '' &&
+    locationState.trim() !== '';
 
   useEffect(() => {
     if (isOpen) {
       if (previousRequest) {
         setSelectedFoodTypes(previousRequest.requestedFoodTypes || []);
         setRequestedSize(previousRequest.requestedSize || '');
+        // location is stored as a single "City, State" string; split it back
+        // out on the last comma so each input is prefilled independently.
+        const prevLocation = previousRequest.location || '';
+        const commaIdx = prevLocation.lastIndexOf(',');
+        if (commaIdx >= 0) {
+          setLocationCity(prevLocation.slice(0, commaIdx).trim());
+          setLocationState(prevLocation.slice(commaIdx + 1).trim());
+        } else {
+          setLocationCity(prevLocation.trim());
+          setLocationState('');
+        }
         setAdditionalNotes(previousRequest.additionalInformation || '');
+        setFeedbackOnPriorDonation(
+          previousRequest.feedbackOnPriorDonation || '',
+        );
       } else {
         setSelectedFoodTypes([]);
         setRequestedSize('');
+        setLocationCity('');
+        setLocationState('');
         setAdditionalNotes('');
+        setFeedbackOnPriorDonation('');
       }
     }
   }, [isOpen, previousRequest, setAlertMessage]);
@@ -65,7 +91,9 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
+      location: `${locationCity.trim()}, ${locationState.trim()}`,
       additionalInformation: additionalNotes || undefined,
+      feedbackOnPriorDonation: feedbackOnPriorDonation || undefined,
       requestedFoodTypes: selectedFoodTypes,
     };
 
@@ -189,9 +217,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                       textStyle="p2"
                     >
-                      {selectedFoodTypes.length > 0
-                        ? `Select more food types`
-                        : 'Select food types'}
+                      Select more food types
                       <ChevronDownIcon />
                     </Button>
                   </Menu.Trigger>
@@ -248,6 +274,89 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                     )
                   }
                 />
+              </Field.Root>
+
+              <Field.Root required mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Location
+                  </Text>
+                </Field.Label>
+                <Flex w="full" gap={3}>
+                  <Input
+                    flex={1}
+                    pl={2.5}
+                    placeholder="City"
+                    _placeholder={{
+                      color: 'neutral.300',
+                      fontFamily: 'Inter',
+                      fontWeight: 400,
+                    }}
+                    size="lg"
+                    textStyle="p2"
+                    bgColor="white"
+                    borderColor="neutral.100"
+                    color={locationCity !== '' ? 'neutral.800' : 'neutral.300'}
+                    value={locationCity}
+                    onChange={(e) => setLocationCity(e.target.value)}
+                  />
+                  <Input
+                    flex={1}
+                    pl={2.5}
+                    placeholder="State"
+                    _placeholder={{
+                      color: 'neutral.300',
+                      fontFamily: 'Inter',
+                      fontWeight: 400,
+                    }}
+                    size="lg"
+                    textStyle="p2"
+                    bgColor="white"
+                    borderColor="neutral.100"
+                    color={locationState !== '' ? 'neutral.800' : 'neutral.300'}
+                    value={locationState}
+                    onChange={(e) => setLocationState(e.target.value)}
+                  />
+                </Flex>
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>
+                  <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                    Feedback on Prior Donation
+                  </Text>
+                </Field.Label>
+                <Textarea
+                  pl={2.5}
+                  placeholder="How did your last donation go?"
+                  _placeholder={{
+                    color: 'neutral.300',
+                    fontFamily: 'Inter',
+                    fontWeight: 400,
+                  }}
+                  size="lg"
+                  textStyle="p2"
+                  color={
+                    feedbackOnPriorDonation !== ''
+                      ? 'neutral.800'
+                      : 'neutral.300'
+                  }
+                  value={feedbackOnPriorDonation}
+                  onChange={(e) => {
+                    const inputText = e.target.value;
+                    const words = inputText.trim().split(/\s+/);
+
+                    if (words.length <= 250) {
+                      setFeedbackOnPriorDonation(e.target.value);
+                    } else {
+                      setAlertMessage('Exceeded word limit', AlertStatus.ERROR);
+                    }
+                  }}
+                />
+
+                <Field.HelperText color="neutral.600">
+                  Max 250 words
+                </Field.HelperText>
               </Field.Root>
 
               <Field.Root mb={4}>

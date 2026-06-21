@@ -261,7 +261,7 @@ describe('OrdersService', () => {
         items: [
           {
             id: 1,
-            foodType: FoodType.SEED_BUTTERS,
+            foodType: FoodType.SPREADS_SEED_BUTTERS,
             name: 'Peanut Butter (16oz)',
             quantity: 10,
           },
@@ -273,7 +273,7 @@ describe('OrdersService', () => {
           },
           {
             id: 3,
-            foodType: FoodType.REFRIGERATED_MEALS,
+            foodType: FoodType.FROZEN_MEALS,
             name: 'Canned Green Beans',
             quantity: 5,
           },
