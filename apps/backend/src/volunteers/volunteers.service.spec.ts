@@ -170,6 +170,7 @@ describe('VolunteersService', () => {
           phone: '555-040-0401',
           role: 'volunteer',
           userCognitoSub: '',
+          active: true,
           pantryIds: [1],
         },
         {
@@ -180,6 +181,7 @@ describe('VolunteersService', () => {
           phone: '555-040-0402',
           role: 'volunteer',
           userCognitoSub: '',
+          active: true,
           pantryIds: [2, 3],
         },
         {
@@ -190,6 +192,7 @@ describe('VolunteersService', () => {
           phone: '555-040-0403',
           role: 'volunteer',
           userCognitoSub: '',
+          active: true,
           pantryIds: [3],
         },
         {
@@ -200,6 +203,7 @@ describe('VolunteersService', () => {
           phone: '555-040-0404',
           role: 'volunteer',
           userCognitoSub: '',
+          active: true,
           pantryIds: [1],
         },
       ]);

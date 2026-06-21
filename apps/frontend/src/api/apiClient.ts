@@ -91,6 +91,12 @@ export class ApiClient {
     );
   }
 
+  public async getUserStats(userId: number) {
+    return this.axiosInstance
+      .get(`/api/users/${userId}/stats`)
+      .then((response) => response.data);
+  }
+
   public async postDonation(body: CreateDonationDto): Promise<Donation> {
     return this.axiosInstance
       .post('/api/donations/', body)
