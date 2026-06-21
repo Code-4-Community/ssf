@@ -304,7 +304,7 @@ export const emailTemplates = {
         params.volunteerName
       }, at <a href="mailto:${params.volunteerEmail}">${
       params.volunteerEmail
-    } </a> or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
+    }</a> or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
     </p>
     <p>
       Thank you so much.
