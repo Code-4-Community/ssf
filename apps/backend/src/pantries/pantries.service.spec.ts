@@ -1417,5 +1417,68 @@ describe('PantriesService', () => {
       });
       expect(warnSpy).not.toHaveBeenCalled();
     });
+
+    it('chunks the bcc recipients into groups of at most 49 to stay within the SES recipient limit', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const MAX_BCC_PER_EMAIL = 49;
+
+      // Seed enough approved pantries to require multiple chunks (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 100; i++) {
+        const pantryName = `Chunk Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `chunk-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      // Re-fetch exactly as the service does so the ordering matches.
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const allBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+
+      const expectedChunks: string[][] = [];
+      for (let i = 0; i < allBccEmails.length; i += MAX_BCC_PER_EMAIL) {
+        expectedChunks.push(allBccEmails.slice(i, i + MAX_BCC_PER_EMAIL));
+      }
+      expect(expectedChunks.length).toBeGreaterThan(1);
+
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // Clear the calls made while seeding pantries via addPantry.
+      mockEmailsService.sendEmails.mockClear();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        expectedChunks.length,
+      );
+      expectedChunks.forEach((chunk, index) => {
+        expect(chunk.length).toBeLessThanOrEqual(MAX_BCC_PER_EMAIL);
+        expect(mockEmailsService.sendEmails).toHaveBeenNthCalledWith(
+          index + 1,
+          {
+            toEmail: SENDER_EMAIL,
+            bccEmails: chunk,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+          },
+        );
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
   });
 });

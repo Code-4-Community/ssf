@@ -288,15 +288,20 @@ export class PantriesService {
 
     const message = emailTemplates.pantryReceiveNewFoodRequest();
 
-    try {
-      await this.emailsService.sendEmails({
-        toEmail: senderEmail,
-        bccEmails,
-        subject: message.subject,
-        bodyHtml: message.bodyHTML,
-      });
-    } catch {
-      this.logger.warn('Failed to send food request reminder to pantries.');
+    const MAX_BCC_PER_EMAIL = 49;
+    for (let i = 0; i < bccEmails.length; i += MAX_BCC_PER_EMAIL) {
+      const bccChunk = bccEmails.slice(i, i + MAX_BCC_PER_EMAIL);
+
+      try {
+        await this.emailsService.sendEmails({
+          toEmail: senderEmail,
+          bccEmails: bccChunk,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn('Failed to send food request reminder to pantries.');
+      }
     }
   }
 
