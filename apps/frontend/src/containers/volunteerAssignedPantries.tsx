@@ -377,7 +377,7 @@ const AssignedPantries: React.FC = () => {
                           color="neutral.800"
                         >
                           {isRefrigeratorFriendly(pantry)
-                            ? 'Refrigerator-Friendly'
+                            ? 'Refrigerator/Freezer-Friendly'
                             : 'Not Refrigerator-Friendly'}
                         </Box>
                       </Box>

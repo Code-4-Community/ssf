@@ -340,7 +340,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Checkbox.Indicator />
                       </Checkbox.Control>
                       <Checkbox.Label color="neutral.700" fontWeight={400}>
-                        Make Donation Recurring
+                        Make Donation Recurring Reminders
                       </Checkbox.Label>
                     </Checkbox.Root>
                   </Stack>

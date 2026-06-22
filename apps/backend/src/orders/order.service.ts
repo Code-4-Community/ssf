@@ -356,6 +356,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
         pantryName: request.pantry.pantryName,
         pantryAddress: pantryAddress,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
