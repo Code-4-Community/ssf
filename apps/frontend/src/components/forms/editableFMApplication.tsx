@@ -16,11 +16,7 @@ import {
   FoodManufacturer,
   UpdateFoodManufacturerApplicationDto,
 } from '../../types/types';
-import {
-  Allergen,
-  DonateWastedFood,
-  ManufacturerAttribute,
-} from '../../types/manufacturerEnums';
+import { Allergen, DonateWastedFood } from '../../types/manufacturerEnums';
 import { formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
@@ -32,7 +28,6 @@ import {
   Field,
   EditField,
   EditRadio,
-  EditSelect,
   EditMultiSelect,
 } from '@components/editableComponents';
 import { useAlert } from '../../hooks/alert';
@@ -40,7 +35,6 @@ import { FloatingAlert } from '@components/floatingAlert';
 
 const allergenOptions = Object.values(Allergen);
 const donateWastedFoodOptions = Object.values(DonateWastedFood);
-const manufacturerAttributeOptions = Object.values(ManufacturerAttribute);
 
 type FormState = {
   secondaryContactFirstName: string;
@@ -52,13 +46,10 @@ type FormState = {
   unlistedProductAllergens: string[];
   facilityFreeAllergens: string[];
   productsGlutenFree: string;
-  productsContainSulfites: string;
   productsSustainableExplanation: string;
   inKindDonations: string;
   donateWastedFood: string;
-  manufacturerAttribute: string;
   additionalComments: string;
-  newsletterSubscription: string;
 };
 
 function buildFormState(app: FoodManufacturer): FormState {
@@ -72,18 +63,10 @@ function buildFormState(app: FoodManufacturer): FormState {
     unlistedProductAllergens: app.unlistedProductAllergens ?? [],
     facilityFreeAllergens: app.facilityFreeAllergens ?? [],
     productsGlutenFree: app.productsGlutenFree ? 'Yes, always' : 'No',
-    productsContainSulfites: app.productsContainSulfites ? 'Yes' : 'No',
     productsSustainableExplanation: app.productsSustainableExplanation ?? '',
     inKindDonations: app.inKindDonations ? 'Yes' : 'No',
     donateWastedFood: app.donateWastedFood ?? '',
-    manufacturerAttribute: app.manufacturerAttribute ?? '',
     additionalComments: app.additionalComments ?? '',
-    newsletterSubscription:
-      app.newsletterSubscription != null
-        ? app.newsletterSubscription
-          ? 'Yes'
-          : 'No'
-        : '',
   };
 }
 
@@ -94,7 +77,6 @@ function validateRequired(form: FormState): boolean {
     form.unlistedProductAllergens.length > 0 &&
     form.facilityFreeAllergens.length > 0 &&
     !!form.productsGlutenFree &&
-    !!form.productsContainSulfites &&
     !!form.productsSustainableExplanation.trim() &&
     !!form.inKindDonations &&
     !!form.donateWastedFood
@@ -169,18 +151,12 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         unlistedProductAllergens: form.unlistedProductAllergens as Allergen[],
         facilityFreeAllergens: form.facilityFreeAllergens as Allergen[],
         productsGlutenFree: form.productsGlutenFree === 'Yes, always',
-        productsContainSulfites: form.productsContainSulfites === 'Yes',
         productsSustainableExplanation:
           form.productsSustainableExplanation || undefined,
         inKindDonations: form.inKindDonations === 'Yes',
         donateWastedFood:
           (form.donateWastedFood as DonateWastedFood) || undefined,
-        manufacturerAttribute:
-          (form.manufacturerAttribute as ManufacturerAttribute) || undefined,
         additionalComments: form.additionalComments || undefined,
-        newsletterSubscription: form.newsletterSubscription
-          ? form.newsletterSubscription === 'Yes'
-          : undefined,
       };
       const updated = await ApiClient.updateFoodManufacturerApplicationData(
         application.foodManufacturerId,
@@ -314,10 +290,6 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
               value={application.productsGlutenFree ? 'Yes, always' : 'No'}
             />
             <Field
-              label="Does product contain sulfites?"
-              value={application.productsContainSulfites ? 'Yes' : 'No'}
-            />
-            <Field
               label="Provides in-kind food donations"
               value={application.inKindDonations ? 'Yes' : 'No'}
             />
@@ -331,22 +303,8 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
             value={application.productsSustainableExplanation}
           />
           <Field
-            label="Food Manufacturer is"
-            value={application.manufacturerAttribute}
-          />
-          <Field
             label="Additional Information"
             value={application.additionalComments}
-          />
-          <Field
-            label="Subscribed to Newsletter"
-            value={
-              application.newsletterSubscription != null
-                ? application.newsletterSubscription
-                  ? 'Yes'
-                  : 'No'
-                : undefined
-            }
           />
         </Section>
       </VStack>
@@ -453,15 +411,6 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         />
 
         <EditRadio
-          label="Does product contain sulfites?"
-          name="productsContainSulfites"
-          value={form.productsContainSulfites}
-          options={['Yes', 'No']}
-          onChange={(v) => setField('productsContainSulfites', v)}
-          required
-        />
-
-        <EditRadio
           label="Provides in-kind food donations"
           name="inKindDonations"
           value={form.inKindDonations}
@@ -488,28 +437,12 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
           required
         />
 
-        <EditSelect
-          label="Food Manufacturer is"
-          name="manufacturerAttribute"
-          value={form.manufacturerAttribute}
-          options={manufacturerAttributeOptions}
-          onChange={(v) => setField('manufacturerAttribute', v)}
-        />
-
         <EditField
           label="Additional Information"
           name="additionalComments"
           value={form.additionalComments}
           onChange={(v) => setField('additionalComments', v)}
           textarea
-        />
-
-        <EditRadio
-          label="Subscribed to Newsletter"
-          name="newsletterSubscription"
-          value={form.newsletterSubscription}
-          options={['Yes', 'No']}
-          onChange={(v) => setField('newsletterSubscription', v)}
         />
 
         {alertState && (

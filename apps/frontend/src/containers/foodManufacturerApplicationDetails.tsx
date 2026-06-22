@@ -317,14 +317,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                       {application.foodManufacturerWebsite}
                     </Text>
                   </GridItem>
-                  {application.manufacturerAttribute && (
-                    <GridItem>
-                      <Text {...fieldHeaderStyles}>Manufacturer Attribute</Text>
-                      <Text {...fieldContentStyles}>
-                        {application.manufacturerAttribute}
-                      </Text>
-                    </GridItem>
-                  )}
                 </Grid>
 
                 <Box>
@@ -357,14 +349,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                     </Text>
                   </GridItem>
                   <GridItem>
-                    <Text {...fieldHeaderStyles}>
-                      Products Contain Sulfites?
-                    </Text>
-                    <Text {...fieldContentStyles}>
-                      {application.productsContainSulfites ? 'Yes' : 'No'}
-                    </Text>
-                  </GridItem>
-                  <GridItem>
                     <Text {...fieldHeaderStyles}>In-Kind Donations?</Text>
                     <Text {...fieldContentStyles}>
                       {application.inKindDonations ? 'Yes' : 'No'}
@@ -391,13 +375,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                   <Text {...fieldHeaderStyles}>Additional Comments</Text>
                   <Text {...fieldContentStyles}>
                     {application.additionalComments || '-'}
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>Subscribed to Newsletter</Text>
-                  <Text {...fieldContentStyles}>
-                    {application.newsletterSubscription ? 'Yes' : 'No'}
                   </Text>
                 </Box>
               </VStack>
