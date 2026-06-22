@@ -351,8 +351,9 @@ describe('PantriesController', () => {
   });
 
   describe('getOrders', () => {
-    it('should return orders for a pantry', async () => {
-      const pantryId = 24;
+    it('should return orders for the authenticated pantry user', async () => {
+      const req = { user: { id: 5 } };
+      const pantry: Partial<Pantry> = { pantryId: 24 };
 
       const mockOrders: Partial<OrderSummary>[] = [
         {
@@ -363,16 +364,18 @@ describe('PantriesController', () => {
         },
       ];
 
+      mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
       mockOrdersService.getOrdersByPantry.mockResolvedValue(
         mockOrders as OrderSummary[],
       );
 
-      const result = await controller.getOrders(pantryId);
+      const result = await controller.getOrders(req as AuthenticatedRequest);
 
       expect(result).toEqual(mockOrders);
       expect(result).toHaveLength(2);
       expect(result[0].orderId).toBe(26);
       expect(result[1].orderId).toBe(27);
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(5);
       expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
     });
   });
@@ -536,7 +539,9 @@ describe('PantriesController', () => {
   });
 
   describe('getFoodRequests', () => {
-    it('should call requestsService.find and return all food requests for a specific pantry', async () => {
+    it('should call requestsService.find and return all food requests for the authenticated pantry user', async () => {
+      const req = { user: { id: 7 } };
+      const pantry: Partial<Pantry> = { pantryId: 1 };
       const foodRequests: Partial<FoodRequest>[] = [
         foodRequest1,
         {
@@ -544,18 +549,19 @@ describe('PantriesController', () => {
           pantryId: 1,
         },
       ];
-      const pantryId = 1;
 
+      mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
       mockRequestsService.findAllForPantry.mockResolvedValueOnce(
         foodRequests as FoodRequest[],
       );
 
-      const result = await controller.getFoodRequests(pantryId);
+      const result = await controller.getFoodRequests(
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(foodRequests);
-      expect(mockRequestsService.findAllForPantry).toHaveBeenCalledWith(
-        pantryId,
-      );
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(7);
+      expect(mockRequestsService.findAllForPantry).toHaveBeenCalledWith(1);
     });
   });
 });

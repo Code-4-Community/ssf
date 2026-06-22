@@ -14,6 +14,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
@@ -288,8 +289,12 @@ describe('RequestsService', () => {
     });
 
     it('should not send email when pantry has no volunteers', async () => {
-      // Harbor Community Center - no volunteers assigned
-      const pantryId = 5;
+      // update the database so that approved pantry 2 has no volunteers
+      const pantryId = 2;
+      await testDataSource.query(`
+        DELETE FROM volunteer_assignments WHERE pantry_id = ${pantryId}
+      `);
+
       const pantry = await testDataSource.getRepository(Pantry).findOne({
         where: { pantryId },
         relations: ['pantryUser', 'volunteers'],
@@ -334,6 +339,28 @@ describe('RequestsService', () => {
           'Additional info',
         ),
       ).rejects.toThrow(new NotFoundException('Pantry 999 not found'));
+    });
+
+    it('should throw ConflictException for denied pantry', async () => {
+      await expect(
+        service.create(
+          4,
+          RequestSize.MEDIUM,
+          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          'Additional info',
+        ),
+      ).rejects.toThrow(new ConflictException('Pantry 4 not approved'));
+    });
+
+    it('should throw ConflictException for pending pantry', async () => {
+      await expect(
+        service.create(
+          5,
+          RequestSize.MEDIUM,
+          [FoodType.DRIED_BEANS, FoodType.REFRIGERATED_MEALS],
+          'Additional info',
+        ),
+      ).rejects.toThrow(new ConflictException('Pantry 5 not approved'));
     });
   });
 
@@ -707,7 +734,16 @@ describe('RequestsService', () => {
     });
 
     it('returns empty matchingItems array for no available matching items', async () => {
-      const result = await service.getAvailableItems(2, 3);
+      // update FM ID 2 to have none of the food types requested in request ID 4
+      await testDataSource.query(`
+        UPDATE donation_items di
+        SET reserved_quantity = quantity
+        FROM donations d
+        WHERE di.donation_id = d.donation_id
+        AND d.food_manufacturer_id = 2
+        AND di.food_type IN ('Whole-Grain Cookies', 'Dairy-Free Alternatives', 'Nut-Free Granola Bars')
+      `);
+      const result = await service.getAvailableItems(4, 2);
       expect(result.matchingItems).toHaveLength(0);
     });
 
@@ -725,6 +761,12 @@ describe('RequestsService', () => {
     it('throws NotFoundException for non-existent manufacturer', async () => {
       await expect(service.getAvailableItems(1, 999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 999 not found'),
+      );
+    });
+
+    it('throws ConflictException for non-approved manufacturer', async () => {
+      await expect(service.getAvailableItems(1, 3)).rejects.toThrow(
+        new ConflictException('Food Manufacturer 3 not approved'),
       );
     });
   });

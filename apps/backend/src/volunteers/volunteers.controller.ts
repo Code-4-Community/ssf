@@ -7,6 +7,11 @@ import { Assignments, VolunteerOrder } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+import { CheckOwnership, OwnerIdResolver } from '../auth/ownership.decorator';
+
+const resolveVolunteerAuthorizedUserIds: OwnerIdResolver = async ({
+  entityId,
+}) => [entityId];
 
 @Controller('volunteers')
 export class VolunteersController {
@@ -21,7 +26,11 @@ export class VolunteersController {
     return this.volunteersService.getVolunteersAndPantryAssignments();
   }
 
-  @Roles(Role.VOLUNTEER, Role.ADMIN)
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: resolveVolunteerAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
@@ -47,8 +56,10 @@ export class VolunteersController {
     return this.volunteersService.getRecentOrders(req.user.id);
   }
 
-  // returns all orders globally
-  // only includes actionCompletion for orders assigned to the requesting volunteer
+  @CheckOwnership({
+    idParam: 'id',
+    resolver: resolveVolunteerAuthorizedUserIds,
+  })
   @Roles(Role.VOLUNTEER)
   @Get('/:id/orders')
   async getVolunteerOrders(

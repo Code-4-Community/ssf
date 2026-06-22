@@ -11,7 +11,11 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import ApiClient from '@api/apiClient';
-import { PantryWithUser, UpdatePantryApplicationDto } from '../../types/types';
+import {
+  AlertStatus,
+  PantryWithUser,
+  UpdatePantryApplicationDto,
+} from '../../types/types';
 import {
   Activity,
   RefrigeratedDonation,
@@ -42,6 +46,8 @@ import {
   EditAddressSection,
 } from '@components/editableComponents';
 import { AuthError } from 'aws-amplify/auth';
+import { useAlert } from '../../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 const allergenClientOptions = [
   'Less than 10',
@@ -255,7 +261,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
   onEditingChange,
 }) => {
   const [application, setApplication] = useState<PantryWithUser | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [alertState, setAlertMessage] = useAlert();
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<FormState | null>(null);
 
@@ -268,7 +274,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         setForm(buildFormState(data));
       }
     } catch {
-      setError('Could not load application details. Please try again later.');
+      setAlertMessage(
+        'Could not load application details. Please try again later.',
+        AlertStatus.ERROR,
+      );
     }
   }, []);
 
@@ -292,12 +301,14 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
     if (!form || !application) return;
 
     if (!validateRequired(form)) {
-      setError('Please complete all required fields before saving.');
+      setAlertMessage(
+        'Please complete all required fields before saving.',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
     setIsSaving(true);
-    setError(null);
     try {
       const restrictions = [...form.restrictions];
       if (
@@ -380,23 +391,37 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         const status = err.response?.status;
         if (status === 400) {
           const messages = err.response?.data?.message;
-          setError(
+          setAlertMessage(
             Array.isArray(messages)
               ? messages.join(' ')
               : 'Invalid input. Please check your entries and try again.',
+            AlertStatus.ERROR,
           );
         } else if (status === 403) {
-          setError('You do not have permission to edit this profile.');
+          setAlertMessage(
+            'You do not have permission to edit this profile.',
+            AlertStatus.ERROR,
+          );
         } else if (status === 404) {
-          setError('This pantry profile could not be found.');
+          setAlertMessage(
+            'This pantry profile could not be found.',
+            AlertStatus.ERROR,
+          );
         } else if (status === 500) {
-          setError('A server error occurred while saving. Please try again.');
+          setAlertMessage(
+            'A server error occurred while saving. Please try again.',
+            AlertStatus.ERROR,
+          );
         } else {
-          setError('Failed to save changes. Please try again.');
+          setAlertMessage(
+            'Failed to save changes. Please try again.',
+            AlertStatus.ERROR,
+          );
         }
       } else if (err instanceof AuthError) {
-        setError(
+        setAlertMessage(
           'Your session may have expired. Please refresh or log in again.',
+          AlertStatus.ERROR,
         );
       }
     } finally {
@@ -408,7 +433,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
     return (
       <Center py={16}>
         <Text textStyle="p2" color="neutral.500">
-          {error ?? 'Application not found.'}
+          {alertState?.message ?? 'Application not found.'}
         </Text>
       </Center>
     );
@@ -815,10 +840,13 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
           helperText="Please share any feedback you have received."
         />
 
-        {error && (
-          <Text color="red" fontSize="14px" mb={2}>
-            {error}
-          </Text>
+        {alertState && (
+          <FloatingAlert
+            key={alertState.id}
+            message={alertState.message}
+            status={alertState.status}
+            timeout={6000}
+          />
         )}
 
         <HStack justify="flex-end" gap={3} mt={6}>
