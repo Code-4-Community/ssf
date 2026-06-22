@@ -746,7 +746,6 @@ describe('OrdersService', () => {
         relations: ['foodManufacturerRepresentative'],
       })) as FoodManufacturer;
 
-      const pantry = request.pantry;
       const pantryAddress = `${request.pantry.shipmentAddressLine1}${
         request.pantry.shipmentAddressLine2
           ? `<br />${request.pantry.shipmentAddressLine2}`
@@ -769,7 +768,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
-        pantryName: pantry.pantryName,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
+        pantryName: request.pantry.pantryName,
         pantryAddress,
         volunteerName: assignee.firstName + ' ' + assignee.lastName,
         volunteerEmail: assignee.email,
@@ -1168,7 +1168,46 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       });
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
+
+    it('throw BadRequestException if pantry is denied', async () => {
+      const pantryId = 4;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
+
+    it('throw BadRequestException if pantry is pending', async () => {
+      const pantryId = 5;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
   });
+
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;

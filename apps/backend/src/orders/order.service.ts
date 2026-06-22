@@ -30,6 +30,7 @@ import { FoodRequest } from '../foodRequests/request.entity';
 import { emailTemplates } from '../emails/emailTemplates';
 import { UsersService } from '../users/users.service';
 import { OrderSummary } from '../pantries/types';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class OrdersService {
@@ -40,13 +41,12 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private pantriesService: PantriesService,
     private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
@@ -123,6 +123,7 @@ export class OrdersService {
         createdAt: o.createdAt,
         shippedAt: o.shippedAt,
         deliveredAt: o.deliveredAt,
+        pantryId: o.request.pantryId,
         pantryName: o.request.pantry.pantryName,
         assignee: o.assignee,
         actionCompletion,
@@ -163,6 +164,7 @@ export class OrdersService {
       createdAt: o.createdAt,
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
@@ -211,6 +213,14 @@ export class OrdersService {
         if (manufacturer.status !== ApplicationStatus.APPROVED) {
           throw new BadRequestException(
             `Manufacturer ${manufacturerId} is not approved`,
+          );
+        }
+
+        const pantry = await this.pantriesService.findOne(request.pantryId);
+
+        if (pantry.status !== ApplicationStatus.APPROVED) {
+          throw new BadRequestException(
+            `Pantry ${request.pantryId} is not approved`,
           );
         }
 
@@ -346,6 +356,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
         pantryName: request.pantry.pantryName,
         pantryAddress: pantryAddress,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
@@ -452,6 +463,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           pantry: {
             pantryId: true,
             pantryName: true,
+            status: true,
           },
         },
       },

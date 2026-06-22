@@ -9,7 +9,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
   const colors = ['blue.core', 'red', 'yellow.hover', 'teal.ssf'];
 
   return (
-    <SimpleGrid columns={Object.keys(stats).length} gap={6} mx={8} my={4}>
+    <SimpleGrid columns={Object.keys(stats).length} gap={4} mb={16}>
       {Object.entries(stats).map(([key, value], index) => {
         const color = colors[index % colors.length];
 
