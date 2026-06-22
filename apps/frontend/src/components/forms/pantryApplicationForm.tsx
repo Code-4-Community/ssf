@@ -635,11 +635,8 @@ const PantryApplicationForm: React.FC = () => {
                   textStyle="p2"
                   size="sm"
                 >
-                  {restrictions.length > 0
-                    ? `Select more restrictions`
-                    : 'Select restrictions'}
+                  Select Restrictions
                   <ChevronDownIcon />
-
                   <input
                     type="text"
                     name="restrictions-required"
@@ -920,11 +917,8 @@ const PantryApplicationForm: React.FC = () => {
                   textStyle="p2"
                   size="sm"
                 >
-                  {languages.length > 0
-                    ? `Select more languages`
-                    : 'Select languages'}
+                  Select languages
                   <ChevronDownIcon />
-
                   <input
                     type="text"
                     name="languages-required"
@@ -1032,9 +1026,7 @@ const PantryApplicationForm: React.FC = () => {
                   textStyle="p2"
                   size="sm"
                 >
-                  {activities.length > 0
-                    ? `Select more activities`
-                    : 'Select activities'}
+                  Select activities
                   <ChevronDownIcon />
                 </Button>
               </Menu.Trigger>

@@ -278,11 +278,8 @@ const ManufacturerApplicationForm: React.FC = () => {
                   textStyle="p2"
                   size="sm"
                 >
-                  {unlistedProductAllergens.length > 0
-                    ? `Select more allergens`
-                    : 'Select allergens'}
+                  Select allergens
                   <ChevronDownIcon />
-
                   <input
                     type="text"
                     name="unlistedProductAllergens-required"
@@ -382,11 +379,8 @@ const ManufacturerApplicationForm: React.FC = () => {
                   textStyle="p2"
                   size="sm"
                 >
-                  {facilityFreeAllergens.length > 0
-                    ? `Select more allergens`
-                    : 'Select allergens'}
+                  Select allergens
                   <ChevronDownIcon />
-
                   <input
                     type="text"
                     name="facilityFreeAllergens-required"
@@ -610,8 +604,9 @@ const ManufacturerApplicationForm: React.FC = () => {
               />
               <Checkbox.Label {...fieldHeaderStyles}>
                 By submitting this form, you agree to receive automated emails
-                from Securing Safe Food (SSF) Corp. should your pantry be
-                enrolled in our program. <Field.RequiredIndicator color="red" />
+                from Securing Safe Food (SSF) Corp. should your food
+                manufacturer be enrolled in our program.{' '}
+                <Field.RequiredIndicator color="red" />
               </Checkbox.Label>
             </Checkbox.Root>
           </Field.Root>
