@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/users.entity';
 import { Donation } from '../donations/donations.entity';
-import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { Allergen, DonateWastedFood } from './types';
 import { ApplicationStatus } from '../shared/types';
 
 @Entity('food_manufacturers')
@@ -86,9 +86,6 @@ export class FoodManufacturer {
   @Column({ name: 'products_gluten_free', type: 'boolean' })
   productsGlutenFree!: boolean;
 
-  @Column({ name: 'products_contain_sulfites', type: 'boolean' })
-  productsContainSulfites!: boolean;
-
   @Column({
     name: 'products_sustainable_explanation',
     type: 'text',
@@ -107,23 +104,11 @@ export class FoodManufacturer {
   donateWastedFood!: DonateWastedFood;
 
   @Column({
-    name: 'manufacturer_attribute',
-    type: 'enum',
-    enum: ManufacturerAttribute,
-    enumName: 'manufacturer_attribute_enum',
-    nullable: true,
-  })
-  manufacturerAttribute!: ManufacturerAttribute | null;
-
-  @Column({
     name: 'additional_comments',
     type: 'text',
     nullable: true,
   })
   additionalComments!: string | null;
-
-  @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription!: boolean | null;
 
   @OneToMany(() => Donation, (donation) => donation.foodManufacturer)
   donations!: Donation[];

@@ -9,8 +9,8 @@ import {
 import { User } from '../users/users.entity';
 import {
   Activity,
-  AllergensConfidence,
   ClientVisitFrequency,
+  DedicatedAllergyFriendly,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ServeAllergicChildren,
@@ -49,9 +49,9 @@ export class Pantry {
     name: 'shipment_address_country',
     type: 'varchar',
     length: 255,
-    nullable: true,
+    default: 'US',
   })
-  shipmentAddressCountry!: string | null;
+  shipmentAddressCountry!: string;
 
   @Column({ name: 'mailing_address_line_1', type: 'varchar', length: 255 })
   mailingAddressLine1!: string;
@@ -77,9 +77,9 @@ export class Pantry {
     name: 'mailing_address_country',
     type: 'varchar',
     length: 255,
-    nullable: true,
+    default: 'US',
   })
-  mailingAddressCountry!: string | null;
+  mailingAddressCountry!: string;
 
   @Column({ name: 'allergen_clients', type: 'varchar', length: 25 })
   allergenClients!: string;
@@ -98,9 +98,8 @@ export class Pantry {
   @Column({
     name: 'delivery_window_instructions',
     type: 'text',
-    nullable: true,
   })
-  deliveryWindowInstructions!: string | null;
+  deliveryWindowInstructions!: string;
 
   @Column({
     name: 'reserve_food_for_allergic',
@@ -115,42 +114,33 @@ export class Pantry {
 
   @Column({
     name: 'dedicated_allergy_friendly',
-    type: 'boolean',
+    type: 'enum',
+    enum: DedicatedAllergyFriendly,
+    enumName: 'dedicated_allergy_friendly_enum',
   })
-  dedicatedAllergyFriendly!: boolean;
+  dedicatedAllergyFriendly!: DedicatedAllergyFriendly;
 
   @Column({
     name: 'client_visit_frequency',
     type: 'enum',
     enum: ClientVisitFrequency,
     enumName: 'client_visit_frequency_enum',
-    nullable: true,
   })
-  clientVisitFrequency!: ClientVisitFrequency | null;
-
-  @Column({
-    name: 'identify_allergens_confidence',
-    type: 'enum',
-    enum: AllergensConfidence,
-    enumName: 'allergens_confidence_enum',
-    nullable: true,
-  })
-  identifyAllergensConfidence!: AllergensConfidence | null;
+  clientVisitFrequency!: ClientVisitFrequency;
 
   @Column({
     name: 'serve_allergic_children',
     type: 'enum',
     enum: ServeAllergicChildren,
     enumName: 'serve_allergic_children_enum',
-    nullable: true,
   })
-  serveAllergicChildren!: ServeAllergicChildren | null;
-
-  @Column({ name: 'newsletter_subscription', type: 'boolean', nullable: true })
-  newsletterSubscription!: boolean | null;
+  serveAllergicChildren!: ServeAllergicChildren;
 
   @Column({ name: 'restrictions', type: 'text', array: true })
   restrictions!: string[];
+
+  @Column({ name: 'languages', type: 'text', array: true })
+  languages!: string[];
 
   @Column({ name: 'has_email_contact', type: 'boolean' })
   hasEmailContact!: boolean;
@@ -225,8 +215,9 @@ export class Pantry {
     enum: Activity,
     enumName: 'activity_enum',
     array: true,
+    nullable: true,
   })
-  activities!: Activity[];
+  activities!: Activity[] | null;
 
   @Column({ name: 'activities_comments', type: 'text', nullable: true })
   activitiesComments!: string | null;

@@ -72,11 +72,11 @@ const SignupPage: React.FC = () => {
               Food Manufacturer (Donor) Partner
             </Button>
           </VStack>
-          <Text textStyle="p2" color="neutral.600" textAlign="center" mt={24}>
+          <Text textStyle="p" color="neutral.800" textAlign="center" mt={24}>
             Already have an account?{' '}
             <Link
-              textStyle="p2"
-              color="neutral.600"
+              textStyle="p"
+              color="neutral.800"
               onClick={() => navigate(ROUTES.LOGIN)}
               variant="underline"
               textDecorationColor="neutral.300"
