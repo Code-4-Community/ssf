@@ -455,6 +455,12 @@ export interface CreateFoodRequestBody {
   additionalInformation?: string;
 }
 
+export interface UpdateFoodRequestBody {
+  requestedSize?: RequestSize;
+  requestedFoodTypes?: FoodType[];
+  additionalInformation?: string | null;
+}
+
 export interface CreateDonationDto {
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;

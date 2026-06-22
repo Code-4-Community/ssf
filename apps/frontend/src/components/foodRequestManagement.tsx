@@ -16,6 +16,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
@@ -43,6 +44,8 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
     string[]
   >([]);
   const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
+    useState<FoodRequestSummaryDto | null>(null);
+  const [deleteRequest, setDeleteRequest] =
     useState<FoodRequestSummaryDto | null>(null);
   const [selectedActionRequest, setSelectedActionRequest] =
     useState<FoodRequestSummaryDto | null>(null);
@@ -393,6 +396,24 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                 if (initialRequestId) {
                   navigate(location.pathname, { replace: true });
                 }
+              }}
+              onSuccess={loadRequests}
+              onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
+            />
+          )}
+
+          {deleteRequest && (
+            <PantryDeleteRequestActionModal
+              request={deleteRequest}
+              isOpen={deleteRequest !== null}
+              onClose={() => setDeleteRequest(null)}
+              onSuccess={() => {
+                setAlertMessage(
+                  'Successfully deleted food request.',
+                  AlertStatus.INFO,
+                );
+                loadRequests();
+                setSelectedViewDetailsRequest(null);
               }}
             />
           )}

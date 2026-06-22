@@ -43,6 +43,7 @@ import {
   BulkUpdateTrackingCostDto,
   UpdateDonationItemDetailsDto,
   PendingApplication,
+  UpdateFoodRequestBody,
   DonationReminderDto,
 } from 'types/types';
 
@@ -108,6 +109,17 @@ export class ApiClient {
     return this.axiosInstance
       .post('/api/requests/', body)
       .then((response) => response.data);
+  }
+
+  public async updateFoodRequest(
+    requestId: number,
+    body: UpdateFoodRequestBody,
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/requests/${requestId}`, body);
+  }
+
+  public async deleteFoodRequest(requestId: number): Promise<void> {
+    await this.axiosInstance.delete(`/api/requests/${requestId}`);
   }
 
   public async closeFoodRequest(requestId: number): Promise<void> {
