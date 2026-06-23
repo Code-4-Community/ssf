@@ -208,7 +208,6 @@ describe('FoodManufacturersController', () => {
         unlistedProductAllergens: [Allergen.EGG],
         facilityFreeAllergens: [Allergen.EGG],
         productsGlutenFree: true,
-        productsContainSulfites: false,
         productsSustainableExplanation: 'We use eco-friendly packaging.',
         inKindDonations: true,
         donateWastedFood: DonateWastedFood.SOMETIMES,

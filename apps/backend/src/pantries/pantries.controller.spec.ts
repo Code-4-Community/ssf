@@ -7,8 +7,8 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
 import {
   Activity,
-  AllergensConfidence,
   ClientVisitFrequency,
+  DedicatedAllergyFriendly,
   PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
@@ -69,18 +69,17 @@ describe('PantriesController', () => {
     pantryName: 'New Community Pantry',
     allergenClients: '10 to 20',
     restrictions: ['Peanut allergy', 'Gluten'],
+    languages: ['English', 'Spanish'],
     refrigeratedDonation: RefrigeratedDonation.YES,
-    dedicatedAllergyFriendly: true,
+    dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
     reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
     reservationExplanation: 'We have a dedicated allergen-free section',
     clientVisitFrequency: ClientVisitFrequency.DAILY,
-    identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
     serveAllergicChildren: ServeAllergicChildren.YES_MANY,
     activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
     activitiesComments: 'We provide nutritional counseling',
     itemsInStock: 'Canned goods, pasta',
     needMoreOptions: 'More fresh produce',
-    newsletterSubscription: true,
   } as PantryApplicationDto;
 
   // Mock Food Request
@@ -308,7 +307,6 @@ describe('PantriesController', () => {
         secondaryContactEmail: 'john.doe@example.com',
         refrigeratedDonation: RefrigeratedDonation.NO,
         reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-        newsletterSubscription: false,
         itemsInStock: 'Canned beans, rice',
       };
 
