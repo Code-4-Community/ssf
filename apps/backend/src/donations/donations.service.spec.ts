@@ -71,8 +71,8 @@ async function insertDonationItem(
 ): Promise<number> {
   const result = await testDataSource.query(
     `INSERT INTO donation_items
-      (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-     VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+      (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 3.4, 3.4, 'Granola', false)
      RETURNING item_id`,
     [donationId, qty, reserved],
   );
@@ -1258,6 +1258,8 @@ describe('DonationService', () => {
                 quantity: 5,
                 foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
                 foodRescue: false,
+                ozPerItem: 3.4,
+                estimatedValue: 3.4,
               },
             ],
           },
@@ -1400,21 +1402,6 @@ describe('DonationService', () => {
 
       expect(spy).toHaveBeenCalled();
     });
-
-    it('does not call checkAndFulfillDonation when no items are fully confirmed', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const spy = jest.spyOn(service, 'checkAndFulfillDonation');
-
-      await service.updateDonationItemDetails(donationId, [
-        { itemId, ozPerItem: 5.0 },
-      ]);
-
-      const dbDonation = await service.findOne(donationId);
-      expect(dbDonation.status).toBe(DonationStatus.MATCHED);
-      expect(spy).not.toHaveBeenCalled();
-    });
   });
 
   describe('checkAndFulfillDonation', () => {
@@ -1425,8 +1412,8 @@ describe('DonationService', () => {
     ): Promise<number> {
       const result = await testDataSource.query(
         `INSERT INTO donation_items
-          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES ($1, 'Test Item', $2, $3, 'Granola', true)
+          (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 3.4, 3.4, 'Granola', true)
          RETURNING item_id`,
         [donationId, qty, reserved],
       );

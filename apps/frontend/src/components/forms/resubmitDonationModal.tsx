@@ -116,12 +116,8 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
         items: items.map((item) => ({
           itemName: item.itemName,
           quantity: item.quantity,
-          ozPerItem:
-            item.ozPerItem != null ? Number(item.ozPerItem) : undefined,
-          estimatedValue:
-            item.estimatedValue != null
-              ? Number(item.estimatedValue)
-              : undefined,
+          ozPerItem: Number(item.ozPerItem),
+          estimatedValue: Number(item.estimatedValue),
           foodType: item.foodType,
           foodRescue: item.foodRescue,
         })),

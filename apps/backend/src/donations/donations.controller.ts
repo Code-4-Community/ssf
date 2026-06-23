@@ -102,8 +102,8 @@ export class DonationsController {
             properties: {
               itemName: { type: 'string', example: 'Canned Beans' },
               quantity: { type: 'integer', example: 1 },
-              ozPerItem: { type: 'number', example: 0.01, nullable: true },
-              estimatedValue: { type: 'number', example: 0.01, nullable: true },
+              ozPerItem: { type: 'number', example: 0.01 },
+              estimatedValue: { type: 'number', example: 0.01 },
               foodType: {
                 type: 'enum',
                 enum: Object.values(FoodType),

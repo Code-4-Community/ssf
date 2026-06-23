@@ -119,8 +119,8 @@ export class FoodManufacturersService {
               (sum, a) => sum + a.allocatedQuantity,
               0,
             ),
-            ozPerItem: item.ozPerItem ?? undefined,
-            estimatedValue: item.estimatedValue ?? undefined,
+            ozPerItem: item.ozPerItem,
+            estimatedValue: item.estimatedValue,
             foodRescue: item.foodRescue,
           });
 

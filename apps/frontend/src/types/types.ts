@@ -204,8 +204,8 @@ export interface DonationItemWithAllocatedQuantity {
   foodType: FoodType;
   allocatedQuantity: number;
   detailsConfirmed: boolean;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodRescue: boolean;
 }
 
@@ -229,8 +229,8 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
@@ -472,8 +472,8 @@ export interface CreateDonationDto {
 export interface CreateDonationItemDto {
   itemName: string;
   quantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
@@ -597,9 +597,9 @@ export interface BulkUpdateTrackingCostDto {
 
 export interface UpdateDonationItemDetailsDto {
   itemId: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
-  foodRescue?: boolean;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodRescue: boolean;
 }
 
 export enum AlertStatus {
