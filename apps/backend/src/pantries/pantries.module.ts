@@ -1,6 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PantriesService } from './pantries.service';
+import { PantriesSchedulerService } from './pantries.scheduler';
 import { PantriesController } from './pantries.controller';
 import { Pantry } from './pantries.entity';
 import { AuthModule } from '../auth/auth.module';
@@ -21,7 +22,7 @@ import { RequestsModule } from '../foodRequests/request.module';
     forwardRef(() => RequestsModule),
   ],
   controllers: [PantriesController],
-  providers: [PantriesService],
+  providers: [PantriesService, PantriesSchedulerService],
   exports: [PantriesService],
 })
 export class PantriesModule {}

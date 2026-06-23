@@ -1384,4 +1384,192 @@ describe('PantriesService', () => {
       expect(result['Value Received']).toBe('$0');
     });
   });
+
+  describe('sendFoodRequestReminderToApprovedPantries', () => {
+    const SENDER_EMAIL = 'sender@securingsafefood.org';
+    const originalSenderEmail = process.env.AWS_SES_SENDER_EMAIL;
+
+    afterEach(() => {
+      process.env.AWS_SES_SENDER_EMAIL = originalSenderEmail;
+      jest.restoreAllMocks();
+    });
+
+    it('logs a warning and sends no emails when there are no approved pantries', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { status: ApplicationStatus.APPROVED },
+          { status: ApplicationStatus.DENIED },
+        );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No approved food pantries, skipping email sending.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning and sends no emails when the sender email is not set', async () => {
+      delete process.env.AWS_SES_SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Skipping food request reminder: AWS_SES_SENDER_EMAIL is not set.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when sending the reminder email fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SES failure'),
+      );
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries for batch 1',
+        ),
+      );
+    });
+
+    it('reports the correct batch number when a later batch fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+
+      // Seed enough approved pantries to require more than one batch (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 60; i++) {
+        const pantryName = `Batch Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `batch-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // First batch succeeds, second batch fails.
+      mockEmailsService.sendEmails.mockClear();
+      mockEmailsService.sendEmails
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('SES failure'));
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries for batch 2',
+        ),
+      );
+    });
+
+    it('sends a single email to the sender with all approved pantry emails as bcc', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const expectedBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SENDER_EMAIL,
+        bccEmails: expectedBccEmails,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('chunks the bcc recipients into groups of at most 49 to stay within the SES recipient limit', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const MAX_BCC_PER_EMAIL = 49;
+
+      // Seed enough approved pantries to require multiple chunks (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 100; i++) {
+        const pantryName = `Chunk Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `chunk-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      // Re-fetch exactly as the service does so the ordering matches.
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const allBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+
+      const expectedChunks: string[][] = [];
+      for (let i = 0; i < allBccEmails.length; i += MAX_BCC_PER_EMAIL) {
+        expectedChunks.push(allBccEmails.slice(i, i + MAX_BCC_PER_EMAIL));
+      }
+      expect(expectedChunks.length).toBeGreaterThan(1);
+
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // Clear the calls made while seeding pantries via addPantry.
+      mockEmailsService.sendEmails.mockClear();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        expectedChunks.length,
+      );
+      expectedChunks.forEach((chunk, index) => {
+        expect(chunk.length).toBeLessThanOrEqual(MAX_BCC_PER_EMAIL);
+        expect(mockEmailsService.sendEmails).toHaveBeenNthCalledWith(
+          index + 1,
+          {
+            toEmail: SENDER_EMAIL,
+            bccEmails: chunk,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+          },
+        );
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
 });
