@@ -1440,7 +1440,46 @@ describe('PantriesService', () => {
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          'Failed to send food request reminder to pantries.',
+          'Failed to send food request reminder to pantries for batch 1',
+        ),
+      );
+    });
+
+    it('reports the correct batch number when a later batch fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+
+      // Seed enough approved pantries to require more than one batch (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 60; i++) {
+        const pantryName = `Batch Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `batch-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // First batch succeeds, second batch fails.
+      mockEmailsService.sendEmails.mockClear();
+      mockEmailsService.sendEmails
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('SES failure'));
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries for batch 2',
         ),
       );
     });

@@ -300,7 +300,11 @@ export class PantriesService {
           bodyHtml: message.bodyHTML,
         });
       } catch {
-        this.logger.warn('Failed to send food request reminder to pantries.');
+        this.logger.warn(
+          `Failed to send food request reminder to pantries for batch ${
+            i / MAX_BCC_PER_EMAIL + 1
+          }`,
+        );
       }
     }
   }
