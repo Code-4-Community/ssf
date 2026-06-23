@@ -537,6 +537,9 @@ const FmCompleteRequiredActionsModal: React.FC<
                           textAlign="center"
                         >
                           Food Rescue
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
                       </Table.Row>
                     </Table.Header>
