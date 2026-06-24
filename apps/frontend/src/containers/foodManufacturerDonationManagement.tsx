@@ -13,7 +13,12 @@ import {
 import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
+import {
+  AlertStatus,
+  Donation,
+  DonationDetails,
+  DonationStatus,
+} from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
@@ -22,6 +27,7 @@ import { ROUTES } from '../routes';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 
 const MAX_PER_STATUS = 5;
 
@@ -53,10 +59,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.FULFILLED]: 1,
   });
 
-  // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
-    null,
-  );
+  const [selectedViewDetailsDonation, setSelectedViewDetailsDonation] =
+    useState<Donation | null>(null);
+  const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async () => {
@@ -156,8 +161,15 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     if (!donationIdParam) return;
 
     const id = Number(donationIdParam);
-    setSelectedDonationId(id);
-  }, [searchParams, setAlertMessage]);
+
+    // match the ID to a donation from any of the three donation status buckets
+    const match = Object.values(statusDonations)
+      .flat()
+      .find((d) => d.donation.donationId === id);
+    if (match) {
+      setSelectedViewDetailsDonation(match.donation);
+    }
+  }, [searchParams, statusDonations]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -260,6 +272,39 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         />
       )}
 
+      {deleteDonation && (
+        <FMDeleteDonationActionModal
+          donation={deleteDonation}
+          isOpen={deleteDonation !== null}
+          onClose={() => {
+            setSelectedViewDetailsDonation(deleteDonation);
+            setDeleteDonation(null);
+          }}
+          onSuccess={() => {
+            setAlertMessage(
+              'Successfully deleted donation items.',
+              AlertStatus.INFO,
+            );
+            fetchDonations();
+            setDeleteDonation(null);
+            setSelectedViewDetailsDonation(null);
+          }}
+        />
+      )}
+
+      {selectedViewDetailsDonation && (
+        <DonationDetailsModal
+          donation={selectedViewDetailsDonation}
+          isOpen={selectedViewDetailsDonation !== null}
+          onClose={() => setSelectedViewDetailsDonation(null)}
+          onSuccess={() => fetchDonations()}
+          onDelete={() => {
+            setDeleteDonation(selectedViewDetailsDonation);
+            setSelectedViewDetailsDonation(null);
+          }}
+        />
+      )}
+
       {Object.values(DonationStatus).map((status) => {
         const allDonationsByStatus = statusDonations[status] || [];
 
@@ -275,16 +320,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               donations={displayedDonations}
               status={status}
               colors={DONATION_STATUS_COLORS[status]}
-              selectedDonationId={selectedDonationId}
-              onDonationSelect={setSelectedDonationId}
+              onDonationSelect={setSelectedViewDetailsDonation}
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
-              onDonationClose={() => {
-                setSelectedDonationId(null);
-                navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
-              }}
             />
           </Box>
         );
@@ -297,13 +337,11 @@ interface DonationStatusSectionProps {
   donations: DonationDetails[];
   status: DonationStatus;
   colors: string[];
-  onDonationSelect: (donationId: number | null) => void;
-  selectedDonationId: number | null;
+  onDonationSelect: (donation: Donation | null) => void;
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
-  onDonationClose: () => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -313,10 +351,8 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   onDonationSelect,
   totalDonations,
   currentPage,
-  selectedDonationId,
   onPageChange,
   onActionSelect,
-  onDonationClose,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -439,17 +475,10 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       <Link
                         textDecorationColor="black"
                         variant="underline"
-                        onClick={() => onDonationSelect(donation.donationId)}
+                        onClick={() => onDonationSelect(donation)}
                       >
                         {donation.donationId}
                       </Link>
-                      {selectedDonationId === donation.donationId && (
-                        <DonationDetailsModal
-                          donation={donation}
-                          isOpen={true}
-                          onClose={onDonationClose}
-                        />
-                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

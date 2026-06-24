@@ -8,12 +8,10 @@ import { NavigateFunction } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
   User,
-  Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
-  Allocation,
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
@@ -45,6 +43,7 @@ import {
   PendingApplication,
   UpdateFoodRequestBody,
   DonationReminderDto,
+  ReplaceDonationItemDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -441,6 +440,17 @@ export class ApiClient {
       `/api/donations/${donationId}/item-details`,
       items,
     );
+  }
+
+  public async editDonationItems(
+    donationId: number,
+    items: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/donations/${donationId}/item`, items);
+  }
+
+  public async deleteDonation(donationId: number): Promise<void> {
+    await this.axiosInstance.delete(`/api/donations/${donationId}`);
   }
 
   public async updateFoodManufacturerApplicationData(

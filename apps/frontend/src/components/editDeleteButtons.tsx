@@ -2,7 +2,7 @@ import { HStack } from '@chakra-ui/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface EditDeleteButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export const EditButton: React.FC<EditDeleteButtonProps> = ({ onClick }) => {

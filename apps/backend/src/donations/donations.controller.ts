@@ -64,11 +64,6 @@ export class DonationsController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @CheckOwnership({
-    idParam: 'foodManufacturerId',
-    idSource: 'body',
-    resolver: resolveCreateDonationAuthorizedUserIds,
-  })
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
