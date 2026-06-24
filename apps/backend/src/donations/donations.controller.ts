@@ -16,23 +16,59 @@ import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { FoodType } from '../donationItems/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+
+const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(DonationService).findOne(entityId),
+    (donation: Donation) => [
+      donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
+
+// For creating a donation, the foodManufacturerId comes from the request body
+// and the only authorized non-admin caller is the manufacturer representative.
+const resolveCreateDonationAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(FoodManufacturersService).findOne(entityId),
+    (manufacturer: FoodManufacturer) => [
+      manufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
 
 @Controller('donations')
 export class DonationsController {
   constructor(private donationService: DonationService) {}
 
+  @Roles(Role.ADMIN)
   @Get()
   async getAllDonations(): Promise<Donation[]> {
     return this.donationService.getAll();
   }
 
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    idSource: 'body',
+    resolver: resolveCreateDonationAuthorizedUserIds,
+  })
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
@@ -66,8 +102,8 @@ export class DonationsController {
             properties: {
               itemName: { type: 'string', example: 'Canned Beans' },
               quantity: { type: 'integer', example: 1 },
-              ozPerItem: { type: 'number', example: 0.01, nullable: true },
-              estimatedValue: { type: 'number', example: 0.01, nullable: true },
+              ozPerItem: { type: 'number', example: 0.01 },
+              estimatedValue: { type: 'number', example: 0.01 },
               foodType: {
                 type: 'enum',
                 enum: Object.values(FoodType),
@@ -88,28 +124,10 @@ export class DonationsController {
     return this.donationService.create(body, req.user.id);
   }
 
-  @Patch('/:donationId/fulfill')
-  async fulfillDonation(
-    @Param('donationId', ParseIntPipe) donationId: number,
-  ): Promise<void> {
-    await this.donationService.fulfill(donationId);
-  }
-
-  @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
+  @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'donationId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(DonationService).findOne(entityId),
-        (donation: Donation) =>
-          services
-            .get(FoodManufacturersService)
-            .findOne(donation.foodManufacturer.foodManufacturerId),
-        (manufacturer: FoodManufacturer) => [
-          manufacturer.foodManufacturerRepresentative.id,
-        ],
-      );
-    },
+    resolver: resolveDonationAuthorizedUserIds,
   })
   @Patch('/:donationId/item-details')
   async updateDonationItemDetails(
@@ -120,6 +138,25 @@ export class DonationsController {
     await this.donationService.updateDonationItemDetails(donationId, body);
   }
 
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
+  @Patch('/:donationId/item')
+  async editDonationItems(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body(new ParseArrayPipe({ items: ReplaceDonationItemDto }))
+    body: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.donationService.editDonationItems(donationId, body);
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
   @Delete('/:donationId')
   async deleteDonation(
     @Param('donationId', ParseIntPipe) donationId: number,

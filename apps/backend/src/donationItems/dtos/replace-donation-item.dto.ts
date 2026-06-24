@@ -5,12 +5,19 @@ import {
   IsEnum,
   IsNotEmpty,
   Length,
+  IsOptional,
   IsInt,
   IsBoolean,
 } from 'class-validator';
 import { FoodType } from '../types';
 
-export class CreateDonationItemDto {
+// itemId present = update row, else add
+export class ReplaceDonationItemDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  itemId?: number;
+
   @IsString()
   @IsNotEmpty()
   @Length(1, 255)

@@ -20,7 +20,7 @@ import { AuthService } from '../auth/auth.service';
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
-import { Allergen, DonateWastedFood, ManufacturerAttribute } from './types';
+import { Allergen, DonateWastedFood } from './types';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { DataSource } from 'typeorm';
@@ -49,7 +49,6 @@ const dto: FoodManufacturerApplicationDto = {
   unlistedProductAllergens: [Allergen.SHELLFISH, Allergen.TREE_NUTS],
   facilityFreeAllergens: [Allergen.PEANUT, Allergen.FISH],
   productsGlutenFree: false,
-  productsContainSulfites: false,
   productsSustainableExplanation: 'none',
   inKindDonations: false,
   donateWastedFood: DonateWastedFood.ALWAYS,
@@ -297,9 +296,7 @@ describe('FoodManufacturersService', () => {
         secondaryContactLastName: 'Johnson',
         secondaryContactEmail: 'sarah.johnson@example.com',
         secondaryContactPhone: '555-555-5557',
-        manufacturerAttribute: ManufacturerAttribute.ORGANIC,
         additionalComments: 'We specialize in allergen-free products',
-        newsletterSubscription: true,
       };
 
       await service.addFoodManufacturer(optionalDto);
@@ -315,7 +312,6 @@ describe('FoodManufacturersService', () => {
       );
       expect(saved?.status).toBe(ApplicationStatus.PENDING);
       expect(saved?.secondaryContactFirstName).toBe('Sarah');
-      expect(saved?.manufacturerAttribute).toBe(ManufacturerAttribute.ORGANIC);
     });
 
     it('should still save manufacturer to database if representative email send fails', async () => {

@@ -7,8 +7,8 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { OrdersService } from '../orders/order.service';
 import {
   Activity,
-  AllergensConfidence,
   ClientVisitFrequency,
+  DedicatedAllergyFriendly,
   PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
@@ -69,18 +69,17 @@ describe('PantriesController', () => {
     pantryName: 'New Community Pantry',
     allergenClients: '10 to 20',
     restrictions: ['Peanut allergy', 'Gluten'],
+    languages: ['English', 'Spanish'],
     refrigeratedDonation: RefrigeratedDonation.YES,
-    dedicatedAllergyFriendly: true,
+    dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
     reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
     reservationExplanation: 'We have a dedicated allergen-free section',
     clientVisitFrequency: ClientVisitFrequency.DAILY,
-    identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
     serveAllergicChildren: ServeAllergicChildren.YES_MANY,
     activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
     activitiesComments: 'We provide nutritional counseling',
     itemsInStock: 'Canned goods, pasta',
     needMoreOptions: 'More fresh produce',
-    newsletterSubscription: true,
   } as PantryApplicationDto;
 
   // Mock Food Request
@@ -308,7 +307,6 @@ describe('PantriesController', () => {
         secondaryContactEmail: 'john.doe@example.com',
         refrigeratedDonation: RefrigeratedDonation.NO,
         reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-        newsletterSubscription: false,
         itemsInStock: 'Canned beans, rice',
       };
 
@@ -353,8 +351,9 @@ describe('PantriesController', () => {
   });
 
   describe('getOrders', () => {
-    it('should return orders for a pantry', async () => {
-      const pantryId = 24;
+    it('should return orders for the authenticated pantry user', async () => {
+      const req = { user: { id: 5 } };
+      const pantry: Partial<Pantry> = { pantryId: 24 };
 
       const mockOrders: Partial<OrderSummary>[] = [
         {
@@ -365,16 +364,18 @@ describe('PantriesController', () => {
         },
       ];
 
+      mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
       mockOrdersService.getOrdersByPantry.mockResolvedValue(
         mockOrders as OrderSummary[],
       );
 
-      const result = await controller.getOrders(pantryId);
+      const result = await controller.getOrders(req as AuthenticatedRequest);
 
       expect(result).toEqual(mockOrders);
       expect(result).toHaveLength(2);
       expect(result[0].orderId).toBe(26);
       expect(result[1].orderId).toBe(27);
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(5);
       expect(mockOrdersService.getOrdersByPantry).toHaveBeenCalledWith(24);
     });
   });
@@ -538,7 +539,9 @@ describe('PantriesController', () => {
   });
 
   describe('getFoodRequests', () => {
-    it('should call requestsService.find and return all food requests for a specific pantry', async () => {
+    it('should call requestsService.find and return all food requests for the authenticated pantry user', async () => {
+      const req = { user: { id: 7 } };
+      const pantry: Partial<Pantry> = { pantryId: 1 };
       const foodRequests: Partial<FoodRequest>[] = [
         foodRequest1,
         {
@@ -546,18 +549,19 @@ describe('PantriesController', () => {
           pantryId: 1,
         },
       ];
-      const pantryId = 1;
 
+      mockPantriesService.findByUserId.mockResolvedValueOnce(pantry as Pantry);
       mockRequestsService.findAllForPantry.mockResolvedValueOnce(
         foodRequests as FoodRequest[],
       );
 
-      const result = await controller.getFoodRequests(pantryId);
+      const result = await controller.getFoodRequests(
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(foodRequests);
-      expect(mockRequestsService.findAllForPantry).toHaveBeenCalledWith(
-        pantryId,
-      );
+      expect(mockPantriesService.findByUserId).toHaveBeenCalledWith(7);
+      expect(mockRequestsService.findAllForPantry).toHaveBeenCalledWith(1);
     });
   });
 });

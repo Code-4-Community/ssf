@@ -17,6 +17,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -42,6 +43,8 @@ const FormRequests: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [alertState, setAlertMessage] = useAlert();
+  const [deleteRequest, setDeleteRequest] =
+    useState<FoodRequestSummaryDto | null>(null);
 
   const pageSize = 10;
 
@@ -50,7 +53,7 @@ const FormRequests: React.FC = () => {
     setPantryId(pantryId);
     if (pantryId) {
       try {
-        const data = await ApiClient.getPantryRequests(pantryId);
+        const data = await ApiClient.getPantryRequests();
         const sortedData = data
           .slice()
           .sort((a, b) => b.requestId - a.requestId);
@@ -229,7 +232,7 @@ const FormRequests: React.FC = () => {
           ))}
         </Table.Body>
       </Table.Root>
-      {openReadOnlyRequest && (
+      {openReadOnlyRequest && !deleteRequest && (
         <RequestDetailsModal
           request={openReadOnlyRequest}
           isOpen={openReadOnlyRequest !== null}
@@ -238,6 +241,23 @@ const FormRequests: React.FC = () => {
             if (searchParams.get('requestId')) {
               navigate(ROUTES.REQUEST_FORM, { replace: true });
             }
+          }}
+          onSuccess={fetchRequests}
+          onDelete={() => setDeleteRequest(openReadOnlyRequest)}
+        />
+      )}
+      {deleteRequest && (
+        <PantryDeleteRequestActionModal
+          request={deleteRequest}
+          isOpen={deleteRequest !== null}
+          onClose={() => setDeleteRequest(null)}
+          onSuccess={() => {
+            setAlertMessage(
+              'Successfully deleted food request.',
+              AlertStatus.INFO,
+            );
+            fetchRequests();
+            setOpenReadOnlyRequest(null);
           }}
         />
       )}

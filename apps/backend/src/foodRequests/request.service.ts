@@ -371,9 +371,9 @@ export class RequestsService {
     validateId(requestId, 'Request');
 
     if (
-      dto.requestedSize == undefined &&
-      dto.requestedFoodTypes == undefined &&
-      dto.additionalInformation == undefined
+      dto.requestedSize === undefined &&
+      dto.requestedFoodTypes === undefined &&
+      dto.additionalInformation === undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update request',

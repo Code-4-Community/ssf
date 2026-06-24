@@ -37,6 +37,8 @@ jest.setTimeout(60000);
 
 const mockAuthService = {
   adminCreateUser: jest.fn().mockResolvedValue('mock-sub'),
+  adminDisableUser: jest.fn().mockResolvedValue(undefined),
+  adminEnableUser: jest.fn().mockResolvedValue(undefined),
 };
 const mockEmailsService = mock<EmailsService>();
 
@@ -125,6 +127,8 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     mockAuthService.adminCreateUser.mockClear();
+    mockAuthService.adminDisableUser.mockClear();
+    mockAuthService.adminEnableUser.mockClear();
     mockEmailsService.sendEmails.mockClear();
     await testDataSource.runMigrations();
   });
@@ -293,32 +297,110 @@ describe('UsersService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should remove a user by id', async () => {
+  describe('deactivate', () => {
+    it('deactivates an active volunteer: sets active=false and disables Cognito', async () => {
       await testDataSource.query(
-        `DELETE FROM allocations WHERE order_id IN (SELECT order_id FROM orders WHERE assignee_id = 6)`,
+        `UPDATE users SET user_cognito_sub = 'cognito-sub-6' WHERE user_id = 6`,
       );
-      await testDataSource.query(`DELETE FROM orders WHERE assignee_id = 6`);
 
-      const result = await service.remove(6);
+      const before = (await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 })) as User;
 
-      expect(result.email).toBe('james.t@volunteer.org');
+      expect(before.active).toBe(true);
+
+      await service.deactivate(6);
+
+      expect(mockAuthService.adminDisableUser).toHaveBeenCalledWith(
+        'james.t@volunteer.org',
+      );
 
       const fromDb = await testDataSource
         .getRepository(User)
         .findOneBy({ id: 6 });
-      expect(fromDb).toBeNull();
+      expect(fromDb?.active).toBe(false);
     });
 
-    it('should throw NotFoundException when user is not found', async () => {
-      await expect(service.remove(9999)).rejects.toThrow(
-        new NotFoundException('User 9999 not found'),
+    it('skips the Cognito call when the user has no Cognito account', async () => {
+      const before = (await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 })) as User;
+
+      expect(before.userCognitoSub).toBe('');
+
+      await service.deactivate(6);
+
+      expect(mockAuthService.adminDisableUser).not.toHaveBeenCalled();
+
+      const fromDb = await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 });
+      expect(fromDb?.active).toBe(false);
+    });
+
+    it('throws BadRequestException when deactivating an already-inactive user', async () => {
+      const before = (await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 })) as User;
+
+      expect(before.active).toBe(true);
+
+      await service.deactivate(6);
+
+      await expect(service.deactivate(6)).rejects.toThrow(
+        new BadRequestException('User 6 is already inactive'),
       );
     });
 
-    it('should throw error for invalid id', async () => {
-      await expect(service.remove(-1)).rejects.toThrow(
-        new BadRequestException('Invalid User ID'),
+    it('throws NotFoundException when user is not found', async () => {
+      await expect(service.deactivate(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
+      );
+    });
+  });
+
+  describe('reactivate', () => {
+    it('reactivates a deactivated volunteer: sets active=true and enables Cognito', async () => {
+      await testDataSource.query(
+        `UPDATE users SET user_cognito_sub = 'cognito-sub-6' WHERE user_id = 6`,
+      );
+
+      const before = (await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 })) as User;
+
+      expect(before.active).toBe(true);
+
+      await service.deactivate(6);
+      mockAuthService.adminEnableUser.mockClear();
+
+      await service.reactivate(6);
+
+      expect(mockAuthService.adminEnableUser).toHaveBeenCalledWith(
+        'james.t@volunteer.org',
+      );
+
+      const fromDb = await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 });
+      expect(fromDb?.active).toBe(true);
+    });
+
+    it('throws BadRequestException when reactivating an already-active user', async () => {
+      const before = (await testDataSource
+        .getRepository(User)
+        .findOneBy({ id: 6 })) as User;
+
+      expect(before.active).toBe(true);
+
+      await expect(service.reactivate(6)).rejects.toThrow(
+        new BadRequestException('User 6 is already active'),
+      );
+    });
+
+    it('throws NotFoundException when user is not found', async () => {
+      await expect(service.reactivate(9999)).rejects.toThrow(
+        new NotFoundException('User 9999 not found'),
       );
     });
   });
@@ -357,6 +439,8 @@ describe('UsersService', () => {
             itemName: 'Test Item',
             quantity: 10,
             foodType: FoodType.GRANOLA,
+            ozPerItem: 3.4,
+            estimatedValue: 3.4,
             foodRescue: false,
           },
         ],

@@ -747,7 +747,6 @@ describe('OrdersService', () => {
         relations: ['foodManufacturerRepresentative'],
       })) as FoodManufacturer;
 
-      const pantry = request.pantry;
       const pantryAddress = `${request.pantry.shipmentAddressLine1}${
         request.pantry.shipmentAddressLine2
           ? `<br />${request.pantry.shipmentAddressLine2}`
@@ -770,7 +769,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
-        pantryName: pantry.pantryName,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
+        pantryName: request.pantry.pantryName,
         pantryAddress,
         volunteerName: assignee.firstName + ' ' + assignee.lastName,
         volunteerEmail: assignee.email,
@@ -1332,8 +1332,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
     async function insertDonationItem(donationId: number): Promise<number> {
       const [{ item_id }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, food_rescue, details_confirmed)
-         VALUES ($1, 'Test Item', 10, 10, 'Granola', false, false)
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, food_rescue, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 3.4, 3.4, 'Granola', false, false)
          RETURNING item_id`,
         [donationId],
       );
