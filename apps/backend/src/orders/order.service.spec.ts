@@ -1782,18 +1782,18 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         `UPDATE orders SET status = $1 WHERE status = $2`,
         [OrderStatus.DELIVERED, OrderStatus.SHIPPED],
       );
-      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      const logSpy = jest.spyOn(service['logger'], 'log');
 
       await service.sendConfirmDeliveryReminders();
 
-      expect(warnSpy).toHaveBeenCalledWith(
+      expect(logSpy).toHaveBeenCalledWith(
         expect.stringContaining(
           'No pantries with unconfirmed deliveries, skipping email sending.',
         ),
       );
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
 
-      warnSpy.mockRestore();
+      logSpy.mockRestore();
     });
 
     it('sends one personalized reminder per unconfirmed order', async () => {
@@ -1825,10 +1825,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       if (!existingShippedOrder)
         throw new Error('Missing existingShippedOrder test object');
 
-      const before = (await eligibleOrders()).length;
-
-      // Add a second shipped order to the same request (same pantry), shipped
-      // long enough ago to be eligible.
+      // Add a second shipped order to the same request
       const secondOrder = orderRepo.create({
         requestId: existingShippedOrder.requestId,
         foodManufacturerId: existingShippedOrder.foodManufacturerId,
@@ -1840,7 +1837,20 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
       await service.sendConfirmDeliveryReminders();
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(before + 1);
+      const samePantryOrders = (await eligibleOrders()).filter(
+        (o) => o.requestId === existingShippedOrder.requestId,
+      );
+      expect(samePantryOrders.length).toBe(2);
+
+      const sentForSecondOrder = samePantryOrders.find(
+        (o) => o.orderId === secondOrder.orderId,
+      )!;
+      const message = expectedMessageFor(sentForSecondOrder);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: sentForSecondOrder.request.pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
     });
 
     it('does not send a reminder for an order shipped less than a week ago', async () => {
@@ -1868,6 +1878,27 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       await service.sendConfirmDeliveryReminders();
 
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('only sends reminders for orders that are SHIPPED', async () => {
+      const orders = await eligibleOrders();
+      expect(orders.length).toBeGreaterThan(0);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(orders.length);
+
+      const orderRepo = testDataSource.getRepository(Order);
+      // Pulling id out of sent email to assert it is shipped.
+      for (const [{ bodyHtml }] of mockEmailsService.sendEmails.mock.calls) {
+        const match = bodyHtml.match(/orderId=(\d+)/);
+        expect(match).not.toBeNull();
+
+        const orderId = Number(match![1]);
+        const order = await orderRepo.findOneBy({ orderId });
+        expect(order).not.toBeNull();
+        expect(order!.status).toEqual(OrderStatus.SHIPPED);
+      }
     });
 
     it('logs a warning and continues when sending a reminder fails', async () => {

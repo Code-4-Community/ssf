@@ -576,7 +576,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       .getMany();
 
     if (orders.length === 0) {
-      this.logger.warn(
+      this.logger.log(
         'No pantries with unconfirmed deliveries, skipping email sending.',
       );
       return;

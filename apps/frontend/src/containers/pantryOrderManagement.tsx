@@ -151,7 +151,6 @@ const PantryOrderManagement: React.FC = () => {
         match.status === OrderStatus.SHIPPED
       ) {
         setSelectedActionOrder(match);
-        navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
       } else {
         setSelectedOrderId(match.orderId);
       }
