@@ -1,30 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, {
-  ORDER_STATUS_BADGE,
+  DashboardCardType,
   DONATION_STATUS_BADGE,
+  ORDER_STATUS_BADGE,
 } from '@components/dashboardCard';
-import {
-  PendingApplication,
-  OrderSummary,
-  Donation,
-  User,
-  AlertStatus,
-} from '../types/types';
-import { DashboardCardType } from '@components/dashboardCard';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
 import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
 import { DashboardStats } from '@components/dashboardStats';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
+import {
+  AlertStatus,
+  Donation,
+  OrderSummary,
+  PendingApplication,
+  User,
+} from '../types/types';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [pendingApplications, setPendingApplications] = useState<
     PendingApplication[]
   >([]);
@@ -33,71 +34,84 @@ const AdminDashboard: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [stats, setStats] = useState<Record<string, string> | null>(null);
 
-  const fetchPendingApplications = async () => {
-    try {
-      const pendingApplications =
-        await ApiClient.getRecentPendingApplications();
-      setPendingApplications(pendingApplications);
-    } catch {
-      setAlertMessage('Error fetching pending applications', AlertStatus.ERROR);
-    }
-  };
-
-  const fetchRecentOrders = async () => {
-    try {
-      const allOrders = await ApiClient.getAllOrders();
-      const sortedOrders = allOrders.sort(
-        (a: OrderSummary, b: OrderSummary) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      const recentOrders = sortedOrders.slice(0, 2);
-      setRecentOrders(recentOrders);
-    } catch {
-      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
-    }
-  };
-
-  const fetchRecentDonations = async () => {
-    try {
-      const allDonations = await ApiClient.getAllDonations();
-      const sortedDonations = allDonations.sort(
-        (a: Donation, b: Donation) =>
-          new Date(b.dateDonated).getTime() - new Date(a.dateDonated).getTime(),
-      );
-      const recentDonations = sortedDonations.slice(0, 2);
-      setRecentDonations(recentDonations);
-    } catch {
-      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
-    }
-  };
-
-  const fetchMe = async () => {
-    let user: User;
-    try {
-      user = await ApiClient.getMe();
-      setCurrentUser(user);
-    } catch {
-      setAlertMessage(
-        'Authentication error. Please log in and try again.',
-        AlertStatus.ERROR,
-      );
-      return;
-    }
-
-    try {
-      const userStats = await ApiClient.getUserStats(user.id);
-      setStats(userStats);
-    } catch {
-      setAlertMessage('Error fetching dashboard statistics', AlertStatus.ERROR);
-    }
-  };
-
   useEffect(() => {
-    fetchMe();
-    fetchRecentDonations();
-    fetchRecentOrders();
-    fetchPendingApplications();
+    const fetchMe = async () => {
+      let user: User;
+      try {
+        user = await ApiClient.getMe();
+        setCurrentUser(user);
+      } catch {
+        setAlertMessage('Error fetching user data', AlertStatus.ERROR);
+        return;
+      }
+
+      try {
+        const userStats = await ApiClient.getUserStats(user.id);
+        setStats(userStats);
+      } catch {
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    };
+
+    const fetchPendingApplications = async () => {
+      try {
+        const applications = await ApiClient.getRecentPendingApplications();
+        setPendingApplications(applications);
+      } catch {
+        setAlertMessage(
+          'Error fetching pending applications',
+          AlertStatus.ERROR,
+        );
+      }
+    };
+
+    const fetchRecentOrders = async () => {
+      try {
+        const allOrders = await ApiClient.getAllOrders();
+        const sortedOrders = allOrders.sort(
+          (a: OrderSummary, b: OrderSummary) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        setRecentOrders(sortedOrders.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching recent orders', AlertStatus.ERROR);
+      }
+    };
+
+    const fetchRecentDonations = async () => {
+      try {
+        const allDonations = await ApiClient.getAllDonations();
+        const sortedDonations = allDonations.sort(
+          (a: Donation, b: Donation) =>
+            new Date(b.dateDonated).getTime() -
+            new Date(a.dateDonated).getTime(),
+        );
+        setRecentDonations(sortedDonations.slice(0, 2));
+      } catch {
+        setAlertMessage('Error fetching recent donations', AlertStatus.ERROR);
+      }
+    };
+
+    const load = async () => {
+      try {
+        await Promise.all([
+          fetchMe(),
+          fetchPendingApplications(),
+          fetchRecentOrders(),
+          fetchRecentDonations(),
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, [setAlertMessage]);
+
+  if (loading) return null;
 
   const isPageEmpty =
     pendingApplications.length === 0 &&
@@ -122,7 +136,7 @@ const AdminDashboard: React.FC = () => {
 
       {isPageEmpty ? (
         <PageEmptyState
-          subtitle="You have no orders or applications to review at this time."
+          entity="orders or applications to review"
           primaryButtonText="View Pantries"
           primaryButtonLink={ROUTES.PANTRY_MANAGEMENT}
           secondaryButtonText="View Donations"
@@ -135,7 +149,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {pendingApplications.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no pending applications at this time" />
+              <SectionEmptyState entity="pending applications" />
             </Box>
           ) : (
             <Box
@@ -182,7 +196,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {recentOrders.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent orders at this time" />
+              <SectionEmptyState entity="recent orders" />
             </Box>
           ) : (
             <Box
@@ -218,7 +232,7 @@ const AdminDashboard: React.FC = () => {
           </Text>
           {recentDonations.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent donations at this time" />
+              <SectionEmptyState entity="recent donations" />
             </Box>
           ) : (
             <Box

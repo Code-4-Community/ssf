@@ -1,43 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import ApiClient from '@api/apiClient';
 import {
   Box,
   Button,
-  Flex,
-  Table,
-  Heading,
-  Pagination,
-  IconButton,
   ButtonGroup,
+  Flex,
+  Heading,
+  IconButton,
   Link,
+  Pagination,
+  Table,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Mail } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
-import ApiClient from '@api/apiClient';
 import {
   AlertStatus,
   Donation,
   DonationDetails,
   DonationStatus,
 } from '../types/types';
+import { FloatingAlert } from '@components/floatingAlert';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
+import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
+import SectionEmptyState from '@components/sectionEmptyState';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
-import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
+import { ROUTES } from '../routes';
 
 const MAX_PER_STATUS = 5;
 
 const FoodManufacturerDonationManagement: React.FC = () => {
-  const [alertState, setAlertMessage] = useAlert();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const resubmitDonationId: string | null =
     searchParams.get('resubmitDonationId');
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
@@ -111,16 +113,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setCurrentPages(initialPages);
 
-      // On page load, get the food manufacturer id and all appropriate donations
       return grouped;
-    } catch {
+    } catch (error) {
       setAlertMessage('Error fetching donations', AlertStatus.ERROR);
+      return;
     }
-  };
-
-  const handleLogNewDonationSuccess = () => {
-    setAlertMessage('Successfully logged new donation', AlertStatus.INFO);
-    if (manufacturerId !== null) fetchDonations();
   };
 
   const openResubmitFromQueryParam = (
@@ -151,6 +148,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           'Error initializing donation management',
           AlertStatus.ERROR,
         );
+      } finally {
+        setLoading(false);
       }
     };
     init();
@@ -184,6 +183,8 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       [status]: page,
     }));
   };
+
+  if (loading) return null;
 
   return (
     <Box p={12}>
@@ -234,7 +235,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <NewDonationFormModal
-          onDonationSuccess={handleLogNewDonationSuccess}
+          onDonationSuccess={() => fetchDonations()}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
         />
@@ -263,7 +264,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onClose={() => setSelectedActionDonation(null)}
           onSuccess={() => {
             setSelectedActionDonation(null);
-            fetchDonations();
+            if (manufacturerId !== null) fetchDonations();
             setAlertMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
               AlertStatus.INFO,
@@ -395,28 +396,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
       </Box>
 
       {donations.length === 0 ? (
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
-          fontFamily="'Inter', sans-serif"
-          fontSize="sm"
-          color="neutral.600"
-          py={10}
-          gap={2}
-        >
-          <Box mb={2}>
-            <CircleCheck size={24} color="#262626" />
-          </Box>
-          <Box fontWeight="600" fontSize="lg" color="neutral.800">
-            No Donations
-          </Box>
-          <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} donations at this time.
-          </Box>
-        </Box>
+        <SectionEmptyState entity={`${status.toLowerCase()} donations`} />
       ) : (
         <>
           <Table.Root>
