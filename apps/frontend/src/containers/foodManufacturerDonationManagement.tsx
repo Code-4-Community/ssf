@@ -272,24 +272,22 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         />
       )}
 
-      {deleteDonation && (
-        <FMDeleteDonationActionModal
-          donation={deleteDonation}
-          isOpen={deleteDonation !== null}
-          onClose={() => {
-            setDeleteDonation(null);
-          }}
-          onSuccess={() => {
-            setAlertMessage(
-              'Successfully deleted donation items.',
-              AlertStatus.INFO,
-            );
-            fetchDonations();
-            setDeleteDonation(null);
-            setSelectedViewDetailsDonation(null);
-          }}
-        />
-      )}
+      <FMDeleteDonationActionModal
+        donation={deleteDonation}
+        isOpen={deleteDonation !== null}
+        onClose={() => {
+          setDeleteDonation(null);
+        }}
+        onSuccess={() => {
+          setAlertMessage(
+            'Successfully deleted donation items.',
+            AlertStatus.INFO,
+          );
+          fetchDonations();
+          setDeleteDonation(null);
+          setSelectedViewDetailsDonation(null);
+        }}
+      />
 
       {selectedViewDetailsDonation && (
         <DonationDetailsModal
