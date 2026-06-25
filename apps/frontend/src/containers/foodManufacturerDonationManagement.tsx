@@ -277,7 +277,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           donation={deleteDonation}
           isOpen={deleteDonation !== null}
           onClose={() => {
-            setSelectedViewDetailsDonation(deleteDonation);
             setDeleteDonation(null);
           }}
           onSuccess={() => {
@@ -300,7 +299,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onSuccess={() => fetchDonations()}
           onDelete={() => {
             setDeleteDonation(selectedViewDetailsDonation);
-            setSelectedViewDetailsDonation(null);
           }}
         />
       )}

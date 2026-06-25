@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Text,
@@ -31,7 +31,6 @@ import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { EditButton, DeleteButton } from '@components/editDeleteButtons';
 import { Minus } from 'lucide-react';
-import { useCallback } from 'react';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -104,10 +103,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   };
 
   const deleteRow = (id: number) => {
-    if (rows.length > 1) {
-      const newRows = rows.filter((r) => r.id !== id);
-      setRows(newRows);
-    }
+    const newRows = rows.filter((r) => r.id !== id);
+    setRows(newRows);
   };
 
   const handleChange = (id: number, field: string, value: string | boolean) => {
@@ -184,21 +181,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-
-    const fetchData = async () => {
-      try {
-        const itemsData = await ApiClient.getDonationItemsByDonationId(
-          donationId,
-        );
-        setItems(itemsData);
-        setRows(mapItemsToRows(itemsData));
-      } catch {
-        setAlertMessage('Error fetching donation details', AlertStatus.ERROR);
-      }
-    };
-
-    fetchData();
-  }, [isOpen, donationId, setAlertMessage]);
+    loadItems();
+  }, [isOpen, loadItems]);
 
   // Group items by food type
   const groupedItems = items.reduce((acc, item) => {
@@ -248,7 +232,9 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                       <EditButton
                         onClick={() => setIsEditing(true)}
                       ></EditButton>
-                      <DeleteButton onClick={onDelete}></DeleteButton>
+                      {onDelete && (
+                        <DeleteButton onClick={onDelete}></DeleteButton>
+                      )}
                     </>
                   )}
               </HStack>
@@ -414,7 +400,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                               type="number"
                               min={0.01}
                               step={0.01}
-                              value={row.ozPerItem ?? ''}
+                              value={row.ozPerItem}
                               onChange={(e) =>
                                 handleChange(
                                   row.id,
@@ -433,7 +419,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                               type="number"
                               min={0.01}
                               step={0.01}
-                              value={row.valuePerItem ?? ''}
+                              value={row.valuePerItem}
                               onChange={(e) =>
                                 handleChange(
                                   row.id,
@@ -532,9 +518,9 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                     </Text>
 
                     <VStack align="stretch" gap={2}>
-                      {typeItems.map((item, index) => (
+                      {typeItems.map((item, _) => (
                         <Box
-                          key={index}
+                          key={item.itemId}
                           display="flex"
                           p={0}
                           border="1px solid"

@@ -111,7 +111,6 @@ export class DonationsController {
       },
     },
   })
-  @Roles(Role.FOODMANUFACTURER)
   async createDonation(
     @Req() req: AuthenticatedRequest,
     @Body() body: CreateDonationDto,
