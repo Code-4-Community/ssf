@@ -294,7 +294,7 @@ describe('UsersService', () => {
         email: existingFmUser!.email,
         firstName: 'Updated',
         lastName: 'FoodManufacturer',
-        phone: '6666666666',
+        phone: '7777777777',
         role: Role.FOODMANUFACTURER,
       };
 
