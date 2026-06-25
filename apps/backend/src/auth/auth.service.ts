@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import {
   CognitoIdentityProviderClient,
@@ -18,6 +19,7 @@ import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly providerClient: CognitoIdentityProviderClient;
   private readonly clientSecret: string;
 
@@ -89,6 +91,10 @@ export class AuthService {
     try {
       await this.providerClient.send(command);
     } catch (error) {
+      this.logger.error(
+        `Failed to add user ${username} to group ${groupName}`,
+        error,
+      );
       throw new InternalServerErrorException(
         `Failed to add user to group ${groupName}`,
       );

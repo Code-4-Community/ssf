@@ -255,6 +255,60 @@ describe('UsersService', () => {
       });
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
+
+    it('should call adminCreateUser with correct parameters for pantry user', async () => {
+      const existingPantryUser = await testDataSource
+        .getRepository(User)
+        .findOne({
+          where: { role: Role.PANTRY },
+        });
+      expect(existingPantryUser).toBeDefined();
+
+      const createUserDto = {
+        email: existingPantryUser!.email,
+        firstName: 'Updated',
+        lastName: 'Pantry',
+        phone: '5555555555',
+        role: Role.PANTRY,
+      };
+
+      const result = await service.create(createUserDto);
+
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+        role: createUserDto.role,
+      });
+      expect(result.userCognitoSub).toBe('mock-sub');
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('should call adminCreateUser with correct parameters for food manufacturer user', async () => {
+      const existingFmUser = await testDataSource.getRepository(User).findOne({
+        where: { role: Role.FOODMANUFACTURER },
+      });
+      expect(existingFmUser).toBeDefined();
+
+      const createUserDto = {
+        email: existingFmUser!.email,
+        firstName: 'Updated',
+        lastName: 'FoodManufacturer',
+        phone: '6666666666',
+        role: Role.FOODMANUFACTURER,
+      };
+
+      const result = await service.create(createUserDto);
+
+      expect(mockAuthService.adminCreateUser).toHaveBeenCalledWith({
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+        role: createUserDto.role,
+      });
+      expect(result.userCognitoSub).toBe('mock-sub');
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
   });
 
   describe('findOne', () => {
@@ -780,11 +834,11 @@ describe('UsersService', () => {
 
       expect(mockAuthService.addUserToGroup).toHaveBeenCalledWith(
         volunteer!.email,
-        'admin',
+        Role.ADMIN,
       );
       expect(mockAuthService.removeUserFromGroup).toHaveBeenCalledWith(
         volunteer!.email,
-        'volunteer',
+        Role.VOLUNTEER,
       );
     });
 

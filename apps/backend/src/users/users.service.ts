@@ -328,8 +328,8 @@ export class UsersService {
       user.pantries = [];
       await userRepo.save(user);
 
-      await this.authService.addUserToGroup(user.email, 'admin');
-      await this.authService.removeUserFromGroup(user.email, 'volunteer');
+      await this.authService.addUserToGroup(user.email, Role.ADMIN);
+      await this.authService.removeUserFromGroup(user.email, Role.VOLUNTEER);
     });
   }
 }
