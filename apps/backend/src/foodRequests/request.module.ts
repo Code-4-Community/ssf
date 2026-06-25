@@ -9,6 +9,8 @@ import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsModule } from '../emails/email.module';
+import { User } from '../users/users.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -18,9 +20,11 @@ import { EmailsModule } from '../emails/email.module';
       Pantry,
       FoodManufacturer,
       DonationItem,
+      User,
     ]),
     AuthModule,
     EmailsModule,
+    UsersModule,
   ],
   controllers: [RequestsController],
   providers: [RequestsService],

@@ -7,11 +7,17 @@ import DashboardCard, {
 import { FloatingAlert } from '@components/floatingAlert';
 import PageEmptyState from '@components/pageEmptyState';
 import SectionEmptyState from '@components/sectionEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
-import { FoodRequestSummaryDto, User, VolunteerOrder } from '../types/types';
+import {
+  AlertStatus,
+  FoodRequestSummaryDto,
+  User,
+  VolunteerOrder,
+} from '../types/types';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -23,12 +29,23 @@ const VolunteerDashboard: React.FC = () => {
     FoodRequestSummaryDto[]
   >([]);
   const [recentOrders, setRecentOrders] = useState<VolunteerOrder[]>([]);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const currentUser = await ApiClient.getMe();
         setUser(currentUser);
+
+        try {
+          const userStats = await ApiClient.getUserStats(currentUser.id);
+          setStats(userStats);
+        } catch {
+          setAlertMessage(
+            'Error fetching dashboard statistics',
+            AlertStatus.ERROR,
+          );
+        }
 
         const [requests, orders] = await Promise.all([
           ApiClient.getVolunteerAssignedRequests(),
@@ -43,7 +60,7 @@ const VolunteerDashboard: React.FC = () => {
         setRecentFoodRequests(sorted.slice(0, 2));
         setRecentOrders(orders);
       } catch {
-        setAlertMessage('Error fetching dashboard data');
+        setAlertMessage('Error fetching dashboard data', AlertStatus.ERROR);
       } finally {
         setLoading(false);
       }
@@ -62,13 +79,15 @@ const VolunteerDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {user.firstName} {user.lastName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState

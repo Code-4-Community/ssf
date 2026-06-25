@@ -12,22 +12,21 @@ export enum ClientVisitFrequency {
   ONCE_A_MONTH = 'Once a month',
 }
 
-export enum AllergensConfidence {
-  VERY_CONFIDENT = 'Very confident',
-  SOMEWHAT_CONFIDENT = 'Somewhat confident',
-  NOT_VERY_CONFIDENT = 'Not very confident (we need more education!)',
-}
-
 export enum ServeAllergicChildren {
   YES_MANY = 'Yes, many (> 10)',
   YES_FEW = 'Yes, a few (< 10)',
   NO = 'No',
 }
 
+export enum DedicatedAllergyFriendly {
+  YES = 'Yes',
+  NO_BUT_CAN_ACCOMMODATE = 'No but we can accommodate this',
+  NO_CANNOT_ACCOMMODATE = 'No, and we cannot accommodate this',
+}
+
 export enum Activity {
   CREATE_LABELED_SHELF = 'Create labeled shelf',
   PROVIDE_EDUCATIONAL_PAMPHLETS = 'Provide educational pamphlets',
-  TRACK_DIETARY_NEEDS = 'Spreadsheet to track dietary needs',
   POST_RESOURCE_FLYERS = 'Post allergen-free resource flyers',
   SURVEY_CLIENTS = 'Survey clients to determine medical dietary needs',
   COLLECT_FEEDBACK = 'Collect feedback from allergen-avoidant clients',

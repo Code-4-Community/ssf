@@ -265,6 +265,50 @@ export class PantriesService {
     });
   }
 
+  async sendFoodRequestReminderToApprovedPantries(): Promise<void> {
+    const pantries = await this.repo.find({
+      where: { status: ApplicationStatus.APPROVED },
+      relations: ['pantryUser'],
+    });
+
+    if (pantries.length === 0) {
+      this.logger.warn('No approved food pantries, skipping email sending.');
+      return;
+    }
+
+    const senderEmail = process.env.AWS_SES_SENDER_EMAIL;
+    if (!senderEmail) {
+      this.logger.warn(
+        'Skipping food request reminder: AWS_SES_SENDER_EMAIL is not set.',
+      );
+      return;
+    }
+
+    const bccEmails = pantries.map((pantry) => pantry.pantryUser.email);
+
+    const message = emailTemplates.pantryReceiveNewFoodRequest();
+
+    const MAX_BCC_PER_EMAIL = 49;
+    for (let i = 0; i < bccEmails.length; i += MAX_BCC_PER_EMAIL) {
+      const bccChunk = bccEmails.slice(i, i + MAX_BCC_PER_EMAIL);
+
+      try {
+        await this.emailsService.sendEmails({
+          toEmail: senderEmail,
+          bccEmails: bccChunk,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn(
+          `Failed to send food request reminder to pantries for batch ${
+            i / MAX_BCC_PER_EMAIL + 1
+          }`,
+        );
+      }
+    }
+  }
+
   async getApprovedPantryNames(): Promise<string[]> {
     const pantries = await this.repo.find({
       select: ['pantryName'],
@@ -313,7 +357,7 @@ export class PantriesService {
     pantry.shipmentAddressCity = pantryData.shipmentAddressCity;
     pantry.shipmentAddressState = pantryData.shipmentAddressState;
     pantry.shipmentAddressZip = pantryData.shipmentAddressZip;
-    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry ?? null;
+    pantry.shipmentAddressCountry = pantryData.shipmentAddressCountry;
 
     // mailing address information
     pantry.mailingAddressLine1 = pantryData.mailingAddressLine1;
@@ -321,25 +365,25 @@ export class PantriesService {
     pantry.mailingAddressCity = pantryData.mailingAddressCity;
     pantry.mailingAddressState = pantryData.mailingAddressState;
     pantry.mailingAddressZip = pantryData.mailingAddressZip;
-    pantry.mailingAddressCountry = pantryData.mailingAddressCountry ?? null;
+    pantry.mailingAddressCountry = pantryData.mailingAddressCountry;
 
     // pantry details information
     pantry.pantryName = pantryData.pantryName;
     pantry.allergenClients = pantryData.allergenClients;
     pantry.restrictions = pantryData.restrictions;
+    pantry.languages = pantryData.languages;
     pantry.refrigeratedDonation = pantryData.refrigeratedDonation;
+    pantry.acceptFoodDeliveries = pantryData.acceptFoodDeliveries;
+    pantry.deliveryWindowInstructions = pantryData.deliveryWindowInstructions;
     pantry.dedicatedAllergyFriendly = pantryData.dedicatedAllergyFriendly;
     pantry.reserveFoodForAllergic = pantryData.reserveFoodForAllergic;
     pantry.reservationExplanation = pantryData.reservationExplanation ?? null;
-    pantry.clientVisitFrequency = pantryData.clientVisitFrequency ?? null;
-    pantry.identifyAllergensConfidence =
-      pantryData.identifyAllergensConfidence ?? null;
-    pantry.serveAllergicChildren = pantryData.serveAllergicChildren ?? null;
-    pantry.activities = pantryData.activities;
+    pantry.clientVisitFrequency = pantryData.clientVisitFrequency;
+    pantry.serveAllergicChildren = pantryData.serveAllergicChildren;
+    pantry.activities = pantryData.activities ?? null;
     pantry.activitiesComments = pantryData.activitiesComments ?? null;
     pantry.itemsInStock = pantryData.itemsInStock;
     pantry.needMoreOptions = pantryData.needMoreOptions;
-    pantry.newsletterSubscription = pantryData.newsletterSubscription ?? null;
 
     // pantry contact is automatically added to User table
     await this.repo.save(pantry);
@@ -394,6 +438,12 @@ export class PantriesService {
     if (pantry.pantryUser.id !== currentUserId) {
       throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
+      );
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot update application for a ${pantry.status} application`,
       );
     }
 
@@ -525,6 +575,10 @@ export class PantriesService {
 
     if (!pantry) {
       throw new NotFoundException(`Pantry with ID ${pantryId} not found`);
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(`Pantry with ID ${pantryId} not approved`);
     }
 
     const uniqueVolunteerIds = new Set([

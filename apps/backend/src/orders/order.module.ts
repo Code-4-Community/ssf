@@ -19,6 +19,8 @@ import { Allocation } from '../allocations/allocations.entity';
 import { Donation } from '../donations/donations.entity';
 import { PantriesModule } from '../pantries/pantries.module';
 import { EmailsModule } from '../emails/email.module';
+import { User } from '../users/users.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -30,17 +32,19 @@ import { EmailsModule } from '../emails/email.module';
       DonationItem,
       Allocation,
       Donation,
+      User,
     ]),
     AllocationModule,
     forwardRef(() => AuthModule),
     AWSS3Module,
     MulterModule.register({ dest: './uploads' }),
     forwardRef(() => RequestsModule),
+    forwardRef(() => PantriesModule),
     ManufacturerModule,
     DonationItemsModule,
     DonationModule,
-    forwardRef(() => PantriesModule),
     EmailsModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

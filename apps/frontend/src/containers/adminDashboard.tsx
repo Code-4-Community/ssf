@@ -8,11 +8,13 @@ import DashboardCard, {
 import { FloatingAlert } from '@components/floatingAlert';
 import PageEmptyState from '@components/pageEmptyState';
 import SectionEmptyState from '@components/sectionEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
 import {
+  AlertStatus,
   Donation,
   OrderSummary,
   PendingApplication,
@@ -30,14 +32,27 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const fetchMe = async () => {
+      let user: User;
       try {
-        const user = await ApiClient.getMe();
+        user = await ApiClient.getMe();
         setCurrentUser(user);
       } catch {
-        setAlertMessage('Error fetching user data');
+        setAlertMessage('Error fetching user data', AlertStatus.ERROR);
+        return;
+      }
+
+      try {
+        const userStats = await ApiClient.getUserStats(user.id);
+        setStats(userStats);
+      } catch {
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
       }
     };
 
@@ -46,7 +61,10 @@ const AdminDashboard: React.FC = () => {
         const applications = await ApiClient.getRecentPendingApplications();
         setPendingApplications(applications);
       } catch {
-        setAlertMessage('Error fetching pending applications');
+        setAlertMessage(
+          'Error fetching pending applications',
+          AlertStatus.ERROR,
+        );
       }
     };
 
@@ -59,7 +77,7 @@ const AdminDashboard: React.FC = () => {
         );
         setRecentOrders(sortedOrders.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching recent orders');
+        setAlertMessage('Error fetching recent orders', AlertStatus.ERROR);
       }
     };
 
@@ -73,7 +91,7 @@ const AdminDashboard: React.FC = () => {
         );
         setRecentDonations(sortedDonations.slice(0, 2));
       } catch {
-        setAlertMessage('Error fetching recent donations');
+        setAlertMessage('Error fetching recent donations', AlertStatus.ERROR);
       }
     };
 
@@ -106,13 +124,15 @@ const AdminDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState

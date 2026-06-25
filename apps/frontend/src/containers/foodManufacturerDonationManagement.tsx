@@ -22,7 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
-import { DonationDetails, DonationStatus } from '../types/types';
+import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
 
 const MAX_PER_STATUS = 5;
 
@@ -64,7 +64,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
+      const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -111,7 +111,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       return grouped;
     } catch (error) {
-      setErrorMessage('Error fetching donations');
+      setErrorMessage('Error fetching donations', AlertStatus.ERROR);
       return;
     }
   };
@@ -140,7 +140,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         const grouped = await fetchDonations(fmId);
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
-        setErrorMessage('Error initializing donation management');
+        setErrorMessage(
+          'Error initializing donation management',
+          AlertStatus.ERROR,
+        );
       } finally {
         setLoading(false);
       }
@@ -178,7 +181,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <FloatingAlert
           key={errorAlertState.id}
           message={errorAlertState.message}
-          status="error"
+          status={errorAlertState.status}
           timeout={6000}
         />
       )}
@@ -186,7 +189,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <FloatingAlert
           key={successAlertState.id}
           message={successAlertState.message}
-          status="info"
+          status={successAlertState.status}
           timeout={6000}
         />
       )}
@@ -229,7 +232,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <NewDonationFormModal
-          foodManufacturerId={manufacturerId}
           onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
@@ -262,6 +264,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
             if (manufacturerId !== null) fetchDonations(manufacturerId);
             setSuccessMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              AlertStatus.INFO,
             );
           }}
         />

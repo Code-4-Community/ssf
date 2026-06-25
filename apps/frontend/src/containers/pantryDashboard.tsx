@@ -7,11 +7,13 @@ import DashboardCard, {
 import { FloatingAlert } from '@components/floatingAlert';
 import PageEmptyState from '@components/pageEmptyState';
 import SectionEmptyState from '@components/sectionEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
 import {
+  AlertStatus,
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
@@ -27,6 +29,7 @@ const PantryDashboard: React.FC = () => {
     FoodRequestSummaryDto[]
   >([]);
   const [recentOrders, setRecentOrders] = useState<OrderSummary[]>([]);
+  const [stats, setStats] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -38,15 +41,13 @@ const PantryDashboard: React.FC = () => {
             const pantryData = await ApiClient.getPantry(pantryId);
             setPantry(pantryData);
           } catch {
-            setAlertMessage('Error fetching pantry data');
+            setAlertMessage('Error fetching pantry data', AlertStatus.ERROR);
           }
         };
 
         const fetchFoodRequests = async () => {
           try {
-            const pantryFoodRequests = await ApiClient.getPantryRequests(
-              pantryId,
-            );
+            const pantryFoodRequests = await ApiClient.getPantryRequests();
             const sortedFoodRequests = pantryFoodRequests.sort(
               (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
                 new Date(b.requestedAt).getTime() -
@@ -54,13 +55,13 @@ const PantryDashboard: React.FC = () => {
             );
             setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
           } catch {
-            setAlertMessage('Error fetching food requests');
+            setAlertMessage('Error fetching food requests', AlertStatus.ERROR);
           }
         };
 
         const fetchOrders = async () => {
           try {
-            const pantryOrders = await ApiClient.getPantryOrders(pantryId);
+            const pantryOrders = await ApiClient.getPantryOrders();
             const sortedOrders = pantryOrders.sort(
               (a: OrderSummary, b: OrderSummary) =>
                 new Date(b.createdAt).getTime() -
@@ -68,13 +69,24 @@ const PantryDashboard: React.FC = () => {
             );
             setRecentOrders(sortedOrders.slice(0, 4));
           } catch {
-            setAlertMessage('Error fetching orders');
+            setAlertMessage('Error fetching orders', AlertStatus.ERROR);
           }
         };
 
         await Promise.all([fetchPantry(), fetchFoodRequests(), fetchOrders()]);
+
+        try {
+          const user = await ApiClient.getMe();
+          const userStats = await ApiClient.getUserStats(user.id);
+          setStats(userStats);
+        } catch {
+          setAlertMessage(
+            'Error fetching dashboard statistics',
+            AlertStatus.ERROR,
+          );
+        }
       } catch {
-        setAlertMessage('Error fetching pantry ID');
+        setAlertMessage('Error fetching pantry ID', AlertStatus.ERROR);
       } finally {
         setLoading(false);
       }
@@ -93,13 +105,15 @@ const PantryDashboard: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status={'error'}
+          status={alertState.status}
           timeout={6000}
         />
       )}
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Welcome, {pantry?.pantryName}
       </Heading>
+
+      {stats && <DashboardStats stats={stats} />}
 
       {isPageEmpty ? (
         <PageEmptyState

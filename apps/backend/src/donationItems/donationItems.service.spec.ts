@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
 import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from './dtos/replace-donation-item.dto';
 
 jest.setTimeout(60000);
 
@@ -228,71 +229,17 @@ describe('DonationItemsService', () => {
       expect(rice.detailsConfirmed).toEqual(true);
     });
 
-    it('creates items with optional fields omitted', async () => {
+    it('sets detailsConfirmed to true since ozPerItem and estimatedValue are required', async () => {
       const donation = await getSeedDonation();
       const transactionManager = testDataSource.createEntityManager();
 
-      const minimalItems: CreateDonationItemDto[] = [
-        {
-          itemName: 'Plain Item',
-          quantity: 3,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: true,
-        },
-      ];
-
       const result = await service.createMultiple(
         donation,
-        minimalItems,
+        validItems,
         transactionManager,
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].itemId).toBeDefined();
-      expect(result[0].ozPerItem).toBeNull();
-      expect(result[0].estimatedValue).toBeNull();
-      expect(result[0].detailsConfirmed).toEqual(false);
-    });
-
-    it('sets detailsConfirmed to true only when both ozPerItem and estimatedValue are provided', async () => {
-      const donation = await getSeedDonation();
-      const transactionManager = testDataSource.createEntityManager();
-
-      const mixedItems: CreateDonationItemDto[] = [
-        {
-          itemName: 'Both Fields',
-          quantity: 4,
-          ozPerItem: 12,
-          estimatedValue: 3.5,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-        {
-          itemName: 'Missing Estimated Value',
-          quantity: 2,
-          ozPerItem: 8,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-        {
-          itemName: 'Missing Oz Per Item',
-          quantity: 6,
-          estimatedValue: 1.99,
-          foodType: FoodType.DRIED_BEANS,
-          foodRescue: false,
-        },
-      ];
-
-      const result = await service.createMultiple(
-        donation,
-        mixedItems,
-        transactionManager,
-      );
-
-      const byName = Object.fromEntries(result.map((i) => [i.itemName, i]));
-      expect(byName['Both Fields'].detailsConfirmed).toEqual(true);
-      expect(byName['Missing Estimated Value'].detailsConfirmed).toEqual(false);
-      expect(byName['Missing Oz Per Item'].detailsConfirmed).toEqual(false);
+      expect(result.every((item) => item.detailsConfirmed)).toBe(true);
     });
 
     it('rolls back all items when one fails within a transaction', async () => {
@@ -308,6 +255,8 @@ describe('DonationItemsService', () => {
         {
           itemName: 'a'.repeat(1000),
           quantity: 5,
+          ozPerItem: 10,
+          estimatedValue: 2.5,
           foodType: FoodType.DRIED_BEANS,
           foodRescue: false,
         },
@@ -371,8 +320,8 @@ describe('DonationItemsService', () => {
     ): Promise<number> {
       const result = await testDataSource.query(
         `INSERT INTO donation_items
-          (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES ($1, 'Test Item', $2, $3, 'Granola', false)
+          (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+         VALUES ($1, 'Test Item', $2, $3, 3.4, 3.4, 'Granola', false)
          RETURNING item_id`,
         [donationId, qty, reserved],
       );
@@ -493,51 +442,6 @@ describe('DonationItemsService', () => {
         .getRepository(DonationItem)
         .findOneBy({ itemId });
       expect(item?.detailsConfirmed).toBe(false);
-      expect(item?.ozPerItem).toBeNull();
-    });
-
-    it('returns false and does not confirm when only some fields are provided', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-
-      expect(result).toBe(false);
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(item?.estimatedValue).toBeNull();
-      expect(item?.detailsConfirmed).toBe(false);
-    });
-
-    it('confirms item on a second call that supplies the remaining fields', async () => {
-      const donationId = await insertMatchedDonation();
-      const itemId = await insertDonationItem(donationId, 10, 5);
-
-      const firstResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 8.5 }], tm),
-      );
-      expect(firstResult).toBe(false);
-
-      const secondResult = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(
-          donationId,
-          [{ itemId, estimatedValue: 12.0, foodRescue: true }],
-          tm,
-        ),
-      );
-      expect(secondResult).toBe(true);
-
-      const item = await testDataSource
-        .getRepository(DonationItem)
-        .findOneBy({ itemId });
-      expect(Number(item?.ozPerItem)).toBe(8.5);
-      expect(Number(item?.estimatedValue)).toBe(12.0);
-      expect(item?.foodRescue).toBe(true);
-      expect(item?.detailsConfirmed).toBe(true);
     });
 
     it('allows updating an already-confirmed item without throwing', async () => {
@@ -551,7 +455,18 @@ describe('DonationItemsService', () => {
       );
 
       const result = await testDataSource.transaction((tm) =>
-        service.updateItemDetails(donationId, [{ itemId, ozPerItem: 9.0 }], tm),
+        service.updateItemDetails(
+          donationId,
+          [
+            {
+              itemId,
+              ozPerItem: 9.0,
+              estimatedValue: 10.0,
+              foodRescue: true,
+            },
+          ],
+          tm,
+        ),
       );
 
       expect(result).toBe(true);
@@ -560,6 +475,133 @@ describe('DonationItemsService', () => {
         .findOneBy({ itemId });
       expect(Number(item?.ozPerItem)).toBe(9.0);
       expect(item?.detailsConfirmed).toBe(true);
+    });
+  });
+
+  describe('editItems', () => {
+    const makeItem = (
+      overrides: Partial<ReplaceDonationItemDto> = {},
+    ): ReplaceDonationItemDto => ({
+      itemName: 'Edited Item',
+      quantity: 20,
+      ozPerItem: 8,
+      estimatedValue: 3.5,
+      foodType: FoodType.QUINOA,
+      foodRescue: true,
+      ...overrides,
+    });
+
+    const donationId = 3;
+    const itemA = 7;
+    const itemB = 8;
+
+    beforeEach(async () => {
+      await testDataSource.query(
+        `DELETE FROM allocations WHERE item_id IN ($1, $2)`,
+        [itemA, itemB],
+      );
+    });
+
+    it('updates existing items, inserts new items, and deletes omitted items', async () => {
+      const itemsBefore = await service.getAllDonationItems(donationId);
+      expect(itemsBefore).toHaveLength(2);
+
+      await testDataSource.transaction((tm) =>
+        service.editItems(
+          donationId,
+          [
+            makeItem({
+              itemId: itemA,
+              itemName: 'Item A Updated',
+              quantity: 99,
+            }),
+            makeItem({ itemName: 'Brand New Item' }),
+          ],
+          tm,
+        ),
+      );
+
+      const items = await service.getAllDonationItems(donationId);
+      // updated itemA + inserted one new + deleted itemB => count unchanged at 2
+      expect(items).toHaveLength(itemsBefore.length);
+      expect(items).toHaveLength(2);
+
+      const names = items.map((i) => i.itemName).sort();
+      expect(names).toEqual(['Brand New Item', 'Item A Updated']);
+
+      const updated = items.find((i) => i.itemId === itemA) as DonationItem;
+      expect(updated.quantity).toBe(99);
+      expect(updated.foodRescue).toBe(true);
+      expect(updated.foodType).toBe(FoodType.QUINOA);
+      expect(Number(updated.ozPerItem)).toBe(8);
+      expect(Number(updated.estimatedValue)).toBe(3.5);
+      expect(updated.detailsConfirmed).toBe(true);
+
+      const inserted = items.find(
+        (i) => i.itemName === 'Brand New Item',
+      ) as DonationItem;
+      expect(inserted.donationId).toBe(donationId);
+      expect(inserted.reservedQuantity).toBe(0);
+      expect(inserted.detailsConfirmed).toBe(true);
+
+      // itemB was omitted from the body, so it should be deleted
+      expect(items.some((i) => i.itemId === itemB)).toBe(false);
+      await expect(service.findOne(itemB)).rejects.toThrow();
+    });
+
+    it('throws BadRequestException when an itemId does not belong to the donation', async () => {
+      const foreignItemId = 11;
+
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [makeItem({ itemId: foreignItemId })],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Donation item ${foreignItemId} does not belong to Donation ${donationId}`,
+        ),
+      );
+    });
+
+    it('throws BadRequestException when the same itemId appears twice', async () => {
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [makeItem({ itemId: itemA }), makeItem({ itemId: itemA })],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Duplicate itemId ${itemA} in request`),
+      );
+    });
+
+    it('rolls back all changes when one item fails to persist within the transaction', async () => {
+      await expect(
+        testDataSource.transaction((tm) =>
+          service.editItems(
+            donationId,
+            [
+              makeItem({ itemId: itemA, itemName: 'Item A Updated' }),
+              makeItem({ itemName: 'a'.repeat(1000) }), // exceeds varchar(255)
+            ],
+            tm,
+          ),
+        ),
+      ).rejects.toThrow();
+
+      const items = await service.getAllDonationItems(donationId);
+      expect(items).toHaveLength(2);
+
+      const a = items.find((i) => i.itemId === itemA);
+      expect(a?.itemName).toBe('Rice (5lb bag)');
+      const b = items.find((i) => i.itemId === itemB);
+      expect(b).toBeDefined();
     });
   });
 });

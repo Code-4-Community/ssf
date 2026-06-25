@@ -19,6 +19,7 @@ import {
 } from './dtos/matching.dto';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { PantriesService } from '../pantries/pantries.service';
 import { User } from '../users/users.entity';
 import { Role } from '../users/types';
@@ -81,21 +82,6 @@ describe('RequestsController', () => {
 
       expect(result).toEqual([foodRequest1, foodRequest2]);
       expect(mockRequestsService.getAll).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /:requestId', () => {
-    it('should call requestsService.findOne and return a specific food request', async () => {
-      const requestId = 1;
-
-      mockRequestsService.findOne.mockResolvedValueOnce(
-        foodRequest1 as FoodRequest,
-      );
-
-      const result = await controller.getRequest(requestId);
-
-      expect(result).toEqual(foodRequest1);
-      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
     });
   });
 
@@ -302,11 +288,22 @@ describe('RequestsController', () => {
     it('should call requestsService.closeRequest', async () => {
       const requestId = 1;
 
-      mockRequestsService.closeRequest.mockResolvedValueOnce(undefined);
+      mockRequestsService.closeRequest.mockResolvedValueOnce(
+        foodRequest1 as FoodRequest,
+      );
 
-      await controller.closeRequest(requestId);
+      const req = { user: { id: 1 } };
 
-      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(requestId);
+      const result = await controller.closeRequest(
+        requestId,
+        req as AuthenticatedRequest,
+      );
+
+      expect(result).toEqual(foodRequest1);
+      expect(mockRequestsService.closeRequest).toHaveBeenCalledWith(
+        requestId,
+        1,
+      );
     });
   });
 

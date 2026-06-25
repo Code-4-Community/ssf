@@ -15,29 +15,26 @@ import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
-interface CloseRequestActionModalProps {
+interface DeleteRequestActionModalProps {
   request: FoodRequestSummaryDto;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const VolunteerCloseRequestActionModal: React.FC<
-  CloseRequestActionModalProps
+const PantryDeleteRequestActionModal: React.FC<
+  DeleteRequestActionModalProps
 > = ({ request, isOpen, onClose, onSuccess }) => {
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
   const onCloseRequest = async () => {
     try {
-      await apiClient.closeFoodRequest(request.requestId);
+      await apiClient.deleteFoodRequest(request.requestId);
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage(
-        'Error completing action. Please try again.',
-        AlertStatus.ERROR,
-      );
+      setAlertMessage('Food request could not be deleted.', AlertStatus.ERROR);
     }
   };
 
@@ -73,14 +70,14 @@ const VolunteerCloseRequestActionModal: React.FC<
           <Dialog.Body pb={6}>
             <VStack align="stretch" gap={4}>
               <Text textStyle="p2" color="gray.dark">
-                Are you sure you want to close this request? This action cannot
-                be undone.
+                Are you sure you want to delete this food request? This action
+                cannot be undone.
               </Text>
               <Box
                 borderWidth={1}
                 p={6}
-                borderColor={'neutral.100'}
-                borderRadius={5}
+                borderColor={'gray.200'}
+                borderRadius={6}
               >
                 <Text textStyle="p2" color="gray.dark">
                   Request #{request.requestId}
@@ -95,6 +92,11 @@ const VolunteerCloseRequestActionModal: React.FC<
                   fontWeight={600}
                   color="neutral.800"
                   variant="outline"
+                  h="36px"
+                  px={3}
+                  flexShrink={0}
+                  textAlign="center"
+                  lineHeight="28px"
                   onClick={onClose}
                 >
                   Cancel
@@ -102,11 +104,16 @@ const VolunteerCloseRequestActionModal: React.FC<
                 <Button
                   textStyle="p2"
                   fontWeight={600}
-                  bg={'blue.hover'}
+                  bg={'red.hover'}
                   color={'white'}
+                  width="92px"
+                  h="36px"
+                  px={5}
+                  flexShrink={0}
+                  textAlign="center"
                   onClick={onCloseRequest}
                 >
-                  Close Request
+                  Delete
                 </Button>
               </Flex>
             </VStack>
@@ -117,4 +124,4 @@ const VolunteerCloseRequestActionModal: React.FC<
   );
 };
 
-export default VolunteerCloseRequestActionModal;
+export default PantryDeleteRequestActionModal;

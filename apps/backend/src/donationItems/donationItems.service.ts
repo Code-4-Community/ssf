@@ -11,6 +11,7 @@ import { FoodType } from './types';
 import { Donation } from '../donations/donations.entity';
 import { CreateDonationItemDto } from './dtos/create-donation-items.dto';
 import { UpdateDonationItemDetailsDto } from './dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from './dtos/replace-donation-item.dto';
 
 @Injectable()
 export class DonationItemsService {
@@ -52,29 +53,6 @@ export class DonationItemsService {
     }
 
     return items;
-  }
-
-  async getAssociatedDonationIds(
-    donationItemIds: number[],
-  ): Promise<Set<number>> {
-    donationItemIds.forEach((id) => validateId(id, 'Donation Item'));
-
-    const items = await this.repo.find({
-      where: { itemId: In(donationItemIds) },
-      select: ['itemId', 'donationId'],
-    });
-
-    const foundIds = new Set(items.map((i) => i.itemId));
-
-    const missingIds = donationItemIds.filter((id) => !foundIds.has(id));
-
-    if (missingIds.length > 0) {
-      throw new NotFoundException(
-        `Donation items not found for ID(s): ${missingIds.join(', ')}`,
-      );
-    }
-
-    return new Set(items.map((i) => i.donationId));
   }
 
   async create(
@@ -127,31 +105,78 @@ export class DonationItemsService {
         );
       }
 
-      const updateData: Partial<DonationItem> = {};
-      if (dto.ozPerItem !== undefined) updateData.ozPerItem = dto.ozPerItem;
-      if (dto.estimatedValue !== undefined)
-        updateData.estimatedValue = dto.estimatedValue;
-      if (dto.foodRescue !== undefined) updateData.foodRescue = dto.foodRescue;
-
-      // If included in DTO, keep it, otherwise use whatever is in the DB (could be null)
-      const resultingOzPerItem =
-        updateData.ozPerItem !== undefined
-          ? updateData.ozPerItem
-          : item.ozPerItem;
-      const resultingEstimatedValue =
-        updateData.estimatedValue !== undefined
-          ? updateData.estimatedValue
-          : item.estimatedValue;
-
-      if (resultingOzPerItem != null && resultingEstimatedValue != null) {
-        updateData.detailsConfirmed = true;
-        confirmedDetailsForAnItem = true;
-      }
+      // ozPerItem, estimatedValue, and foodRescue are required on the DTO, so an
+      // update always supplies the full set of details and confirms the item.
+      const updateData: Partial<DonationItem> = {
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      };
+      confirmedDetailsForAnItem = true;
 
       await donationItemTransactionRepo.update(dto.itemId, updateData);
     }
 
     return confirmedDetailsForAnItem;
+  }
+
+  async editItems(
+    donationId: number,
+    body: ReplaceDonationItemDto[],
+    transactionManager: EntityManager,
+  ): Promise<void> {
+    const itemRepo = transactionManager.getRepository(DonationItem);
+
+    const existingIds = new Set(
+      (
+        await itemRepo.find({
+          where: { donationId },
+          select: { itemId: true },
+        })
+      ).map((item) => item.itemId),
+    );
+
+    const providedIds = new Set<number>();
+    for (const dto of body) {
+      if (dto.itemId === undefined) continue;
+
+      if (providedIds.has(dto.itemId)) {
+        throw new BadRequestException(
+          `Duplicate itemId ${dto.itemId} in request`,
+        );
+      }
+      providedIds.add(dto.itemId);
+
+      if (!existingIds.has(dto.itemId)) {
+        throw new BadRequestException(
+          `Donation item ${dto.itemId} does not belong to Donation ${donationId}`,
+        );
+      }
+    }
+
+    const idsToDelete = [...existingIds].filter((id) => !providedIds.has(id));
+
+    if (idsToDelete.length > 0) {
+      await itemRepo.delete({ itemId: In(idsToDelete) });
+    }
+
+    const itemsToSave = body.map((dto) =>
+      itemRepo.create({
+        ...(dto.itemId !== undefined
+          ? { itemId: dto.itemId }
+          : { donationId, reservedQuantity: 0 }),
+        itemName: dto.itemName,
+        quantity: dto.quantity,
+        ozPerItem: dto.ozPerItem,
+        estimatedValue: dto.estimatedValue,
+        foodType: dto.foodType,
+        foodRescue: dto.foodRescue,
+        detailsConfirmed: true,
+      }),
+    );
+
+    await itemRepo.save(itemsToSave);
   }
 
   async createMultiple(
@@ -171,7 +196,7 @@ export class DonationItemsService {
         estimatedValue: item.estimatedValue,
         foodType: item.foodType,
         foodRescue: item.foodRescue,
-        detailsConfirmed: item.ozPerItem != null && item.estimatedValue != null,
+        detailsConfirmed: true,
       }),
     );
     return transactionRepo.save(donationItems);

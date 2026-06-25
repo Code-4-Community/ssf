@@ -16,11 +16,13 @@ import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
 import VolunteerRequestActionRequiredModal from '@components/forms/volunteerRequestActionRequiredModal';
 import CreateNewOrderModal from '@components/forms/createNewOrderModal';
 import { useAlert } from '../hooks/alert';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { AlertStatus } from '../types/types';
 
 interface RequestManagementProps {
   fetchRequests: () => Promise<FoodRequestSummaryDto[]>;
@@ -43,6 +45,8 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   >([]);
   const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
     useState<FoodRequestSummaryDto | null>(null);
+  const [deleteRequest, setDeleteRequest] =
+    useState<FoodRequestSummaryDto | null>(null);
   const [selectedActionRequest, setSelectedActionRequest] =
     useState<FoodRequestSummaryDto | null>(null);
   const [selectedCloseRequestAction, setSelectedCloseRequestAction] =
@@ -50,8 +54,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [selectedCreateOrderRequest, setSelectedCreateOrderRequest] =
     useState<FoodRequestSummaryDto | null>(null);
 
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,9 +64,9 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       const data = await fetchData();
       setRequests(data);
     } catch {
-      setErrorMessage('Error fetching requests');
+      setAlertMessage('Error fetching requests', AlertStatus.ERROR);
     }
-  }, [fetchData, setErrorMessage]);
+  }, [fetchData, setAlertMessage]);
 
   useEffect(() => {
     loadRequests();
@@ -160,19 +163,11 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
       <Heading textStyle="h1" color="gray.600" mb={6}>
         Food Request Management
       </Heading>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -402,6 +397,24 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                   navigate(location.pathname, { replace: true });
                 }
               }}
+              onSuccess={loadRequests}
+              onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
+            />
+          )}
+
+          {deleteRequest && (
+            <PantryDeleteRequestActionModal
+              request={deleteRequest}
+              isOpen={deleteRequest !== null}
+              onClose={() => setDeleteRequest(null)}
+              onSuccess={() => {
+                setAlertMessage(
+                  'Successfully deleted food request.',
+                  AlertStatus.INFO,
+                );
+                loadRequests();
+                setSelectedViewDetailsRequest(null);
+              }}
             />
           )}
 
@@ -424,7 +437,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCloseRequest}
               onSuccess={() => {
-                setSuccessMessage('Request Closed');
+                setAlertMessage('Request Closed', AlertStatus.INFO);
                 loadRequests();
               }}
             />
@@ -436,7 +449,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
               isOpen={true}
               onClose={clearCreateOrder}
               onSuccess={() => {
-                setSuccessMessage('Order Created');
+                setAlertMessage('Order Created', AlertStatus.INFO);
                 loadRequests();
               }}
             />
