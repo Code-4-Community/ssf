@@ -1245,6 +1245,61 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
     });
 
+    it('frees reserved quantity and recomputes donation status on success', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+      const donationRepo = testDataSource.getRepository(Donation);
+
+      // Seed order 4 is the pending order. It allocates:
+      //  - Cereal Boxes: the only allocation on its donation, which should
+      //    therefore transition to AVAILABLE once the order is closed.
+      //  - Almond Milk: its donation also has allocations from other orders,
+      //    so it should remain MATCHED.
+      const orderId = 4;
+
+      const cerealBefore = (await donationItemRepo.findOne({
+        where: { itemName: 'Cereal Boxes' },
+      })) as DonationItem;
+      const almondBefore = (await donationItemRepo.findOne({
+        where: { itemName: 'Almond Milk' },
+      })) as DonationItem;
+      const cerealDonationBefore = (await donationRepo.findOne({
+        where: { donationId: cerealBefore.donationId },
+      })) as Donation;
+
+      // Confirm the order is not already closed and the starting state we rely on.
+      const orderBefore = await service.findOne(orderId);
+      expect(orderBefore.status).toBe(OrderStatus.PENDING);
+      expect(cerealBefore.reservedQuantity).toBe(75);
+      expect(almondBefore.reservedQuantity).toBe(20);
+      expect(cerealDonationBefore.status).toBe(DonationStatus.FULFILLED);
+
+      await service.closeOrder(orderId);
+
+      expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
+
+      const cerealAfter = (await donationItemRepo.findOne({
+        where: { itemId: cerealBefore.itemId },
+      })) as DonationItem;
+      const almondAfter = (await donationItemRepo.findOne({
+        where: { itemId: almondBefore.itemId },
+      })) as DonationItem;
+      const cerealDonationAfter = (await donationRepo.findOne({
+        where: { donationId: cerealBefore.donationId },
+      })) as Donation;
+      const almondDonationAfter = (await donationRepo.findOne({
+        where: { donationId: almondBefore.donationId },
+      })) as Donation;
+
+      // Order 4 reserved 75 cereal boxes and 10 almond milk; both are released.
+      expect(cerealAfter.reservedQuantity).toBe(0);
+      expect(almondAfter.reservedQuantity).toBe(10);
+
+      // Cereal's donation has no remaining allocations -> AVAILABLE.
+      expect(cerealDonationAfter.status).toBe(DonationStatus.AVAILABLE);
+      // Almond milk's donation still has allocations from other orders -> MATCHED.
+      expect(almondDonationAfter.status).toBe(DonationStatus.MATCHED);
+    });
+
     it('throws NotFoundException if the order does not exist', async () => {
       const nonExistentOrderId = 999;
       await expect(service.closeOrder(nonExistentOrderId)).rejects.toThrow(
@@ -1267,7 +1322,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       );
     });
 
-    it('rolls back all changes when matchAll fails', async () => {
+    it('rolls back all changes when recheckDonationAllocationStatus fails', async () => {
       const {
         orderId,
         allocationRepo,
@@ -1278,7 +1333,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       } = await createPendingOrder();
 
       jest
-        .spyOn((service as any).donationService as DonationService, 'matchAll')
+        .spyOn(
+          (service as any).donationService as DonationService,
+          'recheckDonationAllocationStatus',
+        )
         .mockRejectedValueOnce(new Error('DB error'));
 
       await expect(service.closeOrder(orderId)).rejects.toThrow('DB error');

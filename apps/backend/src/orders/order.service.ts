@@ -776,8 +776,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
       await this.allocationsService.freeAllByOrder(orderId, transactionManager);
 
-      // Donation should always have items matched to it
-      await this.donationService.matchAll(donationIds, transactionManager);
+      await this.donationService.recheckDonationAllocationStatus(
+        donationIds,
+        transactionManager,
+      );
 
       await transactionManager
         .getRepository(Order)

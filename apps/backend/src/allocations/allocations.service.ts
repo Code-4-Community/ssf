@@ -180,8 +180,8 @@ export class AllocationsService {
 
     for (const existing of existingAllocations) {
       const newQuantity = editQuantities.get(existing.allocationId);
-      if (newQuantity === undefined || newQuantity === 0) {
-        // Not referenced, or explicitly set to 0, so delete
+      if (newQuantity === undefined) {
+        // Was set to 0 on clientside, so thus not referenced and to be deleted
         allocationsToDelete.push(existing);
         addDelta(existing.itemId, -existing.allocatedQuantity);
       } else {
@@ -197,10 +197,8 @@ export class AllocationsService {
     // Populate create map and all quantities needed to be taken
     const createMap = new Map<number, number>();
     for (const [itemId, quantity] of createQuantities) {
-      if (quantity > 0) {
-        createMap.set(itemId, quantity);
-        addDelta(itemId, quantity);
-      }
+      createMap.set(itemId, quantity);
+      addDelta(itemId, quantity);
     }
 
     // Validate that every single donation item being affected exists
