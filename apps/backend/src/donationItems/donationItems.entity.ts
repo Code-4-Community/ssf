@@ -31,11 +31,11 @@ export class DonationItem {
   @Column({ name: 'reserved_quantity', type: 'int', default: 0 })
   reservedQuantity!: number;
 
-  @Column({ name: 'oz_per_item', type: 'numeric', nullable: true })
-  ozPerItem!: number | null;
+  @Column({ name: 'oz_per_item', type: 'numeric' })
+  ozPerItem!: number;
 
-  @Column({ name: 'estimated_value', type: 'numeric', nullable: true })
-  estimatedValue!: number | null;
+  @Column({ name: 'estimated_value', type: 'numeric' })
+  estimatedValue!: number;
 
   @Column({
     name: 'food_type',

@@ -119,8 +119,8 @@ export class FoodManufacturersService {
               (sum, a) => sum + a.allocatedQuantity,
               0,
             ),
-            ozPerItem: item.ozPerItem ?? undefined,
-            estimatedValue: item.estimatedValue ?? undefined,
+            ozPerItem: item.ozPerItem,
+            estimatedValue: item.estimatedValue,
             foodRescue: item.foodRescue,
           });
 
@@ -165,6 +165,12 @@ export class FoodManufacturersService {
     if (!manufacturer) {
       throw new NotFoundException(
         `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.status != ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot get donation reminders for a ${manufacturer.status} food manufacturer`,
       );
     }
 
@@ -270,18 +276,12 @@ export class FoodManufacturersService {
       foodManufacturerData.facilityFreeAllergens;
     foodManufacturer.productsGlutenFree =
       foodManufacturerData.productsGlutenFree;
-    foodManufacturer.productsContainSulfites =
-      foodManufacturerData.productsContainSulfites;
     foodManufacturer.productsSustainableExplanation =
       foodManufacturerData.productsSustainableExplanation;
     foodManufacturer.inKindDonations = foodManufacturerData.inKindDonations;
     foodManufacturer.donateWastedFood = foodManufacturerData.donateWastedFood;
-    foodManufacturer.manufacturerAttribute =
-      foodManufacturerData.manufacturerAttribute ?? null;
     foodManufacturer.additionalComments =
       foodManufacturerData.additionalComments ?? null;
-    foodManufacturer.newsletterSubscription =
-      foodManufacturerData.newsletterSubscription ?? null;
 
     await this.repo.save(foodManufacturer);
 
@@ -338,6 +338,12 @@ export class FoodManufacturersService {
     if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
       throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
+      );
+    }
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Cannot update application for a ${manufacturer.status} manufacturer`,
       );
     }
 

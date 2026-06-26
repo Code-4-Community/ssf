@@ -12,10 +12,14 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { ApplicationStatus, FoodManufacturer } from '../types/types';
+import {
+  AlertStatus,
+  ApplicationStatus,
+  FoodManufacturer,
+} from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
-import { FileX, TriangleAlert, WifiOff } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -90,13 +94,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
   const navigate = useNavigate();
   const [application, setApplication] = useState<FoodManufacturer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{
-    type: 'network' | 'not_found' | 'invalid' | null;
-    message: string;
-  }>({
-    type: null,
-    message: '',
-  });
   const [alertState, setAlertMessage] = useAlert();
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
@@ -127,31 +124,25 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     try {
       setLoading(true);
       if (!applicationId) {
-        setError({ type: 'invalid', message: 'Application ID not provided.' });
+        setAlertMessage('Application ID not provided.', AlertStatus.ERROR);
         return;
       } else if (isNaN(parseInt(applicationId, 10))) {
-        setError({
-          type: 'invalid',
-          message: 'Application ID is not a number.',
-        });
+        setAlertMessage('Application ID is not a number.', AlertStatus.ERROR);
       }
       const data = await ApiClient.getFoodManufacturer(
         parseInt(applicationId, 10),
       );
       if (!data) {
-        setError({
-          type: 'not_found',
-          message: 'Application not found.',
-        });
+        setAlertMessage('Application not found.', AlertStatus.ERROR);
       }
       setApplication(data);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status !== 404 && err.response?.status !== 400) {
-          setError({
-            type: 'network',
-            message: 'Could not load application details.',
-          });
+          setAlertMessage(
+            'Could not load application details.',
+            AlertStatus.ERROR,
+          );
         }
       }
     } finally {
@@ -178,7 +169,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error approving application');
+        setAlertMessage('Error approving application', AlertStatus.ERROR);
       }
     }
   };
@@ -198,7 +189,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
             application.foodManufacturerName,
         );
       } catch {
-        setAlertMessage('Error denying application');
+        setAlertMessage('Error denying application', AlertStatus.ERROR);
       }
     }
   };
@@ -213,25 +204,11 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     );
   }
 
-  if (error.message || !application) {
-    const getIcon = () => {
-      switch (error.type) {
-        case 'network':
-          return <WifiOff />;
-        case 'not_found':
-          return <FileX />;
-        default:
-          return <TriangleAlert />;
-      }
-    };
-
+  if (alertState?.message || !application) {
     return (
       <EmptyState
-        icon={getIcon()}
-        title={error.message}
-        subtitle={
-          error.type === 'network' ? 'Please try again later.' : undefined
-        }
+        icon={<TriangleAlert />}
+        title={alertState?.message ?? 'Application not found.'}
       />
     );
   }
@@ -254,7 +231,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
           <FloatingAlert
             key={alertState.id}
             message={alertState.message}
-            status="error"
+            status={alertState.status}
             timeout={6000}
           />
         )}
@@ -340,14 +317,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                       {application.foodManufacturerWebsite}
                     </Text>
                   </GridItem>
-                  {application.manufacturerAttribute && (
-                    <GridItem>
-                      <Text {...fieldHeaderStyles}>Manufacturer Attribute</Text>
-                      <Text {...fieldContentStyles}>
-                        {application.manufacturerAttribute}
-                      </Text>
-                    </GridItem>
-                  )}
                 </Grid>
 
                 <Box>
@@ -380,14 +349,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                     </Text>
                   </GridItem>
                   <GridItem>
-                    <Text {...fieldHeaderStyles}>
-                      Products Contain Sulfites?
-                    </Text>
-                    <Text {...fieldContentStyles}>
-                      {application.productsContainSulfites ? 'Yes' : 'No'}
-                    </Text>
-                  </GridItem>
-                  <GridItem>
                     <Text {...fieldHeaderStyles}>In-Kind Donations?</Text>
                     <Text {...fieldContentStyles}>
                       {application.inKindDonations ? 'Yes' : 'No'}
@@ -414,13 +375,6 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                   <Text {...fieldHeaderStyles}>Additional Comments</Text>
                   <Text {...fieldContentStyles}>
                     {application.additionalComments || '-'}
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>Subscribed to Newsletter</Text>
-                  <Text {...fieldContentStyles}>
-                    {application.newsletterSubscription ? 'Yes' : 'No'}
                   </Text>
                 </Box>
               </VStack>

@@ -18,7 +18,7 @@ import {
   ServeAllergicChildren,
   ReserveFoodForAllergic,
   Activity,
-  AllergensConfidence,
+  DedicatedAllergyFriendly,
 } from './types';
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
@@ -56,10 +56,14 @@ const makePantryDto = (i: number): PantryApplicationDto =>
     mailingAddressZip: '00000',
     allergenClients: 'none',
     restrictions: ['none'],
+    languages: ['English'],
     refrigeratedDonation: RefrigeratedDonation.NO,
     acceptFoodDeliveries: false,
+    deliveryWindowInstructions: 'none',
     reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-    dedicatedAllergyFriendly: false,
+    dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
+    clientVisitFrequency: ClientVisitFrequency.ONCE_A_WEEK,
+    serveAllergicChildren: ServeAllergicChildren.NO,
     activities: [Activity.CREATE_LABELED_SHELF],
     itemsInStock: 'none',
     needMoreOptions: 'none',
@@ -76,16 +80,22 @@ const dto: PantryApplicationDto = {
   shipmentAddressCity: 'Testville',
   shipmentAddressState: 'TX',
   shipmentAddressZip: '11111',
+  shipmentAddressCountry: 'US',
   mailingAddressLine1: '1 Test St',
   mailingAddressCity: 'Testville',
   mailingAddressState: 'TX',
   mailingAddressZip: '11111',
+  mailingAddressCountry: 'US',
   allergenClients: 'none',
   restrictions: ['none'],
+  languages: ['English'],
   refrigeratedDonation: RefrigeratedDonation.NO,
   acceptFoodDeliveries: false,
+  deliveryWindowInstructions: 'none',
   reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-  dedicatedAllergyFriendly: false,
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
+  clientVisitFrequency: ClientVisitFrequency.ONCE_A_WEEK,
+  serveAllergicChildren: ServeAllergicChildren.NO,
   activities: [Activity.CREATE_LABELED_SHELF],
   itemsInStock: 'none',
   needMoreOptions: 'none',
@@ -310,13 +320,11 @@ describe('PantriesService', () => {
         deliveryWindowInstructions: 'Weekdays 9am-5pm',
         reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
         reservationExplanation: 'We have a dedicated section',
-        dedicatedAllergyFriendly: true,
+        dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
         clientVisitFrequency: ClientVisitFrequency.DAILY,
-        identifyAllergensConfidence: AllergensConfidence.VERY_CONFIDENT,
         serveAllergicChildren: ServeAllergicChildren.YES_MANY,
         activities: [Activity.CREATE_LABELED_SHELF, Activity.COLLECT_FEEDBACK],
         activitiesComments: 'We are committed to allergen management',
-        newsletterSubscription: true,
       };
 
       await service.addPantry(optionalDto);
@@ -398,7 +406,6 @@ describe('PantriesService', () => {
         secondaryContactLastName: 'Doe',
         refrigeratedDonation: RefrigeratedDonation.YES,
         reserveFoodForAllergic: ReserveFoodForAllergic.SOME,
-        newsletterSubscription: true,
         itemsInStock: 'Canned beans, rice',
       };
 
@@ -409,7 +416,6 @@ describe('PantriesService', () => {
       expect(updatedPantry.reserveFoodForAllergic).toBe(
         ReserveFoodForAllergic.SOME,
       );
-      expect(updatedPantry.newsletterSubscription).toBe(true);
       expect(updatedPantry.itemsInStock).toBe('Canned beans, rice');
     });
 
@@ -424,13 +430,13 @@ describe('PantriesService', () => {
     });
 
     it('updates only the provided fields and keeps others intact', async () => {
-      const original = await service.findOne(2);
+      const original = await service.findOne(1);
 
       const dto: UpdatePantryApplicationDto = {
         itemsInStock: 'Rice and beans',
       };
 
-      const updated = await service.updatePantryApplication(2, dto, 11);
+      const updated = await service.updatePantryApplication(1, dto, 10);
       expect(updated.itemsInStock).toBe('Rice and beans');
       expect(updated.pantryName).toBe(original.pantryName);
       expect(updated.secondaryContactEmail).toBe(
@@ -446,10 +452,34 @@ describe('PantriesService', () => {
       const invalidUserId = 999;
 
       await expect(
-        service.updatePantryApplication(1, dto, invalidUserId),
+        service.updatePantryApplication(5, dto, invalidUserId),
       ).rejects.toThrow(
         new ForbiddenException(
-          `User ${invalidUserId} is not allowed to edit application for Pantry 1`,
+          `User ${invalidUserId} is not allowed to edit application for Pantry 5`,
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is for a denied pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(4, dto, 13)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a denied application',
+        ),
+      );
+    });
+
+    it('throws ConflictException when pantry application is for a pending pantry', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Jane',
+      };
+
+      await expect(service.updatePantryApplication(5, dto, 14)).rejects.toThrow(
+        new ConflictException(
+          'Cannot update application for a pending application',
         ),
       );
     });
@@ -933,11 +963,15 @@ describe('PantriesService', () => {
         restrictions: ['none'],
         refrigeratedDonation: RefrigeratedDonation.NO,
         acceptFoodDeliveries: false,
+        deliveryWindowInstructions: 'none',
         reserveFoodForAllergic: ReserveFoodForAllergic.NO,
-        dedicatedAllergyFriendly: false,
+        dedicatedAllergyFriendly: DedicatedAllergyFriendly.YES,
+        clientVisitFrequency: ClientVisitFrequency.ONCE_A_WEEK,
+        serveAllergicChildren: ServeAllergicChildren.NO,
         activities: [Activity.CREATE_LABELED_SHELF],
         itemsInStock: 'none',
         needMoreOptions: 'none',
+        languages: ['English'],
       } as PantryApplicationDto);
 
       const saved = await testDataSource.getRepository(Pantry).findOne({
@@ -1149,6 +1183,24 @@ describe('PantriesService', () => {
       expect(pantryBefore?.volunteers).toEqual(pantryAfter?.volunteers);
     });
 
+    it(`throws 'Pantry with ID {pantryId} not approved' ConflictException when updating volunteers for a pending pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(5, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it(`throws ConflictException when updating volunteers for a denied pantry`, async () => {
+      await expect(
+        service.updatePantryVolunteers(4, {
+          addVolunteerIds: [6],
+          removeVolunteerIds: [],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
     it('sends volunteerPantryAssignmentChanged email to each newly added volunteer', async () => {
       const addVolunteerIds = [7, 8];
       const volunteers = await testDataSource
@@ -1330,6 +1382,194 @@ describe('PantriesService', () => {
       expect(result['Orders']).toBe('0');
       expect(result['Items Received']).toBe('0');
       expect(result['Value Received']).toBe('$0');
+    });
+  });
+
+  describe('sendFoodRequestReminderToApprovedPantries', () => {
+    const SENDER_EMAIL = 'sender@securingsafefood.org';
+    const originalSenderEmail = process.env.AWS_SES_SENDER_EMAIL;
+
+    afterEach(() => {
+      process.env.AWS_SES_SENDER_EMAIL = originalSenderEmail;
+      jest.restoreAllMocks();
+    });
+
+    it('logs a warning and sends no emails when there are no approved pantries', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { status: ApplicationStatus.APPROVED },
+          { status: ApplicationStatus.DENIED },
+        );
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No approved food pantries, skipping email sending.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning and sends no emails when the sender email is not set', async () => {
+      delete process.env.AWS_SES_SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Skipping food request reminder: AWS_SES_SENDER_EMAIL is not set.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning when sending the reminder email fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SES failure'),
+      );
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries for batch 1',
+        ),
+      );
+    });
+
+    it('reports the correct batch number when a later batch fails', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+
+      // Seed enough approved pantries to require more than one batch (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 60; i++) {
+        const pantryName = `Batch Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `batch-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // First batch succeeds, second batch fails.
+      mockEmailsService.sendEmails.mockClear();
+      mockEmailsService.sendEmails
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('SES failure'));
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to send food request reminder to pantries for batch 2',
+        ),
+      );
+    });
+
+    it('sends a single email to the sender with all approved pantry emails as bcc', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const expectedBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: SENDER_EMAIL,
+        bccEmails: expectedBccEmails,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('chunks the bcc recipients into groups of at most 49 to stay within the SES recipient limit', async () => {
+      process.env.AWS_SES_SENDER_EMAIL = SENDER_EMAIL;
+      const MAX_BCC_PER_EMAIL = 49;
+
+      // Seed enough approved pantries to require multiple chunks (> 49).
+      const seededPantryNames: string[] = [];
+      for (let i = 0; i < 100; i++) {
+        const pantryName = `Chunk Pantry ${i}`;
+        seededPantryNames.push(pantryName);
+        await service.addPantry({
+          ...dto,
+          contactEmail: `chunk-pantry-${i}@example.com`,
+          pantryName,
+        });
+      }
+      await testDataSource
+        .getRepository(Pantry)
+        .update(
+          { pantryName: In(seededPantryNames) },
+          { status: ApplicationStatus.APPROVED },
+        );
+
+      // Re-fetch exactly as the service does so the ordering matches.
+      const approvedPantries = await testDataSource.getRepository(Pantry).find({
+        where: { status: ApplicationStatus.APPROVED },
+        relations: ['pantryUser'],
+      });
+      const allBccEmails = approvedPantries.map(
+        (pantry) => pantry.pantryUser.email,
+      );
+
+      const expectedChunks: string[][] = [];
+      for (let i = 0; i < allBccEmails.length; i += MAX_BCC_PER_EMAIL) {
+        expectedChunks.push(allBccEmails.slice(i, i + MAX_BCC_PER_EMAIL));
+      }
+      expect(expectedChunks.length).toBeGreaterThan(1);
+
+      const message = emailTemplates.pantryReceiveNewFoodRequest();
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+
+      // Clear the calls made while seeding pantries via addPantry.
+      mockEmailsService.sendEmails.mockClear();
+
+      await service.sendFoodRequestReminderToApprovedPantries();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(
+        expectedChunks.length,
+      );
+      expectedChunks.forEach((chunk, index) => {
+        expect(chunk.length).toBeLessThanOrEqual(MAX_BCC_PER_EMAIL);
+        expect(mockEmailsService.sendEmails).toHaveBeenNthCalledWith(
+          index + 1,
+          {
+            toEmail: SENDER_EMAIL,
+            bccEmails: chunk,
+            subject: message.subject,
+            bodyHtml: message.bodyHTML,
+          },
+        );
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
     });
   });
 });

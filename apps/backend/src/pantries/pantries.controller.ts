@@ -19,8 +19,8 @@ import { PantryApplicationDto } from './dtos/pantry-application.dto';
 import { ApiBody } from '@nestjs/swagger';
 import {
   Activity,
-  AllergensConfidence,
   ClientVisitFrequency,
+  DedicatedAllergyFriendly,
   PantryStats,
   RefrigeratedDonation,
   ReserveFoodForAllergic,
@@ -30,13 +30,26 @@ import {
   OrderSummary,
 } from './types';
 import { OrdersService } from '../orders/order.service';
-import { CheckOwnership, pipeNullable } from '../auth/ownership.decorator';
+import {
+  CheckOwnership,
+  OwnerIdResolver,
+  pipeNullable,
+} from '../auth/ownership.decorator';
 import { Public } from '../auth/public.decorator';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { UpdatePantryVolunteersDto } from './dtos/update-pantry-volunteers-dto';
 import { RequestsService } from '../foodRequests/request.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+
+const resolvePantryAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(PantriesService).findOne(entityId),
+    (pantry: Pantry) => [pantry.pantryUser.id],
+  );
 
 @Controller('pantries')
 export class PantriesController {
@@ -96,6 +109,7 @@ export class PantriesController {
     return this.pantriesService.getPantryAdminStatsOrderYears();
   }
 
+  @Roles(Role.ADMIN)
   @Get('/approved')
   async getApprovedPantries(): Promise<ApprovedPantryResponse[]> {
     return this.pantriesService.getApprovedPantriesWithVolunteers();
@@ -103,12 +117,7 @@ export class PantriesController {
 
   @CheckOwnership({
     idParam: 'pantryId',
-    resolver: async ({ entityId, services }) => {
-      return pipeNullable(
-        () => services.get(PantriesService).findOne(entityId),
-        (pantry: Pantry) => [pantry.pantryUser.id],
-      );
-    },
+    resolver: resolvePantryAuthorizedUserIds,
   })
   @Roles(Role.PANTRY, Role.ADMIN)
   @Get('/:pantryId')
@@ -118,20 +127,20 @@ export class PantriesController {
     return this.pantriesService.findOne(pantryId);
   }
 
-  @Roles(Role.ADMIN, Role.PANTRY)
-  @Get('/:pantryId/orders')
-  async getOrders(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
-  ): Promise<OrderSummary[]> {
-    return this.ordersService.getOrdersByPantry(pantryId);
+  @Roles(Role.PANTRY)
+  @Get('/me/orders')
+  async getOrders(@Req() req: AuthenticatedRequest): Promise<OrderSummary[]> {
+    const pantry = await this.pantriesService.findByUserId(req.user.id);
+    return this.ordersService.getOrdersByPantry(pantry.pantryId);
   }
 
-  @Roles(Role.PANTRY, Role.ADMIN)
-  @Get('/:pantryId/requests')
+  @Roles(Role.PANTRY)
+  @Get('/me/requests')
   async getFoodRequests(
-    @Param('pantryId', ParseIntPipe) pantryId: number,
+    @Req() req: AuthenticatedRequest,
   ): Promise<FoodRequestSummaryDto[]> {
-    return this.requestsService.findAllForPantry(pantryId);
+    const pantry = await this.pantriesService.findByUserId(req.user.id);
+    return this.requestsService.findAllForPantry(pantry.pantryId);
   }
 
   @ApiBody({
@@ -270,6 +279,11 @@ export class PantriesController {
           items: { type: 'string' },
           example: ['Egg allergy', 'Fish allergy'],
         },
+        languages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['English', 'Spanish'],
+        },
         refrigeratedDonation: {
           type: 'string',
           enum: Object.values(RefrigeratedDonation),
@@ -294,18 +308,14 @@ export class PantriesController {
             'We keep a dedicated section for clients with severe allergies',
         },
         dedicatedAllergyFriendly: {
-          type: 'boolean',
-          example: true,
+          type: 'string',
+          enum: Object.values(DedicatedAllergyFriendly),
+          example: DedicatedAllergyFriendly.YES,
         },
         clientVisitFrequency: {
           type: 'string',
           enum: Object.values(ClientVisitFrequency),
           example: ClientVisitFrequency.DAILY,
-        },
-        identifyAllergensConfidence: {
-          type: 'string',
-          enum: Object.values(AllergensConfidence),
-          example: AllergensConfidence.NOT_VERY_CONFIDENT,
         },
         serveAllergicChildren: {
           type: 'string',
@@ -338,10 +348,6 @@ export class PantriesController {
           maxLength: 255,
           example: 'Quite often',
         },
-        newsletterSubscription: {
-          type: 'boolean',
-          example: true,
-        },
       },
       required: [
         'contactFirstName',
@@ -359,11 +365,15 @@ export class PantriesController {
         'mailingAddressState',
         'mailingAddressZip',
         'allergenClients',
+        'restrictions',
+        'languages',
         'refrigeratedDonation',
         'acceptFoodDeliveries',
+        'deliveryWindowInstructions',
         'reserveFoodForAllergic',
         'dedicatedAllergyFriendly',
-        'activities',
+        'clientVisitFrequency',
+        'serveAllergicChildren',
         'itemsInStock',
         'needMoreOptions',
       ],
@@ -378,6 +388,10 @@ export class PantriesController {
     return this.pantriesService.addPantry(pantryData);
   }
 
+  @CheckOwnership({
+    idParam: 'pantryId',
+    resolver: resolvePantryAuthorizedUserIds,
+  })
   @Roles(Role.PANTRY)
   @Patch('/:pantryId/application')
   async updatePantryApplication(

@@ -58,6 +58,12 @@ export class User {
   })
   userCognitoSub!: string;
 
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
+  active!: boolean;
+
   @ManyToMany(() => Pantry, (pantry) => pantry.volunteers)
   @JoinTable({
     name: 'volunteer_assignments',

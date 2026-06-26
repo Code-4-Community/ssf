@@ -26,6 +26,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { isValidUrl } from '../../utils/utils';
+import { AlertStatus } from '../../types/types';
 
 // Up to two decimal places, e.g. "0.5", "1", "12.34" — but not "1.234" or "-1"
 const POSITIVE_TWO_DECIMAL_REGEX = /^\d+(\.\d{1,2})?$/;
@@ -149,8 +150,8 @@ const FmCompleteRequiredActionsModal: React.FC<
       donation.relevantDonationItems.map((item) => [
         item.itemId,
         {
-          ozPerItem: item.ozPerItem?.toString() ?? '',
-          estimatedValue: item.estimatedValue?.toString() ?? '',
+          ozPerItem: item.ozPerItem.toString(),
+          estimatedValue: item.estimatedValue.toString(),
           foodRescue: item.foodRescue,
         },
       ]),
@@ -166,8 +167,8 @@ const FmCompleteRequiredActionsModal: React.FC<
       donation.relevantDonationItems.length > 0 &&
       donation.relevantDonationItems.every(
         (item) =>
-          (itemFormData[item.itemId]?.ozPerItem ?? '') !== '' &&
-          (itemFormData[item.itemId]?.estimatedValue ?? '') !== '',
+          itemFormData[item.itemId].ozPerItem !== '' &&
+          itemFormData[item.itemId].estimatedValue !== '',
       ),
     [itemFormData],
   );
@@ -192,12 +193,14 @@ const FmCompleteRequiredActionsModal: React.FC<
       if (shippingCost !== '' && !isValidShippingCost(shippingCost)) {
         setAlertMessage(
           `Shipping cost for order ${order.orderId} must be a positive number with up to 2 decimal places.`,
+          AlertStatus.ERROR,
         );
         return;
       }
       if (trackingLink.trim() !== '' && !isValidUrl(trackingLink)) {
         setAlertMessage(
           `Tracking link for order ${order.orderId} must be a valid http or https URL.`,
+          AlertStatus.ERROR,
         );
         return;
       }
@@ -225,9 +228,8 @@ const FmCompleteRequiredActionsModal: React.FC<
           .filter((item) => {
             const formData = itemFormData[item.itemId];
             return (
-              formData.ozPerItem !== (item.ozPerItem?.toString() ?? '') ||
-              formData.estimatedValue !==
-                (item.estimatedValue?.toString() ?? '') ||
+              formData.ozPerItem !== item.ozPerItem.toString() ||
+              formData.estimatedValue !== item.estimatedValue.toString() ||
               formData.foodRescue !== item.foodRescue
             );
           })
@@ -235,12 +237,10 @@ const FmCompleteRequiredActionsModal: React.FC<
             const formData = itemFormData[item.itemId];
             const dto: UpdateDonationItemDetailsDto = {
               itemId: item.itemId,
+              ozPerItem: parseFloat(formData.ozPerItem),
+              estimatedValue: parseFloat(formData.estimatedValue),
               foodRescue: formData.foodRescue,
             };
-            if (formData.ozPerItem !== '')
-              dto.ozPerItem = parseFloat(formData.ozPerItem);
-            if (formData.estimatedValue !== '')
-              dto.estimatedValue = parseFloat(formData.estimatedValue);
             return dto;
           });
 
@@ -296,6 +296,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         msg
           ? msg.replace(/^orders\.\d+\./, '')
           : 'Error completing required actions. Please try again.',
+        AlertStatus.ERROR,
       );
     } finally {
       setIsSubmitting(false);
@@ -326,7 +327,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -498,8 +499,12 @@ const FmCompleteRequiredActionsModal: React.FC<
             {stage === 'itemDetails' && (
               <>
                 <Text fontSize="sm" color="neutral.700" mt={1}>
-                  Please fill out the missing fields information to record
-                  donation details.
+                  Please confirm the following information to record donation
+                  details.
+                </Text>
+                <Text fontSize="sm" color="neutral.700" mt={1}>
+                  Please do not include shipping/delivery costs in Food Donation
+                  Value.
                 </Text>
 
                 <Box mt={4} display="block" overflowX="auto">
@@ -510,21 +515,31 @@ const FmCompleteRequiredActionsModal: React.FC<
                   >
                     <Table.Header>
                       <Table.Row>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="40%">
+                        <Table.ColumnHeader {...tableHeaderStyles} width="30%">
                           Food Item
                         </Table.ColumnHeader>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="18%">
+                        <Table.ColumnHeader {...tableHeaderStyles} width="23%">
                           Oz. per item
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
-                        <Table.ColumnHeader {...tableHeaderStyles} width="18%">
-                          Donation Value
+                        <Table.ColumnHeader {...tableHeaderStyles} width="23%">
+                          Donation Value (Fair Market Value of Food Only)
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
+
                         <Table.ColumnHeader
                           {...tableHeaderStyles}
                           width="24%"
                           textAlign="center"
                         >
                           Food Rescue
+                          <Text as="span" color="red">
+                            *
+                          </Text>
                         </Table.ColumnHeader>
                       </Table.Row>
                     </Table.Header>

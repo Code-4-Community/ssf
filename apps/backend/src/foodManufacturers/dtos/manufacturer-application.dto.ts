@@ -10,7 +10,7 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
-import { Allergen, DonateWastedFood, ManufacturerAttribute } from '../types';
+import { Allergen, DonateWastedFood } from '../types';
 
 export class FoodManufacturerApplicationDto {
   @IsString()
@@ -84,9 +84,6 @@ export class FoodManufacturerApplicationDto {
   @IsBoolean()
   productsGlutenFree!: boolean;
 
-  @IsBoolean()
-  productsContainSulfites!: boolean;
-
   @IsString()
   @IsNotEmpty()
   productsSustainableExplanation!: string;
@@ -98,15 +95,7 @@ export class FoodManufacturerApplicationDto {
   donateWastedFood!: DonateWastedFood;
 
   @IsOptional()
-  @IsEnum(ManufacturerAttribute)
-  manufacturerAttribute?: ManufacturerAttribute;
-
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
   additionalComments?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  newsletterSubscription?: boolean;
 }

@@ -6,8 +6,8 @@ export class DonationItemWithAllocatedQuantityDto {
   itemName!: string;
   foodType!: FoodType;
   allocatedQuantity!: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem!: number;
+  estimatedValue!: number;
   foodRescue!: boolean;
 }
 

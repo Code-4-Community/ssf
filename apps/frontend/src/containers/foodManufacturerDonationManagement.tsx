@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import ApiClient from '@api/apiClient';
 import {
   Box,
   Button,
-  Flex,
-  Table,
-  Heading,
-  Pagination,
-  IconButton,
   ButtonGroup,
+  Flex,
+  Heading,
+  IconButton,
   Link,
+  Pagination,
+  Table,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, Mail, CircleCheck } from 'lucide-react';
-import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
-import ApiClient from '@api/apiClient';
-import { DonationDetails, DonationStatus } from '../types/types';
-import NewDonationFormModal from '@components/forms/newDonationFormModal';
-import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ROUTES } from '../routes';
 import { FloatingAlert } from '@components/floatingAlert';
-import { useAlert } from '../hooks/alert';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
+import NewDonationFormModal from '@components/forms/newDonationFormModal';
+import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
+import SectionEmptyState from '@components/sectionEmptyState';
+import { capitalize, DONATION_STATUS_COLORS, formatDate } from '@utils/utils';
+import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
+import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
 
 const MAX_PER_STATUS = 5;
 
@@ -31,6 +32,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const resubmitDonationId: string | null =
     searchParams.get('resubmitDonationId');
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [errorAlertState, setErrorMessage] = useAlert();
   const [successAlertState, setSuccessMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
@@ -62,7 +64,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = async (fmId: number) => {
     try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer(fmId);
+      const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
       const grouped: Record<DonationStatus, DonationDetails[]> = {
         [DonationStatus.AVAILABLE]: [],
@@ -109,7 +111,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       return grouped;
     } catch (error) {
-      setErrorMessage('Error fetching donations');
+      setErrorMessage('Error fetching donations', AlertStatus.ERROR);
       return;
     }
   };
@@ -138,7 +140,12 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         const grouped = await fetchDonations(fmId);
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
-        setErrorMessage('Error initializing donation management');
+        setErrorMessage(
+          'Error initializing donation management',
+          AlertStatus.ERROR,
+        );
+      } finally {
+        setLoading(false);
       }
     };
     init();
@@ -166,13 +173,15 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     }));
   };
 
+  if (loading) return null;
+
   return (
     <Box p={12}>
       {errorAlertState && (
         <FloatingAlert
           key={errorAlertState.id}
           message={errorAlertState.message}
-          status="error"
+          status={errorAlertState.status}
           timeout={6000}
         />
       )}
@@ -180,7 +189,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <FloatingAlert
           key={successAlertState.id}
           message={successAlertState.message}
-          status="info"
+          status={successAlertState.status}
           timeout={6000}
         />
       )}
@@ -223,7 +232,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <NewDonationFormModal
-          foodManufacturerId={manufacturerId}
           onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
@@ -256,6 +264,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
             if (manufacturerId !== null) fetchDonations(manufacturerId);
             setSuccessMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              AlertStatus.INFO,
             );
           }}
         />
@@ -364,28 +373,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
       </Box>
 
       {donations.length === 0 ? (
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
-          fontFamily="'Inter', sans-serif"
-          fontSize="sm"
-          color="neutral.600"
-          py={10}
-          gap={2}
-        >
-          <Box mb={2}>
-            <CircleCheck size={24} color="#262626" />
-          </Box>
-          <Box fontWeight="600" fontSize="lg" color="neutral.800">
-            No Donations
-          </Box>
-          <Box color="neutral.700" fontWeight="400">
-            You have no {status.toLowerCase()} donations at this time.
-          </Box>
-        </Box>
+        <SectionEmptyState entity={`${status.toLowerCase()} donations`} />
       ) : (
         <>
           <Table.Root>

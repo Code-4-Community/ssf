@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -24,6 +25,7 @@ import { DonationItem } from '../donationItems/donationItems.entity';
 import { EmailsService } from '../emails/email.service';
 import { emailTemplates } from '../emails/emailTemplates';
 import { UpdateRequestDto } from './dtos/update-request.dto';
+import { ApplicationStatus } from '../shared/types';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -184,9 +186,16 @@ export class RequestsService {
     const manufacturer = await this.foodManufacturerRepo.findOne({
       where: { foodManufacturerId },
     });
+
     if (!manufacturer) {
       throw new NotFoundException(
         `Food Manufacturer ${foodManufacturerId} not found`,
+      );
+    }
+
+    if (manufacturer.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(
+        `Food Manufacturer ${foodManufacturerId} not approved`,
       );
     }
 
@@ -233,8 +242,13 @@ export class RequestsService {
       where: { pantryId },
       relations: ['pantryUser', 'volunteers'],
     });
+
     if (!pantry) {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
+    }
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ConflictException(`Pantry ${pantryId} not approved`);
     }
 
     const foodRequest = this.repo.create({
@@ -357,9 +371,9 @@ export class RequestsService {
     validateId(requestId, 'Request');
 
     if (
-      dto.requestedSize == undefined &&
-      dto.requestedFoodTypes == undefined &&
-      dto.additionalInformation == undefined
+      dto.requestedSize === undefined &&
+      dto.requestedFoodTypes === undefined &&
+      dto.additionalInformation === undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update request',

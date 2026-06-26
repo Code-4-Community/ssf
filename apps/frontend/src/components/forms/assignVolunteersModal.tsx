@@ -13,7 +13,11 @@ import {
 } from '@chakra-ui/react';
 import { useAlert } from '../../hooks/alert';
 import { useEffect, useState } from 'react';
-import { ApprovedPantryResponse, Assignments } from 'types/types';
+import {
+  AlertStatus,
+  ApprovedPantryResponse,
+  Assignments,
+} from '../../types/types';
 import { SearchIcon } from 'lucide-react';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -70,7 +74,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
         setVolunteers(normalized);
         setSelectedIds(new Set(assignedIds));
       } catch {
-        setAlertMessage('Error fetching volunteers');
+        setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
       }
     };
 
@@ -112,7 +116,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
       onSuccess();
       onClose();
     } catch {
-      setAlertMessage('Error saving volunteer assignments');
+      setAlertMessage('Error saving volunteer assignments', AlertStatus.ERROR);
     }
   };
 
@@ -129,7 +133,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}

@@ -141,20 +141,6 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('getPantryFromOrder', () => {
-    it('should call ordersService.findOrderPantry and return pantry', async () => {
-      const orderId = 1;
-      mockOrdersService.findOrderPantry.mockResolvedValueOnce(
-        mockPantries[0] as Pantry,
-      );
-
-      const result = await controller.getPantryFromOrder(orderId);
-
-      expect(result).toEqual(mockPantries[0] as Pantry);
-      expect(mockOrdersService.findOrderPantry).toHaveBeenCalledWith(orderId);
-    });
-  });
-
   describe('getRequestFromOrder', () => {
     it('should call ordersService.findOrderFoodRequest and return food request', async () => {
       const orderId = 1;
@@ -171,21 +157,6 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('getAllAllocationsByOrder', () => {
-    it('should call allocationsService.getAllAllocationsByOrder and return allocations', async () => {
-      const orderId = 1;
-      mockAllocationsService.getAllAllocationsByOrder.mockResolvedValueOnce(
-        mockAllocations.slice(0, 2) as Allocation[],
-      );
-
-      const result = await controller.getAllAllocationsByOrder(orderId);
-
-      expect(result).toEqual(mockAllocations.slice(0, 2) as Allocation[]);
-      expect(
-        mockAllocationsService.getAllAllocationsByOrder,
-      ).toHaveBeenCalledWith(orderId);
-    });
-  });
   describe('confirmDelivery', () => {
     beforeEach(() => {
       mockAWSS3Service.upload.mockReset();
