@@ -594,22 +594,6 @@ const ManufacturerApplicationForm: React.FC = () => {
               </Checkbox.Label>
             </Checkbox.Root>
           </Field.Root>
-          <Field.Root required mb="4em">
-            <Checkbox.Root>
-              <Checkbox.HiddenInput required />
-              <Checkbox.Control
-                border="1px solid"
-                borderColor="neutral.100"
-                _checked={{ bg: 'neutral.800' }}
-              />
-              <Checkbox.Label {...fieldHeaderStyles}>
-                By submitting this form, you agree to receive automated emails
-                from Securing Safe Food (SSF) Corp. should your food
-                manufacturer be enrolled in our program.{' '}
-                <Field.RequiredIndicator color="red" />
-              </Checkbox.Label>
-            </Checkbox.Root>
-          </Field.Root>
           <Box display="flex" gap={2} justifyContent="flex-end" mb={6}>
             <Button
               border="1px solid"
