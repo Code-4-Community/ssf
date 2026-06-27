@@ -34,7 +34,8 @@ import { DataSource, EntityManager, In } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
-import { emailTemplates } from '../emails/emailTemplates';
+import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
+import { ApplicationStatus } from '../shared/types';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -1743,6 +1744,180 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(after2.trackingLink).toEqual('https://tracking2.com');
       expect(after2.shippingCost).toEqual(7.5);
       expect(after2.status).toEqual(OrderStatus.SHIPPED);
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('sendConfirmDeliveryReminders', () => {
+    // Orders eligible for a reminder: shipped, approved pantry, and shipped at
+    // least a week ago (matching the service query).
+    const eligibleOrders = async (): Promise<Order[]> =>
+      testDataSource
+        .getRepository(Order)
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.request', 'request')
+        .leftJoinAndSelect('request.pantry', 'pantry')
+        .leftJoinAndSelect('pantry.pantryUser', 'pantryUser')
+        .leftJoinAndSelect('order.assignee', 'assignee')
+        .leftJoinAndSelect('order.foodManufacturer', 'foodManufacturer')
+        .where('order.status = :status', { status: OrderStatus.SHIPPED })
+        .andWhere('pantry.status = :pantryStatus', {
+          pantryStatus: ApplicationStatus.APPROVED,
+        })
+        .andWhere("order.shippedAt <= NOW() - INTERVAL '7 days'")
+        .getMany();
+
+    const expectedMessageFor = (order: Order) =>
+      emailTemplates.pantryConfirmDeliveryReminder({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+    it('logs a warning and sends no emails when there are no unconfirmed deliveries', async () => {
+      await testDataSource.query(
+        `UPDATE orders SET status = $1 WHERE status = $2`,
+        [OrderStatus.DELIVERED, OrderStatus.SHIPPED],
+      );
+      const logSpy = jest.spyOn(service['logger'], 'log');
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No pantries with unconfirmed deliveries, skipping email sending.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+
+      logSpy.mockRestore();
+    });
+
+    it('sends one personalized reminder per unconfirmed order', async () => {
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      const orders = await eligibleOrders();
+      expect(orders.length).toBeGreaterThan(0);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(orders.length);
+      for (const order of orders) {
+        const message = expectedMessageFor(order);
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      }
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
+
+    it('sends a separate reminder for each unconfirmed order, even within the same pantry', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const existingShippedOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.SHIPPED },
+      });
+      if (!existingShippedOrder)
+        throw new Error('Missing existingShippedOrder test object');
+
+      // Add a second shipped order to the same request
+      const secondOrder = orderRepo.create({
+        requestId: existingShippedOrder.requestId,
+        foodManufacturerId: existingShippedOrder.foodManufacturerId,
+        assigneeId: existingShippedOrder.assigneeId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date('2024-02-03T08:00:00Z'),
+      });
+      await orderRepo.save(secondOrder);
+
+      await service.sendConfirmDeliveryReminders();
+
+      const samePantryOrders = (await eligibleOrders()).filter(
+        (o) => o.requestId === existingShippedOrder.requestId,
+      );
+      expect(samePantryOrders.length).toBe(2);
+
+      const sentForSecondOrder = samePantryOrders.find(
+        (o) => o.orderId === secondOrder.orderId,
+      )!;
+
+      const message = expectedMessageFor(sentForSecondOrder);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: sentForSecondOrder.request.pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not send a reminder for an order shipped less than a week ago', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      await testDataSource.query(
+        `UPDATE orders SET status = $1 WHERE status = $2`,
+        [OrderStatus.DELIVERED, OrderStatus.SHIPPED],
+      );
+
+      const template = await orderRepo.findOne({
+        where: { status: OrderStatus.DELIVERED },
+      });
+      if (!template) throw new Error('Missing order template');
+
+      const recentOrder = orderRepo.create({
+        requestId: template.requestId,
+        foodManufacturerId: template.foodManufacturerId,
+        assigneeId: template.assigneeId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date(),
+      });
+      await orderRepo.save(recentOrder);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('only sends reminders for orders that are SHIPPED', async () => {
+      const orders = await eligibleOrders();
+      expect(orders.length).toBeGreaterThan(0);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(orders.length);
+
+      const orderRepo = testDataSource.getRepository(Order);
+      // Pulling id out of sent email to assert it is shipped.
+      for (const [{ bodyHtml }] of mockEmailsService.sendEmails.mock.calls) {
+        const match = bodyHtml.match(/orderId=(\d+)/);
+        expect(match).not.toBeNull();
+
+        const orderId = Number(match![1]);
+        const order = await orderRepo.findOneBy({ orderId });
+        expect(order).not.toBeNull();
+        expect(order!.status).toEqual(OrderStatus.SHIPPED);
+      }
+    });
+
+    it('logs a warning and continues when sending a reminder fails', async () => {
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SES failure'),
+      );
+
+      await expect(
+        service.sendConfirmDeliveryReminders(),
+      ).resolves.toBeUndefined();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to send confirm delivery reminder to'),
+      );
 
       warnSpy.mockRestore();
     });
