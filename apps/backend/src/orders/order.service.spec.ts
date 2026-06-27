@@ -1845,12 +1845,15 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const sentForSecondOrder = samePantryOrders.find(
         (o) => o.orderId === secondOrder.orderId,
       )!;
+
       const message = expectedMessageFor(sentForSecondOrder);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
         toEmail: sentForSecondOrder.request.pantry.pantryUser.email,
         subject: message.subject,
         bodyHtml: message.bodyHTML,
       });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
     });
 
     it('does not send a reminder for an order shipped less than a week ago', async () => {
