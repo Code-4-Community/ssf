@@ -36,8 +36,8 @@ interface DonationDetailsModalProps {
   donation: Donation;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
-  onDelete?: () => void;
+  onSuccess: () => void;
+  onDelete: () => void;
 }
 
 interface DonationRow {
@@ -80,8 +80,6 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const donationId = donation.donationId;
-
-  const hasAllocations = items.some((i) => i.reservedQuantity > 0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -162,7 +160,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       try {
         await ApiClient.editDonationItems(donationId, body);
         await loadItems();
-        onSuccess?.();
+        onSuccess();
         setAlertMessage(
           'Successfully updated donation items.',
           AlertStatus.INFO,
@@ -225,16 +223,14 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 <Dialog.Title fontSize="lg" fontWeight="600">
                   Donation #{donationId} Stock
                 </Dialog.Title>
-                {currentUser?.role === Role.FOODMANUFACTURER &&
-                  donation.status === DonationStatus.AVAILABLE &&
-                  !hasAllocations && (
+                {(currentUser?.role === Role.FOODMANUFACTURER ||
+                  currentUser?.role === Role.ADMIN) &&
+                  donation.status === DonationStatus.AVAILABLE && (
                     <>
                       <EditButton
                         onClick={() => setIsEditing(true)}
                       ></EditButton>
-                      {onDelete && (
-                        <DeleteButton onClick={onDelete}></DeleteButton>
-                      )}
+                      <DeleteButton onClick={onDelete}></DeleteButton>
                     </>
                   )}
               </HStack>
