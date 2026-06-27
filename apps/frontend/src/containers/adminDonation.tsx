@@ -20,6 +20,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 
 const AdminDonation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,20 +36,22 @@ const AdminDonation: React.FC = () => {
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
+  const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
 
+  const fetchDonations = async () => {
+    try {
+      const data = await ApiClient.getAllDonations();
+      setDonations(data);
+    } catch {
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
+    }
+  };
+
   useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const data = await ApiClient.getAllDonations();
-        setDonations(data);
-      } catch {
-        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
-      }
-    };
     fetchDonations();
-  }, [setAlertMessage]);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -285,6 +288,24 @@ const AdminDonation: React.FC = () => {
           ))}
         </Table.Body>
       </Table.Root>
+
+      <FMDeleteDonationActionModal
+        donation={deleteDonation}
+        isOpen={deleteDonation !== null}
+        onClose={() => {
+          setDeleteDonation(null);
+        }}
+        onSuccess={() => {
+          setAlertMessage(
+            'Successfully deleted donation items.',
+            AlertStatus.INFO,
+          );
+          fetchDonations();
+          setDeleteDonation(null);
+          setSelectedDonation(null);
+        }}
+      />
+
       {selectedDonation && (
         <DonationDetailsModal
           donation={selectedDonation}
@@ -293,6 +314,8 @@ const AdminDonation: React.FC = () => {
             setSelectedDonation(null);
             navigate(ROUTES.ADMIN_DONATION, { replace: true });
           }}
+          onSuccess={() => fetchDonations()}
+          onDelete={() => setDeleteDonation(selectedDonation)}
         />
       )}
 
