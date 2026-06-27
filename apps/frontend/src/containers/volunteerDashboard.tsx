@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
-import DashboardCard, { ORDER_STATUS_BADGE } from '@components/dashboardCard';
+import DashboardCard, {
+  DashboardCardType,
+  ORDER_STATUS_BADGE,
+} from '@components/dashboardCard';
+import { FloatingAlert } from '@components/floatingAlert';
+import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 import {
   AlertStatus,
   FoodRequestSummaryDto,
   User,
   VolunteerOrder,
 } from '../types/types';
-import { DashboardCardType } from '@components/dashboardCard';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
-import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
-import PageEmptyState from '@components/pageEmptyState';
-import { DashboardStats } from '@components/dashboardStats';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [alertState, setAlertMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [recentFoodRequests, setRecentFoodRequests] = useState<
     FoodRequestSummaryDto[]
@@ -30,48 +33,42 @@ const VolunteerDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      let currentUser: User;
       try {
-        currentUser = await ApiClient.getMe();
+        const currentUser = await ApiClient.getMe();
         setUser(currentUser);
-      } catch {
-        setAlertMessage('Error fetching user information', AlertStatus.ERROR);
-        return;
-      }
 
-      try {
-        const userStats = await ApiClient.getUserStats(currentUser.id);
-        setStats(userStats);
-      } catch {
-        setAlertMessage(
-          'Error fetching dashboard statistics',
-          AlertStatus.ERROR,
-        );
-      }
+        try {
+          const userStats = await ApiClient.getUserStats(currentUser.id);
+          setStats(userStats);
+        } catch {
+          setAlertMessage(
+            'Error fetching dashboard statistics',
+            AlertStatus.ERROR,
+          );
+        }
 
-      try {
-        const requests = await ApiClient.getVolunteerAssignedRequests();
+        const [requests, orders] = await Promise.all([
+          ApiClient.getVolunteerAssignedRequests(),
+          ApiClient.getVolunteerRecentOrders(),
+        ]);
+
         const sorted = requests.sort(
           (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
             new Date(b.requestedAt).getTime() -
             new Date(a.requestedAt).getTime(),
         );
         setRecentFoodRequests(sorted.slice(0, 2));
-      } catch {
-        setAlertMessage('Error fetching food requests', AlertStatus.ERROR);
-      }
-
-      try {
-        const orders = await ApiClient.getVolunteerRecentOrders();
         setRecentOrders(orders);
       } catch {
-        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+        setAlertMessage('Error fetching dashboard data', AlertStatus.ERROR);
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboardData();
   }, [setAlertMessage]);
 
-  if (!user) return null;
+  if (loading || !user) return null;
 
   const isPageEmpty =
     recentFoodRequests.length === 0 && recentOrders.length === 0;
@@ -94,10 +91,10 @@ const VolunteerDashboard: React.FC = () => {
 
       {isPageEmpty ? (
         <PageEmptyState
-          subtitle="You have no food requests or orders at this time."
-          primaryButtonText="View Assigned Pantries"
+          entity="food requests or orders"
+          primaryButtonText="View Pantries"
           primaryButtonLink={ROUTES.VOLUNTEER_ASSIGNED_PANTRIES}
-          secondaryButtonText="View Orders"
+          secondaryButtonText="View Past Orders"
           secondaryButtonLink={ROUTES.VOLUNTEER_ORDER_MANAGEMENT}
         />
       ) : (
@@ -107,7 +104,7 @@ const VolunteerDashboard: React.FC = () => {
           </Text>
           {recentFoodRequests.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no recent food requests at this time" />
+              <SectionEmptyState entity="recent food requests" />
             </Box>
           ) : (
             <Box
@@ -139,7 +136,7 @@ const VolunteerDashboard: React.FC = () => {
           </Text>
           {recentOrders.length === 0 ? (
             <Box mb={16}>
-              <SectionEmptyState subtitle="You have no orders at this time" />
+              <SectionEmptyState entity="orders" />
             </Box>
           ) : (
             <Box

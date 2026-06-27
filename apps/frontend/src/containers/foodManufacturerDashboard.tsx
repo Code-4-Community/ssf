@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import ApiClient from '@api/apiClient';
 import { Box, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, { DashboardCardType } from '@components/dashboardCard';
+import { FloatingAlert } from '@components/floatingAlert';
+import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
+import { DashboardStats } from '@components/dashboardStats';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../hooks/alert';
+import { ROUTES } from '../routes';
 import {
   AlertStatus,
   Donation,
@@ -9,22 +17,14 @@ import {
   FoodManufacturer,
   User,
 } from '../types/types';
-import ApiClient from '@api/apiClient';
-import { useAlert } from '../hooks/alert';
-import { FloatingAlert } from '@components/floatingAlert';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../routes';
-import SectionEmptyState from '@components/sectionEmptyState';
-import PageEmptyState from '@components/pageEmptyState';
-import { DashboardStats } from '@components/dashboardStats';
 
 const FoodManufacturerDashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [alertState, setAlertMessage] = useAlert();
+  const [errorAlertState, setErrorMessage] = useAlert();
+  const [loading, setLoading] = useState(true);
   const [foodManufacturer, setFoodManufacturer] =
     useState<FoodManufacturer | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [upcomingReminders, setUpcomingReminders] = useState<
     DonationReminderDto[]
   >([]);
@@ -33,28 +33,24 @@ const FoodManufacturerDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchFmData = async () => {
-      let fmId: number;
       let currentUser: User;
       try {
         currentUser = await ApiClient.getMe();
-        setUser(currentUser);
-
-        fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         const fm = await ApiClient.getFoodManufacturer(fmId);
         setFoodManufacturer(fm);
       } catch {
-        setAlertMessage(
-          'Error fetching your manufacturer profile.',
-          AlertStatus.ERROR,
-        );
+        setErrorMessage('Error fetching dashboard data', AlertStatus.ERROR);
         return;
+      } finally {
+        setLoading(false);
       }
 
       try {
         const userStats = await ApiClient.getUserStats(currentUser.id);
         setStats(userStats);
       } catch {
-        setAlertMessage(
+        setErrorMessage(
           'Error fetching dashboard statistics',
           AlertStatus.ERROR,
         );
@@ -68,7 +64,7 @@ const FoodManufacturerDashboard: React.FC = () => {
       if (reminders.status === 'fulfilled') {
         setUpcomingReminders(reminders.value);
       } else {
-        setAlertMessage(
+        setErrorMessage(
           'Error fetching upcoming donations.',
           AlertStatus.ERROR,
         );
@@ -85,24 +81,24 @@ const FoodManufacturerDashboard: React.FC = () => {
           .slice(0, 2);
         setRecentDonations(sorted);
       } else {
-        setAlertMessage('Error fetching recent donations.', AlertStatus.ERROR);
+        setErrorMessage('Error fetching recent donations.', AlertStatus.ERROR);
       }
     };
     fetchFmData();
-  }, [setAlertMessage]);
+  }, [setErrorMessage]);
 
-  if (!foodManufacturer) return null;
+  if (loading) return null;
 
   const isPageEmpty =
     upcomingReminders.length === 0 && recentDonations.length === 0;
 
   return (
     <Box p={12}>
-      {alertState?.status === AlertStatus.ERROR && (
+      {errorAlertState && (
         <FloatingAlert
-          key={alertState.id}
-          message={alertState.message}
-          status={alertState.status}
+          key={errorAlertState.id}
+          message={errorAlertState.message}
+          status={errorAlertState.status}
           timeout={6000}
         />
       )}
