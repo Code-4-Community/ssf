@@ -34,6 +34,7 @@ import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto
 import { EmailsService } from '../emails/email.service';
 import { mock } from 'jest-mock-extended';
 import { emailTemplates, SSF_PARTNER_EMAIL } from '../emails/emailTemplates';
+import { Role } from '../users/types';
 
 jest.setTimeout(60000);
 
@@ -480,6 +481,40 @@ describe('PantriesService', () => {
       await expect(service.updatePantryApplication(5, dto, 14)).rejects.toThrow(
         new ConflictException(
           'Cannot update application for a pending application',
+        ),
+      );
+    });
+
+    it('allows admin to update any approved pantry (bypassing ownership check)', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'AdminUpdated',
+        itemsInStock: 'Admin updated items',
+      };
+
+      // User 1 is not the owner of pantry 1 (owner is user 10), but as admin should be able to edit
+      const adminUserId = 1;
+      const updatedPantry = await service.updatePantryApplication(
+        1,
+        dto,
+        adminUserId,
+        Role.ADMIN,
+      );
+
+      expect(updatedPantry.secondaryContactFirstName).toBe('AdminUpdated');
+      expect(updatedPantry.itemsInStock).toBe('Admin updated items');
+    });
+
+    it('still throws ForbiddenException for non-admin non-owner users', async () => {
+      const dto: UpdatePantryApplicationDto = {
+        itemsInStock: 'Should not work',
+      };
+
+      // User 999 is not the owner and not an admin
+      await expect(
+        service.updatePantryApplication(1, dto, 999, Role.PANTRY),
+      ).rejects.toThrow(
+        new ForbiddenException(
+          'User 999 is not allowed to edit application for Pantry 1',
         ),
       );
     });

@@ -254,11 +254,13 @@ function validateRequired(form: FormState): boolean {
 interface EditablePantryApplicationProps {
   isEditing: boolean;
   onEditingChange: (v: boolean) => void;
+  pantryId?: number;
 }
 
 const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
   isEditing,
   onEditingChange,
+  pantryId: propPantryId,
 }) => {
   const [application, setApplication] = useState<PantryWithUser | null>(null);
   const [alertState, setAlertMessage] = useAlert();
@@ -267,7 +269,8 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
 
   const fetchApplication = useCallback(async () => {
     try {
-      const pantryId = await ApiClient.getCurrentUserPantryId();
+      const pantryId =
+        propPantryId ?? (await ApiClient.getCurrentUserPantryId());
       if (pantryId) {
         const data = await ApiClient.getPantry(pantryId);
         setApplication(data);
@@ -279,7 +282,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         AlertStatus.ERROR,
       );
     }
-  }, []);
+  }, [propPantryId]);
 
   useEffect(() => {
     fetchApplication();
