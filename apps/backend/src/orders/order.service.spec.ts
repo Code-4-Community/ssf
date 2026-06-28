@@ -347,7 +347,7 @@ describe('OrdersService', () => {
       const fullyReserved = {
         itemId: 999,
         itemName: 'Fully Reserved Item',
-        foodType: FoodType.SEED_BUTTERS,
+        foodType: FoodType.SPREADS_SEED_BUTTERS,
         quantity: 10,
         reservedQuantity: 10,
         donationId: 1,
@@ -364,7 +364,7 @@ describe('OrdersService', () => {
         {
           itemId: 999,
           itemName: 'Fully Reserved Item',
-          foodType: FoodType.SEED_BUTTERS,
+          foodType: FoodType.SPREADS_SEED_BUTTERS,
           quantity: 10,
           reservedQuantity: 10,
         },
