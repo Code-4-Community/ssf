@@ -493,22 +493,6 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     };
   }
 
-  async updateStatus(orderId: number, newStatus: OrderStatus) {
-    validateId(orderId, 'Order');
-
-    await this.repo
-      .createQueryBuilder()
-      .update(Order)
-      .set({
-        status: newStatus as OrderStatus,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
-        deliveredAt:
-          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
-      })
-      .where('order_id = :orderId', { orderId })
-      .execute();
-  }
-
   async confirmDelivery(
     orderId: number,
     dto: ConfirmDeliveryDto,

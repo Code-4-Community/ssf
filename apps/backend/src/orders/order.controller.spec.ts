@@ -234,29 +234,6 @@ describe('OrdersController', () => {
     });
   });
 
-  describe('updateStatus', () => {
-    it('should call ordersService.updateStatus', async () => {
-      const status = OrderStatus.DELIVERED;
-      const orderId = 1;
-
-      await controller.updateStatus(orderId, status);
-
-      expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
-        orderId,
-        status,
-      );
-    });
-
-    it('should throw with invalid status', async () => {
-      const invalidStatus = 'invalid status';
-      const orderId = 1;
-
-      await expect(
-        controller.updateStatus(orderId, invalidStatus),
-      ).rejects.toThrow(new BadRequestException('Invalid status'));
-    });
-  });
-
   describe('bulkUpdateTrackingCostInfo', () => {
     it('should call ordersService.bulkUpdateTrackingCostInfo with correct parameters', async () => {
       const dto: BulkUpdateTrackingCostDto = {

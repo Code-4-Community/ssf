@@ -354,36 +354,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('updateStatus', () => {
-    it('updates order status to delivered', async () => {
-      const orderId = 3;
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.SHIPPED);
-      expect(order.shippedAt).toBeDefined();
-
-      await service.updateStatus(orderId, OrderStatus.DELIVERED);
-      const updatedOrder = await service.findOne(orderId);
-
-      expect(updatedOrder.status).toEqual(OrderStatus.DELIVERED);
-      expect(updatedOrder.deliveredAt).toBeDefined();
-    });
-
-    it('updates order status to shipped', async () => {
-      const orderId = 4;
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.PENDING);
-
-      await service.updateStatus(orderId, OrderStatus.SHIPPED);
-      const updatedOrder = await service.findOne(orderId);
-
-      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
-      expect(updatedOrder.shippedAt).toBeDefined();
-      expect(updatedOrder.deliveredAt).toBeNull();
-    });
-  });
-
   describe('getOrdersByPantry', () => {
     it('returns order from pantry ID', async () => {
       const pantryId = 1;
@@ -1301,8 +1271,20 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const almondBefore = (await donationItemRepo.findOne({
         where: { itemName: 'Almond Milk' },
       })) as DonationItem;
+
+      // Both donations are allocated by the pending order 4, so the
+      // domain-correct starting status for each is MATCHED (a donation with a
+      // pending order is never FULFILLED). Set that explicitly so the before
+      // state is accurate and the post-close transitions are meaningful.
+      await donationRepo.update(
+        { donationId: In([cerealBefore.donationId, almondBefore.donationId]) },
+        { status: DonationStatus.MATCHED },
+      );
       const cerealDonationBefore = (await donationRepo.findOne({
         where: { donationId: cerealBefore.donationId },
+      })) as Donation;
+      const almondDonationBefore = (await donationRepo.findOne({
+        where: { donationId: almondBefore.donationId },
       })) as Donation;
 
       // Confirm the order is not already closed and the starting state we rely on.
@@ -1310,7 +1292,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(orderBefore.status).toBe(OrderStatus.PENDING);
       expect(cerealBefore.reservedQuantity).toBe(75);
       expect(almondBefore.reservedQuantity).toBe(20);
-      expect(cerealDonationBefore.status).toBe(DonationStatus.FULFILLED);
+      expect(cerealDonationBefore.status).toBe(DonationStatus.MATCHED);
+      expect(almondDonationBefore.status).toBe(DonationStatus.MATCHED);
 
       await service.closeOrder(orderId);
 

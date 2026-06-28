@@ -10,7 +10,7 @@ import {
   FoodType,
   User,
   Role,
-} from 'types/types';
+} from '../../types/types';
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {

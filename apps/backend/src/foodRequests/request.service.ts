@@ -326,17 +326,19 @@ export class RequestsService {
       throw new BadRequestException(`Request ${requestId} is already closed`);
     }
 
-    const allDelivered = orders.every(
-      (order) => order.status === OrderStatus.DELIVERED,
+    const allComplete = orders.every(
+      (order) =>
+        order.status === OrderStatus.DELIVERED ||
+        order.status === OrderStatus.CLOSED,
     );
 
-    request.status = allDelivered
+    request.status = allComplete
       ? FoodRequestStatus.CLOSED
       : FoodRequestStatus.ACTIVE;
 
     await this.repo.save(request);
 
-    if (allDelivered) {
+    if (allComplete) {
       try {
         const lastDeliveredOrder = await this.orderRepo.findOne({
           where: { requestId, status: OrderStatus.DELIVERED },

@@ -213,22 +213,6 @@ export class OrdersController {
     );
   }
 
-  @Roles(Role.VOLUNTEER)
-  @CheckOwnership({
-    idParam: 'orderId',
-    resolver: resolveOrderAuthorizedUserIds,
-  })
-  @Patch('/update-status/:orderId')
-  async updateStatus(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('newStatus') newStatus: string,
-  ): Promise<void> {
-    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
-    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
-  }
-
   @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'donationId',
