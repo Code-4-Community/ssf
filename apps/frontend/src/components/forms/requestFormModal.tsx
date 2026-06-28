@@ -217,7 +217,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                       justifyContent="space-between"
                       textStyle="p2"
                     >
-                      Select more food types
+                      Select food types
                       <ChevronDownIcon />
                     </Button>
                   </Menu.Trigger>

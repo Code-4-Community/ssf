@@ -172,27 +172,31 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                   </Text>
                 </Field.Root>
 
-                <Field.Root mb={4}>
-                  <Field.Label>
-                    <Text {...sectionTitleStyles} mt={3}>
-                      Feedback on Prior Donation
+                {feedbackOnPriorDonation && (
+                  <Field.Root mb={4}>
+                    <Field.Label>
+                      <Text {...sectionTitleStyles} mt={3}>
+                        Feedback on Prior Donation
+                      </Text>
+                    </Field.Label>
+                    <Text textStyle="p2" color="neutral.800" mt={3}>
+                      {feedbackOnPriorDonation}
                     </Text>
-                  </Field.Label>
-                  <Text textStyle="p2" color="neutral.800" mt={3}>
-                    {feedbackOnPriorDonation}
-                  </Text>
-                </Field.Root>
+                  </Field.Root>
+                )}
 
-                <Field.Root mb={4}>
-                  <Field.Label>
-                    <Text {...sectionTitleStyles} mt={3}>
-                      Additional Information
+                {additionalNotes && (
+                  <Field.Root mb={4}>
+                    <Field.Label>
+                      <Text {...sectionTitleStyles} mt={3}>
+                        Additional Information
+                      </Text>
+                    </Field.Label>
+                    <Text textStyle="p2" color="neutral.800" mt={3}>
+                      {additionalNotes}
                     </Text>
-                  </Field.Label>
-                  <Text textStyle="p2" color="neutral.800" mt={3}>
-                    {additionalNotes}
-                  </Text>
-                </Field.Root>
+                  </Field.Root>
+                )}
               </Tabs.Content>
 
               <Tabs.Content value="associatedOrders">
