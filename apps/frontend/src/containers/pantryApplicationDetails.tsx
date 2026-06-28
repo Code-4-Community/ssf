@@ -263,10 +263,49 @@ const PantryApplicationDetails: React.FC = () => {
                   {pantryUser.firstName} {pantryUser.lastName}
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {formatPhone(pantryUser.phone)}
+                  {formatPhone(pantryUser.phone) || '-'}
                 </Text>
                 <Text {...fieldContentStyles}>{pantryUser.email}</Text>
               </GridItem>
+              <GridItem>
+                <Heading {...sectionHeaderStyles} mb={2}>
+                  Secondary Point of Contact
+                </Heading>
+                <Text {...fieldContentStyles}>
+                  {application.secondaryContactFirstName ||
+                  application.secondaryContactLastName
+                    ? `${application.secondaryContactFirstName ?? ''} ${
+                        application.secondaryContactLastName ?? ''
+                      }`.trim()
+                    : '-'}
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {formatPhone(application.secondaryContactPhone) || '-'}
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.secondaryContactEmail || '-'}
+                </Text>
+              </GridItem>
+            </Grid>
+
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+              <GridItem>
+                <Text {...fieldHeaderStyles}>
+                  Has a contact who can regularly respond to SSF emails?
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.hasEmailContact ? 'Yes' : 'No'}
+                </Text>
+              </GridItem>
+              <GridItem>
+                <Text {...fieldHeaderStyles}>Other email contact details</Text>
+                <Text {...fieldContentStyles}>
+                  {application.emailContactOther || '-'}
+                </Text>
+              </GridItem>
+            </Grid>
+
+            <Grid templateColumns="repeat(2, 1fr)" gap={8}>
               <GridItem>
                 <Heading {...sectionHeaderStyles} mb={2}>
                   Shipping Address
@@ -284,10 +323,55 @@ const PantryApplicationDetails: React.FC = () => {
                 <Text {...fieldContentStyles}>
                   {application.shipmentAddressCountry === 'US'
                     ? 'United States of America'
-                    : application.shipmentAddressCountry ?? ''}
+                    : application.shipmentAddressCountry ?? '-'}
+                </Text>
+              </GridItem>
+              <GridItem>
+                <Heading {...sectionHeaderStyles} mb={2}>
+                  Mailing Address
+                </Heading>
+                <Text {...fieldContentStyles}>
+                  {application.mailingAddressLine1}
+                  {application.mailingAddressLine2 &&
+                    `, ${application.mailingAddressLine2}`}
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.mailingAddressCity},{' '}
+                  {application.mailingAddressState}{' '}
+                  {application.mailingAddressZip}
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.mailingAddressCountry === 'US'
+                    ? 'United States of America'
+                    : application.mailingAddressCountry ?? '-'}
                 </Text>
               </GridItem>
             </Grid>
+
+            <Box>
+              <Heading {...sectionHeaderStyles} mb={6}>
+                Delivery Preferences
+              </Heading>
+              <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+                <GridItem>
+                  <Text {...fieldHeaderStyles}>
+                    Accepts food deliveries during standard business hours
+                    (Mon–Fri)?
+                  </Text>
+                  <Text {...fieldContentStyles}>
+                    {application.acceptFoodDeliveries ? 'Yes' : 'No'}
+                  </Text>
+                </GridItem>
+                <GridItem>
+                  <Text {...fieldHeaderStyles}>
+                    Delivery window restrictions
+                  </Text>
+                  <Text {...fieldContentStyles}>
+                    {application.deliveryWindowInstructions || '-'}
+                  </Text>
+                </GridItem>
+              </Grid>
+            </Box>
 
             <Box>
               <Heading {...sectionHeaderStyles} mb={6}>
@@ -295,13 +379,15 @@ const PantryApplicationDetails: React.FC = () => {
               </Heading>
               <Grid templateColumns="repeat(2, 1fr)" gap={6}>
                 <GridItem>
-                  <Text {...fieldHeaderStyles}>Name</Text>
+                  <Text {...fieldHeaderStyles}>Pantry Name</Text>
                   <Text {...fieldContentStyles}>{application.pantryName}</Text>
                 </GridItem>
                 <GridItem>
-                  <Text {...fieldHeaderStyles}>Approximate # of Clients</Text>
+                  <Text {...fieldHeaderStyles}>
+                    Clients with food allergies or adverse reactions served
+                  </Text>
                   <Text {...fieldContentStyles}>
-                    {application.allergenClients}
+                    {application.allergenClients || '-'}
                   </Text>
                 </GridItem>
               </Grid>
@@ -309,61 +395,31 @@ const PantryApplicationDetails: React.FC = () => {
 
             <Box>
               <Heading {...fieldHeaderStyles}>
-                Food Allergies and Restrictions
+                Food allergies / dietary restrictions clients report
               </Heading>
               {application.restrictions &&
               application.restrictions.length > 0 ? (
                 <TagGroup values={application.restrictions} />
               ) : (
-                <Text {...fieldContentStyles}>None</Text>
+                <Text {...fieldContentStyles}>-</Text>
               )}
             </Box>
 
-            <Grid templateColumns="1fr 2fr">
-              <GridItem>
-                <Text {...fieldHeaderStyles}>
-                  Accepts Refrigerated Donations?
-                </Text>
-                <Text {...fieldContentStyles}>
-                  {application.refrigeratedDonation}
-                </Text>
-              </GridItem>
-              <GridItem>
-                <Text {...fieldHeaderStyles}>
-                  Willing to Reserve Donations for Allergen-Avoidant Individuals
-                </Text>
-                <Text {...fieldContentStyles}>
-                  {application.reserveFoodForAllergic}
-                </Text>
-              </GridItem>
-            </Grid>
-
-            {application.reservationExplanation && (
-              <Box>
-                <Text {...fieldHeaderStyles}>Justification</Text>
-                <Text {...fieldContentStyles}>
-                  {application.reservationExplanation}
-                </Text>
-              </Box>
-            )}
-
             <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <GridItem>
                 <Text {...fieldHeaderStyles}>
-                  Dedicated section for allergy-friendly items?
+                  Able to accept frozen/refrigerated donations?
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.dedicatedAllergyFriendly
-                    ? 'Yes, we have a dedicated shelf or box'
-                    : 'No'}
+                  {application.refrigeratedDonation || '-'}
                 </Text>
               </GridItem>
               <GridItem>
                 <Text {...fieldHeaderStyles}>
-                  How Often Allergen-Avoidant Clients Visit
+                  Dedicated shelf/section for allergen-friendly items?
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.clientVisitFrequency ?? 'Not specified'}
+                  {application.dedicatedAllergyFriendly || '-'}
                 </Text>
               </GridItem>
             </Grid>
@@ -371,33 +427,68 @@ const PantryApplicationDetails: React.FC = () => {
             <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <GridItem>
                 <Text {...fieldHeaderStyles}>
-                  Confidence in Identifying the Top 9 Allergens
+                  Willing to reserve food shipments for allergen-avoidant
+                  individuals?
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.identifyAllergensConfidence ?? 'Not specified'}
+                  {application.reserveFoodForAllergic || '-'}
                 </Text>
               </GridItem>
               <GridItem>
                 <Text {...fieldHeaderStyles}>
-                  Serves Allergen-Avoidant Children
+                  How allergen-friendly foods will reach allergic clients
                 </Text>
                 <Text {...fieldContentStyles}>
-                  {application.serveAllergicChildren ?? 'Not specified'}
+                  {application.reservationExplanation || '-'}
+                </Text>
+              </GridItem>
+            </Grid>
+
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+              <GridItem>
+                <Text {...fieldHeaderStyles}>
+                  How often allergen-avoidant clients visit
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.clientVisitFrequency || '-'}
+                </Text>
+              </GridItem>
+              <GridItem>
+                <Text {...fieldHeaderStyles}>
+                  Serves allergen-avoidant children?
+                </Text>
+                <Text {...fieldContentStyles}>
+                  {application.serveAllergicChildren || '-'}
                 </Text>
               </GridItem>
             </Grid>
 
             <Box>
-              <Heading {...fieldHeaderStyles}>Open to SSF Activities</Heading>
+              <Heading {...fieldHeaderStyles}>
+                Languages allergen-avoidant clients speak
+              </Heading>
+              {application.languages && application.languages.length > 0 ? (
+                <TagGroup values={application.languages} />
+              ) : (
+                <Text {...fieldContentStyles}>-</Text>
+              )}
+            </Box>
+
+            <Box>
+              <Heading {...fieldHeaderStyles}>
+                Activities open to doing with SSF
+              </Heading>
               {application.activities && application.activities.length > 0 ? (
                 <TagGroup values={application.activities} />
               ) : (
-                <Text {...fieldContentStyles}>None</Text>
+                <Text {...fieldContentStyles}>-</Text>
               )}
             </Box>
 
             <Box>
-              <Heading {...fieldHeaderStyles}>Comments/Concerns</Heading>
+              <Heading {...fieldHeaderStyles}>
+                Comments about activities
+              </Heading>
               <Text {...fieldContentStyles}>
                 {application.activitiesComments || '-'}
               </Text>
@@ -405,20 +496,19 @@ const PantryApplicationDetails: React.FC = () => {
 
             <Box>
               <Heading {...fieldHeaderStyles}>
-                Allergen-free Items in Stock
+                Allergen-free items currently in stock
               </Heading>
-              <Text {...fieldContentStyles}>{application.itemsInStock}</Text>
-            </Box>
-
-            <Box>
-              <Heading {...fieldHeaderStyles}>Client Requests</Heading>
-              <Text {...fieldContentStyles}>{application.needMoreOptions}</Text>
-            </Box>
-
-            <Box>
-              <Heading {...fieldHeaderStyles}>Subscribed to Newsletter</Heading>
               <Text {...fieldContentStyles}>
-                {application.newsletterSubscription ? 'Yes' : 'No'}
+                {application.itemsInStock || '-'}
+              </Text>
+            </Box>
+
+            <Box>
+              <Heading {...fieldHeaderStyles}>
+                Have clients requested more food options?
+              </Heading>
+              <Text {...fieldContentStyles}>
+                {application.needMoreOptions || '-'}
               </Text>
             </Box>
 

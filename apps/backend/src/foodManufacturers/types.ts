@@ -22,12 +22,4 @@ export enum Allergen {
   FISH = 'Fish',
   SHELLFISH = 'Shellfish',
   SESAME = 'Sesame',
-  GLUTEN = 'Gluten',
-}
-
-export enum ManufacturerAttribute {
-  FEMALE = 'Female-founded or women-led',
-  NON_GMO = 'Non-GMO Project Verified',
-  ORGANIC = 'USDA Certified Organic',
-  NONE = 'None of the above',
 }

@@ -14,6 +14,7 @@ import { OrderStatus } from '../orders/types';
 import { calculateNextDonationDate } from './recurrence.utils';
 import { CreateDonationDto, RepeatOnDaysDto } from './dtos/create-donation.dto';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { DonationItem } from '../donationItems/donationItems.entity';
 import { Allocation } from '../allocations/allocations.entity';
@@ -395,6 +396,52 @@ export class DonationService {
       if (!confirmedDetailsForAnItem) return;
 
       await this.checkAndFulfillDonation(donation, transactionManager);
+    });
+  }
+
+  async editDonationItems(
+    donationId: number,
+    body: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    validateId(donationId, 'Donation');
+
+    if (body.length < 1) {
+      throw new BadRequestException('A donation must have at least one item');
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const donationTransactionRepo =
+        transactionManager.getRepository(Donation);
+
+      const donation = await donationTransactionRepo.findOne({
+        where: { donationId },
+      });
+
+      if (!donation) {
+        throw new NotFoundException(`Donation ${donationId} not found`);
+      }
+
+      if (donation.status !== DonationStatus.AVAILABLE) {
+        throw new BadRequestException(
+          `Donation ${donationId} items can only be edited while the donation is AVAILABLE`,
+        );
+      }
+
+      const hasAllocations = await transactionManager
+        .getRepository(Allocation)
+        .exists({ where: { item: { donation: { donationId } } } });
+
+      if (hasAllocations) {
+        throw new BadRequestException(
+          `Cannot edit items for donation ${donationId} because orders have already drawn from it`,
+        );
+      }
+
+      await this.donationItemsService.editItems(
+        donationId,
+        body,
+        transactionManager,
+      );
     });
   }
 

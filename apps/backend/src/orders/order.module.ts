@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersController } from './order.controller';
 import { Order } from './order.entity';
 import { OrdersService } from './order.service';
+import { OrdersSchedulerService } from './orders.scheduler';
 import { Pantry } from '../pantries/pantries.entity';
 import { AllocationModule } from '../allocations/allocations.module';
 import { AuthModule } from '../auth/auth.module';
@@ -17,10 +18,10 @@ import { ManufacturerModule } from '../foodManufacturers/manufacturers.module';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { Allocation } from '../allocations/allocations.entity';
 import { Donation } from '../donations/donations.entity';
+import { PantriesModule } from '../pantries/pantries.module';
 import { EmailsModule } from '../emails/email.module';
 import { User } from '../users/users.entity';
 import { UsersModule } from '../users/users.module';
-import { PantriesModule } from '../pantries/pantries.module';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { PantriesModule } from '../pantries/pantries.module';
     forwardRef(() => UsersModule),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, OrdersSchedulerService],
   exports: [OrdersService],
 })
 export class OrdersModule {}

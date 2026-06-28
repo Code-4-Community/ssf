@@ -16,6 +16,7 @@ import { DonationService } from './donations.service';
 import { RecurrenceEnum } from './types';
 import { CreateDonationDto } from './dtos/create-donation.dto';
 import { UpdateDonationItemDetailsDto } from '../donationItems/dtos/update-donation-item-details.dto';
+import { ReplaceDonationItemDto } from '../donationItems/dtos/replace-donation-item.dto';
 import { FoodType } from '../donationItems/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
@@ -101,8 +102,8 @@ export class DonationsController {
             properties: {
               itemName: { type: 'string', example: 'Canned Beans' },
               quantity: { type: 'integer', example: 1 },
-              ozPerItem: { type: 'number', example: 0.01, nullable: true },
-              estimatedValue: { type: 'number', example: 0.01, nullable: true },
+              ozPerItem: { type: 'number', example: 0.01 },
+              estimatedValue: { type: 'number', example: 0.01 },
               foodType: {
                 type: 'enum',
                 enum: Object.values(FoodType),
@@ -135,6 +136,20 @@ export class DonationsController {
     body: UpdateDonationItemDetailsDto[],
   ): Promise<void> {
     await this.donationService.updateDonationItemDetails(donationId, body);
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'donationId',
+    resolver: resolveDonationAuthorizedUserIds,
+  })
+  @Patch('/:donationId/item')
+  async editDonationItems(
+    @Param('donationId', ParseIntPipe) donationId: number,
+    @Body(new ParseArrayPipe({ items: ReplaceDonationItemDto }))
+    body: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.donationService.editDonationItems(donationId, body);
   }
 
   @Roles(Role.FOODMANUFACTURER)

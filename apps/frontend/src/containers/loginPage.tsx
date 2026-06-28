@@ -307,16 +307,11 @@ const LoginPage: React.FC = () => {
 
           {step === 'login' && (
             <>
-              <Text
-                textStyle="p2"
-                color="neutral.600"
-                textAlign="center"
-                mt={6}
-              >
+              <Text textStyle="p" color="neutral.800" textAlign="center" mt={6}>
                 Don't have an account?{' '}
                 <Link
-                  textStyle="p2"
-                  color="neutral.600"
+                  textStyle="p"
+                  color="neutral.800"
                   onClick={() => navigate(ROUTES.SIGNUP)}
                   variant="underline"
                   textDecorationColor="neutral.300"

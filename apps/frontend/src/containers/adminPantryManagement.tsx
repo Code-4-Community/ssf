@@ -397,7 +397,7 @@ const AdminPantryManagement: React.FC = () => {
                   >
                     {pantry.refrigeratedDonation === RefrigeratedDonation.NO
                       ? 'Not Refrigerator-Friendly'
-                      : 'Refrigerator-Friendly'}
+                      : 'Refrigerator/Freezer-Friendly'}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell textAlign="right">
