@@ -123,6 +123,32 @@ describe('OrdersController', () => {
     });
   });
 
+  describe('getOrderDonationItems', () => {
+    it('should call ordersService.getManufacturerDonationItems and return its result', async () => {
+      const items = [
+        {
+          itemId: 1,
+          itemName: 'Peanut Butter (16oz)',
+          foodType: FoodType.SEED_BUTTERS,
+          quantity: 100,
+          reservedQuantity: 10,
+        },
+      ];
+      mockOrdersService.getManufacturerDonationItems.mockResolvedValueOnce(
+        items,
+      );
+
+      const orderId = 1;
+
+      const result = await controller.getOrderDonationItems(orderId);
+
+      expect(result).toEqual(items);
+      expect(
+        mockOrdersService.getManufacturerDonationItems,
+      ).toHaveBeenCalledWith(orderId);
+    });
+  });
+
   describe('getAllOrders', () => {
     it('should call ordersService.getAll and return orders', async () => {
       const status = 'pending';

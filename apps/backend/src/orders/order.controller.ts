@@ -31,6 +31,7 @@ import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDonationItemDto } from './dtos/order-donation-item.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -130,6 +131,18 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {
     return this.ordersService.findOrderDetails(orderId);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Get('/:orderId/donation-items')
+  async getOrderDonationItems(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    return this.ordersService.getManufacturerDonationItems(orderId);
   }
 
   @Roles(Role.ADMIN, Role.VOLUNTEER)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -38,6 +38,7 @@ import {
   AlertStatus,
 } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
+import VolunteerCloseOrderModal from '@components/forms/volunteerCloseOrderModal';
 import CompleteRequiredActionsModal from '@components/forms/completeRequiredActionsModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
@@ -68,6 +69,7 @@ const VolunteerOrderManagement: React.FC = () => {
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null);
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
@@ -118,65 +120,65 @@ const VolunteerOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      let user: User;
-      let userId: number;
-      try {
-        user = await ApiClient.getMe();
-        userId = user.id;
-        setCurrentUser(user);
-      } catch {
-        setAlertMessage(
-          'Authentication error. Please log in and try again.',
-          AlertStatus.ERROR,
-        );
-        setIsLoading(false);
-        return;
-      }
+  const fetchOrders = useCallback(async () => {
+    let user: User;
+    let userId: number;
+    try {
+      user = await ApiClient.getMe();
+      userId = user.id;
+      setCurrentUser(user);
+    } catch {
+      setAlertMessage(
+        'Authentication error. Please log in and try again.',
+        AlertStatus.ERROR,
+      );
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const data = await ApiClient.getVolunteerOrders(userId);
+    try {
+      const data = await ApiClient.getVolunteerOrders(userId);
 
-        const grouped: Record<OrderStatus, VolunteerOrderWithColor[]> = {
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.DELIVERED]: [],
-          [OrderStatus.CLOSED]: [],
-        };
+      const grouped: Record<OrderStatus, VolunteerOrderWithColor[]> = {
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.DELIVERED]: [],
+        [OrderStatus.CLOSED]: [],
+      };
 
-        for (const order of data) {
-          const status = order.status;
+      for (const order of data) {
+        const status = order.status;
 
-          const orderWithColor: VolunteerOrderWithColor = { ...order };
+        const orderWithColor: VolunteerOrderWithColor = { ...order };
 
-          if (order.assignee) {
-            orderWithColor.assigneeColor =
-              USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
-          }
-
-          grouped[status].push(orderWithColor);
+        if (order.assignee) {
+          orderWithColor.assigneeColor =
+            USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
         }
 
-        setStatusOrders(grouped);
-
-        // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.DELIVERED]: 1,
-          [OrderStatus.CLOSED]: 1,
-        };
-        setCurrentPages(initialPages);
-      } catch {
-        setAlertMessage('Error fetching assigned orders', AlertStatus.ERROR);
-      } finally {
-        setIsLoading(false);
+        grouped[status].push(orderWithColor);
       }
-    };
 
-    fetchOrders();
+      setStatusOrders(grouped);
+
+      // Initialize current page for each status
+      const initialPages: Record<OrderStatus, number> = {
+        [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.PENDING]: 1,
+        [OrderStatus.DELIVERED]: 1,
+        [OrderStatus.CLOSED]: 1,
+      };
+      setCurrentPages(initialPages);
+    } catch {
+      setAlertMessage('Error fetching assigned orders', AlertStatus.ERROR);
+    } finally {
+      setIsLoading(false);
+    }
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   useEffect(() => {
     const orderIdFromUrl = searchParams.get('orderId');
@@ -385,6 +387,22 @@ const VolunteerOrderManagement: React.FC = () => {
           onClose={() => {
             setSelectedOrderId(null);
             navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+          }}
+          onSuccess={fetchOrders}
+          onDelete={() => setDeleteOrderId(selectedOrderId)}
+        />
+      )}
+
+      {deleteOrderId && (
+        <VolunteerCloseOrderModal
+          orderId={deleteOrderId}
+          isOpen={true}
+          onClose={() => setDeleteOrderId(null)}
+          onSuccess={() => {
+            setDeleteOrderId(null);
+            setSelectedOrderId(null);
+            navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+            fetchOrders();
           }}
         />
       )}

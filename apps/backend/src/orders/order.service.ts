@@ -14,6 +14,7 @@ import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDonationItemDto } from './dtos/order-donation-item.dto';
 import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
@@ -391,6 +392,29 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       throw new NotFoundException(`Order ${orderId} not found`);
     }
     return order;
+  }
+
+  async getManufacturerDonationItems(
+    orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    const items = await this.donationItemsService.getAllForManufacturer(
+      order.foodManufacturerId,
+    );
+
+    return items.map((item) => ({
+      itemId: item.itemId,
+      itemName: item.itemName,
+      foodType: item.foodType,
+      quantity: item.quantity,
+      reservedQuantity: item.reservedQuantity,
+    }));
   }
 
   async findOrderDetails(orderId: number): Promise<OrderDetailsDto> {

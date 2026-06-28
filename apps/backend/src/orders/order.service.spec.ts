@@ -52,6 +52,7 @@ describe('OrdersService', () => {
   let service: OrdersService;
   let donationService: DonationService;
   let allocationsService: AllocationsService;
+  let donationItemsService: DonationItemsService;
 
   beforeAll(async () => {
     mockEmailsService.sendEmails.mockResolvedValue(undefined);
@@ -129,6 +130,8 @@ describe('OrdersService', () => {
     service = module.get<OrdersService>(OrdersService);
     donationService = module.get<DonationService>(DonationService);
     allocationsService = module.get<AllocationsService>(AllocationsService);
+    donationItemsService =
+      module.get<DonationItemsService>(DonationItemsService);
   });
 
   beforeEach(async () => {
@@ -309,6 +312,72 @@ describe('OrdersService', () => {
       await expect(service.findOrderDetails(missingOrderId)).rejects.toThrow(
         `Order ${missingOrderId} not found`,
       );
+    });
+  });
+
+  describe('getManufacturerDonationItems', () => {
+    it("returns the order manufacturer's donation items with quantity and reservedQuantity", async () => {
+      const orderId = 1;
+      const order = await service.findOne(orderId);
+
+      const result = await service.getManufacturerDonationItems(orderId);
+      const expectedItems = await donationItemsService.getAllForManufacturer(
+        order.foodManufacturerId,
+      );
+
+      expect(result).toHaveLength(expectedItems.length);
+      expect(result).toEqual(
+        expect.arrayContaining(
+          expectedItems.map((item) => ({
+            itemId: item.itemId,
+            itemName: item.itemName,
+            foodType: item.foodType,
+            quantity: item.quantity,
+            reservedQuantity: item.reservedQuantity,
+          })),
+        ),
+      );
+    });
+
+    it('includes fully-reserved items (does not filter by availability)', async () => {
+      const orderId = 1;
+      const order = await service.findOne(orderId);
+
+      const fullyReserved = {
+        itemId: 999,
+        itemName: 'Fully Reserved Item',
+        foodType: FoodType.SEED_BUTTERS,
+        quantity: 10,
+        reservedQuantity: 10,
+        donationId: 1,
+      } as DonationItem;
+
+      const spy = jest
+        .spyOn(donationItemsService, 'getAllForManufacturer')
+        .mockResolvedValue([fullyReserved]);
+
+      const result = await service.getManufacturerDonationItems(orderId);
+
+      expect(spy).toHaveBeenCalledWith(order.foodManufacturerId);
+      expect(result).toEqual([
+        {
+          itemId: 999,
+          itemName: 'Fully Reserved Item',
+          foodType: FoodType.SEED_BUTTERS,
+          quantity: 10,
+          reservedQuantity: 10,
+        },
+      ]);
+
+      spy.mockRestore();
+    });
+
+    it('throws NotFoundException when order does not exist', async () => {
+      const missingOrderId = 99999999;
+
+      await expect(
+        service.getManufacturerDonationItems(missingOrderId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
