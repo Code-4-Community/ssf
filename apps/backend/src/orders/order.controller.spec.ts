@@ -129,7 +129,7 @@ describe('OrdersController', () => {
         {
           itemId: 1,
           itemName: 'Peanut Butter (16oz)',
-          foodType: FoodType.SEED_BUTTERS,
+          foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
           quantity: 100,
           reservedQuantity: 10,
         },

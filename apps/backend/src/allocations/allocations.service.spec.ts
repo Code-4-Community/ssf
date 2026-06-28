@@ -43,8 +43,8 @@ async function insertItem(
   reserved: number,
 ): Promise<number> {
   const [{ item_id }] = await testDataSource.query(
-    `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-     VALUES ($1, 'Test Item', $2, $3, 'Granola', false) RETURNING item_id`,
+    `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+     VALUES ($1, 'Test Item', $2, $3, 0, 0, 'Granola', false) RETURNING item_id`,
     [donationId, quantity, reserved],
   );
   return item_id;
@@ -296,12 +296,12 @@ describe('AllocationsService', () => {
 
       // Two donation items with known reserved quantities (donation 1 is seeded).
       const [{ item_id: itemAId }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES (1, 'Item A', 20, 5, 'Granola', false) RETURNING item_id`,
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+         VALUES (1, 'Item A', 20, 5, 0, 0, 'Granola', false) RETURNING item_id`,
       );
       const [{ item_id: itemBId }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, details_confirmed)
-         VALUES (1, 'Item B', 20, 8, 'Granola', false) RETURNING item_id`,
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, details_confirmed)
+         VALUES (1, 'Item B', 20, 8, 0, 0, 'Granola', false) RETURNING item_id`,
       );
 
       // Two allocations against those items (order 1 is seeded).
