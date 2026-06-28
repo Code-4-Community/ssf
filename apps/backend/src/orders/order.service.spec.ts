@@ -1579,26 +1579,29 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
   });
 
   describe('getAllOrdersForVolunteer', () => {
-    it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
+    it('should return only orders assigned to the volunteer, each with actionCompletion', async () => {
       const volunteerId = 6;
+      // assign all seed orders away from volunteer 6, then a single order back to them
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = (SELECT user_id FROM users WHERE role = 'volunteer' AND user_id != 6 LIMIT 1)`,
+      );
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = 6 WHERE order_id = 4`,
+      );
+
       const result = await service.getAllOrdersForVolunteer(volunteerId);
 
-      expect(result).toHaveLength(4);
-
-      const assignedOrder = result.find((o) => o.assignee.id === volunteerId);
-      expect(assignedOrder?.actionCompletion).toEqual({
+      expect(result).toHaveLength(1);
+      expect(result.every((o) => o.assignee.id === volunteerId)).toBe(true);
+      expect(result[0].actionCompletion).toEqual({
         confirmDonationReceipt: false,
         notifyPantry: false,
       });
-
-      const notAssignedOrder = result.find(
-        (o) => o.assignee.id !== volunteerId,
-      );
-      expect(notAssignedOrder?.actionCompletion).toBeUndefined();
     });
 
     it('should map the rest of the data correctly', async () => {
       const volunteerId = 6;
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
       const result = await service.getAllOrdersForVolunteer(volunteerId);
       const order = result.find((o) => o.orderId === 4);
 

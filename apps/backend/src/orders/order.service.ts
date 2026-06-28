@@ -87,8 +87,7 @@ export class OrdersService {
     return qb.getMany();
   }
 
-  // returns ALL orders (not scoped to volunteer)
-  // for orders assigned to the given volunteer, includes actionCompletion (otherwise undefined)
+  // returns all orders assigned to the given volunteer, each with actionCompletion
   async getAllOrdersForVolunteer(
     volunteerId: number,
   ): Promise<VolunteerOrder[]> {
@@ -111,27 +110,23 @@ export class OrdersService {
         'assignee.firstName',
         'assignee.lastName',
       ])
+      .where('order.assigneeId = :volunteerId', { volunteerId })
       .getMany();
 
-    return orders.map((o) => {
-      const { assignee, confirmDonationReceipt, notifyPantry } = o;
-      const actionCompletion =
-        assignee.id === volunteerId
-          ? { confirmDonationReceipt, notifyPantry }
-          : undefined;
-
-      return {
-        orderId: o.orderId,
-        status: o.status,
-        createdAt: o.createdAt,
-        shippedAt: o.shippedAt,
-        deliveredAt: o.deliveredAt,
-        pantryId: o.request.pantryId,
-        pantryName: o.request.pantry.pantryName,
-        assignee: o.assignee,
-        actionCompletion,
-      };
-    });
+    return orders.map((o) => ({
+      orderId: o.orderId,
+      status: o.status,
+      createdAt: o.createdAt,
+      shippedAt: o.shippedAt,
+      deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
+      pantryName: o.request.pantry.pantryName,
+      assignee: o.assignee,
+      actionCompletion: {
+        confirmDonationReceipt: o.confirmDonationReceipt,
+        notifyPantry: o.notifyPantry,
+      },
+    }));
   }
 
   async getRecentOrdersByAssignee(

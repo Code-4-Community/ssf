@@ -36,6 +36,7 @@ import {
   VolunteerAction,
   User,
   AlertStatus,
+  OrderDetails,
 } from '../types/types';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import VolunteerCloseOrderModal from '@components/forms/volunteerCloseOrderModal';
@@ -69,7 +70,7 @@ const VolunteerOrderManagement: React.FC = () => {
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null);
+  const [deleteOrder, setDeleteOrder] = useState<OrderDetails | null>(null);
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
@@ -380,32 +381,27 @@ const VolunteerOrderManagement: React.FC = () => {
         />
       )}
 
-      {selectedOrderId && (
-        <OrderDetailsModal
-          orderId={selectedOrderId}
-          isOpen={true}
-          onClose={() => {
-            setSelectedOrderId(null);
-            navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
-          }}
-          onSuccess={fetchOrders}
-          onDelete={() => setDeleteOrderId(selectedOrderId)}
-        />
-      )}
+      <OrderDetailsModal
+        orderId={selectedOrderId}
+        isOpen={selectedOrderId !== null}
+        onClose={() => {
+          setSelectedOrderId(null);
+          navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+        }}
+        onSuccess={fetchOrders}
+        onDelete={(order) => setDeleteOrder(order)}
+      />
 
-      {deleteOrderId && (
-        <VolunteerCloseOrderModal
-          orderId={deleteOrderId}
-          isOpen={true}
-          onClose={() => setDeleteOrderId(null)}
-          onSuccess={() => {
-            setDeleteOrderId(null);
-            setSelectedOrderId(null);
-            navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
-            fetchOrders();
-          }}
-        />
-      )}
+      <VolunteerCloseOrderModal
+        order={deleteOrder}
+        isOpen={deleteOrder !== null}
+        onClose={() => setDeleteOrder(null)}
+        onSuccess={() => {
+          fetchOrders();
+          setSelectedOrderId(null);
+          navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
+        }}
+      />
     </Box>
   );
 };

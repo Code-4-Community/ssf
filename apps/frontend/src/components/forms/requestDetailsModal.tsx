@@ -4,7 +4,7 @@ import {
   OrderDetails,
   FoodRequestSummaryDto,
 } from 'types/types';
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@utils/utils';
+import { ORDER_STATUS_LABELS } from '@utils/utils';
 import {
   FoodRequestStatus,
   AlertStatus,
