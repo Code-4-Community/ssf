@@ -30,6 +30,7 @@ import {
   IconButton,
   Button,
   Textarea,
+  Input,
 } from '@chakra-ui/react';
 import { ChevronRight, ChevronLeft, ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
@@ -62,15 +63,36 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const [orderDetailsList, setOrderDetailsList] = useState<OrderDetails[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
+  // location is stored as a single "City, State" string; split it back
+  // into its parts for editing and recombine on update.
+  const splitLocation = (loc: string) => {
+    const commaIdx = loc.lastIndexOf(',');
+    if (commaIdx !== -1) {
+      return {
+        city: loc.slice(0, commaIdx).trim(),
+        state: loc.slice(commaIdx + 1).trim(),
+      };
+    }
+    return { city: loc.trim(), state: '' };
+  };
+
   const [requestedSize, setRequestedSize] = useState<RequestSize>(
     request.requestedSize,
   );
   const [selectedFoodTypes, setSelectedFoodTypes] = useState<FoodType[]>(
     request.requestedFoodTypes,
   );
+  const [locationCity, setLocationCity] = useState<string>(
+    splitLocation(request.location).city,
+  );
+  const [locationState, setLocationState] = useState<string>(
+    splitLocation(request.location).state,
+  );
   const [additionalNotes, setAdditionalNotes] = useState<string>(
     request.additionalInformation ?? '',
   );
+  const [feedbackOnPriorDonation, setFeedbackOnPriorDonation] =
+    useState<string>(request.feedbackOnPriorDonation ?? '');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -132,7 +154,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   const handleCancel = () => {
     setRequestedSize(request.requestedSize);
     setSelectedFoodTypes(request.requestedFoodTypes);
+    setLocationCity(splitLocation(request.location).city);
+    setLocationState(splitLocation(request.location).state);
     setAdditionalNotes(request.additionalInformation ?? '');
+    setFeedbackOnPriorDonation(request.feedbackOnPriorDonation ?? '');
     setIsEditing(false);
   };
 
@@ -141,7 +166,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
       await apiClient.updateFoodRequest(request.requestId, {
         requestedSize,
         requestedFoodTypes: selectedFoodTypes,
+        location: `${locationCity.trim()}, ${locationState.trim()}`,
         additionalInformation: additionalNotes === '' ? null : additionalNotes,
+        feedbackOnPriorDonation:
+          feedbackOnPriorDonation === '' ? null : feedbackOnPriorDonation,
       });
       onSuccess();
       setAlertMessage('Successfully updated food request.', AlertStatus.INFO);
@@ -323,7 +351,55 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     />
                   </Field.Root>
 
-                  <Field.Root mb={5}>
+                  <Field.Root required mb={3}>
+                    <Field.Label>
+                      <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                        Location
+                      </Text>
+                    </Field.Label>
+                    <Flex w="full" gap={3}>
+                      <Input
+                        flex={1}
+                        pl={2.5}
+                        placeholder="City"
+                        _placeholder={{
+                          color: 'neutral.300',
+                          fontFamily: 'Inter',
+                          fontWeight: 400,
+                        }}
+                        size="lg"
+                        textStyle="p2"
+                        bgColor="white"
+                        borderColor="neutral.100"
+                        color={
+                          locationCity !== '' ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={locationCity}
+                        onChange={(e) => setLocationCity(e.target.value)}
+                      />
+                      <Input
+                        flex={1}
+                        pl={2.5}
+                        placeholder="State"
+                        _placeholder={{
+                          color: 'neutral.300',
+                          fontFamily: 'Inter',
+                          fontWeight: 400,
+                        }}
+                        size="lg"
+                        textStyle="p2"
+                        bgColor="white"
+                        borderColor="neutral.100"
+                        color={
+                          locationState !== '' ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={locationState}
+                        onChange={(e) => setLocationState(e.target.value)}
+                      />
+                    </Flex>
+                  </Field.Root>
+
+                  <Field.Root mb={3}>
                     <Field.Label>
                       <Text textStyle="p2" fontWeight={600} color="neutral.800">
                         Additional Information
@@ -344,6 +420,45 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Field.HelperText>
                   </Field.Root>
 
+                  <Field.Root mb={5}>
+                    <Field.Label>
+                      <Text textStyle="p2" fontWeight={600} color="neutral.800">
+                        Feedback on Prior Donation
+                      </Text>
+                    </Field.Label>
+                    <Textarea
+                      pl={2.5}
+                      placeholder="How did your last donation go?"
+                      _placeholder={{
+                        color: 'neutral.300',
+                        fontFamily: 'Inter',
+                        fontWeight: 400,
+                      }}
+                      size="lg"
+                      textStyle="p2"
+                      color={
+                        feedbackOnPriorDonation !== ''
+                          ? 'neutral.800'
+                          : 'neutral.300'
+                      }
+                      value={feedbackOnPriorDonation}
+                      onChange={(e) => {
+                        const words = e.target.value.trim().split(/\s+/);
+                        if (words.length <= 250) {
+                          setFeedbackOnPriorDonation(e.target.value);
+                        } else {
+                          setAlertMessage(
+                            'Exceeded word limit',
+                            AlertStatus.ERROR,
+                          );
+                        }
+                      }}
+                    />
+                    <Field.HelperText color="neutral.600">
+                      Max 250 words
+                    </Field.HelperText>
+                  </Field.Root>
+
                   <Flex justifyContent="flex-end" mt={4} gap={2}>
                     <Button
                       onClick={handleCancel}
@@ -355,7 +470,11 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     </Button>
                     <Button
                       onClick={handleUpdate}
-                      disabled={selectedFoodTypes.length === 0}
+                      disabled={
+                        selectedFoodTypes.length === 0 ||
+                        locationCity.trim() === '' ||
+                        locationState.trim() === ''
+                      }
                       bg="blue.hover"
                       color="white"
                     >
@@ -416,13 +535,39 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                     <Field.Root mb={4}>
                       <Field.Label>
                         <Text {...sectionTitleStyles} mt={3}>
-                          Additional Information
+                          Location
                         </Text>
                       </Field.Label>
                       <Text textStyle="p2" color="neutral.800" mt={3}>
-                        {additionalNotes}
+                        {request.location}
                       </Text>
                     </Field.Root>
+
+                    {feedbackOnPriorDonation && (
+                      <Field.Root mb={4}>
+                        <Field.Label>
+                          <Text {...sectionTitleStyles} mt={3}>
+                            Feedback on Prior Donation
+                          </Text>
+                        </Field.Label>
+                        <Text textStyle="p2" color="neutral.800" mt={3}>
+                          {feedbackOnPriorDonation}
+                        </Text>
+                      </Field.Root>
+                    )}
+
+                    {additionalNotes && (
+                      <Field.Root mb={4}>
+                        <Field.Label>
+                          <Text {...sectionTitleStyles} mt={3}>
+                            Additional Information
+                          </Text>
+                        </Field.Label>
+                        <Text textStyle="p2" color="neutral.800" mt={3}>
+                          {additionalNotes}
+                        </Text>
+                      </Field.Root>
+                    )}
                   </Tabs.Content>
 
                   <Tabs.Content value="associatedOrders">

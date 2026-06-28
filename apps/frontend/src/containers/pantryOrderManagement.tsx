@@ -131,13 +131,13 @@ const PantryOrderManagement: React.FC = () => {
 
   useEffect(() => {
     const orderIdFromUrl = searchParams.get('orderId');
+    const action = searchParams.get('action');
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
     const id = Number(orderIdFromUrl);
     const match = allOrders.find((o) => o.orderId === id);
     if (match) {
-      setSelectedOrderId(match.orderId);
       // Paginate the containing status to the page that holds this order.
       for (const status of Object.values(OrderStatus)) {
         const sorted = [...statusOrders[status]].sort((a, b) =>
@@ -151,6 +151,15 @@ const PantryOrderManagement: React.FC = () => {
           }));
           break;
         }
+      }
+
+      if (
+        action === 'confirm-delivery' &&
+        match.status === OrderStatus.SHIPPED
+      ) {
+        setSelectedActionOrder(match);
+      } else {
+        setSelectedOrderId(match.orderId);
       }
     } else {
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
@@ -243,7 +252,10 @@ const PantryOrderManagement: React.FC = () => {
           orderId={selectedActionOrder.orderId}
           orderCreatedAt={selectedActionOrder.createdAt}
           isOpen={true}
-          onClose={() => setSelectedActionOrder(null)}
+          onClose={() => {
+            setSelectedActionOrder(null);
+            navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
+          }}
           onSuccess={() => {
             fetchOrders();
             setAlertMessage('Delivery Confirmed', AlertStatus.INFO);

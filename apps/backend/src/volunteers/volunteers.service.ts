@@ -83,7 +83,9 @@ export class VolunteersService {
       requestId: r.requestId,
       requestedSize: r.requestedSize,
       requestedFoodTypes: r.requestedFoodTypes,
+      location: r.location,
       additionalInformation: r.additionalInformation,
+      feedbackOnPriorDonation: r.feedbackOnPriorDonation,
       requestedAt: r.requestedAt,
       status: r.status,
       pantry: {
