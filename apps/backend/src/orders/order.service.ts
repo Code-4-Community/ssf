@@ -29,9 +29,10 @@ import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
-import { emailTemplates } from '../emails/emailTemplates';
+import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
 import { UsersService } from '../users/users.service';
 import { OrderSummary } from '../pantries/types';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class OrdersService {
@@ -42,13 +43,12 @@ export class OrdersService {
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
-    @InjectRepository(DonationItem)
-    private donationItemRepo: Repository<DonationItem>,
     private requestsService: RequestsService,
     private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private pantriesService: PantriesService,
     private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
@@ -125,6 +125,7 @@ export class OrdersService {
         createdAt: o.createdAt,
         shippedAt: o.shippedAt,
         deliveredAt: o.deliveredAt,
+        pantryId: o.request.pantryId,
         pantryName: o.request.pantry.pantryName,
         assignee: o.assignee,
         actionCompletion,
@@ -165,6 +166,7 @@ export class OrdersService {
       createdAt: o.createdAt,
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
@@ -213,6 +215,14 @@ export class OrdersService {
         if (manufacturer.status !== ApplicationStatus.APPROVED) {
           throw new BadRequestException(
             `Manufacturer ${manufacturerId} is not approved`,
+          );
+        }
+
+        const pantry = await this.pantriesService.findOne(request.pantryId);
+
+        if (pantry.status !== ApplicationStatus.APPROVED) {
+          throw new BadRequestException(
+            `Pantry ${request.pantryId} is not approved`,
           );
         }
 
@@ -348,6 +358,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       const fmMessage = emailTemplates.fmDonationMatchedOrder({
         manufacturerName: manufacturer.foodManufacturerName,
         items: itemDetails,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
         pantryName: request.pantry.pantryName,
         pantryAddress: pantryAddress,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
@@ -448,12 +459,15 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           requestId: true,
           requestedSize: true,
           requestedFoodTypes: true,
+          location: true,
           additionalInformation: true,
+          feedbackOnPriorDonation: true,
           requestedAt: true,
           status: true,
           pantry: {
             pantryId: true,
             pantryName: true,
+            status: true,
           },
         },
       },
@@ -467,7 +481,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       requestId: order.request.requestId,
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
+      location: order.request.location,
       additionalInformation: order.request.additionalInformation ?? null,
+      feedbackOnPriorDonation: order.request.feedbackOnPriorDonation ?? null,
       requestedAt: order.request.requestedAt,
       status: order.request.status,
       pantry: {
@@ -544,6 +560,55 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       throw new InternalServerErrorException(
         'Failed to send order delivery confirmation email to volunteer',
       );
+    }
+  }
+
+  async sendConfirmDeliveryReminders(): Promise<void> {
+    // One reminder per unconfirmed order (status still SHIPPED). The loop stops
+    // for an order once it becomes DELIVERED. Reminders only start a week after
+    // the order shipped
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('pantry.pantryUser', 'pantryUser')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .leftJoinAndSelect('order.foodManufacturer', 'foodManufacturer')
+      .where('order.status = :status', { status: OrderStatus.SHIPPED })
+      .andWhere('pantry.status = :pantryStatus', {
+        pantryStatus: ApplicationStatus.APPROVED,
+      })
+      .andWhere("order.shippedAt <= NOW() - INTERVAL '7 days'")
+      .getMany();
+
+    if (orders.length === 0) {
+      this.logger.log(
+        'No pantries with unconfirmed deliveries, skipping email sending.',
+      );
+      return;
+    }
+
+    for (const order of orders) {
+      const toEmail = order.request.pantry.pantryUser.email;
+      const message = emailTemplates.pantryConfirmDeliveryReminder({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+      try {
+        await this.emailsService.sendEmails({
+          toEmail,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn(
+          `Failed to send confirm delivery reminder to ${toEmail}.`,
+        );
+      }
     }
   }
 

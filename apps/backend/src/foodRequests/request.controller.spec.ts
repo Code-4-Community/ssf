@@ -85,21 +85,6 @@ describe('RequestsController', () => {
     });
   });
 
-  describe('GET /:requestId', () => {
-    it('should call requestsService.findOne and return a specific food request', async () => {
-      const requestId = 1;
-
-      mockRequestsService.findOne.mockResolvedValueOnce(
-        foodRequest1 as FoodRequest,
-      );
-
-      const result = await controller.getRequest(requestId);
-
-      expect(result).toEqual(foodRequest1);
-      expect(mockRequestsService.findOne).toHaveBeenCalledWith(requestId);
-    });
-  });
-
   describe('GET /:requestId/order-details', () => {
     it('should call requestsService.getOrderDetails and return all associated orders and their details', async () => {
       const mockOrderDetails: OrderDetailsDto[] = [
@@ -165,7 +150,9 @@ describe('RequestsController', () => {
           FoodType.DAIRY_FREE_ALTERNATIVES,
           FoodType.DRIED_BEANS,
         ],
+        location: 'Boston, MA',
         additionalInformation: 'Test information.',
+        feedbackOnPriorDonation: 'Prior donation feedback.',
       };
 
       const createdRequest: Partial<FoodRequest> = {
@@ -188,7 +175,9 @@ describe('RequestsController', () => {
         createBody.pantryId,
         createBody.requestedSize,
         createBody.requestedFoodTypes,
+        createBody.location,
         createBody.additionalInformation,
+        createBody.feedbackOnPriorDonation,
       );
     });
   });

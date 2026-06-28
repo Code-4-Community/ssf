@@ -5,7 +5,6 @@ import {
   IsEnum,
   IsNotEmpty,
   Length,
-  IsOptional,
   IsInt,
   IsBoolean,
 } from 'class-validator';
@@ -26,16 +25,14 @@ export class CreateDonationItemDto {
     { message: 'ozPerItem must have at most 2 decimal places' },
   )
   @Min(0.01)
-  @IsOptional()
-  ozPerItem?: number;
+  ozPerItem!: number;
 
   @IsNumber(
     { maxDecimalPlaces: 2 },
     { message: 'estimatedValue must have at most 2 decimal places' },
   )
   @Min(0.01)
-  @IsOptional()
-  estimatedValue?: number;
+  estimatedValue!: number;
 
   @IsEnum(FoodType)
   foodType!: FoodType;

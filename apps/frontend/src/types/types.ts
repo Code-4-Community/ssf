@@ -3,14 +3,10 @@ import {
   ReserveFoodForAllergic,
   ClientVisitFrequency,
   ServeAllergicChildren,
-  AllergensConfidence,
   Activity,
+  DedicatedAllergyFriendly,
 } from './pantryEnums';
-import {
-  DonateWastedFood,
-  Allergen,
-  ManufacturerAttribute,
-} from './manufacturerEnums';
+import { DonateWastedFood, Allergen } from './manufacturerEnums';
 
 export interface Pantry {
   pantryId: number;
@@ -30,14 +26,13 @@ export interface Pantry {
   allergenClients: string;
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
-  deliveryWindowInstructions: string | null;
+  deliveryWindowInstructions: string;
+  languages: string[];
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation: string | null;
-  dedicatedAllergyFriendly: boolean;
-  clientVisitFrequency: ClientVisitFrequency | null;
-  identifyAllergensConfidence: AllergensConfidence | null;
-  serveAllergicChildren: ServeAllergicChildren | null;
-  newsletterSubscription: boolean;
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly;
+  clientVisitFrequency: ClientVisitFrequency;
+  serveAllergicChildren: ServeAllergicChildren;
   restrictions: string[];
   hasEmailContact: boolean;
   emailContactOther: string | null;
@@ -47,7 +42,7 @@ export interface Pantry {
   secondaryContactPhone: string | null;
   status: ApplicationStatus;
   dateApplied: string;
-  activities: Activity[];
+  activities: Activity[] | null;
   activitiesComments: string | null;
   itemsInStock: string;
   needMoreOptions: string;
@@ -92,29 +87,28 @@ export interface PantryApplicationDto {
   shipmentAddressCity: string;
   shipmentAddressState: string;
   shipmentAddressZip: string;
-  shipmentAddressCountry?: string;
+  shipmentAddressCountry: string;
   mailingAddressLine1: string;
   mailingAddressLine2?: string;
   mailingAddressCity: string;
   mailingAddressState: string;
   mailingAddressZip: string;
-  mailingAddressCountry?: string;
+  mailingAddressCountry: string;
   allergenClients: string;
   restrictions: string[];
+  languages: string[];
   refrigeratedDonation: RefrigeratedDonation;
   acceptFoodDeliveries: boolean;
-  deliveryWindowInstructions?: string;
+  deliveryWindowInstructions: string;
   reserveFoodForAllergic: ReserveFoodForAllergic;
   reservationExplanation?: string;
-  dedicatedAllergyFriendly: boolean;
-  clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
-  serveAllergicChildren?: ServeAllergicChildren;
-  activities: Activity[];
+  dedicatedAllergyFriendly: DedicatedAllergyFriendly;
+  clientVisitFrequency: ClientVisitFrequency;
+  serveAllergicChildren: ServeAllergicChildren;
+  activities?: Activity[];
   activitiesComments?: string;
   itemsInStock: string;
   needMoreOptions: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface UpdatePantryApplicationDto {
@@ -137,19 +131,18 @@ export interface UpdatePantryApplicationDto {
   acceptFoodDeliveries?: boolean;
   deliveryWindowInstructions?: string;
   allergenClients?: string;
+  languages?: string[];
   restrictions?: string[];
   refrigeratedDonation?: RefrigeratedDonation;
-  dedicatedAllergyFriendly?: boolean;
+  dedicatedAllergyFriendly?: DedicatedAllergyFriendly;
   reserveFoodForAllergic?: ReserveFoodForAllergic;
   reservationExplanation?: string | null;
   clientVisitFrequency?: ClientVisitFrequency;
-  identifyAllergensConfidence?: AllergensConfidence;
   serveAllergicChildren?: ServeAllergicChildren;
   activities?: Activity[];
   activitiesComments?: string;
   itemsInStock?: string;
   needMoreOptions?: string;
-  newsletterSubscription?: boolean;
 }
 
 export enum DonationStatus {
@@ -211,8 +204,8 @@ export interface DonationItemWithAllocatedQuantity {
   foodType: FoodType;
   allocatedQuantity: number;
   detailsConfirmed: boolean;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodRescue: boolean;
 }
 
@@ -236,27 +229,30 @@ export interface DonationItem {
   itemName: string;
   quantity: number;
   reservedQuantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
 
 export enum FoodType {
   DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
-  DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
+  DRIED_BEANS = 'Dried Beans',
+  FROZEN_MEALS = 'Frozen Meals',
   GLUTEN_FREE_BAKING_PANCAKE_MIXES = 'Gluten-Free Baking/Pancake Mixes',
   GLUTEN_FREE_BREAD = 'Gluten-Free Bread',
-  GLUTEN_FREE_TORTILLAS = 'Gluten-Free Tortillas',
+  GLUTEN_FREE_PASTA = 'Gluten-Free Pasta',
+  GLUTEN_FREE_TORTILLAS_FROZEN = 'Gluten-Free Tortillas (Frozen)',
   GRANOLA = 'Granola',
+  GRANOLA_BARS = 'Granola Bars',
   MASA_HARINA_FLOUR = 'Masa Harina Flour',
-  NUT_FREE_GRANOLA_BARS = 'Nut-Free Granola Bars',
+  NON_GMO_COOKIES = 'Non-GMO Cookies',
   OLIVE_OIL = 'Olive Oil',
-  REFRIGERATED_MEALS = 'Refrigerated Meals',
-  RICE_NOODLES = 'Rice Noodles',
-  SEED_BUTTERS = 'Seed Butters (Peanut Butter Alternative)',
-  WHOLE_GRAIN_COOKIES = 'Whole-Grain Cookies',
   QUINOA = 'Quinoa',
+  RICE_CERTIFIED_GLUTEN_FREE = 'Rice (Certified Gluten Free)',
+  SPREADS_SEED_BUTTERS = 'Spreads/Seed Butters (Peanut Butter Alternative)',
+  SNACKS = 'Snacks',
+  TEFF_FLOUR = 'Teff Flour',
 }
 
 export interface User {
@@ -267,6 +263,7 @@ export interface User {
   email: string;
   phone: string;
   pantries?: Pantry[];
+  active: boolean;
 }
 
 export type UpdateProfileFields = Partial<
@@ -291,7 +288,9 @@ export interface FoodRequestWithoutRelations {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
 }
@@ -300,7 +299,9 @@ export interface FoodRequestSummaryDto {
   requestId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
   pantry: FoodRequestPantry;
@@ -362,6 +363,7 @@ export type VolunteerOrder = {
   createdAt: string;
   shippedAt: string | null;
   deliveredAt: string | null;
+  pantryId: number;
   pantryName: string;
   assignee: OrderAssignee;
   actionCompletion?: VolunteerActionCompletion;
@@ -394,13 +396,10 @@ export interface FoodManufacturerWithoutRelations {
   unlistedProductAllergens: Allergen[];
   facilityFreeAllergens: Allergen[];
   productsGlutenFree: boolean;
-  productsContainSulfites: boolean;
   productsSustainableExplanation: string;
   inKindDonations: boolean;
   donateWastedFood: DonateWastedFood;
-  manufacturerAttribute: ManufacturerAttribute | null;
   additionalComments: string | null;
-  newsletterSubscription: boolean | null;
   status: ApplicationStatus;
   dateApplied: string;
 }
@@ -415,13 +414,10 @@ export interface UpdateFoodManufacturerApplicationDto {
   unlistedProductAllergens?: Allergen[];
   facilityFreeAllergens?: Allergen[];
   productsGlutenFree?: boolean;
-  productsContainSulfites?: boolean;
   productsSustainableExplanation?: string;
   inKindDonations?: boolean;
   donateWastedFood?: DonateWastedFood;
-  manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface ManufacturerApplicationDto {
@@ -438,13 +434,10 @@ export interface ManufacturerApplicationDto {
   unlistedProductAllergens: Allergen[];
   facilityFreeAllergens: Allergen[];
   productsGlutenFree: boolean;
-  productsContainSulfites: boolean;
   productsSustainableExplanation: string;
   inKindDonations: boolean;
   donateWastedFood: DonateWastedFood;
-  manufacturerAttribute?: ManufacturerAttribute;
   additionalComments?: string;
-  newsletterSubscription?: boolean;
 }
 
 export interface ApprovedPantryResponse {
@@ -466,11 +459,20 @@ export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation?: string;
+  feedbackOnPriorDonation?: string;
+}
+
+export interface UpdateFoodRequestBody {
+  requestedSize?: RequestSize;
+  requestedFoodTypes?: FoodType[];
+  location?: string;
+  additionalInformation?: string | null;
+  feedbackOnPriorDonation?: string | null;
 }
 
 export interface CreateDonationDto {
-  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
@@ -481,8 +483,8 @@ export interface CreateDonationDto {
 export interface CreateDonationItemDto {
   itemName: string;
   quantity: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
+  ozPerItem: number;
+  estimatedValue: number;
   foodType: FoodType;
   foodRescue: boolean;
 }
@@ -607,7 +609,12 @@ export interface BulkUpdateTrackingCostDto {
 
 export interface UpdateDonationItemDetailsDto {
   itemId: number;
-  ozPerItem?: number;
-  estimatedValue?: number;
-  foodRescue?: boolean;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodRescue: boolean;
+}
+
+export enum AlertStatus {
+  INFO = 'info',
+  ERROR = 'error',
 }

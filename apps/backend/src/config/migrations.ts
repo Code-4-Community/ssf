@@ -42,6 +42,10 @@ import { AddDonationItemConfirmation1774140453305 } from '../migrations/17741404
 import { DonationItemsOnDeleteCascade1774214910101 } from '../migrations/1774214910101-DonationItemsOnDeleteCascade';
 import { OrdersVolunteerActions1774883880543 } from '../migrations/1774883880543-OrdersVolunteerActions';
 import { AddOrderStatusClosed1780562894014 } from '../migrations/1780562894014-AddOrderStatusClosed';
+import { UpdateFoodRequestTypesAndOrder1781476891610 } from '../migrations/1781476891610-UpdateFoodTypesAndOrder';
+import { UpdatePantryFMApplicationInfo1780913024514 } from '../migrations/1780913024514-UpdatePantryFMApplicationInfo';
+import { AddUserActiveField1780531200000 } from '../migrations/1780531200000-AddUserActiveField';
+import { MakeDonationItemDetailsRequired1782000000000 } from '../migrations/1782000000000-MakeDonationItemDetailsRequired';
 
 const schemaMigrations = [
   User1725726359198,
@@ -88,6 +92,10 @@ const schemaMigrations = [
   DonationItemsOnDeleteCascade1774214910101,
   OrdersVolunteerActions1774883880543,
   AddOrderStatusClosed1780562894014,
+  UpdateFoodRequestTypesAndOrder1781476891610,
+  UpdatePantryFMApplicationInfo1780913024514,
+  AddUserActiveField1780531200000,
+  MakeDonationItemDetailsRequired1782000000000,
 ];
 
 export default schemaMigrations;

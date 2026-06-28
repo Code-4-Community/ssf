@@ -24,7 +24,7 @@ import {
   USER_ICON_COLORS,
 } from '@utils/utils';
 import ApiClient from '@api/apiClient';
-import { OrderStatus, OrderSummary } from '../types/types';
+import { AlertStatus, OrderStatus, OrderSummary } from '../types/types';
 import OrderReceivedActionModal from '@components/forms/orderReceivedActionModal';
 import OrderDetailsModal from '@components/forms/orderDetailsModal';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -64,8 +64,7 @@ const PantryOrderManagement: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
 
   // State to hold filter state per status
   type FilterState = {
@@ -94,8 +93,7 @@ const PantryOrderManagement: React.FC = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const pantryId = await ApiClient.getCurrentUserPantryId();
-      const data = await ApiClient.getPantryOrders(pantryId);
+      const data = await ApiClient.getPantryOrders();
 
       const grouped: Record<OrderStatus, OrderWithColor[]> = {
         [OrderStatus.SHIPPED]: [],
@@ -123,9 +121,9 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
-      setErrorMessage('Failed to fetch orders');
+      setAlertMessage('Failed to fetch orders', AlertStatus.ERROR);
     }
-  }, [setErrorMessage]);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchOrders();
@@ -133,13 +131,13 @@ const PantryOrderManagement: React.FC = () => {
 
   useEffect(() => {
     const orderIdFromUrl = searchParams.get('orderId');
+    const action = searchParams.get('action');
     const allOrders = Object.values(statusOrders).flat();
     if (!orderIdFromUrl || allOrders.length === 0) return;
 
     const id = Number(orderIdFromUrl);
     const match = allOrders.find((o) => o.orderId === id);
     if (match) {
-      setSelectedOrderId(match.orderId);
       // Paginate the containing status to the page that holds this order.
       for (const status of Object.values(OrderStatus)) {
         const sorted = [...statusOrders[status]].sort((a, b) =>
@@ -153,6 +151,15 @@ const PantryOrderManagement: React.FC = () => {
           }));
           break;
         }
+      }
+
+      if (
+        action === 'confirm-delivery' &&
+        match.status === OrderStatus.SHIPPED
+      ) {
+        setSelectedActionOrder(match);
+      } else {
+        setSelectedOrderId(match.orderId);
       }
     } else {
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
@@ -177,19 +184,11 @@ const PantryOrderManagement: React.FC = () => {
         Order Management
       </Heading>
 
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status="error"
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status="info"
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -253,13 +252,19 @@ const PantryOrderManagement: React.FC = () => {
           orderId={selectedActionOrder.orderId}
           orderCreatedAt={selectedActionOrder.createdAt}
           isOpen={true}
-          onClose={() => setSelectedActionOrder(null)}
+          onClose={() => {
+            setSelectedActionOrder(null);
+            navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
+          }}
           onSuccess={() => {
             fetchOrders();
-            setSuccessMessage('Delivery Confirmed');
+            setAlertMessage('Delivery Confirmed', AlertStatus.INFO);
           }}
           onError={() => {
-            setErrorMessage('Delivery could not be confirmed.');
+            setAlertMessage(
+              'Delivery could not be confirmed.',
+              AlertStatus.ERROR,
+            );
           }}
         />
       )}

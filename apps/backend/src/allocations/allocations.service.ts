@@ -21,19 +21,6 @@ export class AllocationsService {
     private donationService: DonationService,
   ) {}
 
-  async getAllAllocationsByOrder(
-    orderId: number,
-  ): Promise<Partial<Allocation>[]> {
-    return this.repo.find({
-      where: { orderId },
-      relations: ['item'],
-      select: {
-        allocationId: true,
-        allocatedQuantity: true,
-      },
-    });
-  }
-
   // This function assumes that orderId and itemAllocations were already correctly validated (see call in create method of OrdersService)
   async createMultiple(
     orderId: number,
