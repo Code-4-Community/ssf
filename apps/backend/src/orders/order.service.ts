@@ -457,7 +457,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           requestId: true,
           requestedSize: true,
           requestedFoodTypes: true,
+          location: true,
           additionalInformation: true,
+          feedbackOnPriorDonation: true,
           requestedAt: true,
           status: true,
           pantry: {
@@ -477,7 +479,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       requestId: order.request.requestId,
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
+      location: order.request.location,
       additionalInformation: order.request.additionalInformation ?? null,
+      feedbackOnPriorDonation: order.request.feedbackOnPriorDonation ?? null,
       requestedAt: order.request.requestedAt,
       status: order.request.status,
       pantry: {
