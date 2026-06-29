@@ -85,7 +85,7 @@ const FMDeleteDonationActionModal: React.FC<
                   borderRadius={6}
                 >
                   <Text textStyle="p2" color="gray.dark">
-                    Donation #{donation.donationId}
+                    Donation #{donation.donationId} Stock
                   </Text>
                   <Text color="neutral.600" textStyle="p2" fontSize={'12'}>
                     Submitted {formatDate(donation.dateDonated)}

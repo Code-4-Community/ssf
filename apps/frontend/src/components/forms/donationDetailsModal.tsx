@@ -22,8 +22,6 @@ import {
   AlertStatus,
   ReplaceDonationItemDto,
   DonationStatus,
-  Role,
-  User,
 } from '../../types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -69,8 +67,6 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   onDelete,
 }) => {
   useModalBodyCleanup();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
   const [items, setItems] = useState<DonationItem[]>([]);
 
   const [rows, setRows] = useState<DonationRow[]>([]);
@@ -80,18 +76,6 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const donationId = donation.donationId;
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await ApiClient.getMe();
-        setCurrentUser(user);
-      } catch {
-        setCurrentUser(null);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const placeholderStyles = {
     color: 'neutral.300',
@@ -223,16 +207,12 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 <Dialog.Title fontSize="lg" fontWeight="600">
                   Donation #{donationId} Stock
                 </Dialog.Title>
-                {(currentUser?.role === Role.FOODMANUFACTURER ||
-                  currentUser?.role === Role.ADMIN) &&
-                  donation.status === DonationStatus.AVAILABLE && (
-                    <>
-                      <EditButton
-                        onClick={() => setIsEditing(true)}
-                      ></EditButton>
-                      <DeleteButton onClick={onDelete}></DeleteButton>
-                    </>
-                  )}
+                {donation.status === DonationStatus.AVAILABLE && (
+                  <>
+                    <EditButton onClick={() => setIsEditing(true)}></EditButton>
+                    <DeleteButton onClick={onDelete}></DeleteButton>
+                  </>
+                )}
               </HStack>
               <Text fontSize="sm">
                 {donation.foodManufacturer?.foodManufacturerName}

@@ -167,7 +167,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       .find((d) => d.donation.donationId === id);
     if (match) {
       setSelectedViewDetailsDonation(match.donation);
-    }
+    } else navigate(ROUTES.FM_DONATION_MANAGEMENT);
   }, [searchParams, statusDonations]);
 
   const handleResubmitClose = () => {
