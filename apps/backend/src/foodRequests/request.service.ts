@@ -64,7 +64,9 @@ export class RequestsService {
         'request.requestId',
         'request.requestedSize',
         'request.requestedFoodTypes',
+        'request.location',
         'request.additionalInformation',
+        'request.feedbackOnPriorDonation',
         'request.requestedAt',
         'request.status',
         'pantry.pantryId',
@@ -234,7 +236,9 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedFoodTypes: FoodType[],
+    location: string,
     additionalInformation?: string,
+    feedbackOnPriorDonation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -255,7 +259,9 @@ export class RequestsService {
       pantryId,
       requestedSize,
       requestedFoodTypes,
+      location,
       additionalInformation,
+      feedbackOnPriorDonation,
     });
 
     await this.repo.save(foodRequest);
@@ -371,9 +377,11 @@ export class RequestsService {
     validateId(requestId, 'Request');
 
     if (
-      dto.requestedSize === undefined &&
-      dto.requestedFoodTypes === undefined &&
-      dto.additionalInformation === undefined
+      dto.requestedSize == undefined &&
+      dto.requestedFoodTypes == undefined &&
+      dto.location == undefined &&
+      dto.additionalInformation == undefined &&
+      dto.feedbackOnPriorDonation == undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update request',
