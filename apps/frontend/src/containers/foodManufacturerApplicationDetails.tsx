@@ -19,9 +19,10 @@ import {
 } from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
-import { TriangleAlert } from 'lucide-react';
+import { Pencil, TriangleAlert } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { FloatingAlert } from '@components/floatingAlert';
+import EditableFMApplication from '@components/forms/editableFMApplication';
 import { useAlert } from '../hooks/alert';
 import ConfirmFoodManufacturerDecisionModal from '@components/forms/confirmFoodManufacturerDecisionModal';
 import { ROUTES } from '../routes';
@@ -104,6 +105,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const fieldContentStyles = {
     textStyle: 'p2',
@@ -229,7 +231,9 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     <Box minH="100vh" p={8} mb={8}>
       <Box maxW="1200px" mx="auto">
         <Heading as="h1" textStyle="h1" color="gray.light" mb={8}>
-          Application Details
+          {isApplicationMode
+            ? 'Application Details'
+            : 'Food Manufacturer Details'}
         </Heading>
 
         {alertState && (
@@ -252,138 +256,183 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
           <VStack align="stretch" gap={8}>
             {/* Header */}
             <Box>
-              <Heading fontSize="18px" fontWeight={600} mb={2}>
-                Application #{application.foodManufacturerId}
-              </Heading>
-              <Text textStyle="p2" color="gray.dark" mb={1}>
-                {application.foodManufacturerName}
-              </Text>
-              <Text textStyle="p3" color="neutral.600">
-                Applied {formatDate(application.dateApplied)}
-              </Text>
+              {isApplicationMode ? (
+                <>
+                  <Heading fontSize="18px" fontWeight={600} mb={2}>
+                    Application #{application.foodManufacturerId}
+                  </Heading>
+                  <Text textStyle="p2" color="gray.dark" mb={1}>
+                    {application.foodManufacturerName}
+                  </Text>
+                  <Text textStyle="p3" color="neutral.600">
+                    Applied {formatDate(application.dateApplied)}
+                  </Text>
+                </>
+              ) : (
+                <HStack justify="space-between" align="center">
+                  <Heading fontSize="18px" fontWeight={600}>
+                    {application.foodManufacturerName}
+                  </Heading>
+                  <HStack
+                    gap={1}
+                    color="blue.hover"
+                    textStyle="p2"
+                    fontWeight={600}
+                    cursor={isEditing ? 'default' : 'pointer'}
+                    _hover={isEditing ? {} : { color: 'neutral.900' }}
+                    onClick={isEditing ? undefined : () => setIsEditing(true)}
+                  >
+                    <Pencil size={14} />
+                    <Text fontWeight={600} fontFamily="ibm">
+                      {isEditing ? 'Editing' : 'Edit'}
+                    </Text>
+                  </HStack>
+                </HStack>
+              )}
             </Box>
 
-            {/* Point of Contact Information */}
-            <Box>
-              <Heading {...sectionHeaderStyles} mb={4}>
-                Point of Contact Information
-              </Heading>
-              <Grid templateColumns="repeat(2, 1fr)" gap={8}>
-                <GridItem>
-                  <Text {...fieldHeaderStyles}>Primary Representative</Text>
-                  <Text {...fieldContentStyles}>
-                    {rep.firstName} {rep.lastName}
-                  </Text>
-                  <Text {...fieldContentStyles}>{formatPhone(rep.phone)}</Text>
-                  <Text {...fieldContentStyles}>{rep.email}</Text>
-                </GridItem>
-
-                {hasSecondaryContact && (
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>Secondary Contact</Text>
-                    {(application.secondaryContactFirstName ||
-                      application.secondaryContactLastName) && (
+            {!isApplicationMode && isEditing ? (
+              <EditableFMApplication
+                isEditing={isEditing}
+                onEditingChange={(editing) => {
+                  setIsEditing(editing);
+                  if (!editing) {
+                    fetchApplicationDetails();
+                  }
+                }}
+                foodManufacturerId={application.foodManufacturerId}
+              />
+            ) : (
+              <>
+                {/* Point of Contact Information */}
+                <Box>
+                  <Heading {...sectionHeaderStyles} mb={4}>
+                    Point of Contact Information
+                  </Heading>
+                  <Grid templateColumns="repeat(2, 1fr)" gap={8}>
+                    <GridItem>
+                      <Text {...fieldHeaderStyles}>Primary Representative</Text>
                       <Text {...fieldContentStyles}>
-                        {application.secondaryContactFirstName}{' '}
-                        {application.secondaryContactLastName}
+                        {rep.firstName} {rep.lastName}
                       </Text>
-                    )}
-                    {application.secondaryContactPhone && (
                       <Text {...fieldContentStyles}>
-                        {formatPhone(application.secondaryContactPhone)}
+                        {formatPhone(rep.phone)}
                       </Text>
+                      <Text {...fieldContentStyles}>{rep.email}</Text>
+                    </GridItem>
+
+                    {hasSecondaryContact && (
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>Secondary Contact</Text>
+                        {(application.secondaryContactFirstName ||
+                          application.secondaryContactLastName) && (
+                          <Text {...fieldContentStyles}>
+                            {application.secondaryContactFirstName}{' '}
+                            {application.secondaryContactLastName}
+                          </Text>
+                        )}
+                        {application.secondaryContactPhone && (
+                          <Text {...fieldContentStyles}>
+                            {formatPhone(application.secondaryContactPhone)}
+                          </Text>
+                        )}
+                        {application.secondaryContactEmail && (
+                          <Text {...fieldContentStyles}>
+                            {application.secondaryContactEmail}
+                          </Text>
+                        )}
+                      </GridItem>
                     )}
-                    {application.secondaryContactEmail && (
+                  </Grid>
+                </Box>
+
+                {/* Food Manufacturer Details */}
+                <Box>
+                  <Heading {...sectionHeaderStyles} mb={6}>
+                    Food Manufacturer Details
+                  </Heading>
+                  <VStack align="stretch" gap={6}>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>Name</Text>
+                        <Text {...fieldContentStyles}>
+                          {application.foodManufacturerName}
+                        </Text>
+                      </GridItem>
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>Website</Text>
+                        <Text {...fieldContentStyles}>
+                          {application.foodManufacturerWebsite}
+                        </Text>
+                      </GridItem>
+                    </Grid>
+
+                    <Box>
+                      <Text {...fieldHeaderStyles}>
+                        Unlisted Product Allergens
+                      </Text>
+                      {application.unlistedProductAllergens.length > 0 ? (
+                        <TagGroup
+                          values={application.unlistedProductAllergens}
+                        />
+                      ) : (
+                        <Text {...fieldContentStyles}>None</Text>
+                      )}
+                    </Box>
+
+                    <Box>
+                      <Text {...fieldHeaderStyles}>
+                        Allergens Facility is Free Of
+                      </Text>
+                      {application.facilityFreeAllergens.length > 0 ? (
+                        <TagGroup values={application.facilityFreeAllergens} />
+                      ) : (
+                        <Text {...fieldContentStyles}>None</Text>
+                      )}
+                    </Box>
+
+                    <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>
+                          Products are Gluten-Free?
+                        </Text>
+                        <Text {...fieldContentStyles}>
+                          {application.productsGlutenFree ? 'Yes' : 'No'}
+                        </Text>
+                      </GridItem>
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>In-Kind Donations?</Text>
+                        <Text {...fieldContentStyles}>
+                          {application.inKindDonations ? 'Yes' : 'No'}
+                        </Text>
+                      </GridItem>
+                      <GridItem>
+                        <Text {...fieldHeaderStyles}>Donate Wasted Food?</Text>
+                        <Text {...fieldContentStyles}>
+                          {application.donateWastedFood}
+                        </Text>
+                      </GridItem>
+                    </Grid>
+
+                    <Box>
+                      <Text {...fieldHeaderStyles}>
+                        Sustainable Products Explanation
+                      </Text>
                       <Text {...fieldContentStyles}>
-                        {application.secondaryContactEmail}
+                        {application.productsSustainableExplanation || '-'}
                       </Text>
-                    )}
-                  </GridItem>
-                )}
-              </Grid>
-            </Box>
+                    </Box>
 
-            {/* Food Manufacturer Details */}
-            <Box>
-              <Heading {...sectionHeaderStyles} mb={6}>
-                Food Manufacturer Details
-              </Heading>
-              <VStack align="stretch" gap={6}>
-                <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>Name</Text>
-                    <Text {...fieldContentStyles}>
-                      {application.foodManufacturerName}
-                    </Text>
-                  </GridItem>
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>Website</Text>
-                    <Text {...fieldContentStyles}>
-                      {application.foodManufacturerWebsite}
-                    </Text>
-                  </GridItem>
-                </Grid>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>Unlisted Product Allergens</Text>
-                  {application.unlistedProductAllergens.length > 0 ? (
-                    <TagGroup values={application.unlistedProductAllergens} />
-                  ) : (
-                    <Text {...fieldContentStyles}>None</Text>
-                  )}
+                    <Box>
+                      <Text {...fieldHeaderStyles}>Additional Comments</Text>
+                      <Text {...fieldContentStyles}>
+                        {application.additionalComments || '-'}
+                      </Text>
+                    </Box>
+                  </VStack>
                 </Box>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>
-                    Allergens Facility is Free Of
-                  </Text>
-                  {application.facilityFreeAllergens.length > 0 ? (
-                    <TagGroup values={application.facilityFreeAllergens} />
-                  ) : (
-                    <Text {...fieldContentStyles}>None</Text>
-                  )}
-                </Box>
-
-                <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>
-                      Products are Gluten-Free?
-                    </Text>
-                    <Text {...fieldContentStyles}>
-                      {application.productsGlutenFree ? 'Yes' : 'No'}
-                    </Text>
-                  </GridItem>
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>In-Kind Donations?</Text>
-                    <Text {...fieldContentStyles}>
-                      {application.inKindDonations ? 'Yes' : 'No'}
-                    </Text>
-                  </GridItem>
-                  <GridItem>
-                    <Text {...fieldHeaderStyles}>Donate Wasted Food?</Text>
-                    <Text {...fieldContentStyles}>
-                      {application.donateWastedFood}
-                    </Text>
-                  </GridItem>
-                </Grid>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>
-                    Sustainable Products Explanation
-                  </Text>
-                  <Text {...fieldContentStyles}>
-                    {application.productsSustainableExplanation || '-'}
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text {...fieldHeaderStyles}>Additional Comments</Text>
-                  <Text {...fieldContentStyles}>
-                    {application.additionalComments || '-'}
-                  </Text>
-                </Box>
-              </VStack>
-            </Box>
+              </>
+            )}
 
             {isApplicationMode && (
               <HStack justify="flex-end" gap={2}>

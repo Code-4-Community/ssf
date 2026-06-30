@@ -10,6 +10,7 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Role } from '../users/types';
 import {
   DonationDetailsDto,
   DonationReminderDto,
@@ -255,7 +256,7 @@ describe('FoodManufacturersController', () => {
   });
 
   describe('PATCH /:manufacturerId/application', () => {
-    const req = { user: { id: 1 } };
+    const req = { user: { id: 1, role: Role.FOODMANUFACTURER } };
 
     it('should update a food manufacturer application', async () => {
       const manufacturerId = 1;
@@ -282,7 +283,12 @@ describe('FoodManufacturersController', () => {
       expect(result).toEqual(mockManufacturer1);
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 1);
+      ).toHaveBeenCalledWith(
+        manufacturerId,
+        mockUpdateData,
+        1,
+        Role.FOODMANUFACTURER,
+      );
     });
 
     it('should throw error if manufacturer does not exist', async () => {
@@ -303,7 +309,31 @@ describe('FoodManufacturersController', () => {
       ).rejects.toThrow();
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(999, mockUpdateData, 1);
+      ).toHaveBeenCalledWith(999, mockUpdateData, 1, Role.FOODMANUFACTURER);
+    });
+
+    it('should allow admin to update any food manufacturer application', async () => {
+      const adminReq = { user: { id: 2, role: Role.ADMIN } };
+      const manufacturerId = 1;
+
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Admin Updated',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue(
+        mockManufacturer1 as FoodManufacturer,
+      );
+
+      const result = await controller.updateFoodManufacturerApplication(
+        adminReq as AuthenticatedRequest,
+        manufacturerId,
+        mockUpdateData,
+      );
+
+      expect(result).toEqual(mockManufacturer1);
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 2, Role.ADMIN);
     });
   });
 

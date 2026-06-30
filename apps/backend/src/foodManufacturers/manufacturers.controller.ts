@@ -238,6 +238,7 @@ export class FoodManufacturersController {
       foodManufacturerId,
       foodManufacturerData,
       req.user.id,
+      req.user.role,
     );
   }
 
