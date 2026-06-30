@@ -119,6 +119,9 @@ export class AuthService {
       throw new InternalServerErrorException(
         `Failed to remove user from group ${groupName}`,
       );
+    }
+  }
+
   async adminDisableUser(email: string): Promise<void> {
     const disableUserCommand = new AdminDisableUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,

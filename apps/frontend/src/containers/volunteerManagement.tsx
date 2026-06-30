@@ -64,12 +64,16 @@ const VolunteerManagement: React.FC = () => {
 
     try {
       await ApiClient.promoteVolunteerToAdmin(selectedVolunteer.id);
-      setSuccessMessage(
+      setAlertMessage(
         `${selectedVolunteer.firstName} ${selectedVolunteer.lastName} has been promoted to admin.`,
+        AlertStatus.INFO,
       );
       fetchVolunteers(); // Refresh list - promoted user will disappear
     } catch {
-      setErrorMessage('Failed to promote volunteer to admin.');
+      setAlertMessage(
+        'Failed to promote volunteer to admin.',
+        AlertStatus.ERROR,
+      );
     }
   };
 
