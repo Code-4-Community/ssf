@@ -346,27 +346,28 @@ export class RequestsService {
           relations: ['assignee'],
         });
 
-        if (lastDeliveredOrder) {
-          const volunteers = request.pantry.volunteers || [];
-          const volunteerEmails = volunteers.map((v) => v.email);
-
-          const { assignee } = lastDeliveredOrder;
-          const message = emailTemplates.pantryRequestClosed({
-            pantryName: request.pantry.pantryName,
-            volunteerName: `${assignee.firstName} ${assignee.lastName}`,
-            volunteerEmail: assignee.email,
-          });
-          await this.emailsService.sendEmails({
-            toEmail: request.pantry.pantryUser.email,
-            subject: message.subject,
-            bodyHtml: message.bodyHTML,
-            bccEmails: volunteerEmails,
-          });
-        } else {
-          throw new InternalServerErrorException(
-            `Request ${requestId} auto-closed, but failed to send pantry notification email`,
-          );
+        // A request can auto-close without any delivered order (e.g. when its
+        // orders were closed rather than delivered). There is no delivery to
+        // notify the pantry about, so skip the notification instead of failing.
+        if (!lastDeliveredOrder) {
+          return;
         }
+
+        const volunteers = request.pantry.volunteers || [];
+        const volunteerEmails = volunteers.map((v) => v.email);
+
+        const { assignee } = lastDeliveredOrder;
+        const message = emailTemplates.pantryRequestClosed({
+          pantryName: request.pantry.pantryName,
+          volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+          volunteerEmail: assignee.email,
+        });
+        await this.emailsService.sendEmails({
+          toEmail: request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+          bccEmails: volunteerEmails,
+        });
       } catch {
         throw new InternalServerErrorException(
           `Request ${requestId} auto-closed, but failed to send pantry notification email`,

@@ -19,6 +19,7 @@ import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 
 const mockOrdersService = mock<OrdersService>();
 const mockAllocationsService = mock<AllocationsService>();
@@ -476,6 +477,39 @@ describe('OrdersController', () => {
       expect(mockOrdersService.completeVolunteerAction).toHaveBeenCalledWith(
         orderId,
         VolunteerAction.CONFIRM_DONATION_RECEIPT,
+      );
+    });
+  });
+
+  describe('closeOrder', () => {
+    it('should call ordersService.closeOrder with the order id', async () => {
+      const orderId = 1;
+
+      mockOrdersService.closeOrder.mockResolvedValueOnce(undefined);
+
+      await controller.closeOrder(orderId);
+
+      expect(mockOrdersService.closeOrder).toHaveBeenCalledWith(orderId);
+    });
+  });
+
+  describe('editAllocations', () => {
+    it('should call ordersService.updateAllocations with correct parameters', async () => {
+      const orderId = 1;
+      const dto: UpdateAllocationsDto = {
+        allocations: [
+          { allocationId: 1, allocatedQuantity: 5 },
+          { donationItemId: 8, allocatedQuantity: 3 },
+        ],
+      };
+
+      mockOrdersService.updateAllocations.mockResolvedValueOnce(undefined);
+
+      await controller.editAllocations(orderId, dto);
+
+      expect(mockOrdersService.updateAllocations).toHaveBeenCalledWith(
+        orderId,
+        dto,
       );
     });
   });

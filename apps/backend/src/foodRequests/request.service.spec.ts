@@ -531,6 +531,24 @@ describe('RequestsService', () => {
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
+    it('closes the request without sending an email when all orders are closed and none delivered', async () => {
+      const requestId = 1;
+      const orderRepo = testDataSource.getRepository(Order);
+
+      // Close every order on the request so it auto-closes with no delivered
+      // order to notify the pantry about.
+      await orderRepo.update({ requestId }, { status: OrderStatus.CLOSED });
+
+      const requestBefore = await service.findOne(requestId);
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
+
+      await service.updateRequestStatus(requestId);
+
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
     it('throws BadRequestException and does not send email when request is already closed', async () => {
       await testDataSource.query(
         `UPDATE food_requests SET status = 'closed' WHERE request_id = 1`,

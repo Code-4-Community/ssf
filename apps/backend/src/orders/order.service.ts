@@ -834,6 +834,14 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         .getRepository(Order)
         .update({ orderId }, { status: OrderStatus.CLOSED });
     });
+
+    // Re-fetch the order now that it is committed as CLOSED so the request
+    // status is recomputed against the up-to-date order state.
+    const updatedOrder = await this.repo.findOneBy({ orderId });
+
+    if (updatedOrder) {
+      await this.requestsService.updateRequestStatus(updatedOrder.requestId);
+    }
   }
 
   async updateAllocations(
@@ -842,7 +850,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
   ): Promise<void> {
     validateId(orderId, 'Order');
 
-    if (dto.allocations.length == 0) {
+    if (dto.allocations.length === 0) {
       throw new BadRequestException('Must add or edit at least one allocation');
     }
 
