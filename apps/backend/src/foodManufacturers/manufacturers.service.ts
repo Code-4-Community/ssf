@@ -240,6 +240,13 @@ export class FoodManufacturersService {
     });
   }
 
+  async getApprovedManufacturers(): Promise<FoodManufacturer[]> {
+    return this.repo.find({
+      where: { status: ApplicationStatus.APPROVED },
+      relations: ['foodManufacturerRepresentative'],
+    });
+  }
+
   async addFoodManufacturer(
     foodManufacturerData: FoodManufacturerApplicationDto,
   ) {

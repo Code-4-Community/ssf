@@ -78,6 +78,37 @@ describe('FoodManufacturersController', () => {
     });
   });
 
+  describe('GET /approved', () => {
+    it('should return approved food manufacturers', async () => {
+      const mockManufacturers: Partial<FoodManufacturer>[] = [
+        {
+          foodManufacturerId: 1,
+          foodManufacturerName: 'Good Foods Inc',
+          status: ApplicationStatus.APPROVED,
+        },
+        {
+          foodManufacturerId: 2,
+          foodManufacturerName: 'Healthy Eats LLC',
+          status: ApplicationStatus.APPROVED,
+        },
+      ];
+
+      mockManufacturersService.getApprovedManufacturers.mockResolvedValue(
+        mockManufacturers as FoodManufacturer[],
+      );
+
+      const result = await controller.getApprovedManufacturers();
+
+      expect(result).toEqual(mockManufacturers);
+      expect(result).toHaveLength(2);
+      expect(result[0].foodManufacturerId).toBe(1);
+      expect(result[1].foodManufacturerId).toBe(2);
+      expect(
+        mockManufacturersService.getApprovedManufacturers,
+      ).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /:id', () => {
     it('should return a food manufacturer by id', async () => {
       mockManufacturersService.findOne.mockResolvedValue(

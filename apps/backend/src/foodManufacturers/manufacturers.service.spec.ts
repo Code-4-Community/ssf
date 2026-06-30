@@ -174,6 +174,24 @@ describe('FoodManufacturersService', () => {
     });
   });
 
+  describe('getApprovedManufacturers', () => {
+    it('returns manufacturers with approved status', async () => {
+      const approved = await service.getApprovedManufacturers();
+      expect(approved.length).toBeGreaterThan(0);
+      expect(
+        approved.every((m) => m.status === ApplicationStatus.APPROVED),
+      ).toBe(true);
+    });
+
+    it('returns empty array when no approved manufacturers exist', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending' WHERE status = 'approved'`,
+      );
+      const approved = await service.getApprovedManufacturers();
+      expect(approved).toEqual([]);
+    });
+  });
+
   describe('approve', () => {
     it('approves a pending manufacturer', async () => {
       const pending = await service.getPendingManufacturers();

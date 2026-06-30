@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useMatch, Link } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -90,7 +90,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 };
 
 const FoodManufacturerApplicationDetails: React.FC = () => {
-  const { applicationId } = useParams<{ applicationId: string }>();
+  const { applicationId, foodManufacturerId } = useParams<{
+    applicationId?: string;
+    foodManufacturerId?: string;
+  }>();
+  const id = applicationId ?? foodManufacturerId;
+  const isApplicationMode = useMatch(
+    ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS,
+  );
   const navigate = useNavigate();
   const [application, setApplication] = useState<FoodManufacturer | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,15 +130,13 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
   const fetchApplicationDetails = useCallback(async () => {
     try {
       setLoading(true);
-      if (!applicationId) {
+      if (!id) {
         setAlertMessage('Application ID not provided.', AlertStatus.ERROR);
         return;
-      } else if (isNaN(parseInt(applicationId, 10))) {
+      } else if (isNaN(parseInt(id, 10))) {
         setAlertMessage('Application ID is not a number.', AlertStatus.ERROR);
       }
-      const data = await ApiClient.getFoodManufacturer(
-        parseInt(applicationId, 10),
-      );
+      const data = await ApiClient.getFoodManufacturer(parseInt(id, 10));
       if (!data) {
         setAlertMessage('Application not found.', AlertStatus.ERROR);
       }
@@ -148,7 +153,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [applicationId]);
+  }, [id]);
 
   useEffect(() => {
     fetchApplicationDetails();
@@ -380,48 +385,50 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
               </VStack>
             </Box>
 
-            <HStack justify="flex-end" gap={2}>
-              <Button
-                variant="outline"
-                borderColor="neutral.200"
-                color="neutral.800"
-                onClick={() => setShowDenyModal(true)}
-                px={4}
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Deny
-              </Button>
-              <Button
-                bg="blue.hover"
-                color="white"
-                onClick={() => setShowApproveModal(true)}
-                px={4}
-                _hover={{ bg: 'neutral.800' }}
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Approve Application
-              </Button>
+            {isApplicationMode && (
+              <HStack justify="flex-end" gap={2}>
+                <Button
+                  variant="outline"
+                  borderColor="neutral.200"
+                  color="neutral.800"
+                  onClick={() => setShowDenyModal(true)}
+                  px={4}
+                  textStyle="p2"
+                  fontWeight={600}
+                >
+                  Deny
+                </Button>
+                <Button
+                  bg="blue.hover"
+                  color="white"
+                  onClick={() => setShowApproveModal(true)}
+                  px={4}
+                  _hover={{ bg: 'neutral.800' }}
+                  textStyle="p2"
+                  fontWeight={600}
+                >
+                  Approve Application
+                </Button>
 
-              <ConfirmFoodManufacturerDecisionModal
-                isOpen={showApproveModal}
-                onClose={() => setShowApproveModal(false)}
-                onConfirm={handleApprove}
-                decision="approve"
-                foodManufacturerName={application.foodManufacturerName}
-                dateApplied={formatDate(application.dateApplied)}
-              />
+                <ConfirmFoodManufacturerDecisionModal
+                  isOpen={showApproveModal}
+                  onClose={() => setShowApproveModal(false)}
+                  onConfirm={handleApprove}
+                  decision="approve"
+                  foodManufacturerName={application.foodManufacturerName}
+                  dateApplied={formatDate(application.dateApplied)}
+                />
 
-              <ConfirmFoodManufacturerDecisionModal
-                isOpen={showDenyModal}
-                onClose={() => setShowDenyModal(false)}
-                onConfirm={handleDeny}
-                decision="deny"
-                foodManufacturerName={application.foodManufacturerName}
-                dateApplied={formatDate(application.dateApplied)}
-              />
-            </HStack>
+                <ConfirmFoodManufacturerDecisionModal
+                  isOpen={showDenyModal}
+                  onClose={() => setShowDenyModal(false)}
+                  onConfirm={handleDeny}
+                  decision="deny"
+                  foodManufacturerName={application.foodManufacturerName}
+                  dateApplied={formatDate(application.dateApplied)}
+                />
+              </HStack>
+            )}
           </VStack>
         </Box>
       </Box>
