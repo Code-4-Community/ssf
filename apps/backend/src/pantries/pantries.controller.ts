@@ -391,8 +391,9 @@ export class PantriesController {
   @CheckOwnership({
     idParam: 'pantryId',
     resolver: resolvePantryAuthorizedUserIds,
+    bypassRoles: [Role.ADMIN],
   })
-  @Roles(Role.PANTRY)
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Patch('/:pantryId/application')
   async updatePantryApplication(
     @Req() req: AuthenticatedRequest,
@@ -404,6 +405,7 @@ export class PantriesController {
       pantryId,
       pantryData,
       req.user.id,
+      req.user.role,
     );
   }
 

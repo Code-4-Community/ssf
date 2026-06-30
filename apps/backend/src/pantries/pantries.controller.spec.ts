@@ -23,6 +23,7 @@ import { User } from '../users/users.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { UpdatePantryApplicationDto } from './dtos/update-pantry-application.dto';
 import { RequestsService } from '../foodRequests/request.service';
+import { Role } from '../users/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 
 const mockPantriesService = mock<PantriesService>();
@@ -296,7 +297,7 @@ describe('PantriesController', () => {
   });
 
   describe('PATCH /:pantryId/application', () => {
-    const req = { user: { id: 1 } };
+    const req = { user: { id: 1, role: Role.PANTRY } };
 
     it('should update a pantry application', async () => {
       const pantryId = 1;
@@ -323,6 +324,7 @@ describe('PantriesController', () => {
         pantryId,
         mockUpdateData,
         1,
+        Role.PANTRY,
       );
     });
 
@@ -346,6 +348,32 @@ describe('PantriesController', () => {
         999,
         mockUpdateData,
         1,
+        Role.PANTRY,
+      );
+    });
+
+    it('should allow admin to update any pantry application', async () => {
+      const adminReq = { user: { id: 2, role: Role.ADMIN } };
+      const pantryId = 1;
+
+      const mockUpdateData: UpdatePantryApplicationDto = {
+        secondaryContactFirstName: 'Admin Updated',
+      };
+
+      mockPantriesService.updatePantryApplication.mockResolvedValue(mockPantry);
+
+      const result = await controller.updatePantryApplication(
+        adminReq as AuthenticatedRequest,
+        pantryId,
+        mockUpdateData,
+      );
+
+      expect(result).toEqual(mockPantry);
+      expect(mockPantriesService.updatePantryApplication).toHaveBeenCalledWith(
+        pantryId,
+        mockUpdateData,
+        2,
+        Role.ADMIN,
       );
     });
   });
