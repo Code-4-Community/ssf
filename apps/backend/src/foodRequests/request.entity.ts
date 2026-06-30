@@ -56,6 +56,12 @@ export class FoodRequest {
   @Column({ name: 'additional_information', type: 'text', nullable: true })
   additionalInformation!: string | null;
 
+  @Column({ name: 'location', type: 'text' })
+  location!: string;
+
+  @Column({ name: 'feedback_on_prior_donation', type: 'text', nullable: true })
+  feedbackOnPriorDonation!: string | null;
+
   @CreateDateColumn({
     name: 'requested_at',
     type: 'timestamp',

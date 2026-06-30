@@ -26,7 +26,8 @@ describe('UsersController', () => {
   beforeEach(async () => {
     mockUserService.findUsersByRoles.mockReset();
     mockUserService.findOne.mockReset();
-    mockUserService.remove.mockReset();
+    mockUserService.deactivate.mockReset();
+    mockUserService.reactivate.mockReset();
     mockUserService.update.mockReset();
     mockUserService.create.mockReset();
     mockUserService.getUserDashboardStats.mockReset();
@@ -65,14 +66,23 @@ describe('UsersController', () => {
     });
   });
 
-  describe('DELETE /:id', () => {
-    it('should remove a user by id', async () => {
-      mockUserService.remove.mockResolvedValue(mockUser1 as User);
+  describe('PATCH /:id/deactivate', () => {
+    it('should deactivate a user by id', async () => {
+      mockUserService.deactivate.mockResolvedValue(undefined);
 
-      const result = await controller.removeUser(1);
+      await controller.deactivateUser(1);
 
-      expect(result).toEqual(mockUser1);
-      expect(mockUserService.remove).toHaveBeenCalledWith(1);
+      expect(mockUserService.deactivate).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('PATCH /:id/reactivate', () => {
+    it('should reactivate a user by id', async () => {
+      mockUserService.reactivate.mockResolvedValue(undefined);
+
+      await controller.reactivateUser(1);
+
+      expect(mockUserService.reactivate).toHaveBeenCalledWith(1);
     });
   });
 

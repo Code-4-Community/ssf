@@ -9,6 +9,8 @@ import {
   AdminCreateUserCommand,
   AdminAddUserToGroupCommand,
   AdminRemoveUserFromGroupCommand,
+  AdminDisableUserCommand,
+  AdminEnableUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 import CognitoAuthConfig from './aws-exports';
@@ -117,6 +119,29 @@ export class AuthService {
       throw new InternalServerErrorException(
         `Failed to remove user from group ${groupName}`,
       );
+  async adminDisableUser(email: string): Promise<void> {
+    const disableUserCommand = new AdminDisableUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+    });
+
+    try {
+      await this.providerClient.send(disableUserCommand);
+    } catch {
+      throw new InternalServerErrorException('Failed to disable user');
+    }
+  }
+
+  async adminEnableUser(email: string): Promise<void> {
+    const enableUserCommand = new AdminEnableUserCommand({
+      UserPoolId: CognitoAuthConfig.userPoolId,
+      Username: email,
+    });
+
+    try {
+      await this.providerClient.send(enableUserCommand);
+    } catch {
+      throw new InternalServerErrorException('Failed to enable user');
     }
   }
 }

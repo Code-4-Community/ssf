@@ -17,12 +17,14 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
+import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import { formatDate } from '@utils/utils';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { AlertStatus } from '../types/types';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -41,6 +43,8 @@ const FormRequests: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [alertState, setAlertMessage] = useAlert();
+  const [deleteRequest, setDeleteRequest] =
+    useState<FoodRequestSummaryDto | null>(null);
 
   const pageSize = 10;
 
@@ -49,7 +53,7 @@ const FormRequests: React.FC = () => {
     setPantryId(pantryId);
     if (pantryId) {
       try {
-        const data = await ApiClient.getPantryRequests(pantryId);
+        const data = await ApiClient.getPantryRequests();
         const sortedData = data
           .slice()
           .sort((a, b) => b.requestId - a.requestId);
@@ -58,10 +62,13 @@ const FormRequests: React.FC = () => {
           setPreviousRequest(sortedData[0]);
         }
       } catch {
-        setAlertMessage('Error fetching requests');
+        setAlertMessage('Error fetching requests', AlertStatus.ERROR);
       }
     } else {
-      setAlertMessage('No pantry associated with this account.');
+      setAlertMessage(
+        'No pantry associated with this account.',
+        AlertStatus.ERROR,
+      );
     }
   }, [setAlertMessage]);
 
@@ -101,7 +108,7 @@ const FormRequests: React.FC = () => {
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -225,7 +232,7 @@ const FormRequests: React.FC = () => {
           ))}
         </Table.Body>
       </Table.Root>
-      {openReadOnlyRequest && (
+      {openReadOnlyRequest && !deleteRequest && (
         <RequestDetailsModal
           request={openReadOnlyRequest}
           isOpen={openReadOnlyRequest !== null}
@@ -234,6 +241,23 @@ const FormRequests: React.FC = () => {
             if (searchParams.get('requestId')) {
               navigate(ROUTES.REQUEST_FORM, { replace: true });
             }
+          }}
+          onSuccess={fetchRequests}
+          onDelete={() => setDeleteRequest(openReadOnlyRequest)}
+        />
+      )}
+      {deleteRequest && (
+        <PantryDeleteRequestActionModal
+          request={deleteRequest}
+          isOpen={deleteRequest !== null}
+          onClose={() => setDeleteRequest(null)}
+          onSuccess={() => {
+            setAlertMessage(
+              'Successfully deleted food request.',
+              AlertStatus.INFO,
+            );
+            fetchRequests();
+            setOpenReadOnlyRequest(null);
           }}
         />
       )}

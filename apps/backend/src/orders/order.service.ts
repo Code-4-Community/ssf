@@ -26,8 +26,11 @@ import { AllocationsService } from '../allocations/allocations.service';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
-import { emailTemplates } from '../emails/emailTemplates';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
+import { UsersService } from '../users/users.service';
 import { OrderSummary } from '../pantries/types';
+import { PantriesService } from '../pantries/pantries.service';
 
 @Injectable()
 export class OrdersService {
@@ -37,11 +40,14 @@ export class OrdersService {
     @InjectRepository(Order) private repo: Repository<Order>,
     @InjectRepository(Pantry) private pantryRepo: Repository<Pantry>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    @InjectRepository(FoodRequest) private requestRepo: Repository<FoodRequest>,
     private requestsService: RequestsService,
-    private donationService: DonationService,
+    private usersService: UsersService,
     private manufacturerService: FoodManufacturersService,
     private donationItemsService: DonationItemsService,
     private allocationsService: AllocationsService,
+    private pantriesService: PantriesService,
+    private donationService: DonationService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,
   ) {}
@@ -117,6 +123,7 @@ export class OrdersService {
         createdAt: o.createdAt,
         shippedAt: o.shippedAt,
         deliveredAt: o.deliveredAt,
+        pantryId: o.request.pantryId,
         pantryName: o.request.pantry.pantryName,
         assignee: o.assignee,
         actionCompletion,
@@ -157,6 +164,7 @@ export class OrdersService {
       createdAt: o.createdAt,
       shippedAt: o.shippedAt,
       deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
       assignee: o.assignee,
     }));
@@ -179,97 +187,197 @@ export class OrdersService {
     itemAllocations: Map<number, number>,
     userId: number,
   ): Promise<Order> {
-    return this.dataSource.transaction(async (transactionManager) => {
-      validateId(manufacturerId, 'Food Manufacturer');
-      validateId(requestId, 'Request');
+    const { savedOrder, request, manufacturer, assignee, itemDetails } =
+      await this.dataSource.transaction(async (transactionManager) => {
+        validateId(manufacturerId, 'Food Manufacturer');
+        validateId(requestId, 'Request');
+        validateId(userId, 'User');
 
-      const request = await this.requestsService.findOne(requestId);
+        const request = await this.requestRepo.findOne({
+          where: { requestId },
+          relations: ['pantry', 'pantry.pantryUser'],
+        });
 
-      if (request.status !== FoodRequestStatus.ACTIVE) {
-        throw new BadRequestException(`Request ${requestId} is not active`);
-      }
+        if (!request) {
+          throw new NotFoundException(`Request ${requestId} not found`);
+        }
 
-      const manufacturer = await this.manufacturerService.findOne(
-        manufacturerId,
-      );
+        if (request.status !== FoodRequestStatus.ACTIVE) {
+          throw new BadRequestException(`Request ${requestId} is not active`);
+        }
 
-      if (manufacturer.status !== ApplicationStatus.APPROVED) {
-        throw new BadRequestException(
-          `Manufacturer ${manufacturerId} is not approved`,
+        const manufacturer = await this.manufacturerService.findOne(
+          manufacturerId,
         );
-      }
 
-      const fmDonations = await this.donationRepo.find({
-        where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
-        select: ['donationId'],
-      });
-
-      const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
-
-      const donationItemIds = Array.from(itemAllocations.keys());
-      const donationItems = await this.donationItemsService.getByIds(
-        donationItemIds,
-      );
-
-      const invalidItems = donationItems.filter(
-        (item) => !fmDonationIdSet.has(item.donationId),
-      );
-
-      if (invalidItems.length > 0) {
-        const messages = invalidItems.map(
-          (item) =>
-            `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
-        );
-        throw new BadRequestException(
-          `The following donation items are not associated with the current food manufacturer: ${messages.join(
-            ', ',
-          )}`,
-        );
-      }
-
-      for (const donationItem of donationItems) {
-        const id = donationItem.itemId;
-        const quantityToAllocate = itemAllocations.get(id)!;
-
-        if (
-          quantityToAllocate >
-          donationItem.quantity - donationItem.reservedQuantity
-        ) {
+        if (manufacturer.status !== ApplicationStatus.APPROVED) {
           throw new BadRequestException(
-            `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+            `Manufacturer ${manufacturerId} is not approved`,
           );
         }
-      }
 
-      const orderTransactionRepo = transactionManager.getRepository(Order);
+        const pantry = await this.pantriesService.findOne(request.pantryId);
 
-      const order = orderTransactionRepo.create({
-        requestId: requestId,
-        foodManufacturerId: manufacturerId,
-        status: OrderStatus.PENDING,
-        assigneeId: userId,
-      });
+        if (pantry.status !== ApplicationStatus.APPROVED) {
+          throw new BadRequestException(
+            `Pantry ${request.pantryId} is not approved`,
+          );
+        }
 
-      const savedOrder = await orderTransactionRepo.save(order);
+        const fmDonations = await this.donationRepo.find({
+          where: { foodManufacturer: { foodManufacturerId: manufacturerId } },
+          select: ['donationId'],
+        });
 
-      await this.allocationsService.createMultiple(
-        savedOrder.orderId,
-        itemAllocations,
-        transactionManager,
-      );
+        if (fmDonations.length === 0) {
+          throw new BadRequestException(
+            `Manufacturer ${manufacturerId} has no donations`,
+          );
+        }
 
-      const associatedDonationIdsSet =
-        await this.donationItemsService.getAssociatedDonationIds(
+        const fmDonationIdSet = new Set(fmDonations.map((d) => d.donationId));
+
+        const donationItemIds = Array.from(itemAllocations.keys());
+        const donationItems = await this.donationItemsService.getByIds(
           donationItemIds,
         );
 
-      await this.donationService.matchAll(
-        Array.from(associatedDonationIdsSet),
-        transactionManager,
-      );
+        if (donationItems.length === 0) {
+          throw new BadRequestException(
+            'Cannot create order with no donation items',
+          );
+        }
 
-      return savedOrder;
-    });
+        const invalidItems = donationItems.filter(
+          (item) => !fmDonationIdSet.has(item.donationId),
+        );
+
+        if (invalidItems.length > 0) {
+          const messages = invalidItems.map(
+            (item) =>
+              `Donation item ID ${item.itemId} with Donation ID ${item.donationId}`,
+          );
+          throw new BadRequestException(
+            `The following donation items are not associated with the current food manufacturer: ${messages.join(
+              ', ',
+            )}`,
+          );
+        }
+
+        const itemDetails: { quantity: string; product: string }[] = [];
+
+        for (const donationItem of donationItems) {
+          const id = donationItem.itemId;
+          const quantityToAllocate = itemAllocations.get(id)!;
+
+          if (
+            quantityToAllocate >
+            donationItem.quantity - donationItem.reservedQuantity
+          ) {
+            throw new BadRequestException(
+              `Donation item ${id} quantity to allocate exceeds remaining quantity`,
+            );
+          }
+
+          itemDetails.push({
+            quantity: String(quantityToAllocate),
+            product: donationItem.itemName,
+          });
+        }
+
+        const orderTransactionRepo = transactionManager.getRepository(Order);
+
+        const order = orderTransactionRepo.create({
+          requestId: requestId,
+          foodManufacturerId: manufacturerId,
+          status: OrderStatus.PENDING,
+          assigneeId: userId,
+        });
+
+        const savedOrder = await orderTransactionRepo.save(order);
+
+        await this.allocationsService.createMultiple(
+          savedOrder.orderId,
+          itemAllocations,
+          transactionManager,
+        );
+
+        await this.donationService.matchAll(
+          [...new Set(donationItems.map((item) => item.donationId))],
+          transactionManager,
+        );
+
+        const assignee = await this.usersService.findOne(userId);
+
+        return {
+          savedOrder,
+          request,
+          manufacturer,
+          assignee,
+          itemDetails,
+        };
+      });
+
+    const emailErrors: string[] = [];
+
+    try {
+      const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
+        pantryName: request.pantry.pantryName,
+        items: itemDetails,
+        brand: manufacturer.foodManufacturerName,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails({
+        toEmail: request.pantry.pantryUser.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
+    } catch {
+      emailErrors.push(
+        'Failed to send pantry request matched order confirmation email',
+      );
+    }
+
+    try {
+      const pantryAddress = `${request.pantry.shipmentAddressLine1}${
+        request.pantry.shipmentAddressLine2
+          ? `<br />${request.pantry.shipmentAddressLine2}`
+          : ''
+      }<br />
+${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
+        request.pantry.shipmentAddressZip
+      }${
+        request.pantry.shipmentAddressCountry
+          ? `<br />${request.pantry.shipmentAddressCountry}`
+          : ''
+      }`;
+
+      const fmMessage = emailTemplates.fmDonationMatchedOrder({
+        manufacturerName: manufacturer.foodManufacturerName,
+        items: itemDetails,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
+        pantryName: request.pantry.pantryName,
+        pantryAddress: pantryAddress,
+        volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+        volunteerEmail: assignee.email,
+      });
+      await this.emailsService.sendEmails({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: fmMessage.subject,
+        bodyHtml: fmMessage.bodyHTML,
+      });
+    } catch {
+      emailErrors.push(
+        'Failed to send food manufacturer donation matched order confirmation email',
+      );
+    }
+
+    if (emailErrors.length > 0) {
+      throw new InternalServerErrorException(emailErrors.join('; '));
+    }
+
+    return savedOrder;
   }
 
   async findOne(orderId: number): Promise<Order> {
@@ -349,12 +457,15 @@ export class OrdersService {
           requestId: true,
           requestedSize: true,
           requestedFoodTypes: true,
+          location: true,
           additionalInformation: true,
+          feedbackOnPriorDonation: true,
           requestedAt: true,
           status: true,
           pantry: {
             pantryId: true,
             pantryName: true,
+            status: true,
           },
         },
       },
@@ -368,7 +479,9 @@ export class OrdersService {
       requestId: order.request.requestId,
       requestedSize: order.request.requestedSize,
       requestedFoodTypes: order.request.requestedFoodTypes,
+      location: order.request.location,
       additionalInformation: order.request.additionalInformation ?? null,
+      feedbackOnPriorDonation: order.request.feedbackOnPriorDonation ?? null,
       requestedAt: order.request.requestedAt,
       status: order.request.status,
       pantry: {
@@ -445,6 +558,55 @@ export class OrdersService {
       throw new InternalServerErrorException(
         'Failed to send order delivery confirmation email to volunteer',
       );
+    }
+  }
+
+  async sendConfirmDeliveryReminders(): Promise<void> {
+    // One reminder per unconfirmed order (status still SHIPPED). The loop stops
+    // for an order once it becomes DELIVERED. Reminders only start a week after
+    // the order shipped
+    const orders = await this.repo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.request', 'request')
+      .leftJoinAndSelect('request.pantry', 'pantry')
+      .leftJoinAndSelect('pantry.pantryUser', 'pantryUser')
+      .leftJoinAndSelect('order.assignee', 'assignee')
+      .leftJoinAndSelect('order.foodManufacturer', 'foodManufacturer')
+      .where('order.status = :status', { status: OrderStatus.SHIPPED })
+      .andWhere('pantry.status = :pantryStatus', {
+        pantryStatus: ApplicationStatus.APPROVED,
+      })
+      .andWhere("order.shippedAt <= NOW() - INTERVAL '7 days'")
+      .getMany();
+
+    if (orders.length === 0) {
+      this.logger.log(
+        'No pantries with unconfirmed deliveries, skipping email sending.',
+      );
+      return;
+    }
+
+    for (const order of orders) {
+      const toEmail = order.request.pantry.pantryUser.email;
+      const message = emailTemplates.pantryConfirmDeliveryReminder({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+      try {
+        await this.emailsService.sendEmails({
+          toEmail,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        this.logger.warn(
+          `Failed to send confirm delivery reminder to ${toEmail}.`,
+        );
+      }
     }
   }
 

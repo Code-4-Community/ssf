@@ -10,22 +10,20 @@ export const SSF_PARTNER_EMAIL = 'example@gmail.com';
 
 export const emailTemplates = {
   pantryFmApplicationApproved: (params: { name: string }): EmailTemplate => ({
-    subject: 'Your Securing Safe Food Account Has Been Approved',
+    subject: 'Your Securing Safe Food Account Has Been Created',
     bodyHTML: `
       <p>Hi ${params.name},</p>
       <p>
-        We're excited to let you know that your Securing Safe Food account has been
-        approved and is now active. You can now <a href="${EMAIL_REDIRECT_URL}/login">log in</a>
-        using the credentials created during registration to begin submitting requests, managing donations, and
-        coordinating with our network.
+        Welcome to Securing Safe Food! Your partner application has been approved and your SSF account is now active.
+      </p>
+      <p>
+        You can <a href="${EMAIL_REDIRECT_URL}/login">log in</a> using the credentials created during registration
+         to begin submitting requests, managing donations, and coordinating with our network.
       </p>
       <p>
         If you have any questions as you get started or need help navigating the
-        platform, please do not hesitate to reach out — we are happy to help!
-      </p>
-      <p>
-        We are grateful to have you as part of the SSF community and look forward
-        to working together to expand access to allergen-safe food.
+        platform, please do not hesitate to reach out. We are grateful to have you as part of the SSF community and look forward
+        to working together to expand access to allergen-free food.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
@@ -36,14 +34,14 @@ export const emailTemplates = {
     bodyHTML: `
       <p>Welcome to Securing Safe Food!</p>
       <p>
-        Your volunteer account has been successfully created and you can now log in
+        Your volunteer account has been successfully created, and you can now log in
         to begin supporting pantry coordination, order matching, and delivery logistics.
       </p>
       <p>
         To log in to your account, please click the following link: <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
       </p>
       <p>
-        Once logged in, you'll be able to view your assignments, track active requests,
+        Once logged in, you will view your assignments, track active requests,
         and collaborate with partner organizations.
       </p>
       <p>
@@ -69,12 +67,18 @@ export const emailTemplates = {
   pantryFmApplicationSubmittedToUser: (params: {
     name: string;
   }): EmailTemplate => ({
-    subject: 'Your Application Has Been Submitted',
+    subject: 'Your SSF Application Has Been Submitted',
     bodyHTML: `
       <p>Hi ${params.name},</p>
       <p>
         Thank you for your interest in partnering with Securing Safe Food! 
-        Your application has been successfully submitted and is currently under review. We will notify you via email once a decision has been made.
+        Your application has been successfully submitted and is currently under review. 
+        If we determine that your food pantry aligns with our mission and available resources, our team will reach out.
+      </p>
+      <p>
+        While we are unable to respond to every application, submissions are reviewed on a rolling basis. 
+        If you do not hear from us right away, please note that we may still contact you at a later date (for example, within 6–12 months) as opportunities become available. 
+        Please also note that we are currently prioritizing locations near our clinical referral partners.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
@@ -88,8 +92,8 @@ export const emailTemplates = {
       <p>Hi,</p>
       <p>
         A new food request has been submitted by ${params.pantryName}. 
-        Please <a href="${EMAIL_REDIRECT_URL}/login">log on to the SSF platform</a>
-        to review these request details and begin coordination when ready.
+        Please <a href="${EMAIL_REDIRECT_URL}/login">log in to the SSF platform</a>
+        to review these request details and begin coordination.
       </p>
       <p>
         Thank you for your continued support of our network and mission!
@@ -102,7 +106,7 @@ export const emailTemplates = {
     fmName: string;
     resubmitDonationId: number;
   }): EmailTemplate => ({
-    subject: 'Reminder: Submit Your Scheduled Recurring Donation with SSF',
+    subject: 'Reminder: Donation via SSF Partner Program Is Due',
     bodyHTML: `
       <p>Hi ${params.fmName},</p>
       <p>
@@ -110,11 +114,14 @@ export const emailTemplates = {
         schedule indicates a new donation submission is due.
       </p>
       <p>
-        When you have a moment, please log into your account and submit your current
+        When you have a moment, please log in to your account and submit your current
         donation availability so we can continue matching your contributions with pantry requests.
       </p>
       <p>
         You can resubmit this donation by visiting <a href="${EMAIL_REDIRECT_URL}/fm-donation-management?resubmitDonationId=${params.resubmitDonationId}">your donation management portal</a>.
+      </p>
+      <p>
+      Additionally, we kindly ask you to complete our <a href="https://survey.zohopublic.com/zs/k7CZLi">digital packing slip form</a> before shipping your donation. This form collects important information for recipient food pantries. A PDF will be automatically emailed for you to print and include in the shipment. 
       </p>
       <p>
         We greatly appreciate your continued generosity and support of our mission. Your
@@ -131,24 +138,23 @@ export const emailTemplates = {
     volunteerName: string;
     volunteerEmail: string;
   }): EmailTemplate => ({
-    subject: `Tracking Information for your ${params.fmName} delivery (Securing Safe Food)`,
+    subject: `Tracking Information for Your Delivery From ${params.fmName} | Securing Safe Food`,
     bodyHTML: `
       <p>Hi ${params.pantryName},</p>
       <p>
         Good news! Tracking information is now available for your upcoming SSF delivery
         from ${params.fmName}. You can use this tracking information to monitor the
-        status of your shipment or log into your portal for more information on your
-        expected donation.
+        status of your shipment or log in to your portal for more information on the donation.
       </p>
       <p>
         <strong>Tracking Link:</strong> <a href="${params.trackingLink}">${params.trackingLink}</a>
       </p>
       <p>
-        You can use the tracking link above to monitor your shipment, or <a href="${EMAIL_REDIRECT_URL}/login">log into your portal</a> for full order details and updates.
+        You can use the tracking link above to monitor your shipment, or <a href="${EMAIL_REDIRECT_URL}/login">log in to your portal</a> for full donation details and updates.
       </p>
       <p>
         If you experience any issues or have questions, please contact your coordinator,
-        ${params.volunteerName}, at <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>, and our team will be happy to assist.
+        ${params.volunteerName}, at <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a>, or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
@@ -159,16 +165,16 @@ export const emailTemplates = {
     pantryName: string;
     fmName: string;
   }): EmailTemplate => ({
-    subject: `${params.pantryName} Confirmed for your ${params.fmName} Order`,
+    subject: `${params.pantryName} Confirmed for Your ${params.fmName} Order`,
     bodyHTML: `
       <p>Hi ${params.volunteerName},</p>
       <p>
         ${params.pantryName} has confirmed the receipt of an order from ${params.fmName}
-        which you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log into the platform</a>
+        which you are assigned to. Please <a href="${EMAIL_REDIRECT_URL}/login">log in to the platform</a>
         to review the completed request or check for additional information.
       </p>
       <p>
-        Thank you for your coordination and support in helping reach this order to completion!
+        Thank you for your coordination and support in helping to complete this order!
       </p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
@@ -177,17 +183,177 @@ export const emailTemplates = {
   volunteerPantryAssignmentChanged: (params: {
     volunteerName: string;
   }): EmailTemplate => ({
-    subject: 'Your SSF Pantry Assignment has been updated',
+    subject: 'Your SSF Pantry Assignment Has Been Updated',
     bodyHTML: `
       <p>Hi ${params.volunteerName},</p>
       <p>
-        Your pantry assignment with SSF has been updated. Please log into the platform
-        to <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">review your current assignments </a>
+        Your pantry assignment with SSF has been updated. Please log in to the platform
+        to <a href="${EMAIL_REDIRECT_URL}/volunteer-assigned-pantries">review your current assignments</a>
         and any active requests that may require your attention.
       </p>
       <p>
         Thank you for your continued support of our partners and mission.
       </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  pantryRequestMatchedOrder: (params: {
+    pantryName: string;
+    items: { quantity: string; product: string }[];
+    brand: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: `Incoming Allergen-Friendly Donation (${params.brand}) | Securing Safe Food`,
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Good news! Your recent food request through Securing Safe Food has been successfully matched to a donation and is now approaching delivery. 
+      </p>
+      <p><strong>Items you will receive from the donating manufacturer ${
+        params.brand
+      }:</strong></p>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+      <p>
+        To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please <a href="${EMAIL_REDIRECT_URL}/login">log in to the platform</a>.
+      </p>
+      <p>
+        If any details change on your end or you have updated food capacity, please update your request in the system or contact your coordinator, ${
+          params.volunteerName
+        }, at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a> or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
+      </p>
+      <p>
+        We will continue to keep you informed as the order progresses. We are excited to help support your pantry!
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  pantryRequestClosed: (params: {
+    pantryName: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: 'Your Securing Safe Food Request Has Been Completed',
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        Your recent food request through Securing Safe Food has been marked as complete. If you would like to continue receiving
+        allergen-friendly donations, please submit a new food request at any time to ensure there is no interruption
+        in future deliveries.
+      </p>
+      <p>
+        To submit a new request or view past deliveries, please log in to the platform here:
+        <a href="${EMAIL_REDIRECT_URL}/login">${EMAIL_REDIRECT_URL}/login</a>
+      </p>
+      <p>
+        If you have any questions or feedback about this donation, please do not hesitate to reach out.
+        You can contact your pantry coordinator, ${params.volunteerName}, at
+        <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a> or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
+      </p>
+      <p>Best regards,<br />The Securing Safe Food Team</p>
+    `,
+  }),
+
+  fmDonationMatchedOrder: (params: {
+    manufacturerName: string;
+    items: { quantity: string; product: string }[];
+    pantryContact: string;
+    pantryName: string;
+    pantryAddress: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject:
+      'Your Securing Safe Food Donation Has Been Matched to a Pantry Request',
+    bodyHTML: `
+    <p>Hi ${params.manufacturerName},</p>
+    <p>
+      Thank you for your continued partnership with Securing Safe Food. A donation you submitted has now been successfully matched to a pantry request and is approaching fulfillment.
+    </p>
+    <p><strong>Matched Item(s):</strong><br /></p>
+      <ul>
+        ${params.items
+          .map((item) => `<li>${item.quantity} of ${item.product}</li>`)
+          .join('')}
+      </ul>
+    <p>
+      <strong>Address:</strong><br />
+      Attn: ${params.pantryContact}<br />
+      ${params.pantryName}<br />
+      ${params.pantryAddress}
+    </p>
+    <p>
+      Please <a href="${EMAIL_REDIRECT_URL}/login">log in to the platform</a> to review the full delivery details, timelines, and any special handling instructions associated with this shipment.
+    </p>
+    <p>
+    Additionally, we kindly ask you to complete our <a href="https://survey.zohopublic.com/zs/k7CZLi">digital packing slip form</a> before shipping your donation. This form collects important information for recipient food pantries. A PDF will be automatically emailed for you to print and include in the shipment. 
+    </p>
+    <p>
+      Your support plays a direct role in expanding access to allergen-free foods, and we truly appreciate your commitment to this work.
+    </p>
+    <p>
+      If you have any questions or need assistance, please contact your coordinator, ${
+        params.volunteerName
+      }, at <a href="mailto:${params.volunteerEmail}">${
+      params.volunteerEmail
+    }</a> or email <a href="mailto:partners@securingsafefood.org">partners@securingsafefood.org</a>.
+    </p>
+    <p>
+      Thank you so much.
+    </p>
+    <p>Best regards,<br />The Securing Safe Food Team</p>
+  `,
+  }),
+
+  pantryReceiveNewFoodRequest: (): EmailTemplate => ({
+    subject: 'Allergen-Friendly Food Request Form',
+    bodyHTML: `
+    <p><strong>Receive a New Food Delivery Through Securing Safe Food</strong></p>
+    <p>
+      Fill out our food request form to be placed on our waiting list at <a href="${EMAIL_REDIRECT_URL}/request-form">${EMAIL_REDIRECT_URL}/request-form</a>
+    </p>
+    <p>
+      If you submitted a request last cycle and did not receive a shipment, thank you for your patience.
+      We match available resources to food pantries based on product type, allergens, size, and shipping restrictions.
+      You are welcome to submit another form to update your request.
+    </p>
+    <p>Best regards,<br />The Securing Safe Food Team</p>
+  `,
+  }),
+
+  pantryConfirmDeliveryReminder: (params: {
+    pantryName: string;
+    fmName: string;
+    confirmDeliveryLink: string;
+    volunteerName: string;
+    volunteerEmail: string;
+  }): EmailTemplate => ({
+    subject: `${params.fmName} Donation Confirmation Reminder`,
+    bodyHTML: `
+      <p>Hi ${params.pantryName},</p>
+      <p>
+        This is a friendly reminder to confirm receipt of your recent donation from ${params.fmName}.
+      </p>
+      <p>
+        To confirm delivery receipt, please scan the QR code included on your donation packing slip
+        (if included in shipment) or <a href="${params.confirmDeliveryLink}">click here</a> and complete
+        the brief confirmation process. Confirming receipt helps us verify successful delivery, track the
+        impact of donations, and ensure our food partners receive acknowledgment of their contributions.
+      </p>
+      <p>If you have already submitted your confirmation, thank you and please disregard this message.</p>
+      <p>
+        If you have any questions or need assistance, please contact your coordinator, ${params.volunteerName},
+        at <a href="mailto:${params.volunteerEmail}">${params.volunteerEmail}</a> or email partners@securingsafefood.org.
+      </p>
+      <p>Thank you for partnering with Securing Safe Food!</p>
       <p>Best regards,<br />The Securing Safe Food Team</p>
     `,
   }),

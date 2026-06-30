@@ -209,16 +209,39 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async remove(id: number) {
-    validateId(id, 'User');
-
+  async deactivate(id: number): Promise<void> {
     const user = await this.findOne(id);
 
-    if (!user) {
-      throw new NotFoundException(`User ${id} not found`);
+    if (!user.active) {
+      throw new BadRequestException(`User ${id} is already inactive`);
     }
 
-    return this.repo.remove(user);
+    // Disable the Cognito account first so a failure leaves active field unchanged.
+    // Users without a Cognito account (empty sub) have nothing to disable.
+    // The only users without a Cognito account are unapproved FMs and pantries
+    if (user.userCognitoSub) {
+      await this.authService.adminDisableUser(user.email);
+    }
+
+    user.active = false;
+    await this.repo.save(user);
+  }
+
+  async reactivate(id: number): Promise<void> {
+    const user = await this.findOne(id);
+
+    if (user.active) {
+      throw new BadRequestException(`User ${id} is already active`);
+    }
+
+    // Re-enable the Cognito account first so a failure leaves active field unchanged.
+    // Users without a Cognito account (empty sub) have nothing to enable.
+    if (user.userCognitoSub) {
+      await this.authService.adminEnableUser(user.email);
+    }
+
+    user.active = true;
+    await this.repo.save(user);
   }
 
   async findUsersByRoles(roles: Role[]): Promise<User[]> {

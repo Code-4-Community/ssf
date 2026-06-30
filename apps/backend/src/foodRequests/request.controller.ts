@@ -8,7 +8,9 @@ import {
   ValidationPipe,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { ApiBody } from '@nestjs/swagger';
 import { RequestsService } from './request.service';
 import { FoodRequest } from './request.entity';
@@ -75,18 +77,6 @@ export class RequestsController {
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,
   })
-  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
-  @Get('/:requestId')
-  async getRequest(
-    @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<FoodRequest> {
-    return this.requestsService.findOne(requestId);
-  }
-
-  @CheckOwnership({
-    idParam: 'requestId',
-    resolver: resolveRequestAuthorizedUserIds,
-  })
   @Roles(Role.VOLUNTEER, Role.PANTRY, Role.ADMIN)
   @Get('/:requestId/order-details')
   async getAllOrderDetailsFromRequest(
@@ -143,10 +133,19 @@ export class RequestsController {
           items: { type: 'string', enum: Object.values(FoodType) },
           example: [FoodType.DAIRY_FREE_ALTERNATIVES, FoodType.DRIED_BEANS],
         },
+        location: {
+          type: 'string',
+          example: 'Boston, MA',
+        },
         additionalInformation: {
           type: 'string',
           nullable: true,
           example: 'Urgent request',
+        },
+        feedbackOnPriorDonation: {
+          type: 'string',
+          nullable: true,
+          example: 'The last donation was well received by our clients.',
         },
       },
     },
@@ -159,7 +158,9 @@ export class RequestsController {
       requestData.pantryId,
       requestData.requestedSize,
       requestData.requestedFoodTypes,
+      requestData.location,
       requestData.additionalInformation,
+      requestData.feedbackOnPriorDonation,
     );
   }
 
@@ -176,7 +177,7 @@ export class RequestsController {
     await this.requestsService.update(requestId, body);
   }
 
-  @Roles(Role.PANTRY)
+  @Roles(Role.ADMIN, Role.VOLUNTEER, Role.PANTRY)
   @CheckOwnership({
     idParam: 'requestId',
     resolver: resolveRequestAuthorizedUserIds,
@@ -196,7 +197,8 @@ export class RequestsController {
   @Patch('/:requestId/close')
   async closeRequest(
     @Param('requestId', ParseIntPipe) requestId: number,
-  ): Promise<void> {
-    await this.requestsService.closeRequest(requestId);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<FoodRequest> {
+    return this.requestsService.closeRequest(requestId, req.user.id);
   }
 }

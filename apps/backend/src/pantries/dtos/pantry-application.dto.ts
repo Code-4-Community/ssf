@@ -14,7 +14,7 @@ import {
   RefrigeratedDonation,
   ReserveFoodForAllergic,
   ClientVisitFrequency,
-  AllergensConfidence,
+  DedicatedAllergyFriendly,
   ServeAllergicChildren,
   Activity,
 } from '../types';
@@ -111,11 +111,10 @@ export class PantryApplicationDto {
   @Length(1, 255)
   shipmentAddressZip!: string;
 
-  @IsOptional()
   @IsString()
-  @MaxLength(255)
   @IsNotEmpty()
-  shipmentAddressCountry?: string;
+  @Length(1, 255)
+  shipmentAddressCountry!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -143,11 +142,10 @@ export class PantryApplicationDto {
   @Length(1, 255)
   mailingAddressZip!: string;
 
-  @IsOptional()
   @IsString()
-  @MaxLength(255)
   @IsNotEmpty()
-  mailingAddressCountry?: string;
+  @Length(1, 255)
+  mailingAddressCountry!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -160,16 +158,21 @@ export class PantryApplicationDto {
   @MaxLength(255, { each: true })
   restrictions!: string[];
 
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @MaxLength(255, { each: true })
+  languages!: string[];
+
   @IsEnum(RefrigeratedDonation)
   refrigeratedDonation!: RefrigeratedDonation;
 
   @IsBoolean()
   acceptFoodDeliveries!: boolean;
 
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  deliveryWindowInstructions?: string;
+  deliveryWindowInstructions!: string;
 
   @IsEnum(ReserveFoodForAllergic)
   reserveFoodForAllergic!: ReserveFoodForAllergic;
@@ -180,24 +183,18 @@ export class PantryApplicationDto {
   @IsNotEmpty()
   reservationExplanation?: string;
 
-  @IsBoolean()
-  dedicatedAllergyFriendly!: boolean;
+  @IsEnum(DedicatedAllergyFriendly)
+  dedicatedAllergyFriendly!: DedicatedAllergyFriendly;
 
-  @IsOptional()
   @IsEnum(ClientVisitFrequency)
-  clientVisitFrequency?: ClientVisitFrequency;
+  clientVisitFrequency!: ClientVisitFrequency;
 
-  @IsOptional()
-  @IsEnum(AllergensConfidence)
-  identifyAllergensConfidence?: AllergensConfidence;
-
-  @IsOptional()
   @IsEnum(ServeAllergicChildren)
-  serveAllergicChildren?: ServeAllergicChildren;
+  serveAllergicChildren!: ServeAllergicChildren;
 
-  @ArrayNotEmpty()
+  @IsOptional()
   @IsEnum(Activity, { each: true })
-  activities!: Activity[];
+  activities?: Activity[];
 
   @IsOptional()
   @IsString()
@@ -214,8 +211,4 @@ export class PantryApplicationDto {
   @IsNotEmpty()
   @Length(1, 255)
   needMoreOptions!: string;
-
-  @IsOptional()
-  @IsBoolean()
-  newsletterSubscription?: boolean;
 }

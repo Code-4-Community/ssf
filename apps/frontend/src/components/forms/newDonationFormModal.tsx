@@ -30,9 +30,9 @@ import { generateNextDonationDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { AlertStatus } from '../../types/types';
 
 interface NewDonationFormModalProps {
-  foodManufacturerId: number;
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -85,10 +85,16 @@ const getFirstValidationError = (
     if (!isValidPositiveInt(row.numItems)) {
       return `Quantity${rowLabel} must be a positive whole number.`;
     }
-    if (row.ozPerItem !== '' && !isValidDecimal(row.ozPerItem)) {
+    if (row.ozPerItem === '') {
+      return `Oz. per item${rowLabel} is required.`;
+    }
+    if (!isValidDecimal(row.ozPerItem)) {
       return `Oz. per item${rowLabel} must be a positive number with at most 2 decimal places.`;
     }
-    if (row.valuePerItem !== '' && !isValidDecimal(row.valuePerItem)) {
+    if (row.valuePerItem === '') {
+      return `Donation value${rowLabel} is required.`;
+    }
+    if (!isValidDecimal(row.valuePerItem)) {
       return `Donation value${rowLabel} must be a positive number with at most 2 decimal places.`;
     }
   }
@@ -104,7 +110,6 @@ const getFirstValidationError = (
 };
 
 const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
-  foodManufacturerId,
   onDonationSuccess,
   isOpen,
   onClose,
@@ -204,12 +209,14 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       repeatInterval === RecurrenceEnum.WEEKLY &&
       !Object.values(repeatOn).some(Boolean)
     ) {
-      setAlertMessage('Please select at least one day for weekly recurrence.');
+      setAlertMessage(
+        'Please select at least one day for weekly recurrence.',
+        AlertStatus.ERROR,
+      );
       return;
     }
 
     const donationBody: CreateDonationDto = {
-      foodManufacturerId,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:
@@ -220,10 +227,8 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       items: rows.map((row) => ({
         itemName: row.foodItem,
         quantity: parseInt(row.numItems),
-        ozPerItem: row.ozPerItem ? parseFloat(row.ozPerItem) : undefined,
-        estimatedValue: row.valuePerItem
-          ? parseFloat(row.valuePerItem)
-          : undefined,
+        ozPerItem: parseFloat(row.ozPerItem),
+        estimatedValue: parseFloat(row.valuePerItem),
         foodType: row.foodType as FoodType,
         foodRescue: row.foodRescue,
       })),
@@ -248,7 +253,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       setRepeatInterval(RecurrenceEnum.NONE);
       onClose();
     } catch {
-      setAlertMessage('Error submitting new donation');
+      setAlertMessage('Error submitting new donation', AlertStatus.ERROR);
     }
   };
 
@@ -281,7 +286,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
         <FloatingAlert
           key={alertState.id}
           message={alertState.message}
-          status="error"
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -297,9 +302,13 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
           </Dialog.Header>
 
           <Dialog.Body>
-            <Text mb={4} mt={-4} color="neutral.700">
+            <Text mt={-4} color="neutral.700">
               Please fill out the following information to record donation
               details.
+            </Text>
+            <Text mb={4} fontWeight={600} color="neutral.700">
+              Please do not include shipping/delivery costs in Food Donation
+              Value.
             </Text>
 
             <Box display="block" overflowX="auto" whiteSpace="nowrap">
@@ -339,7 +348,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                         <Checkbox.Indicator />
                       </Checkbox.Control>
                       <Checkbox.Label color="neutral.700" fontWeight={400}>
-                        Make Donation Recurring
+                        Make Donation Recurring Reminders
                       </Checkbox.Label>
                     </Checkbox.Root>
                   </Stack>
@@ -368,9 +377,16 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                     </Table.ColumnHeader>
                     <Table.ColumnHeader width="14%">
                       Oz. per item
+                      <Text as="span" color="red">
+                        *
+                      </Text>
                     </Table.ColumnHeader>
                     <Table.ColumnHeader width="14%">
-                      Donation Value
+                      <Text>Donation Value</Text>
+                      (Fair Market Value of Food Only)
+                      <Text as="span" color="red">
+                        *
+                      </Text>
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
                       width="20px"
@@ -381,6 +397,9 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
                       lineHeight="tight"
                     >
                       Food Rescue
+                      <Text as="span" color="red">
+                        *
+                      </Text>
                     </Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>

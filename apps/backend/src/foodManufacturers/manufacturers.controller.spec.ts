@@ -91,7 +91,7 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('GET /:foodManufacturerId/donations', () => {
+  describe('GET /me/donations', () => {
     it('should return donation details for a given food manufacturer', async () => {
       const mockDonations: Partial<Donation>[] = [
         {
@@ -123,6 +123,8 @@ describe('FoodManufacturersController', () => {
               foodType: FoodType.DAIRY_FREE_ALTERNATIVES,
               allocatedQuantity: 10,
               foodRescue: false,
+              estimatedValue: 3.4,
+              ozPerItem: 3.4,
             },
           ],
         },
@@ -135,16 +137,19 @@ describe('FoodManufacturersController', () => {
 
       const req = { user: { id: 1 } };
 
+      mockManufacturersService.findByUserId.mockResolvedValueOnce({
+        foodManufacturerId: 1,
+      } as FoodManufacturer);
       mockManufacturersService.getFMDonations.mockResolvedValue(
         mockDonationDetails,
       );
 
       const result = await controller.getFoodManufacturerDonations(
         req as AuthenticatedRequest,
-        1,
       );
 
       expect(result).toBe(mockDonationDetails);
+      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(1);
       expect(mockManufacturersService.getFMDonations).toHaveBeenCalledWith(
         1,
         1,
@@ -152,8 +157,9 @@ describe('FoodManufacturersController', () => {
     });
   });
 
-  describe('GET /:foodManufacturerId/next-two-reminders', () => {
-    it('should return the next two upcoming donation reminders for a given food manufacturer', async () => {
+  describe('GET /me/next-two-reminders', () => {
+    it('should return the next two upcoming donation reminders for the authenticated manufacturer', async () => {
+      const req = { user: { id: 3 } };
       const mockDonationReminders: DonationReminderDto[] = [
         {
           donation: {
@@ -171,13 +177,19 @@ describe('FoodManufacturersController', () => {
         },
       ];
 
+      mockManufacturersService.findByUserId.mockResolvedValueOnce({
+        foodManufacturerId: 1,
+      } as FoodManufacturer);
       mockManufacturersService.getUpcomingDonationReminders.mockResolvedValue(
         mockDonationReminders,
       );
 
-      const result = await controller.getNextTwoDonationReminders(1);
+      const result = await controller.getNextTwoDonationReminders(
+        req as AuthenticatedRequest,
+      );
 
       expect(result).toEqual(mockDonationReminders);
+      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(3);
       expect(
         mockManufacturersService.getUpcomingDonationReminders,
       ).toHaveBeenCalledWith(1);
@@ -196,7 +208,6 @@ describe('FoodManufacturersController', () => {
         unlistedProductAllergens: [Allergen.EGG],
         facilityFreeAllergens: [Allergen.EGG],
         productsGlutenFree: true,
-        productsContainSulfites: false,
         productsSustainableExplanation: 'We use eco-friendly packaging.',
         inKindDonations: true,
         donateWastedFood: DonateWastedFood.SOMETIMES,

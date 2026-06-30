@@ -30,11 +30,12 @@ import { AuthService } from '../auth/auth.service';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { DataSource, In } from 'typeorm';
+import { DataSource, EntityManager, In } from 'typeorm';
 import { EmailsService } from '../emails/email.service';
 import { Allocation } from '../allocations/allocations.entity';
 import { mock } from 'jest-mock-extended';
-import { emailTemplates } from '../emails/emailTemplates';
+import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
+import { ApplicationStatus } from '../shared/types';
 
 // Set 1 minute timeout for async DB operations
 jest.setTimeout(60000);
@@ -110,6 +111,10 @@ describe('OrdersService', () => {
         {
           provide: AuthService,
           useValue: {},
+        },
+        {
+          provide: EmailsService,
+          useValue: mockEmailsService,
         },
       ],
     }).compile();
@@ -257,7 +262,7 @@ describe('OrdersService', () => {
         items: [
           {
             id: 1,
-            foodType: FoodType.SEED_BUTTERS,
+            foodType: FoodType.SPREADS_SEED_BUTTERS,
             name: 'Peanut Butter (16oz)',
             quantity: 10,
           },
@@ -269,7 +274,7 @@ describe('OrdersService', () => {
           },
           {
             id: 3,
-            foodType: FoodType.REFRIGERATED_MEALS,
+            foodType: FoodType.FROZEN_MEALS,
             name: 'Canned Green Beans',
             quantity: 5,
           },
@@ -591,7 +596,7 @@ describe('OrdersService', () => {
         fmName: order.foodManufacturer.foodManufacturerName,
       });
 
-      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(1);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
         toEmail: order.assignee.email,
         subject: message.subject,
@@ -612,7 +617,7 @@ describe('OrdersService', () => {
         ),
       ).rejects.toThrow(
         new InternalServerErrorException(
-          'Failed to send order delivery confirmation email to volunteer',
+          'Request 3 auto-closed, but failed to send pantry notification email',
         ),
       );
 
@@ -621,7 +626,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('createOrder', () => {
+  describe('create', () => {
     let validCreateOrderDto: CreateOrderDto;
     let parsedAllocations: Map<number, number>;
     const userId = 3;
@@ -642,26 +647,30 @@ describe('OrdersService', () => {
       ]);
     });
 
-    it('should create a new order successfully', async () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should create a new order successfully and send appropriate emails', async () => {
       const allocationRepo = testDataSource.getRepository(Allocation);
       const donationItemRepo = testDataSource.getRepository(DonationItem);
       const donationRepo = testDataSource.getRepository(Donation);
+      const usersRepo = testDataSource.getRepository(User);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+      const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
 
       parsedAllocations.set(9, 5);
 
       // Initial donation items
-      const donationItem1 = await donationItemRepo.findOne({
+      const donationItem1 = (await donationItemRepo.findOne({
         where: { itemId: 1 },
-      });
-      const donationItem2 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const donationItem2 = (await donationItemRepo.findOne({
         where: { itemId: 2 },
-      });
-      const donationItem3 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const donationItem3 = (await donationItemRepo.findOne({
         where: { itemId: 9 },
-      });
-
-      if (!donationItem1 || !donationItem2 || !donationItem3)
-        throw new Error('Missing dummy donation items');
+      })) as DonationItem;
 
       donationItem3.quantity = 100;
 
@@ -694,23 +703,16 @@ describe('OrdersService', () => {
         expect.arrayContaining([10, 3, 5]),
       );
 
-      const updatedDonationItem1 = await donationItemRepo.findOne({
+      const updatedDonationItem1 = (await donationItemRepo.findOne({
         where: { itemId: 1 },
-      });
-      const updatedDonationItem2 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const updatedDonationItem2 = (await donationItemRepo.findOne({
         where: { itemId: 2 },
-      });
-      const updatedDonationItem3 = await donationItemRepo.findOne({
+      })) as DonationItem;
+      const updatedDonationItem3 = (await donationItemRepo.findOne({
         where: { itemId: 9 },
-      });
+      })) as DonationItem;
 
-      if (
-        !updatedDonationItem1 ||
-        !updatedDonationItem2 ||
-        !updatedDonationItem3
-      ) {
-        throw new Error('Missing donation item test object');
-      }
       expect(updatedDonationItem1.reservedQuantity).toBe(
         donationItem1.reservedQuantity + 10,
       );
@@ -730,15 +732,80 @@ describe('OrdersService', () => {
         where: { donationId: 2 },
       });
       expect(matchedDonation2?.status).toBe(DonationStatus.MATCHED);
+
+      // Testing emails section
+
+      const assignee = (await usersRepo.findOne({
+        where: { id: userId },
+      })) as User;
+      const request = (await requestRepo.findOne({
+        where: { requestId: validCreateOrderDto.foodRequestId },
+        relations: ['pantry', 'pantry.pantryUser'],
+      })) as FoodRequest;
+      const manufacturer = (await manufacturerRepo.findOne({
+        where: { foodManufacturerId: validCreateOrderDto.manufacturerId },
+        relations: ['foodManufacturerRepresentative'],
+      })) as FoodManufacturer;
+
+      const pantryAddress = `${request.pantry.shipmentAddressLine1}${
+        request.pantry.shipmentAddressLine2
+          ? `<br />${request.pantry.shipmentAddressLine2}`
+          : ''
+      }<br />
+${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
+        request.pantry.shipmentAddressZip
+      }${
+        request.pantry.shipmentAddressCountry
+          ? `<br />${request.pantry.shipmentAddressCountry}`
+          : ''
+      }`;
+
+      const itemDetails = [
+        { quantity: '10', product: updatedDonationItem1.itemName },
+        { quantity: '3', product: updatedDonationItem2.itemName },
+        { quantity: '5', product: updatedDonationItem3.itemName },
+      ];
+
+      const fmMessage = emailTemplates.fmDonationMatchedOrder({
+        manufacturerName: manufacturer.foodManufacturerName,
+        items: itemDetails,
+        pantryContact: `${request.pantry.pantryUser.firstName} ${request.pantry.pantryUser.lastName}`,
+        pantryName: request.pantry.pantryName,
+        pantryAddress,
+        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerEmail: assignee.email,
+      });
+
+      const pantryMessage = emailTemplates.pantryRequestMatchedOrder({
+        pantryName: request.pantry.pantryName,
+        items: itemDetails,
+        brand: manufacturer.foodManufacturerName,
+        volunteerName: assignee.firstName + ' ' + assignee.lastName,
+        volunteerEmail: assignee.email,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: request.pantry.pantryUser.email,
+        subject: pantryMessage.subject,
+        bodyHtml: pantryMessage.bodyHTML,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: fmMessage.subject,
+        bodyHtml: fmMessage.bodyHTML,
+      });
     });
 
     it('should throw BadRequestException if request is not active', async () => {
       const requestRepo = testDataSource.getRepository(FoodRequest);
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
-      const request = await requestRepo.findOne({ where: { requestId: 2 } });
-
-      if (!request) throw new Error('Missing dummy request');
+      const request = (await requestRepo.findOne({
+        where: { requestId: 2 },
+      })) as FoodRequest;
 
       request.status = FoodRequestStatus.CLOSED;
       await requestRepo.save(request);
@@ -751,16 +818,10 @@ describe('OrdersService', () => {
           parsedAllocations,
           userId,
         ),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.create(
-          validCreateOrderDto.foodRequestId,
-          validCreateOrderDto.manufacturerId,
-          parsedAllocations,
-          userId,
-        ),
       ).rejects.toThrow(
-        `Request ${validCreateOrderDto.foodRequestId} is not active`,
+        new BadRequestException(
+          `Request ${validCreateOrderDto.foodRequestId} is not active`,
+        ),
       );
 
       // Asserting that donation item reserved quantity wasn't updated
@@ -783,16 +844,10 @@ describe('OrdersService', () => {
           parsedAllocations,
           userId,
         ),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.create(
-          validCreateOrderDto.foodRequestId,
-          validCreateOrderDto.manufacturerId,
-          parsedAllocations,
-          userId,
-        ),
       ).rejects.toThrow(
-        `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
+        new BadRequestException(
+          `Manufacturer ${validCreateOrderDto.manufacturerId} is not approved`,
+        ),
       );
 
       // Asserting that donation item reserved quantity wasn't updated
@@ -802,10 +857,13 @@ describe('OrdersService', () => {
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
-    it('should throw NotFoundException if donation item does not exist', async () => {
+    it('should throw BadRequestException if manufacturer has no donations', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
-      parsedAllocations.set(999, 1);
+      await testDataSource.query(
+        `UPDATE donations SET food_manufacturer_id = 2 WHERE food_manufacturer_id = $1`,
+        [validCreateOrderDto.manufacturerId],
+      );
 
       await expect(
         service.create(
@@ -814,15 +872,11 @@ describe('OrdersService', () => {
           parsedAllocations,
           userId,
         ),
-      ).rejects.toThrow(NotFoundException);
-      await expect(
-        service.create(
-          validCreateOrderDto.foodRequestId,
-          validCreateOrderDto.manufacturerId,
-          parsedAllocations,
-          userId,
+      ).rejects.toThrow(
+        new BadRequestException(
+          `Manufacturer ${validCreateOrderDto.manufacturerId} has no donations`,
         ),
-      ).rejects.toThrow(`Donation items not found for ID(s): 999`);
+      );
 
       // Asserting that donation item reserved quantity wasn't updated
       const donationItem1 = await donationItemRepo.findOne({
@@ -847,16 +901,10 @@ describe('OrdersService', () => {
           parsedAllocations,
           userId,
         ),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.create(
-          validCreateOrderDto.foodRequestId,
-          validCreateOrderDto.manufacturerId,
-          parsedAllocations,
-          userId,
-        ),
       ).rejects.toThrow(
-        `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
+        new BadRequestException(
+          `Donation item ${donationItemId} quantity to allocate exceeds remaining quantity`,
+        ),
       );
 
       // Asserting that donation item reserved quantity wasn't updated
@@ -866,7 +914,7 @@ describe('OrdersService', () => {
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
 
-    it('should throw Error if donation is not associated with manufacturer', async () => {
+    it('should throw BadRequestException if donation is not associated with manufacturer', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
 
       const donationItemId = 7;
@@ -881,16 +929,10 @@ describe('OrdersService', () => {
           parsedAllocations,
           userId,
         ),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.create(
-          validCreateOrderDto.foodRequestId,
-          validCreateOrderDto.manufacturerId,
-          parsedAllocations,
-          userId,
-        ),
       ).rejects.toThrow(
-        `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
+        new BadRequestException(
+          `The following donation items are not associated with the current food manufacturer: Donation item ID ${donationItemId} with Donation ID 3`,
+        ),
       );
 
       // Asserting that donation item reserved quantity wasn't updated
@@ -899,7 +941,274 @@ describe('OrdersService', () => {
       });
       expect(donationItem1?.reservedQuantity).toBe(10);
     });
+
+    it('should still create order and send FM email when pantry email fails', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SMTP error'),
+      );
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry request matched order confirmation email',
+        ),
+      );
+
+      const createdOrder = await service.findOne(5);
+
+      expect(createdOrder.status).toEqual(OrderStatus.PENDING);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+
+      const manufacturerRepo = testDataSource.getRepository(FoodManufacturer);
+      const manufacturer = (await manufacturerRepo.findOne({
+        where: { foodManufacturerId: validCreateOrderDto.manufacturerId },
+        relations: ['foodManufacturerRepresentative'],
+      })) as FoodManufacturer;
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: manufacturer.foodManufacturerRepresentative.email,
+        subject: expect.any(String),
+        bodyHtml: expect.any(String),
+      });
+    });
+
+    it('should still create order when both emails fail', async () => {
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SMTP error'),
+      );
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SMTP error'),
+      );
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new InternalServerErrorException(
+          'Failed to send pantry request matched order confirmation email; Failed to send food manufacturer donation matched order confirmation email',
+        ),
+      );
+
+      const createdOrder = await service.findOne(5);
+      expect(createdOrder.status).toEqual(OrderStatus.PENDING);
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+    });
+
+    it('should call allocationsService.createMultiple once with correct parameters', async () => {
+      const spy = jest.spyOn(
+        (service as any).allocationsService as AllocationsService,
+        'createMultiple',
+      );
+
+      const createdOrder = await service.create(
+        validCreateOrderDto.foodRequestId,
+        validCreateOrderDto.manufacturerId,
+        parsedAllocations,
+        userId,
+      );
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(
+        createdOrder.orderId,
+        parsedAllocations,
+        expect.any(EntityManager),
+      );
+    });
+
+    it('should call donationService.matchAll once with correct parameters', async () => {
+      const spy = jest.spyOn(
+        (service as any).donationService as DonationService,
+        'matchAll',
+      );
+
+      await service.create(
+        validCreateOrderDto.foodRequestId,
+        validCreateOrderDto.manufacturerId,
+        parsedAllocations,
+        userId,
+      );
+
+      // Items 1 and 2 both belong to donation_id 1
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(
+        expect.arrayContaining([1]),
+        expect.any(EntityManager),
+      );
+    });
+
+    it('should rollback transaction and not create order if allocation creation fails', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const orderCountBefore = await orderRepo.count();
+      const item1Before = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2Before = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+
+      jest
+        .spyOn(
+          (service as any).allocationsService as AllocationsService,
+          'createMultiple',
+        )
+        .mockRejectedValueOnce(new Error('DB error'));
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow('DB error');
+
+      const orderCountAfter = await orderRepo.count();
+      expect(orderCountAfter).toBe(orderCountBefore);
+
+      const item1After = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2After = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+      expect(item1After?.reservedQuantity).toBe(item1Before?.reservedQuantity);
+      expect(item2After?.reservedQuantity).toBe(item2Before?.reservedQuantity);
+    });
+
+    it('should rollback transaction and not create order if donation matching fails', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      const orderCountBefore = await orderRepo.count();
+      const item1Before = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2Before = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+
+      jest
+        .spyOn((service as any).donationService as DonationService, 'matchAll')
+        .mockRejectedValueOnce(new Error('DB error'));
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow('DB error');
+
+      const orderCountAfter = await orderRepo.count();
+      expect(orderCountAfter).toBe(orderCountBefore);
+
+      const item1After = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      const item2After = await donationItemRepo.findOne({
+        where: { itemId: 2 },
+      });
+      expect(item1After?.reservedQuantity).toBe(item1Before?.reservedQuantity);
+      expect(item2After?.reservedQuantity).toBe(item2Before?.reservedQuantity);
+    });
+
+    it('should throw BadRequestException if itemAllocations is empty', async () => {
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+      const emptyAllocations = new Map<number, number>();
+
+      await expect(
+        service.create(
+          validCreateOrderDto.foodRequestId,
+          validCreateOrderDto.manufacturerId,
+          emptyAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Cannot create order with no donation items'),
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('should throw NotFoundException if request is not found', async () => {
+      const nonExistentRequestId = 999;
+      const donationItemRepo = testDataSource.getRepository(DonationItem);
+
+      await expect(
+        service.create(
+          nonExistentRequestId,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new NotFoundException(`Request ${nonExistentRequestId} not found`),
+      );
+
+      // Asserting that donation item reserved quantity wasn't updated
+      const donationItem1 = await donationItemRepo.findOne({
+        where: { itemId: 1 },
+      });
+      expect(donationItem1?.reservedQuantity).toBe(10);
+    });
+
+    it('throw BadRequestException if pantry is denied', async () => {
+      const pantryId = 4;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
+
+    it('throw BadRequestException if pantry is pending', async () => {
+      const pantryId = 5;
+      await testDataSource.query(`
+        UPDATE food_requests
+        SET pantry_id = ${pantryId}
+        WHERE request_id = 1;
+      `);
+      await expect(
+        service.create(
+          1,
+          validCreateOrderDto.manufacturerId,
+          parsedAllocations,
+          3,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(`Pantry ${pantryId} is not approved`),
+      );
+    });
   });
+
   describe('getAllOrdersForVolunteer', () => {
     it('should return all orders across all pantries and assignees, with required actions for assigned orders', async () => {
       const volunteerId = 6;
@@ -1023,8 +1332,8 @@ describe('OrdersService', () => {
 
     async function insertDonationItem(donationId: number): Promise<number> {
       const [{ item_id }] = await testDataSource.query(
-        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, food_type, food_rescue, details_confirmed)
-         VALUES ($1, 'Test Item', 10, 10, 'Granola', false, false)
+        `INSERT INTO donation_items (donation_id, item_name, quantity, reserved_quantity, oz_per_item, estimated_value, food_type, food_rescue, details_confirmed)
+         VALUES ($1, 'Test Item', 10, 10, 3.4, 3.4, 'Granola', false, false)
          RETURNING item_id`,
         [donationId],
       );
@@ -1435,6 +1744,180 @@ describe('OrdersService', () => {
       expect(after2.trackingLink).toEqual('https://tracking2.com');
       expect(after2.shippingCost).toEqual(7.5);
       expect(after2.status).toEqual(OrderStatus.SHIPPED);
+
+      warnSpy.mockRestore();
+    });
+  });
+
+  describe('sendConfirmDeliveryReminders', () => {
+    // Orders eligible for a reminder: shipped, approved pantry, and shipped at
+    // least a week ago (matching the service query).
+    const eligibleOrders = async (): Promise<Order[]> =>
+      testDataSource
+        .getRepository(Order)
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.request', 'request')
+        .leftJoinAndSelect('request.pantry', 'pantry')
+        .leftJoinAndSelect('pantry.pantryUser', 'pantryUser')
+        .leftJoinAndSelect('order.assignee', 'assignee')
+        .leftJoinAndSelect('order.foodManufacturer', 'foodManufacturer')
+        .where('order.status = :status', { status: OrderStatus.SHIPPED })
+        .andWhere('pantry.status = :pantryStatus', {
+          pantryStatus: ApplicationStatus.APPROVED,
+        })
+        .andWhere("order.shippedAt <= NOW() - INTERVAL '7 days'")
+        .getMany();
+
+    const expectedMessageFor = (order: Order) =>
+      emailTemplates.pantryConfirmDeliveryReminder({
+        pantryName: order.request.pantry.pantryName,
+        fmName: order.foodManufacturer.foodManufacturerName,
+        confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
+        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerEmail: order.assignee.email,
+      });
+
+    it('logs a warning and sends no emails when there are no unconfirmed deliveries', async () => {
+      await testDataSource.query(
+        `UPDATE orders SET status = $1 WHERE status = $2`,
+        [OrderStatus.DELIVERED, OrderStatus.SHIPPED],
+      );
+      const logSpy = jest.spyOn(service['logger'], 'log');
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No pantries with unconfirmed deliveries, skipping email sending.',
+        ),
+      );
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+
+      logSpy.mockRestore();
+    });
+
+    it('sends one personalized reminder per unconfirmed order', async () => {
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      const orders = await eligibleOrders();
+      expect(orders.length).toBeGreaterThan(0);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(orders.length);
+      for (const order of orders) {
+        const message = expectedMessageFor(order);
+        expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+          toEmail: order.request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      }
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+    });
+
+    it('sends a separate reminder for each unconfirmed order, even within the same pantry', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const existingShippedOrder = await orderRepo.findOne({
+        where: { status: OrderStatus.SHIPPED },
+      });
+      if (!existingShippedOrder)
+        throw new Error('Missing existingShippedOrder test object');
+
+      // Add a second shipped order to the same request
+      const secondOrder = orderRepo.create({
+        requestId: existingShippedOrder.requestId,
+        foodManufacturerId: existingShippedOrder.foodManufacturerId,
+        assigneeId: existingShippedOrder.assigneeId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date('2024-02-03T08:00:00Z'),
+      });
+      await orderRepo.save(secondOrder);
+
+      await service.sendConfirmDeliveryReminders();
+
+      const samePantryOrders = (await eligibleOrders()).filter(
+        (o) => o.requestId === existingShippedOrder.requestId,
+      );
+      expect(samePantryOrders.length).toBe(2);
+
+      const sentForSecondOrder = samePantryOrders.find(
+        (o) => o.orderId === secondOrder.orderId,
+      )!;
+
+      const message = expectedMessageFor(sentForSecondOrder);
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
+        toEmail: sentForSecondOrder.request.pantry.pantryUser.email,
+        subject: message.subject,
+        bodyHtml: message.bodyHTML,
+      });
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not send a reminder for an order shipped less than a week ago', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+
+      await testDataSource.query(
+        `UPDATE orders SET status = $1 WHERE status = $2`,
+        [OrderStatus.DELIVERED, OrderStatus.SHIPPED],
+      );
+
+      const template = await orderRepo.findOne({
+        where: { status: OrderStatus.DELIVERED },
+      });
+      if (!template) throw new Error('Missing order template');
+
+      const recentOrder = orderRepo.create({
+        requestId: template.requestId,
+        foodManufacturerId: template.foodManufacturerId,
+        assigneeId: template.assigneeId,
+        status: OrderStatus.SHIPPED,
+        shippedAt: new Date(),
+      });
+      await orderRepo.save(recentOrder);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('only sends reminders for orders that are SHIPPED', async () => {
+      const orders = await eligibleOrders();
+      expect(orders.length).toBeGreaterThan(0);
+
+      await service.sendConfirmDeliveryReminders();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(orders.length);
+
+      const orderRepo = testDataSource.getRepository(Order);
+      // Pulling id out of sent email to assert it is shipped.
+      for (const [{ bodyHtml }] of mockEmailsService.sendEmails.mock.calls) {
+        const match = bodyHtml.match(/orderId=(\d+)/);
+        expect(match).not.toBeNull();
+
+        const orderId = Number(match![1]);
+        const order = await orderRepo.findOneBy({ orderId });
+        expect(order).not.toBeNull();
+        expect(order!.status).toEqual(OrderStatus.SHIPPED);
+      }
+    });
+
+    it('logs a warning and continues when sending a reminder fails', async () => {
+      const warnSpy = jest.spyOn(service['logger'], 'warn');
+      mockEmailsService.sendEmails.mockRejectedValueOnce(
+        new Error('SES failure'),
+      );
+
+      await expect(
+        service.sendConfirmDeliveryReminders(),
+      ).resolves.toBeUndefined();
+
+      expect(mockEmailsService.sendEmails).toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to send confirm delivery reminder to'),
+      );
 
       warnSpy.mockRestore();
     });
