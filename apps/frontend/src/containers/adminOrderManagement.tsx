@@ -47,6 +47,7 @@ const AdminOrderManagement: React.FC = () => {
     [OrderStatus.SHIPPED]: [],
     [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
+    [OrderStatus.CLOSED]: [],
   });
 
   // State to hold selected order for details modal
@@ -58,6 +59,7 @@ const AdminOrderManagement: React.FC = () => {
       [OrderStatus.SHIPPED]: 1,
       [OrderStatus.PENDING]: 1,
       [OrderStatus.DELIVERED]: 1,
+      [OrderStatus.CLOSED]: 1,
     },
   );
 
@@ -95,6 +97,11 @@ const AdminOrderManagement: React.FC = () => {
       searchPantry: '',
       sortAsc: false,
     },
+    [OrderStatus.CLOSED]: {
+      selectedPantries: [],
+      searchPantry: '',
+      sortAsc: false,
+    },
   });
 
   const MAX_PER_STATUS = 5;
@@ -109,6 +116,7 @@ const AdminOrderManagement: React.FC = () => {
           [OrderStatus.SHIPPED]: [],
           [OrderStatus.PENDING]: [],
           [OrderStatus.DELIVERED]: [],
+          [OrderStatus.CLOSED]: [],
         };
 
         for (const order of data) {
@@ -130,6 +138,7 @@ const AdminOrderManagement: React.FC = () => {
           [OrderStatus.SHIPPED]: 1,
           [OrderStatus.PENDING]: 1,
           [OrderStatus.DELIVERED]: 1,
+          [OrderStatus.CLOSED]: 1,
         };
         setCurrentPages(initialPages);
       } catch {
@@ -207,6 +216,10 @@ const AdminOrderManagement: React.FC = () => {
         },
         [OrderStatus.DELIVERED]: {
           ...prev[OrderStatus.DELIVERED],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.CLOSED]: {
+          ...prev[OrderStatus.CLOSED],
           selectedPantries: [pantryName],
         },
       }));

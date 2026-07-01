@@ -14,6 +14,7 @@ import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
@@ -23,6 +24,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { Allocation } from '../allocations/allocations.entity';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
@@ -491,22 +493,6 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     };
   }
 
-  async updateStatus(orderId: number, newStatus: OrderStatus) {
-    validateId(orderId, 'Order');
-
-    await this.repo
-      .createQueryBuilder()
-      .update(Order)
-      .set({
-        status: newStatus as OrderStatus,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
-        deliveredAt:
-          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
-      })
-      .where('order_id = :orderId', { orderId })
-      .execute();
-  }
-
   async confirmDelivery(
     orderId: number,
     dto: ConfirmDeliveryDto,
@@ -813,5 +799,69 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     order[action] = true;
 
     await this.repo.save(order);
+  }
+
+  async closeOrder(orderId: number): Promise<void> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(`Order ${orderId} must be pending`);
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      // Capture which donations are affected before allocations are removed
+      const allocations = await transactionManager
+        .getRepository(Allocation)
+        .find({ where: { orderId }, relations: ['item'] });
+      const donationIds = [
+        ...new Set(allocations.map((allocation) => allocation.item.donationId)),
+      ];
+
+      await this.allocationsService.freeAllByOrder(orderId, transactionManager);
+
+      await this.donationService.recheckDonationAllocationStatus(
+        donationIds,
+        transactionManager,
+      );
+
+      await transactionManager
+        .getRepository(Order)
+        .update({ orderId }, { status: OrderStatus.CLOSED });
+    });
+  }
+
+  async updateAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    validateId(orderId, 'Order');
+
+    if (dto.allocations.length === 0) {
+      throw new BadRequestException('Must add or edit at least one allocation');
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const order = await transactionManager
+        .getRepository(Order)
+        .findOneBy({ orderId });
+      if (!order) {
+        throw new NotFoundException(`Order ${orderId} not found`);
+      }
+      if (order.status !== OrderStatus.PENDING) {
+        throw new BadRequestException(`Order ${orderId} must be pending`);
+      }
+
+      await this.allocationsService.updateOrderAllocations(
+        order,
+        dto,
+        transactionManager,
+      );
+    });
   }
 }

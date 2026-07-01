@@ -18,6 +18,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import {
   CheckOwnership,
@@ -38,6 +39,7 @@ import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
@@ -211,22 +213,6 @@ export class OrdersController {
     );
   }
 
-  @Roles(Role.VOLUNTEER)
-  @CheckOwnership({
-    idParam: 'orderId',
-    resolver: resolveOrderAuthorizedUserIds,
-  })
-  @Patch('/update-status/:orderId')
-  async updateStatus(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('newStatus') newStatus: string,
-  ): Promise<void> {
-    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
-    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
-  }
-
   @Roles(Role.FOODMANUFACTURER)
   @CheckOwnership({
     idParam: 'donationId',
@@ -319,5 +305,30 @@ export class OrdersController {
     @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
   ): Promise<void> {
     await this.ordersService.completeVolunteerAction(orderId, dto.action);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/close')
+  async closeOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<void> {
+    await this.ordersService.closeOrder(orderId);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/allocations')
+  async editAllocations(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body(new ValidationPipe()) dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.ordersService.updateAllocations(orderId, dto);
   }
 }

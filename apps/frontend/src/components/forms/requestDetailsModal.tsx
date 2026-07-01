@@ -5,15 +5,13 @@ import {
   FoodRequestSummaryDto,
   FoodRequestStatus,
   AlertStatus,
-} from '../../types/types';
-import {
   OrderStatus,
   RequestSize,
   FoodType,
   User,
   Role,
 } from '../../types/types';
-import { ORDER_STATUS_LABELS } from '@utils/utils';
+import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@utils/utils';
 import React, { useState, useEffect } from 'react';
 import {
   Flex,
