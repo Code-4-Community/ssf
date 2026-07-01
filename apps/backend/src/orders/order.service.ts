@@ -14,6 +14,8 @@ import { DonationService } from '../donations/donations.service';
 import { OrderStatus, VolunteerAction } from './types';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDonationItemDto } from './dtos/order-donation-item.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { RequestsService } from '../foodRequests/request.service';
@@ -23,6 +25,7 @@ import { FoodRequestStatus } from '../foodRequests/types';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { DonationItemsService } from '../donationItems/donationItems.service';
 import { AllocationsService } from '../allocations/allocations.service';
+import { Allocation } from '../allocations/allocations.entity';
 import { ApplicationStatus } from '../shared/types';
 import { VolunteerOrder } from '../volunteers/types';
 import { EmailsService } from '../emails/email.service';
@@ -84,8 +87,7 @@ export class OrdersService {
     return qb.getMany();
   }
 
-  // returns ALL orders (not scoped to volunteer)
-  // for orders assigned to the given volunteer, includes actionCompletion (otherwise undefined)
+  // returns all orders assigned to the given volunteer, each with actionCompletion
   async getAllOrdersForVolunteer(
     volunteerId: number,
   ): Promise<VolunteerOrder[]> {
@@ -108,27 +110,23 @@ export class OrdersService {
         'assignee.firstName',
         'assignee.lastName',
       ])
+      .where('order.assigneeId = :volunteerId', { volunteerId })
       .getMany();
 
-    return orders.map((o) => {
-      const { assignee, confirmDonationReceipt, notifyPantry } = o;
-      const actionCompletion =
-        assignee.id === volunteerId
-          ? { confirmDonationReceipt, notifyPantry }
-          : undefined;
-
-      return {
-        orderId: o.orderId,
-        status: o.status,
-        createdAt: o.createdAt,
-        shippedAt: o.shippedAt,
-        deliveredAt: o.deliveredAt,
-        pantryId: o.request.pantryId,
-        pantryName: o.request.pantry.pantryName,
-        assignee: o.assignee,
-        actionCompletion,
-      };
-    });
+    return orders.map((o) => ({
+      orderId: o.orderId,
+      status: o.status,
+      createdAt: o.createdAt,
+      shippedAt: o.shippedAt,
+      deliveredAt: o.deliveredAt,
+      pantryId: o.request.pantryId,
+      pantryName: o.request.pantry.pantryName,
+      assignee: o.assignee,
+      actionCompletion: {
+        confirmDonationReceipt: o.confirmDonationReceipt,
+        notifyPantry: o.notifyPantry,
+      },
+    }));
   }
 
   async getRecentOrdersByAssignee(
@@ -389,6 +387,29 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       throw new NotFoundException(`Order ${orderId} not found`);
     }
     return order;
+  }
+
+  async getManufacturerDonationItems(
+    orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    const items = await this.donationItemsService.getAllForManufacturer(
+      order.foodManufacturerId,
+    );
+
+    return items.map((item) => ({
+      itemId: item.itemId,
+      itemName: item.itemName,
+      foodType: item.foodType,
+      quantity: item.quantity,
+      reservedQuantity: item.reservedQuantity,
+    }));
   }
 
   async findOrderDetails(orderId: number): Promise<OrderDetailsDto> {
@@ -813,5 +834,69 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     order[action] = true;
 
     await this.repo.save(order);
+  }
+
+  async closeOrder(orderId: number): Promise<void> {
+    validateId(orderId, 'Order');
+
+    const order = await this.repo.findOneBy({ orderId });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(`Order ${orderId} must be pending`);
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      // Capture which donations are affected before allocations are removed
+      const allocations = await transactionManager
+        .getRepository(Allocation)
+        .find({ where: { orderId }, relations: ['item'] });
+      const donationIds = [
+        ...new Set(allocations.map((allocation) => allocation.item.donationId)),
+      ];
+
+      await this.allocationsService.freeAllByOrder(orderId, transactionManager);
+
+      await this.donationService.recheckDonationAllocationStatus(
+        donationIds,
+        transactionManager,
+      );
+
+      await transactionManager
+        .getRepository(Order)
+        .update({ orderId }, { status: OrderStatus.CLOSED });
+    });
+  }
+
+  async updateAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    validateId(orderId, 'Order');
+
+    if (dto.allocations.length == 0) {
+      throw new BadRequestException('Must add or edit at least one allocation');
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const order = await transactionManager
+        .getRepository(Order)
+        .findOneBy({ orderId });
+      if (!order) {
+        throw new NotFoundException(`Order ${orderId} not found`);
+      }
+      if (order.status !== OrderStatus.PENDING) {
+        throw new BadRequestException(`Order ${orderId} must be pending`);
+      }
+
+      await this.allocationsService.updateOrderAllocations(
+        order,
+        dto,
+        transactionManager,
+      );
+    });
   }
 }

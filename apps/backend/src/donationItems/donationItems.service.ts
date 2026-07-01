@@ -35,6 +35,15 @@ export class DonationItemsService {
     return this.repo.find({ where: { donation: { donationId } } });
   }
 
+  async getAllForManufacturer(
+    foodManufacturerId: number,
+  ): Promise<DonationItem[]> {
+    validateId(foodManufacturerId, 'Manufacturer');
+    return this.repo.find({
+      where: { donation: { foodManufacturer: { foodManufacturerId } } },
+    });
+  }
+
   async getByIds(donationItemIds: number[]): Promise<DonationItem[]> {
     donationItemIds.forEach((id) => validateId(id, 'Donation Item'));
 

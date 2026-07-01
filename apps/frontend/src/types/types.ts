@@ -174,6 +174,23 @@ export class DonationItemDetailsDto {
   availableQuantity!: number;
 }
 
+export interface OrderDonationItemDto {
+  itemId: number;
+  itemName: string;
+  foodType: FoodType;
+  quantity: number;
+  reservedQuantity: number;
+}
+
+export interface AllocationUpdate {
+  donationItemId: number;
+  allocatedQuantity: number;
+}
+
+export interface UpdateAllocationsDto {
+  allocations: AllocationUpdate[];
+}
+
 export enum RecurrenceEnum {
   NONE = 'none',
   WEEKLY = 'weekly',
@@ -508,6 +525,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   PENDING = 'pending',
   DELIVERED = 'delivered',
+  CLOSED = 'closed',
 }
 
 export enum RequestSize {

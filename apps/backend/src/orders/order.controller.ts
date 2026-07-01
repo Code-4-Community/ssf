@@ -31,6 +31,7 @@ import { DonationService } from '../donations/donations.service';
 import { Donation } from '../donations/donations.entity';
 import { BulkUpdateTrackingCostDto } from './dtos/bulk-update-tracking-cost.dto';
 import { OrderDetailsDto } from './dtos/order-details.dto';
+import { OrderDonationItemDto } from './dtos/order-donation-item.dto';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
 import { AWSS3Service } from '../aws/aws-s3.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -38,6 +39,7 @@ import * as multer from 'multer';
 import { ConfirmDeliveryDto } from './dtos/confirm-delivery.dto';
 import { CompleteVolunteerActionDto } from './dtos/complete-volunteer-action.dto';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { UpdateAllocationsDto } from './dtos/update-allocations.dto';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
@@ -129,6 +131,18 @@ export class OrdersController {
     @Param('orderId', ParseIntPipe) orderId: number,
   ): Promise<OrderDetailsDto> {
     return this.ordersService.findOrderDetails(orderId);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Get('/:orderId/donation-items')
+  async getOrderDonationItems(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    return this.ordersService.getManufacturerDonationItems(orderId);
   }
 
   @Roles(Role.ADMIN, Role.VOLUNTEER)
@@ -319,5 +333,30 @@ export class OrdersController {
     @Body(new ValidationPipe()) dto: CompleteVolunteerActionDto,
   ): Promise<void> {
     await this.ordersService.completeVolunteerAction(orderId, dto.action);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/close')
+  async closeOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ): Promise<void> {
+    await this.ordersService.closeOrder(orderId);
+  }
+
+  @CheckOwnership({
+    idParam: 'orderId',
+    resolver: resolveOrderAuthorizedUserIds,
+  })
+  @Roles(Role.VOLUNTEER)
+  @Patch('/:orderId/allocations')
+  async editAllocations(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body(new ValidationPipe()) dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.ordersService.updateAllocations(orderId, dto);
   }
 }
