@@ -17,6 +17,7 @@ import {
   AlertStatus,
   ApprovedPantryResponse,
   Assignments,
+  Role,
 } from '../../types/types';
 import { SearchIcon } from 'lucide-react';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
@@ -65,11 +66,13 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
 
         const assignedIds = new Set(pantry.volunteers.map((v) => v.userId));
 
-        const normalized: VolunteerDisplay[] = allVolunteers.map((v) => ({
-          userId: v.id,
-          firstName: v.firstName,
-          lastName: v.lastName,
-        }));
+        const normalized: VolunteerDisplay[] = allVolunteers
+          .filter((v) => v.active)
+          .map((v) => ({
+            userId: v.id,
+            firstName: v.firstName,
+            lastName: v.lastName,
+          }));
 
         setVolunteers(normalized);
         setSelectedIds(new Set(assignedIds));
