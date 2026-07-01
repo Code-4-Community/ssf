@@ -50,6 +50,12 @@ export class FoodManufacturersController {
     return this.foodManufacturersService.getPendingManufacturers();
   }
 
+  @Roles(Role.ADMIN)
+  @Get('/approved')
+  async getApprovedManufacturers(): Promise<FoodManufacturer[]> {
+    return this.foodManufacturersService.getApprovedManufacturers();
+  }
+
   @Roles(Role.FOODMANUFACTURER)
   @Get('/my-id')
   async getCurrentUserFoodManufacturerId(
@@ -216,7 +222,7 @@ export class FoodManufacturersController {
     );
   }
 
-  @Roles(Role.FOODMANUFACTURER)
+  @Roles(Role.FOODMANUFACTURER, Role.ADMIN)
   @CheckOwnership({
     idParam: 'foodManufacturerId',
     resolver: resolveFoodManufacturerAuthorizedUserIds,
@@ -232,6 +238,7 @@ export class FoodManufacturersController {
       foodManufacturerId,
       foodManufacturerData,
       req.user.id,
+      req.user.role,
     );
   }
 

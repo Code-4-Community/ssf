@@ -156,6 +156,12 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getApprovedFoodManufacturers(): Promise<FoodManufacturer[]> {
+    return this.axiosInstance
+      .get('/api/manufacturers/approved')
+      .then((response) => response.data);
+  }
+
   public async getFoodManufacturer(
     manufacturerId: number,
   ): Promise<FoodManufacturer> {
