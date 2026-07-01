@@ -1254,6 +1254,40 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
     });
 
+    it('keeps the request active when its only order is closed and does not update the request status', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+
+      // Seed order 4 is the sole order on its parent request, so closing it
+      // exercises the "request with one order" case.
+      const orderId = 4;
+      const order4 = (await orderRepo.findOneBy({ orderId })) as Order;
+      expect(await orderRepo.countBy({ requestId: order4.requestId })).toBe(1);
+
+      const updateRequestStatusSpy = jest.spyOn(
+        (service as any).requestsService as RequestsService,
+        'updateRequestStatus',
+      );
+
+      // Before: the request is active and its only order is still pending.
+      const requestBefore = (await requestRepo.findOneBy({
+        requestId: order4.requestId,
+      })) as FoodRequest;
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(order4.status).toBe(OrderStatus.PENDING);
+
+      await service.closeOrder(orderId);
+
+      expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
+
+      // After: closing the order must not touch the parent request's status.
+      const requestAfter = (await requestRepo.findOneBy({
+        requestId: order4.requestId,
+      })) as FoodRequest;
+      expect(requestAfter.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(updateRequestStatusSpy).not.toHaveBeenCalled();
+    });
+
     it('frees reserved quantity and recomputes donation status on success', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
       const donationRepo = testDataSource.getRepository(Donation);
