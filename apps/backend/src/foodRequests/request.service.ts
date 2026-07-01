@@ -332,6 +332,9 @@ export class RequestsService {
         order.status === OrderStatus.CLOSED,
     );
 
+    // This function is only called by confirm delivery, so we
+    // never fall into the case where we only have closed orders
+    // for a request
     request.status = allComplete
       ? FoodRequestStatus.CLOSED
       : FoodRequestStatus.ACTIVE;

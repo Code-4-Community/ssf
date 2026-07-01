@@ -1246,70 +1246,12 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       };
     };
 
-    it('sets the order status to CLOSED and keeps the request active while other orders are still open', async () => {
-      const orderRepo = testDataSource.getRepository(Order);
-      const requestRepo = testDataSource.getRepository(FoodRequest);
+    it('sets the order status to CLOSED on success', async () => {
       const { orderId } = await createPendingOrder();
-
-      const createdOrder = (await orderRepo.findOneBy({ orderId })) as Order;
-
-      // Add a sibling pending order on the same request so the request still
-      // has an open order after the order under test is closed.
-      const siblingOrder = orderRepo.create({
-        requestId: createdOrder.requestId,
-        foodManufacturerId: createdOrder.foodManufacturerId,
-        assigneeId: createdOrder.assigneeId,
-        status: OrderStatus.PENDING,
-      });
-      await orderRepo.save(siblingOrder);
-
-      const requestBefore = (await requestRepo.findOneBy({
-        requestId: createdOrder.requestId,
-      })) as FoodRequest;
-      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
 
       await service.closeOrder(orderId);
 
       expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
-
-      // A pending sibling order remains, so the request stays open.
-      const requestAfter = (await requestRepo.findOneBy({
-        requestId: createdOrder.requestId,
-      })) as FoodRequest;
-      expect(requestAfter.status).toBe(FoodRequestStatus.ACTIVE);
-    });
-
-    it('closes the request when the closed order was its last open order', async () => {
-      const orderRepo = testDataSource.getRepository(Order);
-      const requestRepo = testDataSource.getRepository(FoodRequest);
-      const { orderId } = await createPendingOrder();
-
-      const createdOrder = (await orderRepo.findOneBy({ orderId })) as Order;
-
-      // Mark every other order on this request as delivered so the pending
-      // order under test is the only thing keeping the request open.
-      await orderRepo
-        .createQueryBuilder()
-        .update(Order)
-        .set({ status: OrderStatus.DELIVERED })
-        .where('request_id = :requestId', { requestId: createdOrder.requestId })
-        .andWhere('order_id != :orderId', { orderId })
-        .execute();
-
-      const requestBefore = (await requestRepo.findOneBy({
-        requestId: createdOrder.requestId,
-      })) as FoodRequest;
-      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
-
-      await service.closeOrder(orderId);
-
-      expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
-
-      // No open orders remain, so the request is closed.
-      const requestAfter = (await requestRepo.findOneBy({
-        requestId: createdOrder.requestId,
-      })) as FoodRequest;
-      expect(requestAfter.status).toBe(FoodRequestStatus.CLOSED);
     });
 
     it('frees reserved quantity and recomputes donation status on success', async () => {

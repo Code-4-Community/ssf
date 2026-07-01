@@ -834,14 +834,6 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         .getRepository(Order)
         .update({ orderId }, { status: OrderStatus.CLOSED });
     });
-
-    // Re-fetch the order now that it is committed as CLOSED so the request
-    // status is recomputed against the up-to-date order state.
-    const updatedOrder = await this.repo.findOneBy({ orderId });
-
-    if (updatedOrder) {
-      await this.requestsService.updateRequestStatus(updatedOrder.requestId);
-    }
   }
 
   async updateAllocations(
