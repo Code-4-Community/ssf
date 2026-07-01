@@ -286,6 +286,14 @@ export class ApiClient {
     await this.axiosInstance.patch(`/api/users/${userId}/promote-volunteer`);
   }
 
+  public async deactivateUser(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/deactivate`);
+  }
+
+  public async reactivateUser(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/reactivate`);
+  }
+
   public async getFoodRequest(requestId: number): Promise<FoodRequest> {
     return this.axiosInstance
       .get(`/api/requests/${requestId}`)

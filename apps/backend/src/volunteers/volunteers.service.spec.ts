@@ -145,7 +145,7 @@ describe('VolunteersService', () => {
   });
 
   describe('getVolunteersAndPantryAssignments', () => {
-    it('returns an empty array when there are no volunteers', async () => {
+    it('returns only admins when there are no volunteers', async () => {
       await testDataSource.query(`DELETE FROM allocations`);
       await testDataSource.query(`DELETE FROM orders`);
       await testDataSource.query(
@@ -154,14 +154,59 @@ describe('VolunteersService', () => {
 
       const result = await service.getVolunteersAndPantryAssignments();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([
+        {
+          id: 1,
+          firstName: 'John',
+          lastName: 'Smith',
+          email: 'john.smith@ssf.org',
+          phone: '555-010-0101',
+          role: 'admin',
+          userCognitoSub: '',
+          active: true,
+          pantryIds: [],
+        },
+        {
+          id: 2,
+          firstName: 'Sarah',
+          lastName: 'Johnson',
+          email: 'sarah.j@ssf.org',
+          phone: '555-010-0102',
+          role: 'admin',
+          userCognitoSub: '',
+          active: true,
+          pantryIds: [],
+        },
+      ]);
     });
 
-    it('returns all volunteers with their pantry assignments', async () => {
+    it('returns all volunteers and admins with their pantry assignments', async () => {
       const result = await service.getVolunteersAndPantryAssignments();
 
-      expect(result.length).toEqual(4);
+      expect(result.length).toEqual(6);
       expect(result).toEqual([
+        {
+          id: 1,
+          firstName: 'John',
+          lastName: 'Smith',
+          email: 'john.smith@ssf.org',
+          phone: '555-010-0101',
+          role: 'admin',
+          userCognitoSub: '',
+          active: true,
+          pantryIds: [],
+        },
+        {
+          id: 2,
+          firstName: 'Sarah',
+          lastName: 'Johnson',
+          email: 'sarah.j@ssf.org',
+          phone: '555-010-0102',
+          role: 'admin',
+          userCognitoSub: '',
+          active: true,
+          pantryIds: [],
+        },
         {
           id: 6,
           firstName: 'James',

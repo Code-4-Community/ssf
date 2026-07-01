@@ -29,10 +29,8 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
   [Role.ADMIN]: [
     {
       type: 'group',
-      label: 'Volunteers',
-      children: [
-        { label: 'Volunteer Management', to: ROUTES.VOLUNTEER_MANAGEMENT },
-      ],
+      label: 'Users',
+      children: [{ label: 'User Management', to: ROUTES.VOLUNTEER_MANAGEMENT }],
     },
     {
       type: 'group',

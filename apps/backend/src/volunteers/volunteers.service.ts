@@ -41,6 +41,7 @@ export class VolunteersService {
   async getVolunteersAndPantryAssignments(): Promise<Assignments[]> {
     const volunteers = await this.usersService.findUsersByRoles([
       Role.VOLUNTEER,
+      Role.ADMIN,
     ]);
 
     return volunteers.map((v) => {

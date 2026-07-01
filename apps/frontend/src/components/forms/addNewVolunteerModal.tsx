@@ -128,7 +128,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
               fontFamily="Inter"
               color="#000"
             >
-              Add New Volunteer
+              Add New User
             </Dialog.Title>
             <CloseButton
               onClick={() => setIsOpen(false)}
@@ -140,7 +140,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
           </Dialog.Header>
           <Dialog.Body color="neutral.800" fontWeight={600} textStyle="p2">
             <Text mb="1.5em" color="#52525B" fontWeight={400}>
-              Complete all information in the form to register a new volunteer.
+              Complete all information in the form to register a new user.
             </Text>
             <Flex gap={8} justifyContent="flex-start" my={4}>
               <Field.Root>

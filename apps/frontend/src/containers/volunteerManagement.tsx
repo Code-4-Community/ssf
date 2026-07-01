@@ -8,6 +8,7 @@ import {
   Input,
   VStack,
   Box,
+  Badge,
   InputGroup,
   Pagination,
   ButtonGroup,
@@ -22,10 +23,11 @@ import {
   ChevronLeft,
   EllipsisVertical,
 } from 'lucide-react';
-import { AlertStatus, User } from '../types/types';
+import { AlertStatus, Role, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
 import PromoteVolunteerModal from '@components/forms/promoteVolunteerModal';
+import ConfirmActionModal from '@components/forms/confirmActionModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
@@ -37,6 +39,7 @@ const VolunteerManagement: React.FC = () => {
   const [searchName, setSearchName] = useState<string>('');
   const [selectedVolunteer, setSelectedVolunteer] = useState<User | null>(null);
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
 
@@ -77,10 +80,37 @@ const VolunteerManagement: React.FC = () => {
     }
   };
 
-  const filteredVolunteers = volunteers.filter((a) => {
-    const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
-    return fullName.includes(searchName.toLowerCase());
-  });
+  const handleToggleActive = async () => {
+    if (!selectedVolunteer) return;
+
+    const wasActive = selectedVolunteer.active;
+    const fullName = `${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`;
+    try {
+      if (wasActive) {
+        await ApiClient.deactivateUser(selectedVolunteer.id);
+      } else {
+        await ApiClient.reactivateUser(selectedVolunteer.id);
+      }
+      setAlertMessage(
+        `${fullName} has been ${wasActive ? 'deactivated' : 'activated'}.`,
+        AlertStatus.INFO,
+      );
+      fetchVolunteers();
+    } catch {
+      setAlertMessage(
+        `Failed to ${wasActive ? 'deactivate' : 'activate'} user.`,
+        AlertStatus.ERROR,
+      );
+    }
+  };
+
+  const filteredVolunteers = volunteers
+    .filter((a) => {
+      const fullName = `${a.firstName} ${a.lastName}`.toLowerCase();
+      return fullName.includes(searchName.toLowerCase());
+    })
+    // Deactivated users sort to the bottom of the list.
+    .sort((a, b) => Number(b.active) - Number(a.active));
 
   const paginatedVolunteers = filteredVolunteers.slice(
     (currentPage - 1) * pageSize,
@@ -96,7 +126,7 @@ const VolunteerManagement: React.FC = () => {
   return (
     <Box flexDirection="column" p={12}>
       <Text textStyle="h1" color="gray.light">
-        Volunteer Management
+        User Management
       </Text>
       {alertState && (
         <FloatingAlert
@@ -141,13 +171,10 @@ const VolunteerManagement: React.FC = () => {
             </InputGroup>
             <NewVolunteerModal
               onSubmitSuccess={() => {
-                setAlertMessage('Volunteer added.', AlertStatus.INFO);
+                setAlertMessage('User added.', AlertStatus.INFO);
               }}
               onSubmitFail={() => {
-                setAlertMessage(
-                  'Volunteer could not be added.',
-                  AlertStatus.ERROR,
-                );
+                setAlertMessage('User could not be added.', AlertStatus.ERROR);
               }}
             />
           </Flex>
@@ -160,7 +187,14 @@ const VolunteerManagement: React.FC = () => {
                 textStyle="p2"
                 fontWeight={600}
               >
-                Volunteer
+                Users
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+              >
+                Status
               </Table.ColumnHeader>
               <Table.ColumnHeader
                 color="neutral.800"
@@ -188,8 +222,13 @@ const VolunteerManagement: React.FC = () => {
                     <Box
                       borderRadius="full"
                       bg={
-                        USER_ICON_COLORS[volunteer.id % USER_ICON_COLORS.length]
+                        volunteer.active
+                          ? USER_ICON_COLORS[
+                              volunteer.id % USER_ICON_COLORS.length
+                            ]
+                          : 'neutral.300'
                       }
+                      opacity={volunteer.active ? 1 : 0.6}
                       width="33px"
                       height="33px"
                       display="flex"
@@ -203,23 +242,39 @@ const VolunteerManagement: React.FC = () => {
                     {volunteer.firstName} {volunteer.lastName}
                   </Box>
                 </Table.Cell>
+                <Table.Cell>
+                  <Badge
+                    py={1}
+                    px={2}
+                    borderRadius="md"
+                    textStyle="p2"
+                    fontWeight={500}
+                    fontSize="12px"
+                    bg={volunteer.active ? 'teal.200' : 'neutral.300'}
+                    color={volunteer.active ? 'teal.hover' : 'black'}
+                  >
+                    {volunteer.active ? 'Active' : 'Deactivated'}
+                  </Badge>
+                </Table.Cell>
                 <Table.Cell>{volunteer.email}</Table.Cell>
                 <Table.Cell textAlign="right">
-                  <Link
-                    color="neutral.700"
-                    fontWeight={400}
-                    textStyle="p2"
-                    variant="underline"
-                    textDecorationColor="neutral.700"
-                    cursor="pointer"
-                    onClick={() =>
-                      navigate(
-                        `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
-                      )
-                    }
-                  >
-                    View Assigned Pantries
-                  </Link>
+                  {volunteer.role === Role.VOLUNTEER && (
+                    <Link
+                      color="neutral.700"
+                      fontWeight={400}
+                      textStyle="p2"
+                      variant="underline"
+                      textDecorationColor="neutral.700"
+                      cursor="pointer"
+                      onClick={() =>
+                        navigate(
+                          `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
+                        )
+                      }
+                    >
+                      View Assigned Pantries
+                    </Link>
+                  )}
                 </Table.Cell>
                 <Table.Cell>
                   <Menu.Root>
@@ -235,14 +290,25 @@ const VolunteerManagement: React.FC = () => {
                     <Portal>
                       <Menu.Positioner>
                         <Menu.Content>
+                          {volunteer.role === Role.VOLUNTEER && (
+                            <Menu.Item
+                              value="promote"
+                              onClick={() => {
+                                setSelectedVolunteer(volunteer);
+                                setIsPromoteModalOpen(true);
+                              }}
+                            >
+                              Promote to Admin
+                            </Menu.Item>
+                          )}
                           <Menu.Item
-                            value="promote"
+                            value="toggle-active"
                             onClick={() => {
                               setSelectedVolunteer(volunteer);
-                              setIsPromoteModalOpen(true);
+                              setIsConfirmModalOpen(true);
                             }}
                           >
-                            Promote to Admin
+                            {volunteer.active ? 'Deactivate' : 'Activate'}
                           </Menu.Item>
                         </Menu.Content>
                       </Menu.Positioner>
@@ -317,6 +383,19 @@ const VolunteerManagement: React.FC = () => {
           }}
           onConfirm={handlePromote}
           volunteerName={`${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`}
+        />
+      )}
+
+      {selectedVolunteer && (
+        <ConfirmActionModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => {
+            setIsConfirmModalOpen(false);
+            setSelectedVolunteer(null);
+          }}
+          onConfirm={handleToggleActive}
+          volunteerName={`${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`}
+          action={selectedVolunteer.active ? 'deactivate' : 'activate'}
         />
       )}
     </Box>
