@@ -70,7 +70,7 @@ const VolunteerOrderManagement: React.FC = () => {
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [deleteOrder, setDeleteOrder] = useState<OrderDetails | null>(null);
+  const [closeOrder, setCloseOrder] = useState<OrderDetails | null>(null);
   const [actionModalOrder, setActionModalOrder] =
     useState<VolunteerOrder | null>(null);
 
@@ -389,13 +389,13 @@ const VolunteerOrderManagement: React.FC = () => {
           navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
         }}
         onSuccess={fetchOrders}
-        onDelete={(order) => setDeleteOrder(order)}
+        onDelete={(order) => setCloseOrder(order)}
       />
 
       <VolunteerCloseOrderModal
-        order={deleteOrder}
-        isOpen={deleteOrder !== null}
-        onClose={() => setDeleteOrder(null)}
+        order={closeOrder}
+        isOpen={closeOrder !== null}
+        onClose={() => setCloseOrder(null)}
         onSuccess={() => {
           fetchOrders();
           setSelectedOrderId(null);

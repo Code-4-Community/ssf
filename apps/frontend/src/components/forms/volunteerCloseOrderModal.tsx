@@ -30,14 +30,14 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
-  const onDeleteOrder = async () => {
+  const onCloseOrder = async () => {
     if (order === null) return;
     try {
       await apiClient.closeOrder(order.orderId);
       onClose();
       onSuccess();
     } catch {
-      setAlertMessage('Order could not be deleted.', AlertStatus.ERROR);
+      setAlertMessage('Order could not be closed.', AlertStatus.ERROR);
     }
   };
 
@@ -116,9 +116,9 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
                     px={5}
                     flexShrink={0}
                     textAlign="center"
-                    onClick={onDeleteOrder}
+                    onClick={onCloseOrder}
                   >
-                    Delete
+                    Close
                   </Button>
                 </Flex>
               </VStack>

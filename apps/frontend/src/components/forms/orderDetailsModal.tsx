@@ -115,6 +115,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [itemAllocations, setItemAllocations] = useState<
     Record<number, number>
   >({});
+  // The item whose allocation box is currently being edited (focused).
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
 
   const groupedManufacturerItems = useGroupedItemsByFoodType(manufacturerItems);
 
@@ -280,29 +282,48 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
                               <Flex
                                 alignSelf="stretch"
-                                w="43px"
+                                w="72px"
                                 align="center"
                                 justify="center"
                                 borderLeft="1px solid"
                                 borderColor="neutral.100"
                                 bg="#fefefe"
+                                cursor="text"
+                                onClick={() => setEditingItemId(item.itemId)}
                               >
-                                <Input
-                                  inputMode="numeric"
-                                  _focusVisible={{ outline: 'none' }}
-                                  border="none"
-                                  textAlign="center"
-                                  px={0}
-                                  h="full"
-                                  w="full"
-                                  value={itemAllocations[item.itemId] ?? 0}
-                                  onChange={(e) =>
-                                    setItemAllocations((prev) => ({
-                                      ...prev,
-                                      [item.itemId]: Number(e.target.value),
-                                    }))
-                                  }
-                                />
+                                {editingItemId === item.itemId ? (
+                                  <Input
+                                    autoFocus
+                                    inputMode="numeric"
+                                    _focusVisible={{ outline: 'none' }}
+                                    border="none"
+                                    textAlign="center"
+                                    px={0}
+                                    h="full"
+                                    w="full"
+                                    value={itemAllocations[item.itemId] ?? 0}
+                                    onChange={(e) =>
+                                      setItemAllocations((prev) => ({
+                                        ...prev,
+                                        [item.itemId]: Number(e.target.value),
+                                      }))
+                                    }
+                                    onBlur={() => setEditingItemId(null)}
+                                  />
+                                ) : (
+                                  <Text
+                                    textStyle="p2"
+                                    color={
+                                      (itemAllocations[item.itemId] ?? 0) >
+                                      item.quantity - item.reservedQuantity
+                                        ? 'red.core'
+                                        : 'neutral.800'
+                                    }
+                                  >
+                                    {itemAllocations[item.itemId] ?? 0} of{' '}
+                                    {item.quantity - item.reservedQuantity}
+                                  </Text>
+                                )}
                               </Flex>
                             </Flex>
                           ))}
