@@ -7,8 +7,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Between, DataSource, In, Repository } from 'typeorm';
 import { User } from './users.entity';
 import { PendingApplication, Role } from './types';
 import { validateId } from '../utils/validation.utils';
@@ -44,6 +44,8 @@ export class UsersService {
     private pantryRepo: Repository<Pantry>,
     @InjectRepository(FoodManufacturer)
     private fmRepo: Repository<FoodManufacturer>,
+    @InjectDataSource()
+    private dataSource: DataSource,
     private authService: AuthService,
     private emailsService: EmailsService,
     @Inject(forwardRef(() => PantriesService))
@@ -79,6 +81,7 @@ export class UsersService {
         firstName,
         lastName,
         email,
+        role,
       });
       return this.repo.save(existingUser);
     }
@@ -88,6 +91,7 @@ export class UsersService {
       firstName,
       lastName,
       email,
+      role,
     });
     const user = this.repo.create({
       role,
@@ -320,5 +324,35 @@ export class UsersService {
     } else {
       throw new BadRequestException(`Unsupported role: ${user.role}`);
     }
+  }
+
+  async promoteVolunteerToAdmin(userId: number): Promise<void> {
+    validateId(userId, 'User');
+
+    const user = await this.repo.findOne({
+      where: { id: userId },
+      relations: ['pantries'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    if (user.role !== Role.VOLUNTEER) {
+      throw new BadRequestException(
+        `User ${userId} is not a volunteer. Current role: ${user.role}`,
+      );
+    }
+
+    await this.dataSource.transaction(async (transactionManager) => {
+      const userRepo = transactionManager.getRepository(User);
+
+      user.role = Role.ADMIN;
+      user.pantries = [];
+      await userRepo.save(user);
+
+      await this.authService.addUserToGroup(user.email, Role.ADMIN);
+      await this.authService.removeUserFromGroup(user.email, Role.VOLUNTEER);
+    });
   }
 }
