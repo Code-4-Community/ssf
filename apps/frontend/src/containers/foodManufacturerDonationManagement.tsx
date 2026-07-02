@@ -10,19 +10,25 @@ import {
   Pagination,
   Table,
 } from '@chakra-ui/react';
+import { ChevronRight, ChevronLeft, Mail } from 'lucide-react';
+import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
+import {
+  AlertStatus,
+  Donation,
+  DonationDetails,
+  DonationStatus,
+} from '../types/types';
 import { FloatingAlert } from '@components/floatingAlert';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
 import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequiredActionsModal';
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
 import SectionEmptyState from '@components/sectionEmptyState';
-import { capitalize, DONATION_STATUS_COLORS, formatDate } from '@utils/utils';
-import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
+import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 import { ROUTES } from '../routes';
-import { AlertStatus, DonationDetails, DonationStatus } from '../types/types';
 
 const MAX_PER_STATUS = 5;
 
@@ -33,8 +39,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     searchParams.get('resubmitDonationId');
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [errorAlertState, setErrorMessage] = useAlert();
-  const [successAlertState, setSuccessMessage] = useAlert();
+  const [alertState, setAlertMessage] = useAlert();
   const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
@@ -56,13 +61,12 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     [DonationStatus.FULFILLED]: 1,
   });
 
-  // State to hold selected donation for details modal
-  const [selectedDonationId, setSelectedDonationId] = useState<number | null>(
-    null,
-  );
+  const [selectedViewDetailsDonation, setSelectedViewDetailsDonation] =
+    useState<Donation | null>(null);
+  const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async (fmId: number) => {
+  const fetchDonations = async () => {
     try {
       const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
@@ -111,7 +115,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       return grouped;
     } catch (error) {
-      setErrorMessage('Error fetching donations', AlertStatus.ERROR);
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
       return;
     }
   };
@@ -137,10 +141,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       try {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
-        const grouped = await fetchDonations(fmId);
+        const grouped = await fetchDonations();
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
-        setErrorMessage(
+        setAlertMessage(
           'Error initializing donation management',
           AlertStatus.ERROR,
         );
@@ -156,8 +160,15 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     if (!donationIdParam) return;
 
     const id = Number(donationIdParam);
-    setSelectedDonationId(id);
-  }, [searchParams, setErrorMessage]);
+
+    // match the ID to a donation from any of the three donation status buckets
+    const match = Object.values(statusDonations)
+      .flat()
+      .find((d) => d.donation.donationId === id);
+    if (match) {
+      setSelectedViewDetailsDonation(match.donation);
+    } else navigate(ROUTES.FM_DONATION_MANAGEMENT);
+  }, [searchParams, statusDonations]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -177,19 +188,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   return (
     <Box p={12}>
-      {errorAlertState && (
+      {alertState && (
         <FloatingAlert
-          key={errorAlertState.id}
-          message={errorAlertState.message}
-          status={errorAlertState.status}
-          timeout={6000}
-        />
-      )}
-      {successAlertState && (
-        <FloatingAlert
-          key={successAlertState.id}
-          message={successAlertState.message}
-          status={successAlertState.status}
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
           timeout={6000}
         />
       )}
@@ -232,7 +235,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <NewDonationFormModal
-          onDonationSuccess={() => fetchDonations(manufacturerId)}
+          onDonationSuccess={() => fetchDonations()}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
         />
@@ -242,7 +245,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <ResubmitDonationModal
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => fetchDonations(manufacturerId)}
+          onSuccess={() => fetchDonations()}
           donations={Object.values(statusDonations).flat()}
           foodManufacturerId={manufacturerId}
           initialDonationId={
@@ -261,11 +264,40 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onClose={() => setSelectedActionDonation(null)}
           onSuccess={() => {
             setSelectedActionDonation(null);
-            if (manufacturerId !== null) fetchDonations(manufacturerId);
-            setSuccessMessage(
+            if (manufacturerId !== null) fetchDonations();
+            setAlertMessage(
               'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
               AlertStatus.INFO,
             );
+          }}
+        />
+      )}
+
+      <FMDeleteDonationActionModal
+        donation={deleteDonation}
+        isOpen={deleteDonation !== null}
+        onClose={() => {
+          setDeleteDonation(null);
+        }}
+        onSuccess={() => {
+          setAlertMessage(
+            'Successfully deleted donation items.',
+            AlertStatus.INFO,
+          );
+          fetchDonations();
+          setDeleteDonation(null);
+          setSelectedViewDetailsDonation(null);
+        }}
+      />
+
+      {selectedViewDetailsDonation && (
+        <DonationDetailsModal
+          donation={selectedViewDetailsDonation}
+          isOpen={selectedViewDetailsDonation !== null}
+          onClose={() => setSelectedViewDetailsDonation(null)}
+          onSuccess={() => fetchDonations()}
+          onDelete={() => {
+            setDeleteDonation(selectedViewDetailsDonation);
           }}
         />
       )}
@@ -285,16 +317,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               donations={displayedDonations}
               status={status}
               colors={DONATION_STATUS_COLORS[status]}
-              selectedDonationId={selectedDonationId}
-              onDonationSelect={setSelectedDonationId}
+              onDonationSelect={setSelectedViewDetailsDonation}
               totalDonations={allDonationsByStatus.length}
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
-              onDonationClose={() => {
-                setSelectedDonationId(null);
-                navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
-              }}
             />
           </Box>
         );
@@ -307,13 +334,11 @@ interface DonationStatusSectionProps {
   donations: DonationDetails[];
   status: DonationStatus;
   colors: string[];
-  onDonationSelect: (donationId: number | null) => void;
-  selectedDonationId: number | null;
+  onDonationSelect: (donation: Donation | null) => void;
   totalDonations: number;
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
-  onDonationClose: () => void;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -323,10 +348,8 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   onDonationSelect,
   totalDonations,
   currentPage,
-  selectedDonationId,
   onPageChange,
   onActionSelect,
-  onDonationClose,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -428,17 +451,10 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                       <Link
                         textDecorationColor="black"
                         variant="underline"
-                        onClick={() => onDonationSelect(donation.donationId)}
+                        onClick={() => onDonationSelect(donation)}
                       >
                         {donation.donationId}
                       </Link>
-                      {selectedDonationId === donation.donationId && (
-                        <DonationDetailsModal
-                          donation={donation}
-                          isOpen={true}
-                          onClose={onDonationClose}
-                        />
-                      )}
                     </Table.Cell>
                     <Table.Cell
                       {...tableCellStyles}

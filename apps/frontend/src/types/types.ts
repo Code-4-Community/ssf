@@ -613,6 +613,16 @@ export interface UpdateDonationItemDetailsDto {
   foodRescue: boolean;
 }
 
+export interface ReplaceDonationItemDto {
+  itemId?: number;
+  itemName: string;
+  quantity: number;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: FoodType;
+  foodRescue: boolean;
+}
+
 export enum AlertStatus {
   INFO = 'info',
   ERROR = 'error',
