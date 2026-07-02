@@ -391,7 +391,6 @@ export class PantriesController {
   @CheckOwnership({
     idParam: 'pantryId',
     resolver: resolvePantryAuthorizedUserIds,
-    bypassRoles: [Role.ADMIN],
   })
   @Roles(Role.PANTRY, Role.ADMIN)
   @Patch('/:pantryId/application')

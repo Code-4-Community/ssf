@@ -248,27 +248,25 @@ const PantryApplicationDetails: React.FC = () => {
                 </Text>
               </>
             ) : (
-              <>
-                <HStack justify="space-between" align="center" mb={4}>
-                  <Text textStyle="p" fontWeight={600}>
-                    {application.pantryName}
+              <HStack justify="space-between" align="center" mb={4}>
+                <Text textStyle="p" fontWeight={600}>
+                  {application.pantryName}
+                </Text>
+                <HStack
+                  gap={1}
+                  color="blue.hover"
+                  textStyle="p2"
+                  fontWeight={600}
+                  cursor={isEditing ? 'default' : 'pointer'}
+                  _hover={isEditing ? {} : { color: 'neutral.900' }}
+                  onClick={isEditing ? undefined : () => setIsEditing(true)}
+                >
+                  <Pencil size={14} />
+                  <Text fontWeight={600} fontFamily="ibm">
+                    {isEditing ? 'Editing' : 'Edit'}
                   </Text>
-                  <HStack
-                    gap={1}
-                    color="blue.hover"
-                    textStyle="p2"
-                    fontWeight={600}
-                    cursor={isEditing ? 'default' : 'pointer'}
-                    _hover={isEditing ? {} : { color: 'neutral.900' }}
-                    onClick={isEditing ? undefined : () => setIsEditing(true)}
-                  >
-                    <Pencil size={14} />
-                    <Text fontWeight={600} fontFamily="ibm">
-                      {isEditing ? 'Editing' : 'Edit'}
-                    </Text>
-                  </HStack>
                 </HStack>
-              </>
+              </HStack>
             )}
           </Box>
 
@@ -282,6 +280,7 @@ const PantryApplicationDetails: React.FC = () => {
                 }
               }}
               pantryId={application.pantryId}
+              initialApplication={application}
             />
           ) : (
             <>

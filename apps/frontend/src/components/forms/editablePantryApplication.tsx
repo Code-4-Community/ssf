@@ -255,20 +255,28 @@ interface EditablePantryApplicationProps {
   isEditing: boolean;
   onEditingChange: (v: boolean) => void;
   pantryId?: number;
+  initialApplication?: PantryWithUser;
 }
 
 const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
   isEditing,
   onEditingChange,
   pantryId: propPantryId,
+  initialApplication,
 }) => {
-  const [application, setApplication] = useState<PantryWithUser | null>(null);
+  const [application, setApplication] = useState<PantryWithUser | null>(
+    initialApplication ?? null,
+  );
   const [alertState, setAlertMessage] = useAlert();
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState<FormState | null>(null);
+  const [isLoading, setIsLoading] = useState(!initialApplication);
+  const [form, setForm] = useState<FormState | null>(
+    initialApplication ? buildFormState(initialApplication) : null,
+  );
 
   const fetchApplication = useCallback(async () => {
     try {
+      setIsLoading(true);
       const pantryId =
         propPantryId ?? (await ApiClient.getCurrentUserPantryId());
       if (pantryId) {
@@ -281,12 +289,16 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         'Could not load application details. Please try again later.',
         AlertStatus.ERROR,
       );
+    } finally {
+      setIsLoading(false);
     }
   }, [propPantryId]);
 
   useEffect(() => {
-    fetchApplication();
-  }, [fetchApplication]);
+    if (!initialApplication) {
+      fetchApplication();
+    }
+  }, [fetchApplication, initialApplication]);
 
   useEffect(() => {
     if (!isEditing && application) setForm(buildFormState(application));
@@ -431,6 +443,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!application || !form) {
     return (
