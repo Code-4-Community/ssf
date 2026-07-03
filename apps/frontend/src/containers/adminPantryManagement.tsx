@@ -313,7 +313,9 @@ const AdminPantryManagement: React.FC = () => {
                   <Box display="flex" alignItems="center" minH="33px">
                     {pantry.volunteers && pantry.volunteers.length > 0 ? (
                       (() => {
-                        const volunteers = pantry.volunteers;
+                        const volunteers = pantry.volunteers.filter(
+                          (volunteer) => volunteer.active,
+                        );
                         const maxVisible = 3;
 
                         const hasOverflow = volunteers.length > maxVisible;

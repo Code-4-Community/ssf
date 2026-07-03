@@ -453,6 +453,7 @@ export interface AssignedVolunteer {
   lastName: string;
   email: string;
   phone: string;
+  active: boolean;
 }
 
 export interface CreateFoodRequestBody {
