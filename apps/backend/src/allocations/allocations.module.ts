@@ -5,12 +5,15 @@ import { AllocationsService } from './allocations.service';
 import { AuthModule } from '../auth/auth.module';
 import { DonationItemsModule } from '../donationItems/donationItems.module';
 import { DonationItem } from '../donationItems/donationItems.entity';
+import { Donation } from '../donations/donations.entity';
+import { DonationModule } from '../donations/donations.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Allocation, DonationItem]),
+    TypeOrmModule.forFeature([Allocation, DonationItem, Donation]),
     forwardRef(() => AuthModule),
     DonationItemsModule,
+    DonationModule,
   ],
   providers: [AllocationsService],
   exports: [AllocationsService],

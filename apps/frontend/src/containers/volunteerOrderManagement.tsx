@@ -64,6 +64,7 @@ const VolunteerOrderManagement: React.FC = () => {
     [OrderStatus.SHIPPED]: [],
     [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
+    [OrderStatus.CLOSED]: [],
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -75,6 +76,7 @@ const VolunteerOrderManagement: React.FC = () => {
       [OrderStatus.SHIPPED]: 1,
       [OrderStatus.PENDING]: 1,
       [OrderStatus.DELIVERED]: 1,
+      [OrderStatus.CLOSED]: 1,
     },
   );
 
@@ -107,6 +109,11 @@ const VolunteerOrderManagement: React.FC = () => {
       searchPantry: '',
       sortAsc: false,
     },
+    [OrderStatus.CLOSED]: {
+      selectedPantries: [],
+      searchPantry: '',
+      sortAsc: false,
+    },
   });
 
   const MAX_PER_STATUS = 5;
@@ -135,6 +142,7 @@ const VolunteerOrderManagement: React.FC = () => {
           [OrderStatus.SHIPPED]: [],
           [OrderStatus.PENDING]: [],
           [OrderStatus.DELIVERED]: [],
+          [OrderStatus.CLOSED]: [],
         };
 
         for (const order of data) {
@@ -157,6 +165,7 @@ const VolunteerOrderManagement: React.FC = () => {
           [OrderStatus.SHIPPED]: 1,
           [OrderStatus.PENDING]: 1,
           [OrderStatus.DELIVERED]: 1,
+          [OrderStatus.CLOSED]: 1,
         };
         setCurrentPages(initialPages);
       } catch {
@@ -224,6 +233,10 @@ const VolunteerOrderManagement: React.FC = () => {
         },
         [OrderStatus.DELIVERED]: {
           ...prev[OrderStatus.DELIVERED],
+          selectedPantries: [pantryName],
+        },
+        [OrderStatus.CLOSED]: {
+          ...prev[OrderStatus.CLOSED],
           selectedPantries: [pantryName],
         },
       }));

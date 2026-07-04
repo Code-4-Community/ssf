@@ -9,18 +9,21 @@ import {
 export const YELLOW_STATUS: [string, string] = ['yellow.200', 'yellow.hover'];
 export const BLUE_STATUS: [string, string] = ['blue.100', 'blue.core'];
 export const TEAL_STATUS: [string, string] = ['teal.200', 'teal.hover'];
+export const GRAY_STATUS: [string, string] = ['neutral.100', 'neutral.700'];
 
 // color mapping for order/donation statuses, the first color is background, the second is color for status text
 export const ORDER_STATUS_COLORS: Record<OrderStatus, [string, string]> = {
   [OrderStatus.SHIPPED]: YELLOW_STATUS,
   [OrderStatus.PENDING]: BLUE_STATUS,
   [OrderStatus.DELIVERED]: TEAL_STATUS,
+  [OrderStatus.CLOSED]: GRAY_STATUS,
 };
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   [OrderStatus.PENDING]: 'Received',
   [OrderStatus.SHIPPED]: 'In Progress',
   [OrderStatus.DELIVERED]: 'Completed',
+  [OrderStatus.CLOSED]: 'Closed',
 };
 
 export const DONATION_STATUS_COLORS: Record<DonationStatus, [string, string]> =

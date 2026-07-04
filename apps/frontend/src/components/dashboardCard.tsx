@@ -57,6 +57,11 @@ export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
     bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
   },
+  [OrderStatus.CLOSED]: {
+    label: ORDER_STATUS_LABELS[OrderStatus.CLOSED],
+    bg: ORDER_STATUS_COLORS[OrderStatus.CLOSED][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.CLOSED][1],
+  },
 };
 
 export const DONATION_STATUS_BADGE: Record<DonationStatus, DashboardCardBadge> =
