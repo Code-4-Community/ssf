@@ -235,6 +235,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
+          foodManufacturerId={manufacturerId}
         />
       )}
 

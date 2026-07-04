@@ -112,6 +112,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     setIsSubmitting(true);
     try {
       const dto: CreateDonationDto = {
+        foodManufacturerId,
         recurrence: RecurrenceEnum.NONE,
         items: items.map((item) => ({
           itemName: item.itemName,
