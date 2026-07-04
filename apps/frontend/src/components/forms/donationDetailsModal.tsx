@@ -6,13 +6,6 @@ import {
   Dialog,
   CloseButton,
   HStack,
-  Table,
-  Button,
-  Input,
-  NativeSelect,
-  NativeSelectIndicator,
-  Checkbox,
-  Flex,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import {
@@ -28,7 +21,9 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { EditButton, DeleteButton } from '@components/editDeleteButtons';
-import { Minus } from 'lucide-react';
+import EditableDonationItemsTable, {
+  DonationRow,
+} from './editableDonationItemsTable';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -37,27 +32,6 @@ interface DonationDetailsModalProps {
   onSuccess: () => void;
   onDelete: () => void;
 }
-
-interface DonationRow {
-  id: number;
-  foodItem: string;
-  foodType: FoodType | '';
-  numItems: string;
-  ozPerItem: string;
-  valuePerItem: string;
-  foodRescue: boolean;
-}
-
-const mapItemsToRows = (items: DonationItem[]): DonationRow[] =>
-  items.map((item) => ({
-    id: item.itemId,
-    foodItem: item.itemName,
-    foodType: item.foodType,
-    numItems: String(item.quantity),
-    ozPerItem: String(item.ozPerItem),
-    valuePerItem: String(item.estimatedValue),
-    foodRescue: item.foodRescue,
-  }));
 
 const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   donation,
@@ -69,50 +43,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   useModalBodyCleanup();
   const [items, setItems] = useState<DonationItem[]>([]);
 
-  const [rows, setRows] = useState<DonationRow[]>([]);
-
   const [alertState, setAlertMessage] = useAlert();
 
   const [isEditing, setIsEditing] = useState(false);
 
   const donationId = donation.donationId;
 
-  const placeholderStyles = {
-    color: 'neutral.300',
-    fontFamily: 'inter',
-    fontSize: 'sm',
-    fontWeight: '400',
-  };
-
-  const deleteRow = (id: number) => {
-    const newRows = rows.filter((r) => r.id !== id);
-    setRows(newRows);
-  };
-
-  const handleChange = (id: number, field: string, value: string | boolean) => {
-    const newRows = rows.map((row) =>
-      row.id === id ? { ...row, [field]: value } : row,
-    );
-    setRows(newRows);
-  };
-
-  const addRow = () => {
-    setRows([
-      ...rows,
-      {
-        id: Date.now(),
-        foodItem: '',
-        foodType: '',
-        numItems: '',
-        ozPerItem: '',
-        valuePerItem: '',
-        foodRescue: false,
-      },
-    ]);
-  };
-
   const handleCancel = () => {
-    setRows(mapItemsToRows(items));
     setIsEditing(false);
   };
 
@@ -122,13 +59,12 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         donationId,
       );
       setItems(itemsData);
-      setRows(mapItemsToRows(itemsData));
     } catch {
       setAlertMessage('Error fetching donation details', AlertStatus.ERROR);
     }
   }, [donationId, setAlertMessage]);
 
-  const handleUpdate = () => {
+  const handleUpdate = async (rows: DonationRow[]) => {
     const existingIds = new Set(items.map((i) => i.itemId));
     const body: ReplaceDonationItemDto[] = rows.map((r) => ({
       ...(existingIds.has(r.id) ? { itemId: r.id } : {}),
@@ -140,25 +76,18 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       foodRescue: r.foodRescue,
     }));
 
-    const updateData = async () => {
-      try {
-        await ApiClient.editDonationItems(donationId, body);
-        await loadItems();
-        onSuccess();
-        setAlertMessage(
-          'Successfully updated donation items.',
-          AlertStatus.INFO,
-        );
-        setIsEditing(false);
-      } catch {
-        setAlertMessage(
-          'Donation items could not be updated.',
-          AlertStatus.ERROR,
-        );
-      }
-    };
-
-    updateData();
+    try {
+      await ApiClient.editDonationItems(donationId, body);
+      await loadItems();
+      onSuccess();
+      setAlertMessage('Successfully updated donation items.', AlertStatus.INFO);
+      setIsEditing(false);
+    } catch {
+      setAlertMessage(
+        'Donation items could not be updated.',
+        AlertStatus.ERROR,
+      );
+    }
   };
 
   useEffect(() => {
@@ -223,263 +152,20 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
           <Dialog.Body>
             {isEditing ? (
-              <>
-                <Box display="block" overflowX="auto" whiteSpace="nowrap">
-                  <Table.Root
-                    variant="line"
-                    size="md"
-                    style={{ borderCollapse: 'collapse' }}
-                  >
-                    <Table.Header>
-                      <Table.Row fontWeight={600}>
-                        <Table.ColumnHeader width="32px" p={1} />
-                        <Table.ColumnHeader width="23%" p={0}>
-                          Food Item
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                        <Table.ColumnHeader width="22%">
-                          Food Type
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                        <Table.ColumnHeader width="14%">
-                          Quantity
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                        <Table.ColumnHeader width="14%">
-                          Oz. per item
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                        <Table.ColumnHeader width="14%">
-                          Donation Value
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                        <Table.ColumnHeader
-                          width="20px"
-                          textAlign="left"
-                          px={0}
-                          pl={4}
-                          whiteSpace="normal"
-                          lineHeight="tight"
-                        >
-                          Food Rescue
-                          <Text as="span" color="red">
-                            *
-                          </Text>
-                        </Table.ColumnHeader>
-                      </Table.Row>
-                    </Table.Header>
-
-                    <Table.Body>
-                      {rows.map((row) => (
-                        <Table.Row key={row.id}>
-                          <Table.Cell width="32px" p={0} pr={2}>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => deleteRow(row.id)}
-                              disabled={rows.length === 1}
-                              borderColor="neutral.300"
-                              borderRadius="md"
-                              bg="white"
-                              _hover={{ bg: 'neutral.50' }}
-                              _disabled={{
-                                opacity: 0.4,
-                                cursor: 'not-allowed',
-                              }}
-                              width="28px"
-                              height="28px"
-                              minW="28px"
-                              padding={0}
-                            >
-                              <Box color="neutral.300">
-                                <Minus
-                                  style={{ width: '24px', height: '24px' }}
-                                />
-                              </Box>
-                            </Button>
-                          </Table.Cell>
-
-                          <Table.Cell p={0} pr={4}>
-                            <Input
-                              _placeholder={placeholderStyles}
-                              color="neutral.800"
-                              placeholder="Enter Food"
-                              value={row.foodItem}
-                              onChange={(e) =>
-                                handleChange(row.id, 'foodItem', e.target.value)
-                              }
-                            />
-                          </Table.Cell>
-
-                          <Table.Cell>
-                            <NativeSelect.Root size="md" width="100%">
-                              <NativeSelect.Field
-                                color={
-                                  row.foodType ? 'neutral.800' : 'neutral.300'
-                                }
-                                placeholder="Select Type"
-                                value={row.foodType}
-                                onChange={(e) =>
-                                  handleChange(
-                                    row.id,
-                                    'foodType',
-                                    e.target.value,
-                                  )
-                                }
-                              >
-                                {Object.values(FoodType).map((type) => (
-                                  <option
-                                    key={type}
-                                    value={type}
-                                    style={{
-                                      color: 'var(--chakra-colors-neutral-800)',
-                                    }}
-                                  >
-                                    {type}
-                                  </option>
-                                ))}
-                              </NativeSelect.Field>
-                              <NativeSelectIndicator />
-                            </NativeSelect.Root>
-                          </Table.Cell>
-
-                          <Table.Cell>
-                            <Input
-                              _placeholder={placeholderStyles}
-                              color="neutral.800"
-                              placeholder="Enter #"
-                              type="number"
-                              min={1}
-                              step={1}
-                              value={row.numItems}
-                              onChange={(e) =>
-                                handleChange(row.id, 'numItems', e.target.value)
-                              }
-                            />
-                          </Table.Cell>
-
-                          <Table.Cell>
-                            <Input
-                              _placeholder={placeholderStyles}
-                              color="neutral.800"
-                              placeholder="Enter #"
-                              type="number"
-                              min={0.01}
-                              step={0.01}
-                              value={row.ozPerItem}
-                              onChange={(e) =>
-                                handleChange(
-                                  row.id,
-                                  'ozPerItem',
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </Table.Cell>
-
-                          <Table.Cell>
-                            <Input
-                              _placeholder={placeholderStyles}
-                              color="neutral.800"
-                              placeholder="Enter $"
-                              type="number"
-                              min={0.01}
-                              step={0.01}
-                              value={row.valuePerItem}
-                              onChange={(e) =>
-                                handleChange(
-                                  row.id,
-                                  'valuePerItem',
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </Table.Cell>
-
-                          <Table.Cell px={0} pl={6} width="32px">
-                            <Checkbox.Root
-                              checked={row.foodRescue}
-                              size="lg"
-                              borderRadius="2px"
-                              onCheckedChange={(e: { checked: boolean }) =>
-                                handleChange(row.id, 'foodRescue', !!e.checked)
-                              }
-                            >
-                              <Checkbox.HiddenInput />
-                              <Checkbox.Control
-                                borderRadius="2px"
-                                borderColor="#E4E4E7"
-                              >
-                                <Checkbox.Indicator />
-                              </Checkbox.Control>
-                            </Checkbox.Root>
-                          </Table.Cell>
-                        </Table.Row>
-                      ))}
-                    </Table.Body>
-                  </Table.Root>
-                </Box>
-
-                <Button
-                  display="inline-flex"
-                  alignItems="center"
-                  bg="white"
-                  color="neutral.800"
-                  fontWeight={600}
-                  fontSize={14}
-                  borderRadius={4}
-                  borderColor="neutral.200"
-                  variant="outline"
-                  mt={4}
-                  onClick={addRow}
-                >
-                  Add New Row +
-                </Button>
-
-                <Flex
-                  justifyContent="flex-end"
-                  gap={3}
-                  mt={6}
-                  pt={4}
-                  align="center"
-                >
-                  <Button
-                    variant="outline"
-                    color="gray.700"
-                    fontWeight={600}
-                    size="md"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    backgroundColor="blue.ssf"
-                    size="md"
-                    fontWeight={600}
-                    onClick={handleUpdate}
-                    disabled={rows.some(
-                      (r) =>
-                        r.foodItem === '' ||
-                        r.foodType === '' ||
-                        r.numItems === '' ||
-                        r.ozPerItem === '' ||
-                        r.valuePerItem === '',
-                    )}
-                  >
-                    Update Donation
-                  </Button>
-                </Flex>
-              </>
+              <EditableDonationItemsTable
+                initialRows={items.map((item) => ({
+                  id: item.itemId,
+                  foodItem: item.itemName,
+                  foodType: item.foodType,
+                  numItems: String(item.quantity),
+                  ozPerItem: String(item.ozPerItem),
+                  valuePerItem: String(item.estimatedValue),
+                  foodRescue: item.foodRescue,
+                }))}
+                onCancel={handleCancel}
+                onSubmit={handleUpdate}
+                submitButtonLabel="Update Donation"
+              ></EditableDonationItemsTable>
             ) : (
               <VStack align="stretch" gap={4} my={2}>
                 {Object.entries(groupedItems).map(([foodType, typeItems]) => (
