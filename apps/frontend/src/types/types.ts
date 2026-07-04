@@ -405,10 +405,10 @@ export interface FoodManufacturerWithoutRelations {
 }
 
 export interface UpdateFoodManufacturerApplicationDto {
-  secondaryContactFirstName?: string;
-  secondaryContactLastName?: string;
-  secondaryContactEmail?: string;
-  secondaryContactPhone?: string;
+  secondaryContactFirstName?: string | null;
+  secondaryContactLastName?: string | null;
+  secondaryContactEmail?: string | null;
+  secondaryContactPhone?: string | null;
   foodManufacturerName?: string;
   foodManufacturerWebsite?: string;
   unlistedProductAllergens?: Allergen[];
@@ -417,7 +417,7 @@ export interface UpdateFoodManufacturerApplicationDto {
   productsSustainableExplanation?: string;
   inKindDonations?: boolean;
   donateWastedFood?: DonateWastedFood;
-  additionalComments?: string;
+  additionalComments?: string | null;
 }
 
 export interface ManufacturerApplicationDto {

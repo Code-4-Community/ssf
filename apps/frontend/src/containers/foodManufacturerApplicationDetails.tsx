@@ -301,6 +301,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
                   }
                 }}
                 foodManufacturerId={application.foodManufacturerId}
+                initialApplication={application}
               />
             ) : (
               <>

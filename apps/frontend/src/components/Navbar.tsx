@@ -55,7 +55,7 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       label: 'Manufacturers',
       children: [
         {
-          label: 'Food Manufacturer Management',
+          label: 'Manufacturer Management',
           to: ROUTES.FOOD_MANUFACTURER_MANAGEMENT,
         },
         { label: 'Donation Management', to: ROUTES.ADMIN_DONATION },
@@ -181,7 +181,7 @@ const NavGroup: React.FC<NavGroupProps> = ({
             key={child.to}
             display="flex"
             alignItems="center"
-            h="32px"
+            minH="32px"
             pl="8px"
             pr="8px"
             w="full"

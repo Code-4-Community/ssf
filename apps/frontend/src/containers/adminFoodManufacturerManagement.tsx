@@ -278,7 +278,11 @@ const AdminFoodManufacturerManagement: React.FC = () => {
                     variant="underline"
                     textDecorationColor="neutral.700"
                     cursor="pointer"
-                    onClick={() => navigate(ROUTES.ADMIN_DONATION)}
+                    onClick={() =>
+                      navigate(
+                        `${ROUTES.ADMIN_DONATION}?foodManufacturerId=${fm.foodManufacturerId}`,
+                      )
+                    }
                   >
                     View Donations
                   </Link>
