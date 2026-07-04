@@ -296,10 +296,7 @@ const AdminDonation: React.FC = () => {
           setDeleteDonation(null);
         }}
         onSuccess={() => {
-          setAlertMessage(
-            'Successfully deleted donation items.',
-            AlertStatus.INFO,
-          );
+          setAlertMessage('Successfully deleted donation.', AlertStatus.INFO);
           fetchDonations();
           setDeleteDonation(null);
           setSelectedDonation(null);

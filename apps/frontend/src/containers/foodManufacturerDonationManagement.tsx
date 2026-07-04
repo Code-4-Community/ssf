@@ -156,6 +156,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (loading) return;
     const donationIdParam = searchParams.get('donationId');
     if (!donationIdParam) return;
 
@@ -168,7 +169,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
     if (match) {
       setSelectedViewDetailsDonation(match.donation);
     } else navigate(ROUTES.FM_DONATION_MANAGEMENT);
-  }, [searchParams, statusDonations]);
+  }, [searchParams, statusDonations, loading]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -280,10 +281,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           setDeleteDonation(null);
         }}
         onSuccess={() => {
-          setAlertMessage(
-            'Successfully deleted donation items.',
-            AlertStatus.INFO,
-          );
+          setAlertMessage('Successfully deleted donation.', AlertStatus.INFO);
           fetchDonations();
           setDeleteDonation(null);
           setSelectedViewDetailsDonation(null);
@@ -294,7 +292,10 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         <DonationDetailsModal
           donation={selectedViewDetailsDonation}
           isOpen={selectedViewDetailsDonation !== null}
-          onClose={() => setSelectedViewDetailsDonation(null)}
+          onClose={() => {
+            setSelectedViewDetailsDonation(null);
+            navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+          }}
           onSuccess={() => fetchDonations()}
           onDelete={() => {
             setDeleteDonation(selectedViewDetailsDonation);
