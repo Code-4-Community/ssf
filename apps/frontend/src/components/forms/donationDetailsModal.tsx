@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, VStack, Dialog, CloseButton } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  VStack,
+  Dialog,
+  CloseButton,
+  Checkbox,
+} from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { Donation, DonationItem, FoodType } from 'types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
-import { AlertStatus } from '../../types/types';
+import {
+  AlertStatus,
+  Donation,
+  DonationItem,
+  FoodType,
+  RecurrenceEnum,
+} from '../../types/types';
 
 interface DonationDetailsModalProps {
   donation: Donation;
@@ -139,6 +151,34 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 </Box>
               ))}
             </VStack>
+
+            {donation.recurrence !== RecurrenceEnum.NONE && (
+              <Box mt={6} color="neutral.800" fontSize="sm">
+                <Checkbox.Root checked readOnly pointerEvents="none" mb={3}>
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control borderRadius="2px" borderColor="#E4E4E7">
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
+                  <Checkbox.Label color="neutral.700" fontWeight={400}>
+                    Make Donation Recurring Reminders
+                  </Checkbox.Label>
+                </Checkbox.Root>
+
+                {donation.nextDonationDates &&
+                  donation.nextDonationDates.length > 0 && (
+                    <Box>
+                      <Text fontWeight={600} mb={2}>
+                        Upcoming reminder emails
+                      </Text>
+                      <Text color="neutral.700">
+                        {donation.nextDonationDates
+                          .map((date) => formatDate(date))
+                          .join(', ')}
+                      </Text>
+                    </Box>
+                  )}
+              </Box>
+            )}
           </Dialog.Body>
         </Dialog.Content>
       </Dialog.Positioner>
