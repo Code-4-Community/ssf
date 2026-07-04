@@ -44,6 +44,7 @@ import { OrdersVolunteerActions1774883880543 } from '../migrations/1774883880543
 import { UpdatePantryFMApplicationInfo1780913024514 } from '../migrations/1780913024514-UpdatePantryFMApplicationInfo';
 import { AddUserActiveField1780531200000 } from '../migrations/1780531200000-AddUserActiveField';
 import { MakeDonationItemDetailsRequired1782000000000 } from '../migrations/1782000000000-MakeDonationItemDetailsRequired';
+import { AddShippingCostPaidBySsf1782613537327 } from '../migrations/1782613537327-AddShippingCostPaidBySsf';
 
 const schemaMigrations = [
   User1725726359198,
@@ -92,6 +93,7 @@ const schemaMigrations = [
   UpdatePantryFMApplicationInfo1780913024514,
   AddUserActiveField1780531200000,
   MakeDonationItemDetailsRequired1782000000000,
+  AddShippingCostPaidBySsf1782613537327,
 ];
 
 export default schemaMigrations;

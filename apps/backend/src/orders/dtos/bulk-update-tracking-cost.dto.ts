@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -31,6 +32,10 @@ export class OrderTrackingCostEntryDto {
   )
   @Min(0, { message: 'Shipping cost cannot be negative' })
   shippingCost?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  shippingCostPaidBySsf?: boolean;
 }
 
 export class BulkUpdateTrackingCostDto {

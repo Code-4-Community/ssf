@@ -215,6 +215,7 @@ export interface DonationOrderDetails {
   pantryName: string;
   trackingLink: string | null;
   shippingCost: number | null;
+  shippingCostPaidBySsf: boolean;
   items: OrderItemDetails[];
 }
 
@@ -462,6 +463,7 @@ export interface UpdateFoodRequestBody {
 }
 
 export interface CreateDonationDto {
+  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
@@ -570,8 +572,10 @@ export interface PantryStats {
   totalLbs: number;
   totalDonatedFoodValue: number;
   totalShippingCost: number;
+  totalShippingCostPaidBySsf: number;
   totalValue: number;
   percentageFoodRescueItems: number;
+  foodRescueLbs: number;
 }
 
 export type TotalStats = Omit<PantryStats, 'pantryId' | 'pantryName'>;
@@ -592,6 +596,7 @@ export interface BulkUpdateTrackingCostDto {
     orderId: number;
     trackingLink?: string;
     shippingCost?: number;
+    shippingCostPaidBySsf?: boolean;
   }[];
 }
 

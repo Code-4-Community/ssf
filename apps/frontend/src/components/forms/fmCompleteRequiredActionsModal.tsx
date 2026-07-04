@@ -46,6 +46,7 @@ interface FmCompleteRequiredActionsModalProps {
 interface OrderFormData {
   shippingCost: string;
   trackingLink: string;
+  shippingCostPaidBySsf: boolean;
 }
 
 interface ItemFormData {
@@ -137,6 +138,7 @@ const FmCompleteRequiredActionsModal: React.FC<
         {
           shippingCost: o.shippingCost?.toString() ?? '',
           trackingLink: o.trackingLink ?? '',
+          shippingCostPaidBySsf: o.shippingCostPaidBySsf,
         },
       ]),
     ),
@@ -179,7 +181,7 @@ const FmCompleteRequiredActionsModal: React.FC<
   const updateOrderField = (
     orderId: number,
     field: keyof OrderFormData,
-    value: string,
+    value: string | boolean,
   ) => {
     setOrderFormData((prev) => ({
       ...prev,
@@ -255,11 +257,19 @@ const FmCompleteRequiredActionsModal: React.FC<
       // Only include orders where the user actually changed a value from the original prop values
       const ordersToUpdate = orders
         .filter((order) => {
-          const { trackingLink, shippingCost } = orderFormData[order.orderId];
+          const { trackingLink, shippingCost, shippingCostPaidBySsf } =
+            orderFormData[order.orderId];
           const originalTracking = order.trackingLink ?? '';
           const originalCost = order.shippingCost?.toString() ?? '';
+          // The paid-by-SSF flag is only meaningful alongside a shipping cost,
+          // so only treat a flag change as a change when a cost is present.
+          const flagChanged =
+            shippingCost !== '' &&
+            shippingCostPaidBySsf !== order.shippingCostPaidBySsf;
           return (
-            trackingLink !== originalTracking || shippingCost !== originalCost
+            trackingLink !== originalTracking ||
+            shippingCost !== originalCost ||
+            flagChanged
           );
         })
         .map(
@@ -269,13 +279,16 @@ const FmCompleteRequiredActionsModal: React.FC<
             orderId: number;
             trackingLink?: string;
             shippingCost?: number;
+            shippingCostPaidBySsf?: boolean;
           } => {
-            const { trackingLink, shippingCost } = orderFormData[order.orderId];
+            const { trackingLink, shippingCost, shippingCostPaidBySsf } =
+              orderFormData[order.orderId];
             return {
               orderId: order.orderId,
               ...(trackingLink.trim() !== '' && { trackingLink }),
               ...(shippingCost !== '' && {
                 shippingCost: parseFloat(shippingCost),
+                shippingCostPaidBySsf,
               }),
             };
           },
@@ -373,6 +386,33 @@ const FmCompleteRequiredActionsModal: React.FC<
                       )
                     }
                   />
+                  <Checkbox.Root
+                    mt={3}
+                    checked={
+                      orderFormData[currentOrder.orderId].shippingCostPaidBySsf
+                    }
+                    size="sm"
+                    borderRadius="2px"
+                    onCheckedChange={(e: { checked: boolean }) =>
+                      updateOrderField(
+                        currentOrder.orderId,
+                        'shippingCostPaidBySsf',
+                        !!e.checked,
+                      )
+                    }
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control borderRadius="2px" borderColor="#E4E4E7">
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <Checkbox.Label
+                      fontWeight="400"
+                      fontSize="sm"
+                      color="neutral.800"
+                    >
+                      Shipping cost paid by SSF
+                    </Checkbox.Label>
+                  </Checkbox.Root>
                 </Box>
 
                 <Box mt={4}>

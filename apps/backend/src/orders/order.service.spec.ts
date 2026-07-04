@@ -1540,6 +1540,30 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(after2.shippedAt).toBeDefined();
     });
 
+    it('persists the shippingCostPaidBySsf flag when provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const before = await service.findOne(4);
+      expect(before.shippingCostPaidBySsf).toBe(false);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            shippingCost: 5.0,
+            shippingCostPaidBySsf: true,
+          },
+        ],
+      });
+
+      const after = await service.findOne(4);
+      expect(after.shippingCost).toEqual(5.0);
+      expect(after.shippingCostPaidBySsf).toBe(true);
+    });
+
     it('updates only tracking link when no shipping cost is provided, order stays PENDING', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId);

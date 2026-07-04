@@ -113,6 +113,7 @@ describe('FoodManufacturersController', () => {
               pantryName: 'Community Food Pantry',
               trackingLink: null,
               shippingCost: null,
+              shippingCostPaidBySsf: false,
               items: [],
             },
           ],

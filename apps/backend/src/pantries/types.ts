@@ -90,8 +90,10 @@ export type PantryStats = {
   totalLbs: number;
   totalDonatedFoodValue: number;
   totalShippingCost: number;
+  totalShippingCostPaidBySsf: number;
   totalValue: number;
   percentageFoodRescueItems: number;
+  foodRescueLbs: number;
 };
 
 // Make new type that is just a list of PantryStats with pantryId and pantryName omitted

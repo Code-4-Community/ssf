@@ -526,6 +526,34 @@ describe('PantriesService', () => {
       expect(stats.totalDonatedFoodValue).toBeCloseTo(625.0, 2);
       expect(stats.totalValue).toBeCloseTo(645.0, 2);
       expect(stats.percentageFoodRescueItems).toBe(0);
+      expect(stats.foodRescueLbs).toBe(0);
+      // No orders are flagged SSF-paid in the seed data
+      expect(stats.totalShippingCostPaidBySsf).toBe(0);
+    });
+
+    it('only sums SSF-paid orders into totalShippingCostPaidBySsf', async () => {
+      // Capture the pantry's shipping before flagging anything as SSF-paid.
+      const before = (
+        await service.getPantryStats(['Community Food Pantry Downtown'])
+      )[0];
+      expect(before.totalShippingCost).toBeGreaterThan(0);
+
+      // Flag every order as paid by SSF. SSF-paid shipping is excluded from
+      // totalShippingCost, so that total should drop to zero while the SSF-paid
+      // total picks up the entire shipping amount.
+      await testDataSource.query(
+        `UPDATE public.orders SET shipping_cost_paid_by_ssf = true`,
+      );
+
+      const stats = (
+        await service.getPantryStats(['Community Food Pantry Downtown'])
+      )[0];
+
+      expect(stats.totalShippingCost).toBe(0);
+      expect(stats.totalShippingCostPaidBySsf).toBeCloseTo(
+        before.totalShippingCost,
+        2,
+      );
     });
 
     it('throws NotFoundException for a non-approved (denied) pantry', async () => {
@@ -564,6 +592,7 @@ describe('PantriesService', () => {
       expect(stats.totalShippingCost).toBe(0);
       expect(stats.totalValue).toBe(0);
       expect(stats.percentageFoodRescueItems).toBe(0);
+      expect(stats.foodRescueLbs).toBe(0);
     });
 
     it('respects year filter and returns zeros for a non-matching year', async () => {
@@ -579,6 +608,7 @@ describe('PantriesService', () => {
       expect(stats.totalShippingCost).toBe(0);
       expect(stats.totalValue).toBe(0);
       expect(stats.percentageFoodRescueItems).toBe(0);
+      expect(stats.foodRescueLbs).toBe(0);
     });
   });
 
@@ -814,6 +844,7 @@ describe('PantriesService', () => {
       expect(totalEmpty.totalShippingCost).toBe(0);
       expect(totalEmpty.totalValue).toBe(0);
       expect(totalEmpty.percentageFoodRescueItems).toBe(0);
+      expect(totalEmpty.foodRescueLbs).toBe(0);
     });
 
     it('returns all zeros when no approved pantries exist', async () => {
@@ -828,6 +859,7 @@ describe('PantriesService', () => {
       expect(total.totalShippingCost).toBe(0);
       expect(total.totalValue).toBe(0);
       expect(total.percentageFoodRescueItems).toBe(0);
+      expect(total.foodRescueLbs).toBe(0);
     });
 
     it('excludes a pantry set to pending from the totals', async () => {

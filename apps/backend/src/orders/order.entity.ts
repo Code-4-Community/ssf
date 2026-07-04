@@ -101,6 +101,13 @@ export class Order {
   })
   shippingCost!: number | null;
 
+  @Column({
+    name: 'shipping_cost_paid_by_ssf',
+    type: 'boolean',
+    default: false,
+  })
+  shippingCostPaidBySsf!: boolean;
+
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'assignee_id' })
   assignee!: User;

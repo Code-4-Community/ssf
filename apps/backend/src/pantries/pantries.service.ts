@@ -65,15 +65,17 @@ export class PantriesService {
     totalLbs: 0,
     totalDonatedFoodValue: 0,
     totalShippingCost: 0,
+    totalShippingCostPaidBySsf: 0,
     totalValue: 0,
     percentageFoodRescueItems: 0,
+    foodRescueLbs: 0,
   };
 
   private async aggregateStats(
     pantryIds: number[],
     years?: number[],
   ): Promise<Omit<PantryStats, 'pantryName'>[]> {
-    // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, totalFoodRescueItems)
+    // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, foodRescueItems, foodRescueOz)
     const itemsQb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
@@ -91,7 +93,11 @@ export class PantriesService {
       )
       .addSelect(
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
-        'totalFoodRescueItems',
+        'foodRescueItems',
+      )
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN COALESCE(item.ozPerItem, 0) * allocation.allocatedQuantity ELSE 0 END), 0)`,
+        'foodRescueOz',
       )
       .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
@@ -107,7 +113,14 @@ export class PantriesService {
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
       .select('request.pantryId', 'pantryId')
-      .addSelect('COALESCE(SUM(order.shippingCost), 0)', 'totalShippingCost')
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN order.shippingCostPaidBySsf = true THEN 0 ELSE order.shippingCost END), 0)`,
+        'totalShippingCost',
+      )
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN order.shippingCostPaidBySsf = true THEN order.shippingCost ELSE 0 END), 0)`,
+        'totalShippingCostPaidBySsf',
+      )
       .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
@@ -126,7 +139,10 @@ export class PantriesService {
     const shippingMap = new Map(
       shippingRows.map((r) => [
         Number(r.pantryId),
-        Number(r.totalShippingCost),
+        {
+          totalShippingCost: Number(r.totalShippingCost),
+          totalShippingCostPaidBySsf: Number(r.totalShippingCostPaidBySsf),
+        },
       ]),
     );
 
@@ -134,8 +150,12 @@ export class PantriesService {
       const totalItems = Number(row.totalItems);
       const totalOz = Number(row.totalOz);
       const totalDonatedFoodValue = Number(row.totalDonatedFoodValue);
-      const totalShippingCost = shippingMap.get(Number(row.pantryId)) ?? 0;
-      const totalFoodRescueItems = Number(row.totalFoodRescueItems);
+      const shipping = shippingMap.get(Number(row.pantryId));
+      const totalShippingCost = shipping?.totalShippingCost ?? 0;
+      const totalShippingCostPaidBySsf =
+        shipping?.totalShippingCostPaidBySsf ?? 0;
+      const foodRescueItems = Number(row.foodRescueItems);
+      const foodRescueOz = Number(row.foodRescueOz);
 
       return {
         pantryId: Number(row.pantryId),
@@ -144,11 +164,13 @@ export class PantriesService {
         totalLbs: parseFloat((totalOz / 16).toFixed(2)),
         totalDonatedFoodValue,
         totalShippingCost,
+        totalShippingCostPaidBySsf,
         totalValue: totalDonatedFoodValue + totalShippingCost,
         percentageFoodRescueItems:
           totalItems > 0
-            ? parseFloat(((totalFoodRescueItems / totalItems) * 100).toFixed(2))
+            ? parseFloat(((foodRescueItems / totalItems) * 100).toFixed(2))
             : 0,
+        foodRescueLbs: parseFloat((foodRescueOz / 16).toFixed(2)),
       } satisfies Omit<PantryStats, 'pantryName'>;
     });
   }
@@ -242,12 +264,15 @@ export class PantriesService {
       totalStats.totalOz += s.totalOz;
       totalStats.totalDonatedFoodValue += s.totalDonatedFoodValue;
       totalStats.totalShippingCost += s.totalShippingCost;
+      totalStats.totalShippingCostPaidBySsf += s.totalShippingCostPaidBySsf;
       totalStats.totalValue += s.totalValue;
+      totalStats.foodRescueLbs += s.foodRescueLbs;
       totalFoodRescueItems +=
         (s.percentageFoodRescueItems / 100) * s.totalItems;
     }
 
     totalStats.totalLbs = parseFloat((totalStats.totalOz / 16).toFixed(2));
+    totalStats.foodRescueLbs = parseFloat(totalStats.foodRescueLbs.toFixed(2));
     totalStats.percentageFoodRescueItems =
       totalStats.totalItems > 0
         ? parseFloat(

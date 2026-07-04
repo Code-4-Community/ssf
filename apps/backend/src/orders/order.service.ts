@@ -739,6 +739,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         if (entry.shippingCost !== undefined) {
           order.shippingCost = entry.shippingCost;
         }
+        if (entry.shippingCostPaidBySsf !== undefined) {
+          order.shippingCostPaidBySsf = entry.shippingCostPaidBySsf;
+        }
         if (order.trackingLink !== null && order.shippingCost !== null) {
           order.status = OrderStatus.SHIPPED;
           order.shippedAt = new Date();

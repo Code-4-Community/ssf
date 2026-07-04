@@ -133,6 +133,7 @@ export class FoodManufacturersService {
                 pantryName: order.request.pantry.pantryName,
                 trackingLink: order.trackingLink,
                 shippingCost: order.shippingCost,
+                shippingCostPaidBySsf: order.shippingCostPaidBySsf,
                 items: [],
               });
             }

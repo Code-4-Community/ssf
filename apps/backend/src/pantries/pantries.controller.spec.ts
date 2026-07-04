@@ -465,8 +465,10 @@ describe('PantriesController', () => {
           totalLbs: 100,
           totalDonatedFoodValue: 500,
           totalShippingCost: 50,
+          totalShippingCostPaidBySsf: 20,
           totalValue: 550,
-          percentageFoodRescueItems: 80,
+          percentageFoodRescueItems: 40,
+          foodRescueLbs: 80,
         },
       ];
 
@@ -505,8 +507,10 @@ describe('PantriesController', () => {
         totalLbs: 500,
         totalDonatedFoodValue: 2500,
         totalShippingCost: 200,
+        totalShippingCostPaidBySsf: 80,
         totalValue: 2700,
-        percentageFoodRescueItems: 75,
+        percentageFoodRescueItems: 30,
+        foodRescueLbs: 75,
       };
 
       mockPantriesService.getTotalStats.mockResolvedValueOnce(mockTotalStats);
@@ -524,8 +528,10 @@ describe('PantriesController', () => {
         totalLbs: 500,
         totalDonatedFoodValue: 2500,
         totalShippingCost: 200,
+        totalShippingCostPaidBySsf: 80,
         totalValue: 2700,
-        percentageFoodRescueItems: 75,
+        percentageFoodRescueItems: 30,
+        foodRescueLbs: 75,
       };
 
       mockPantriesService.getTotalStats.mockResolvedValueOnce(mockTotalStats);
