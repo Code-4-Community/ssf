@@ -1126,6 +1126,7 @@ describe('DonationService', () => {
     it('successfully creates a donation with items', async () => {
       const donation = await service.create(
         {
+          foodManufacturerId: 1,
           recurrence: RecurrenceEnum.NONE,
           items: validItems,
         },
@@ -1164,6 +1165,7 @@ describe('DonationService', () => {
 
       const donation = await service.create(
         {
+          foodManufacturerId: 1,
           recurrence: RecurrenceEnum.MONTHLY,
           recurrenceFreq: 1,
           occurrencesRemaining: 3,
@@ -1203,6 +1205,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
+            foodManufacturerId: 1,
             recurrence: RecurrenceEnum.NONE,
             items: validItems,
           },
@@ -1219,6 +1222,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
+            foodManufacturerId: 1,
             recurrence: RecurrenceEnum.WEEKLY,
             repeatOnDays: {
               Sunday: false,
@@ -1250,6 +1254,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
+            foodManufacturerId: 1,
             recurrence: RecurrenceEnum.NONE,
             items: [
               ...validItems,
@@ -1275,6 +1280,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
+            foodManufacturerId: 1,
             recurrence: RecurrenceEnum.NONE,
             items: validItems,
           },
