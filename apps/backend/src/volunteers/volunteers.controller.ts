@@ -30,7 +30,7 @@ export class VolunteersController {
     idParam: 'id',
     resolver: resolveVolunteerAuthorizedUserIds,
   })
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,
