@@ -266,6 +266,16 @@ describe('DonationService', () => {
       expect(afterById.get(toMatchId)).toBe(DonationStatus.MATCHED);
       expect(afterById.get(toFreeId)).toBe(DonationStatus.AVAILABLE);
     });
+
+    it('throws NotFoundException for a donation that does not exist', async () => {
+      const missingDonationId = 999;
+
+      await expect(
+        service.recheckDonationAllocationStatus([missingDonationId]),
+      ).rejects.toThrow(
+        new NotFoundException(`Donation ${missingDonationId} not found`),
+      );
+    });
   });
 
   describe('findOne', () => {

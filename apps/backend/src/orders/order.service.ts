@@ -512,22 +512,6 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     };
   }
 
-  async updateStatus(orderId: number, newStatus: OrderStatus) {
-    validateId(orderId, 'Order');
-
-    await this.repo
-      .createQueryBuilder()
-      .update(Order)
-      .set({
-        status: newStatus as OrderStatus,
-        shippedAt: newStatus === OrderStatus.SHIPPED ? new Date() : undefined,
-        deliveredAt:
-          newStatus === OrderStatus.DELIVERED ? new Date() : undefined,
-      })
-      .where('order_id = :orderId', { orderId })
-      .execute();
-  }
-
   async confirmDelivery(
     orderId: number,
     dto: ConfirmDeliveryDto,
@@ -877,7 +861,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
   ): Promise<void> {
     validateId(orderId, 'Order');
 
-    if (dto.allocations.length == 0) {
+    if (dto.allocations.length === 0) {
       throw new BadRequestException('Must add or edit at least one allocation');
     }
 

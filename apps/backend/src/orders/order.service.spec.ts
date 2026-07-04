@@ -423,36 +423,6 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('updateStatus', () => {
-    it('updates order status to delivered', async () => {
-      const orderId = 3;
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.SHIPPED);
-      expect(order.shippedAt).toBeDefined();
-
-      await service.updateStatus(orderId, OrderStatus.DELIVERED);
-      const updatedOrder = await service.findOne(orderId);
-
-      expect(updatedOrder.status).toEqual(OrderStatus.DELIVERED);
-      expect(updatedOrder.deliveredAt).toBeDefined();
-    });
-
-    it('updates order status to shipped', async () => {
-      const orderId = 4;
-      const order = await service.findOne(orderId);
-
-      expect(order.status).toEqual(OrderStatus.PENDING);
-
-      await service.updateStatus(orderId, OrderStatus.SHIPPED);
-      const updatedOrder = await service.findOne(orderId);
-
-      expect(updatedOrder.status).toEqual(OrderStatus.SHIPPED);
-      expect(updatedOrder.shippedAt).toBeDefined();
-      expect(updatedOrder.deliveredAt).toBeNull();
-    });
-  });
-
   describe('getOrdersByPantry', () => {
     it('returns order from pantry ID', async () => {
       const pantryId = 1;
@@ -1353,6 +1323,40 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
     });
 
+    it('keeps the request active when its only order is closed and does not update the request status', async () => {
+      const orderRepo = testDataSource.getRepository(Order);
+      const requestRepo = testDataSource.getRepository(FoodRequest);
+
+      // Seed order 4 is the sole order on its parent request, so closing it
+      // exercises the "request with one order" case.
+      const orderId = 4;
+      const order4 = (await orderRepo.findOneBy({ orderId })) as Order;
+      expect(await orderRepo.countBy({ requestId: order4.requestId })).toBe(1);
+
+      const updateRequestStatusSpy = jest.spyOn(
+        (service as any).requestsService as RequestsService,
+        'updateRequestStatus',
+      );
+
+      // Before: the request is active and its only order is still pending.
+      const requestBefore = (await requestRepo.findOneBy({
+        requestId: order4.requestId,
+      })) as FoodRequest;
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(order4.status).toBe(OrderStatus.PENDING);
+
+      await service.closeOrder(orderId);
+
+      expect((await service.findOne(orderId)).status).toBe(OrderStatus.CLOSED);
+
+      // After: closing the order must not touch the parent request's status.
+      const requestAfter = (await requestRepo.findOneBy({
+        requestId: order4.requestId,
+      })) as FoodRequest;
+      expect(requestAfter.status).toBe(FoodRequestStatus.ACTIVE);
+      expect(updateRequestStatusSpy).not.toHaveBeenCalled();
+    });
+
     it('frees reserved quantity and recomputes donation status on success', async () => {
       const donationItemRepo = testDataSource.getRepository(DonationItem);
       const donationRepo = testDataSource.getRepository(Donation);
@@ -1364,14 +1368,39 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       //    so it should remain MATCHED.
       const orderId = 4;
 
+      // Keep the parent request active with a sibling open order so this test
+      // stays focused on donation status rather than request auto-closure.
+      const orderRepo = testDataSource.getRepository(Order);
+      const order4 = (await orderRepo.findOneBy({ orderId })) as Order;
+      await orderRepo.save(
+        orderRepo.create({
+          requestId: order4.requestId,
+          foodManufacturerId: order4.foodManufacturerId,
+          assigneeId: order4.assigneeId,
+          status: OrderStatus.SHIPPED,
+        }),
+      );
+
       const cerealBefore = (await donationItemRepo.findOne({
         where: { itemName: 'Cereal Boxes' },
       })) as DonationItem;
       const almondBefore = (await donationItemRepo.findOne({
         where: { itemName: 'Almond Milk' },
       })) as DonationItem;
+
+      // Both donations are allocated by the pending order 4, so the
+      // domain-correct starting status for each is MATCHED (a donation with a
+      // pending order is never FULFILLED). Set that explicitly so the before
+      // state is accurate and the post-close transitions are meaningful.
+      await donationRepo.update(
+        { donationId: In([cerealBefore.donationId, almondBefore.donationId]) },
+        { status: DonationStatus.MATCHED },
+      );
       const cerealDonationBefore = (await donationRepo.findOne({
         where: { donationId: cerealBefore.donationId },
+      })) as Donation;
+      const almondDonationBefore = (await donationRepo.findOne({
+        where: { donationId: almondBefore.donationId },
       })) as Donation;
 
       // Confirm the order is not already closed and the starting state we rely on.
@@ -1379,7 +1408,8 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(orderBefore.status).toBe(OrderStatus.PENDING);
       expect(cerealBefore.reservedQuantity).toBe(75);
       expect(almondBefore.reservedQuantity).toBe(20);
-      expect(cerealDonationBefore.status).toBe(DonationStatus.FULFILLED);
+      expect(cerealDonationBefore.status).toBe(DonationStatus.MATCHED);
+      expect(almondDonationBefore.status).toBe(DonationStatus.MATCHED);
 
       await service.closeOrder(orderId);
 

@@ -496,6 +496,13 @@ export class DonationService {
 
     for (const donationId of donationIds) {
       validateId(donationId, 'Donation');
+      const donation = await donationRepo.findOne({
+        where: { donationId },
+      });
+
+      if (!donation) {
+        throw new NotFoundException(`Donation ${donationId} not found`);
+      }
 
       const hasAllocations = await allocationRepo.exists({
         where: { item: { donation: { donationId } } },

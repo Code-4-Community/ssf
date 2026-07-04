@@ -18,6 +18,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { OrdersService } from './order.service';
 import { Order } from './order.entity';
 import { Pantry } from '../pantries/pantries.entity';
+import { AllocationsService } from '../allocations/allocations.service';
 import { OrderStatus } from './types';
 import {
   CheckOwnership,
@@ -223,22 +224,6 @@ export class OrdersController {
       parsedAllocations,
       req.user.id,
     );
-  }
-
-  @Roles(Role.VOLUNTEER)
-  @CheckOwnership({
-    idParam: 'orderId',
-    resolver: resolveOrderAuthorizedUserIds,
-  })
-  @Patch('/update-status/:orderId')
-  async updateStatus(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body('newStatus') newStatus: string,
-  ): Promise<void> {
-    if (!Object.values(OrderStatus).includes(newStatus as OrderStatus)) {
-      throw new BadRequestException('Invalid status');
-    }
-    return this.ordersService.updateStatus(orderId, newStatus as OrderStatus);
   }
 
   @Roles(Role.FOODMANUFACTURER)
