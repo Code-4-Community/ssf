@@ -290,17 +290,18 @@ const VolunteerManagement: React.FC = () => {
                     <Portal>
                       <Menu.Positioner>
                         <Menu.Content>
-                          {volunteer.role === Role.VOLUNTEER && (
-                            <Menu.Item
-                              value="promote"
-                              onClick={() => {
-                                setSelectedVolunteer(volunteer);
-                                setIsPromoteModalOpen(true);
-                              }}
-                            >
-                              Promote to Admin
-                            </Menu.Item>
-                          )}
+                          {volunteer.role === Role.VOLUNTEER &&
+                            volunteer.active && (
+                              <Menu.Item
+                                value="promote"
+                                onClick={() => {
+                                  setSelectedVolunteer(volunteer);
+                                  setIsPromoteModalOpen(true);
+                                }}
+                              >
+                                Promote to Admin
+                              </Menu.Item>
+                            )}
                           <Menu.Item
                             value="toggle-active"
                             onClick={() => {

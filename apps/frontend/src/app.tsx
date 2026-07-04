@@ -7,7 +7,7 @@ import ApplicationSubmitted from '@containers/applicationSubmitted';
 import { submitPantryApplicationForm } from '@components/forms/pantryApplicationForm';
 import ApprovePantries from '@containers/approvePantries';
 import PantryApplicationDetails from '@containers/pantryApplicationDetails';
-import VolunteerManagement from '@containers/volunteerManagement';
+import VolunteerManagement from '@containers/userManagement';
 import AdminDonation from '@containers/adminDonation';
 import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
