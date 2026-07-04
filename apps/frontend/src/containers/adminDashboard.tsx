@@ -176,8 +176,8 @@ const AdminDashboard: React.FC = () => {
                   onLinkClick={() => {
                     navigate(
                       application.type === 'pantry'
-                        ? ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
-                            ':pantryId',
+                        ? ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                            ':applicationId',
                             application.id.toString(),
                           )
                         : ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
