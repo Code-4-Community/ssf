@@ -75,8 +75,7 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
               <VStack align="stretch" gap={4}>
                 <Text textStyle="p2" color="gray.dark">
                   Are you sure you want to delete this order? This action cannot
-                  be undone. The respective food manufacturer will be notified
-                  of this change.
+                  be undone.
                 </Text>
                 <Box
                   borderWidth={1}

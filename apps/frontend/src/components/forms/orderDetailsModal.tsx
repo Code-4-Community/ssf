@@ -305,7 +305,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     onChange={(e) =>
                                       setItemAllocations((prev) => ({
                                         ...prev,
-                                        [item.itemId]: Number(e.target.value),
+                                        [item.itemId]:
+                                          Number(e.target.value) || 0,
                                       }))
                                     }
                                     onBlur={() => setEditingItemId(null)}
@@ -315,13 +316,17 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     textStyle="p2"
                                     color={
                                       (itemAllocations[item.itemId] ?? 0) >
-                                      item.quantity - item.reservedQuantity
+                                      item.quantity -
+                                        item.reservedQuantity +
+                                        (currentAllocations[item.itemId] ?? 0)
                                         ? 'red.core'
                                         : 'neutral.800'
                                     }
                                   >
                                     {itemAllocations[item.itemId] ?? 0} of{' '}
-                                    {item.quantity - item.reservedQuantity}
+                                    {item.quantity -
+                                      item.reservedQuantity +
+                                      (currentAllocations[item.itemId] ?? 0)}
                                   </Text>
                                 )}
                               </Flex>
