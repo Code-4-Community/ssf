@@ -299,6 +299,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onSuccess={() => fetchDonations()}
           onDelete={() => {
             setDeleteDonation(selectedViewDetailsDonation);
+            navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
           }}
         />
       )}
