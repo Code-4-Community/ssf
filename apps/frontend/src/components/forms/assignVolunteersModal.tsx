@@ -67,7 +67,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
         const assignedIds = new Set(pantry.volunteers.map((v) => v.userId));
 
         const normalized: VolunteerDisplay[] = allVolunteers
-          .filter((v) => v.active)
+          .filter((v) => v.active && v.role === Role.VOLUNTEER)
           .map((v) => ({
             userId: v.id,
             firstName: v.firstName,

@@ -769,7 +769,12 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                             <Box
                               key={index}
                               borderRadius="full"
-                              bg={order.assigneeColor || 'gray'}
+                              bg={
+                                order.assignee.active
+                                  ? order.assigneeColor || 'gray'
+                                  : 'neutral.300'
+                              }
+                              opacity={order.assignee.active ? 1 : 0.6}
                               width="33px"
                               height="33px"
                               display="flex"

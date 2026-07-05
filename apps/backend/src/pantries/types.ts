@@ -30,6 +30,7 @@ export interface OrderSummary {
     id: number;
     firstName: string;
     lastName: string;
+    active: boolean;
   };
 }
 
