@@ -508,6 +508,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   PENDING = 'pending',
   DELIVERED = 'delivered',
+  CLOSED = 'closed',
 }
 
 export enum RequestSize {
