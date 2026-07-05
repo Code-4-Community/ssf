@@ -65,10 +65,6 @@ export class RepeatOnDaysDto {
 }
 
 export class CreateDonationDto {
-  @IsInt()
-  @IsNotEmpty()
-  foodManufacturerId!: number;
-
   @IsNotEmpty()
   @IsEnum(RecurrenceEnum)
   recurrence!: RecurrenceEnum;

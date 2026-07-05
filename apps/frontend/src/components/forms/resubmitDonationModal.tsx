@@ -29,7 +29,6 @@ interface ResubmitDonationModalProps {
   onClose: () => void;
   onSuccess: () => void;
   donations: DonationDetails[];
-  foodManufacturerId: number;
   initialDonationId?: number | null;
   onSelect: (donationId: number) => void;
 }
@@ -46,7 +45,6 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
   onClose,
   onSuccess,
   donations,
-  foodManufacturerId,
   initialDonationId,
   onSelect,
 }) => {
@@ -112,7 +110,6 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     setIsSubmitting(true);
     try {
       const dto: CreateDonationDto = {
-        foodManufacturerId,
         recurrence: RecurrenceEnum.NONE,
         items: items.map((item) => ({
           itemName: item.itemName,

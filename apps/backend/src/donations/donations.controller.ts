@@ -25,8 +25,6 @@ import {
   OwnerIdResolver,
   pipeNullable,
 } from '../auth/ownership.decorator';
-import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
-import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
@@ -37,19 +35,6 @@ const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
     () => services.get(DonationService).findOne(entityId),
     (donation: Donation) => [
       donation.foodManufacturer.foodManufacturerRepresentative.id,
-    ],
-  );
-
-// For creating a donation, the foodManufacturerId comes from the request body
-// and the only authorized non-admin caller is the manufacturer representative.
-const resolveCreateDonationAuthorizedUserIds: OwnerIdResolver = ({
-  entityId,
-  services,
-}) =>
-  pipeNullable(
-    () => services.get(FoodManufacturersService).findOne(entityId),
-    (manufacturer: FoodManufacturer) => [
-      manufacturer.foodManufacturerRepresentative.id,
     ],
   );
 
@@ -64,11 +49,6 @@ export class DonationsController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
-  @CheckOwnership({
-    idParam: 'foodManufacturerId',
-    idSource: 'body',
-    resolver: resolveCreateDonationAuthorizedUserIds,
-  })
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
@@ -116,7 +96,6 @@ export class DonationsController {
       },
     },
   })
-  @Roles(Role.FOODMANUFACTURER)
   async createDonation(
     @Req() req: AuthenticatedRequest,
     @Body() body: CreateDonationDto,

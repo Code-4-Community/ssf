@@ -235,7 +235,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onDonationSuccess={() => fetchDonations(manufacturerId)}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
-          foodManufacturerId={manufacturerId}
         />
       )}
 
@@ -245,7 +244,6 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           onClose={handleResubmitClose}
           onSuccess={() => fetchDonations(manufacturerId)}
           donations={Object.values(statusDonations).flat()}
-          foodManufacturerId={manufacturerId}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
           }

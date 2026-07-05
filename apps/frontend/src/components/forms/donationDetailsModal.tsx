@@ -5,7 +5,6 @@ import {
   VStack,
   Dialog,
   CloseButton,
-  Checkbox,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { formatDate } from '@utils/utils';
@@ -154,15 +153,9 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
             {donation.recurrence !== RecurrenceEnum.NONE && (
               <Box mt={6} color="neutral.800" fontSize="sm">
-                <Checkbox.Root checked readOnly pointerEvents="none" mb={3}>
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control borderRadius="2px" borderColor="#E4E4E7">
-                    <Checkbox.Indicator />
-                  </Checkbox.Control>
-                  <Checkbox.Label color="neutral.700" fontWeight={400}>
-                    Make Donation Recurring Reminders
-                  </Checkbox.Label>
-                </Checkbox.Root>
+                <Text fontWeight={600} color="neutral.700" mb={3}>
+                  Recurring Donation
+                </Text>
 
                 {donation.nextDonationDates &&
                   donation.nextDonationDates.length > 0 && (

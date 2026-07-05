@@ -36,7 +36,6 @@ interface NewDonationFormModalProps {
   onDonationSuccess: () => void;
   isOpen: boolean;
   onClose: () => void;
-  foodManufacturerId: number;
 }
 
 interface DonationRow {
@@ -114,7 +113,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   onDonationSuccess,
   isOpen,
   onClose,
-  foodManufacturerId,
 }) => {
   useModalBodyCleanup();
   const [rows, setRows] = useState<DonationRow[]>([
@@ -219,7 +217,6 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
     }
 
     const donationBody: CreateDonationDto = {
-      foodManufacturerId,
       recurrenceFreq: isRecurring ? parseInt(repeatEvery) : undefined,
       recurrence: isRecurring ? repeatInterval : RecurrenceEnum.NONE,
       repeatOnDays:

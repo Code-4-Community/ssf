@@ -463,7 +463,6 @@ export interface UpdateFoodRequestBody {
 }
 
 export interface CreateDonationDto {
-  foodManufacturerId: number;
   recurrenceFreq?: number;
   recurrence: RecurrenceEnum;
   repeatOnDays?: RepeatOnState;
