@@ -509,6 +509,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   PENDING = 'pending',
   DELIVERED = 'delivered',
+  CLOSED = 'closed',
 }
 
 export enum RequestSize {
@@ -611,6 +612,16 @@ export interface UpdateDonationItemDetailsDto {
   itemId: number;
   ozPerItem: number;
   estimatedValue: number;
+  foodRescue: boolean;
+}
+
+export interface ReplaceDonationItemDto {
+  itemId?: number;
+  itemName: string;
+  quantity: number;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: FoodType;
   foodRescue: boolean;
 }
 

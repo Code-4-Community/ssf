@@ -419,6 +419,36 @@ describe('RequestsService', () => {
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
     });
 
+    it('should close the request when its orders are a mix of delivered and closed', async () => {
+      const requestId = 1;
+      const orderRepo = testDataSource.getRepository(Order);
+
+      // Seed request 1 has a single delivered order. Add a second, closed order
+      // so the request has one of each terminal status to exercise the
+      // delivered-or-closed "all complete" check.
+      const [deliveredOrder] = await orderRepo.find({ where: { requestId } });
+      expect(deliveredOrder.status).toBe(OrderStatus.DELIVERED);
+
+      await orderRepo.save(
+        orderRepo.create({
+          requestId,
+          foodManufacturerId: deliveredOrder.foodManufacturerId,
+          assigneeId: deliveredOrder.assigneeId,
+          status: OrderStatus.CLOSED,
+        }),
+      );
+
+      const orders = await orderRepo.find({ where: { requestId } });
+      expect(orders.map((o) => o.status).sort()).toEqual(
+        [OrderStatus.CLOSED, OrderStatus.DELIVERED].sort(),
+      );
+
+      await service.updateRequestStatus(requestId);
+
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
+    });
+
     it('should update request status to active since all orders are not delivered', async () => {
       const requestId = 3;
 
@@ -503,6 +533,24 @@ describe('RequestsService', () => {
 
       await service.updateRequestStatus(3);
 
+      expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
+    });
+
+    it('closes the request without sending an email when all orders are closed and none delivered', async () => {
+      const requestId = 1;
+      const orderRepo = testDataSource.getRepository(Order);
+
+      // Close every order on the request so it auto-closes with no delivered
+      // order to notify the pantry about.
+      await orderRepo.update({ requestId }, { status: OrderStatus.CLOSED });
+
+      const requestBefore = await service.findOne(requestId);
+      expect(requestBefore.status).toBe(FoodRequestStatus.ACTIVE);
+
+      await service.updateRequestStatus(requestId);
+
+      const request = await service.findOne(requestId);
+      expect(request.status).toBe(FoodRequestStatus.CLOSED);
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
 
