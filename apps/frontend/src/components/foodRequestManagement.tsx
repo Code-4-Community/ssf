@@ -15,6 +15,7 @@ import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
+import TableEmptyState from '@components/tableEmptyState';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
@@ -253,209 +254,216 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
           Sort
         </Button>
       </Box>
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="15%"
-            >
-              Request #
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="15%"
-            >
-              Status
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width={enableVolunteerActions ? '20%' : '40%'}
-            >
-              Pantry
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              textAlign="right"
-              borderRight={enableVolunteerActions ? '1px solid' : undefined}
-              borderRightColor="neutral.100"
-              width={enableVolunteerActions ? '20%' : '30%'}
-            >
-              Date Requested
-            </Table.ColumnHeader>
-            {enableVolunteerActions && (
+      {paginatedRequests.length === 0 ? (
+        <TableEmptyState
+          title="No Food Requests"
+          subtitle="You have no food requests at this time."
+        />
+      ) : (
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                width="15%"
+              >
+                Request #
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                width="15%"
+              >
+                Status
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                {...tableHeaderStyles}
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                width={enableVolunteerActions ? '20%' : '40%'}
+              >
+                Pantry
+              </Table.ColumnHeader>
               <Table.ColumnHeader
                 {...tableHeaderStyles}
                 textAlign="right"
-                width="30%"
-              >
-                Action Required
-              </Table.ColumnHeader>
-            )}
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {paginatedRequests.map((request) => (
-            <Table.Row key={request.requestId} _hover={{ bg: 'neutral.50' }}>
-              <Table.Cell
-                {...tableCellStyles}
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                <Link
-                  textDecorationColor="black"
-                  variant="underline"
-                  onClick={() => setSelectedViewDetailsRequest(request)}
-                >
-                  {request.requestId}
-                </Link>
-              </Table.Cell>
-              <Table.Cell
-                {...tableCellStyles}
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                <Box
-                  borderRadius="md"
-                  bg={
-                    request.status === FoodRequestStatus.ACTIVE
-                      ? 'teal.200'
-                      : 'neutral.300'
-                  }
-                  color={
-                    request.status === FoodRequestStatus.ACTIVE
-                      ? 'teal.hover'
-                      : 'black'
-                  }
-                  display="inline-block"
-                  fontWeight="500"
-                  fontSize="12px"
-                  my={3}
-                  py={0.5}
-                  px={3}
-                >
-                  {capitalize(request.status)}
-                </Box>
-              </Table.Cell>
-              <Table.Cell
-                {...tableCellStyles}
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {request.pantry.pantryName}
-              </Table.Cell>
-              <Table.Cell
-                {...tableCellStyles}
-                textAlign="right"
                 borderRight={enableVolunteerActions ? '1px solid' : undefined}
                 borderRightColor="neutral.100"
-                color="neutral.700"
+                width={enableVolunteerActions ? '20%' : '30%'}
               >
-                {formatDate(request.requestedAt)}
-              </Table.Cell>
+                Date Requested
+              </Table.ColumnHeader>
               {enableVolunteerActions && (
-                <Table.Cell
-                  {...tableCellStyles}
-                  bgColor={
-                    request.status !== FoodRequestStatus.ACTIVE
-                      ? 'neutral.50'
-                      : 'white'
-                  }
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
                   textAlign="right"
-                  color="neutral.700"
-                  pr={0}
+                  width="30%"
                 >
-                  {request.status === FoodRequestStatus.ACTIVE && (
-                    <Button
-                      variant="plain"
-                      fontWeight="400"
-                      textDecoration="underline"
-                      color="neutral.700"
-                      onClick={() => setSelectedActionRequest(request)}
-                    >
-                      Complete Required Action
-                    </Button>
-                  )}
-                </Table.Cell>
+                  Action Required
+                </Table.ColumnHeader>
               )}
             </Table.Row>
-          ))}
+          </Table.Header>
+          <Table.Body>
+            {paginatedRequests.map((request) => (
+              <Table.Row key={request.requestId} _hover={{ bg: 'neutral.50' }}>
+                <Table.Cell
+                  {...tableCellStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                >
+                  <Link
+                    textDecorationColor="black"
+                    variant="underline"
+                    onClick={() => setSelectedViewDetailsRequest(request)}
+                  >
+                    {request.requestId}
+                  </Link>
+                </Table.Cell>
+                <Table.Cell
+                  {...tableCellStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                >
+                  <Box
+                    borderRadius="md"
+                    bg={
+                      request.status === FoodRequestStatus.ACTIVE
+                        ? 'teal.200'
+                        : 'neutral.300'
+                    }
+                    color={
+                      request.status === FoodRequestStatus.ACTIVE
+                        ? 'teal.hover'
+                        : 'black'
+                    }
+                    display="inline-block"
+                    fontWeight="500"
+                    fontSize="12px"
+                    my={3}
+                    py={0.5}
+                    px={3}
+                  >
+                    {capitalize(request.status)}
+                  </Box>
+                </Table.Cell>
+                <Table.Cell
+                  {...tableCellStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                >
+                  {request.pantry.pantryName}
+                </Table.Cell>
+                <Table.Cell
+                  {...tableCellStyles}
+                  textAlign="right"
+                  borderRight={enableVolunteerActions ? '1px solid' : undefined}
+                  borderRightColor="neutral.100"
+                  color="neutral.700"
+                >
+                  {formatDate(request.requestedAt)}
+                </Table.Cell>
+                {enableVolunteerActions && (
+                  <Table.Cell
+                    {...tableCellStyles}
+                    bgColor={
+                      request.status !== FoodRequestStatus.ACTIVE
+                        ? 'neutral.50'
+                        : 'white'
+                    }
+                    textAlign="right"
+                    color="neutral.700"
+                    pr={0}
+                  >
+                    {request.status === FoodRequestStatus.ACTIVE && (
+                      <Button
+                        variant="plain"
+                        fontWeight="400"
+                        textDecoration="underline"
+                        color="neutral.700"
+                        onClick={() => setSelectedActionRequest(request)}
+                      >
+                        Complete Required Action
+                      </Button>
+                    )}
+                  </Table.Cell>
+                )}
+              </Table.Row>
+            ))}
 
-          {selectedViewDetailsRequest && (
-            <RequestDetailsModal
-              request={selectedViewDetailsRequest}
-              isOpen={selectedViewDetailsRequest !== null}
-              onClose={() => {
-                setSelectedViewDetailsRequest(null);
-                if (initialRequestId) {
-                  navigate(location.pathname, { replace: true });
-                }
-              }}
-              onSuccess={loadRequests}
-              onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
-            />
-          )}
+            {selectedViewDetailsRequest && (
+              <RequestDetailsModal
+                request={selectedViewDetailsRequest}
+                isOpen={selectedViewDetailsRequest !== null}
+                onClose={() => {
+                  setSelectedViewDetailsRequest(null);
+                  if (initialRequestId) {
+                    navigate(location.pathname, { replace: true });
+                  }
+                }}
+                onSuccess={loadRequests}
+                onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
+              />
+            )}
 
-          {deleteRequest && (
-            <PantryDeleteRequestActionModal
-              request={deleteRequest}
-              isOpen={deleteRequest !== null}
-              onClose={() => setDeleteRequest(null)}
-              onSuccess={() => {
-                setAlertMessage(
-                  'Successfully deleted food request.',
-                  AlertStatus.INFO,
-                );
-                loadRequests();
-                setSelectedViewDetailsRequest(null);
-              }}
-            />
-          )}
+            {deleteRequest && (
+              <PantryDeleteRequestActionModal
+                request={deleteRequest}
+                isOpen={deleteRequest !== null}
+                onClose={() => setDeleteRequest(null)}
+                onSuccess={() => {
+                  setAlertMessage(
+                    'Successfully deleted food request.',
+                    AlertStatus.INFO,
+                  );
+                  loadRequests();
+                  setSelectedViewDetailsRequest(null);
+                }}
+              />
+            )}
 
-          {selectedActionRequest && (
-            <VolunteerRequestActionRequiredModal
-              isOpen={true}
-              onClose={clearActionRequest}
-              onCloseRequest={() => {
-                setSelectedCloseRequestAction(selectedActionRequest);
-              }}
-              onCreateOrder={() => {
-                setSelectedCreateOrderRequest(selectedActionRequest);
-              }}
-            />
-          )}
+            {selectedActionRequest && (
+              <VolunteerRequestActionRequiredModal
+                isOpen={true}
+                onClose={clearActionRequest}
+                onCloseRequest={() => {
+                  setSelectedCloseRequestAction(selectedActionRequest);
+                }}
+                onCreateOrder={() => {
+                  setSelectedCreateOrderRequest(selectedActionRequest);
+                }}
+              />
+            )}
 
-          {selectedCloseRequestAction && (
-            <VolunteerCloseRequestActionModal
-              request={selectedCloseRequestAction}
-              isOpen={true}
-              onClose={clearCloseRequest}
-              onSuccess={() => {
-                setAlertMessage('Request Closed', AlertStatus.INFO);
-                loadRequests();
-              }}
-            />
-          )}
+            {selectedCloseRequestAction && (
+              <VolunteerCloseRequestActionModal
+                request={selectedCloseRequestAction}
+                isOpen={true}
+                onClose={clearCloseRequest}
+                onSuccess={() => {
+                  setAlertMessage('Request Closed', AlertStatus.INFO);
+                  loadRequests();
+                }}
+              />
+            )}
 
-          {selectedCreateOrderRequest && (
-            <CreateNewOrderModal
-              request={selectedCreateOrderRequest}
-              isOpen={true}
-              onClose={clearCreateOrder}
-              onSuccess={() => {
-                setAlertMessage('Order Created', AlertStatus.INFO);
-                loadRequests();
-              }}
-            />
-          )}
-        </Table.Body>
-      </Table.Root>
+            {selectedCreateOrderRequest && (
+              <CreateNewOrderModal
+                request={selectedCreateOrderRequest}
+                isOpen={true}
+                onClose={clearCreateOrder}
+                onSuccess={() => {
+                  setAlertMessage('Order Created', AlertStatus.INFO);
+                  loadRequests();
+                }}
+              />
+            )}
+          </Table.Body>
+        </Table.Root>
+      )}
 
       {totalPages > 1 && (
         <Pagination.Root
