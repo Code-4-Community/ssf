@@ -117,7 +117,7 @@ export class DonationsController {
     await this.donationService.updateDonationItemDetails(donationId, body);
   }
 
-  @Roles(Role.FOODMANUFACTURER)
+  @Roles(Role.FOODMANUFACTURER, Role.ADMIN)
   @CheckOwnership({
     idParam: 'donationId',
     resolver: resolveDonationAuthorizedUserIds,
@@ -131,7 +131,7 @@ export class DonationsController {
     await this.donationService.editDonationItems(donationId, body);
   }
 
-  @Roles(Role.FOODMANUFACTURER)
+  @Roles(Role.FOODMANUFACTURER, Role.ADMIN)
   @CheckOwnership({
     idParam: 'donationId',
     resolver: resolveDonationAuthorizedUserIds,

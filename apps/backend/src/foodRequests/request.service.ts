@@ -64,7 +64,9 @@ export class RequestsService {
         'request.requestId',
         'request.requestedSize',
         'request.requestedFoodTypes',
+        'request.location',
         'request.additionalInformation',
+        'request.feedbackOnPriorDonation',
         'request.requestedAt',
         'request.status',
         'pantry.pantryId',
@@ -234,7 +236,9 @@ export class RequestsService {
     pantryId: number,
     requestedSize: RequestSize,
     requestedFoodTypes: FoodType[],
+    location: string,
     additionalInformation?: string,
+    feedbackOnPriorDonation?: string,
   ): Promise<FoodRequest> {
     validateId(pantryId, 'Pantry');
 
@@ -255,7 +259,9 @@ export class RequestsService {
       pantryId,
       requestedSize,
       requestedFoodTypes,
+      location,
       additionalInformation,
+      feedbackOnPriorDonation,
     });
 
     await this.repo.save(foodRequest);
@@ -320,17 +326,22 @@ export class RequestsService {
       throw new BadRequestException(`Request ${requestId} is already closed`);
     }
 
-    const allDelivered = orders.every(
-      (order) => order.status === OrderStatus.DELIVERED,
+    const allComplete = orders.every(
+      (order) =>
+        order.status === OrderStatus.DELIVERED ||
+        order.status === OrderStatus.CLOSED,
     );
 
-    request.status = allDelivered
+    // This function is only called by confirm delivery, so we
+    // never fall into the case where we only have closed orders
+    // for a request
+    request.status = allComplete
       ? FoodRequestStatus.CLOSED
       : FoodRequestStatus.ACTIVE;
 
     await this.repo.save(request);
 
-    if (allDelivered) {
+    if (allComplete) {
       try {
         const lastDeliveredOrder = await this.orderRepo.findOne({
           where: { requestId, status: OrderStatus.DELIVERED },
@@ -338,27 +349,28 @@ export class RequestsService {
           relations: ['assignee'],
         });
 
-        if (lastDeliveredOrder) {
-          const volunteers = request.pantry.volunteers || [];
-          const volunteerEmails = volunteers.map((v) => v.email);
-
-          const { assignee } = lastDeliveredOrder;
-          const message = emailTemplates.pantryRequestClosed({
-            pantryName: request.pantry.pantryName,
-            volunteerName: `${assignee.firstName} ${assignee.lastName}`,
-            volunteerEmail: assignee.email,
-          });
-          await this.emailsService.sendEmails({
-            toEmail: request.pantry.pantryUser.email,
-            subject: message.subject,
-            bodyHtml: message.bodyHTML,
-            bccEmails: volunteerEmails,
-          });
-        } else {
-          throw new InternalServerErrorException(
-            `Request ${requestId} auto-closed, but failed to send pantry notification email`,
-          );
+        // A request can auto-close without any delivered order (e.g. when its
+        // orders were closed rather than delivered). There is no delivery to
+        // notify the pantry about, so skip the notification instead of failing.
+        if (!lastDeliveredOrder) {
+          return;
         }
+
+        const volunteers = request.pantry.volunteers || [];
+        const volunteerEmails = volunteers.map((v) => v.email);
+
+        const { assignee } = lastDeliveredOrder;
+        const message = emailTemplates.pantryRequestClosed({
+          pantryName: request.pantry.pantryName,
+          volunteerName: `${assignee.firstName} ${assignee.lastName}`,
+          volunteerEmail: assignee.email,
+        });
+        await this.emailsService.sendEmails({
+          toEmail: request.pantry.pantryUser.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+          bccEmails: volunteerEmails,
+        });
       } catch {
         throw new InternalServerErrorException(
           `Request ${requestId} auto-closed, but failed to send pantry notification email`,
@@ -371,9 +383,11 @@ export class RequestsService {
     validateId(requestId, 'Request');
 
     if (
-      dto.requestedSize === undefined &&
-      dto.requestedFoodTypes === undefined &&
-      dto.additionalInformation === undefined
+      dto.requestedSize == undefined &&
+      dto.requestedFoodTypes == undefined &&
+      dto.location == undefined &&
+      dto.additionalInformation == undefined &&
+      dto.feedbackOnPriorDonation == undefined
     ) {
       throw new BadRequestException(
         'At least one field must be provided to update request',

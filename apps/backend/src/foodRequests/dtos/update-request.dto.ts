@@ -21,5 +21,15 @@ export class UpdateRequestDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
   additionalInformation?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  feedbackOnPriorDonation?: string;
 }

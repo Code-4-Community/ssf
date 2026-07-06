@@ -20,8 +20,17 @@ export class CreateRequestDto {
   @IsEnum(FoodType, { each: true })
   requestedFoodTypes!: FoodType[];
 
+  @IsString()
+  @IsNotEmpty()
+  location!: string;
+
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   additionalInformation?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  feedbackOnPriorDonation?: string;
 }

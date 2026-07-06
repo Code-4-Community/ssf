@@ -150,7 +150,9 @@ describe('RequestsController', () => {
           FoodType.DAIRY_FREE_ALTERNATIVES,
           FoodType.DRIED_BEANS,
         ],
+        location: 'Boston, MA',
         additionalInformation: 'Test information.',
+        feedbackOnPriorDonation: 'Prior donation feedback.',
       };
 
       const createdRequest: Partial<FoodRequest> = {
@@ -173,7 +175,9 @@ describe('RequestsController', () => {
         createBody.pantryId,
         createBody.requestedSize,
         createBody.requestedFoodTypes,
+        createBody.location,
         createBody.additionalInformation,
+        createBody.feedbackOnPriorDonation,
       );
     });
   });

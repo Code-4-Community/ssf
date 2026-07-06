@@ -43,6 +43,7 @@ const PantryOrderManagement: React.FC = () => {
     [OrderStatus.SHIPPED]: [],
     [OrderStatus.PENDING]: [],
     [OrderStatus.DELIVERED]: [],
+    [OrderStatus.CLOSED]: [],
   });
 
   // State to hold selected order for details modal
@@ -57,6 +58,7 @@ const PantryOrderManagement: React.FC = () => {
       [OrderStatus.SHIPPED]: 1,
       [OrderStatus.PENDING]: 1,
       [OrderStatus.DELIVERED]: 1,
+      [OrderStatus.CLOSED]: 1,
     },
   );
 
@@ -84,6 +86,9 @@ const PantryOrderManagement: React.FC = () => {
     [OrderStatus.DELIVERED]: {
       sortAsc: false,
     },
+    [OrderStatus.CLOSED]: {
+      sortAsc: false,
+    },
   });
 
   const fetchOrders = useCallback(async () => {
@@ -94,6 +99,7 @@ const PantryOrderManagement: React.FC = () => {
         [OrderStatus.SHIPPED]: [],
         [OrderStatus.PENDING]: [],
         [OrderStatus.DELIVERED]: [],
+        [OrderStatus.CLOSED]: [],
       };
 
       for (const order of data) {
@@ -111,6 +117,7 @@ const PantryOrderManagement: React.FC = () => {
         [OrderStatus.SHIPPED]: 1,
         [OrderStatus.PENDING]: 1,
         [OrderStatus.DELIVERED]: 1,
+        [OrderStatus.CLOSED]: 1,
       };
       setCurrentPages(initialPages);
     } catch {
