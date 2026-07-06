@@ -400,6 +400,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       };
       setApplication(updatedWithUser);
       setForm(buildFormState(updatedWithUser));
+      setAlertMessage('Changes successfully saved.', AlertStatus.INFO);
       onEditingChange(false);
     } catch (err) {
       if (axios.isAxiosError(err)) {

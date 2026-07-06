@@ -8,7 +8,6 @@ import {
   ConflictException,
   ForbiddenException,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PantryApplicationDto } from './dtos/pantry-application.dto';
