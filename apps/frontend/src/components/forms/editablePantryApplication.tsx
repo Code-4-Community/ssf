@@ -343,10 +343,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       }
 
       const formData: UpdatePantryApplicationDto = {
-        secondaryContactFirstName: form.secondaryContactFirstName || undefined,
-        secondaryContactLastName: form.secondaryContactLastName || undefined,
-        secondaryContactEmail: form.secondaryContactEmail || undefined,
-        secondaryContactPhone: form.secondaryContactPhone || undefined,
+        secondaryContactFirstName: form.secondaryContactFirstName || null,
+        secondaryContactLastName: form.secondaryContactLastName || null,
+        secondaryContactEmail: form.secondaryContactEmail || null,
+        secondaryContactPhone: form.secondaryContactPhone || null,
         shipmentAddressLine1: form.shipmentLine1 || undefined,
         shipmentAddressLine2: form.shipmentLine2 || undefined,
         shipmentAddressCity: form.shipmentCity || undefined,
@@ -385,7 +385,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         serveAllergicChildren:
           (form.serveAllergicChildren as ServeAllergicChildren) || undefined,
         activities: form.activities as Activity[],
-        activitiesComments: form.activitiesComments || undefined,
+        activitiesComments: form.activitiesComments || null,
         itemsInStock: form.itemsInStock || undefined,
         needMoreOptions: form.needMoreOptions || undefined,
       };
