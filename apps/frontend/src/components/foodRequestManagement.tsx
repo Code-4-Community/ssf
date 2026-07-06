@@ -15,7 +15,8 @@ import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
-import TableEmptyState from '@components/tableEmptyState';
+import { ROUTES } from '../routes';
+import PageEmptyState from '@components/pageEmptyState';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
@@ -159,6 +160,16 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const clearCloseRequest = () => setSelectedCloseRequestAction(null);
   const clearCreateOrder = () => setSelectedCreateOrderRequest(null);
 
+  const emptyStatePrimary = enableVolunteerActions
+    ? {
+        text: 'View Assigned Pantries',
+        link: ROUTES.VOLUNTEER_ASSIGNED_PANTRIES,
+      }
+    : { text: 'View Orders', link: ROUTES.ADMIN_ORDER_MANAGEMENT };
+  const emptyStateSecondary = enableVolunteerActions
+    ? { text: 'View Orders', link: ROUTES.VOLUNTEER_ORDER_MANAGEMENT }
+    : { text: 'View Dashboard', link: ROUTES.ADMIN_DASHBOARD };
+
   return (
     <Box p={12}>
       <Heading textStyle="h1" color="gray.600" mb={6}>
@@ -255,9 +266,12 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         </Button>
       </Box>
       {paginatedRequests.length === 0 ? (
-        <TableEmptyState
-          title="No Food Requests"
-          subtitle="You have no food requests at this time."
+        <PageEmptyState
+          entity="food requests"
+          primaryButtonText={emptyStatePrimary.text}
+          primaryButtonLink={emptyStatePrimary.link}
+          secondaryButtonText={emptyStateSecondary.text}
+          secondaryButtonLink={emptyStateSecondary.link}
         />
       ) : (
         <Table.Root>
