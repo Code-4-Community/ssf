@@ -16,11 +16,14 @@ export const ROUTES = {
   PANTRY_MANAGEMENT_DETAILS: '/pantry-details/pantry/:pantryId',
   FOOD_MANUFACTURER_APPLICATION_DETAILS:
     '/food-manufacturer-application-details/:applicationId',
+  FOOD_MANUFACTURER_MANAGEMENT_DETAILS:
+    '/food-manufacturer-details/manufacturer/:foodManufacturerId',
 
   APPROVE_PANTRIES: '/approve-pantries',
   APPROVE_FOOD_MANUFACTURERS: '/approve-food-manufacturers',
   VOLUNTEER_MANAGEMENT: '/volunteer-management',
   PANTRY_MANAGEMENT: '/pantry-management',
+  FOOD_MANUFACTURER_MANAGEMENT: '/food-manufacturer-management',
   ADMIN_ORDER_MANAGEMENT: '/admin-order-management',
   ADMIN_DONATION: '/admin-donation',
   ADMIN_DONATION_STATS: '/admin-donation-stats',

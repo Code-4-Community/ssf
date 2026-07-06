@@ -10,6 +10,7 @@ import { Donation } from '../donations/donations.entity';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { Role } from '../users/types';
 import {
   DonationDetailsDto,
   DonationReminderDto,
@@ -74,6 +75,37 @@ describe('FoodManufacturersController', () => {
       expect(result[1].foodManufacturerId).toBe(2);
       expect(
         mockManufacturersService.getPendingManufacturers,
+      ).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /approved', () => {
+    it('should return approved food manufacturers', async () => {
+      const mockManufacturers: Partial<FoodManufacturer>[] = [
+        {
+          foodManufacturerId: 1,
+          foodManufacturerName: 'Good Foods Inc',
+          status: ApplicationStatus.APPROVED,
+        },
+        {
+          foodManufacturerId: 2,
+          foodManufacturerName: 'Healthy Eats LLC',
+          status: ApplicationStatus.APPROVED,
+        },
+      ];
+
+      mockManufacturersService.getApprovedManufacturers.mockResolvedValue(
+        mockManufacturers as FoodManufacturer[],
+      );
+
+      const result = await controller.getApprovedManufacturers();
+
+      expect(result).toEqual(mockManufacturers);
+      expect(result).toHaveLength(2);
+      expect(result[0].foodManufacturerId).toBe(1);
+      expect(result[1].foodManufacturerId).toBe(2);
+      expect(
+        mockManufacturersService.getApprovedManufacturers,
       ).toHaveBeenCalled();
     });
   });
@@ -224,7 +256,7 @@ describe('FoodManufacturersController', () => {
   });
 
   describe('PATCH /:manufacturerId/application', () => {
-    const req = { user: { id: 1 } };
+    const req = { user: { id: 1, role: Role.FOODMANUFACTURER } };
 
     it('should update a food manufacturer application', async () => {
       const manufacturerId = 1;
@@ -251,7 +283,12 @@ describe('FoodManufacturersController', () => {
       expect(result).toEqual(mockManufacturer1);
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 1);
+      ).toHaveBeenCalledWith(
+        manufacturerId,
+        mockUpdateData,
+        1,
+        Role.FOODMANUFACTURER,
+      );
     });
 
     it('should throw error if manufacturer does not exist', async () => {
@@ -272,7 +309,31 @@ describe('FoodManufacturersController', () => {
       ).rejects.toThrow();
       expect(
         mockManufacturersService.updateFoodManufacturerApplication,
-      ).toHaveBeenCalledWith(999, mockUpdateData, 1);
+      ).toHaveBeenCalledWith(999, mockUpdateData, 1, Role.FOODMANUFACTURER);
+    });
+
+    it('should allow admin to update any food manufacturer application', async () => {
+      const adminReq = { user: { id: 2, role: Role.ADMIN } };
+      const manufacturerId = 1;
+
+      const mockUpdateData: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'Admin Updated',
+      };
+
+      mockManufacturersService.updateFoodManufacturerApplication.mockResolvedValue(
+        mockManufacturer1 as FoodManufacturer,
+      );
+
+      const result = await controller.updateFoodManufacturerApplication(
+        adminReq as AuthenticatedRequest,
+        manufacturerId,
+        mockUpdateData,
+      );
+
+      expect(result).toEqual(mockManufacturer1);
+      expect(
+        mockManufacturersService.updateFoodManufacturerApplication,
+      ).toHaveBeenCalledWith(manufacturerId, mockUpdateData, 2, Role.ADMIN);
     });
   });
 
