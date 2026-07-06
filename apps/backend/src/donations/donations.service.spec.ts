@@ -1256,7 +1256,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
-              recurrence: RecurrenceEnum.NONE,
+            recurrence: RecurrenceEnum.NONE,
             items: validItems,
           },
           1,
@@ -1272,7 +1272,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
-              recurrence: RecurrenceEnum.WEEKLY,
+            recurrence: RecurrenceEnum.WEEKLY,
             repeatOnDays: {
               Sunday: false,
               Monday: true,
@@ -1303,7 +1303,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
-              recurrence: RecurrenceEnum.NONE,
+            recurrence: RecurrenceEnum.NONE,
             items: [
               ...validItems,
               {
@@ -1328,7 +1328,7 @@ describe('DonationService', () => {
       await expect(
         service.create(
           {
-              recurrence: RecurrenceEnum.NONE,
+            recurrence: RecurrenceEnum.NONE,
             items: validItems,
           },
           5,
