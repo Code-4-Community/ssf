@@ -186,12 +186,12 @@ const NavGroup: React.FC<NavGroupProps> = ({
             pr="8px"
             w="full"
           >
-            <Box position="relative" w="15px" h="20px">
+            <Box position="relative" w="15px" alignSelf="stretch">
               <Box
                 position="absolute"
                 left="calc(50% + 3px)"
                 top="-6px"
-                h="32px"
+                bottom="-6px"
                 w="1px"
                 bg="neutral.300"
                 transform="translateX(-50%)"

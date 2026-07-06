@@ -8,12 +8,10 @@ import { NavigateFunction } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
   User,
-  Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
-  Allocation,
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
@@ -45,6 +43,9 @@ import {
   PendingApplication,
   UpdateFoodRequestBody,
   DonationReminderDto,
+  ReplaceDonationItemDto,
+  OrderDonationItemDto,
+  UpdateAllocationsDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -354,6 +355,25 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async getOrderDonationItems(
+    orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/donation-items`)
+      .then((response) => response.data);
+  }
+
+  public async editAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/allocations`, dto);
+  }
+
+  public async closeOrder(orderId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/close`, {});
+  }
+
   public async updatePantryApplicationData(
     pantryId: number,
     data: UpdatePantryApplicationDto,
@@ -457,6 +477,17 @@ export class ApiClient {
       `/api/donations/${donationId}/item-details`,
       items,
     );
+  }
+
+  public async editDonationItems(
+    donationId: number,
+    items: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/donations/${donationId}/item`, items);
+  }
+
+  public async deleteDonation(donationId: number): Promise<void> {
+    await this.axiosInstance.delete(`/api/donations/${donationId}`);
   }
 
   public async updateFoodManufacturerApplicationData(
