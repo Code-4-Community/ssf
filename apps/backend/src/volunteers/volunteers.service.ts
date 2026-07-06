@@ -38,18 +38,23 @@ export class VolunteersService {
     return volunteer;
   }
 
-  async getVolunteersAndPantryAssignments(): Promise<Assignments[]> {
+  async getVolunteersAndPantryAssignments(
+    excludeUserId?: number,
+  ): Promise<Assignments[]> {
     const volunteers = await this.usersService.findUsersByRoles([
       Role.VOLUNTEER,
+      Role.ADMIN,
     ]);
 
-    return volunteers.map((v) => {
-      const { pantries, ...volunteerWithoutPantries } = v;
-      return {
-        ...volunteerWithoutPantries,
-        pantryIds: pantries?.map((p) => p.pantryId) || [],
-      };
-    });
+    return volunteers
+      .filter((v) => v.id !== excludeUserId)
+      .map((v) => {
+        const { pantries, ...volunteerWithoutPantries } = v;
+        return {
+          ...volunteerWithoutPantries,
+          pantryIds: pantries?.map((p) => p.pantryId) || [],
+        };
+      });
   }
 
   async getVolunteerPantries(volunteerId: number): Promise<Pantry[]> {

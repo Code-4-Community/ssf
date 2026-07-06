@@ -182,6 +182,7 @@ const PantryDashboard: React.FC = () => {
                     id: order.assignee.id,
                     firstName: order.assignee.firstName,
                     lastName: order.assignee.lastName,
+                    active: order.assignee.active,
                   }}
                   onLinkClick={() =>
                     navigate(

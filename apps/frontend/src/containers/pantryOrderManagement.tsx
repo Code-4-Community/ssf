@@ -552,10 +552,13 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         <Box
                           borderRadius="full"
                           bg={
-                            USER_ICON_COLORS[
-                              order.assignee.id % USER_ICON_COLORS.length
-                            ]
+                            order.assignee.active
+                              ? USER_ICON_COLORS[
+                                  order.assignee.id % USER_ICON_COLORS.length
+                                ]
+                              : 'neutral.300'
                           }
+                          opacity={order.assignee.active ? 1 : 0.6}
                           width="33px"
                           height="33px"
                           display="flex"
