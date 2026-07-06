@@ -241,6 +241,13 @@ export class FoodManufacturersService {
     });
   }
 
+  async getApprovedManufacturers(): Promise<FoodManufacturer[]> {
+    return this.repo.find({
+      where: { status: ApplicationStatus.APPROVED },
+      relations: ['foodManufacturerRepresentative'],
+    });
+  }
+
   async addFoodManufacturer(
     foodManufacturerData: FoodManufacturerApplicationDto,
   ) {
@@ -321,6 +328,7 @@ export class FoodManufacturersService {
     manufacturerId: number,
     foodManufacturerData: UpdateFoodManufacturerApplicationDto,
     currentUserId: number,
+    currentUserRole?: Role,
   ): Promise<FoodManufacturer> {
     validateId(manufacturerId, 'Food Manufacturer');
     validateId(currentUserId, 'User');
@@ -336,7 +344,10 @@ export class FoodManufacturersService {
       );
     }
 
-    if (manufacturer.foodManufacturerRepresentative.id !== currentUserId) {
+    if (
+      currentUserRole !== Role.ADMIN &&
+      manufacturer.foodManufacturerRepresentative.id !== currentUserId
+    ) {
       throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Food Manufacturer ${manufacturerId}`,
       );

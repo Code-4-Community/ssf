@@ -83,6 +83,33 @@ const AdminDonation: React.FC = () => {
     }
   }, [searchParams, donations, navigate]);
 
+  // Pre-fill manufacturer filter from the foodManufacturerId url param and then
+  // clear the param, so navigating from "View Donations" filters to that
+  // manufacturer's donations.
+  useEffect(() => {
+    const foodManufacturerIdFromUrl = searchParams.get('foodManufacturerId');
+
+    if (!foodManufacturerIdFromUrl || donations.length === 0) return;
+
+    const matchedDonation = donations.find(
+      (donation) =>
+        donation.foodManufacturer?.foodManufacturerId ===
+        Number(foodManufacturerIdFromUrl),
+    );
+    const manufacturerName =
+      matchedDonation?.foodManufacturer?.foodManufacturerName;
+
+    if (manufacturerName) {
+      setSelectedManufacturers([manufacturerName]);
+    } else {
+      setAlertMessage(
+        'Selected manufacturer has no donations',
+        AlertStatus.ERROR,
+      );
+      navigate(ROUTES.ADMIN_DONATION, { replace: true });
+    }
+  }, [searchParams, donations, navigate, setAlertMessage]);
+
   const manufacturerOptions = [
     ...new Set(
       donations

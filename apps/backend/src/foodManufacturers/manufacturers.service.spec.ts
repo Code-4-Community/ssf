@@ -28,6 +28,7 @@ import { FoodType } from '../donationItems/types';
 import { DonationService } from '../donations/donations.service';
 import { PantriesService } from '../pantries/pantries.service';
 import { Pantry } from '../pantries/pantries.entity';
+import { Role } from '../users/types';
 import { Allocation } from '../allocations/allocations.entity';
 import { RecurrenceEnum } from '../donations/types';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
@@ -171,6 +172,24 @@ describe('FoodManufacturersService', () => {
       expect(pending.every((m) => m.status === ApplicationStatus.PENDING)).toBe(
         true,
       );
+    });
+  });
+
+  describe('getApprovedManufacturers', () => {
+    it('returns manufacturers with approved status', async () => {
+      const approved = await service.getApprovedManufacturers();
+      expect(approved.length).toBeGreaterThan(0);
+      expect(
+        approved.every((m) => m.status === ApplicationStatus.APPROVED),
+      ).toBe(true);
+    });
+
+    it('returns empty array when no approved manufacturers exist', async () => {
+      await testDataSource.query(
+        `UPDATE food_manufacturers SET status = 'pending' WHERE status = 'approved'`,
+      );
+      const approved = await service.getApprovedManufacturers();
+      expect(approved).toEqual([]);
     });
   });
 
@@ -959,6 +978,46 @@ describe('FoodManufacturersService', () => {
       ).rejects.toThrow(
         new ConflictException(
           'Cannot update application for a pending manufacturer',
+        ),
+      );
+    });
+
+    it('allows admin to update any approved manufacturer (bypassing ownership check)', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        secondaryContactFirstName: 'AdminUpdated',
+        foodManufacturerName: 'Admin Edited Foods',
+      };
+
+      // User 999 is not the representative of manufacturer 1, but as admin should be able to edit
+      const adminUserId = 999;
+      const updated = await service.updateFoodManufacturerApplication(
+        1,
+        dto,
+        adminUserId,
+        Role.ADMIN,
+      );
+
+      expect(updated.secondaryContactFirstName).toBe('AdminUpdated');
+      expect(updated.foodManufacturerName).toBe('Admin Edited Foods');
+    });
+
+    it('still throws ForbiddenException for non-admin non-owner users', async () => {
+      const dto: UpdateFoodManufacturerApplicationDto = {
+        foodManufacturerName: 'Should not work',
+      };
+
+      const invalidUserId = 999;
+
+      await expect(
+        service.updateFoodManufacturerApplication(
+          1,
+          dto,
+          invalidUserId,
+          Role.FOODMANUFACTURER,
+        ),
+      ).rejects.toThrow(
+        new ForbiddenException(
+          `User ${invalidUserId} is not allowed to edit application for Food Manufacturer 1`,
         ),
       );
     });

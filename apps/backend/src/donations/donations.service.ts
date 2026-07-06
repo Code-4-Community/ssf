@@ -495,6 +495,7 @@ export class DonationService {
       : this.allocationRepo;
 
     for (const donationId of donationIds) {
+      validateId(donationId, 'Donation');
       const donation = await donationRepo.findOne({
         where: { donationId },
       });
