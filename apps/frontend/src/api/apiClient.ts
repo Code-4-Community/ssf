@@ -44,6 +44,8 @@ import {
   UpdateFoodRequestBody,
   DonationReminderDto,
   ReplaceDonationItemDto,
+  OrderDonationItemDto,
+  UpdateAllocationsDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -152,6 +154,12 @@ export class ApiClient {
   public async getAllPendingFoodManufacturers(): Promise<FoodManufacturer[]> {
     return this.axiosInstance
       .get('/api/manufacturers/pending')
+      .then((response) => response.data);
+  }
+
+  public async getApprovedFoodManufacturers(): Promise<FoodManufacturer[]> {
+    return this.axiosInstance
+      .get('/api/manufacturers/approved')
       .then((response) => response.data);
   }
 
@@ -353,6 +361,25 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}`)
       .then((response) => response.data);
+  }
+
+  public async getOrderDonationItems(
+    orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/donation-items`)
+      .then((response) => response.data);
+  }
+
+  public async editAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/allocations`, dto);
+  }
+
+  public async closeOrder(orderId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/close`, {});
   }
 
   public async updatePantryApplicationData(

@@ -32,6 +32,7 @@ import AdminDonationStats from '@containers/adminDonationStats';
 import ProfilePage from '@containers/profilePage';
 import VolunteerOrderManagement from '@containers/volunteerOrderManagement';
 import AdminPantryManagement from '@containers/adminPantryManagement';
+import AdminFoodManufacturerManagement from '@containers/adminFoodManufacturerManagement';
 import AdminRequestManagement from '@containers/adminRequestManagement';
 import PantryDashboard from '@containers/pantryDashboard';
 import VolunteerDashboard from '@containers/volunteerDashboard';
@@ -162,6 +163,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: ROUTES.FOOD_MANUFACTURER_MANAGEMENT_DETAILS,
+        element: (
+          <ProtectedRoute>
+            <FoodManufacturerApplicationDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: ROUTES.ADMIN_DONATION,
         element: (
           <ProtectedRoute>
@@ -254,6 +263,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AdminPantryManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.FOOD_MANUFACTURER_MANAGEMENT,
+        element: (
+          <ProtectedRoute>
+            <AdminFoodManufacturerManagement />
           </ProtectedRoute>
         ),
       },
