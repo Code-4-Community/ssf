@@ -333,10 +333,14 @@ const AdminPantryManagement: React.FC = () => {
                                 key={volunteer.userId}
                                 borderRadius="full"
                                 bg={
-                                  USER_ICON_COLORS[
-                                    volunteer.userId % USER_ICON_COLORS.length
-                                  ]
+                                  volunteer.active
+                                    ? USER_ICON_COLORS[
+                                        volunteer.userId %
+                                          USER_ICON_COLORS.length
+                                      ]
+                                    : 'neutral.300'
                                 }
+                                opacity={volunteer.active ? 1 : 0.6}
                                 width="33px"
                                 height="33px"
                                 display="flex"
