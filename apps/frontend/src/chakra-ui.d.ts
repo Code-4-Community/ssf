@@ -24,7 +24,7 @@ declare module '@chakra-ui/react' {
 
   // Menu components
   export interface MenuTriggerProps extends ComponentPropsStrictChildren {}
-  export interface MenuContentProps extends ComponentPropsStrictChildren {}
+  export interface MenuContentProps extends ComponentPropsLenientChildren {}
   export interface MenuItemProps extends ComponentPropsLenientChildren {}
   export interface MenuPositionerProps extends ComponentPropsStrictChildren {}
   export interface MenuRootProps extends ComponentPropsStrictChildren {}

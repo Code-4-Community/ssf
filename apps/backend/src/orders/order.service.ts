@@ -72,6 +72,7 @@ export class OrdersService {
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
+        'assignee.active',
       ]);
 
     if (filters?.status) {
@@ -109,6 +110,7 @@ export class OrdersService {
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
+        'assignee.active',
       ])
       .where('order.assigneeId = :volunteerId', { volunteerId })
       .getMany();
@@ -150,6 +152,7 @@ export class OrdersService {
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
+        'assignee.active',
       ])
       .where('order.assigneeId = :volunteerId', { volunteerId })
       .orderBy('order.createdAt', 'DESC')
@@ -655,6 +658,7 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         id: order.assignee.id,
         firstName: order.assignee.firstName,
         lastName: order.assignee.lastName,
+        active: order.assignee.active,
       },
     }));
   }

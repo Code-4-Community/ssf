@@ -197,7 +197,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             w="30px"
             h="30px"
             borderRadius="full"
-            bg={USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]}
+            bg={
+              assignee.active
+                ? USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]
+                : 'neutral.300'
+            }
+            opacity={assignee.active ? 1 : 0.6}
             color="white"
             display="flex"
             alignItems="center"

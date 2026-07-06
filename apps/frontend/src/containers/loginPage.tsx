@@ -75,6 +75,13 @@ const LoginPage: React.FC = () => {
           navigate(from, { replace: true });
           return;
         }
+        if (error.message === 'User is disabled.') {
+          setAlertMessage(
+            'Your account has been deactivated.',
+            AlertStatus.ERROR,
+          );
+          return;
+        }
         if (
           error.name === 'NotAuthorizedException' ||
           error.name === 'UserNotFoundException'

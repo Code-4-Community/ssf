@@ -313,7 +313,9 @@ const AdminPantryManagement: React.FC = () => {
                   <Box display="flex" alignItems="center" minH="33px">
                     {pantry.volunteers && pantry.volunteers.length > 0 ? (
                       (() => {
-                        const volunteers = pantry.volunteers;
+                        const volunteers = pantry.volunteers.filter(
+                          (volunteer) => volunteer.active,
+                        );
                         const maxVisible = 3;
 
                         const hasOverflow = volunteers.length > maxVisible;
@@ -331,10 +333,14 @@ const AdminPantryManagement: React.FC = () => {
                                 key={volunteer.userId}
                                 borderRadius="full"
                                 bg={
-                                  USER_ICON_COLORS[
-                                    volunteer.userId % USER_ICON_COLORS.length
-                                  ]
+                                  volunteer.active
+                                    ? USER_ICON_COLORS[
+                                        volunteer.userId %
+                                          USER_ICON_COLORS.length
+                                      ]
+                                    : 'neutral.300'
                                 }
+                                opacity={volunteer.active ? 1 : 0.6}
                                 width="33px"
                                 height="33px"
                                 display="flex"

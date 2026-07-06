@@ -556,6 +556,7 @@ export class PantriesService {
         lastName: volunteer.lastName,
         email: volunteer.email,
         phone: volunteer.phone,
+        active: volunteer.active,
       })),
     }));
   }

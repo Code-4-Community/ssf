@@ -401,6 +401,7 @@ export type OrderAssignee = {
   id: number;
   firstName: string;
   lastName: string;
+  active: boolean;
 };
 
 export interface FoodManufacturerWithoutRelations {
@@ -471,6 +472,7 @@ export interface AssignedVolunteer {
   lastName: string;
   email: string;
   phone: string;
+  active: boolean;
 }
 
 export interface CreateFoodRequestBody {
@@ -572,6 +574,7 @@ export interface OrderSummary {
     id: number;
     firstName: string;
     lastName: string;
+    active: boolean;
   };
 }
 

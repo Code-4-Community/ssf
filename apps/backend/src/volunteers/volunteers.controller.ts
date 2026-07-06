@@ -22,8 +22,12 @@ export class VolunteersController {
 
   @Roles(Role.ADMIN)
   @Get('/')
-  async getAllVolunteers(): Promise<Assignments[]> {
-    return this.volunteersService.getVolunteersAndPantryAssignments();
+  async getAllVolunteers(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Assignments[]> {
+    return this.volunteersService.getVolunteersAndPantryAssignments(
+      req.user.id,
+    );
   }
 
   @CheckOwnership({

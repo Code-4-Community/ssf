@@ -103,14 +103,18 @@ describe('VolunteersController', () => {
         })[],
       );
 
-      const result = await controller.getAllVolunteers();
+      const req: AuthenticatedRequest = {
+        user: { id: 99 },
+      } as AuthenticatedRequest;
+
+      const result = await controller.getAllVolunteers(req);
 
       expect(result).toEqual(expectedVolunteers);
       expect(result.length).toBe(2);
       expect(result.every((u) => u.role === Role.VOLUNTEER)).toBe(true);
       expect(
         mockVolunteersService.getVolunteersAndPantryAssignments,
-      ).toHaveBeenCalled();
+      ).toHaveBeenCalledWith(99);
     });
   });
 
@@ -179,7 +183,12 @@ describe('VolunteersController', () => {
       const req: AuthenticatedRequest = {
         user: { id: 6 },
       } as AuthenticatedRequest;
-      const assignee = { id: 6, firstName: 'James', lastName: 'Thomas' };
+      const assignee = {
+        id: 6,
+        firstName: 'James',
+        lastName: 'Thomas',
+        active: true,
+      };
       const recentOrders: Partial<VolunteerOrder>[] = [
         {
           orderId: 4,
