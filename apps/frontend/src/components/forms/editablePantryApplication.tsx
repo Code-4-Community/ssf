@@ -256,6 +256,7 @@ interface EditablePantryApplicationProps {
   onEditingChange: (v: boolean) => void;
   pantryId?: number;
   initialApplication?: PantryWithUser;
+  onSaveSuccess?: (updatedApplication: PantryWithUser) => void;
 }
 
 const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
@@ -263,6 +264,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
   onEditingChange,
   pantryId: propPantryId,
   initialApplication,
+  onSaveSuccess,
 }) => {
   const [application, setApplication] = useState<PantryWithUser | null>(
     initialApplication ?? null,
@@ -400,7 +402,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       };
       setApplication(updatedWithUser);
       setForm(buildFormState(updatedWithUser));
-      setAlertMessage('Changes successfully saved.', AlertStatus.INFO);
+      onSaveSuccess?.(updatedWithUser);
       onEditingChange(false);
     } catch (err) {
       if (axios.isAxiosError(err)) {

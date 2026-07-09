@@ -200,7 +200,7 @@ const PantryApplicationDetails: React.FC = () => {
     );
   }
 
-  if (alertState?.message || !application) {
+  if (!application) {
     return (
       <EmptyState
         icon={<TriangleAlert />}
@@ -273,13 +273,14 @@ const PantryApplicationDetails: React.FC = () => {
           {!isApplicationMode && isEditing ? (
             <EditablePantryApplication
               isEditing={isEditing}
-              onEditingChange={(editing) => {
-                setIsEditing(editing);
-                if (!editing) {
-                  fetchApplicationDetails();
-                }
+              onEditingChange={setIsEditing}
+              onSaveSuccess={(updated) => {
+                setApplication(updated);
+                setAlertMessage(
+                  'Changes successfully saved.',
+                  AlertStatus.INFO,
+                );
               }}
-              pantryId={application.pantryId}
               initialApplication={application}
             />
           ) : (
