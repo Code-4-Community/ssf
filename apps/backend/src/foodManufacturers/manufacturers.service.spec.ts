@@ -578,7 +578,7 @@ describe('FoodManufacturersService', () => {
       expect(result['Donations']).toBe('2');
       expect(result['Value Donated']).toBe('$925');
       expect(result['Items Donated']).toBe('225');
-      expect(result['lbs Donated']).toBe('225.03125');
+      expect(result['lbs Donated']).toBe('225.03');
     });
 
     it('throws NotFoundException for non-existent manufacturer', async () => {

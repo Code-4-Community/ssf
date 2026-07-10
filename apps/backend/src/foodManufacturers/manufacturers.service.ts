@@ -475,7 +475,7 @@ export class FoodManufacturersService {
       Donations: String(result.donations),
       'Value Donated': `$${Number(result.total_value)}`,
       'Items Donated': String(result.total_items),
-      'lbs Donated': `${Number(result.total_lbs)}`,
+      'lbs Donated': `${Number(result.total_lbs).toFixed(2)}`,
     };
   }
 }
