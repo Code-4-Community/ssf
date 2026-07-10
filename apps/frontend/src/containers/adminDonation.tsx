@@ -21,6 +21,7 @@ import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
+import PageEmptyState from '@components/pageEmptyState';
 
 const AdminDonation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -173,148 +174,158 @@ const AdminDonation: React.FC = () => {
           timeout={6000}
         />
       )}
-      <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
-        <Box position="relative">
-          <Button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            variant="outline"
-            color="neutral.600"
-            border="1px solid"
-            borderColor="neutral.200"
-            size="sm"
-            p={3}
-            fontFamily="ibm"
-            fontWeight="semibold"
-          >
-            <Funnel />
-            Filter
-          </Button>
-
-          {isFilterOpen && (
-            <>
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                onClick={() => setIsFilterOpen(false)}
-                zIndex={10}
-              />
-              <Box
-                position="absolute"
-                top="100%"
-                left={0}
-                mt={2}
-                bg="white"
+      {filteredDonations.length === 0 ? (
+        <PageEmptyState entity="donations" />
+      ) : (
+        <>
+          <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
+            <Box position="relative">
+              <Button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                variant="outline"
+                color="neutral.600"
                 border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-                boxShadow="lg"
-                p={4}
-                minW="275px"
-                maxH="150px"
-                overflowY="auto"
-                zIndex={20}
+                borderColor="neutral.200"
+                size="sm"
+                p={3}
+                fontFamily="ibm"
+                fontWeight="semibold"
               >
-                <VStack align="stretch" gap={2}>
-                  {manufacturerOptions.map((manufacturer) => (
-                    <Checkbox.Root
-                      key={manufacturer}
-                      checked={selectedManufacturers.includes(manufacturer)}
-                      onCheckedChange={(e: { checked: boolean }) =>
-                        handleFilterChange(manufacturer, e.checked)
-                      }
-                      color="black"
-                      size="sm"
-                    >
-                      <Checkbox.HiddenInput />
-                      <Checkbox.Control borderRadius="sm" />
-                      <Checkbox.Label>{manufacturer}</Checkbox.Label>
-                    </Checkbox.Root>
-                  ))}
-                </VStack>
-              </Box>
-            </>
-          )}
-        </Box>
-        <Button
-          onClick={() => setSortAsc((s) => !s)}
-          variant="outline"
-          color="neutral.600"
-          border="1px solid"
-          borderColor="neutral.200"
-          p={3}
-          size="sm"
-          fontFamily="ibm"
-          fontWeight="semibold"
-        >
-          <ArrowDownUp />
-          Sort
-        </Button>
-      </Box>
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="10%"
+                <Funnel />
+                Filter
+              </Button>
+
+              {isFilterOpen && (
+                <>
+                  <Box
+                    position="fixed"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    onClick={() => setIsFilterOpen(false)}
+                    zIndex={10}
+                  />
+                  <Box
+                    position="absolute"
+                    top="100%"
+                    left={0}
+                    mt={2}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p={4}
+                    minW="275px"
+                    maxH="150px"
+                    overflowY="auto"
+                    zIndex={20}
+                  >
+                    <VStack align="stretch" gap={2}>
+                      {manufacturerOptions.map((manufacturer) => (
+                        <Checkbox.Root
+                          key={manufacturer}
+                          checked={selectedManufacturers.includes(manufacturer)}
+                          onCheckedChange={(e: { checked: boolean }) =>
+                            handleFilterChange(manufacturer, e.checked)
+                          }
+                          color="black"
+                          size="sm"
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control borderRadius="sm" />
+                          <Checkbox.Label>{manufacturer}</Checkbox.Label>
+                        </Checkbox.Root>
+                      ))}
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </Box>
+            <Button
+              onClick={() => setSortAsc((s) => !s)}
+              variant="outline"
+              color="neutral.600"
+              border="1px solid"
+              borderColor="neutral.200"
+              p={3}
+              size="sm"
+              fontFamily="ibm"
+              fontWeight="semibold"
             >
-              Donation #
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="65%"
-            >
-              Manufacturer
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              textAlign="right"
-              width="25%"
-            >
-              Date Started
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {paginatedDonations.map((donation, index) => (
-            <Table.Row
-              key={`${donation.donationId}-${index}`}
-              _hover={{ bg: 'neutral.50' }}
-            >
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
-              >
-                <Link
-                  textDecorationColor="black"
-                  variant="underline"
-                  onClick={() => setSelectedDonation(donation)}
+              <ArrowDownUp />
+              Sort
+            </Button>
+          </Box>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="10%"
                 >
-                  {donation.donationId}
-                </Link>
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {donation.foodManufacturer?.foodManufacturerName}
-              </Table.Cell>
-              <Table.Cell textStyle="p2" textAlign="right" color="neutral.700">
-                {formatDate(donation.dateDonated)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+                  Donation #
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="65%"
+                >
+                  Manufacturer
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  textAlign="right"
+                  width="25%"
+                >
+                  Date Started
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {paginatedDonations.map((donation, index) => (
+                <Table.Row
+                  key={`${donation.donationId}-${index}`}
+                  _hover={{ bg: 'neutral.50' }}
+                >
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
+                  >
+                    <Link
+                      textDecorationColor="black"
+                      variant="underline"
+                      onClick={() => setSelectedDonation(donation)}
+                    >
+                      {donation.donationId}
+                    </Link>
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {donation.foodManufacturer?.foodManufacturerName}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    textAlign="right"
+                    color="neutral.700"
+                  >
+                    {formatDate(donation.dateDonated)}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </>
+      )}
 
       <FMDeleteDonationActionModal
         donation={deleteDonation}
