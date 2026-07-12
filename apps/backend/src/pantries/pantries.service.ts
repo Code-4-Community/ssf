@@ -9,10 +9,11 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { Order } from '../orders/order.entity';
+import { OrderStatus } from '../orders/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -43,6 +44,8 @@ export class PantriesService {
 
     @Inject(forwardRef(() => EmailsService))
     private emailsService: EmailsService,
+
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -638,8 +641,53 @@ export class PantriesService {
       (u) => removeSet.has(u.id) && currentVolunteerIds.has(u.id),
     );
 
-    pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
-    await this.repo.save(pantry);
+    // Persist the assignment change and cascade it to this pantry's open
+    // (pending/shipped) orders atomically, so a failed cascade can't leave the
+    // volunteer removed while their orders stay assigned. Removals run before
+    // adds so a same-request handoff (remove A, add B) lets B inherit the orders
+    // that A was just unassigned from.
+    const openStatuses = [OrderStatus.PENDING, OrderStatus.SHIPPED];
+    const pantryRequestsSubquery =
+      'request_id IN (SELECT request_id FROM food_requests WHERE pantry_id = :pantryId)';
+
+    // A newly added volunteer inherits all of the pantry's currently unassigned
+    // open orders. If several are added at once, the first-listed (by request
+    // order) inherits them.
+    const newVolunteerIds = new Set(newVolunteers.map((v) => v.id));
+    const inheritorId = addVolunteerIds.find((id) => newVolunteerIds.has(id));
+
+    await this.dataSource.transaction(async (manager) => {
+      pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
+      await manager.getRepository(Pantry).save(pantry);
+
+      const orderRepo = manager.getRepository(Order);
+
+      // A removed volunteer loses their open orders for this pantry (they become
+      // unassigned); delivered/closed orders keep their historical assignee.
+      if (removedVolunteers.length > 0) {
+        await orderRepo
+          .createQueryBuilder()
+          .update(Order)
+          .set({ assigneeId: null })
+          .where('assignee_id IN (:...removedIds)', {
+            removedIds: removedVolunteers.map((v) => v.id),
+          })
+          .andWhere('status IN (:...openStatuses)', { openStatuses })
+          .andWhere(pantryRequestsSubquery, { pantryId })
+          .execute();
+      }
+
+      if (inheritorId !== undefined) {
+        await orderRepo
+          .createQueryBuilder()
+          .update(Order)
+          .set({ assigneeId: inheritorId })
+          .where('assignee_id IS NULL')
+          .andWhere('status IN (:...openStatuses)', { openStatuses })
+          .andWhere(pantryRequestsSubquery, { pantryId })
+          .execute();
+      }
+    });
 
     for (const volunteer of [...newVolunteers, ...removedVolunteers]) {
       try {

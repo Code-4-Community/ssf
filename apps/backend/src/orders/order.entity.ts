@@ -108,12 +108,12 @@ export class Order {
   })
   shippingCostPaidBySsf!: boolean;
 
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'assignee_id' })
-  assignee!: User;
+  assignee!: User | null;
 
-  @Column({ name: 'assignee_id', type: 'int' })
-  assigneeId!: number;
+  @Column({ name: 'assignee_id', type: 'int', nullable: true })
+  assigneeId!: number | null;
 
   // represents whether or not the assigned volunteer has confirmed donation receipt
   @Column({ name: 'confirm_donation_receipt', type: 'boolean', default: false })

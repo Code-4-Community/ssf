@@ -359,11 +359,15 @@ export class RequestsService {
         const volunteers = request.pantry.volunteers || [];
         const volunteerEmails = volunteers.map((v) => v.email);
 
+        // A delivered order always keeps its assignee (only open orders are
+        // unassigned), but fall back defensively so the pantry is still notified.
         const { assignee } = lastDeliveredOrder;
         const message = emailTemplates.pantryRequestClosed({
           pantryName: request.pantry.pantryName,
-          volunteerName: `${assignee.firstName} ${assignee.lastName}`,
-          volunteerEmail: assignee.email,
+          volunteerName: assignee
+            ? `${assignee.firstName} ${assignee.lastName}`
+            : 'the Securing Safe Food team',
+          volunteerEmail: assignee?.email ?? 'partners@securingsafefood.org',
         });
         await this.emailsService.sendEmails({
           toEmail: request.pantry.pantryUser.email,

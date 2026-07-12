@@ -22,6 +22,7 @@ import {
 import { ApplicationStatus } from '../shared/types';
 import { testDataSource } from '../config/typeormTestDataSource';
 import { Order } from '../orders/order.entity';
+import { OrderStatus } from '../orders/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Donation } from '../donations/donations.entity';
 import { UsersService } from '../users/users.service';
@@ -1398,6 +1399,107 @@ describe('PantriesService', () => {
       }
 
       warnSpy.mockRestore();
+    });
+  });
+
+  describe('updatePantryVolunteers order cascade', () => {
+    const orderRepo = () => testDataSource.getRepository(Order);
+
+    // Pantry 1 is seeded with volunteers 6 and 9. These helpers build orders
+    // tied to a request that belongs to pantry 1 (and to another pantry) so we
+    // can assert the cascade only touches the right open orders.
+    const seedOrder = async (
+      pantryId: number,
+      assigneeId: number | null,
+      status: OrderStatus,
+    ): Promise<number> => {
+      const request = await testDataSource
+        .getRepository(FoodRequest)
+        .findOne({ where: { pantryId } });
+      const manufacturer = await testDataSource
+        .getRepository(FoodManufacturer)
+        .findOne({ where: {} });
+      const order = await orderRepo().save(
+        orderRepo().create({
+          requestId: request!.requestId,
+          foodManufacturerId: manufacturer!.foodManufacturerId,
+          assigneeId,
+          status,
+        }),
+      );
+      return order.orderId;
+    };
+
+    const assigneeIdOf = async (orderId: number): Promise<number | null> => {
+      const order = await orderRepo().findOne({ where: { orderId } });
+      return order!.assigneeId;
+    };
+
+    it('unassigns a removed volunteer from the pantry open orders, keeping delivered ones', async () => {
+      const pendingId = await seedOrder(1, 6, OrderStatus.PENDING);
+      const shippedId = await seedOrder(1, 6, OrderStatus.SHIPPED);
+      const deliveredId = await seedOrder(1, 6, OrderStatus.DELIVERED);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [6],
+      });
+
+      expect(await assigneeIdOf(pendingId)).toBeNull();
+      expect(await assigneeIdOf(shippedId)).toBeNull();
+      expect(await assigneeIdOf(deliveredId)).toBe(6);
+    });
+
+    it('does not unassign orders from other pantries', async () => {
+      // volunteer 6's order in a different pantry must be untouched
+      const otherPantryOrderId = await seedOrder(2, 6, OrderStatus.PENDING);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [],
+        removeVolunteerIds: [6],
+      });
+
+      expect(await assigneeIdOf(otherPantryOrderId)).toBe(6);
+    });
+
+    it('assigns a newly added volunteer to the pantry unassigned open orders', async () => {
+      const unassignedPendingId = await seedOrder(1, null, OrderStatus.PENDING);
+      const unassignedDeliveredId = await seedOrder(
+        1,
+        null,
+        OrderStatus.DELIVERED,
+      );
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [7],
+        removeVolunteerIds: [],
+      });
+
+      expect(await assigneeIdOf(unassignedPendingId)).toBe(7);
+      // delivered orders are never auto-assigned
+      expect(await assigneeIdOf(unassignedDeliveredId)).toBeNull();
+    });
+
+    it('hands off open orders when a volunteer is swapped in a single request', async () => {
+      const orderId = await seedOrder(1, 6, OrderStatus.PENDING);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [7],
+        removeVolunteerIds: [6],
+      });
+
+      expect(await assigneeIdOf(orderId)).toBe(7);
+    });
+
+    it('assigns unassigned open orders to the first-listed added volunteer', async () => {
+      const orderId = await seedOrder(1, null, OrderStatus.PENDING);
+
+      await service.updatePantryVolunteers(1, {
+        addVolunteerIds: [7, 8],
+        removeVolunteerIds: [],
+      });
+
+      expect(await assigneeIdOf(orderId)).toBe(7);
     });
   });
 

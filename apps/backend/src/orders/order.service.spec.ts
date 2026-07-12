@@ -639,14 +639,16 @@ describe('OrdersService', () => {
       );
 
       const message = emailTemplates.pantryConfirmsOrderDelivery({
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerName: `${order.assignee!.firstName} ${
+          order.assignee!.lastName
+        }`,
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
       });
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
-        toEmail: order.assignee.email,
+        toEmail: order.assignee!.email,
         subject: message.subject,
         bodyHtml: message.bodyHTML,
       });
@@ -2081,8 +2083,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           pantryName: order.request.pantry.pantryName,
           fmName: order.foodManufacturer.foodManufacturerName,
           trackingLink: order.trackingLink!,
-          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-          volunteerEmail: order.assignee.email,
+          volunteerName: `${order.assignee!.firstName} ${
+            order.assignee!.lastName
+          }`,
+          volunteerEmail: order.assignee!.email,
         });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
@@ -2199,8 +2203,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
         confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-        volunteerEmail: order.assignee.email,
+        volunteerName: `${order.assignee!.firstName} ${
+          order.assignee!.lastName
+        }`,
+        volunteerEmail: order.assignee!.email,
       });
 
     it('logs a warning and sends no emails when there are no unconfirmed deliveries', async () => {

@@ -31,7 +31,7 @@ export interface OrderSummary {
     firstName: string;
     lastName: string;
     active: boolean;
-  };
+  } | null;
 }
 
 export interface AssignedVolunteer {

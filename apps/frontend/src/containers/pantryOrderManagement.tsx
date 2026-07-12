@@ -549,29 +549,46 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                         alignItems="center"
                         justifyContent="center"
                       >
-                        <Box
-                          borderRadius="full"
-                          bg={
-                            order.assignee.active
-                              ? USER_ICON_COLORS[
-                                  order.assignee.id % USER_ICON_COLORS.length
-                                ]
-                              : 'neutral.300'
-                          }
-                          opacity={order.assignee.active ? 1 : 0.6}
-                          width="33px"
-                          height="33px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          color="white"
-                          p={2}
-                        >
-                          {getInitials(
-                            order.assignee.firstName,
-                            order.assignee.lastName,
-                          )}
-                        </Box>
+                        {order.assignee ? (
+                          <Box
+                            borderRadius="full"
+                            bg={
+                              order.assignee.active
+                                ? USER_ICON_COLORS[
+                                    order.assignee.id % USER_ICON_COLORS.length
+                                  ]
+                                : 'neutral.300'
+                            }
+                            opacity={order.assignee.active ? 1 : 0.6}
+                            width="33px"
+                            height="33px"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="white"
+                            p={2}
+                          >
+                            {getInitials(
+                              order.assignee.firstName,
+                              order.assignee.lastName,
+                            )}
+                          </Box>
+                        ) : (
+                          <Box
+                            borderRadius="full"
+                            bg="neutral.100"
+                            width="33px"
+                            height="33px"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="neutral.500"
+                            p={2}
+                            title="Unassigned"
+                          >
+                            —
+                          </Box>
+                        )}
                       </Box>
                     </Table.Cell>
                     <Table.Cell
