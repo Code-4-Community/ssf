@@ -220,7 +220,7 @@ export const emailTemplates = {
           .join('')}
       </ul>
       <p>
-      We strongly recommend that clients read all ingredients and allergen labels before consuming any foods. 
+      We strongly recommend that clients read all ingredients and allergen labels before consuming any foods.
       Any questions or issues should be directed to the manufacturer(s) and/or their healthcare provider(s).
       </p>
       <p>

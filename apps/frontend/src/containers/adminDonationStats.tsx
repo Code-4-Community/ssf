@@ -375,7 +375,9 @@ const AdminDonationStats: React.FC = () => {
               borderRightColor="neutral.100"
               width="13%"
             >
-              Shipping/ Delivery Expenses
+              Shipping/
+              <br />
+              Delivery Expenses
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
