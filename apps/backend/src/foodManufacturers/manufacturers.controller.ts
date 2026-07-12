@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -16,6 +17,8 @@ import { ApiBody } from '@nestjs/swagger';
 import { Allergen, DonateWastedFood } from './types';
 import { Public } from '../auth/public.decorator';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
+import { ManufacturerSummaryDto } from './dtos/manufacturer-summary.dto';
+import { ApplicationStatus } from '../shared/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
@@ -61,10 +64,40 @@ export class FoodManufacturersController {
   async getCurrentUserFoodManufacturerId(
     @Req() req: AuthenticatedRequest,
   ): Promise<number> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
-      req.user.id,
-    );
-    return manufacturer.foodManufacturerId;
+    const manufacturers =
+      await this.foodManufacturersService.findManufacturersByUserId(
+        req.user.id,
+      );
+
+    const approved = manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .sort((a, b) => a.foodManufacturerId - b.foodManufacturerId);
+
+    if (approved.length === 0) {
+      throw new NotFoundException(
+        `No approved food manufacturer found for user ${req.user.id}`,
+      );
+    }
+
+    return approved[0].foodManufacturerId;
+  }
+
+  @Roles(Role.FOODMANUFACTURER)
+  @Get('/me')
+  async getCurrentUserFoodManufacturers(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<ManufacturerSummaryDto[]> {
+    const manufacturers =
+      await this.foodManufacturersService.findManufacturersByUserId(
+        req.user.id,
+      );
+
+    return manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .map((m) => ({
+        foodManufacturerId: m.foodManufacturerId,
+        foodManufacturerName: m.foodManufacturerName,
+      }));
   }
 
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)
@@ -84,11 +117,7 @@ export class FoodManufacturersController {
   async getFoodManufacturerDonations(
     @Req() req: AuthenticatedRequest,
   ): Promise<DonationDetailsDto[]> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
-      req.user.id,
-    );
-    return this.foodManufacturersService.getFMDonations(
-      manufacturer.foodManufacturerId,
+    return this.foodManufacturersService.getDonationsForRepresentative(
       req.user.id,
     );
   }
@@ -98,11 +127,8 @@ export class FoodManufacturersController {
   async getNextTwoDonationReminders(
     @Req() req: AuthenticatedRequest,
   ): Promise<DonationReminderDto[]> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
+    return this.foodManufacturersService.getUpcomingRemindersForRepresentative(
       req.user.id,
-    );
-    return this.foodManufacturersService.getUpcomingDonationReminders(
-      manufacturer.foodManufacturerId,
     );
   }
 

@@ -123,6 +123,36 @@ describe('FoodManufacturersController', () => {
     });
   });
 
+  describe('GET /me', () => {
+    it('returns only the approved manufacturers the user represents', async () => {
+      const req = { user: { id: 3 } };
+
+      mockManufacturersService.findManufacturersByUserId.mockResolvedValueOnce([
+        {
+          foodManufacturerId: 1,
+          foodManufacturerName: 'FoodCorp Industries',
+          status: ApplicationStatus.APPROVED,
+        } as FoodManufacturer,
+        {
+          foodManufacturerId: 3,
+          foodManufacturerName: 'Organic Suppliers LLC',
+          status: ApplicationStatus.PENDING,
+        } as FoodManufacturer,
+      ]);
+
+      const result = await controller.getCurrentUserFoodManufacturers(
+        req as AuthenticatedRequest,
+      );
+
+      expect(result).toEqual([
+        { foodManufacturerId: 1, foodManufacturerName: 'FoodCorp Industries' },
+      ]);
+      expect(
+        mockManufacturersService.findManufacturersByUserId,
+      ).toHaveBeenCalledWith(3);
+    });
+  });
+
   describe('GET /me/donations', () => {
     it('should return donation details for a given food manufacturer', async () => {
       const mockDonations: Partial<Donation>[] = [
@@ -170,10 +200,7 @@ describe('FoodManufacturersController', () => {
 
       const req = { user: { id: 1 } };
 
-      mockManufacturersService.findByUserId.mockResolvedValueOnce({
-        foodManufacturerId: 1,
-      } as FoodManufacturer);
-      mockManufacturersService.getFMDonations.mockResolvedValue(
+      mockManufacturersService.getDonationsForRepresentative.mockResolvedValue(
         mockDonationDetails,
       );
 
@@ -182,11 +209,9 @@ describe('FoodManufacturersController', () => {
       );
 
       expect(result).toBe(mockDonationDetails);
-      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(1);
-      expect(mockManufacturersService.getFMDonations).toHaveBeenCalledWith(
-        1,
-        1,
-      );
+      expect(
+        mockManufacturersService.getDonationsForRepresentative,
+      ).toHaveBeenCalledWith(1);
     });
   });
 
@@ -210,10 +235,7 @@ describe('FoodManufacturersController', () => {
         },
       ];
 
-      mockManufacturersService.findByUserId.mockResolvedValueOnce({
-        foodManufacturerId: 1,
-      } as FoodManufacturer);
-      mockManufacturersService.getUpcomingDonationReminders.mockResolvedValue(
+      mockManufacturersService.getUpcomingRemindersForRepresentative.mockResolvedValue(
         mockDonationReminders,
       );
 
@@ -222,10 +244,9 @@ describe('FoodManufacturersController', () => {
       );
 
       expect(result).toEqual(mockDonationReminders);
-      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(3);
       expect(
-        mockManufacturersService.getUpcomingDonationReminders,
-      ).toHaveBeenCalledWith(1);
+        mockManufacturersService.getUpcomingRemindersForRepresentative,
+      ).toHaveBeenCalledWith(3);
     });
   });
 
@@ -359,21 +380,48 @@ describe('FoodManufacturersController', () => {
   });
 
   describe('getCurrentUserFoodManufacturerId', () => {
-    it('returns foodManufacturerId for authenticated user', async () => {
+    it('returns the first approved foodManufacturerId for the authenticated user', async () => {
       const req = { user: { id: 1 } };
-      const manufacturer: Partial<FoodManufacturer> = {
-        foodManufacturerId: 10,
-      };
-      mockManufacturersService.findByUserId.mockResolvedValueOnce(
-        manufacturer as FoodManufacturer,
-      );
+      mockManufacturersService.findManufacturersByUserId.mockResolvedValueOnce([
+        {
+          foodManufacturerId: 12,
+          status: ApplicationStatus.PENDING,
+        } as FoodManufacturer,
+        {
+          foodManufacturerId: 10,
+          status: ApplicationStatus.APPROVED,
+        } as FoodManufacturer,
+        {
+          foodManufacturerId: 11,
+          status: ApplicationStatus.APPROVED,
+        } as FoodManufacturer,
+      ]);
 
       const result = await controller.getCurrentUserFoodManufacturerId(
         req as AuthenticatedRequest,
       );
 
+      // Lowest-id approved manufacturer; pending one is ignored.
       expect(result).toEqual(10);
-      expect(mockManufacturersService.findByUserId).toHaveBeenCalledWith(1);
+      expect(
+        mockManufacturersService.findManufacturersByUserId,
+      ).toHaveBeenCalledWith(1);
+    });
+
+    it('throws NotFoundException when the user has no approved manufacturers', async () => {
+      const req = { user: { id: 1 } };
+      mockManufacturersService.findManufacturersByUserId.mockResolvedValueOnce([
+        {
+          foodManufacturerId: 12,
+          status: ApplicationStatus.PENDING,
+        } as FoodManufacturer,
+      ]);
+
+      await expect(
+        controller.getCurrentUserFoodManufacturerId(
+          req as AuthenticatedRequest,
+        ),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

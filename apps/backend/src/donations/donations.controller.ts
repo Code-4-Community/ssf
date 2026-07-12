@@ -8,7 +8,6 @@ import {
   ParseArrayPipe,
   Get,
   Delete,
-  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -25,7 +24,8 @@ import {
   OwnerIdResolver,
   pipeNullable,
 } from '../auth/ownership.decorator';
-import { AuthenticatedRequest } from '../auth/authenticated-request';
+import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
+import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 
 const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
@@ -35,6 +35,17 @@ const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
     () => services.get(DonationService).findOne(entityId),
     (donation: Donation) => [
       donation.foodManufacturer.foodManufacturerRepresentative.id,
+    ],
+  );
+
+const resolveFoodManufacturerAuthorizedUserIds: OwnerIdResolver = ({
+  entityId,
+  services,
+}) =>
+  pipeNullable(
+    () => services.get(FoodManufacturersService).findOne(entityId),
+    (manufacturer: FoodManufacturer) => [
+      manufacturer.foodManufacturerRepresentative.id,
     ],
   );
 
@@ -49,12 +60,18 @@ export class DonationsController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    idSource: 'body',
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
+  })
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
     schema: {
       type: 'object',
       properties: {
+        foodManufacturerId: { type: 'integer', example: 1 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),
@@ -96,11 +113,8 @@ export class DonationsController {
       },
     },
   })
-  async createDonation(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: CreateDonationDto,
-  ): Promise<Donation> {
-    return this.donationService.create(body, req.user.id);
+  async createDonation(@Body() body: CreateDonationDto): Promise<Donation> {
+    return this.donationService.create(body);
   }
 
   @Roles(Role.FOODMANUFACTURER)

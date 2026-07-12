@@ -25,6 +25,7 @@ import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 
 interface ResubmitDonationModalProps {
+  foodManufacturerId: number;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -41,6 +42,7 @@ const formatDonationDate = (dateString: string) =>
   });
 
 const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
+  foodManufacturerId,
   isOpen,
   onClose,
   onSuccess,
@@ -110,6 +112,11 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     setIsSubmitting(true);
     try {
       const dto: CreateDonationDto = {
+        // Resubmit under the original donation's manufacturer, since the list
+        // can span multiple manufacturers the representative belongs to.
+        foodManufacturerId:
+          selectedDonation?.donation.foodManufacturer?.foodManufacturerId ??
+          foodManufacturerId,
         recurrence: RecurrenceEnum.NONE,
         items: items.map((item) => ({
           itemName: item.itemName,
