@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PantriesService } from './pantries.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import {
   BadRequestException,
@@ -154,6 +154,10 @@ describe('PantriesService', () => {
         {
           provide: getRepositoryToken(FoodManufacturer),
           useValue: testDataSource.getRepository(FoodManufacturer),
+        },
+        {
+          provide: DataSource,
+          useValue: testDataSource,
         },
       ],
     }).compile();
@@ -973,8 +977,30 @@ describe('PantriesService', () => {
           expect(v.lastName).toBeDefined();
           expect(v.email).toBeDefined();
           expect(v.phone).toBeDefined();
+          expect(typeof v.active).toBe('boolean');
         });
       });
+    });
+
+    it('returns the active status for each volunteer', async () => {
+      await testDataSource.query(
+        `UPDATE users SET active = false WHERE email = 'james.t@volunteer.org'`,
+      );
+
+      const result = await service.getApprovedPantriesWithVolunteers();
+      const volunteers = result.flatMap((p) => p.volunteers);
+
+      const inactiveVolunteer = volunteers.find(
+        (v) => v.email === 'james.t@volunteer.org',
+      );
+      expect(inactiveVolunteer).toBeDefined();
+      expect(inactiveVolunteer?.active).toBe(false);
+
+      const activeVolunteer = volunteers.find(
+        (v) => v.email === 'maria.g@volunteer.org',
+      );
+      expect(activeVolunteer).toBeDefined();
+      expect(activeVolunteer?.active).toBe(true);
     });
 
     it('should return empty volunteers array when pantry has no volunteers', async () => {

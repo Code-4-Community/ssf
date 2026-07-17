@@ -62,6 +62,13 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Patch('/:id/promote-volunteer')
+  @Roles(Role.ADMIN)
+  async promoteToAdmin(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.usersService.promoteVolunteerToAdmin(id);
+  }
+
+  // Keeping these two as functionality seems useful
   @Roles(Role.ADMIN)
   @Patch('/:id/deactivate')
   async deactivateUser(@Param('id', ParseIntPipe) id: number): Promise<void> {

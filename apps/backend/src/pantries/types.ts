@@ -30,6 +30,7 @@ export interface OrderSummary {
     id: number;
     firstName: string;
     lastName: string;
+    active: boolean;
   };
 }
 
@@ -39,6 +40,7 @@ export interface AssignedVolunteer {
   lastName: string;
   email: string;
   phone: string;
+  active: boolean;
 }
 
 export enum RefrigeratedDonation {

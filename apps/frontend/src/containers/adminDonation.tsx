@@ -20,6 +20,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 
 const AdminDonation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,20 +36,22 @@ const AdminDonation: React.FC = () => {
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
+  const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
 
+  const fetchDonations = async () => {
+    try {
+      const data = await ApiClient.getAllDonations();
+      setDonations(data);
+    } catch {
+      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
+    }
+  };
+
   useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const data = await ApiClient.getAllDonations();
-        setDonations(data);
-      } catch {
-        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
-      }
-    };
     fetchDonations();
-  }, [setAlertMessage]);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -79,6 +82,33 @@ const AdminDonation: React.FC = () => {
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
     }
   }, [searchParams, donations, navigate]);
+
+  // Pre-fill manufacturer filter from the foodManufacturerId url param and then
+  // clear the param, so navigating from "View Donations" filters to that
+  // manufacturer's donations.
+  useEffect(() => {
+    const foodManufacturerIdFromUrl = searchParams.get('foodManufacturerId');
+
+    if (!foodManufacturerIdFromUrl || donations.length === 0) return;
+
+    const matchedDonation = donations.find(
+      (donation) =>
+        donation.foodManufacturer?.foodManufacturerId ===
+        Number(foodManufacturerIdFromUrl),
+    );
+    const manufacturerName =
+      matchedDonation?.foodManufacturer?.foodManufacturerName;
+
+    if (manufacturerName) {
+      setSelectedManufacturers([manufacturerName]);
+    } else {
+      setAlertMessage(
+        'Selected manufacturer has no donations',
+        AlertStatus.ERROR,
+      );
+      navigate(ROUTES.ADMIN_DONATION, { replace: true });
+    }
+  }, [searchParams, donations, navigate, setAlertMessage]);
 
   const manufacturerOptions = [
     ...new Set(
@@ -285,6 +315,21 @@ const AdminDonation: React.FC = () => {
           ))}
         </Table.Body>
       </Table.Root>
+
+      <FMDeleteDonationActionModal
+        donation={deleteDonation}
+        isOpen={deleteDonation !== null}
+        onClose={() => {
+          setDeleteDonation(null);
+        }}
+        onSuccess={() => {
+          setAlertMessage('Successfully deleted donation.', AlertStatus.INFO);
+          fetchDonations();
+          setDeleteDonation(null);
+          setSelectedDonation(null);
+        }}
+      />
+
       {selectedDonation && (
         <DonationDetailsModal
           donation={selectedDonation}
@@ -293,6 +338,8 @@ const AdminDonation: React.FC = () => {
             setSelectedDonation(null);
             navigate(ROUTES.ADMIN_DONATION, { replace: true });
           }}
+          onSuccess={() => fetchDonations()}
+          onDelete={() => setDeleteDonation(selectedDonation)}
         />
       )}
 

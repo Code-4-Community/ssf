@@ -174,6 +174,23 @@ export class DonationItemDetailsDto {
   availableQuantity!: number;
 }
 
+export interface OrderDonationItemDto {
+  itemId: number;
+  itemName: string;
+  foodType: FoodType;
+  quantity: number;
+  reservedQuantity: number;
+}
+
+export interface AllocationUpdate {
+  donationItemId: number;
+  allocatedQuantity: number;
+}
+
+export interface UpdateAllocationsDto {
+  allocations: AllocationUpdate[];
+}
+
 export enum RecurrenceEnum {
   NONE = 'none',
   WEEKLY = 'weekly',
@@ -237,19 +254,22 @@ export interface DonationItem {
 
 export enum FoodType {
   DAIRY_FREE_ALTERNATIVES = 'Dairy-Free Alternatives',
-  DRIED_BEANS = 'Dried Beans (Gluten-Free, Nut-Free)',
+  DRIED_BEANS = 'Dried Beans',
+  FROZEN_MEALS = 'Frozen Meals',
   GLUTEN_FREE_BAKING_PANCAKE_MIXES = 'Gluten-Free Baking/Pancake Mixes',
   GLUTEN_FREE_BREAD = 'Gluten-Free Bread',
-  GLUTEN_FREE_TORTILLAS = 'Gluten-Free Tortillas',
+  GLUTEN_FREE_PASTA = 'Gluten-Free Pasta',
+  GLUTEN_FREE_TORTILLAS_FROZEN = 'Gluten-Free Tortillas (Frozen)',
   GRANOLA = 'Granola',
+  GRANOLA_BARS = 'Granola Bars',
   MASA_HARINA_FLOUR = 'Masa Harina Flour',
-  NUT_FREE_GRANOLA_BARS = 'Nut-Free Granola Bars',
+  NON_GMO_COOKIES = 'Non-GMO Cookies',
   OLIVE_OIL = 'Olive Oil',
-  REFRIGERATED_MEALS = 'Refrigerated Meals',
-  RICE_NOODLES = 'Rice Noodles',
-  SEED_BUTTERS = 'Seed Butters (Peanut Butter Alternative)',
-  WHOLE_GRAIN_COOKIES = 'Whole-Grain Cookies',
   QUINOA = 'Quinoa',
+  RICE_CERTIFIED_GLUTEN_FREE = 'Rice (Certified Gluten Free)',
+  SPREADS_SEED_BUTTERS = 'Spreads/Seed Butters (Peanut Butter Alternative)',
+  SNACKS = 'Snacks',
+  TEFF_FLOUR = 'Teff Flour',
 }
 
 export interface User {
@@ -285,7 +305,9 @@ export interface FoodRequestWithoutRelations {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
 }
@@ -294,7 +316,9 @@ export interface FoodRequestSummaryDto {
   requestId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation: string | null;
+  feedbackOnPriorDonation: string | null;
   requestedAt: string;
   status: FoodRequestStatus;
   pantry: FoodRequestPantry;
@@ -376,6 +400,7 @@ export type OrderAssignee = {
   id: number;
   firstName: string;
   lastName: string;
+  active: boolean;
 };
 
 export interface FoodManufacturerWithoutRelations {
@@ -398,10 +423,10 @@ export interface FoodManufacturerWithoutRelations {
 }
 
 export interface UpdateFoodManufacturerApplicationDto {
-  secondaryContactFirstName?: string;
-  secondaryContactLastName?: string;
-  secondaryContactEmail?: string;
-  secondaryContactPhone?: string;
+  secondaryContactFirstName?: string | null;
+  secondaryContactLastName?: string | null;
+  secondaryContactEmail?: string | null;
+  secondaryContactPhone?: string | null;
   foodManufacturerName?: string;
   foodManufacturerWebsite?: string;
   unlistedProductAllergens?: Allergen[];
@@ -410,7 +435,7 @@ export interface UpdateFoodManufacturerApplicationDto {
   productsSustainableExplanation?: string;
   inKindDonations?: boolean;
   donateWastedFood?: DonateWastedFood;
-  additionalComments?: string;
+  additionalComments?: string | null;
 }
 
 export interface ManufacturerApplicationDto {
@@ -446,19 +471,24 @@ export interface AssignedVolunteer {
   lastName: string;
   email: string;
   phone: string;
+  active: boolean;
 }
 
 export interface CreateFoodRequestBody {
   pantryId: number;
   requestedSize: RequestSize;
   requestedFoodTypes: FoodType[];
+  location: string;
   additionalInformation?: string;
+  feedbackOnPriorDonation?: string;
 }
 
 export interface UpdateFoodRequestBody {
   requestedSize?: RequestSize;
   requestedFoodTypes?: FoodType[];
+  location?: string;
   additionalInformation?: string | null;
+  feedbackOnPriorDonation?: string | null;
 }
 
 export interface CreateDonationDto {
@@ -497,6 +527,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   PENDING = 'pending',
   DELIVERED = 'delivered',
+  CLOSED = 'closed',
 }
 
 export enum RequestSize {
@@ -542,6 +573,7 @@ export interface OrderSummary {
     id: number;
     firstName: string;
     lastName: string;
+    active: boolean;
   };
 }
 
@@ -599,6 +631,16 @@ export interface UpdateDonationItemDetailsDto {
   itemId: number;
   ozPerItem: number;
   estimatedValue: number;
+  foodRescue: boolean;
+}
+
+export interface ReplaceDonationItemDto {
+  itemId?: number;
+  itemName: string;
+  quantity: number;
+  ozPerItem: number;
+  estimatedValue: number;
+  foodType: FoodType;
   foodRescue: boolean;
 }
 

@@ -422,6 +422,7 @@ describe('PantriesController', () => {
               lastName: 'Johnson',
               email: 'alice.johnson@example.com',
               phone: '(617) 555-0100',
+              active: true,
             },
             {
               userId: 11,
@@ -429,6 +430,7 @@ describe('PantriesController', () => {
               lastName: 'Williams',
               email: 'bob.williams@example.com',
               phone: '(617) 555-0101',
+              active: false,
             },
           ],
         },

@@ -29,10 +29,8 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
   [Role.ADMIN]: [
     {
       type: 'group',
-      label: 'Volunteers',
-      children: [
-        { label: 'Volunteer Management', to: ROUTES.VOLUNTEER_MANAGEMENT },
-      ],
+      label: 'Users',
+      children: [{ label: 'User Management', to: ROUTES.VOLUNTEER_MANAGEMENT }],
     },
     {
       type: 'group',
@@ -54,6 +52,10 @@ const ROLE_NAV_SECTIONS: Record<Role, NavSection[]> = {
       type: 'group',
       label: 'Manufacturers',
       children: [
+        {
+          label: 'Manufacturer Management',
+          to: ROUTES.FOOD_MANUFACTURER_MANAGEMENT,
+        },
         { label: 'Donation Management', to: ROUTES.ADMIN_DONATION },
         { label: 'Application Review', to: ROUTES.APPROVE_FOOD_MANUFACTURERS },
         { label: 'Donation Statistics', to: ROUTES.ADMIN_DONATION_STATS },
@@ -177,17 +179,17 @@ const NavGroup: React.FC<NavGroupProps> = ({
             key={child.to}
             display="flex"
             alignItems="center"
-            h="32px"
+            minH="32px"
             pl="8px"
             pr="8px"
             w="full"
           >
-            <Box position="relative" w="15px" h="20px">
+            <Box position="relative" w="15px" alignSelf="stretch">
               <Box
                 position="absolute"
                 left="calc(50% + 3px)"
                 top="-6px"
-                h="32px"
+                bottom="-6px"
                 w="1px"
                 bg="neutral.300"
                 transform="translateX(-50%)"

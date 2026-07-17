@@ -8,12 +8,10 @@ import { NavigateFunction } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
   User,
-  Order,
   FoodRequest,
   FoodManufacturer,
   DonationItem,
   Donation,
-  Allocation,
   CreateFoodRequestBody,
   Pantry,
   PantryApplicationDto,
@@ -45,6 +43,9 @@ import {
   PendingApplication,
   UpdateFoodRequestBody,
   DonationReminderDto,
+  ReplaceDonationItemDto,
+  OrderDonationItemDto,
+  UpdateAllocationsDto,
 } from 'types/types';
 
 const defaultBaseUrl =
@@ -153,6 +154,12 @@ export class ApiClient {
   public async getAllPendingFoodManufacturers(): Promise<FoodManufacturer[]> {
     return this.axiosInstance
       .get('/api/manufacturers/pending')
+      .then((response) => response.data);
+  }
+
+  public async getApprovedFoodManufacturers(): Promise<FoodManufacturer[]> {
+    return this.axiosInstance
+      .get('/api/manufacturers/approved')
       .then((response) => response.data);
   }
 
@@ -282,6 +289,24 @@ export class ApiClient {
       .then((response) => response.data);
   }
 
+  public async promoteVolunteerToAdmin(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/promote-volunteer`);
+  }
+
+  public async deactivateUser(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/deactivate`);
+  }
+
+  public async reactivateUser(userId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/users/${userId}/reactivate`);
+  }
+
+  public async getFoodRequest(requestId: number): Promise<FoodRequest> {
+    return this.axiosInstance
+      .get(`/api/requests/${requestId}`)
+      .then((response) => response.data);
+  }
+
   public async getDonationItemsByDonationId(
     donationId: number,
   ): Promise<DonationItem[]> {
@@ -336,6 +361,25 @@ export class ApiClient {
     return this.axiosInstance
       .get(`/api/orders/${orderId}`)
       .then((response) => response.data);
+  }
+
+  public async getOrderDonationItems(
+    orderId: number,
+  ): Promise<OrderDonationItemDto[]> {
+    return this.axiosInstance
+      .get(`/api/orders/${orderId}/donation-items`)
+      .then((response) => response.data);
+  }
+
+  public async editAllocations(
+    orderId: number,
+    dto: UpdateAllocationsDto,
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/allocations`, dto);
+  }
+
+  public async closeOrder(orderId: number): Promise<void> {
+    await this.axiosInstance.patch(`/api/orders/${orderId}/close`, {});
   }
 
   public async updatePantryApplicationData(
@@ -441,6 +485,17 @@ export class ApiClient {
       `/api/donations/${donationId}/item-details`,
       items,
     );
+  }
+
+  public async editDonationItems(
+    donationId: number,
+    items: ReplaceDonationItemDto[],
+  ): Promise<void> {
+    await this.axiosInstance.patch(`/api/donations/${donationId}/item`, items);
+  }
+
+  public async deleteDonation(donationId: number): Promise<void> {
+    await this.axiosInstance.delete(`/api/donations/${donationId}`);
   }
 
   public async updateFoodManufacturerApplicationData(

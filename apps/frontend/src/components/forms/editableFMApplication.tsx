@@ -87,17 +87,23 @@ interface EditableFMApplicationProps {
   isEditing: boolean;
   onEditingChange: (v: boolean) => void;
   foodManufacturerId: number;
+  initialApplication?: FoodManufacturer;
 }
 
 const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
   isEditing,
   onEditingChange,
   foodManufacturerId,
+  initialApplication,
 }) => {
-  const [application, setApplication] = useState<FoodManufacturer | null>(null);
+  const [application, setApplication] = useState<FoodManufacturer | null>(
+    initialApplication ?? null,
+  );
   const [alertState, setAlertMessage] = useAlert();
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState<FormState | null>(null);
+  const [form, setForm] = useState<FormState | null>(
+    initialApplication ? buildFormState(initialApplication) : null,
+  );
 
   const fetchApplication = useCallback(async () => {
     try {
@@ -113,8 +119,9 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
   }, [foodManufacturerId]);
 
   useEffect(() => {
-    fetchApplication();
-  }, [fetchApplication]);
+    // Fetch the application when we don't have one loaded already
+    if (!initialApplication) fetchApplication();
+  }, [fetchApplication, initialApplication]);
 
   useEffect(() => {
     if (!isEditing && application) setForm(buildFormState(application));
@@ -142,10 +149,13 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
     setIsSaving(true);
     try {
       const formData: UpdateFoodManufacturerApplicationDto = {
-        secondaryContactFirstName: form.secondaryContactFirstName || undefined,
-        secondaryContactLastName: form.secondaryContactLastName || undefined,
-        secondaryContactEmail: form.secondaryContactEmail || undefined,
-        secondaryContactPhone: form.secondaryContactPhone || undefined,
+        // Optional fields send null (not undefined) when cleared so the empty
+        // value is persisted; undefined would be dropped from the request body
+        // and leave the previous value unchanged.
+        secondaryContactFirstName: form.secondaryContactFirstName || null,
+        secondaryContactLastName: form.secondaryContactLastName || null,
+        secondaryContactEmail: form.secondaryContactEmail || null,
+        secondaryContactPhone: form.secondaryContactPhone || null,
         foodManufacturerName: form.foodManufacturerName || undefined,
         foodManufacturerWebsite: form.foodManufacturerWebsite || undefined,
         unlistedProductAllergens: form.unlistedProductAllergens as Allergen[],
@@ -156,7 +166,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         inKindDonations: form.inKindDonations === 'Yes',
         donateWastedFood:
           (form.donateWastedFood as DonateWastedFood) || undefined,
-        additionalComments: form.additionalComments || undefined,
+        additionalComments: form.additionalComments || null,
       };
       const updated = await ApiClient.updateFoodManufacturerApplicationData(
         application.foodManufacturerId,

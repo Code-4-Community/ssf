@@ -22,15 +22,19 @@ export class VolunteersController {
 
   @Roles(Role.ADMIN)
   @Get('/')
-  async getAllVolunteers(): Promise<Assignments[]> {
-    return this.volunteersService.getVolunteersAndPantryAssignments();
+  async getAllVolunteers(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Assignments[]> {
+    return this.volunteersService.getVolunteersAndPantryAssignments(
+      req.user.id,
+    );
   }
 
   @CheckOwnership({
     idParam: 'id',
     resolver: resolveVolunteerAuthorizedUserIds,
   })
-  @Roles(Role.VOLUNTEER)
+  @Roles(Role.VOLUNTEER, Role.ADMIN)
   @Get('/:id/pantries')
   async getVolunteerPantries(
     @Param('id', ParseIntPipe) id: number,

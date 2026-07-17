@@ -57,6 +57,11 @@ export const ORDER_STATUS_BADGE: Record<OrderStatus, DashboardCardBadge> = {
     bg: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][0],
     color: ORDER_STATUS_COLORS[OrderStatus.DELIVERED][1],
   },
+  [OrderStatus.CLOSED]: {
+    label: ORDER_STATUS_LABELS[OrderStatus.CLOSED],
+    bg: ORDER_STATUS_COLORS[OrderStatus.CLOSED][0],
+    color: ORDER_STATUS_COLORS[OrderStatus.CLOSED][1],
+  },
 };
 
 export const DONATION_STATUS_BADGE: Record<DonationStatus, DashboardCardBadge> =
@@ -192,7 +197,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             w="30px"
             h="30px"
             borderRadius="full"
-            bg={USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]}
+            bg={
+              assignee.active
+                ? USER_ICON_COLORS[assignee.id % USER_ICON_COLORS.length]
+                : 'neutral.300'
+            }
+            opacity={assignee.active ? 1 : 0.6}
             color="white"
             display="flex"
             alignItems="center"
