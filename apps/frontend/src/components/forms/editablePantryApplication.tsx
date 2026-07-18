@@ -254,19 +254,29 @@ function validateRequired(form: FormState): boolean {
 interface EditablePantryApplicationProps {
   isEditing: boolean;
   onEditingChange: (v: boolean) => void;
+  initialApplication?: PantryWithUser;
+  onSaveSuccess?: (updatedApplication: PantryWithUser) => void;
 }
 
 const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
   isEditing,
   onEditingChange,
+  initialApplication,
+  onSaveSuccess,
 }) => {
-  const [application, setApplication] = useState<PantryWithUser | null>(null);
+  const [application, setApplication] = useState<PantryWithUser | null>(
+    initialApplication ?? null,
+  );
   const [alertState, setAlertMessage] = useAlert();
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState<FormState | null>(null);
+  const [isLoading, setIsLoading] = useState(!initialApplication);
+  const [form, setForm] = useState<FormState | null>(
+    initialApplication ? buildFormState(initialApplication) : null,
+  );
 
   const fetchApplication = useCallback(async () => {
     try {
+      setIsLoading(true);
       const pantryId = await ApiClient.getCurrentUserPantryId();
       if (pantryId) {
         const data = await ApiClient.getPantry(pantryId);
@@ -278,12 +288,16 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         'Could not load application details. Please try again later.',
         AlertStatus.ERROR,
       );
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchApplication();
-  }, [fetchApplication]);
+    if (!initialApplication) {
+      fetchApplication();
+    }
+  }, [fetchApplication, initialApplication]);
 
   useEffect(() => {
     if (!isEditing && application) setForm(buildFormState(application));
@@ -328,10 +342,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       }
 
       const formData: UpdatePantryApplicationDto = {
-        secondaryContactFirstName: form.secondaryContactFirstName || undefined,
-        secondaryContactLastName: form.secondaryContactLastName || undefined,
-        secondaryContactEmail: form.secondaryContactEmail || undefined,
-        secondaryContactPhone: form.secondaryContactPhone || undefined,
+        secondaryContactFirstName: form.secondaryContactFirstName || null,
+        secondaryContactLastName: form.secondaryContactLastName || null,
+        secondaryContactEmail: form.secondaryContactEmail || null,
+        secondaryContactPhone: form.secondaryContactPhone || null,
         shipmentAddressLine1: form.shipmentLine1 || undefined,
         shipmentAddressLine2: form.shipmentLine2 || undefined,
         shipmentAddressCity: form.shipmentCity || undefined,
@@ -370,7 +384,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
         serveAllergicChildren:
           (form.serveAllergicChildren as ServeAllergicChildren) || undefined,
         activities: form.activities as Activity[],
-        activitiesComments: form.activitiesComments || undefined,
+        activitiesComments: form.activitiesComments || null,
         itemsInStock: form.itemsInStock || undefined,
         needMoreOptions: form.needMoreOptions || undefined,
       };
@@ -385,6 +399,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       };
       setApplication(updatedWithUser);
       setForm(buildFormState(updatedWithUser));
+      onSaveSuccess?.(updatedWithUser);
       onEditingChange(false);
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -428,6 +443,10 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!application || !form) {
     return (

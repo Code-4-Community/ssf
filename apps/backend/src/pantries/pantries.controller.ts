@@ -392,7 +392,7 @@ export class PantriesController {
     idParam: 'pantryId',
     resolver: resolvePantryAuthorizedUserIds,
   })
-  @Roles(Role.PANTRY)
+  @Roles(Role.PANTRY, Role.ADMIN)
   @Patch('/:pantryId/application')
   async updatePantryApplication(
     @Req() req: AuthenticatedRequest,
@@ -404,6 +404,7 @@ export class PantriesController {
       pantryId,
       pantryData,
       req.user.id,
+      req.user.role,
     );
   }
 

@@ -422,6 +422,7 @@ export class PantriesService {
     pantryId: number,
     pantryData: UpdatePantryApplicationDto,
     currentUserId: number,
+    currentUserRole?: Role,
   ): Promise<Pantry> {
     validateId(pantryId, 'Pantry');
     validateId(currentUserId, 'User');
@@ -435,7 +436,10 @@ export class PantriesService {
       throw new NotFoundException(`Pantry ${pantryId} not found`);
     }
 
-    if (pantry.pantryUser.id !== currentUserId) {
+    if (
+      currentUserRole !== Role.ADMIN &&
+      pantry.pantryUser.id !== currentUserId
+    ) {
       throw new ForbiddenException(
         `User ${currentUserId} is not allowed to edit application for Pantry ${pantryId}`,
       );
