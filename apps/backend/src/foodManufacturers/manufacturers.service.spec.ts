@@ -559,6 +559,26 @@ describe('FoodManufacturersService', () => {
     });
   });
 
+  describe('findApprovedManufacturersByUserId', () => {
+    it('returns only approved manufacturers, sorted by id', async () => {
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+
+      // Point both manufacturers at the same representative, but leave #1
+      // pending so it must be filtered out.
+      const repo = testDataSource.getRepository(FoodManufacturer);
+      await repo.update(1, { status: ApplicationStatus.PENDING });
+      await repo.update(2, {
+        foodManufacturerRepresentative: { id: userId },
+        status: ApplicationStatus.APPROVED,
+      });
+
+      const result = await service.findApprovedManufacturersByUserId(userId);
+
+      expect(result.map((m) => m.foodManufacturerId)).toEqual([2]);
+    });
+  });
+
   describe('getDonationsForRepresentative', () => {
     it('aggregates donations across all manufacturers the user represents', async () => {
       const fm1 = await service.findOne(1);
