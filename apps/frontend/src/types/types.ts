@@ -112,10 +112,10 @@ export interface PantryApplicationDto {
 }
 
 export interface UpdatePantryApplicationDto {
-  secondaryContactFirstName?: string;
-  secondaryContactLastName?: string;
-  secondaryContactEmail?: string;
-  secondaryContactPhone?: string;
+  secondaryContactFirstName?: string | null;
+  secondaryContactLastName?: string | null;
+  secondaryContactEmail?: string | null;
+  secondaryContactPhone?: string | null;
   shipmentAddressLine1?: string;
   shipmentAddressLine2?: string;
   shipmentAddressCity?: string;
@@ -140,7 +140,7 @@ export interface UpdatePantryApplicationDto {
   clientVisitFrequency?: ClientVisitFrequency;
   serveAllergicChildren?: ServeAllergicChildren;
   activities?: Activity[];
-  activitiesComments?: string;
+  activitiesComments?: string | null;
   itemsInStock?: string;
   needMoreOptions?: string;
 }

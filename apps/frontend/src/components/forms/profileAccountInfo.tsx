@@ -9,10 +9,17 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 import { Pencil } from 'lucide-react';
-import { Role, UpdateProfileFields, User } from '../../types/types';
+import {
+  AlertStatus,
+  Role,
+  UpdateProfileFields,
+  User,
+} from '../../types/types';
 import { formatPhone } from '@utils/utils';
 import EditablePantryApplication from '@components/forms/editablePantryApplication';
 import EditableFMApplication from '@components/forms/editableFMApplication';
+import { useAlert } from '../../hooks/alert';
+import { FloatingAlert } from '@components/floatingAlert';
 
 interface ProfileAccountInfoProps {
   profile: User;
@@ -79,6 +86,7 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
   const [isEditingApplication, setIsEditingApplication] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ firstName, lastName, phone });
+  const [alertState, setAlertMessage] = useAlert();
 
   const isCurrentlyEditing =
     activeTab === 'Account' ? isEditing : isEditingApplication;
@@ -197,56 +205,70 @@ const ProfileAccountInfo: React.FC<ProfileAccountInfoProps> = ({
 
   if (showTabs) {
     return (
-      <Tabs.Root
-        defaultValue="Account"
-        variant="line"
-        mx={2}
-        onValueChange={(e: { value: string }) => setActiveTab(e.value)}
-      >
-        <HStack justify="space-between" mb={8}>
-          <Tabs.List>
-            <Tabs.Trigger
-              value="Account"
-              color="neutral.800"
-              textStyle="p2"
-              borderBottom="0.5px solid"
-              borderColor="neutral.100"
-              _selected={{ borderColor: 'neutral.700' }}
-            >
-              Account
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="Application"
-              color="neutral.800"
-              textStyle="p2"
-              borderBottom="0.5px solid"
-              borderColor="neutral.100"
-              _selected={{ borderColor: 'neutral.700' }}
-            >
-              Application
-            </Tabs.Trigger>
-          </Tabs.List>
-          {editButton}
-        </HStack>
+      <>
+        {alertState && (
+          <FloatingAlert
+            message={alertState.message}
+            status={alertState.status}
+          />
+        )}
+        <Tabs.Root
+          defaultValue="Account"
+          variant="line"
+          mx={2}
+          onValueChange={(e: { value: string }) => setActiveTab(e.value)}
+        >
+          <HStack justify="space-between" mb={8}>
+            <Tabs.List>
+              <Tabs.Trigger
+                value="Account"
+                color="neutral.800"
+                textStyle="p2"
+                borderBottom="0.5px solid"
+                borderColor="neutral.100"
+                _selected={{ borderColor: 'neutral.700' }}
+              >
+                Account
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="Application"
+                color="neutral.800"
+                textStyle="p2"
+                borderBottom="0.5px solid"
+                borderColor="neutral.100"
+                _selected={{ borderColor: 'neutral.700' }}
+              >
+                Application
+              </Tabs.Trigger>
+            </Tabs.List>
+            {editButton}
+          </HStack>
 
-        <Tabs.Content value="Account">{fields}</Tabs.Content>
-        <Tabs.Content value="Application">
-          {profile.role === Role.FOODMANUFACTURER ? (
-            foodManufacturerId != null && (
-              <EditableFMApplication
+          <Tabs.Content value="Account">{fields}</Tabs.Content>
+          <Tabs.Content value="Application">
+            {profile.role === Role.FOODMANUFACTURER ? (
+              foodManufacturerId != null && (
+                <EditableFMApplication
+                  isEditing={isEditingApplication}
+                  onEditingChange={setIsEditingApplication}
+                  foodManufacturerId={foodManufacturerId}
+                />
+              )
+            ) : (
+              <EditablePantryApplication
                 isEditing={isEditingApplication}
                 onEditingChange={setIsEditingApplication}
-                foodManufacturerId={foodManufacturerId}
+                onSaveSuccess={() =>
+                  setAlertMessage(
+                    'Changes successfully saved.',
+                    AlertStatus.INFO,
+                  )
+                }
               />
-            )
-          ) : (
-            <EditablePantryApplication
-              isEditing={isEditingApplication}
-              onEditingChange={setIsEditingApplication}
-            />
-          )}
-        </Tabs.Content>
-      </Tabs.Root>
+            )}
+          </Tabs.Content>
+        </Tabs.Root>
+      </>
     );
   } else {
     return (
