@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -312,13 +311,7 @@ export class UsersService {
     if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
       return this.getAdminVolunteerMonthlyAggregatedStats();
     } else if (user.role === Role.PANTRY) {
-      const pantry = await this.pantriesService.findByUserId(userId);
-      if (pantry.status !== ApplicationStatus.APPROVED) {
-        throw new ForbiddenException(
-          `Pantry with User id ${userId} must be approved`,
-        );
-      }
-      return this.pantriesService.getDashboardStats(pantry.pantryId);
+      return this.pantriesService.getDashboardStatsForUser(userId);
     } else if (user.role === Role.FOODMANUFACTURER) {
       return this.foodManufacturersService.getDashboardStatsForRepresentative(
         userId,

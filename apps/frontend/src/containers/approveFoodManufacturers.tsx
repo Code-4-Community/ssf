@@ -134,7 +134,7 @@ const ApproveFoodManufacturers: React.FC = () => {
           timeout={6000}
         />
       )}
-      {filteredFoodManufacturers.length === 0 ? (
+      {foodManufacturers.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"

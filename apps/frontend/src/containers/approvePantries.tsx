@@ -125,7 +125,7 @@ const ApprovePantries: React.FC = () => {
           timeout={6000}
         />
       )}
-      {filteredPantries.length === 0 ? (
+      {pantries.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"

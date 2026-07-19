@@ -172,7 +172,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
           timeout={6000}
         />
       )}
-      {filteredRequests.length === 0 ? (
+      {requests.length === 0 ? (
         <PageEmptyState entity="food requests" />
       ) : (
         <>

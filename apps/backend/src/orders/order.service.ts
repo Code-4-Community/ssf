@@ -34,25 +34,10 @@ import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
 import { UsersService } from '../users/users.service';
 import { OrderSummary } from '../pantries/types';
 import { PantriesService } from '../pantries/pantries.service';
-import { User } from '../users/users.entity';
+import { coordinatorContact } from './order.utils';
 
 // Contact used in pantry-facing emails that reference the assigned volunteer as
 // a coordinator. Falls back to the SSF team when the order is unassigned.
-function coordinatorContact(assignee: User | null): {
-  name: string;
-  email: string;
-} {
-  return assignee
-    ? {
-        name: `${assignee.firstName} ${assignee.lastName}`,
-        email: assignee.email,
-      }
-    : {
-        name: 'the Securing Safe Food team',
-        email: 'partners@securingsafefood.org',
-      };
-}
-
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);

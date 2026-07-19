@@ -770,4 +770,16 @@ export class PantriesService {
       'Value Received': `$${Number(result.total_value)}`,
     };
   }
+
+  async getDashboardStatsForUser(userId: number): Promise<PantryStatsDto> {
+    const pantry = await this.findByUserId(userId);
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ForbiddenException(
+        `Pantry with User id ${userId} must be approved`,
+      );
+    }
+
+    return this.getDashboardStats(pantry.pantryId);
+  }
 }

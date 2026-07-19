@@ -18,7 +18,6 @@ import { Allergen, DonateWastedFood } from './types';
 import { Public } from '../auth/public.decorator';
 import { UpdateFoodManufacturerApplicationDto } from './dtos/update-manufacturer-application.dto';
 import { ManufacturerSummaryDto } from './dtos/manufacturer-summary.dto';
-import { ApplicationStatus } from '../shared/types';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
@@ -64,14 +63,10 @@ export class FoodManufacturersController {
   async getCurrentUserFoodManufacturerId(
     @Req() req: AuthenticatedRequest,
   ): Promise<number> {
-    const manufacturers =
-      await this.foodManufacturersService.findManufacturersByUserId(
+    const approved =
+      await this.foodManufacturersService.findApprovedManufacturersByUserId(
         req.user.id,
       );
-
-    const approved = manufacturers
-      .filter((m) => m.status === ApplicationStatus.APPROVED)
-      .sort((a, b) => a.foodManufacturerId - b.foodManufacturerId);
 
     if (approved.length === 0) {
       throw new NotFoundException(
@@ -88,16 +83,14 @@ export class FoodManufacturersController {
     @Req() req: AuthenticatedRequest,
   ): Promise<ManufacturerSummaryDto[]> {
     const manufacturers =
-      await this.foodManufacturersService.findManufacturersByUserId(
+      await this.foodManufacturersService.findApprovedManufacturersByUserId(
         req.user.id,
       );
 
-    return manufacturers
-      .filter((m) => m.status === ApplicationStatus.APPROVED)
-      .map((m) => ({
-        foodManufacturerId: m.foodManufacturerId,
-        foodManufacturerName: m.foodManufacturerName,
-      }));
+    return manufacturers.map((m) => ({
+      foodManufacturerId: m.foodManufacturerId,
+      foodManufacturerName: m.foodManufacturerName,
+    }));
   }
 
   @Roles(Role.ADMIN, Role.FOODMANUFACTURER)

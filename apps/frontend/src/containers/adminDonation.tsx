@@ -174,7 +174,7 @@ const AdminDonation: React.FC = () => {
           timeout={6000}
         />
       )}
-      {filteredDonations.length === 0 ? (
+      {donations.length === 0 ? (
         <PageEmptyState entity="donations" />
       ) : (
         <>

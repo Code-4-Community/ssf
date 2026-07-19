@@ -478,6 +478,16 @@ export class FoodManufacturersService {
     });
   }
 
+  async findApprovedManufacturersByUserId(
+    userId: number,
+  ): Promise<FoodManufacturer[]> {
+    const manufacturers = await this.findManufacturersByUserId(userId);
+
+    return manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .sort((a, b) => a.foodManufacturerId - b.foodManufacturerId);
+  }
+
   async getDashboardStats(id: number): Promise<ManufacturerStatsDto> {
     validateId(id, 'Food Manufacturer');
 
