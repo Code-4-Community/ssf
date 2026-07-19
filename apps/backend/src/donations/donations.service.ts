@@ -63,17 +63,14 @@ export class DonationService {
     });
   }
 
-  async create(
-    donationData: CreateDonationDto,
-    userId: number,
-  ): Promise<Donation> {
-    const manufacturer = await this.foodManufacturersService.findByUserId(
-      userId,
+  async create(donationData: CreateDonationDto): Promise<Donation> {
+    const manufacturer = await this.foodManufacturersService.findOne(
+      donationData.foodManufacturerId,
     );
 
     if (manufacturer.status !== ApplicationStatus.APPROVED) {
       throw new ConflictException(
-        `Food Manufacturer for User ${userId} not approved`,
+        `Food Manufacturer ${donationData.foodManufacturerId} not approved`,
       );
     }
 

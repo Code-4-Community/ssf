@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -73,17 +72,27 @@ export class UsersService {
     // Pantry and food manufacturer users must already exist in the DB
     // (created during application) before a Cognito account is made
     if (role === Role.PANTRY || role === Role.FOODMANUFACTURER) {
-      const existingUser = await this.repo.findOneBy({ email });
-      if (!existingUser) {
+      const usersWithEmail = await this.repo.findBy({ email });
+      if (usersWithEmail.length === 0) {
         throw new NotFoundException(`User with email ${email} not found`);
       }
-      existingUser.userCognitoSub = await this.authService.adminCreateUser({
+
+      // If this person already has a provisioned account (e.g. they represent
+      // another manufacturer), reuse it instead of creating a second Cognito
+      // user, so one login can represent multiple manufacturers.
+      const provisionedUser = usersWithEmail.find((u) => u.userCognitoSub);
+      if (provisionedUser) {
+        return provisionedUser;
+      }
+
+      const applicationUser = usersWithEmail[0];
+      applicationUser.userCognitoSub = await this.authService.adminCreateUser({
         firstName,
         lastName,
         email,
         role,
       });
-      return this.repo.save(existingUser);
+      return this.repo.save(applicationUser);
     }
 
     // Create Cognito user and save to DB
@@ -302,24 +311,10 @@ export class UsersService {
     if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
       return this.getAdminVolunteerMonthlyAggregatedStats();
     } else if (user.role === Role.PANTRY) {
-      const pantry = await this.pantriesService.findByUserId(userId);
-      if (pantry.status !== ApplicationStatus.APPROVED) {
-        throw new ForbiddenException(
-          `Pantry with User id ${userId} must be approved`,
-        );
-      }
-      return this.pantriesService.getDashboardStats(pantry.pantryId);
+      return this.pantriesService.getDashboardStatsForUser(userId);
     } else if (user.role === Role.FOODMANUFACTURER) {
-      const foodManufacturer = await this.foodManufacturersService.findByUserId(
+      return this.foodManufacturersService.getDashboardStatsForRepresentative(
         userId,
-      );
-      if (foodManufacturer.status !== ApplicationStatus.APPROVED) {
-        throw new ForbiddenException(
-          `Food Manufacturer with User id ${userId} must be approved`,
-        );
-      }
-      return this.foodManufacturersService.getDashboardStats(
-        foodManufacturer.foodManufacturerId,
       );
     } else {
       throw new BadRequestException(`Unsupported role: ${user.role}`);

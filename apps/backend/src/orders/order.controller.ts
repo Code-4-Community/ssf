@@ -53,7 +53,7 @@ const resolveOrderAuthorizedUserIds: OwnerIdResolver = ({
   if (user?.role === Role.VOLUNTEER) {
     return pipeNullable(
       () => services.get(OrdersService).findOne(entityId),
-      (order: Order) => [order.assigneeId],
+      (order: Order) => (order.assigneeId ? [order.assigneeId] : []),
     );
   }
   return pipeNullable(

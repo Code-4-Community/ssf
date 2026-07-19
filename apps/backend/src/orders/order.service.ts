@@ -34,7 +34,10 @@ import { emailTemplates, EMAIL_REDIRECT_URL } from '../emails/emailTemplates';
 import { UsersService } from '../users/users.service';
 import { OrderSummary } from '../pantries/types';
 import { PantriesService } from '../pantries/pantries.service';
+import { coordinatorContact } from './order.utils';
 
+// Contact used in pantry-facing emails that reference the assigned volunteer as
+// a coordinator. Falls back to the SSF team when the order is unassigned.
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
@@ -123,7 +126,8 @@ export class OrdersService {
       deliveredAt: o.deliveredAt,
       pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
-      assignee: o.assignee,
+      // filtered by assigneeId = volunteerId above, so assignee is always present
+      assignee: o.assignee!,
       actionCompletion: {
         confirmDonationReceipt: o.confirmDonationReceipt,
         notifyPantry: o.notifyPantry,
@@ -167,7 +171,8 @@ export class OrdersService {
       deliveredAt: o.deliveredAt,
       pantryId: o.request.pantryId,
       pantryName: o.request.pantry.pantryName,
-      assignee: o.assignee,
+      // filtered by assigneeId = volunteerId above, so assignee is always present
+      assignee: o.assignee!,
     }));
   }
 
@@ -550,22 +555,26 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
     await this.repo.save(order);
     await this.requestsService.updateRequestStatus(order.requestId);
 
-    try {
-      const message = emailTemplates.pantryConfirmsOrderDelivery({
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-        pantryName: order.request.pantry.pantryName,
-        fmName: order.foodManufacturer.foodManufacturerName,
-      });
+    // This email notifies the assigned volunteer; skip it if the order is
+    // currently unassigned (e.g. the volunteer was removed from the pantry).
+    if (order.assignee) {
+      try {
+        const message = emailTemplates.pantryConfirmsOrderDelivery({
+          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+          pantryName: order.request.pantry.pantryName,
+          fmName: order.foodManufacturer.foodManufacturerName,
+        });
 
-      await this.emailsService.sendEmails({
-        toEmail: order.assignee.email,
-        subject: message.subject,
-        bodyHtml: message.bodyHTML,
-      });
-    } catch {
-      throw new InternalServerErrorException(
-        'Failed to send order delivery confirmation email to volunteer',
-      );
+        await this.emailsService.sendEmails({
+          toEmail: order.assignee.email,
+          subject: message.subject,
+          bodyHtml: message.bodyHTML,
+        });
+      } catch {
+        throw new InternalServerErrorException(
+          'Failed to send order delivery confirmation email to volunteer',
+        );
+      }
     }
   }
 
@@ -596,12 +605,13 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
     for (const order of orders) {
       const toEmail = order.request.pantry.pantryUser.email;
+      const coordinator = coordinatorContact(order.assignee);
       const message = emailTemplates.pantryConfirmDeliveryReminder({
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
         confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-        volunteerEmail: order.assignee.email,
+        volunteerName: coordinator.name,
+        volunteerEmail: coordinator.email,
       });
 
       try {
@@ -654,12 +664,14 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
             })) ?? null,
         },
       },
-      assignee: {
-        id: order.assignee.id,
-        firstName: order.assignee.firstName,
-        lastName: order.assignee.lastName,
-        active: order.assignee.active,
-      },
+      assignee: order.assignee
+        ? {
+            id: order.assignee.id,
+            firstName: order.assignee.firstName,
+            lastName: order.assignee.lastName,
+            active: order.assignee.active,
+          }
+        : null,
     }));
   }
 
@@ -752,6 +764,9 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         if (entry.shippingCost !== undefined) {
           order.shippingCost = entry.shippingCost;
         }
+        if (entry.shippingCostPaidBySsf !== undefined) {
+          order.shippingCostPaidBySsf = entry.shippingCostPaidBySsf;
+        }
         if (order.trackingLink !== null && order.shippingCost !== null) {
           order.status = OrderStatus.SHIPPED;
           order.shippedAt = new Date();
@@ -774,12 +789,13 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
 
     for (const order of ordersGainedTrackingLink) {
       try {
+        const coordinator = coordinatorContact(order.assignee);
         const message = emailTemplates.trackingLinkAvailable({
           pantryName: order.request.pantry.pantryName,
           fmName: order.foodManufacturer.foodManufacturerName,
           trackingLink: order.trackingLink!,
-          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-          volunteerEmail: order.assignee.email,
+          volunteerName: coordinator.name,
+          volunteerEmail: coordinator.email,
         });
 
         await this.emailsService.sendEmails({

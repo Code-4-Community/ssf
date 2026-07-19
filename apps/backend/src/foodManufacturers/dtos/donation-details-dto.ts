@@ -24,6 +24,7 @@ export class DonationOrderDetailsDto {
   pantryName!: string;
   trackingLink!: string | null;
   shippingCost!: number | null;
+  shippingCostPaidBySsf!: boolean;
   items!: PendingOrderItemDto[];
 }
 

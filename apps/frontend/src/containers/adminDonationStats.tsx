@@ -367,15 +367,25 @@ const AdminDonationStats: React.FC = () => {
               borderRightColor="neutral.100"
               width="15%"
             >
-              Value of Donated Food
+              Fair Market Value of Food Donation
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
               borderRight="1px solid"
               borderRightColor="neutral.100"
-              width="15%"
+              width="13%"
             >
-              Shipping Cost/Tax
+              Shipping/
+              <br />
+              Delivery Expenses
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              {...tableHeaderStyles}
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              width="13%"
+            >
+              Shipping Paid by SSF
             </Table.ColumnHeader>
             <Table.ColumnHeader
               {...tableHeaderStyles}
@@ -385,8 +395,16 @@ const AdminDonationStats: React.FC = () => {
             >
               Total Value
             </Table.ColumnHeader>
-            <Table.ColumnHeader {...tableHeaderStyles} width="25%">
-              % of Food Rescue
+            <Table.ColumnHeader
+              {...tableHeaderStyles}
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              width="10%"
+            >
+              % Food Rescue
+            </Table.ColumnHeader>
+            <Table.ColumnHeader {...tableHeaderStyles} width="10%">
+              Lbs Food Rescue
             </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
@@ -447,10 +465,26 @@ const AdminDonationStats: React.FC = () => {
                 borderRightColor="neutral.100"
                 bg="yellow.100"
               >
+                ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                bg="yellow.100"
+              >
                 ${(totalStats?.totalValue ?? 0).toFixed(2)}
               </Table.Cell>
-              <Table.Cell textStyle="p2" bg="yellow.100">
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+                bg="yellow.100"
+              >
                 {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
+              </Table.Cell>
+              <Table.Cell textStyle="p2" bg="yellow.100">
+                {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
               </Table.Cell>
             </Table.Row>
           )}
@@ -504,10 +538,24 @@ const AdminDonationStats: React.FC = () => {
                 borderRight="1px solid"
                 borderRightColor="neutral.100"
               >
+                ${stat.totalShippingCostPaidBySsf.toFixed(2)}
+              </Table.Cell>
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
                 ${stat.totalValue.toFixed(2)}
               </Table.Cell>
-              <Table.Cell textStyle="p2">
+              <Table.Cell
+                textStyle="p2"
+                borderRight="1px solid"
+                borderRightColor="neutral.100"
+              >
                 {stat.percentageFoodRescueItems.toFixed(2)}%
+              </Table.Cell>
+              <Table.Cell textStyle="p2">
+                {stat.foodRescueLbs.toFixed(2)}
               </Table.Cell>
             </Table.Row>
           ))}

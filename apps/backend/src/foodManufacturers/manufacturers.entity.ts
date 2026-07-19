@@ -2,7 +2,7 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToOne,
+  ManyToOne,
   OneToMany,
   JoinColumn,
 } from 'typeorm';
@@ -22,7 +22,10 @@ export class FoodManufacturer {
   @Column({ name: 'food_manufacturer_website', type: 'varchar', length: 255 })
   foodManufacturerWebsite!: string;
 
-  @OneToOne(() => User, {
+  // Many manufacturers may share one representative: the same person can
+  // represent multiple food manufacturers. Each manufacturer still has exactly
+  // one representative.
+  @ManyToOne(() => User, {
     nullable: false,
     cascade: ['insert'],
     onDelete: 'CASCADE',

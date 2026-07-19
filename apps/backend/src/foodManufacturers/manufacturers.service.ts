@@ -133,6 +133,7 @@ export class FoodManufacturersService {
                 pantryName: order.request.pantry.pantryName,
                 trackingLink: order.trackingLink,
                 shippingCost: order.shippingCost,
+                shippingCostPaidBySsf: order.shippingCostPaidBySsf,
                 items: [],
               });
             }
@@ -153,6 +154,22 @@ export class FoodManufacturersService {
         relevantDonationItems,
       };
     });
+  }
+
+  // Aggregates donations across every manufacturer the user represents, so a
+  // representative of multiple manufacturers sees all of their donations.
+  async getDonationsForRepresentative(
+    userId: number,
+  ): Promise<DonationDetailsDto[]> {
+    const manufacturers = await this.findManufacturersByUserId(userId);
+
+    const perManufacturer = await Promise.all(
+      manufacturers.map((m) =>
+        this.getFMDonations(m.foodManufacturerId, userId),
+      ),
+    );
+
+    return perManufacturer.flat();
   }
 
   async getUpcomingDonationReminders(
@@ -231,6 +248,26 @@ export class FoodManufacturersService {
     );
 
     return donationReminders.slice(0, 2);
+  }
+
+  // Merges upcoming reminders across every approved manufacturer the user
+  // represents and returns the two soonest overall.
+  async getUpcomingRemindersForRepresentative(
+    userId: number,
+  ): Promise<DonationReminderDto[]> {
+    const manufacturers = await this.findManufacturersByUserId(userId);
+    const approvedIds = manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .map((m) => m.foodManufacturerId);
+
+    const perManufacturer = await Promise.all(
+      approvedIds.map((id) => this.getUpcomingDonationReminders(id)),
+    );
+
+    return perManufacturer
+      .flat()
+      .sort((a, b) => a.reminderDate.getTime() - b.reminderDate.getTime())
+      .slice(0, 2);
   }
 
   async getPendingManufacturers(): Promise<FoodManufacturer[]> {
@@ -430,20 +467,25 @@ export class FoodManufacturersService {
     await this.repo.update(id, { status: ApplicationStatus.DENIED });
   }
 
-  async findByUserId(userId: number): Promise<FoodManufacturer> {
+  // A user may represent multiple manufacturers, so this returns every
+  // manufacturer they represent.
+  async findManufacturersByUserId(userId: number): Promise<FoodManufacturer[]> {
     validateId(userId, 'User');
 
-    const foodManufacturer = await this.repo.findOne({
+    return this.repo.find({
       where: { foodManufacturerRepresentative: { id: userId } },
       relations: ['foodManufacturerRepresentative'],
     });
+  }
 
-    if (!foodManufacturer) {
-      throw new NotFoundException(
-        `Food Manufacturer for User ${userId} not found`,
-      );
-    }
-    return foodManufacturer;
+  async findApprovedManufacturersByUserId(
+    userId: number,
+  ): Promise<FoodManufacturer[]> {
+    const manufacturers = await this.findManufacturersByUserId(userId);
+
+    return manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .sort((a, b) => a.foodManufacturerId - b.foodManufacturerId);
   }
 
   async getDashboardStats(id: number): Promise<ManufacturerStatsDto> {
@@ -457,11 +499,39 @@ export class FoodManufacturersService {
       throw new NotFoundException(`Food Manufacturer ${id} not found`);
     }
 
+    return this.computeStats([id]);
+  }
+
+  // Aggregates dashboard stats across every approved manufacturer the user
+  // represents, so a representative of multiple manufacturers sees combined
+  // totals.
+  async getDashboardStatsForRepresentative(
+    userId: number,
+  ): Promise<ManufacturerStatsDto> {
+    const manufacturers = await this.findManufacturersByUserId(userId);
+    const approvedIds = manufacturers
+      .filter((m) => m.status === ApplicationStatus.APPROVED)
+      .map((m) => m.foodManufacturerId);
+
+    if (approvedIds.length === 0) {
+      throw new ForbiddenException(
+        `User ${userId} has no approved food manufacturers`,
+      );
+    }
+
+    return this.computeStats(approvedIds);
+  }
+
+  private async computeStats(
+    foodManufacturerIds: number[],
+  ): Promise<ManufacturerStatsDto> {
     const result = await this.repo
       .createQueryBuilder('fm')
       .leftJoin('fm.donations', 'd')
       .leftJoin('d.donationItems', 'di')
-      .where('fm.foodManufacturerId = :id', { id })
+      .where('fm.foodManufacturerId IN (:...foodManufacturerIds)', {
+        foodManufacturerIds,
+      })
       .select([
         'COUNT(DISTINCT d.donationId) AS donations',
         'COALESCE(SUM(di.estimatedValue * di.quantity), 0) AS total_value',
@@ -474,7 +544,7 @@ export class FoodManufacturersService {
       Donations: String(result.donations),
       'Value Donated': `$${Number(result.total_value)}`,
       'Items Donated': String(result.total_items),
-      'lbs Donated': `${Number(result.total_lbs)}`,
+      'lbs Donated': `${Number(result.total_lbs).toFixed(2)}`,
     };
   }
 }

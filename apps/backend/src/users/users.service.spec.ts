@@ -313,6 +313,31 @@ describe('UsersService', () => {
       expect(result.userCognitoSub).toBe('mock-sub');
       expect(mockEmailsService.sendEmails).not.toHaveBeenCalled();
     });
+
+    it('reuses an existing provisioned account instead of creating a second Cognito user', async () => {
+      const userRepo = testDataSource.getRepository(User);
+      const existingFmUser = await userRepo.findOne({
+        where: { role: Role.FOODMANUFACTURER },
+      });
+      expect(existingFmUser).toBeDefined();
+
+      // Simulate this person already having a provisioned (approved) account,
+      // e.g. because they already represent another manufacturer.
+      existingFmUser!.userCognitoSub = 'already-provisioned-sub';
+      await userRepo.save(existingFmUser!);
+
+      const result = await service.create({
+        email: existingFmUser!.email,
+        firstName: 'Second',
+        lastName: 'Manufacturer',
+        phone: '7777777777',
+        role: Role.FOODMANUFACTURER,
+      });
+
+      expect(mockAuthService.adminCreateUser).not.toHaveBeenCalled();
+      expect(result.id).toBe(existingFmUser!.id);
+      expect(result.userCognitoSub).toBe('already-provisioned-sub');
+    });
   });
 
   describe('findOne', () => {
@@ -491,6 +516,7 @@ describe('UsersService', () => {
       const now = new Date();
 
       const createDonationBody: Partial<CreateDonationDto> = {
+        foodManufacturerId: 1,
         recurrence: RecurrenceEnum.MONTHLY,
         recurrenceFreq: 3,
         occurrencesRemaining: 2,
@@ -506,7 +532,7 @@ describe('UsersService', () => {
         ],
       };
 
-      await donationService.create(createDonationBody as CreateDonationDto, 3);
+      await donationService.create(createDonationBody as CreateDonationDto);
 
       // updating existing request to have a current month requested at date
       const existingRequest = await foodRequestService.findOne(1);
@@ -719,24 +745,19 @@ describe('UsersService', () => {
       ]);
     });
 
-    it('should call foodManufacturersService.findByUserId and getDashboardStats for food manufacturer user', async () => {
+    it('should aggregate dashboard stats across the food manufacturer representative', async () => {
       await testDataSource.query(
         `UPDATE food_manufacturers SET status = 'approved' WHERE food_manufacturer_name = 'FoodCorp Industries'`,
       );
 
-      const findByUserIdSpy = jest.spyOn(
+      const statsSpy = jest.spyOn(
         foodManufacturersService,
-        'findByUserId',
-      );
-      const getDashboardStatsSpy = jest.spyOn(
-        foodManufacturersService,
-        'getDashboardStats',
+        'getDashboardStatsForRepresentative',
       );
 
       const result = await service.getUserDashboardStats(3);
 
-      expect(findByUserIdSpy).toHaveBeenCalledWith(3);
-      expect(getDashboardStatsSpy).toHaveBeenCalledWith(1);
+      expect(statsSpy).toHaveBeenCalledWith(3);
       expect(Object.keys(result)).toEqual([
         'Donations',
         'Value Donated',
@@ -768,12 +789,10 @@ describe('UsersService', () => {
       );
     });
 
-    it('should throw ForbiddenException for food manufacturer user with non-approved food manufacturer', async () => {
+    it('should throw ForbiddenException for food manufacturer user with no approved food manufacturers', async () => {
       // user 5 = jennifer.t@organic.com, Organic Suppliers LLC, status='pending'
       await expect(service.getUserDashboardStats(5)).rejects.toThrow(
-        new ForbiddenException(
-          'Food Manufacturer with User id 5 must be approved',
-        ),
+        new ForbiddenException('User 5 has no approved food manufacturers'),
       );
     });
   });

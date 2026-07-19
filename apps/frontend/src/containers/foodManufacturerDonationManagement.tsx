@@ -187,6 +187,27 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   if (loading) return null;
 
+  const allDonations = Object.values(statusDonations).flat();
+
+  // Only show the manufacturer column when the representative's donations span
+  // more than one manufacturer.
+  const showManufacturer =
+    new Set(
+      allDonations.map((d) => d.donation.foodManufacturer?.foodManufacturerId),
+    ).size > 1;
+
+  // Default a new donation to the manufacturer of the most recent donation, so
+  // it starts on the one the representative most recently donated as.
+  const mostRecentDonationFmId = allDonations.reduce<
+    { fmId?: number; date: number } | undefined
+  >((latest, d) => {
+    const date = new Date(d.donation.dateDonated).getTime();
+    if (!latest || date > latest.date) {
+      return { fmId: d.donation.foodManufacturer?.foodManufacturerId, date };
+    }
+    return latest;
+  }, undefined)?.fmId;
+
   return (
     <Box p={12}>
       {alertState && (
@@ -236,6 +257,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <NewDonationFormModal
+          foodManufacturerId={mostRecentDonationFmId ?? manufacturerId}
           onDonationSuccess={() => fetchDonations()}
           isOpen={isLogDonationOpen}
           onClose={() => setIsLogDonationOpen(false)}
@@ -244,11 +266,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       {manufacturerId !== null && (
         <ResubmitDonationModal
+          foodManufacturerId={manufacturerId}
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
           onSuccess={() => fetchDonations()}
           donations={Object.values(statusDonations).flat()}
-          foodManufacturerId={manufacturerId}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
           }
@@ -324,6 +346,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
               currentPage={currentPage}
               onPageChange={(page) => handlePageChange(status, page)}
               onActionSelect={setSelectedActionDonation}
+              showManufacturer={showManufacturer}
             />
           </Box>
         );
@@ -341,6 +364,7 @@ interface DonationStatusSectionProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   onActionSelect: (donation: DonationDetails | null) => void;
+  showManufacturer: boolean;
 }
 
 const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
@@ -352,6 +376,7 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   currentPage,
   onPageChange,
   onActionSelect,
+  showManufacturer,
 }) => {
   const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
 
@@ -412,6 +437,16 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                 >
                   Donation #
                 </Table.ColumnHeader>
+                {showManufacturer && (
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    width="20%"
+                  >
+                    Food Manufacturer
+                  </Table.ColumnHeader>
+                )}
                 <Table.ColumnHeader
                   {...tableHeaderStyles}
                   borderRight="1px solid"
@@ -458,6 +493,16 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
                         {donation.donationId}
                       </Link>
                     </Table.Cell>
+                    {showManufacturer && (
+                      <Table.Cell
+                        {...tableCellStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        color="neutral.700"
+                      >
+                        {donation.foodManufacturer?.foodManufacturerName}
+                      </Table.Cell>
+                    )}
                     <Table.Cell
                       {...tableCellStyles}
                       borderRight="1px solid"

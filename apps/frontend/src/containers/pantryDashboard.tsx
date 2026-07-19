@@ -178,12 +178,16 @@ const PantryDashboard: React.FC = () => {
                   subtitle={order.request.pantry.pantryName}
                   linkText="View Order Details"
                   badge={ORDER_STATUS_BADGE[order.status]}
-                  assignee={{
-                    id: order.assignee.id,
-                    firstName: order.assignee.firstName,
-                    lastName: order.assignee.lastName,
-                    active: order.assignee.active,
-                  }}
+                  assignee={
+                    order.assignee
+                      ? {
+                          id: order.assignee.id,
+                          firstName: order.assignee.firstName,
+                          lastName: order.assignee.lastName,
+                          active: order.assignee.active,
+                        }
+                      : undefined
+                  }
                   onLinkClick={() =>
                     navigate(
                       `${ROUTES.PANTRY_ORDER_MANAGEMENT}?orderId=${order.orderId}`,

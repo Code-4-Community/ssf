@@ -536,24 +536,66 @@ describe('FoodManufacturersService', () => {
     });
   });
 
-  describe('findByUserId', () => {
-    it('findByUserId success', async () => {
-      const manufacturer = await service.findOne(1);
-      const userId = manufacturer.foodManufacturerRepresentative.id;
-      const result = await service.findByUserId(userId);
-      expect(result.foodManufacturerId).toBe(1);
+  describe('findManufacturersByUserId', () => {
+    it('returns every manufacturer the user represents', async () => {
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+
+      // Point a second manufacturer at the same representative so this user
+      // represents two manufacturers.
+      const repo = testDataSource.getRepository(FoodManufacturer);
+      await repo.update(2, {
+        foodManufacturerRepresentative: { id: userId },
+      });
+
+      const result = await service.findManufacturersByUserId(userId);
+
+      expect(result.map((m) => m.foodManufacturerId).sort()).toEqual([1, 2]);
     });
 
-    it('findByUserId with non-existent user throws NotFoundException', async () => {
-      await expect(service.findByUserId(9999)).rejects.toThrow(
-        new NotFoundException('Food Manufacturer for User 9999 not found'),
-      );
+    it('returns an empty array when the user represents no manufacturers', async () => {
+      const result = await service.findManufacturersByUserId(1);
+      expect(result).toEqual([]);
     });
+  });
 
-    it('findByUserId with existing non-manufacturer user throws NotFoundException', async () => {
-      await expect(service.findByUserId(1)).rejects.toThrow(
-        new NotFoundException('Food Manufacturer for User 1 not found'),
+  describe('findApprovedManufacturersByUserId', () => {
+    it('returns only approved manufacturers, sorted by id', async () => {
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+
+      // Point both manufacturers at the same representative, but leave #1
+      // pending so it must be filtered out.
+      const repo = testDataSource.getRepository(FoodManufacturer);
+      await repo.update(1, { status: ApplicationStatus.PENDING });
+      await repo.update(2, {
+        foodManufacturerRepresentative: { id: userId },
+        status: ApplicationStatus.APPROVED,
+      });
+
+      const result = await service.findApprovedManufacturersByUserId(userId);
+
+      expect(result.map((m) => m.foodManufacturerId)).toEqual([2]);
+    });
+  });
+
+  describe('getDonationsForRepresentative', () => {
+    it('aggregates donations across all manufacturers the user represents', async () => {
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+
+      // Make this user represent a second manufacturer too.
+      await testDataSource
+        .getRepository(FoodManufacturer)
+        .update(2, { foodManufacturerRepresentative: { id: userId } });
+
+      const result = await service.getDonationsForRepresentative(userId);
+
+      const fmIds = new Set(
+        result.map((d) => d.donation.foodManufacturer?.foodManufacturerId),
       );
+      expect(fmIds.has(1)).toBe(true);
+      expect(fmIds.has(2)).toBe(true);
     });
   });
 
@@ -578,12 +620,43 @@ describe('FoodManufacturersService', () => {
       expect(result['Donations']).toBe('2');
       expect(result['Value Donated']).toBe('$925');
       expect(result['Items Donated']).toBe('225');
-      expect(result['lbs Donated']).toBe('225.03125');
+      expect(result['lbs Donated']).toBe('225.03');
     });
 
     it('throws NotFoundException for non-existent manufacturer', async () => {
       await expect(service.getDashboardStats(9999)).rejects.toThrow(
         new NotFoundException('Food Manufacturer 9999 not found'),
+      );
+    });
+  });
+
+  describe('getDashboardStatsForRepresentative', () => {
+    it('aggregates stats across the approved manufacturers the user represents', async () => {
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+
+      const single = await service.getDashboardStatsForRepresentative(userId);
+      expect(single['Donations']).toBe('2'); // FoodCorp only
+
+      // Give this user a second approved manufacturer.
+      await testDataSource
+        .getRepository(FoodManufacturer)
+        .update(2, { foodManufacturerRepresentative: { id: userId } });
+
+      const aggregated = await service.getDashboardStatsForRepresentative(
+        userId,
+      );
+      expect(Number(aggregated['Donations'])).toBeGreaterThan(
+        Number(single['Donations']),
+      );
+    });
+
+    it('throws ForbiddenException when the user has no approved manufacturers', async () => {
+      // user 5 represents only the pending Organic Suppliers LLC
+      await expect(
+        service.getDashboardStatsForRepresentative(5),
+      ).rejects.toThrow(
+        new ForbiddenException('User 5 has no approved food manufacturers'),
       );
     });
   });
@@ -900,6 +973,49 @@ describe('FoodManufacturersService', () => {
           'Cannot get donation reminders for a pending food manufacturer',
         ),
       );
+    });
+  });
+
+  describe('getUpcomingRemindersForRepresentative', () => {
+    it('returns at most two reminders merged across the approved manufacturers', async () => {
+      const futureDate1 = new Date();
+      futureDate1.setMilliseconds(0);
+      futureDate1.setDate(futureDate1.getDate() + 7);
+      const futureDate2 = new Date();
+      futureDate2.setMilliseconds(0);
+      futureDate2.setDate(futureDate2.getDate() + 14);
+
+      // Donation 1 belongs to FM 1; give FM 2 (also approved) a nearer reminder.
+      await testDataSource.query(
+        `UPDATE public.donations SET next_donation_dates = ARRAY[$1::timestamptz], recurrence = 'monthly', recurrence_freq = 1, occurrences_remaining = 5
+        WHERE donation_id = 1`,
+        [futureDate2.toISOString()],
+      );
+      await testDataSource.query(
+        `INSERT INTO public.donations (food_manufacturer_id, recurrence, recurrence_freq, occurrences_remaining, next_donation_dates)
+        VALUES (2, 'monthly', 1, 5, ARRAY[$1::timestamptz])`,
+        [futureDate1.toISOString()],
+      );
+
+      const fm1 = await service.findOne(1);
+      const userId = fm1.foodManufacturerRepresentative.id;
+      await testDataSource
+        .getRepository(FoodManufacturer)
+        .update(2, { foodManufacturerRepresentative: { id: userId } });
+
+      const result = await service.getUpcomingRemindersForRepresentative(
+        userId,
+      );
+
+      expect(result.length).toBeLessThanOrEqual(2);
+      // The soonest reminder overall comes from FM 2.
+      expect(result[0].reminderDate).toStrictEqual(futureDate1);
+    });
+
+    it('returns an empty array when the user has no approved manufacturers', async () => {
+      // user 5 represents only the pending Organic Suppliers LLC
+      const result = await service.getUpcomingRemindersForRepresentative(5);
+      expect(result).toEqual([]);
     });
   });
 

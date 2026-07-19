@@ -639,14 +639,16 @@ describe('OrdersService', () => {
       );
 
       const message = emailTemplates.pantryConfirmsOrderDelivery({
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
+        volunteerName: `${order.assignee!.firstName} ${
+          order.assignee!.lastName
+        }`,
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
       });
 
       expect(mockEmailsService.sendEmails).toHaveBeenCalledTimes(2);
       expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
-        toEmail: order.assignee.email,
+        toEmail: order.assignee!.email,
         subject: message.subject,
         bodyHtml: message.bodyHTML,
       });
@@ -1942,6 +1944,30 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
       expect(after2.shippedAt).toBeDefined();
     });
 
+    it('persists the shippingCostPaidBySsf flag when provided', async () => {
+      const donationId = await insertMatchedDonation();
+      const itemId = await insertDonationItem(donationId);
+      await insertAllocation(4, itemId);
+
+      const before = await service.findOne(4);
+      expect(before.shippingCostPaidBySsf).toBe(false);
+
+      await service.bulkUpdateTrackingCostInfo({
+        donationId,
+        orders: [
+          {
+            orderId: 4,
+            shippingCost: 5.0,
+            shippingCostPaidBySsf: true,
+          },
+        ],
+      });
+
+      const after = await service.findOne(4);
+      expect(after.shippingCost).toEqual(5.0);
+      expect(after.shippingCostPaidBySsf).toBe(true);
+    });
+
     it('updates only tracking link when no shipping cost is provided, order stays PENDING', async () => {
       const donationId = await insertMatchedDonation();
       const itemId = await insertDonationItem(donationId);
@@ -2057,8 +2083,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
           pantryName: order.request.pantry.pantryName,
           fmName: order.foodManufacturer.foodManufacturerName,
           trackingLink: order.trackingLink!,
-          volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-          volunteerEmail: order.assignee.email,
+          volunteerName: `${order.assignee!.firstName} ${
+            order.assignee!.lastName
+          }`,
+          volunteerEmail: order.assignee!.email,
         });
 
         expect(mockEmailsService.sendEmails).toHaveBeenCalledWith({
@@ -2175,8 +2203,10 @@ ${request.pantry.shipmentAddressCity}, ${request.pantry.shipmentAddressState} ${
         pantryName: order.request.pantry.pantryName,
         fmName: order.foodManufacturer.foodManufacturerName,
         confirmDeliveryLink: `${EMAIL_REDIRECT_URL}/pantry-order-management?orderId=${order.orderId}&action=confirm-delivery`,
-        volunteerName: `${order.assignee.firstName} ${order.assignee.lastName}`,
-        volunteerEmail: order.assignee.email,
+        volunteerName: `${order.assignee!.firstName} ${
+          order.assignee!.lastName
+        }`,
+        volunteerEmail: order.assignee!.email,
       });
 
     it('logs a warning and sends no emails when there are no unconfirmed deliveries', async () => {

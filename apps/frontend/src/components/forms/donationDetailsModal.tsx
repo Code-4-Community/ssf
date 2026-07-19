@@ -15,6 +15,7 @@ import {
   AlertStatus,
   ReplaceDonationItemDto,
   DonationStatus,
+  RecurrenceEnum,
 } from '../../types/types';
 import { formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -217,6 +218,28 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   </Box>
                 ))}
               </VStack>
+            )}
+
+            {!isEditing && donation.recurrence !== RecurrenceEnum.NONE && (
+              <Box mt={6} color="neutral.800" fontSize="sm">
+                <Text fontWeight={600} mb={3}>
+                  Donation sets up recurring reminders
+                </Text>
+
+                {donation.nextDonationDates &&
+                  donation.nextDonationDates.length > 0 && (
+                    <Box>
+                      <Text fontWeight={600} color="neutral.700" mb={2}>
+                        Upcoming reminder emails
+                      </Text>
+                      <Text color="neutral.700">
+                        {donation.nextDonationDates
+                          .map((date) => formatDate(date))
+                          .join(', ')}
+                      </Text>
+                    </Box>
+                  )}
+              </Box>
             )}
           </Dialog.Body>
         </Dialog.Content>

@@ -15,6 +15,7 @@ import { Pantry } from '../pantries/pantries.entity';
 import { Order } from '../orders/order.entity';
 import { OrderDetailsDto } from '../orders/dtos/order-details.dto';
 import { OrderStatus } from '../orders/types';
+import { coordinatorContact } from '../orders/order.utils';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import {
   MatchingItemsDto,
@@ -359,11 +360,13 @@ export class RequestsService {
         const volunteers = request.pantry.volunteers || [];
         const volunteerEmails = volunteers.map((v) => v.email);
 
-        const { assignee } = lastDeliveredOrder;
+        // A delivered order always keeps its assignee (only open orders are
+        // unassigned), but fall back defensively so the pantry is still notified.
+        const coordinator = coordinatorContact(lastDeliveredOrder.assignee);
         const message = emailTemplates.pantryRequestClosed({
           pantryName: request.pantry.pantryName,
-          volunteerName: `${assignee.firstName} ${assignee.lastName}`,
-          volunteerEmail: assignee.email,
+          volunteerName: coordinator.name,
+          volunteerEmail: coordinator.email,
         });
         await this.emailsService.sendEmails({
           toEmail: request.pantry.pantryUser.email,

@@ -8,7 +8,6 @@ import {
   ParseArrayPipe,
   Get,
   Delete,
-  Req,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { Donation } from './donations.entity';
@@ -27,7 +26,6 @@ import {
 } from '../auth/ownership.decorator';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
-import { AuthenticatedRequest } from '../auth/authenticated-request';
 
 const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
@@ -40,9 +38,7 @@ const resolveDonationAuthorizedUserIds: OwnerIdResolver = ({
     ],
   );
 
-// For creating a donation, the foodManufacturerId comes from the request body
-// and the only authorized non-admin caller is the manufacturer representative.
-const resolveCreateDonationAuthorizedUserIds: OwnerIdResolver = ({
+const resolveFoodManufacturerAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
   services,
 }) =>
@@ -64,12 +60,18 @@ export class DonationsController {
   }
 
   @Roles(Role.FOODMANUFACTURER)
+  @CheckOwnership({
+    idParam: 'foodManufacturerId',
+    idSource: 'body',
+    resolver: resolveFoodManufacturerAuthorizedUserIds,
+  })
   @Post()
   @ApiBody({
     description: 'Details for creating a donation',
     schema: {
       type: 'object',
       properties: {
+        foodManufacturerId: { type: 'integer', example: 1 },
         recurrence: {
           type: 'string',
           enum: Object.values(RecurrenceEnum),
@@ -111,11 +113,8 @@ export class DonationsController {
       },
     },
   })
-  async createDonation(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: CreateDonationDto,
-  ): Promise<Donation> {
-    return this.donationService.create(body, req.user.id);
+  async createDonation(@Body() body: CreateDonationDto): Promise<Donation> {
+    return this.donationService.create(body);
   }
 
   @Roles(Role.FOODMANUFACTURER)

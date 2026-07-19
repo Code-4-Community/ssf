@@ -220,6 +220,10 @@ export const emailTemplates = {
           .join('')}
       </ul>
       <p>
+      We strongly recommend that clients read all ingredients and allergen labels before consuming any foods.
+      Any questions or issues should be directed to the manufacturer(s) and/or their healthcare provider(s).
+      </p>
+      <p>
         To view full order details, delivery updates, and any notes from the coordinating volunteer or food manufacturer, please <a href="${EMAIL_REDIRECT_URL}/login">log in to the platform</a>.
       </p>
       <p>

@@ -125,7 +125,7 @@ const ApprovePantries: React.FC = () => {
           timeout={6000}
         />
       )}
-      {filteredPantries.length === 0 ? (
+      {pantries.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -238,7 +238,7 @@ const ApprovePantries: React.FC = () => {
                   {...tableHeaderStyles}
                   borderRight="1px solid"
                   borderRightColor="neutral.100"
-                  width="10%"
+                  width="15%"
                 >
                   Application #
                 </Table.ColumnHeader>

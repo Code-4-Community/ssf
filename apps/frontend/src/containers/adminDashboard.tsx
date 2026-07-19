@@ -176,8 +176,8 @@ const AdminDashboard: React.FC = () => {
                   onLinkClick={() => {
                     navigate(
                       application.type === 'pantry'
-                        ? ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
-                            ':pantryId',
+                        ? ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                            ':applicationId',
                             application.id.toString(),
                           )
                         : ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
@@ -214,12 +214,16 @@ const AdminDashboard: React.FC = () => {
                   subtitle={order.request.pantry.pantryName}
                   linkText="View Order Details"
                   badge={ORDER_STATUS_BADGE[order.status]}
-                  assignee={{
-                    id: order.assignee.id,
-                    firstName: order.assignee.firstName,
-                    lastName: order.assignee.lastName,
-                    active: order.assignee.active,
-                  }}
+                  assignee={
+                    order.assignee
+                      ? {
+                          id: order.assignee.id,
+                          firstName: order.assignee.firstName,
+                          lastName: order.assignee.lastName,
+                          active: order.assignee.active,
+                        }
+                      : undefined
+                  }
                   onLinkClick={() =>
                     navigate(`/admin-order-management?orderId=${order.orderId}`)
                   }

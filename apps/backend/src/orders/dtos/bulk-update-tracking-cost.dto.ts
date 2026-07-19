@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -22,7 +23,7 @@ export class OrderTrackingCostEntryDto {
     },
     { message: 'Tracking link must be a valid HTTP/HTTPS URL' },
   )
-  trackingLink?: string;
+  trackingLink?: string | null;
 
   @IsOptional()
   @IsNumber(
@@ -30,7 +31,11 @@ export class OrderTrackingCostEntryDto {
     { message: 'Shipping cost must have at most 2 decimal places' },
   )
   @Min(0, { message: 'Shipping cost cannot be negative' })
-  shippingCost?: number;
+  shippingCost?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  shippingCostPaidBySsf?: boolean;
 }
 
 export class BulkUpdateTrackingCostDto {

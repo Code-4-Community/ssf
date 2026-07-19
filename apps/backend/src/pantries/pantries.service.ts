@@ -9,10 +9,11 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Pantry } from './pantries.entity';
 import { Order } from '../orders/order.entity';
+import { OrderStatus } from '../orders/types';
 import { FoodRequest } from '../foodRequests/request.entity';
 import { Allocation } from '../allocations/allocations.entity';
 import { DonationItem } from '../donationItems/donationItems.entity';
@@ -43,6 +44,8 @@ export class PantriesService {
 
     @Inject(forwardRef(() => EmailsService))
     private emailsService: EmailsService,
+
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findOne(pantryId: number): Promise<Pantry> {
@@ -65,15 +68,17 @@ export class PantriesService {
     totalLbs: 0,
     totalDonatedFoodValue: 0,
     totalShippingCost: 0,
+    totalShippingCostPaidBySsf: 0,
     totalValue: 0,
     percentageFoodRescueItems: 0,
+    foodRescueLbs: 0,
   };
 
   private async aggregateStats(
     pantryIds: number[],
     years?: number[],
   ): Promise<Omit<PantryStats, 'pantryName'>[]> {
-    // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, totalFoodRescueItems)
+    // Query 1: aggregate item stats (totalItems, totalOz, totalDonatedFoodValue, foodRescueItems, foodRescueOz)
     const itemsQb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
@@ -91,7 +96,11 @@ export class PantriesService {
       )
       .addSelect(
         `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN allocation.allocatedQuantity ELSE 0 END), 0)`,
-        'totalFoodRescueItems',
+        'foodRescueItems',
+      )
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN item.foodRescue = true THEN COALESCE(item.ozPerItem, 0) * allocation.allocatedQuantity ELSE 0 END), 0)`,
+        'foodRescueOz',
       )
       .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
@@ -107,7 +116,14 @@ export class PantriesService {
       .createQueryBuilder('order')
       .leftJoin('order.request', 'request')
       .select('request.pantryId', 'pantryId')
-      .addSelect('COALESCE(SUM(order.shippingCost), 0)', 'totalShippingCost')
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN order.shippingCostPaidBySsf = true THEN 0 ELSE order.shippingCost END), 0)`,
+        'totalShippingCost',
+      )
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN order.shippingCostPaidBySsf = true THEN order.shippingCost ELSE 0 END), 0)`,
+        'totalShippingCostPaidBySsf',
+      )
       .where('request.pantryId IN (:...pantryIds)', { pantryIds })
       .groupBy('request.pantryId');
 
@@ -126,7 +142,10 @@ export class PantriesService {
     const shippingMap = new Map(
       shippingRows.map((r) => [
         Number(r.pantryId),
-        Number(r.totalShippingCost),
+        {
+          totalShippingCost: Number(r.totalShippingCost),
+          totalShippingCostPaidBySsf: Number(r.totalShippingCostPaidBySsf),
+        },
       ]),
     );
 
@@ -134,8 +153,12 @@ export class PantriesService {
       const totalItems = Number(row.totalItems);
       const totalOz = Number(row.totalOz);
       const totalDonatedFoodValue = Number(row.totalDonatedFoodValue);
-      const totalShippingCost = shippingMap.get(Number(row.pantryId)) ?? 0;
-      const totalFoodRescueItems = Number(row.totalFoodRescueItems);
+      const shipping = shippingMap.get(Number(row.pantryId));
+      const totalShippingCost = shipping?.totalShippingCost ?? 0;
+      const totalShippingCostPaidBySsf =
+        shipping?.totalShippingCostPaidBySsf ?? 0;
+      const foodRescueItems = Number(row.foodRescueItems);
+      const foodRescueOz = Number(row.foodRescueOz);
 
       return {
         pantryId: Number(row.pantryId),
@@ -144,11 +167,13 @@ export class PantriesService {
         totalLbs: parseFloat((totalOz / 16).toFixed(2)),
         totalDonatedFoodValue,
         totalShippingCost,
+        totalShippingCostPaidBySsf,
         totalValue: totalDonatedFoodValue + totalShippingCost,
         percentageFoodRescueItems:
           totalItems > 0
-            ? parseFloat(((totalFoodRescueItems / totalItems) * 100).toFixed(2))
+            ? parseFloat(((foodRescueItems / totalItems) * 100).toFixed(2))
             : 0,
+        foodRescueLbs: parseFloat((foodRescueOz / 16).toFixed(2)),
       } satisfies Omit<PantryStats, 'pantryName'>;
     });
   }
@@ -242,12 +267,15 @@ export class PantriesService {
       totalStats.totalOz += s.totalOz;
       totalStats.totalDonatedFoodValue += s.totalDonatedFoodValue;
       totalStats.totalShippingCost += s.totalShippingCost;
+      totalStats.totalShippingCostPaidBySsf += s.totalShippingCostPaidBySsf;
       totalStats.totalValue += s.totalValue;
+      totalStats.foodRescueLbs += s.foodRescueLbs;
       totalFoodRescueItems +=
         (s.percentageFoodRescueItems / 100) * s.totalItems;
     }
 
     totalStats.totalLbs = parseFloat((totalStats.totalOz / 16).toFixed(2));
+    totalStats.foodRescueLbs = parseFloat(totalStats.foodRescueLbs.toFixed(2));
     totalStats.percentageFoodRescueItems =
       totalStats.totalItems > 0
         ? parseFloat(
@@ -617,8 +645,53 @@ export class PantriesService {
       (u) => removeSet.has(u.id) && currentVolunteerIds.has(u.id),
     );
 
-    pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
-    await this.repo.save(pantry);
+    // Persist the assignment change and cascade it to this pantry's open
+    // (pending/shipped) orders atomically, so a failed cascade can't leave the
+    // volunteer removed while their orders stay assigned. Removals run before
+    // adds so a same-request handoff (remove A, add B) lets B inherit the orders
+    // that A was just unassigned from.
+    const openStatuses = [OrderStatus.PENDING, OrderStatus.SHIPPED];
+    const pantryRequestsSubquery =
+      'request_id IN (SELECT request_id FROM food_requests WHERE pantry_id = :pantryId)';
+
+    // A newly added volunteer inherits all of the pantry's currently unassigned
+    // open orders. If several are added at once, the first-listed (by request
+    // order) inherits them.
+    const newVolunteerIds = new Set(newVolunteers.map((v) => v.id));
+    const inheritorId = addVolunteerIds.find((id) => newVolunteerIds.has(id));
+
+    await this.dataSource.transaction(async (manager) => {
+      pantry.volunteers = [...volunteersToKeep, ...newVolunteers];
+      await manager.getRepository(Pantry).save(pantry);
+
+      const orderRepo = manager.getRepository(Order);
+
+      // A removed volunteer loses their open orders for this pantry (they become
+      // unassigned); delivered/closed orders keep their historical assignee.
+      if (removedVolunteers.length > 0) {
+        await orderRepo
+          .createQueryBuilder()
+          .update(Order)
+          .set({ assigneeId: null })
+          .where('assignee_id IN (:...removedIds)', {
+            removedIds: removedVolunteers.map((v) => v.id),
+          })
+          .andWhere('status IN (:...openStatuses)', { openStatuses })
+          .andWhere(pantryRequestsSubquery, { pantryId })
+          .execute();
+      }
+
+      if (inheritorId !== undefined) {
+        await orderRepo
+          .createQueryBuilder()
+          .update(Order)
+          .set({ assigneeId: inheritorId })
+          .where('assignee_id IS NULL')
+          .andWhere('status IN (:...openStatuses)', { openStatuses })
+          .andWhere(pantryRequestsSubquery, { pantryId })
+          .execute();
+      }
+    });
 
     for (const volunteer of [...newVolunteers, ...removedVolunteers]) {
       try {
@@ -700,5 +773,17 @@ export class PantriesService {
       'Items Received': String(result.total_items),
       'Value Received': `$${Number(result.total_value)}`,
     };
+  }
+
+  async getDashboardStatsForUser(userId: number): Promise<PantryStatsDto> {
+    const pantry = await this.findByUserId(userId);
+
+    if (pantry.status !== ApplicationStatus.APPROVED) {
+      throw new ForbiddenException(
+        `Pantry with User id ${userId} must be approved`,
+      );
+    }
+
+    return this.getDashboardStats(pantry.pantryId);
   }
 }

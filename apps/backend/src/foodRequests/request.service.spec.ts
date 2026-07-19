@@ -505,7 +505,7 @@ describe('RequestsService', () => {
       const request = await service.findOne(1);
       expect(request.status).toBe(FoodRequestStatus.CLOSED);
 
-      const assignee = lastDeliveredOrder.assignee;
+      const assignee = lastDeliveredOrder.assignee!;
       const expectedMessage = emailTemplates.pantryRequestClosed({
         pantryName: pantry.pantryName,
         volunteerName: `${assignee.firstName} ${assignee.lastName}`,
