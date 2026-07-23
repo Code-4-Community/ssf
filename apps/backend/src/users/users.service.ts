@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Between, DataSource, In, Repository } from 'typeorm';
 import { User } from './users.entity';
@@ -23,10 +24,12 @@ import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { PantriesService } from '../pantries/pantries.service';
 import { FoodManufacturersService } from '../foodManufacturers/manufacturers.service';
-import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
+import { AdminStatsDto } from './dtos/admin-stats.dto';
 import { Pantry } from '../pantries/pantries.entity';
 import { FoodManufacturer } from '../foodManufacturers/manufacturers.entity';
 import { ApplicationStatus } from '../shared/types';
+import { VolunteerStatsDto } from '../volunteers/dtos/volunteer-stats.dto';
+import { VolunteersService } from '../volunteers/volunteers.service';
 
 @Injectable()
 export class UsersService {
@@ -51,6 +54,7 @@ export class UsersService {
     private pantriesService: PantriesService,
     @Inject(forwardRef(() => FoodManufacturersService))
     private foodManufacturersService: FoodManufacturersService,
+    private moduleRef: ModuleRef,
   ) {}
 
   async create(createUserDto: userSchemaDto): Promise<User> {
@@ -268,7 +272,7 @@ export class UsersService {
     return user;
   }
 
-  async getAdminVolunteerMonthlyAggregatedStats(): Promise<AdminVolunteerStats> {
+  async getAdminMonthlyAggregatedStats(): Promise<AdminStatsDto> {
     const now = new Date();
     const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endMonth = new Date(
@@ -305,11 +309,19 @@ export class UsersService {
 
   async getUserDashboardStats(
     userId: number,
-  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
+  ): Promise<
+    AdminStatsDto | PantryStatsDto | ManufacturerStatsDto | VolunteerStatsDto
+  > {
     const user = await this.findOne(userId);
 
-    if (user.role === Role.ADMIN || user.role === Role.VOLUNTEER) {
-      return this.getAdminVolunteerMonthlyAggregatedStats();
+    if (user.role === Role.ADMIN) {
+      return this.getAdminMonthlyAggregatedStats();
+    } else if (user.role === Role.VOLUNTEER) {
+      // Resolved lazily via ModuleRef to avoid a UsersModule <-> VolunteersModule
+      // circular module dependency.
+      return this.moduleRef
+        .get(VolunteersService, { strict: false })
+        .getVolunteerDashboardStats(userId);
     } else if (user.role === Role.PANTRY) {
       return this.pantriesService.getDashboardStatsForUser(userId);
     } else if (user.role === Role.FOODMANUFACTURER) {

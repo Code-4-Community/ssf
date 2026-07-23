@@ -1,6 +1,5 @@
-export type AdminVolunteerStats = {
+export type VolunteerStatsDto = {
   'Food Requests': string;
   Orders: string;
   Donations: string;
-  Volunteers: string;
 };

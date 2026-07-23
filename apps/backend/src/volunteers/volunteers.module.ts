@@ -1,6 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/users.entity';
+import { Order } from '../orders/order.entity';
 import { PantriesModule } from '../pantries/pantries.module';
 import { AuthModule } from '../auth/auth.module';
 import { VolunteersController } from './volunteers.controller';
@@ -12,7 +13,7 @@ import { EmailsModule } from '../emails/email.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Order]),
     UsersModule,
     forwardRef(() => PantriesModule),
     forwardRef(() => AuthModule),

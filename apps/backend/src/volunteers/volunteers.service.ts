@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/users.entity';
@@ -10,14 +15,25 @@ import { Assignments, VolunteerOrder } from './types';
 import { RequestsService } from '../foodRequests/request.service';
 import { OrdersService } from '../orders/order.service';
 import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary.dto';
+import { Order } from '../orders/order.entity';
+import { FoodRequest } from '../foodRequests/request.entity';
+import { Allocation } from '../allocations/allocations.entity';
+import { DonationItem } from '../donationItems/donationItems.entity';
+import { Donation } from '../donations/donations.entity';
+import { VolunteerStatsDto } from './dtos/volunteer-stats.dto';
 
 @Injectable()
 export class VolunteersService {
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
+    @InjectRepository(Order)
+    private orderRepo: Repository<Order>,
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
+    @Inject(forwardRef(() => RequestsService))
     private requestsService: RequestsService,
+    @Inject(forwardRef(() => OrdersService))
     private ordersService: OrdersService,
   ) {}
 
@@ -98,5 +114,68 @@ export class VolunteersService {
         pantryName: r.pantry.pantryName,
       },
     }));
+  }
+
+  async getVolunteerDashboardStats(
+    volunteerId: number,
+  ): Promise<VolunteerStatsDto> {
+    await this.findOne(volunteerId);
+
+    const now = new Date();
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    // Food requests for pantries the volunteer is assigned to, requested this month
+    const foodRequestsResult = await this.repo
+      .createQueryBuilder('volunteer')
+      .leftJoin('volunteer.pantries', 'pantry')
+      .leftJoin(FoodRequest, 'fr', 'fr.pantry_id = pantry.pantry_id')
+      .where('volunteer.id = :volunteerId', { volunteerId })
+      .andWhere('fr.requested_at BETWEEN :startMonth AND :endMonth', {
+        startMonth,
+        endMonth,
+      })
+      .select('COUNT(DISTINCT fr.request_id)', 'food_requests')
+      .getRawOne();
+
+    // Orders assigned to the volunteer that were created this month
+    const ordersResult = await this.orderRepo
+      .createQueryBuilder('order')
+      .where('order.assigneeId = :volunteerId', { volunteerId })
+      .andWhere('order.created_at BETWEEN :startMonth AND :endMonth', {
+        startMonth,
+        endMonth,
+      })
+      .select('COUNT(DISTINCT order.order_id)', 'orders')
+      .getRawOne();
+
+    // Unique donations behind the donation items allocated to the volunteer's
+    // orders, donated this month
+    const donationsResult = await this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoin(Allocation, 'a', 'a.order_id = order.order_id')
+      .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
+      .leftJoin(Donation, 'd', 'd.donation_id = di.donation_id')
+      .where('order.assigneeId = :volunteerId', { volunteerId })
+      .andWhere('d.date_donated BETWEEN :startMonth AND :endMonth', {
+        startMonth,
+        endMonth,
+      })
+      .select('COUNT(DISTINCT di.donation_id)', 'donations')
+      .getRawOne();
+
+    return {
+      'Food Requests': String(foodRequestsResult.food_requests),
+      Orders: String(ordersResult.orders),
+      Donations: String(donationsResult.donations),
+    };
   }
 }

@@ -396,76 +396,76 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                   )}
                 </Table.Row>
               ))}
-
-              {selectedViewDetailsRequest && (
-                <RequestDetailsModal
-                  request={selectedViewDetailsRequest}
-                  isOpen={selectedViewDetailsRequest !== null}
-                  onClose={() => {
-                    setSelectedViewDetailsRequest(null);
-                    if (initialRequestId) {
-                      navigate(location.pathname, { replace: true });
-                    }
-                  }}
-                  onSuccess={loadRequests}
-                  onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
-                />
-              )}
-
-              {deleteRequest && (
-                <PantryDeleteRequestActionModal
-                  request={deleteRequest}
-                  isOpen={deleteRequest !== null}
-                  onClose={() => setDeleteRequest(null)}
-                  onSuccess={() => {
-                    setAlertMessage(
-                      'Successfully deleted food request.',
-                      AlertStatus.INFO,
-                    );
-                    loadRequests();
-                    setSelectedViewDetailsRequest(null);
-                  }}
-                />
-              )}
-
-              {selectedActionRequest && (
-                <VolunteerRequestActionRequiredModal
-                  isOpen={true}
-                  onClose={clearActionRequest}
-                  onCloseRequest={() => {
-                    setSelectedCloseRequestAction(selectedActionRequest);
-                  }}
-                  onCreateOrder={() => {
-                    setSelectedCreateOrderRequest(selectedActionRequest);
-                  }}
-                />
-              )}
-
-              {selectedCloseRequestAction && (
-                <VolunteerCloseRequestActionModal
-                  request={selectedCloseRequestAction}
-                  isOpen={true}
-                  onClose={clearCloseRequest}
-                  onSuccess={() => {
-                    setAlertMessage('Request Closed', AlertStatus.INFO);
-                    loadRequests();
-                  }}
-                />
-              )}
-
-              {selectedCreateOrderRequest && (
-                <CreateNewOrderModal
-                  request={selectedCreateOrderRequest}
-                  isOpen={true}
-                  onClose={clearCreateOrder}
-                  onSuccess={() => {
-                    setAlertMessage('Order Created', AlertStatus.INFO);
-                    loadRequests();
-                  }}
-                />
-              )}
             </Table.Body>
           </Table.Root>
+
+          {selectedViewDetailsRequest && (
+            <RequestDetailsModal
+              request={selectedViewDetailsRequest}
+              isOpen={selectedViewDetailsRequest !== null}
+              onClose={() => {
+                setSelectedViewDetailsRequest(null);
+                if (initialRequestId) {
+                  navigate(location.pathname, { replace: true });
+                }
+              }}
+              onSuccess={loadRequests}
+              onDelete={() => setDeleteRequest(selectedViewDetailsRequest)}
+            />
+          )}
+
+          {deleteRequest && (
+            <PantryDeleteRequestActionModal
+              request={deleteRequest}
+              isOpen={deleteRequest !== null}
+              onClose={() => setDeleteRequest(null)}
+              onSuccess={() => {
+                setAlertMessage(
+                  'Successfully deleted food request.',
+                  AlertStatus.INFO,
+                );
+                loadRequests();
+                setSelectedViewDetailsRequest(null);
+              }}
+            />
+          )}
+
+          {selectedActionRequest && (
+            <VolunteerRequestActionRequiredModal
+              isOpen={true}
+              onClose={clearActionRequest}
+              onCloseRequest={() => {
+                setSelectedCloseRequestAction(selectedActionRequest);
+              }}
+              onCreateOrder={() => {
+                setSelectedCreateOrderRequest(selectedActionRequest);
+              }}
+            />
+          )}
+
+          {selectedCloseRequestAction && (
+            <VolunteerCloseRequestActionModal
+              request={selectedCloseRequestAction}
+              isOpen={true}
+              onClose={clearCloseRequest}
+              onSuccess={() => {
+                setAlertMessage('Request Closed', AlertStatus.INFO);
+                loadRequests();
+              }}
+            />
+          )}
+
+          {selectedCreateOrderRequest && (
+            <CreateNewOrderModal
+              request={selectedCreateOrderRequest}
+              isOpen={true}
+              onClose={clearCreateOrder}
+              onSuccess={() => {
+                setAlertMessage('Order Created', AlertStatus.INFO);
+                loadRequests();
+              }}
+            />
+          )}
         </>
       )}
 
