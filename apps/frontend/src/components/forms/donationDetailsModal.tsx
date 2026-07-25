@@ -137,7 +137,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 <Dialog.Title fontSize="lg" fontWeight="600">
                   Donation #{donationId} Stock
                 </Dialog.Title>
-                {donation.status === DonationStatus.AVAILABLE && (
+                {donation.status === DonationStatus.AVAILABLE && !isEditing && (
                   <>
                     <EditButton onClick={() => setIsEditing(true)}></EditButton>
                     <DeleteButton onClick={onDelete}></DeleteButton>
