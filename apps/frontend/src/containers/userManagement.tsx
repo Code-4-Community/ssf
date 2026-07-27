@@ -172,6 +172,7 @@ const VolunteerManagement: React.FC = () => {
             <NewVolunteerModal
               onSubmitSuccess={() => {
                 setAlertMessage('User added.', AlertStatus.INFO);
+                fetchVolunteers();
               }}
               onSubmitFail={() => {
                 setAlertMessage('User could not be added.', AlertStatus.ERROR);
