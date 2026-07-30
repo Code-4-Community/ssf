@@ -271,7 +271,6 @@ const Navbar: React.FC = () => {
     navigate(ROUTES.LOGIN, { replace: true });
   };
 
-  // Should be changed once other dashboards are implmented
   const ROLE_DASHBOARD_ROUTE: Record<Role, string> = {
     [Role.ADMIN]: ROUTES.ADMIN_DASHBOARD,
     [Role.FOODMANUFACTURER]: ROUTES.FM_DASHBOARD,
@@ -330,7 +329,7 @@ const Navbar: React.FC = () => {
               overflow="hidden"
               style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
             >
-              {roleLabel ? `${roleLabel} Dashboard` : 'Dashboard'}
+              {roleLabel ? `${roleLabel}` : 'Profile'}
             </Text>
             <Text
               fontSize="10px"
