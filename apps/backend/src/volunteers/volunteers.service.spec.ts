@@ -387,32 +387,6 @@ describe('VolunteersService', () => {
   });
 
   describe('getVolunteerDashboardStats', () => {
-    const now = new Date();
-    const currentMonthDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      15,
-      12,
-      0,
-      0,
-    );
-
-    // Stats are aggregated for the current month, but the seed data uses fixed
-    // 2024 dates. Pull the relevant records into the current month so the
-    // month filter includes them. Run this after any assignee updates that
-    // still rely on the original seeded dates as identifiers.
-    async function normalizeDatesToCurrentMonth() {
-      await testDataSource.query(`UPDATE food_requests SET requested_at = $1`, [
-        currentMonthDate,
-      ]);
-      await testDataSource.query(`UPDATE orders SET created_at = $1`, [
-        currentMonthDate,
-      ]);
-      await testDataSource.query(`UPDATE donations SET date_donated = $1`, [
-        currentMonthDate,
-      ]);
-    }
-
     it('throws NotFoundException for non-existent volunteer', async () => {
       await expect(service.getVolunteerDashboardStats(999)).rejects.toThrow(
         new NotFoundException('Volunteer 999 not found'),
@@ -422,7 +396,6 @@ describe('VolunteersService', () => {
     it('counts food requests from assigned pantries, with zero orders/donations when none are assigned', async () => {
       // Maria Garcia (id=7) is assigned to pantries 2 and 3, each with 1 food request
       await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
-      await normalizeDatesToCurrentMonth();
 
       const stats = await service.getVolunteerDashboardStats(7);
 
@@ -445,7 +418,6 @@ describe('VolunteersService', () => {
         `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 8`,
       );
       await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
-      await normalizeDatesToCurrentMonth();
 
       const stats = await service.getVolunteerDashboardStats(8);
 
@@ -460,7 +432,6 @@ describe('VolunteersService', () => {
       // James Thomas (id=6) is assigned to pantry 1 only (2 food requests),
       // but all 4 seeded orders (spanning 4 distinct donations) are assigned to him
       await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
-      await normalizeDatesToCurrentMonth();
 
       const stats = await service.getVolunteerDashboardStats(6);
 
@@ -478,7 +449,6 @@ describe('VolunteersService', () => {
       await testDataSource.query(
         `UPDATE orders SET assignee_id = 7 WHERE shipped_at = '2024-01-17 08:00:00'`,
       );
-      await normalizeDatesToCurrentMonth();
 
       const stats = await service.getVolunteerDashboardStats(7);
 
@@ -500,7 +470,6 @@ describe('VolunteersService', () => {
       await testDataSource.query(
         `UPDATE orders SET assignee_id = 8 WHERE created_at = '2024-02-03 12:00:00' AND status = 'pending'`,
       );
-      await normalizeDatesToCurrentMonth();
 
       const stats = await service.getVolunteerDashboardStats(8);
 

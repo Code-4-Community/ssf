@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { User } from './users.entity';
 import { PendingApplication, Role } from './types';
 import { validateId } from '../utils/validation.utils';
@@ -272,30 +272,12 @@ export class UsersService {
     return user;
   }
 
-  async getAdminMonthlyAggregatedStats(): Promise<AdminStatsDto> {
-    const now = new Date();
-    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
-
+  async getAdminAggregatedStats(): Promise<AdminStatsDto> {
     const [foodRequestsCount, ordersCount, donationsCount, volunteersCount] =
       await Promise.all([
-        this.foodRequestRepo.count({
-          where: { requestedAt: Between(startMonth, endMonth) },
-        }),
-        this.orderRepo.count({
-          where: { createdAt: Between(startMonth, endMonth) },
-        }),
-        this.donationRepo.count({
-          where: { dateDonated: Between(startMonth, endMonth) },
-        }),
+        this.foodRequestRepo.count(),
+        this.orderRepo.count(),
+        this.donationRepo.count(),
         this.repo.count({ where: { role: Role.VOLUNTEER } }),
       ]);
 
@@ -315,7 +297,7 @@ export class UsersService {
     const user = await this.findOne(userId);
 
     if (user.role === Role.ADMIN) {
-      return this.getAdminMonthlyAggregatedStats();
+      return this.getAdminAggregatedStats();
     } else if (user.role === Role.VOLUNTEER) {
       // Resolved lazily via ModuleRef to avoid a UsersModule <-> VolunteersModule
       // circular module dependency.

@@ -121,54 +121,30 @@ export class VolunteersService {
   ): Promise<VolunteerStatsDto> {
     await this.findOne(volunteerId);
 
-    const now = new Date();
-    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
-
-    // Food requests for pantries the volunteer is assigned to, requested this month
+    // Food requests for pantries the volunteer is assigned to
     const foodRequestsResult = await this.repo
       .createQueryBuilder('volunteer')
       .leftJoin('volunteer.pantries', 'pantry')
       .leftJoin(FoodRequest, 'fr', 'fr.pantry_id = pantry.pantry_id')
       .where('volunteer.id = :volunteerId', { volunteerId })
-      .andWhere('fr.requested_at BETWEEN :startMonth AND :endMonth', {
-        startMonth,
-        endMonth,
-      })
       .select('COUNT(DISTINCT fr.request_id)', 'food_requests')
       .getRawOne();
 
-    // Orders assigned to the volunteer that were created this month
+    // Orders assigned to the volunteer
     const ordersResult = await this.orderRepo
       .createQueryBuilder('order')
       .where('order.assigneeId = :volunteerId', { volunteerId })
-      .andWhere('order.created_at BETWEEN :startMonth AND :endMonth', {
-        startMonth,
-        endMonth,
-      })
       .select('COUNT(DISTINCT order.order_id)', 'orders')
       .getRawOne();
 
     // Unique donations behind the donation items allocated to the volunteer's
-    // orders, donated this month
+    // orders
     const donationsResult = await this.orderRepo
       .createQueryBuilder('order')
       .leftJoin(Allocation, 'a', 'a.order_id = order.order_id')
       .leftJoin(DonationItem, 'di', 'di.item_id = a.item_id')
       .leftJoin(Donation, 'd', 'd.donation_id = di.donation_id')
       .where('order.assigneeId = :volunteerId', { volunteerId })
-      .andWhere('d.date_donated BETWEEN :startMonth AND :endMonth', {
-        startMonth,
-        endMonth,
-      })
       .select('COUNT(DISTINCT di.donation_id)', 'donations')
       .getRawOne();
 
