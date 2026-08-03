@@ -310,21 +310,19 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         }}
       />
 
-      {selectedViewDetailsDonation && (
-        <DonationDetailsModal
-          donation={selectedViewDetailsDonation}
-          isOpen={selectedViewDetailsDonation !== null}
-          onClose={() => {
-            setSelectedViewDetailsDonation(null);
-            navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
-          }}
-          onSuccess={() => fetchDonations()}
-          onDelete={() => {
-            setDeleteDonation(selectedViewDetailsDonation);
-            navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
-          }}
-        />
-      )}
+      <DonationDetailsModal
+        donation={selectedViewDetailsDonation}
+        isOpen={selectedViewDetailsDonation !== null}
+        onClose={() => {
+          setSelectedViewDetailsDonation(null);
+          navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+        }}
+        onSuccess={() => fetchDonations()}
+        onDelete={() => {
+          setDeleteDonation(selectedViewDetailsDonation);
+          navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+        }}
+      />
 
       {Object.values(DonationStatus).map((status) => {
         const allDonationsByStatus = statusDonations[status] || [];
