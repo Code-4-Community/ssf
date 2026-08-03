@@ -264,7 +264,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           isOpen={isLogDonationOpen}
           onClose={() => {
             setIsLogDonationOpen(false);
-            if (searchParams.get('logDonation')) {
+            if (searchParams.get('logDonation') === 'true') {
               navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
             }
           }}
