@@ -210,6 +210,7 @@ describe('FoodManufacturersService', () => {
       const id = manufacturer.foodManufacturerId;
       const message = emailTemplates.pantryFmApplicationApproved({
         name: manufacturer.foodManufacturerRepresentative.firstName,
+        applicantType: 'company',
       });
 
       await service.approve(id);
@@ -380,6 +381,7 @@ describe('FoodManufacturersService', () => {
 
       const userMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
         name: dto.contactFirstName,
+        applicantType: 'company',
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 

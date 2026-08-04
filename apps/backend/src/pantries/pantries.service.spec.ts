@@ -223,6 +223,7 @@ describe('PantriesService', () => {
       const pantry = await service.findOne(5);
       const message = emailTemplates.pantryFmApplicationApproved({
         name: pantry.pantryUser.firstName,
+        applicantType: 'pantry',
       });
 
       await service.approve(5);
@@ -387,6 +388,7 @@ describe('PantriesService', () => {
 
       const userMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
         name: dto.contactFirstName,
+        applicantType: 'pantry',
       });
       const adminMessage = emailTemplates.pantryFmApplicationSubmittedToAdmin();
 

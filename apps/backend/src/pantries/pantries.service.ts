@@ -419,6 +419,7 @@ export class PantriesService {
     try {
       const pantryMessage = emailTemplates.pantryFmApplicationSubmittedToUser({
         name: pantryContact.firstName,
+        applicantType: 'pantry',
       });
 
       await this.emailsService.sendEmails({
@@ -516,6 +517,7 @@ export class PantriesService {
     try {
       const message = emailTemplates.pantryFmApplicationApproved({
         name: newPantryUser.firstName,
+        applicantType: 'pantry',
       });
 
       await this.emailsService.sendEmails({
