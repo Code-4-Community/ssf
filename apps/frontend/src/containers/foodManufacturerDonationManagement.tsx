@@ -317,7 +317,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         }}
       />
 
-      {selectedViewDetailsDonation && (
+      {selectedViewDetailsDonation !== null && (
         <DonationDetailsModal
           donation={selectedViewDetailsDonation}
           isOpen={selectedViewDetailsDonation !== null}

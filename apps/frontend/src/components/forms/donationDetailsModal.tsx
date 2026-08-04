@@ -27,7 +27,7 @@ import EditableDonationItemsTable, {
 } from './editableDonationItemsTable';
 
 interface DonationDetailsModalProps {
-  donation: Donation;
+  donation: Donation | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -48,13 +48,14 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const donationId = donation.donationId;
+  const donationId = donation?.donationId;
 
   const handleCancel = () => {
     setIsEditing(false);
   };
 
   const loadItems = useCallback(async () => {
+    if (donationId == null) return;
     try {
       const itemsData = await ApiClient.getDonationItemsByDonationId(
         donationId,
@@ -66,6 +67,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   }, [donationId, setAlertMessage]);
 
   const handleUpdate = async (rows: DonationRow[]) => {
+    if (donationId == null) return;
     const existingIds = new Set(items.map((i) => i.itemId));
     const body: ReplaceDonationItemDto[] = rows.map((r) => ({
       ...(existingIds.has(r.id) ? { itemId: r.id } : {}),
@@ -122,128 +124,133 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       )}
       <Dialog.Backdrop bg="blackAlpha.300" />
 
-      <Dialog.Positioner>
-        <Dialog.Content
-          maxW={isEditing ? '75vw' : 'lg'}
-          maxH={isEditing ? '90vh' : undefined}
-        >
-          <Dialog.CloseTrigger asChild>
-            <CloseButton />
-          </Dialog.CloseTrigger>
+      {donation !== null && (
+        <Dialog.Positioner>
+          <Dialog.Content
+            maxW={isEditing ? '75vw' : 'lg'}
+            maxH={isEditing ? '90vh' : undefined}
+          >
+            <Dialog.CloseTrigger asChild>
+              <CloseButton />
+            </Dialog.CloseTrigger>
 
-          <Dialog.Header>
-            <VStack align="stretch" gap={0}>
-              <HStack mb={2}>
-                <Dialog.Title fontSize="lg" fontWeight="600">
-                  Donation #{donationId} Stock
-                </Dialog.Title>
-                {donation.status === DonationStatus.AVAILABLE && !isEditing && (
-                  <>
-                    <EditButton onClick={() => setIsEditing(true)}></EditButton>
-                    <DeleteButton onClick={onDelete}></DeleteButton>
-                  </>
-                )}
-              </HStack>
-              <Text fontSize="sm">
-                {donation.foodManufacturer?.foodManufacturerName}
-              </Text>
-              <Text fontSize="sm">{formatDate(donation.dateDonated)}</Text>
-            </VStack>
-          </Dialog.Header>
-
-          <Dialog.Body>
-            {isEditing ? (
-              <EditableDonationItemsTable
-                initialRows={items.map((item) => ({
-                  id: item.itemId,
-                  foodItem: item.itemName,
-                  foodType: item.foodType,
-                  numItems: String(item.quantity),
-                  ozPerItem: String(item.ozPerItem),
-                  valuePerItem: String(item.estimatedValue),
-                  foodRescue: item.foodRescue,
-                }))}
-                onCancel={handleCancel}
-                onSubmit={handleUpdate}
-                submitButtonLabel="Update Donation"
-              ></EditableDonationItemsTable>
-            ) : (
-              <VStack align="stretch" gap={4} my={2}>
-                {Object.entries(groupedItems).map(([foodType, typeItems]) => (
-                  <Box key={foodType}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="600"
-                      color="neutral.800"
-                      mb={2}
-                    >
-                      {foodType}
-                    </Text>
-
-                    <VStack align="stretch" gap={2}>
-                      {typeItems.map((item, _) => (
-                        <Box
-                          key={item.itemId}
-                          display="flex"
-                          p={0}
-                          border="1px solid"
-                          borderColor="neutral.100"
-                          borderRadius="md"
-                          overflow="hidden"
-                          color="neutral.800"
-                          fontSize="sm"
-                        >
-                          <Box flex={1} p={3} bg="white">
-                            <Text>{item.itemName}</Text>
-                          </Box>
-
-                          <Box
-                            borderLeft="1px solid"
-                            borderColor="neutral.100"
-                            p={3}
-                            width="35%"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            bg="white"
-                          >
-                            <Text>
-                              {item.quantity - item.reservedQuantity} of{' '}
-                              {item.quantity} Remaining
-                            </Text>
-                          </Box>
-                        </Box>
-                      ))}
-                    </VStack>
-                  </Box>
-                ))}
-              </VStack>
-            )}
-
-            {!isEditing && donation.recurrence !== RecurrenceEnum.NONE && (
-              <Box mt={6} color="neutral.800" fontSize="sm">
-                <Text fontWeight={600} mb={3}>
-                  Donation sets up recurring reminders
+            <Dialog.Header>
+              <VStack align="stretch" gap={0}>
+                <HStack mb={2}>
+                  <Dialog.Title fontSize="lg" fontWeight="600">
+                    Donation #{donationId} Stock
+                  </Dialog.Title>
+                  {donation.status === DonationStatus.AVAILABLE &&
+                    !isEditing && (
+                      <>
+                        <EditButton
+                          onClick={() => setIsEditing(true)}
+                        ></EditButton>
+                        <DeleteButton onClick={onDelete}></DeleteButton>
+                      </>
+                    )}
+                </HStack>
+                <Text fontSize="sm">
+                  {donation.foodManufacturer?.foodManufacturerName}
                 </Text>
+                <Text fontSize="sm">{formatDate(donation.dateDonated)}</Text>
+              </VStack>
+            </Dialog.Header>
 
-                {donation.nextDonationDates &&
-                  donation.nextDonationDates.length > 0 && (
-                    <Box>
-                      <Text fontWeight={600} color="neutral.700" mb={2}>
-                        Upcoming reminder emails
+            <Dialog.Body>
+              {isEditing ? (
+                <EditableDonationItemsTable
+                  initialRows={items.map((item) => ({
+                    id: item.itemId,
+                    foodItem: item.itemName,
+                    foodType: item.foodType,
+                    numItems: String(item.quantity),
+                    ozPerItem: String(item.ozPerItem),
+                    valuePerItem: String(item.estimatedValue),
+                    foodRescue: item.foodRescue,
+                  }))}
+                  onCancel={handleCancel}
+                  onSubmit={handleUpdate}
+                  submitButtonLabel="Update Donation"
+                ></EditableDonationItemsTable>
+              ) : (
+                <VStack align="stretch" gap={4} my={2}>
+                  {Object.entries(groupedItems).map(([foodType, typeItems]) => (
+                    <Box key={foodType}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="600"
+                        color="neutral.800"
+                        mb={2}
+                      >
+                        {foodType}
                       </Text>
-                      <Text color="neutral.700">
-                        {donation.nextDonationDates
-                          .map((date) => formatDate(date))
-                          .join(', ')}
-                      </Text>
+
+                      <VStack align="stretch" gap={2}>
+                        {typeItems.map((item, _) => (
+                          <Box
+                            key={item.itemId}
+                            display="flex"
+                            p={0}
+                            border="1px solid"
+                            borderColor="neutral.100"
+                            borderRadius="md"
+                            overflow="hidden"
+                            color="neutral.800"
+                            fontSize="sm"
+                          >
+                            <Box flex={1} p={3} bg="white">
+                              <Text>{item.itemName}</Text>
+                            </Box>
+
+                            <Box
+                              borderLeft="1px solid"
+                              borderColor="neutral.100"
+                              p={3}
+                              width="35%"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              bg="white"
+                            >
+                              <Text>
+                                {item.quantity - item.reservedQuantity} of{' '}
+                                {item.quantity} Remaining
+                              </Text>
+                            </Box>
+                          </Box>
+                        ))}
+                      </VStack>
                     </Box>
-                  )}
-              </Box>
-            )}
-          </Dialog.Body>
-        </Dialog.Content>
-      </Dialog.Positioner>
+                  ))}
+                </VStack>
+              )}
+
+              {!isEditing && donation.recurrence !== RecurrenceEnum.NONE && (
+                <Box mt={6} color="neutral.800" fontSize="sm">
+                  <Text fontWeight={600} mb={3}>
+                    Donation sets up recurring reminders
+                  </Text>
+
+                  {donation.nextDonationDates &&
+                    donation.nextDonationDates.length > 0 && (
+                      <Box>
+                        <Text fontWeight={600} color="neutral.700" mb={2}>
+                          Upcoming reminder emails
+                        </Text>
+                        <Text color="neutral.700">
+                          {donation.nextDonationDates
+                            .map((date) => formatDate(date))
+                            .join(', ')}
+                        </Text>
+                      </Box>
+                    )}
+                </Box>
+              )}
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      )}
     </Dialog.Root>
   );
 };

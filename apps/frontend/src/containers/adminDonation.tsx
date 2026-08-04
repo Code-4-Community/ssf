@@ -341,7 +341,7 @@ const AdminDonation: React.FC = () => {
         }}
       />
 
-      {selectedDonation && (
+      {selectedDonation !== null && (
         <DonationDetailsModal
           donation={selectedDonation}
           isOpen={selectedDonation !== null}

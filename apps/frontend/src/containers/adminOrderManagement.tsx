@@ -307,16 +307,14 @@ const AdminOrderManagement: React.FC = () => {
         );
       })}
 
-      {selectedOrderId && (
-        <OrderDetailsModal
-          orderId={selectedOrderId}
-          isOpen={true}
-          onClose={() => {
-            setSelectedOrderId(null);
-            navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
-          }}
-        />
-      )}
+      <OrderDetailsModal
+        orderId={selectedOrderId}
+        isOpen={selectedOrderId !== null}
+        onClose={() => {
+          setSelectedOrderId(null);
+          navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
+        }}
+      />
     </Box>
   );
 };
