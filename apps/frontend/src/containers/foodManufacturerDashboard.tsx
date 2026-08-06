@@ -112,7 +112,7 @@ const FoodManufacturerDashboard: React.FC = () => {
         <PageEmptyState
           entity="donations"
           primaryButtonText="Log New Donation"
-          primaryButtonLink={ROUTES.FM_DONATION_MANAGEMENT}
+          primaryButtonLink={`${ROUTES.FM_DONATION_MANAGEMENT}?logDonation=true`}
           secondaryButtonText="View Donations"
           secondaryButtonLink={ROUTES.FM_DONATION_MANAGEMENT}
         />

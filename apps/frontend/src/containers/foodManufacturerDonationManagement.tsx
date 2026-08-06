@@ -40,7 +40,9 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [isResubmitOpen, setIsResubmitOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [alertState, setAlertMessage] = useAlert();
-  const [isLogDonationOpen, setIsLogDonationOpen] = useState(false);
+  const [isLogDonationOpen, setIsLogDonationOpen] = useState(
+    searchParams.get('logDonation') === 'true',
+  );
   const [manufacturerId, setManufacturerId] = useState<number | null>(null);
   const [selectedActionDonation, setSelectedActionDonation] =
     useState<DonationDetails | null>(null);
@@ -260,7 +262,12 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           foodManufacturerId={mostRecentDonationFmId ?? manufacturerId}
           onDonationSuccess={() => fetchDonations()}
           isOpen={isLogDonationOpen}
-          onClose={() => setIsLogDonationOpen(false)}
+          onClose={() => {
+            setIsLogDonationOpen(false);
+            if (searchParams.get('logDonation') === 'true') {
+              navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+            }
+          }}
         />
       )}
 
@@ -310,7 +317,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
         }}
       />
 
-      {selectedViewDetailsDonation && (
+      {selectedViewDetailsDonation !== null && (
         <DonationDetailsModal
           donation={selectedViewDetailsDonation}
           isOpen={selectedViewDetailsDonation !== null}

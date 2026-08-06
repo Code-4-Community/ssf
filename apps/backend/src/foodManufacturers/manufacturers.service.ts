@@ -333,6 +333,7 @@ export class FoodManufacturersService {
       const manufacturerMessage =
         emailTemplates.pantryFmApplicationSubmittedToUser({
           name: foodManufacturerContact.firstName,
+          applicantType: 'company',
         });
 
       await this.emailsService.sendEmails({
@@ -432,6 +433,7 @@ export class FoodManufacturersService {
     try {
       const message = emailTemplates.pantryFmApplicationApproved({
         name: newFoodManufacturer.firstName,
+        applicantType: 'company',
       });
 
       await this.emailsService.sendEmails({
