@@ -385,4 +385,99 @@ describe('VolunteersService', () => {
       );
     });
   });
+
+  describe('getVolunteerDashboardStats', () => {
+    it('throws NotFoundException for non-existent volunteer', async () => {
+      await expect(service.getVolunteerDashboardStats(999)).rejects.toThrow(
+        new NotFoundException('Volunteer 999 not found'),
+      );
+    });
+
+    it('counts food requests from assigned pantries, with zero orders/donations when none are assigned', async () => {
+      // Maria Garcia (id=7) is assigned to pantries 2 and 3, each with 1 food request
+      await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
+
+      const stats = await service.getVolunteerDashboardStats(7);
+
+      const expectedKeys = ['Food Requests', 'Orders', 'Donations'];
+      expect(Object.keys(stats)).toEqual(expectedKeys);
+
+      Object.values(stats).forEach((value) => {
+        expect(typeof value).toBe('string');
+      });
+
+      expect(stats).toEqual({
+        'Food Requests': '2',
+        Orders: '0',
+        Donations: '0',
+      });
+    });
+
+    it('returns zero stats when the volunteer has no pantry or order assignments', async () => {
+      await testDataSource.query(
+        `DELETE FROM "volunteer_assignments" WHERE volunteer_id = 8`,
+      );
+      await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
+
+      const stats = await service.getVolunteerDashboardStats(8);
+
+      expect(stats).toEqual({
+        'Food Requests': '0',
+        Orders: '0',
+        Donations: '0',
+      });
+    });
+
+    it('counts orders assigned to the volunteer and the unique donations behind them', async () => {
+      // James Thomas (id=6) is assigned to pantry 1 only (2 food requests),
+      // but all 4 seeded orders (spanning 4 distinct donations) are assigned to him
+      await testDataSource.query(`UPDATE orders SET assignee_id = 6`);
+
+      const stats = await service.getVolunteerDashboardStats(6);
+
+      expect(stats).toEqual({
+        'Food Requests': '2',
+        Orders: '4',
+        Donations: '4',
+      });
+    });
+
+    it('counts orders/donations assigned directly to the volunteer even outside their assigned pantries', async () => {
+      // Maria Garcia (id=7) is assigned to pantries 2 and 3, not pantry 1,
+      // but is directly assigned the delivered order under pantry 1
+      await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = 7 WHERE shipped_at = '2024-01-17 08:00:00'`,
+      );
+
+      const stats = await service.getVolunteerDashboardStats(7);
+
+      expect(stats).toEqual({
+        'Food Requests': '2',
+        Orders: '1',
+        Donations: '1',
+      });
+    });
+
+    it('counts a shared donation only once across multiple assigned orders', async () => {
+      // William Moore (id=8) is assigned to pantry 3 only (1 food request).
+      // Assign him the Westside order (donation D2 only) and the pending
+      // Downtown order (donations D4 and D2) - D2 should only count once.
+      await testDataSource.query(`UPDATE orders SET assignee_id = NULL`);
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = 8 WHERE shipped_at = '2024-01-22 09:00:00'`,
+      );
+      await testDataSource.query(
+        `UPDATE orders SET assignee_id = 8 WHERE created_at = '2024-02-03 12:00:00' AND status = 'pending'`,
+      );
+
+      const stats = await service.getVolunteerDashboardStats(8);
+
+      expect(stats).toEqual({
+        'Food Requests': '1',
+        Orders: '2',
+        Donations: '2',
+      });
+    });
+  });
 });

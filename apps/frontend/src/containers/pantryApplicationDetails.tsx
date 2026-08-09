@@ -12,7 +12,12 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
-import { AlertStatus, ApplicationStatus, PantryWithUser } from '../types/types';
+import {
+  AlertStatus,
+  ApplicationStatus,
+  PantryWithUser,
+  Role,
+} from '../types/types';
 import { formatDate, formatPhone } from '@utils/utils';
 import { TagGroup } from '@components/forms/tagGroup';
 import { Pencil, TriangleAlert } from 'lucide-react';
@@ -101,6 +106,7 @@ const PantryApplicationDetails: React.FC = () => {
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const fieldContentStyles = {
     textStyle: 'p2',
@@ -155,6 +161,18 @@ const PantryApplicationDetails: React.FC = () => {
   useEffect(() => {
     fetchApplicationDetails();
   }, [fetchApplicationDetails]);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const user = await ApiClient.getMe();
+        setIsAdmin(user.role === Role.ADMIN);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+    fetchRole();
+  }, []);
 
   const handleApprove = async () => {
     if (application) {
@@ -252,25 +270,27 @@ const PantryApplicationDetails: React.FC = () => {
                 <Text textStyle="p" fontWeight={600}>
                   {application.pantryName}
                 </Text>
-                <HStack
-                  gap={1}
-                  color="blue.hover"
-                  textStyle="p2"
-                  fontWeight={600}
-                  cursor={isEditing ? 'default' : 'pointer'}
-                  _hover={isEditing ? {} : { color: 'neutral.900' }}
-                  onClick={isEditing ? undefined : () => setIsEditing(true)}
-                >
-                  <Pencil size={14} />
-                  <Text fontWeight={600} fontFamily="ibm">
-                    {isEditing ? 'Editing' : 'Edit'}
-                  </Text>
-                </HStack>
+                {isAdmin && (
+                  <HStack
+                    gap={1}
+                    color="blue.hover"
+                    textStyle="p2"
+                    fontWeight={600}
+                    cursor={isEditing ? 'default' : 'pointer'}
+                    _hover={isEditing ? {} : { color: 'neutral.900' }}
+                    onClick={isEditing ? undefined : () => setIsEditing(true)}
+                  >
+                    <Pencil size={14} />
+                    <Text fontWeight={600} fontFamily="ibm">
+                      {isEditing ? 'Editing' : 'Edit'}
+                    </Text>
+                  </HStack>
+                )}
               </HStack>
             )}
           </Box>
 
-          {!isApplicationMode && isEditing ? (
+          {!isApplicationMode && isAdmin && isEditing ? (
             <EditablePantryApplication
               isEditing={isEditing}
               onEditingChange={setIsEditing}

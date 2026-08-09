@@ -45,10 +45,16 @@ import { FoodRequestSummaryDto } from '../foodRequests/dtos/food-request-summary
 const resolvePantryAuthorizedUserIds: OwnerIdResolver = ({
   entityId,
   services,
+  user,
 }) =>
   pipeNullable(
     () => services.get(PantriesService).findOne(entityId),
-    (pantry: Pantry) => [pantry.pantryUser.id],
+    (pantry: Pantry) => {
+      if (user?.role === Role.VOLUNTEER) {
+        return (pantry.volunteers ?? []).map((volunteer) => volunteer.id);
+      }
+      return [pantry.pantryUser.id];
+    },
   );
 
 @Controller('pantries')
@@ -119,7 +125,7 @@ export class PantriesController {
     idParam: 'pantryId',
     resolver: resolvePantryAuthorizedUserIds,
   })
-  @Roles(Role.PANTRY, Role.ADMIN)
+  @Roles(Role.PANTRY, Role.ADMIN, Role.VOLUNTEER)
   @Get('/:pantryId')
   async getPantry(
     @Param('pantryId', ParseIntPipe) pantryId: number,
