@@ -80,9 +80,10 @@ const AdminDonation: React.FC = () => {
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
       }
     } else {
+      setAlertMessage('Donation not found.', AlertStatus.ERROR);
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
     }
-  }, [searchParams, donations, navigate]);
+  }, [searchParams, donations, navigate, setAlertMessage]);
 
   // Pre-fill manufacturer filter from the foodManufacturerId url param and then
   // clear the param, so navigating from "View Donations" filters to that

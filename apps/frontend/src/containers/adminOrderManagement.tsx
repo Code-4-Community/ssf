@@ -188,9 +188,10 @@ const AdminOrderManagement: React.FC = () => {
         }
       }
     } else {
+      setAlertMessage('Order not found.', AlertStatus.ERROR);
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   // Pre-fill pantry filter from url param and then clear the param.
   useEffect(() => {
