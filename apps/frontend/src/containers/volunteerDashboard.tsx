@@ -14,6 +14,7 @@ import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
 import {
   AlertStatus,
+  FoodRequestStatus,
   FoodRequestSummaryDto,
   User,
   VolunteerOrder,
@@ -52,11 +53,15 @@ const VolunteerDashboard: React.FC = () => {
           ApiClient.getVolunteerRecentOrders(),
         ]);
 
-        const sorted = requests.sort(
-          (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-            new Date(b.requestedAt).getTime() -
-            new Date(a.requestedAt).getTime(),
-        );
+        const sorted = requests
+          .filter(
+            (r: FoodRequestSummaryDto) => r.status === FoodRequestStatus.ACTIVE,
+          )
+          .sort(
+            (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+              new Date(b.requestedAt).getTime() -
+              new Date(a.requestedAt).getTime(),
+          );
         setRecentFoodRequests(sorted.slice(0, 2));
         setRecentOrders(orders);
       } catch {

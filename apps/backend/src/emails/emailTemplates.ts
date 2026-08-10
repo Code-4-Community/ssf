@@ -9,7 +9,10 @@ export const EMAIL_REDIRECT_URL = 'http://localhost:4200';
 export const SSF_PARTNER_EMAIL = 'example@gmail.com';
 
 export const emailTemplates = {
-  pantryFmApplicationApproved: (params: { name: string }): EmailTemplate => ({
+  pantryFmApplicationApproved: (params: {
+    name: string;
+    applicantType: 'company' | 'pantry';
+  }): EmailTemplate => ({
     subject: 'Your Securing Safe Food Account Has Been Created',
     bodyHTML: `
       <p>Hi ${params.name},</p>
@@ -18,7 +21,11 @@ export const emailTemplates = {
       </p>
       <p>
         You can <a href="${EMAIL_REDIRECT_URL}/login">log in</a> using the credentials created during registration
-         to begin submitting requests, managing donations, and coordinating with our network.
+         ${
+           params.applicantType === 'company'
+             ? 'to begin managing donations and coordinating with our network'
+             : 'to begin submitting requests, and coordinating with our network'
+         }.
       </p>
       <p>
         If you have any questions as you get started or need help navigating the
@@ -66,14 +73,17 @@ export const emailTemplates = {
 
   pantryFmApplicationSubmittedToUser: (params: {
     name: string;
+    applicantType: 'company' | 'pantry';
   }): EmailTemplate => ({
     subject: 'Your SSF Application Has Been Submitted',
     bodyHTML: `
       <p>Hi ${params.name},</p>
       <p>
-        Thank you for your interest in partnering with Securing Safe Food! 
-        Your application has been successfully submitted and is currently under review. 
-        If we determine that your food pantry aligns with our mission and available resources, our team will reach out.
+        Thank you for your interest in partnering with Securing Safe Food!
+        Your application has been successfully submitted and is currently under review.
+        If we determine that your ${
+          params.applicantType === 'company' ? 'company' : 'food pantry'
+        } aligns with our mission and available resources, our team will reach out.
       </p>
       <p>
         While we are unable to respond to every application, submissions are reviewed on a rolling basis. 

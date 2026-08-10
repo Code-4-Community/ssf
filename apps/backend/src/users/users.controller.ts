@@ -14,11 +14,12 @@ import { userSchemaDto } from './dtos/userSchema.dto';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { PendingApplication, Role } from './types';
 import { AuthenticatedRequest } from '../auth/authenticated-request';
-import { AdminVolunteerStats } from './dtos/admin-volunteer-stats.dto';
+import { AdminStatsDto } from './dtos/admin-stats.dto';
 import { PantryStatsDto } from '../pantries/dtos/pantry-stats.dto';
 import { ManufacturerStatsDto } from '../foodManufacturers/dtos/manufacturer-stats.dto';
 import { Roles } from '../auth/roles.decorator';
 import { CheckOwnership, OwnerIdResolver } from '../auth/ownership.decorator';
+import { VolunteerStatsDto } from '../volunteers/dtos/volunteer-stats.dto';
 
 const resolveUserAuthorizedUserIds: OwnerIdResolver = async ({ entityId }) => [
   entityId,
@@ -40,7 +41,9 @@ export class UsersController {
   @Get('/:id/stats')
   async getUserDashboardStats(
     @Param('id', ParseIntPipe) userId: number,
-  ): Promise<AdminVolunteerStats | PantryStatsDto | ManufacturerStatsDto> {
+  ): Promise<
+    AdminStatsDto | PantryStatsDto | ManufacturerStatsDto | VolunteerStatsDto
+  > {
     return this.usersService.getUserDashboardStats(userId);
   }
 

@@ -14,6 +14,7 @@ import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
 import {
   AlertStatus,
+  FoodRequestStatus,
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
@@ -48,11 +49,16 @@ const PantryDashboard: React.FC = () => {
         const fetchFoodRequests = async () => {
           try {
             const pantryFoodRequests = await ApiClient.getPantryRequests();
-            const sortedFoodRequests = pantryFoodRequests.sort(
-              (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-                new Date(b.requestedAt).getTime() -
-                new Date(a.requestedAt).getTime(),
-            );
+            const sortedFoodRequests = pantryFoodRequests
+              .filter(
+                (fr: FoodRequestSummaryDto) =>
+                  fr.status === FoodRequestStatus.ACTIVE,
+              )
+              .sort(
+                (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+                  new Date(b.requestedAt).getTime() -
+                  new Date(a.requestedAt).getTime(),
+              );
             setRecentFoodRequests(sortedFoodRequests.slice(0, 2));
           } catch {
             setAlertMessage('Error fetching food requests', AlertStatus.ERROR);

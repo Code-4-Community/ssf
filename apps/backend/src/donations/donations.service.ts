@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -33,6 +35,7 @@ export class DonationService {
     @InjectRepository(DonationItem)
     private donationItemsRepo: Repository<DonationItem>,
     private donationItemsService: DonationItemsService,
+    @Inject(forwardRef(() => FoodManufacturersService))
     private foodManufacturersService: FoodManufacturersService,
     @InjectDataSource() private dataSource: DataSource,
     private emailsService: EmailsService,

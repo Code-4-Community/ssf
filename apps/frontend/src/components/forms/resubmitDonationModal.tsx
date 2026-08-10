@@ -353,10 +353,11 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
                                     mx={3}
                                   />
                                   <Text
-                                    minW={5}
+                                    w="48px"
                                     py={2}
                                     textStyle="p2"
                                     color="neutral.800"
+                                    textAlign="center"
                                   >
                                     {item.quantity}
                                   </Text>

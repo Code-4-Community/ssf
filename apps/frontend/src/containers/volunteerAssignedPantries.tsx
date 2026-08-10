@@ -351,6 +351,14 @@ const AssignedPantries: React.FC = () => {
                         textDecoration="underline"
                         cursor="pointer"
                         color="gray.dark"
+                        onClick={() =>
+                          navigate(
+                            ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
+                              ':pantryId',
+                              pantry.pantryId.toString(),
+                            ),
+                          )
+                        }
                       >
                         {pantry.pantryName}
                       </Text>

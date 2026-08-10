@@ -233,297 +233,307 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 Fulfilled by {orderDetails?.foodManufacturerName}
               </Text>
 
-              {isEditing ? (
-                <Box mt={5}>
-                  <Text {...sectionTitleStyles} mb={5}>
-                    {orderDetails?.foodManufacturerName} Stock
-                  </Text>
-                  <Box maxH="55vh" overflowY="auto" pr={1}>
-                    {Object.entries(groupedManufacturerItems).map(
-                      ([foodType, items]) => (
-                        <Box key={foodType} mb={5}>
-                          <Flex align="center" gap={1} mb={1.5}>
-                            <Text {...sectionTitleStyles}>{foodType}</Text>
-                            {foodRequest?.requestedFoodTypes.includes(
-                              foodType as FoodType,
-                            ) && (
-                              <Badge
-                                bgColor="teal.200"
-                                color="teal.hover"
-                                fontSize="10px"
-                                fontWeight={500}
-                                borderRadius="4px"
-                                px={1}
-                                py={0}
-                              >
-                                Matching
-                              </Badge>
-                            )}
-                          </Flex>
-                          {items.map((item) => (
-                            <Flex
-                              border="1px solid"
-                              borderColor="neutral.100"
-                              borderRadius="4px"
-                              h="40px"
-                              align="center"
-                              overflow="hidden"
-                              mt="1.5"
-                              key={item.itemId}
-                            >
-                              <Text
-                                pl={3}
-                                textStyle="p2"
-                                color="neutral.800"
-                                flex={1}
-                              >
-                                {item.itemName}
-                              </Text>
+              <Tabs.Root unstyled mt={5} fitted defaultValue="orderDetails">
+                <Tabs.List maxW="60%">
+                  <Tabs.Trigger
+                    textStyle="p2"
+                    px={4}
+                    py={1}
+                    color="neutral.800"
+                    value="orderDetails"
+                    borderBottom="1.5px solid"
+                    borderColor="neutral.100"
+                    _selected={{ borderColor: 'neutral.700' }}
+                  >
+                    Order Details
+                  </Tabs.Trigger>
+                  <Tabs.Trigger
+                    textStyle="p2"
+                    px={4}
+                    py={1}
+                    color="neutral.800"
+                    value="associatedRequest"
+                    borderBottom="1.5px solid"
+                    borderColor="neutral.100"
+                    _selected={{ borderColor: 'neutral.700' }}
+                  >
+                    Associated Request
+                  </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="associatedRequest">
+                  {!foodRequest && (
+                    <Text mt={5} textStyle="p2">
+                      {' '}
+                      No associated food request to display{' '}
+                    </Text>
+                  )}
 
-                              <Flex
-                                alignSelf="stretch"
-                                w="72px"
-                                align="center"
-                                justify="center"
-                                borderLeft="1px solid"
-                                borderColor="neutral.100"
-                                bg="#fefefe"
-                                cursor="text"
-                                onClick={() => setEditingItemId(item.itemId)}
-                              >
-                                {editingItemId === item.itemId ? (
-                                  <Input
-                                    autoFocus
-                                    inputMode="numeric"
-                                    _focusVisible={{ outline: 'none' }}
-                                    border="none"
-                                    textAlign="center"
-                                    px={0}
-                                    h="full"
-                                    w="full"
-                                    value={itemAllocations[item.itemId] ?? 0}
-                                    onChange={(e) =>
-                                      setItemAllocations((prev) => ({
-                                        ...prev,
-                                        [item.itemId]:
-                                          Number(e.target.value) || 0,
-                                      }))
-                                    }
-                                    onBlur={() => setEditingItemId(null)}
-                                  />
-                                ) : (
-                                  <Text
-                                    textStyle="p2"
-                                    color={
-                                      (itemAllocations[item.itemId] ?? 0) >
-                                      item.quantity -
-                                        item.reservedQuantity +
-                                        (currentAllocations[item.itemId] ?? 0)
-                                        ? 'red.core'
-                                        : 'neutral.800'
-                                    }
+                  {foodRequest && (
+                    <Box
+                      borderWidth="1px"
+                      borderColor="neutral.100"
+                      borderRadius="5px"
+                      p={3}
+                      mt={6}
+                    >
+                      <Flex justify="space-between" align="center" mb={3}>
+                        <Text {...sectionTitleStyles}>
+                          Request {foodRequest.requestId} -
+                          <Text as="span" color="neutral.800" textStyle="p2">
+                            {' '}
+                            {foodRequest.pantry.pantryName}
+                          </Text>
+                        </Text>
+                        {foodRequest.status === FoodRequestStatus.CLOSED ? (
+                          <Badge
+                            {...badgeStyles}
+                            bgColor="yellow.200"
+                            color="yellow.hover"
+                          >
+                            Closed
+                          </Badge>
+                        ) : (
+                          <Badge
+                            {...badgeStyles}
+                            bgColor="teal.200"
+                            color="teal.hover"
+                          >
+                            Active
+                          </Badge>
+                        )}
+                      </Flex>
+
+                      <Field.Root mb={4} mt={6}>
+                        <Field.Label>
+                          <Text {...sectionTitleStyles}>Size of Shipment</Text>
+                        </Field.Label>
+                        <Menu.Root>
+                          <Text textStyle="p2" color="neutral.800" mt={3}>
+                            {foodRequest.requestedSize}
+                          </Text>
+                        </Menu.Root>
+                      </Field.Root>
+
+                      <Field.Root mb={4} mt={3}>
+                        <Field.Label>
+                          <Text {...sectionTitleStyles} mt={3}>
+                            Food Type(s)
+                          </Text>
+                        </Field.Label>
+
+                        {foodRequest.requestedFoodTypes.length > 0 && (
+                          <TagGroup values={foodRequest.requestedFoodTypes} />
+                        )}
+                      </Field.Root>
+
+                      <Field.Root mb={4}>
+                        <Field.Label>
+                          <Text {...sectionTitleStyles} mt={3}>
+                            Additional Information
+                          </Text>
+                        </Field.Label>
+                        <Text textStyle="p2" color="neutral.800" mt={3}>
+                          {foodRequest.additionalInformation}
+                        </Text>
+                      </Field.Root>
+                    </Box>
+                  )}
+                </Tabs.Content>
+
+                <Tabs.Content value="orderDetails" mt={6}>
+                  {isEditing ? (
+                    <Box>
+                      <Text {...sectionTitleStyles} mb={5}>
+                        {orderDetails?.foodManufacturerName} Stock
+                      </Text>
+                      <Box maxH="55vh" overflowY="auto" pr={1}>
+                        {Object.entries(groupedManufacturerItems).map(
+                          ([foodType, items]) => (
+                            <Box key={foodType} mb={5}>
+                              <Flex align="center" gap={1} mb={1.5}>
+                                <Text {...sectionTitleStyles}>{foodType}</Text>
+                                {foodRequest?.requestedFoodTypes.includes(
+                                  foodType as FoodType,
+                                ) && (
+                                  <Badge
+                                    bgColor="teal.200"
+                                    color="teal.hover"
+                                    fontSize="10px"
+                                    fontWeight={500}
+                                    borderRadius="4px"
+                                    px={1}
+                                    py={0}
                                   >
-                                    {itemAllocations[item.itemId] ?? 0} of{' '}
-                                    {item.quantity -
-                                      item.reservedQuantity +
-                                      (currentAllocations[item.itemId] ?? 0)}
-                                  </Text>
+                                    Matching
+                                  </Badge>
                                 )}
                               </Flex>
-                            </Flex>
-                          ))}
-                        </Box>
-                      ),
-                    )}
-                  </Box>
-                  <Flex justifyContent="flex-end" mt={4} gap={2}>
-                    <Button
-                      onClick={handleCancel}
-                      variant="outline"
-                      background="bg"
-                      color="neutral.800"
-                      borderColor="neutral.200"
-                    >
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSave} bg="blue.hover" color="white">
-                      Update Order
-                    </Button>
-                  </Flex>
-                </Box>
-              ) : (
-                <Tabs.Root unstyled mt={5} fitted defaultValue="orderDetails">
-                  <Tabs.List maxW="60%">
-                    <Tabs.Trigger
-                      textStyle="p2"
-                      px={4}
-                      py={1}
-                      color="neutral.800"
-                      value="orderDetails"
-                      borderBottom="1.5px solid"
-                      borderColor="neutral.100"
-                      _selected={{ borderColor: 'neutral.700' }}
-                    >
-                      Order Details
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                      textStyle="p2"
-                      px={4}
-                      py={1}
-                      color="neutral.800"
-                      value="associatedRequest"
-                      borderBottom="1.5px solid"
-                      borderColor="neutral.100"
-                      _selected={{ borderColor: 'neutral.700' }}
-                    >
-                      Associated Request
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                  <Tabs.Content value="associatedRequest">
-                    {!foodRequest && (
-                      <Text mt={5} textStyle="p2">
-                        {' '}
-                        No associated food request to display{' '}
-                      </Text>
-                    )}
+                              {items.map((item) => (
+                                <Flex
+                                  border="1px solid"
+                                  borderColor="neutral.100"
+                                  borderRadius="4px"
+                                  h="40px"
+                                  align="center"
+                                  overflow="hidden"
+                                  mt="1.5"
+                                  key={item.itemId}
+                                >
+                                  <Text
+                                    pl={3}
+                                    textStyle="p2"
+                                    color="neutral.800"
+                                    flex={1}
+                                  >
+                                    {item.itemName}
+                                  </Text>
 
-                    {foodRequest && (
-                      <Box
-                        borderWidth="1px"
-                        borderColor="neutral.100"
-                        borderRadius="5px"
-                        p={3}
-                        mt={6}
-                      >
-                        <Flex justify="space-between" align="center" mb={3}>
-                          <Text {...sectionTitleStyles}>
-                            Request {foodRequest.requestId} -
-                            <Text as="span" color="neutral.800" textStyle="p2">
-                              {' '}
-                              {foodRequest.pantry.pantryName}
-                            </Text>
-                          </Text>
-                          {foodRequest.status === FoodRequestStatus.CLOSED ? (
-                            <Badge
-                              {...badgeStyles}
-                              bgColor="yellow.200"
-                              color="yellow.hover"
-                            >
-                              Closed
-                            </Badge>
-                          ) : (
-                            <Badge
-                              {...badgeStyles}
-                              bgColor="teal.200"
-                              color="teal.hover"
-                            >
-                              Active
-                            </Badge>
-                          )}
-                        </Flex>
-
-                        <Field.Root mb={4} mt={6}>
-                          <Field.Label>
-                            <Text {...sectionTitleStyles}>
-                              Size of Shipment
-                            </Text>
-                          </Field.Label>
-                          <Menu.Root>
-                            <Text textStyle="p2" color="neutral.800" mt={3}>
-                              {foodRequest.requestedSize}
-                            </Text>
-                          </Menu.Root>
-                        </Field.Root>
-
-                        <Field.Root mb={4} mt={3}>
-                          <Field.Label>
-                            <Text {...sectionTitleStyles} mt={3}>
-                              Food Type(s)
-                            </Text>
-                          </Field.Label>
-
-                          {foodRequest.requestedFoodTypes.length > 0 && (
-                            <TagGroup values={foodRequest.requestedFoodTypes} />
-                          )}
-                        </Field.Root>
-
-                        <Field.Root mb={4}>
-                          <Field.Label>
-                            <Text {...sectionTitleStyles} mt={3}>
-                              Additional Information
-                            </Text>
-                          </Field.Label>
-                          <Text textStyle="p2" color="neutral.800" mt={3}>
-                            {foodRequest.additionalInformation}
-                          </Text>
-                        </Field.Root>
+                                  <Flex
+                                    alignSelf="stretch"
+                                    w="72px"
+                                    align="center"
+                                    justify="center"
+                                    borderLeft="1px solid"
+                                    borderColor="neutral.100"
+                                    bg="#fefefe"
+                                    cursor="text"
+                                    onClick={() =>
+                                      setEditingItemId(item.itemId)
+                                    }
+                                  >
+                                    {editingItemId === item.itemId ? (
+                                      <Input
+                                        autoFocus
+                                        inputMode="numeric"
+                                        _focusVisible={{ outline: 'none' }}
+                                        border="none"
+                                        textAlign="center"
+                                        px={0}
+                                        h="full"
+                                        w="full"
+                                        value={
+                                          itemAllocations[item.itemId] ?? 0
+                                        }
+                                        onChange={(e) =>
+                                          setItemAllocations((prev) => ({
+                                            ...prev,
+                                            [item.itemId]:
+                                              Number(e.target.value) || 0,
+                                          }))
+                                        }
+                                        onBlur={() => setEditingItemId(null)}
+                                      />
+                                    ) : (
+                                      <Text
+                                        textStyle="p2"
+                                        color={
+                                          (itemAllocations[item.itemId] ?? 0) >
+                                          item.quantity -
+                                            item.reservedQuantity +
+                                            (currentAllocations[item.itemId] ??
+                                              0)
+                                            ? 'red.core'
+                                            : 'neutral.800'
+                                        }
+                                      >
+                                        {itemAllocations[item.itemId] ?? 0} of{' '}
+                                        {item.quantity -
+                                          item.reservedQuantity +
+                                          (currentAllocations[item.itemId] ??
+                                            0)}
+                                      </Text>
+                                    )}
+                                  </Flex>
+                                </Flex>
+                              ))}
+                            </Box>
+                          ),
+                        )}
                       </Box>
-                    )}
-                  </Tabs.Content>
-
-                  <Tabs.Content value="orderDetails" mt={6}>
-                    {Object.entries(groupedOrderItemsByType).map(
-                      ([foodType, items]) => (
-                        <Box key={foodType} mb={4}>
-                          <Text {...sectionTitleStyles}>{foodType}</Text>
-                          {items.map((item) => (
-                            <Flex
-                              border="1px solid"
-                              borderColor="neutral.100"
-                              borderRadius="4px"
-                              h="40px"
-                              align="center"
-                              overflow="hidden"
-                              mt="2"
-                              key={item.id}
-                            >
-                              <Text
-                                pl={3}
-                                textStyle="p2"
-                                color="neutral.800"
-                                flex={1}
-                              >
-                                {item.name}
-                              </Text>
-
+                      <Flex justifyContent="flex-end" mt={4} gap={2}>
+                        <Button
+                          onClick={handleCancel}
+                          variant="outline"
+                          background="bg"
+                          color="neutral.800"
+                          borderColor="neutral.200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSave}
+                          bg="blue.hover"
+                          color="white"
+                        >
+                          Update Order
+                        </Button>
+                      </Flex>
+                    </Box>
+                  ) : (
+                    <>
+                      {Object.entries(groupedOrderItemsByType).map(
+                        ([foodType, items]) => (
+                          <Box key={foodType} mb={4}>
+                            <Text {...sectionTitleStyles}>{foodType}</Text>
+                            {items.map((item) => (
                               <Flex
-                                alignSelf="stretch"
-                                w="43px"
-                                align="center"
-                                justify="center"
-                                borderLeft="1px solid"
+                                border="1px solid"
                                 borderColor="neutral.100"
+                                borderRadius="4px"
+                                h="40px"
+                                align="center"
+                                overflow="hidden"
+                                mt="2"
+                                key={item.id}
                               >
-                                <Text textStyle="p2" color="neutral.800">
-                                  {item.quantity}
+                                <Text
+                                  pl={3}
+                                  textStyle="p2"
+                                  color="neutral.800"
+                                  flex={1}
+                                >
+                                  {item.name}
                                 </Text>
+
+                                <Flex
+                                  alignSelf="stretch"
+                                  w="43px"
+                                  align="center"
+                                  justify="center"
+                                  borderLeft="1px solid"
+                                  borderColor="neutral.100"
+                                >
+                                  <Text textStyle="p2" color="neutral.800">
+                                    {item.quantity}
+                                  </Text>
+                                </Flex>
                               </Flex>
-                            </Flex>
-                          ))}
-                        </Box>
-                      ),
-                    )}
-                    <Text {...sectionTitleStyles} mt="3">
-                      Tracking
-                    </Text>
-                    {orderDetails?.trackingLink ? (
-                      <Link
-                        href={orderDetails.trackingLink}
-                        color="teal.ssf"
-                        variant="underline"
-                        mt="3"
-                        mb="3"
-                      >
-                        {orderDetails.trackingLink}
-                      </Link>
-                    ) : (
-                      <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
-                        No tracking link available at this time
+                            ))}
+                          </Box>
+                        ),
+                      )}
+                      <Text {...sectionTitleStyles} mt="3">
+                        Tracking
                       </Text>
-                    )}
-                  </Tabs.Content>
-                </Tabs.Root>
-              )}
+                      {orderDetails?.trackingLink ? (
+                        <Link
+                          href={orderDetails.trackingLink}
+                          color="teal.ssf"
+                          variant="underline"
+                          mt="3"
+                          mb="3"
+                        >
+                          {orderDetails.trackingLink}
+                        </Link>
+                      ) : (
+                        <Text color="neutral.700" textStyle="p2" mt="3" mb="3">
+                          No tracking link available at this time
+                        </Text>
+                      )}
+                    </>
+                  )}
+                </Tabs.Content>
+              </Tabs.Root>
             </Dialog.Body>
             <Dialog.CloseTrigger asChild>
               <CloseButton size="lg" />

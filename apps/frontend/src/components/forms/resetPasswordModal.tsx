@@ -9,11 +9,14 @@ import {
   Button,
   Link,
   Field,
+  IconButton,
+  Group,
 } from '@chakra-ui/react';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
+import { Eye, EyeOff } from 'lucide-react';
 import { AlertStatus } from '../../types/types';
 
 const ResetPasswordModal: React.FC = () => {
@@ -23,6 +26,8 @@ const ResetPasswordModal: React.FC = () => {
   const [step, setStep] = useState<'reset' | 'new'>('reset');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
 
   const navigate = useNavigate();
@@ -165,23 +170,45 @@ const ResetPasswordModal: React.FC = () => {
           <VStack gap={5} align="stretch">
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>New Password</Field.Label>
-              <Input
-                type="password"
-                placeholder="Enter new password"
-                {...inputStyles}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={handleResetPasswordKeyDown}
-              />
+              <Group attached w="full">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter new password"
+                  {...inputStyles}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleResetPasswordKeyDown}
+                />
+                <IconButton
+                  variant="outline"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  <Box color="neutral.200">
+                    {showPassword && <EyeOff />}
+                    {!showPassword && <Eye />}
+                  </Box>
+                </IconButton>
+              </Group>
             </Field.Root>
             <Field.Root required>
               <Field.Label {...fieldHeaderStyles}>Confirm Password</Field.Label>
-              <Input
-                type="password"
-                placeholder="Confirm Password"
-                {...inputStyles}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onKeyDown={handleResetPasswordKeyDown}
-              />
+              <Group attached w="full">
+                <Input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Confirm Password"
+                  {...inputStyles}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onKeyDown={handleResetPasswordKeyDown}
+                />
+                <IconButton
+                  variant="outline"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                >
+                  <Box color="neutral.200">
+                    {showConfirmPassword && <EyeOff />}
+                    {!showConfirmPassword && <Eye />}
+                  </Box>
+                </IconButton>
+              </Group>
             </Field.Root>
           </VStack>
         )}
