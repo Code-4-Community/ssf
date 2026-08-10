@@ -17,7 +17,7 @@ export class SignUpDto {
   @IsNotEmpty()
   @IsPhoneNumber('US', {
     message:
-      'phone must be a valid phone number (make sure all the digits are correct)',
+      'Phone must be a valid phone number. Make sure all the digits are correct.',
   })
   phone!: string;
 }

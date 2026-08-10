@@ -228,7 +228,7 @@ const Navbar: React.FC = () => {
       ApiClient.getMe()
         .then(setCurrentUser)
         .catch(() => setCurrentUser(null));
-    } else {
+    } else if (authStatus === 'unauthenticated') {
       setCurrentUser(null);
     }
   }, [authStatus]);

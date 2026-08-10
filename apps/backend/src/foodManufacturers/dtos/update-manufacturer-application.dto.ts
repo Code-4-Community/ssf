@@ -38,7 +38,7 @@ export class UpdateFoodManufacturerApplicationDto {
   @IsString()
   @IsPhoneNumber('US', {
     message:
-      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+      'Secondary phone contact must be a valid phone number. Make sure all the digits are correct.',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;

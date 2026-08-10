@@ -42,7 +42,7 @@ export class FoodManufacturerApplicationDto {
   @IsNotEmpty()
   @IsPhoneNumber('US', {
     message:
-      'contactPhone must be a valid phone number (make sure all the digits are correct)',
+      'Phone must be a valid phone number. Make sure all the digits are correct.',
   })
   contactPhone!: string;
 
@@ -68,7 +68,7 @@ export class FoodManufacturerApplicationDto {
   @IsString()
   @IsPhoneNumber('US', {
     message:
-      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+      'Secondary phone contact must be a valid phone number. Make sure all the digits are correct.',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;
