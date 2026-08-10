@@ -60,9 +60,6 @@ const AdminDonationStats: React.FC = () => {
   }, [setAlertMessage]);
 
   useEffect(() => {
-    // Total stats only displayed on first page, so no need to do anything on page change
-    if (currentPage !== 1) return;
-
     const fetchTotalStats = async () => {
       try {
         const stats = await ApiClient.getTotalStats(
@@ -74,7 +71,7 @@ const AdminDonationStats: React.FC = () => {
       }
     };
     fetchTotalStats();
-  }, [setAlertMessage, selectedYears, currentPage]);
+  }, [setAlertMessage, selectedYears]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -409,85 +406,83 @@ const AdminDonationStats: React.FC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {currentPage === 1 && (
-            <Table.Row fontWeight="semibold">
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
-              >
-                All Pantries
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {totalStats?.totalItems ?? 0}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.totalOz ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.totalLbs ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalValue ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
-              </Table.Cell>
-              <Table.Cell textStyle="p2" bg="yellow.100">
-                {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
-              </Table.Cell>
-            </Table.Row>
-          )}
+          <Table.Row fontWeight="semibold">
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              py={0}
+            >
+              All Pantries
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {totalStats?.totalItems ?? 0}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.totalOz ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.totalLbs ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalValue ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
+            </Table.Cell>
+            <Table.Cell textStyle="p2" bg="yellow.100">
+              {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
+            </Table.Cell>
+          </Table.Row>
           {pantryStats.map((stat) => (
             <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
               <Table.Cell
