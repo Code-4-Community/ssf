@@ -389,6 +389,7 @@ const ApproveFoodManufacturers: React.FC = () => {
                 <Pagination.PrevTrigger
                   color="neutral.800"
                   variant="outline"
+                  disabled={currentPage === 1}
                   _hover={{ color: 'black', cursor: 'pointer' }}
                 >
                   <ChevronLeft size={16} />
@@ -410,6 +411,7 @@ const ApproveFoodManufacturers: React.FC = () => {
                 <Pagination.NextTrigger
                   color="neutral.800"
                   variant="ghost"
+                  disabled={currentPage === totalPages}
                   _hover={{ color: 'black', cursor: 'pointer' }}
                 >
                   <ChevronRight size={16} />
