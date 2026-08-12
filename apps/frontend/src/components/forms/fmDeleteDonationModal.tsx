@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Box,
   Button,
@@ -30,6 +30,10 @@ const FMDeleteDonationActionModal: React.FC<
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
 
+  const donationRef = useRef<Donation | null>(donation);
+  if (donation) donationRef.current = donation;
+  const displayDonation = donation ?? donationRef.current;
+
   const onDeleteDonation = async () => {
     if (!donation) return;
     try {
@@ -60,7 +64,7 @@ const FMDeleteDonationActionModal: React.FC<
       )}
       <Dialog.Backdrop />
 
-      {donation && (
+      {displayDonation && (
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.CloseTrigger asChild>
@@ -85,10 +89,10 @@ const FMDeleteDonationActionModal: React.FC<
                   borderRadius={6}
                 >
                   <Text textStyle="p2" color="gray.dark">
-                    Donation #{donation.donationId} Stock
+                    Donation #{displayDonation.donationId} Stock
                   </Text>
                   <Text color="neutral.600" textStyle="p2" fontSize={'12'}>
-                    Submitted {formatDate(donation.dateDonated)}
+                    Submitted {formatDate(displayDonation.dateDonated)}
                   </Text>
                 </Box>
                 <Flex justifyContent="flex-end" gap={2.5}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Text,
@@ -47,6 +47,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [alertState, setAlertMessage] = useAlert();
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const donationRef = useRef<Donation | null>(donation);
+  if (donation) donationRef.current = donation;
+  const displayDonation = donation ?? donationRef.current;
 
   const donationId = donation?.donationId;
 
@@ -124,7 +128,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       )}
       <Dialog.Backdrop bg="blackAlpha.300" />
 
-      {donation !== null && (
+      {displayDonation !== null && (
         <Dialog.Positioner>
           <Dialog.Content
             maxW={isEditing ? '75vw' : 'lg'}
@@ -140,7 +144,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   <Dialog.Title fontSize="lg" fontWeight="600">
                     Donation #{donationId} Stock
                   </Dialog.Title>
-                  {donation.status === DonationStatus.AVAILABLE &&
+                  {displayDonation.status === DonationStatus.AVAILABLE &&
                     !isEditing && (
                       <>
                         <EditButton
@@ -151,9 +155,11 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                     )}
                 </HStack>
                 <Text fontSize="sm">
-                  {donation.foodManufacturer?.foodManufacturerName}
+                  {displayDonation.foodManufacturer?.foodManufacturerName}
                 </Text>
-                <Text fontSize="sm">{formatDate(donation.dateDonated)}</Text>
+                <Text fontSize="sm">
+                  {formatDate(displayDonation.dateDonated)}
+                </Text>
               </VStack>
             </Dialog.Header>
 
@@ -226,27 +232,28 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 </VStack>
               )}
 
-              {!isEditing && donation.recurrence !== RecurrenceEnum.NONE && (
-                <Box mt={6} color="neutral.800" fontSize="sm">
-                  <Text fontWeight={600} mb={3}>
-                    Donation sets up recurring reminders
-                  </Text>
+              {!isEditing &&
+                displayDonation.recurrence !== RecurrenceEnum.NONE && (
+                  <Box mt={6} color="neutral.800" fontSize="sm">
+                    <Text fontWeight={600} mb={3}>
+                      Donation sets up recurring reminders
+                    </Text>
 
-                  {donation.nextDonationDates &&
-                    donation.nextDonationDates.length > 0 && (
-                      <Box>
-                        <Text fontWeight={600} color="neutral.700" mb={2}>
-                          Upcoming reminder emails
-                        </Text>
-                        <Text color="neutral.700">
-                          {donation.nextDonationDates
-                            .map((date) => formatDate(date))
-                            .join(', ')}
-                        </Text>
-                      </Box>
-                    )}
-                </Box>
-              )}
+                    {displayDonation.nextDonationDates &&
+                      displayDonation.nextDonationDates.length > 0 && (
+                        <Box>
+                          <Text fontWeight={600} color="neutral.700" mb={2}>
+                            Upcoming reminder emails
+                          </Text>
+                          <Text color="neutral.700">
+                            {displayDonation.nextDonationDates
+                              .map((date) => formatDate(date))
+                              .join(', ')}
+                          </Text>
+                        </Box>
+                      )}
+                  </Box>
+                )}
             </Dialog.Body>
           </Dialog.Content>
         </Dialog.Positioner>
