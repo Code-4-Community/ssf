@@ -311,7 +311,8 @@ const AdminPantryManagement: React.FC = () => {
                   _hover={{ bg: 'gray.50' }}
                 >
                   <Box display="flex" alignItems="center" minH="33px">
-                    {pantry.volunteers && pantry.volunteers.length > 0 ? (
+                    {pantry.volunteers &&
+                    pantry.volunteers.some((volunteer) => volunteer.active) ? (
                       (() => {
                         const volunteers = pantry.volunteers.filter(
                           (volunteer) => volunteer.active,
