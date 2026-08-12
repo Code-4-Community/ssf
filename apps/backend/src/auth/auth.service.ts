@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -75,10 +76,18 @@ export class AuthService {
 
       return sub ?? '';
     } catch (error) {
-      if (error instanceof Error && error.name == 'UsernameExistsException') {
+      if (error instanceof HttpException) {
+        throw error;
+      } else if (
+        error instanceof Error &&
+        error.name == 'UsernameExistsException'
+      ) {
         throw new ConflictException('A user with this email already exists');
       } else {
-        throw new InternalServerErrorException('Failed to create user');
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new InternalServerErrorException(
+          `Failed to create user: ${reason}`,
+        );
       }
     }
   }
@@ -97,8 +106,9 @@ export class AuthService {
         `Failed to add user ${username} to group ${groupName}`,
         error,
       );
+      const reason = error instanceof Error ? error.message : String(error);
       throw new InternalServerErrorException(
-        `Failed to add user to group ${groupName}`,
+        `Failed to add user to group ${groupName}: ${reason}`,
       );
     }
   }
