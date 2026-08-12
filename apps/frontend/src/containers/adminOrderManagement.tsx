@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -106,48 +106,48 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  useEffect(() => {
-    // Fetch all orders on component mount and sorts them into their appropriate status lists
-    const fetchOrders = async () => {
-      try {
-        const data = await ApiClient.getAllOrders();
+  // Fetches all orders and sorts them into their appropriate status lists
+  const fetchOrders = useCallback(async () => {
+    try {
+      const data = await ApiClient.getAllOrders();
 
-        const grouped: Record<OrderStatus, OrderWithColor[]> = {
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.DELIVERED]: [],
-          [OrderStatus.CLOSED]: [],
-        };
+      const grouped: Record<OrderStatus, OrderWithColor[]> = {
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.DELIVERED]: [],
+        [OrderStatus.CLOSED]: [],
+      };
 
-        for (const order of data) {
-          const status = order.status;
-          const orderWithColor: OrderWithColor = { ...order };
+      for (const order of data) {
+        const status = order.status;
+        const orderWithColor: OrderWithColor = { ...order };
 
-          if (order.assignee) {
-            orderWithColor.assigneeColor =
-              USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
-          }
-
-          grouped[status].push(orderWithColor);
+        if (order.assignee) {
+          orderWithColor.assigneeColor =
+            USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
         }
 
-        setStatusOrders(grouped);
-
-        // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.DELIVERED]: 1,
-          [OrderStatus.CLOSED]: 1,
-        };
-        setCurrentPages(initialPages);
-      } catch {
-        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+        grouped[status].push(orderWithColor);
       }
-    };
 
-    fetchOrders();
+      setStatusOrders(grouped);
+
+      // Initialize current page for each status
+      const initialPages: Record<OrderStatus, number> = {
+        [OrderStatus.SHIPPED]: 1,
+        [OrderStatus.PENDING]: 1,
+        [OrderStatus.DELIVERED]: 1,
+        [OrderStatus.CLOSED]: 1,
+      };
+      setCurrentPages(initialPages);
+    } catch {
+      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+    }
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
@@ -315,6 +315,7 @@ const AdminOrderManagement: React.FC = () => {
           setSelectedOrderId(null);
           navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
         }}
+        onSuccess={fetchOrders}
       />
     </Box>
   );
