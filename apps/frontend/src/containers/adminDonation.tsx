@@ -259,72 +259,79 @@ const AdminDonation: React.FC = () => {
               Sort
             </Button>
           </Box>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="10%"
-                >
-                  Donation #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="65%"
-                >
-                  Manufacturer
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
-                >
-                  Date Started
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {paginatedDonations.map((donation, index) => (
-                <Table.Row
-                  key={`${donation.donationId}-${index}`}
-                  _hover={{ bg: 'neutral.50' }}
-                >
-                  <Table.Cell
-                    textStyle="p2"
+          {filteredDonations.length === 0 ? (
+            <PageEmptyState
+              entity="donations"
+              subtitle="No donations match the selected filter."
+            />
+          ) : (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
-                    py={0}
+                    width="10%"
                   >
-                    <Link
-                      textDecorationColor="black"
-                      variant="underline"
-                      onClick={() => setSelectedDonation(donation)}
-                    >
-                      {donation.donationId}
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Donation #
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="65%"
                   >
-                    {donation.foodManufacturer?.foodManufacturerName}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Manufacturer
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     textAlign="right"
-                    color="neutral.700"
+                    width="25%"
                   >
-                    {formatDate(donation.dateDonated)}
-                  </Table.Cell>
+                    Date Started
+                  </Table.ColumnHeader>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+              </Table.Header>
+              <Table.Body>
+                {paginatedDonations.map((donation, index) => (
+                  <Table.Row
+                    key={`${donation.donationId}-${index}`}
+                    _hover={{ bg: 'neutral.50' }}
+                  >
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      py={0}
+                    >
+                      <Link
+                        textDecorationColor="black"
+                        variant="underline"
+                        onClick={() => setSelectedDonation(donation)}
+                      >
+                        {donation.donationId}
+                      </Link>
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {donation.foodManufacturer?.foodManufacturerName}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      textAlign="right"
+                      color="neutral.700"
+                    >
+                      {formatDate(donation.dateDonated)}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
         </>
       )}
 

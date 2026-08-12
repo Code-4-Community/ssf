@@ -271,104 +271,128 @@ const ApproveFoodManufacturers: React.FC = () => {
               Sort
             </Button>
           </Box>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="15%"
-                >
-                  Application #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="45%"
-                >
-                  Food Manufacturer
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="15%"
-                >
-                  Date Applied
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
-                >
-                  Actions
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {paginatedFoodManufacturers.map((foodManufacturer, index) => (
-                <Table.Row
-                  key={`${foodManufacturer.foodManufacturerId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Table.Cell
-                    textStyle="p2"
+          {filteredFoodManufacturers.length === 0 ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              fontFamily="'Inter', sans-serif"
+              fontSize="sm"
+              color="neutral.600"
+              py={10}
+              gap={2}
+            >
+              <Box mb={2}>
+                <CircleCheck size={24} color="#262626" />
+              </Box>
+              <Box fontWeight="600" fontSize="lg" color="neutral.800">
+                No Matching Applications
+              </Box>
+              <Box color="neutral.700" fontWeight="400">
+                No applications match the selected filter.
+              </Box>
+            </Box>
+          ) : (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
-                    py={0}
+                    width="15%"
                   >
-                    {foodManufacturer.foodManufacturerId}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Application #
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="45%"
                   >
-                    {foodManufacturer.foodManufacturerName}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Food Manufacturer
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="15%"
                   >
-                    {new Date(foodManufacturer.dateApplied).toLocaleDateString(
-                      'en-US',
-                      {
+                    Date Applied
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    textAlign="right"
+                    width="25%"
+                  >
+                    Actions
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {paginatedFoodManufacturers.map((foodManufacturer, index) => (
+                  <Table.Row
+                    key={`${foodManufacturer.foodManufacturerId}-${index}`}
+                    _hover={{ bg: 'gray.50' }}
+                  >
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      py={0}
+                    >
+                      {foodManufacturer.foodManufacturerId}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {foodManufacturer.foodManufacturerName}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {new Date(
+                        foodManufacturer.dateApplied,
+                      ).toLocaleDateString('en-US', {
                         month: '2-digit',
                         day: '2-digit',
                         year: 'numeric',
-                      },
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    textAlign="right"
-                    color="neutral.700"
-                  >
-                    <Link
-                      color="neutral.700"
-                      fontWeight={400}
+                      })}
+                    </Table.Cell>
+                    <Table.Cell
                       textStyle="p2"
-                      variant="underline"
-                      textDecorationColor="neutral.700"
-                      onClick={() =>
-                        navigate(
-                          ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
-                            ':applicationId',
-                            String(foodManufacturer.foodManufacturerId),
-                          ),
-                        )
-                      }
+                      textAlign="right"
+                      color="neutral.700"
                     >
-                      View Details
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+                      <Link
+                        color="neutral.700"
+                        fontWeight={400}
+                        textStyle="p2"
+                        variant="underline"
+                        textDecorationColor="neutral.700"
+                        onClick={() =>
+                          navigate(
+                            ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                              ':applicationId',
+                              String(foodManufacturer.foodManufacturerId),
+                            ),
+                          )
+                        }
+                      >
+                        View Details
+                      </Link>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
 
           {totalPages > 1 && (
             <Pagination.Root

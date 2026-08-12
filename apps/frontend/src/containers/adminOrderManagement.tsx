@@ -651,11 +651,16 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                 <CircleCheck size={24} color="#262626" />
               </Box>
               <Box fontWeight="600" fontSize="lg" color="neutral.800">
-                No Orders
+                {filterState.selectedPantries.length > 0
+                  ? 'No Matching Orders'
+                  : 'No Orders'}
               </Box>
               <Box color="neutral.700" fontWeight="400">
-                You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders
-                at this time.
+                {filterState.selectedPantries.length > 0
+                  ? 'No orders match the selected filter.'
+                  : `You have no ${ORDER_STATUS_LABELS[
+                      status
+                    ].toLowerCase()} orders at this time.`}
               </Box>
             </Box>
           ) : (
