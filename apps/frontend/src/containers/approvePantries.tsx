@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
+  CircleX,
   Funnel,
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
@@ -28,6 +29,7 @@ import { ROUTES } from '../routes';
 const ApprovePantries: React.FC = () => {
   const navigate = useNavigate();
   const [pantries, setPantries] = useState<Pantry[]>([]);
+  const [hasError, setHasError] = useState(false);
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +42,9 @@ const ApprovePantries: React.FC = () => {
       try {
         const data = await ApiClient.getAllPendingPantries();
         setPantries(data);
+        setHasError(false);
       } catch {
+        setHasError(true);
         setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
       }
     };
@@ -125,7 +129,7 @@ const ApprovePantries: React.FC = () => {
           timeout={6000}
         />
       )}
-      {pantries.length === 0 ? (
+      {!hasError && pantries.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -147,6 +151,31 @@ const ApprovePantries: React.FC = () => {
           </Box>
           <Box color="neutral.700" fontWeight="400">
             There are no applications to review at this time
+          </Box>
+        </Box>
+      ) : hasError ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          py={10}
+          gap={2}
+          minH="40vh"
+        >
+          <Box mb={2}>
+            <CircleX size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            Unable to Load Applications
+          </Box>
+          <Box color="neutral.700" fontWeight="400">
+            Something went wrong while loading applications. Please try again
+            later.
           </Box>
         </Box>
       ) : (
@@ -310,10 +339,14 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={ROUTES.PANTRY_APPLICATION_DETAILS.replace(
-                        ':applicationId',
-                        pantry.pantryId.toString(),
-                      )}
+                      onClick={() =>
+                        navigate(
+                          ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                            ':applicationId',
+                            pantry.pantryId.toString(),
+                          ),
+                        )
+                      }
                     >
                       View Details
                     </Link>

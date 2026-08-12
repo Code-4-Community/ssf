@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
+  CircleX,
   Funnel,
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
@@ -30,6 +31,7 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [foodManufacturers, setFoodManufacturers] = useState<
     FoodManufacturer[]
   >([]);
+  const [hasError, setHasError] = useState(false);
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedFoodManufacturers, setSelectedFoodManufacturers] = useState<
     string[]
@@ -44,7 +46,9 @@ const ApproveFoodManufacturers: React.FC = () => {
       try {
         const data = await ApiClient.getAllPendingFoodManufacturers();
         setFoodManufacturers(data);
+        setHasError(false);
       } catch {
+        setHasError(true);
         setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
       }
     };
@@ -134,7 +138,7 @@ const ApproveFoodManufacturers: React.FC = () => {
           timeout={6000}
         />
       )}
-      {foodManufacturers.length === 0 ? (
+      {!hasError && foodManufacturers.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -156,6 +160,31 @@ const ApproveFoodManufacturers: React.FC = () => {
           </Box>
           <Box color="neutral.700" fontWeight="400">
             There are no applications to review at this time
+          </Box>
+        </Box>
+      ) : hasError ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          py={10}
+          gap={2}
+          minH="40vh"
+        >
+          <Box mb={2}>
+            <CircleX size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            Unable to Load Applications
+          </Box>
+          <Box color="neutral.700" fontWeight="400">
+            Something went wrong while loading applications. Please try again
+            later.
           </Box>
         </Box>
       ) : (
@@ -324,10 +353,14 @@ const ApproveFoodManufacturers: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
-                        ':applicationId',
-                        String(foodManufacturer.foodManufacturerId),
-                      )}
+                      onClick={() =>
+                        navigate(
+                          ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                            ':applicationId',
+                            String(foodManufacturer.foodManufacturerId),
+                          ),
+                        )
+                      }
                     >
                       View Details
                     </Link>
