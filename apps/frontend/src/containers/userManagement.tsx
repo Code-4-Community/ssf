@@ -219,7 +219,7 @@ const VolunteerManagement: React.FC = () => {
             {paginatedVolunteers?.map((volunteer) => (
               <Table.Row key={volunteer.id}>
                 <Table.Cell>
-                  <Box display="flex" alignItems="center" gap={5}>
+                  <Box display="flex" alignItems="center" gap={5} width="100%">
                     <Box
                       borderRadius="full"
                       bg={
@@ -241,6 +241,23 @@ const VolunteerManagement: React.FC = () => {
                       {getInitials(volunteer.firstName, volunteer.lastName)}
                     </Box>
                     {volunteer.firstName} {volunteer.lastName}
+                    {volunteer.role === Role.ADMIN && (
+                      <Badge
+                        ml="auto"
+                        py={0.5}
+                        px={1.5}
+                        borderRadius="md"
+                        textStyle="p3"
+                        fontWeight={400}
+                        fontSize="10px"
+                        bg="transparent"
+                        color="neutral.700"
+                        border="1px solid"
+                        borderColor="neutral.300"
+                      >
+                        Admin
+                      </Badge>
+                    )}
                   </Box>
                 </Table.Cell>
                 <Table.Cell>
