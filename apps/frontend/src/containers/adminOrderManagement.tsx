@@ -665,180 +665,182 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
             </Box>
           ) : (
             <>
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="10%"
-                    >
-                      Order #
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="18%"
-                    >
-                      Status
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="7%"
-                      textAlign="center"
-                    >
-                      Assignee
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="30%"
-                    >
-                      Pantry
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="15%"
-                    >
-                      Dates
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      textAlign="right"
-                      width="20%"
-                    >
-                      Action Required
-                    </Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {orders.map((order, index) => {
-                    const pantry = order.request.pantry;
-
-                    return (
-                      <Table.Row
-                        key={`${order.orderId}-${index}`}
-                        _hover={{ bg: 'neutral.50' }}
+              <Box overflowX="auto">
+                <Table.Root>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="10%"
                       >
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
+                        Order #
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="18%"
+                      >
+                        Status
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="7%"
+                        textAlign="center"
+                      >
+                        Assignee
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="30%"
+                      >
+                        Pantry
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="15%"
+                      >
+                        Dates
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        textAlign="right"
+                        width="20%"
+                      >
+                        Action Required
+                      </Table.ColumnHeader>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {orders.map((order, index) => {
+                      const pantry = order.request.pantry;
+
+                      return (
+                        <Table.Row
+                          key={`${order.orderId}-${index}`}
+                          _hover={{ bg: 'neutral.50' }}
                         >
-                          <Link
-                            textDecorationColor="black"
-                            variant="underline"
-                            onClick={() => onOrderSelect(order.orderId)}
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
                           >
-                            {order.orderId}
-                          </Link>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          <Box
-                            borderRadius="md"
-                            bg={colors[0]}
-                            color={colors[1]}
-                            display="inline-block"
-                            fontWeight="500"
-                            fontSize="12px"
-                            my={3}
-                            py={0.5}
-                            px={3}
+                            <Link
+                              textDecorationColor="black"
+                              variant="underline"
+                              onClick={() => onOrderSelect(order.orderId)}
+                            >
+                              {order.orderId}
+                            </Link>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
                           >
-                            {ORDER_STATUS_LABELS[order.status]}
-                          </Box>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          <Box
-                            direction="row"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
+                            <Box
+                              borderRadius="md"
+                              bg={colors[0]}
+                              color={colors[1]}
+                              display="inline-block"
+                              fontWeight="500"
+                              fontSize="12px"
+                              my={3}
+                              py={0.5}
+                              px={3}
+                            >
+                              {ORDER_STATUS_LABELS[order.status]}
+                            </Box>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
                           >
-                            {order.assignee ? (
-                              <Box
-                                key={index}
-                                borderRadius="full"
-                                bg={
-                                  order.assignee.active
-                                    ? order.assigneeColor || 'gray'
-                                    : 'neutral.300'
-                                }
-                                opacity={order.assignee.active ? 1 : 0.6}
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="white"
-                                p={2}
-                              >
-                                {getInitials(
-                                  order.assignee.firstName,
-                                  order.assignee.lastName,
-                                )}
-                              </Box>
-                            ) : (
-                              <Box
-                                key={index}
-                                borderRadius="full"
-                                bg="neutral.100"
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="neutral.500"
-                                p={2}
-                                title="Unassigned"
-                              >
-                                —
-                              </Box>
-                            )}
-                          </Box>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          {pantry.pantryName}
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          textAlign="left"
-                          color="neutral.700"
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          {formatDate(order.createdAt)}-
-                          {order.deliveredAt && formatDate(order.deliveredAt)}
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          textAlign="left"
-                          bg="neutral.50"
-                        ></Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
-                </Table.Body>
-              </Table.Root>
+                            <Box
+                              direction="row"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              {order.assignee ? (
+                                <Box
+                                  key={index}
+                                  borderRadius="full"
+                                  bg={
+                                    order.assignee.active
+                                      ? order.assigneeColor || 'gray'
+                                      : 'neutral.300'
+                                  }
+                                  opacity={order.assignee.active ? 1 : 0.6}
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="white"
+                                  p={2}
+                                >
+                                  {getInitials(
+                                    order.assignee.firstName,
+                                    order.assignee.lastName,
+                                  )}
+                                </Box>
+                              ) : (
+                                <Box
+                                  key={index}
+                                  borderRadius="full"
+                                  bg="neutral.100"
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="neutral.500"
+                                  p={2}
+                                  title="Unassigned"
+                                >
+                                  —
+                                </Box>
+                              )}
+                            </Box>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            {pantry.pantryName}
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            textAlign="left"
+                            color="neutral.700"
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            {formatDate(order.createdAt)}-
+                            {order.deliveredAt && formatDate(order.deliveredAt)}
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            textAlign="left"
+                            bg="neutral.50"
+                          ></Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
+                  </Table.Body>
+                </Table.Root>
+              </Box>
 
               {totalPages > 1 && (
                 <Box mt={4}>
