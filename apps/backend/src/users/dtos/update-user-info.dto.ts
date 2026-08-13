@@ -23,8 +23,7 @@ export class UpdateUserInfoDto {
   @IsString()
   @IsNotEmpty()
   @IsPhoneNumber('US', {
-    message:
-      'Phone must be a valid phone number. Make sure all the digits are correct.',
+    message: 'Phone must be a valid US phone number.',
   })
   phone?: string;
 }
