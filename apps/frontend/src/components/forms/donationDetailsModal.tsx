@@ -52,7 +52,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   if (donation) donationRef.current = donation;
   const displayDonation = donation ?? donationRef.current;
 
-  const donationId = donation?.donationId;
+  const donationId = displayDonation?.donationId;
 
   const handleCancel = () => {
     setIsEditing(false);
