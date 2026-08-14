@@ -376,14 +376,19 @@ const ApproveFoodManufacturers: React.FC = () => {
                         textStyle="p2"
                         variant="underline"
                         textDecorationColor="neutral.700"
-                        onClick={() =>
+                        href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                          ':applicationId',
+                          String(foodManufacturer.foodManufacturerId),
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
                           navigate(
                             ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
                               ':applicationId',
                               String(foodManufacturer.foodManufacturerId),
                             ),
-                          )
-                        }
+                          );
+                        }}
                       >
                         View Details
                       </Link>
