@@ -409,7 +409,7 @@ const AdminPantryManagement: React.FC = () => {
                           );
                         })()
                       ) : (
-                        <Box color="neutral.600" fontStyle="p2">
+                        <Box color="neutral.600" textStyle="p2">
                           No Volunteer
                         </Box>
                       )}
