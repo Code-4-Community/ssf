@@ -344,13 +344,13 @@ const ApprovePantries: React.FC = () => {
                         pantry.pantryId.toString(),
                       )}
                       onClick={(event) => {
-                        event.preventDefault()
+                        event.preventDefault();
                         navigate(
                           ROUTES.PANTRY_APPLICATION_DETAILS.replace(
                             ':applicationId',
                             pantry.pantryId.toString(),
                           ),
-                        )
+                        );
                       }}
                     >
                       View Details

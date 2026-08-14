@@ -171,7 +171,7 @@ export class PantriesController {
           type: 'string',
           format: 'phone',
           example: '(508) 508-6789',
-          description: 'Must be a valid US phone number',
+          description: 'Phone must be a valid US phone number',
         },
         hasEmailContact: {
           type: 'boolean',
@@ -198,7 +198,7 @@ export class PantriesController {
           type: 'string',
           format: 'phone',
           example: '(508) 528-6789',
-          description: 'Must be a valid US phone number',
+          description: 'Phone must be a valid US phone number',
         },
         pantryName: {
           type: 'string',
