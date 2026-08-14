@@ -339,14 +339,19 @@ const ApprovePantries: React.FC = () => {
                       textStyle="p2"
                       variant="underline"
                       textDecorationColor="neutral.700"
-                      onClick={() =>
+                      href={ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                        ':applicationId',
+                        pantry.pantryId.toString(),
+                      )}
+                      onClick={(event) => {
+                        event.preventDefault()
                         navigate(
                           ROUTES.PANTRY_APPLICATION_DETAILS.replace(
                             ':applicationId',
                             pantry.pantryId.toString(),
                           ),
                         )
-                      }
+                      }}
                     >
                       View Details
                     </Link>
