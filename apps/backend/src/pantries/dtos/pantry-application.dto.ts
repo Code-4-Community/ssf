@@ -73,8 +73,7 @@ export class PantryApplicationDto {
   @IsOptional()
   @IsString()
   @IsPhoneNumber('US', {
-    message:
-      'Secondary phone contact must be a valid phone number. Make sure all the digits are correct.',
+    message: 'Secondary phone contact must be a valid US phone number.',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;
