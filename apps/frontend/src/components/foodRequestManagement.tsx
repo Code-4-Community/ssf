@@ -4,18 +4,16 @@ import {
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   VStack,
-  ButtonGroup,
   Checkbox,
   Link,
 } from '@chakra-ui/react';
-import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
+import { ArrowDownUp, Funnel } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import PageEmptyState from '@components/pageEmptyState';
+import { PaginationControl } from '@components/pagination';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
@@ -131,7 +129,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -469,59 +466,14 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         </>
       )}
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={filteredRequests.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft size={16} />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                <ChevronRight size={16} />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

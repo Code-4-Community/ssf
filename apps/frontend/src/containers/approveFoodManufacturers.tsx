@@ -7,23 +7,14 @@ import {
   Heading,
   VStack,
   Checkbox,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Link,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { AlertStatus, FoodManufacturer } from '../types/types';
-import {
-  ArrowDownUp,
-  ChevronLeft,
-  ChevronRight,
-  CircleCheck,
-  CircleX,
-  Funnel,
-} from 'lucide-react';
+import { ArrowDownUp, CircleCheck, CircleX, Funnel } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { PaginationControl } from '@components/pagination';
 import { ROUTES } from '../routes';
 
 const ApproveFoodManufacturers: React.FC = () => {
@@ -95,7 +86,6 @@ const ApproveFoodManufacturers: React.FC = () => {
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredFoodManufacturers.length / itemsPerPage);
   const paginatedFoodManufacturers = filteredFoodManufacturers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -399,55 +389,14 @@ const ApproveFoodManufacturers: React.FC = () => {
             </Table.Root>
           )}
 
-          {totalPages > 1 && (
-            <Pagination.Root
+          <Box mt={12}>
+            <PaginationControl
               count={filteredFoodManufacturers.length}
               pageSize={itemsPerPage}
               page={currentPage}
-              onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-            >
-              <ButtonGroup
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt={12}
-                variant="outline"
-                size="sm"
-                gap={4}
-              >
-                <Pagination.PrevTrigger
-                  color="neutral.800"
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronLeft size={16} />
-                </Pagination.PrevTrigger>
-
-                <Pagination.Items
-                  render={(page) => (
-                    <IconButton
-                      borderColor={{
-                        base: 'neutral.100',
-                        _selected: 'neutral.600',
-                      }}
-                    >
-                      {page.value}
-                    </IconButton>
-                  )}
-                />
-
-                <Pagination.NextTrigger
-                  color="neutral.800"
-                  variant="ghost"
-                  disabled={currentPage === totalPages}
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronRight size={16} />
-                </Pagination.NextTrigger>
-              </ButtonGroup>
-            </Pagination.Root>
-          )}
+              onPageChange={setCurrentPage}
+            />
+          </Box>
         </Box>
       )}
     </Box>

@@ -1,16 +1,6 @@
 import ApiClient from '@api/apiClient';
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  Heading,
-  IconButton,
-  Link,
-  Pagination,
-  Table,
-} from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, Mail } from 'lucide-react';
+import { Box, Button, Flex, Heading, Link, Table } from '@chakra-ui/react';
+import { Mail } from 'lucide-react';
 import { capitalize, formatDate, DONATION_STATUS_COLORS } from '@utils/utils';
 import {
   AlertStatus,
@@ -29,6 +19,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 import { ROUTES } from '../routes';
+import { PaginationControl } from '@components/pagination';
 
 const MAX_PER_STATUS = 5;
 
@@ -385,8 +376,6 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
   onActionSelect,
   showManufacturer,
 }) => {
-  const totalPages = Math.ceil(totalDonations / MAX_PER_STATUS);
-
   const tableHeaderStyles = {
     borderBottom: '1px solid',
     borderColor: 'neutral.100',
@@ -559,65 +548,14 @@ const DonationStatusSection: React.FC<DonationStatusSectionProps> = ({
             </Table.Body>
           </Table.Root>
 
-          {totalPages > 1 && (
-            <Box mt={4}>
-              <Pagination.Root
-                count={totalDonations}
-                pageSize={MAX_PER_STATUS}
-                page={currentPage}
-                onPageChange={(e: { page: number }) => onPageChange(e.page)}
-              >
-                <ButtonGroup
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  variant="outline"
-                  size="sm"
-                  gap={4}
-                >
-                  <Pagination.PrevTrigger
-                    color="neutral.800"
-                    _hover={{ color: 'black' }}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft
-                      size={16}
-                      style={{
-                        cursor: currentPage !== 1 ? 'pointer' : 'default',
-                      }}
-                    />
-                  </Pagination.PrevTrigger>
-
-                  <Pagination.Items
-                    render={(page) => (
-                      <IconButton
-                        borderColor={{
-                          base: 'neutral.100',
-                          _selected: 'neutral.600',
-                        }}
-                      >
-                        {page.value}
-                      </IconButton>
-                    )}
-                  />
-
-                  <Pagination.NextTrigger
-                    color="neutral.800"
-                    _hover={{ color: 'black' }}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight
-                      size={16}
-                      style={{
-                        cursor:
-                          currentPage !== totalPages ? 'pointer' : 'default',
-                      }}
-                    />
-                  </Pagination.NextTrigger>
-                </ButtonGroup>
-              </Pagination.Root>
-            </Box>
-          )}
+          <Box mt={4}>
+            <PaginationControl
+              count={totalDonations}
+              pageSize={MAX_PER_STATUS}
+              page={currentPage}
+              onPageChange={onPageChange}
+            />
+          </Box>
         </>
       )}
     </Box>

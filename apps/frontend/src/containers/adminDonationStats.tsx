@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ChevronRight,
-  ChevronLeft,
-  ChevronDown,
-  Funnel,
-  Search,
-} from 'lucide-react';
+import { ChevronDown, Funnel, Search } from 'lucide-react';
 import {
   Box,
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   Checkbox,
   VStack,
-  ButtonGroup,
   Input,
 } from '@chakra-ui/react';
 import { AlertStatus, PantryStats, TotalStats } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { PaginationControl } from '@components/pagination';
 
 const AdminDonationStats: React.FC = () => {
   // Individual and combined pantry stats to be displayed
@@ -118,7 +110,6 @@ const AdminDonationStats: React.FC = () => {
   const pantryList =
     selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
   const totalCount = pantryList.length;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -557,57 +548,14 @@ const AdminDonationStats: React.FC = () => {
         </Table.Body>
       </Table.Root>
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={totalCount}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  variant={{ base: 'outline', _selected: 'outline' }}
-                  onClick={() => setCurrentPage(page.value)}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                <ChevronRight />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

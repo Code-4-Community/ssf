@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
+import { ArrowDownUp, Funnel } from 'lucide-react';
 import {
   Box,
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   Checkbox,
   VStack,
-  ButtonGroup,
   Link,
 } from '@chakra-ui/react';
 import { AlertStatus, Donation } from '../types/types';
@@ -22,6 +19,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 import PageEmptyState from '@components/pageEmptyState';
+import { PaginationControl } from '@components/pagination';
 
 const AdminDonation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -147,7 +145,6 @@ const AdminDonation: React.FC = () => {
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredDonations.length / itemsPerPage);
   const paginatedDonations = filteredDonations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -360,55 +357,14 @@ const AdminDonation: React.FC = () => {
         onDelete={() => setDeleteDonation(selectedDonation)}
       />
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={filteredDonations.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger
-              color="neutral.800"
-              variant="outline"
-              disabled={currentPage === 1}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronLeft size={16} />
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger
-              color="neutral.800"
-              variant="ghost"
-              disabled={currentPage === totalPages}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronRight size={16} />
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

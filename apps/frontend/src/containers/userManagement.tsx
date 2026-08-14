@@ -10,19 +10,12 @@ import {
   Box,
   Badge,
   InputGroup,
-  Pagination,
-  ButtonGroup,
   IconButton,
   Link,
   Menu,
   Portal,
 } from '@chakra-ui/react';
-import {
-  SearchIcon,
-  ChevronRight,
-  ChevronLeft,
-  EllipsisVertical,
-} from 'lucide-react';
+import { SearchIcon, EllipsisVertical } from 'lucide-react';
 import { AlertStatus, Role, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
@@ -31,6 +24,7 @@ import ConfirmActionModal from '@components/forms/confirmActionModal';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
+import { PaginationControl } from '@components/pagination';
 
 const VolunteerManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -339,57 +333,12 @@ const VolunteerManagement: React.FC = () => {
           </Table.Body>
         </Table.Root>
         <Flex justify="center" mt={12}>
-          <Pagination.Root
-            count={Math.ceil(filteredVolunteers.length / pageSize)}
-            pageSize={1}
+          <PaginationControl
+            count={filteredVolunteers.length}
+            pageSize={pageSize}
             page={currentPage}
-            onChange={(page: number) => setCurrentPage(page)}
-          >
-            <ButtonGroup variant="outline" size="sm" gap={4}>
-              <Pagination.PrevTrigger asChild>
-                <IconButton
-                  variant="ghost"
-                  disabled={currentPage === 1}
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                >
-                  <ChevronLeft />
-                </IconButton>
-              </Pagination.PrevTrigger>
-
-              <Pagination.Items
-                render={(page) => (
-                  <IconButton
-                    variant={{ base: 'outline', _selected: 'outline' }}
-                    onClick={() => setCurrentPage(page.value)}
-                  >
-                    {page.value}
-                  </IconButton>
-                )}
-              />
-
-              <Pagination.NextTrigger asChild>
-                <IconButton
-                  variant="ghost"
-                  disabled={
-                    currentPage ===
-                    Math.ceil(filteredVolunteers.length / pageSize)
-                  }
-                  onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.min(
-                        prev + 1,
-                        Math.ceil(filteredVolunteers.length / pageSize),
-                      ),
-                    )
-                  }
-                >
-                  <ChevronRight />
-                </IconButton>
-              </Pagination.NextTrigger>
-            </ButtonGroup>
-          </Pagination.Root>
+            onPageChange={setCurrentPage}
+          />
         </Flex>
       </Box>
 

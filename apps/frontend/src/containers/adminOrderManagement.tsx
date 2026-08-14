@@ -4,23 +4,12 @@ import {
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   VStack,
-  ButtonGroup,
   Checkbox,
   Input,
   Link,
 } from '@chakra-ui/react';
-import {
-  ArrowDownUp,
-  ChevronRight,
-  ChevronLeft,
-  Funnel,
-  Mail,
-  CircleCheck,
-  Search,
-} from 'lucide-react';
+import { ArrowDownUp, Funnel, Mail, CircleCheck, Search } from 'lucide-react';
 import {
   formatDate,
   getInitials,
@@ -35,6 +24,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { PaginationControl } from '@components/pagination';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -358,7 +348,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const MAX_PER_STATUS = 5;
-  const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
     const newSelected = checked
@@ -843,67 +832,14 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                 </Table.Root>
               </Box>
 
-              {totalPages > 1 && (
-                <Box mt={4}>
-                  <Pagination.Root
-                    count={totalOrders}
-                    pageSize={MAX_PER_STATUS}
-                    page={currentPage}
-                    onPageChange={(e: { page: number }) => onPageChange(e.page)}
-                  >
-                    <ButtonGroup
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                      variant="outline"
-                      size="sm"
-                      gap={4}
-                    >
-                      <Pagination.PrevTrigger
-                        color="neutral.800"
-                        _hover={{ color: 'black' }}
-                        disabled={currentPage === 1}
-                      >
-                        <ChevronLeft
-                          size={16}
-                          style={{
-                            cursor: currentPage !== 1 ? 'pointer' : 'default',
-                          }}
-                        />
-                      </Pagination.PrevTrigger>
-
-                      <Pagination.Items
-                        render={(page) => (
-                          <IconButton
-                            borderColor={{
-                              base: 'neutral.100',
-                              _selected: 'neutral.600',
-                            }}
-                          >
-                            {page.value}
-                          </IconButton>
-                        )}
-                      />
-
-                      <Pagination.NextTrigger
-                        color="neutral.800"
-                        _hover={{ color: 'black' }}
-                        disabled={currentPage === totalPages}
-                      >
-                        <ChevronRight
-                          size={16}
-                          style={{
-                            cursor:
-                              currentPage !== totalPages
-                                ? 'pointer'
-                                : 'default',
-                          }}
-                        />
-                      </Pagination.NextTrigger>
-                    </ButtonGroup>
-                  </Pagination.Root>
-                </Box>
-              )}
+              <Box mt={4}>
+                <PaginationControl
+                  count={totalOrders}
+                  pageSize={MAX_PER_STATUS}
+                  page={currentPage}
+                  onPageChange={onPageChange}
+                />
+              </Box>
             </>
           )}
         </>

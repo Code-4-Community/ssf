@@ -7,13 +7,9 @@ import {
   Input,
   Dialog,
   CloseButton,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Table,
   Checkbox,
 } from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import ApiClient from '@api/apiClient';
 import {
@@ -27,6 +23,7 @@ import { useAlert } from '../../hooks/alert';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { isValidUrl } from '../../utils/utils';
 import { AlertStatus } from '../../types/types';
+import { PaginationControl } from '@components/pagination';
 
 // Up to two decimal places, e.g. "0.5", "1", "12.34" — but not "1.234" or "-1"
 const POSITIVE_TWO_DECIMAL_REGEX = /^\d+(\.\d{1,2})?$/;
@@ -449,65 +446,12 @@ const FmCompleteRequiredActionsModal: React.FC<
 
                 {orders.length > 1 && (
                   <Flex justify="center" mt={4}>
-                    <Pagination.Root
+                    <PaginationControl
                       count={orders.length}
                       pageSize={1}
                       page={currentPage}
-                      onPageChange={(e: { page: number }) =>
-                        setCurrentPage(e.page)
-                      }
-                    >
-                      <ButtonGroup
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        variant="outline"
-                        size="sm"
-                        gap={4}
-                      >
-                        <Pagination.PrevTrigger
-                          color="neutral.800"
-                          _hover={{ color: 'black' }}
-                          disabled={currentPage === 1}
-                        >
-                          <ChevronLeft
-                            size={16}
-                            style={{
-                              cursor: currentPage !== 1 ? 'pointer' : 'default',
-                            }}
-                          />
-                        </Pagination.PrevTrigger>
-
-                        <Pagination.Items
-                          render={(page) => (
-                            <IconButton
-                              borderColor={{
-                                base: 'neutral.100',
-                                _selected: 'neutral.600',
-                              }}
-                            >
-                              {page.value}
-                            </IconButton>
-                          )}
-                        />
-
-                        <Pagination.NextTrigger
-                          color="neutral.800"
-                          _hover={{ color: 'black' }}
-                          disabled={currentPage === orders.length}
-                        >
-                          <ChevronRight
-                            size={16}
-                            style={{
-                              cursor:
-                                currentPage !== orders.length
-                                  ? 'pointer'
-                                  : 'default',
-                            }}
-                          />
-                        </Pagination.NextTrigger>
-                      </ButtonGroup>
-                    </Pagination.Root>
+                      onPageChange={setCurrentPage}
+                    />
                   </Flex>
                 )}
 
