@@ -20,6 +20,7 @@ import {
   Form,
   redirect,
   useActionData,
+  useNavigation,
 } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
@@ -45,6 +46,8 @@ const ManufacturerApplicationForm: React.FC = () => {
   >([]);
   const [alertState, setAlertMessage] = useAlert();
   const actionData = useActionData() as { error?: string } | undefined;
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -604,7 +607,12 @@ const ManufacturerApplicationForm: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" bg="blue.hover" fontWeight={600}>
+            <Button
+              type="submit"
+              bg="blue.hover"
+              fontWeight={600}
+              disabled={isSubmitting}
+            >
               Submit
             </Button>
           </Box>

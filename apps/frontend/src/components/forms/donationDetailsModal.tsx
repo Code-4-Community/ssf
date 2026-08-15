@@ -47,6 +47,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [alertState, setAlertMessage] = useAlert();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const donationRef = useRef<Donation | null>(donation);
   if (donation) donationRef.current = donation;
@@ -83,6 +84,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       foodRescue: r.foodRescue,
     }));
 
+    setIsSubmitting(true);
     try {
       await ApiClient.editDonationItems(donationId, body);
       await loadItems();
@@ -94,6 +96,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         'Donation items could not be updated.',
         AlertStatus.ERROR,
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -178,6 +182,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   onCancel={handleCancel}
                   onSubmit={handleUpdate}
                   submitButtonLabel="Update Donation"
+                  isSubmitting={isSubmitting}
                 ></EditableDonationItemsTable>
               ) : (
                 <VStack align="stretch" gap={4} my={2}>

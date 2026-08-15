@@ -122,6 +122,7 @@ interface EditableDonationItemsTableProps {
   onCancel: () => void;
   onSubmit: (rows: DonationRow[], recurrence: RecurrenceData | null) => void;
   submitButtonLabel: string;
+  isSubmitting?: boolean;
 }
 
 const EditableDonationItemsTable: React.FC<EditableDonationItemsTableProps> = ({
@@ -130,6 +131,7 @@ const EditableDonationItemsTable: React.FC<EditableDonationItemsTableProps> = ({
   onCancel,
   onSubmit,
   submitButtonLabel,
+  isSubmitting,
 }) => {
   const [rows, setRows] = useState<DonationRow[]>(initialRows ?? [BLANK_ROW]);
 
@@ -200,7 +202,7 @@ const EditableDonationItemsTable: React.FC<EditableDonationItemsTableProps> = ({
     endsAfter,
   );
 
-  const isSubmitDisabled = firstValidationError !== null;
+  const isSubmitDisabled = firstValidationError !== null || !!isSubmitting;
 
   const getSelectedDaysText = () => {
     const selected = (Object.keys(repeatOn) as DayOfWeek[]).filter(
@@ -672,7 +674,7 @@ const EditableDonationItemsTable: React.FC<EditableDonationItemsTableProps> = ({
         >
           Cancel
         </Button>
-        <Tooltip.Root disabled={!isSubmitDisabled} openDelay={0}>
+        <Tooltip.Root disabled={firstValidationError === null} openDelay={0}>
           <Tooltip.Trigger asChild>
             <Box display="inline-block">
               <Button

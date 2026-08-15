@@ -22,6 +22,7 @@ import {
   Form,
   redirect,
   useActionData,
+  useNavigation,
 } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { USPhoneInput } from '@components/forms/usPhoneInput';
@@ -91,6 +92,8 @@ const PantryApplicationForm: React.FC = () => {
   const [otherEmailContact, setOtherEmailContact] = useState<boolean>(false);
   const [alertState, setAlertMessage] = useAlert();
   const actionData = useActionData() as { error?: string } | undefined;
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
 
   const sectionTitleStyles = {
     fontFamily: 'inter',
@@ -1169,7 +1172,13 @@ const PantryApplicationForm: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" bg="blue.hover" fontWeight={600} px={8}>
+            <Button
+              type="submit"
+              bg="blue.hover"
+              fontWeight={600}
+              px={8}
+              disabled={isSubmitting}
+            >
               Submit Application
             </Button>
           </Box>

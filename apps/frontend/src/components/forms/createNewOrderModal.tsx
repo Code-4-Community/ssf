@@ -54,6 +54,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   const [itemAllocations, setItemAllocations] = useState<
     Record<number, number>
   >({});
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchManufacturers = async () => {
@@ -120,6 +121,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
   };
 
   const onSubmitNewOrder = async () => {
+    if (isSubmittingOrder) return;
     const cleanedAllocations: Record<number, number> = {};
 
     for (const item in itemAllocations) {
@@ -136,12 +138,15 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
       itemAllocations: cleanedAllocations,
     };
 
+    setIsSubmittingOrder(true);
     try {
       await apiClient.createOrder(data);
       onClose();
       onSuccess();
     } catch {
       setAlertMessage('Error creating new order', AlertStatus.ERROR);
+    } finally {
+      setIsSubmittingOrder(false);
     }
   };
 
@@ -459,6 +464,7 @@ const CreateNewOrderModal: React.FC<CreateNewOrderModalModalProps> = ({
                     bg={'blue.hover'}
                     color={'white'}
                     onClick={onSubmitNewOrder}
+                    disabled={isSubmittingOrder}
                   >
                     Continue
                   </Button>
