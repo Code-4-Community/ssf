@@ -35,8 +35,10 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!firstName || !lastName || !email || !phone || phone === '+1') {
       setAlertMessage('Please fill in all fields. *', AlertStatus.ERROR);
       return;
@@ -50,6 +52,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
       role: Role.VOLUNTEER,
     };
 
+    setIsSubmitting(true);
     try {
       await ApiClient.postUser(newVolunteer);
       if (onSubmitSuccess) onSubmitSuccess();
@@ -90,6 +93,8 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
         if (onSubmitFail) onSubmitFail();
         handleClear();
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -226,6 +231,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                 bg={'blue.hover'}
                 color={'white'}
                 onClick={handleSubmit}
+                disabled={isSubmitting}
               >
                 Submit
               </Button>

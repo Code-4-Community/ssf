@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Funnel, Search } from 'lucide-react';
 import {
   Box,
@@ -32,6 +32,9 @@ const AdminDonationStats: React.FC = () => {
 
   const [alertState, setAlertMessage] = useAlert();
 
+  const totalStatsRequestIdRef = useRef(0);
+  const pantryStatsRequestIdRef = useRef(0);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -52,20 +55,26 @@ const AdminDonationStats: React.FC = () => {
   }, [setAlertMessage]);
 
   useEffect(() => {
+    const requestId = ++totalStatsRequestIdRef.current;
     const fetchTotalStats = async () => {
       try {
         const stats = await ApiClient.getTotalStats(
           selectedYears.length ? selectedYears : undefined,
         );
-        setTotalStats(stats);
+        if (requestId === totalStatsRequestIdRef.current) {
+          setTotalStats(stats);
+        }
       } catch {
-        setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
+        if (requestId === totalStatsRequestIdRef.current) {
+          setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
+        }
       }
     };
     fetchTotalStats();
   }, [setAlertMessage, selectedYears]);
 
   useEffect(() => {
+    const requestId = ++pantryStatsRequestIdRef.current;
     const fetchStats = async () => {
       try {
         const stats = await ApiClient.getPantryStats({
@@ -73,9 +82,13 @@ const AdminDonationStats: React.FC = () => {
           years: selectedYears.length ? selectedYears : undefined,
           page: currentPage,
         });
-        setPantryStats(stats);
+        if (requestId === pantryStatsRequestIdRef.current) {
+          setPantryStats(stats);
+        }
       } catch {
-        setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
+        if (requestId === pantryStatsRequestIdRef.current) {
+          setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
+        }
       }
     };
     fetchStats();
