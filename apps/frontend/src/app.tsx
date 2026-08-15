@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from 'react-router-dom';
 import Root from '@containers/root';
 import NotFound from '@containers/404';
 import FormRequests from '@containers/formRequests';
@@ -9,7 +13,6 @@ import ApprovePantries from '@containers/approvePantries';
 import PantryApplicationDetails from '@containers/pantryApplicationDetails';
 import VolunteerManagement from '@containers/userManagement';
 import AdminDonation from '@containers/adminDonation';
-import Homepage from '@containers/homepage';
 import AdminOrderManagement from '@containers/adminOrderManagement';
 import { Amplify } from 'aws-amplify';
 import CognitoAuthConfig from './aws-exports';
@@ -50,7 +53,7 @@ const router = createBrowserRouter([
       // Public routes (no auth needed)
       {
         index: true,
-        element: <Homepage />,
+        element: <Navigate to={ROUTES.LOGIN} replace />,
       },
       {
         path: ROUTES.LOGIN,

@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || ROUTES.HOME;
+  const from = location.state?.from?.pathname || ROUTES.PROFILE;
 
   useEffect(() => {
     if (authStatus === 'authenticated') {
