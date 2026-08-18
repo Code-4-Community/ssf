@@ -9,13 +9,14 @@ import {
   VStack,
   Box,
   Badge,
+  Button,
   InputGroup,
   IconButton,
   Link,
   Menu,
   Portal,
 } from '@chakra-ui/react';
-import { SearchIcon, EllipsisVertical } from 'lucide-react';
+import { SearchIcon, EllipsisVertical, PlusIcon } from 'lucide-react';
 import { AlertStatus, Role, User } from '../types/types';
 import ApiClient from '@api/apiClient';
 import NewVolunteerModal from '@components/forms/addNewVolunteerModal';
@@ -34,6 +35,7 @@ const VolunteerManagement: React.FC = () => {
   const [selectedVolunteer, setSelectedVolunteer] = useState<User | null>(null);
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
 
@@ -163,15 +165,20 @@ const VolunteerManagement: React.FC = () => {
                 _focusVisible={{ boxShadow: 'none', outline: 'none' }}
               />
             </InputGroup>
-            <NewVolunteerModal
-              onSubmitSuccess={() => {
-                setAlertMessage('User added.', AlertStatus.INFO);
-                fetchVolunteers();
-              }}
-              onSubmitFail={() => {
-                setAlertMessage('User could not be added.', AlertStatus.ERROR);
-              }}
-            />
+            <Button
+              pl={3}
+              borderColor="neutral.200"
+              variant="outline"
+              color="neutral.600"
+              fontFamily="ibm"
+              fontWeight="semibold"
+              fontSize="14px"
+              gap={1}
+              onClick={() => setIsAddUserModalOpen(true)}
+            >
+              <Box as={PlusIcon} boxSize="17px" strokeWidth={2.5} />
+              Add
+            </Button>
           </Flex>
         </VStack>
         <Table.Root variant="line" showColumnBorder>
@@ -364,6 +371,20 @@ const VolunteerManagement: React.FC = () => {
           onConfirm={handleToggleActive}
           volunteerName={`${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`}
           action={selectedVolunteer.active ? 'deactivate' : 'activate'}
+        />
+      )}
+
+      {isAddUserModalOpen && (
+        <NewVolunteerModal
+          isOpen
+          onClose={() => setIsAddUserModalOpen(false)}
+          onSubmitSuccess={() => {
+            setAlertMessage('User added.', AlertStatus.INFO);
+            fetchVolunteers();
+          }}
+          onSubmitFail={() => {
+            setAlertMessage('User could not be added.', AlertStatus.ERROR);
+          }}
         />
       )}
     </Box>

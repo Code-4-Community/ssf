@@ -346,16 +346,18 @@ const AdminDonation: React.FC = () => {
         }}
       />
 
-      <DonationDetailsModal
-        donation={selectedDonation}
-        isOpen={selectedDonation !== null}
-        onClose={() => {
-          setSelectedDonation(null);
-          navigate(ROUTES.ADMIN_DONATION, { replace: true });
-        }}
-        onSuccess={() => fetchDonations()}
-        onDelete={() => setDeleteDonation(selectedDonation)}
-      />
+      {selectedDonation !== null && (
+        <DonationDetailsModal
+          donation={selectedDonation}
+          isOpen={selectedDonation !== null}
+          onClose={() => {
+            setSelectedDonation(null);
+            navigate(ROUTES.ADMIN_DONATION, { replace: true });
+          }}
+          onSuccess={() => fetchDonations()}
+          onDelete={() => setDeleteDonation(selectedDonation)}
+        />
+      )}
 
       <Box mt={12}>
         <PaginationControl

@@ -6,23 +6,25 @@ import {
   Field,
   Input,
   CloseButton,
-  Box,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { AlertStatus, Role, UserDto } from '../../types/types';
 import ApiClient from '@api/apiClient';
 import { USPhoneInput } from './usPhoneInput';
-import { PlusIcon } from 'lucide-react';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 
 interface NewVolunteerModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSubmitSuccess?: () => void;
   onSubmitFail?: () => void;
 }
 
 const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
+  isOpen,
+  onClose,
   onSubmitSuccess,
   onSubmitFail,
 }) => {
@@ -31,8 +33,6 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-
-  const [isOpen, setIsOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +56,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
     try {
       await ApiClient.postUser(newVolunteer);
       if (onSubmitSuccess) onSubmitSuccess();
-      handleClear();
+      onClose();
     } catch (error: unknown) {
       let hasEmailError = false;
       let hasPhoneError = false;
@@ -91,38 +91,28 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
         );
       } else {
         if (onSubmitFail) onSubmitFail();
-        handleClear();
+        onClose();
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleClear = () => {
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setPhone('');
-    setIsOpen(false);
-  };
-
   return (
-    <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-      <Dialog.Trigger asChild>
-        <Button
-          pl={3}
-          borderColor="neutral.200"
-          variant="outline"
-          color="neutral.600"
-          fontFamily="ibm"
-          fontWeight="semibold"
-          fontSize="14px"
-          gap={1}
-        >
-          <Box as={PlusIcon} boxSize="17px" strokeWidth={2.5} />
-          Add
-        </Button>
-      </Dialog.Trigger>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) => {
+        if (!e.open) onClose();
+      }}
+    >
+      {alertState && (
+        <FloatingAlert
+          key={alertState.id}
+          message={alertState.message}
+          status={alertState.status}
+          timeout={6000}
+        />
+      )}
       <Dialog.Backdrop />
       <Dialog.Positioner alignItems="center">
         <Dialog.Content maxW="40em" mt="-8">
@@ -135,13 +125,9 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
             >
               Add New User
             </Dialog.Title>
-            <CloseButton
-              onClick={() => setIsOpen(false)}
-              size="md"
-              position="absolute"
-              top={3}
-              right={3}
-            />
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="md" position="absolute" top={3} right={3} />
+            </Dialog.CloseTrigger>
           </Dialog.Header>
           <Dialog.Body color="neutral.800" fontWeight={600} textStyle="p2">
             <Text mb="1.5em" color="#52525B" fontWeight={400}>
@@ -207,21 +193,13 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                 }}
               />
             </Field.Root>
-            {alertState && (
-              <FloatingAlert
-                key={alertState.id}
-                message={alertState.message}
-                status={alertState.status}
-                timeout={6000}
-              />
-            )}
             <Flex justifyContent="flex-end" mt={10} gap={2.5}>
               <Button
                 textStyle="p2"
                 fontWeight={600}
                 color="neutral.800"
                 variant="outline"
-                onClick={handleClear}
+                onClick={onClose}
               >
                 Cancel
               </Button>
