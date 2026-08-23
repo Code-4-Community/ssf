@@ -85,6 +85,7 @@ const router = createBrowserRouter([
         path: ROUTES.UNAUTHORIZED,
         element: <Unauthorized />,
       },
+      // Protected routes below (require auth)
       {
         path: ROUTES.REQUEST_FORM,
         element: (
