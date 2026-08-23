@@ -10,6 +10,7 @@ export interface AlertState {
 export function useAlert(): [
   AlertState | null,
   (message: string, status: AlertStatus) => void,
+  () => void,
 ] {
   const [alertState, setAlertState] = useState<AlertState | null>(null);
   const idRef = useRef<number>(0);
@@ -21,5 +22,7 @@ export function useAlert(): [
     [],
   );
 
-  return [alertState, setAlertMessage];
+  const clearAlert = useCallback(() => setAlertState(null), []);
+
+  return [alertState, setAlertMessage, clearAlert];
 }
