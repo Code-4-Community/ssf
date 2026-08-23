@@ -117,7 +117,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     <Dialog.Root
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {
-        if (!e.open) onClose();
+        if (!e.open) {
+          setIsEditing(false);
+          onClose();
+        }
       }}
       closeOnInteractOutside
       scrollBehavior="inside"
