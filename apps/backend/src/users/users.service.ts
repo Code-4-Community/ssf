@@ -15,6 +15,7 @@ import { validateId } from '../utils/validation.utils';
 import { UpdateUserInfoDto } from './dtos/update-user-info.dto';
 import { AuthService } from '../auth/auth.service';
 import { userSchemaDto } from './dtos/userSchema.dto';
+import { SignUpDto } from '../auth/dtos/sign-up.dto';
 import { emailTemplates } from '../emails/emailTemplates';
 import { EmailsService } from '../emails/email.service';
 import { FoodRequest } from '../foodRequests/request.entity';
@@ -90,22 +91,16 @@ export class UsersService {
       }
 
       const applicationUser = usersWithEmail[0];
-      applicationUser.userCognitoSub = await this.authService.adminCreateUser({
-        firstName,
-        lastName,
-        email,
-        role,
-      });
+      const signUpDto: SignUpDto = { firstName, lastName, email, role };
+      applicationUser.userCognitoSub = await this.authService.adminCreateUser(
+        signUpDto,
+      );
       return this.repo.save(applicationUser);
     }
 
     // Create Cognito user and save to DB
-    const userCognitoSub = await this.authService.adminCreateUser({
-      firstName,
-      lastName,
-      email,
-      role,
-    });
+    const signUpDto: SignUpDto = { firstName, lastName, email, role };
+    const userCognitoSub = await this.authService.adminCreateUser(signUpDto);
     const user = this.repo.create({
       role,
       firstName,

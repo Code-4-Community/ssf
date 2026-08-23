@@ -17,7 +17,6 @@ import {
 import CognitoAuthConfig from './aws-exports';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { createHmac } from 'crypto';
-import { Role } from '../users/types';
 import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
@@ -53,7 +52,7 @@ export class AuthService {
     lastName,
     email,
     role,
-  }: Omit<SignUpDto, 'password' | 'phone'> & { role: Role }): Promise<string> {
+  }: SignUpDto): Promise<string> {
     const createUserCommand = new AdminCreateUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
       Username: email,
