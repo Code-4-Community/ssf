@@ -120,6 +120,19 @@ const AdminDonation: React.FC = () => {
     ),
   ].sort((a, b) => a.localeCompare(b));
 
+  useEffect(() => {
+    setSelectedManufacturers((prev) =>
+      prev.filter((m) => manufacturerOptions.includes(m)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [donations]);
+
+  useEffect(() => {
+    if (!isFilterOpen) {
+      setSearchManufacturer('');
+    }
+  }, [isFilterOpen]);
+
   const handleFilterChange = (manufacturer: string, checked: boolean) => {
     if (checked) {
       setSelectedManufacturers([...selectedManufacturers, manufacturer]);
