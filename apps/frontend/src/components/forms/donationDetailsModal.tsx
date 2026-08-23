@@ -152,6 +152,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                     Donation #{donationId} Stock
                   </Dialog.Title>
                   {displayDonation.status === DonationStatus.AVAILABLE &&
+                    !items.some((item) => item.reservedQuantity > 0) &&
                     !isEditing && (
                       <>
                         <EditButton
