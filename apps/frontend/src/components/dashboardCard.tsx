@@ -121,6 +121,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         display="flex"
         alignItems="flex-start"
         justifyContent="space-between"
+        flexWrap="wrap"
         gap={3}
       >
         <Box display="flex" alignItems="center" gap={4} mb={2}>
