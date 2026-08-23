@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownUp, Funnel } from 'lucide-react';
+import { ArrowDownUp, Funnel, Search } from 'lucide-react';
 import {
   Box,
   Button,
@@ -8,6 +8,7 @@ import {
   Checkbox,
   VStack,
   Link,
+  Input,
 } from '@chakra-ui/react';
 import { AlertStatus, Donation } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
@@ -32,6 +33,7 @@ const AdminDonation: React.FC = () => {
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
     [],
   );
+  const [searchManufacturer, setSearchManufacturer] = useState('');
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
@@ -216,26 +218,63 @@ const AdminDonation: React.FC = () => {
                     boxShadow="lg"
                     p={4}
                     minW="275px"
-                    maxH="150px"
+                    maxH="200px"
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={
+                          searchManufacturer ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={searchManufacturer}
+                        onChange={(e) => setSearchManufacturer(e.target.value)}
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {manufacturerOptions.map((manufacturer) => (
-                        <Checkbox.Root
-                          key={manufacturer}
-                          checked={selectedManufacturers.includes(manufacturer)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(manufacturer, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{manufacturer}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {manufacturerOptions
+                        .filter((manufacturer) =>
+                          manufacturer
+                            .toLowerCase()
+                            .includes(searchManufacturer.toLowerCase()),
+                        )
+                        .map((manufacturer) => (
+                          <Checkbox.Root
+                            key={manufacturer}
+                            checked={selectedManufacturers.includes(
+                              manufacturer,
+                            )}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(manufacturer, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{manufacturer}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>

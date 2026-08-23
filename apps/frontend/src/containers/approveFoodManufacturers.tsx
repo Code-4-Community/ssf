@@ -8,10 +8,17 @@ import {
   VStack,
   Checkbox,
   Link,
+  Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { AlertStatus, FoodManufacturer } from '../types/types';
-import { ArrowDownUp, CircleCheck, CircleX, Funnel } from 'lucide-react';
+import {
+  ArrowDownUp,
+  CircleCheck,
+  CircleX,
+  Funnel,
+  Search,
+} from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
 import { PaginationControl } from '@components/pagination';
@@ -27,6 +34,7 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [selectedFoodManufacturers, setSelectedFoodManufacturers] = useState<
     string[]
   >([]);
+  const [searchFoodManufacturer, setSearchFoodManufacturer] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -219,28 +227,65 @@ const ApproveFoodManufacturers: React.FC = () => {
                     boxShadow="lg"
                     p={4}
                     minW="275px"
-                    maxH="150px"
+                    maxH="200px"
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={
+                          searchFoodManufacturer ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={searchFoodManufacturer}
+                        onChange={(e) =>
+                          setSearchFoodManufacturer(e.target.value)
+                        }
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {foodManufacturerOptions.map((foodManufacturer) => (
-                        <Checkbox.Root
-                          key={foodManufacturer}
-                          checked={selectedFoodManufacturers.includes(
-                            foodManufacturer,
-                          )}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(foodManufacturer, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{foodManufacturer}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {foodManufacturerOptions
+                        .filter((foodManufacturer) =>
+                          foodManufacturer
+                            .toLowerCase()
+                            .includes(searchFoodManufacturer.toLowerCase()),
+                        )
+                        .map((foodManufacturer) => (
+                          <Checkbox.Root
+                            key={foodManufacturer}
+                            checked={selectedFoodManufacturers.includes(
+                              foodManufacturer,
+                            )}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(foodManufacturer, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{foodManufacturer}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>
