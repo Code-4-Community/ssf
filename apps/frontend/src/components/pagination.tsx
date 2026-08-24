@@ -63,7 +63,7 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
           >
             <ChevronRight />
           </IconButton>
-        </Pagination.NextTrigger
+        </Pagination.NextTrigger>
       </ButtonGroup>
     </Pagination.Root>
   );
