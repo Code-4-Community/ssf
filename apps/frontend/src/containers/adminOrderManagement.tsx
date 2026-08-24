@@ -122,14 +122,19 @@ const AdminOrderManagement: React.FC = () => {
 
       setStatusOrders(grouped);
 
-      // Initialize current page for each status
-      const initialPages: Record<OrderStatus, number> = {
-        [OrderStatus.SHIPPED]: 1,
-        [OrderStatus.PENDING]: 1,
-        [OrderStatus.DELIVERED]: 1,
-        [OrderStatus.CLOSED]: 1,
-      };
-      setCurrentPages(initialPages);
+      // Preserve current page per status, clamping if the list shrank
+      // instead of always resetting back to page 1 on refetch.
+      setCurrentPages((prev) => {
+        const next: Record<OrderStatus, number> = { ...prev };
+        for (const status of Object.values(OrderStatus)) {
+          const totalPages = Math.max(
+            1,
+            Math.ceil(grouped[status].length / MAX_PER_STATUS),
+          );
+          next[status] = Math.min(prev[status], totalPages);
+        }
+        return next;
+      });
     } catch {
       setAlertMessage('Error fetching orders', AlertStatus.ERROR);
     }

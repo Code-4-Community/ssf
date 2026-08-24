@@ -27,7 +27,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    let retryTimeout: ReturnType<typeof setTimeout>;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const fetchProfile = async () => {
       try {
