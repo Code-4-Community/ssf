@@ -35,7 +35,11 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
         gap={4}
       >
         <Pagination.PrevTrigger asChild>
-          <IconButton variant="ghost" disabled={page === 1}>
+          <IconButton
+            variant="ghost"
+            disabled={page === 1}
+            aria-label="Previous page"
+          >
             <ChevronLeft />
           </IconButton>
         </Pagination.PrevTrigger>
@@ -52,10 +56,14 @@ export const PaginationControl: React.FC<PaginationControlProps> = ({
         />
 
         <Pagination.NextTrigger asChild>
-          <IconButton variant="ghost" disabled={page === totalPages}>
+          <IconButton
+            variant="ghost"
+            disabled={page === totalPages}
+            aria-label="Next page"
+          >
             <ChevronRight />
           </IconButton>
-        </Pagination.NextTrigger>
+        </Pagination.NextTrigger
       </ButtonGroup>
     </Pagination.Root>
   );
