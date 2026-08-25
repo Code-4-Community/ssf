@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Funnel, CircleCheck } from 'lucide-react';
+import { Funnel, CircleCheck, Search } from 'lucide-react';
 import {
   Box,
   Button,
@@ -75,8 +75,6 @@ const AssignedPantries: React.FC = () => {
   const hasNoFilterResults =
     !isLoading && pantries.length > 0 && filteredPantries.length === 0;
 
-  const isFiltered = selectedPantryIds.size > 0;
-
   const togglePantry = (pantryId: number) => {
     setSelectedPantryIds((prev) => {
       const next = new Set(prev);
@@ -84,18 +82,6 @@ const AssignedPantries: React.FC = () => {
       else next.add(pantryId);
       return next;
     });
-  };
-
-  const allChecked =
-    pantries.length > 0 && selectedPantryIds.size === pantries.length;
-  const isIndeterminate = selectedPantryIds.size > 0 && !allChecked;
-
-  const toggleAll = () => {
-    if (allChecked || isIndeterminate) {
-      setSelectedPantryIds(new Set());
-    } else {
-      setSelectedPantryIds(new Set(pantries.map((p) => p.pantryId)));
-    }
   };
 
   const visiblePantries = useMemo(() => {
@@ -143,10 +129,9 @@ const AssignedPantries: React.FC = () => {
                 <Button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   variant="outline"
-                  color={isFiltered ? 'blue.600' : 'neutral.800'}
+                  color="neutral.800"
                   border="1px solid"
-                  borderColor={isFiltered ? 'blue.300' : 'neutral.200'}
-                  bg={isFiltered ? 'blue.50' : undefined}
+                  borderColor="neutral.200"
                   size="sm"
                   p={3}
                   fontFamily="ibm"
@@ -154,20 +139,6 @@ const AssignedPantries: React.FC = () => {
                 >
                   <Funnel />
                   Filter
-                  {isFiltered && (
-                    <Box
-                      as="span"
-                      ml={1}
-                      bg="blue.500"
-                      color="white"
-                      borderRadius="full"
-                      fontSize="xs"
-                      px={1.5}
-                      lineHeight="1.4"
-                    >
-                      {selectedPantryIds.size}
-                    </Box>
-                  )}
                 </Button>
 
                 {isFilterOpen && (
@@ -193,42 +164,38 @@ const AssignedPantries: React.FC = () => {
                       boxShadow="lg"
                       p={4}
                       minW="275px"
+                      maxH="200px"
+                      overflowY="auto"
                       zIndex={20}
                     >
                       <VStack align="stretch" gap={2}>
-                        <Input
-                          placeholder="Search pantries..."
-                          size="sm"
-                          value={pantrySearch}
-                          onChange={(e) => setPantrySearch(e.target.value)}
-                          fontFamily="inter"
-                        />
-
-                        <Checkbox.Root
-                          checked={
-                            allChecked
-                              ? true
-                              : isIndeterminate
-                              ? 'indeterminate'
-                              : false
-                          }
-                          onCheckedChange={toggleAll}
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control />
-                          <Checkbox.Label>
-                            <Text
-                              fontSize="sm"
-                              fontWeight="semibold"
-                              color="neutral.800"
-                            >
-                              Select All
-                            </Text>
-                          </Checkbox.Label>
-                        </Checkbox.Root>
-
-                        <Box borderBottom="1px solid" borderColor="gray.100" />
+                        <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                          <Search
+                            size={18}
+                            color="var(--chakra-colors-neutral-300)"
+                            style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: 8,
+                              transform: 'translateY(-50%)',
+                            }}
+                          />
+                          <Input
+                            placeholder="Search"
+                            color={pantrySearch ? 'neutral.800' : 'neutral.300'}
+                            value={pantrySearch}
+                            onChange={(e) => setPantrySearch(e.target.value)}
+                            fontSize="sm"
+                            pl="30px"
+                            border="none"
+                            bg="transparent"
+                            _focus={{
+                              boxShadow: 'none',
+                              border: 'none',
+                              outline: 'none',
+                            }}
+                          />
+                        </Box>
 
                         {visiblePantries.length > 0 ? (
                           visiblePantries.map((pantry) => (
@@ -241,7 +208,7 @@ const AssignedPantries: React.FC = () => {
                               size="sm"
                             >
                               <Checkbox.HiddenInput />
-                              <Checkbox.Control />
+                              <Checkbox.Control borderRadius="sm" />
                               <Checkbox.Label>
                                 <Text fontSize="sm" color="neutral.800">
                                   {pantry.pantryName}
