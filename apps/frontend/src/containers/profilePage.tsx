@@ -26,41 +26,64 @@ const ProfilePage: React.FC = () => {
   const [alertState, setAlertMessage] = useAlert();
 
   useEffect(() => {
+    let cancelled = false;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
+
     const fetchProfile = async () => {
       try {
         const user: User = await ApiClient.getMe();
+        if (cancelled) return;
         setProfile(user);
         if (user.role === Role.PANTRY) {
           try {
             const pantryId = await ApiClient.getCurrentUserPantryId();
             const pantry = await ApiClient.getPantry(pantryId);
-            setOrgName(pantry.pantryName);
+            if (!cancelled) setOrgName(pantry.pantryName);
           } catch {
-            setAlertMessage('Failed to fetch pantry data.', AlertStatus.ERROR);
+            if (!cancelled) {
+              setAlertMessage(
+                'Failed to fetch pantry data.',
+                AlertStatus.ERROR,
+              );
+            }
           }
         } else if (user.role === Role.FOODMANUFACTURER) {
           try {
             const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
-            setFoodManufacturerId(fmId);
+            if (!cancelled) setFoodManufacturerId(fmId);
             const fm = await ApiClient.getFoodManufacturer(fmId);
-            setOrgName(fm.foodManufacturerName);
+            if (!cancelled) setOrgName(fm.foodManufacturerName);
           } catch {
-            setAlertMessage(
-              'Failed to fetch food manufacturer data.',
-              AlertStatus.ERROR,
-            );
+            if (!cancelled) {
+              setAlertMessage(
+                'Failed to fetch food manufacturer data.',
+                AlertStatus.ERROR,
+              );
+            }
           }
         }
-      } catch {
+        if (!cancelled) setIsLoading(false);
+      } catch (error) {
+        if (cancelled) return;
+        // Backend unreachable (e.g. still cold-starting) - keep the spinner
+        // up and retry, rather than showing a permanent "not found" error.
+        if (axios.isAxiosError(error) && !error.response) {
+          retryTimeout = setTimeout(fetchProfile, 3000);
+          return;
+        }
         setAlertMessage(
           'Authentication error. Please log in and try again.',
           AlertStatus.ERROR,
         );
-      } finally {
         setIsLoading(false);
       }
     };
     fetchProfile();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(retryTimeout);
+    };
   }, [setAlertMessage]);
 
   const handleSave = async (fields: UpdateProfileFields): Promise<boolean> => {

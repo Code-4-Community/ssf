@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -16,7 +17,6 @@ import {
 import CognitoAuthConfig from './aws-exports';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { createHmac } from 'crypto';
-import { Role } from '../users/types';
 import { validateEnv } from '../utils/validation.utils';
 
 @Injectable()
@@ -52,7 +52,7 @@ export class AuthService {
     lastName,
     email,
     role,
-  }: Omit<SignUpDto, 'password' | 'phone'> & { role: Role }): Promise<string> {
+  }: SignUpDto): Promise<string> {
     const createUserCommand = new AdminCreateUserCommand({
       UserPoolId: CognitoAuthConfig.userPoolId,
       Username: email,
@@ -75,10 +75,18 @@ export class AuthService {
 
       return sub ?? '';
     } catch (error) {
-      if (error instanceof Error && error.name == 'UsernameExistsException') {
+      if (error instanceof HttpException) {
+        throw error;
+      } else if (
+        error instanceof Error &&
+        error.name == 'UsernameExistsException'
+      ) {
         throw new ConflictException('A user with this email already exists');
       } else {
-        throw new InternalServerErrorException('Failed to create user');
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new InternalServerErrorException(
+          `Failed to create user: ${reason}`,
+        );
       }
     }
   }
@@ -97,8 +105,9 @@ export class AuthService {
         `Failed to add user ${username} to group ${groupName}`,
         error,
       );
+      const reason = error instanceof Error ? error.message : String(error);
       throw new InternalServerErrorException(
-        `Failed to add user to group ${groupName}`,
+        `Failed to add user to group ${groupName}: ${reason}`,
       );
     }
   }

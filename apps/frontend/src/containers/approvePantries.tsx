@@ -7,29 +7,30 @@ import {
   Heading,
   VStack,
   Checkbox,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Link,
+  Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { AlertStatus, Pantry } from '../types/types';
 import {
   ArrowDownUp,
-  ChevronLeft,
-  ChevronRight,
   CircleCheck,
+  CircleX,
   Funnel,
+  Search,
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { PaginationControl } from '@components/pagination';
 import { ROUTES } from '../routes';
 
 const ApprovePantries: React.FC = () => {
   const navigate = useNavigate();
   const [pantries, setPantries] = useState<Pantry[]>([]);
+  const [hasError, setHasError] = useState(false);
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedPantries, setSelectedPantries] = useState<string[]>([]);
+  const [searchPantry, setSearchPantry] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,7 +41,9 @@ const ApprovePantries: React.FC = () => {
       try {
         const data = await ApiClient.getAllPendingPantries();
         setPantries(data);
+        setHasError(false);
       } catch {
+        setHasError(true);
         setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
       }
     };
@@ -82,7 +85,6 @@ const ApprovePantries: React.FC = () => {
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredPantries.length / itemsPerPage);
   const paginatedPantries = filteredPantries.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -125,7 +127,7 @@ const ApprovePantries: React.FC = () => {
           timeout={6000}
         />
       )}
-      {pantries.length === 0 ? (
+      {!hasError && pantries.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -147,6 +149,31 @@ const ApprovePantries: React.FC = () => {
           </Box>
           <Box color="neutral.700" fontWeight="400">
             There are no applications to review at this time
+          </Box>
+        </Box>
+      ) : hasError ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          py={10}
+          gap={2}
+          minH="40vh"
+        >
+          <Box mb={2}>
+            <CircleX size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            Unable to Load Applications
+          </Box>
+          <Box color="neutral.700" fontWeight="400">
+            Something went wrong while loading applications. Please try again
+            later.
           </Box>
         </Box>
       ) : (
@@ -191,26 +218,59 @@ const ApprovePantries: React.FC = () => {
                     boxShadow="lg"
                     p={4}
                     minW="275px"
-                    maxH="150px"
+                    maxH="200px"
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={searchPantry ? 'neutral.800' : 'neutral.300'}
+                        value={searchPantry}
+                        onChange={(e) => setSearchPantry(e.target.value)}
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {pantryOptions.map((pantry) => (
-                        <Checkbox.Root
-                          key={pantry}
-                          checked={selectedPantries.includes(pantry)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(pantry, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{pantry}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {pantryOptions
+                        .filter((pantry) =>
+                          pantry
+                            .toLowerCase()
+                            .includes(searchPantry.toLowerCase()),
+                        )
+                        .map((pantry) => (
+                          <Checkbox.Root
+                            key={pantry}
+                            checked={selectedPantries.includes(pantry)}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(pantry, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{pantry}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>
@@ -314,6 +374,15 @@ const ApprovePantries: React.FC = () => {
                         ':applicationId',
                         pantry.pantryId.toString(),
                       )}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        navigate(
+                          ROUTES.PANTRY_APPLICATION_DETAILS.replace(
+                            ':applicationId',
+                            pantry.pantryId.toString(),
+                          ),
+                        );
+                      }}
                     >
                       View Details
                     </Link>
@@ -323,55 +392,14 @@ const ApprovePantries: React.FC = () => {
             </Table.Body>
           </Table.Root>
 
-          {totalPages > 1 && (
-            <Pagination.Root
+          <Box mt={12}>
+            <PaginationControl
               count={filteredPantries.length}
               pageSize={itemsPerPage}
               page={currentPage}
-              onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-            >
-              <ButtonGroup
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt={12}
-                variant="outline"
-                size="sm"
-                gap={4}
-              >
-                <Pagination.PrevTrigger
-                  color="neutral.800"
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronLeft size={16} />
-                </Pagination.PrevTrigger>
-
-                <Pagination.Items
-                  render={(page) => (
-                    <IconButton
-                      borderColor={{
-                        base: 'neutral.100',
-                        _selected: 'neutral.600',
-                      }}
-                    >
-                      {page.value}
-                    </IconButton>
-                  )}
-                />
-
-                <Pagination.NextTrigger
-                  color="neutral.800"
-                  variant="ghost"
-                  disabled={currentPage === totalPages}
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronRight size={16} />
-                </Pagination.NextTrigger>
-              </ButtonGroup>
-            </Pagination.Root>
-          )}
+              onPageChange={setCurrentPage}
+            />
+          </Box>
         </Box>
       )}
     </Box>

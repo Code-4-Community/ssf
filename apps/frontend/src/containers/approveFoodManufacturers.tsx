@@ -7,22 +7,21 @@ import {
   Heading,
   VStack,
   Checkbox,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Link,
+  Input,
 } from '@chakra-ui/react';
 import ApiClient from '@api/apiClient';
 import { AlertStatus, FoodManufacturer } from '../types/types';
 import {
   ArrowDownUp,
-  ChevronLeft,
-  ChevronRight,
   CircleCheck,
+  CircleX,
   Funnel,
+  Search,
 } from 'lucide-react';
 import { useAlert } from '../hooks/alert';
 import { FloatingAlert } from '@components/floatingAlert';
+import { PaginationControl } from '@components/pagination';
 import { ROUTES } from '../routes';
 
 const ApproveFoodManufacturers: React.FC = () => {
@@ -30,10 +29,12 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [foodManufacturers, setFoodManufacturers] = useState<
     FoodManufacturer[]
   >([]);
+  const [hasError, setHasError] = useState(false);
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedFoodManufacturers, setSelectedFoodManufacturers] = useState<
     string[]
   >([]);
+  const [searchFoodManufacturer, setSearchFoodManufacturer] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,7 +45,9 @@ const ApproveFoodManufacturers: React.FC = () => {
       try {
         const data = await ApiClient.getAllPendingFoodManufacturers();
         setFoodManufacturers(data);
+        setHasError(false);
       } catch {
+        setHasError(true);
         setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
       }
     };
@@ -91,7 +94,6 @@ const ApproveFoodManufacturers: React.FC = () => {
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredFoodManufacturers.length / itemsPerPage);
   const paginatedFoodManufacturers = filteredFoodManufacturers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -134,7 +136,7 @@ const ApproveFoodManufacturers: React.FC = () => {
           timeout={6000}
         />
       )}
-      {foodManufacturers.length === 0 ? (
+      {!hasError && foodManufacturers.length === 0 ? (
         <Box
           display="flex"
           flexDirection="column"
@@ -156,6 +158,31 @@ const ApproveFoodManufacturers: React.FC = () => {
           </Box>
           <Box color="neutral.700" fontWeight="400">
             There are no applications to review at this time
+          </Box>
+        </Box>
+      ) : hasError ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          fontFamily="'Inter', sans-serif"
+          fontSize="sm"
+          color="neutral.600"
+          py={10}
+          gap={2}
+          minH="40vh"
+        >
+          <Box mb={2}>
+            <CircleX size={24} color="#262626" />
+          </Box>
+          <Box fontWeight="600" fontSize="lg" color="neutral.800">
+            Unable to Load Applications
+          </Box>
+          <Box color="neutral.700" fontWeight="400">
+            Something went wrong while loading applications. Please try again
+            later.
           </Box>
         </Box>
       ) : (
@@ -200,28 +227,65 @@ const ApproveFoodManufacturers: React.FC = () => {
                     boxShadow="lg"
                     p={4}
                     minW="275px"
-                    maxH="150px"
+                    maxH="200px"
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={
+                          searchFoodManufacturer ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={searchFoodManufacturer}
+                        onChange={(e) =>
+                          setSearchFoodManufacturer(e.target.value)
+                        }
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {foodManufacturerOptions.map((foodManufacturer) => (
-                        <Checkbox.Root
-                          key={foodManufacturer}
-                          checked={selectedFoodManufacturers.includes(
-                            foodManufacturer,
-                          )}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(foodManufacturer, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{foodManufacturer}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {foodManufacturerOptions
+                        .filter((foodManufacturer) =>
+                          foodManufacturer
+                            .toLowerCase()
+                            .includes(searchFoodManufacturer.toLowerCase()),
+                        )
+                        .map((foodManufacturer) => (
+                          <Checkbox.Root
+                            key={foodManufacturer}
+                            checked={selectedFoodManufacturers.includes(
+                              foodManufacturer,
+                            )}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(foodManufacturer, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{foodManufacturer}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>
@@ -242,148 +306,142 @@ const ApproveFoodManufacturers: React.FC = () => {
               Sort
             </Button>
           </Box>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="15%"
-                >
-                  Application #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="45%"
-                >
-                  Food Manufacturer
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="15%"
-                >
-                  Date Applied
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
-                >
-                  Actions
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {paginatedFoodManufacturers.map((foodManufacturer, index) => (
-                <Table.Row
-                  key={`${foodManufacturer.foodManufacturerId}-${index}`}
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Table.Cell
-                    textStyle="p2"
+          {filteredFoodManufacturers.length === 0 ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              fontFamily="'Inter', sans-serif"
+              fontSize="sm"
+              color="neutral.600"
+              py={10}
+              gap={2}
+            >
+              <Box mb={2}>
+                <CircleCheck size={24} color="#262626" />
+              </Box>
+              <Box fontWeight="600" fontSize="lg" color="neutral.800">
+                No Matching Applications
+              </Box>
+              <Box color="neutral.700" fontWeight="400">
+                No applications match the selected filter.
+              </Box>
+            </Box>
+          ) : (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
-                    py={0}
+                    width="15%"
                   >
-                    {foodManufacturer.foodManufacturerId}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Application #
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="45%"
                   >
-                    {foodManufacturer.foodManufacturerName}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Food Manufacturer
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="15%"
                   >
-                    {new Date(foodManufacturer.dateApplied).toLocaleDateString(
-                      'en-US',
-                      {
+                    Date Applied
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
+                    textAlign="right"
+                    width="25%"
+                  >
+                    Actions
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {paginatedFoodManufacturers.map((foodManufacturer, index) => (
+                  <Table.Row
+                    key={`${foodManufacturer.foodManufacturerId}-${index}`}
+                    _hover={{ bg: 'gray.50' }}
+                  >
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      py={0}
+                    >
+                      {foodManufacturer.foodManufacturerId}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {foodManufacturer.foodManufacturerName}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {new Date(
+                        foodManufacturer.dateApplied,
+                      ).toLocaleDateString('en-US', {
                         month: '2-digit',
                         day: '2-digit',
                         year: 'numeric',
-                      },
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
-                    textAlign="right"
-                    color="neutral.700"
-                  >
-                    <Link
-                      color="neutral.700"
-                      fontWeight={400}
+                      })}
+                    </Table.Cell>
+                    <Table.Cell
                       textStyle="p2"
-                      variant="underline"
-                      textDecorationColor="neutral.700"
-                      href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
-                        ':applicationId',
-                        String(foodManufacturer.foodManufacturerId),
-                      )}
+                      textAlign="right"
+                      color="neutral.700"
                     >
-                      View Details
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+                      <Link
+                        color="neutral.700"
+                        fontWeight={400}
+                        textStyle="p2"
+                        variant="underline"
+                        textDecorationColor="neutral.700"
+                        href={ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                          ':applicationId',
+                          String(foodManufacturer.foodManufacturerId),
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(
+                            ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS.replace(
+                              ':applicationId',
+                              String(foodManufacturer.foodManufacturerId),
+                            ),
+                          );
+                        }}
+                      >
+                        View Details
+                      </Link>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
 
-          {totalPages > 1 && (
-            <Pagination.Root
+          <Box mt={12}>
+            <PaginationControl
               count={filteredFoodManufacturers.length}
               pageSize={itemsPerPage}
               page={currentPage}
-              onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-            >
-              <ButtonGroup
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt={12}
-                variant="outline"
-                size="sm"
-                gap={4}
-              >
-                <Pagination.PrevTrigger
-                  color="neutral.800"
-                  variant="outline"
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronLeft size={16} />
-                </Pagination.PrevTrigger>
-
-                <Pagination.Items
-                  render={(page) => (
-                    <IconButton
-                      borderColor={{
-                        base: 'neutral.100',
-                        _selected: 'neutral.600',
-                      }}
-                    >
-                      {page.value}
-                    </IconButton>
-                  )}
-                />
-
-                <Pagination.NextTrigger
-                  color="neutral.800"
-                  variant="ghost"
-                  _hover={{ color: 'black', cursor: 'pointer' }}
-                >
-                  <ChevronRight size={16} />
-                </Pagination.NextTrigger>
-              </ButtonGroup>
-            </Pagination.Root>
-          )}
+              onPageChange={setCurrentPage}
+            />
+          </Box>
         </Box>
       )}
     </Box>

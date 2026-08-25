@@ -34,9 +34,11 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const [alertState, setAlertMessage] = useAlert();
+  const [alertState, setAlertMessage, clearAlert] = useAlert();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!firstName || !lastName || !email || !phone || phone === '+1') {
       setAlertMessage('Please fill in all fields. *', AlertStatus.ERROR);
       return;
@@ -50,10 +52,11 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
       role: Role.VOLUNTEER,
     };
 
+    setIsSubmitting(true);
     try {
       await ApiClient.postUser(newVolunteer);
       if (onSubmitSuccess) onSubmitSuccess();
-      handleClear();
+      closeAndReset();
     } catch (error: unknown) {
       let hasEmailError = false;
       let hasPhoneError = false;
@@ -88,21 +91,29 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
         );
       } else {
         if (onSubmitFail) onSubmitFail();
-        handleClear();
+        closeAndReset();
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleClear = () => {
+  const closeAndReset = () => {
     setFirstName('');
     setLastName('');
     setEmail('');
     setPhone('');
+    clearAlert();
     setIsOpen(false);
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(e: { open: boolean }) =>
+        e.open ? setIsOpen(true) : closeAndReset()
+      }
+    >
       <Dialog.Trigger asChild>
         <Button
           pl={3}
@@ -131,7 +142,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
               Add New User
             </Dialog.Title>
             <CloseButton
-              onClick={() => setIsOpen(false)}
+              onClick={closeAndReset}
               size="md"
               position="absolute"
               top={3}
@@ -216,7 +227,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                 fontWeight={600}
                 color="neutral.800"
                 variant="outline"
-                onClick={handleClear}
+                onClick={closeAndReset}
               >
                 Cancel
               </Button>
@@ -226,6 +237,7 @@ const NewVolunteerModal: React.FC<NewVolunteerModalProps> = ({
                 bg={'blue.hover'}
                 color={'white'}
                 onClick={handleSubmit}
+                disabled={isSubmitting}
               >
                 Submit
               </Button>

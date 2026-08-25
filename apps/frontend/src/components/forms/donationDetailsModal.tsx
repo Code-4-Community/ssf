@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Text,
@@ -47,8 +47,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
   const [alertState, setAlertMessage] = useAlert();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const donationId = donation?.donationId;
+  const donationRef = useRef<Donation | null>(donation);
+  if (donation) donationRef.current = donation;
+  const displayDonation = donation ?? donationRef.current;
+
+  const donationId = displayDonation?.donationId;
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -79,6 +84,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       foodRescue: r.foodRescue,
     }));
 
+    setIsSubmitting(true);
     try {
       await ApiClient.editDonationItems(donationId, body);
       await loadItems();
@@ -90,6 +96,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
         'Donation items could not be updated.',
         AlertStatus.ERROR,
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,7 +117,10 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
     <Dialog.Root
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {
-        if (!e.open) onClose();
+        if (!e.open) {
+          setIsEditing(false);
+          onClose();
+        }
       }}
       closeOnInteractOutside
       scrollBehavior="inside"
@@ -124,7 +135,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
       )}
       <Dialog.Backdrop bg="blackAlpha.300" />
 
-      {donation !== null && (
+      {displayDonation !== null && (
         <Dialog.Positioner>
           <Dialog.Content
             maxW={isEditing ? '75vw' : 'lg'}
@@ -140,7 +151,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   <Dialog.Title fontSize="lg" fontWeight="600">
                     Donation #{donationId} Stock
                   </Dialog.Title>
-                  {donation.status === DonationStatus.AVAILABLE &&
+                  {displayDonation.status === DonationStatus.AVAILABLE &&
+                    !items.some((item) => item.reservedQuantity > 0) &&
                     !isEditing && (
                       <>
                         <EditButton
@@ -151,9 +163,11 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                     )}
                 </HStack>
                 <Text fontSize="sm">
-                  {donation.foodManufacturer?.foodManufacturerName}
+                  {displayDonation.foodManufacturer?.foodManufacturerName}
                 </Text>
-                <Text fontSize="sm">{formatDate(donation.dateDonated)}</Text>
+                <Text fontSize="sm">
+                  {formatDate(displayDonation.dateDonated)}
+                </Text>
               </VStack>
             </Dialog.Header>
 
@@ -172,6 +186,7 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   onCancel={handleCancel}
                   onSubmit={handleUpdate}
                   submitButtonLabel="Update Donation"
+                  isSubmitting={isSubmitting}
                 ></EditableDonationItemsTable>
               ) : (
                 <VStack align="stretch" gap={4} my={2}>
@@ -226,27 +241,28 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 </VStack>
               )}
 
-              {!isEditing && donation.recurrence !== RecurrenceEnum.NONE && (
-                <Box mt={6} color="neutral.800" fontSize="sm">
-                  <Text fontWeight={600} mb={3}>
-                    Donation sets up recurring reminders
-                  </Text>
+              {!isEditing &&
+                displayDonation.recurrence !== RecurrenceEnum.NONE && (
+                  <Box mt={6} color="neutral.800" fontSize="sm">
+                    <Text fontWeight={600} mb={3}>
+                      Donation sets up recurring reminders
+                    </Text>
 
-                  {donation.nextDonationDates &&
-                    donation.nextDonationDates.length > 0 && (
-                      <Box>
-                        <Text fontWeight={600} color="neutral.700" mb={2}>
-                          Upcoming reminder emails
-                        </Text>
-                        <Text color="neutral.700">
-                          {donation.nextDonationDates
-                            .map((date) => formatDate(date))
-                            .join(', ')}
-                        </Text>
-                      </Box>
-                    )}
-                </Box>
-              )}
+                    {displayDonation.nextDonationDates &&
+                      displayDonation.nextDonationDates.length > 0 && (
+                        <Box>
+                          <Text fontWeight={600} color="neutral.700" mb={2}>
+                            Upcoming reminder emails
+                          </Text>
+                          <Text color="neutral.700">
+                            {displayDonation.nextDonationDates
+                              .map((date) => formatDate(date))
+                              .join(', ')}
+                          </Text>
+                        </Box>
+                      )}
+                  </Box>
+                )}
             </Dialog.Body>
           </Dialog.Content>
         </Dialog.Positioner>

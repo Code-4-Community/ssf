@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
+import { ArrowDownUp, Funnel, Search } from 'lucide-react';
 import {
   Box,
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   Checkbox,
   VStack,
-  ButtonGroup,
   Link,
+  Input,
 } from '@chakra-ui/react';
 import { AlertStatus, Donation } from '../types/types';
 import DonationDetailsModal from '@components/forms/donationDetailsModal';
@@ -22,6 +20,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 import PageEmptyState from '@components/pageEmptyState';
+import { PaginationControl } from '@components/pagination';
 
 const AdminDonation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -34,6 +33,7 @@ const AdminDonation: React.FC = () => {
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>(
     [],
   );
+  const [searchManufacturer, setSearchManufacturer] = useState('');
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(
     null,
   );
@@ -80,9 +80,10 @@ const AdminDonation: React.FC = () => {
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
       }
     } else {
+      setAlertMessage('Donation not found.', AlertStatus.ERROR);
       navigate(ROUTES.ADMIN_DONATION, { replace: true });
     }
-  }, [searchParams, donations, navigate]);
+  }, [searchParams, donations, navigate, setAlertMessage]);
 
   // Pre-fill manufacturer filter from the foodManufacturerId url param and then
   // clear the param, so navigating from "View Donations" filters to that
@@ -119,6 +120,19 @@ const AdminDonation: React.FC = () => {
     ),
   ].sort((a, b) => a.localeCompare(b));
 
+  useEffect(() => {
+    setSelectedManufacturers((prev) =>
+      prev.filter((m) => manufacturerOptions.includes(m)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [donations]);
+
+  useEffect(() => {
+    if (!isFilterOpen) {
+      setSearchManufacturer('');
+    }
+  }, [isFilterOpen]);
+
   const handleFilterChange = (manufacturer: string, checked: boolean) => {
     if (checked) {
       setSelectedManufacturers([...selectedManufacturers, manufacturer]);
@@ -146,7 +160,6 @@ const AdminDonation: React.FC = () => {
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredDonations.length / itemsPerPage);
   const paginatedDonations = filteredDonations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -218,26 +231,63 @@ const AdminDonation: React.FC = () => {
                     boxShadow="lg"
                     p={4}
                     minW="275px"
-                    maxH="150px"
+                    maxH="200px"
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={
+                          searchManufacturer ? 'neutral.800' : 'neutral.300'
+                        }
+                        value={searchManufacturer}
+                        onChange={(e) => setSearchManufacturer(e.target.value)}
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {manufacturerOptions.map((manufacturer) => (
-                        <Checkbox.Root
-                          key={manufacturer}
-                          checked={selectedManufacturers.includes(manufacturer)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(manufacturer, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{manufacturer}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {manufacturerOptions
+                        .filter((manufacturer) =>
+                          manufacturer
+                            .toLowerCase()
+                            .includes(searchManufacturer.toLowerCase()),
+                        )
+                        .map((manufacturer) => (
+                          <Checkbox.Root
+                            key={manufacturer}
+                            checked={selectedManufacturers.includes(
+                              manufacturer,
+                            )}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(manufacturer, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{manufacturer}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>
@@ -258,72 +308,79 @@ const AdminDonation: React.FC = () => {
               Sort
             </Button>
           </Box>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="10%"
-                >
-                  Donation #
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  borderRight="1px solid"
-                  borderRightColor="neutral.100"
-                  width="65%"
-                >
-                  Manufacturer
-                </Table.ColumnHeader>
-                <Table.ColumnHeader
-                  {...tableHeaderStyles}
-                  textAlign="right"
-                  width="25%"
-                >
-                  Date Started
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {paginatedDonations.map((donation, index) => (
-                <Table.Row
-                  key={`${donation.donationId}-${index}`}
-                  _hover={{ bg: 'neutral.50' }}
-                >
-                  <Table.Cell
-                    textStyle="p2"
+          {filteredDonations.length === 0 ? (
+            <PageEmptyState
+              entity="donations"
+              subtitle="No donations match the selected filter."
+            />
+          ) : (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
-                    py={0}
+                    width="10%"
                   >
-                    <Link
-                      textDecorationColor="black"
-                      variant="underline"
-                      onClick={() => setSelectedDonation(donation)}
-                    >
-                      {donation.donationId}
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Donation #
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     borderRight="1px solid"
                     borderRightColor="neutral.100"
+                    width="65%"
                   >
-                    {donation.foodManufacturer?.foodManufacturerName}
-                  </Table.Cell>
-                  <Table.Cell
-                    textStyle="p2"
+                    Manufacturer
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    {...tableHeaderStyles}
                     textAlign="right"
-                    color="neutral.700"
+                    width="25%"
                   >
-                    {formatDate(donation.dateDonated)}
-                  </Table.Cell>
+                    Date Started
+                  </Table.ColumnHeader>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+              </Table.Header>
+              <Table.Body>
+                {paginatedDonations.map((donation, index) => (
+                  <Table.Row
+                    key={`${donation.donationId}-${index}`}
+                    _hover={{ bg: 'neutral.50' }}
+                  >
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                      py={0}
+                    >
+                      <Link
+                        textDecorationColor="black"
+                        variant="underline"
+                        onClick={() => setSelectedDonation(donation)}
+                      >
+                        {donation.donationId}
+                      </Link>
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      borderRight="1px solid"
+                      borderRightColor="neutral.100"
+                    >
+                      {donation.foodManufacturer?.foodManufacturerName}
+                    </Table.Cell>
+                    <Table.Cell
+                      textStyle="p2"
+                      textAlign="right"
+                      color="neutral.700"
+                    >
+                      {formatDate(donation.dateDonated)}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
         </>
       )}
 
@@ -341,68 +398,25 @@ const AdminDonation: React.FC = () => {
         }}
       />
 
-      {selectedDonation !== null && (
-        <DonationDetailsModal
-          donation={selectedDonation}
-          isOpen={selectedDonation !== null}
-          onClose={() => {
-            setSelectedDonation(null);
-            navigate(ROUTES.ADMIN_DONATION, { replace: true });
-          }}
-          onSuccess={() => fetchDonations()}
-          onDelete={() => setDeleteDonation(selectedDonation)}
-        />
-      )}
+      <DonationDetailsModal
+        donation={selectedDonation}
+        isOpen={selectedDonation !== null}
+        onClose={() => {
+          setSelectedDonation(null);
+          navigate(ROUTES.ADMIN_DONATION, { replace: true });
+        }}
+        onSuccess={() => fetchDonations()}
+        onDelete={() => setDeleteDonation(selectedDonation)}
+      />
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={filteredDonations.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger
-              color="neutral.800"
-              variant="outline"
-              disabled={currentPage === 1}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronLeft size={16} />
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger
-              color="neutral.800"
-              variant="ghost"
-              disabled={currentPage === totalPages}
-              _hover={{ color: 'black', cursor: 'pointer' }}
-            >
-              <ChevronRight size={16} />
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

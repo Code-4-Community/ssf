@@ -6,15 +6,12 @@ import {
   Input,
   VStack,
   Box,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Link,
   Button,
   Checkbox,
   Badge,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, Funnel, Search } from 'lucide-react';
+import { Funnel, Search } from 'lucide-react';
 import { AlertStatus, ApprovedPantryResponse } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
@@ -24,6 +21,7 @@ import { RefrigeratedDonation } from '../types/pantryEnums';
 import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { PaginationControl } from '@components/pagination';
 
 const AdminPantryManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -259,238 +257,218 @@ const AdminPantryManagement: React.FC = () => {
             )}
           </Flex>
         </VStack>
-        <Table.Root variant="line" showColumnBorder>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader {...textHeaderStyles}>
-                Pantry
-              </Table.ColumnHeader>
-              <Table.ColumnHeader {...textHeaderStyles}>
-                Assignee
-              </Table.ColumnHeader>
-              <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
-                Refrigerator-Friendly
-              </Table.ColumnHeader>
-              <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
-                Action
-              </Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body
-            color="neutral.700"
-            fontWeight={400}
-            textStyle="p2"
-            css={{ '& td': { paddingTop: '8px', paddingBottom: '8px' } }}
+        {filteredPantries.length === 0 ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
+            fontFamily="'Inter', sans-serif"
+            fontSize="sm"
+            color="neutral.600"
+            py={10}
+            gap={2}
           >
-            {paginatedPantries?.map((pantry) => (
-              <Table.Row key={pantry.pantryId}>
-                <Table.Cell>
-                  <Link
-                    textStyle="p2"
-                    color="gray.dark"
-                    variant="underline"
-                    textDecorationColor="gray.dark"
-                    onClick={() =>
-                      navigate(
-                        ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
-                          ':pantryId',
-                          pantry.pantryId.toString(),
-                        ),
-                      )
-                    }
-                  >
-                    {pantry.pantryName}
-                  </Link>
-                </Table.Cell>
-                <Table.Cell
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
-                  cursor="pointer"
-                  _hover={{ bg: 'gray.50' }}
-                >
-                  <Box display="flex" alignItems="center" minH="33px">
-                    {pantry.volunteers && pantry.volunteers.length > 0 ? (
-                      (() => {
-                        const volunteers = pantry.volunteers.filter(
-                          (volunteer) => volunteer.active,
-                        );
-                        const maxVisible = 3;
-
-                        const hasOverflow = volunteers.length > maxVisible;
-                        const visibleVolunteers = hasOverflow
-                          ? volunteers.slice(0, maxVisible - 1)
-                          : volunteers;
-
-                        const remainingCount =
-                          volunteers.length - (maxVisible - 1);
-
-                        return (
-                          <>
-                            {visibleVolunteers.map((volunteer, index) => (
-                              <Box
-                                key={volunteer.userId}
-                                borderRadius="full"
-                                bg={
-                                  volunteer.active
-                                    ? USER_ICON_COLORS[
-                                        volunteer.userId %
-                                          USER_ICON_COLORS.length
-                                      ]
-                                    : 'neutral.300'
-                                }
-                                opacity={volunteer.active ? 1 : 0.6}
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="white"
-                                fontSize="12px"
-                                ml={index === 0 ? 0 : '-4px'}
-                                zIndex={index}
-                                border="1px solid white"
-                              >
-                                {getInitials(
-                                  volunteer.firstName,
-                                  volunteer.lastName,
-                                )}
-                              </Box>
-                            ))}
-
-                            {hasOverflow && (
-                              <Box
-                                borderRadius="full"
-                                bg="neutral.500"
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="neutral.50"
-                                textStyle="p2"
-                                ml="-4px"
-                                zIndex={maxVisible}
-                                border="1px solid white"
-                              >
-                                +{remainingCount}
-                              </Box>
-                            )}
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <Box color="neutral.600" fontStyle="p2">
-                        No Volunteer
-                      </Box>
-                    )}
-                  </Box>
-                </Table.Cell>
-                <Table.Cell textAlign="right">
-                  <Badge
-                    py={1}
-                    px={2}
-                    color="neutral.800"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize="12px"
-                    bgColor={
-                      pantry.refrigeratedDonation === RefrigeratedDonation.NO
-                        ? 'neutral.200'
-                        : 'neutral.100'
-                    }
-                  >
-                    {pantry.refrigeratedDonation === RefrigeratedDonation.NO
-                      ? 'Not Refrigerator-Friendly'
-                      : 'Refrigerator/Freezer-Friendly'}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell textAlign="right">
-                  <Link
-                    color="neutral.700"
-                    fontWeight={400}
-                    textStyle="p2"
-                    variant="underline"
-                    textDecorationColor="neutral.700"
-                    cursor="pointer"
-                    onClick={() =>
-                      navigate(
-                        `${ROUTES.ADMIN_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
-                      )
-                    }
-                  >
-                    View Orders
-                  </Link>
-                </Table.Cell>
+            <Box fontWeight="600" fontSize="lg" color="neutral.800">
+              {selectedPantries.length > 0
+                ? 'No Matching Pantries'
+                : 'No Pantries'}
+            </Box>
+            <Box color="neutral.700" fontWeight="400">
+              {selectedPantries.length > 0
+                ? 'No pantries match the selected filter.'
+                : 'You have no pantries at this time.'}
+            </Box>
+          </Box>
+        ) : (
+          <Table.Root variant="line" showColumnBorder>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader {...textHeaderStyles}>
+                  Pantry
+                </Table.ColumnHeader>
+                <Table.ColumnHeader {...textHeaderStyles}>
+                  Assignee
+                </Table.ColumnHeader>
+                <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
+                  Refrigerator-Friendly
+                </Table.ColumnHeader>
+                <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
+                  Action
+                </Table.ColumnHeader>
               </Table.Row>
-            ))}
-            {selectedPantryToAssignVolunteers && (
-              <AssignVolunteersModal
-                pantry={selectedPantryToAssignVolunteers}
-                onClose={() => setSelectedPantryToAssignVolunteers(null)}
-                onSuccess={handleAssignVolunteersSuccess}
-                isOpen={true}
-              />
-            )}
-          </Table.Body>
-        </Table.Root>
-        <Flex justify="center" mt={12}>
-          <Pagination.Root
-            count={Math.ceil(filteredPantries.length / pageSize)}
-            pageSize={1}
-            page={currentPage}
-            onChange={(page: number) => setCurrentPage(page)}
-          >
-            <ButtonGroup variant="outline" size="sm" gap={4}>
-              <Pagination.PrevTrigger asChild>
-                <IconButton
-                  variant="ghost"
-                  disabled={currentPage === 1}
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                >
-                  <ChevronLeft />
-                </IconButton>
-              </Pagination.PrevTrigger>
-
-              <Pagination.Items
-                render={(page) => (
-                  <IconButton
-                    borderColor={{
-                      base: 'neutral.100',
-                      _selected: 'neutral.600',
-                    }}
-                    variant={{ base: 'outline', _selected: 'outline' }}
-                    onClick={() => setCurrentPage(page.value)}
+            </Table.Header>
+            <Table.Body
+              color="neutral.700"
+              fontWeight={400}
+              textStyle="p2"
+              css={{ '& td': { paddingTop: '8px', paddingBottom: '8px' } }}
+            >
+              {paginatedPantries?.map((pantry) => (
+                <Table.Row key={pantry.pantryId}>
+                  <Table.Cell>
+                    <Link
+                      textStyle="p2"
+                      color="gray.dark"
+                      variant="underline"
+                      textDecorationColor="gray.dark"
+                      onClick={() =>
+                        navigate(
+                          ROUTES.PANTRY_MANAGEMENT_DETAILS.replace(
+                            ':pantryId',
+                            pantry.pantryId.toString(),
+                          ),
+                        )
+                      }
+                    >
+                      {pantry.pantryName}
+                    </Link>
+                  </Table.Cell>
+                  <Table.Cell
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    onClick={() => setSelectedPantryToAssignVolunteers(pantry)}
+                    cursor="pointer"
+                    _hover={{ bg: 'gray.50' }}
                   >
-                    {page.value}
-                  </IconButton>
-                )}
-              />
+                    <Box display="flex" alignItems="center" minH="33px">
+                      {pantry.volunteers &&
+                      pantry.volunteers.some(
+                        (volunteer) => volunteer.active,
+                      ) ? (
+                        (() => {
+                          const volunteers = pantry.volunteers.filter(
+                            (volunteer) => volunteer.active,
+                          );
+                          const maxVisible = 3;
 
-              <Pagination.NextTrigger asChild>
-                <IconButton
-                  variant="ghost"
-                  disabled={
-                    currentPage ===
-                    Math.ceil(filteredPantries.length / pageSize)
-                  }
-                  onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.min(
-                        prev + 1,
-                        Math.ceil(filteredPantries.length / pageSize),
-                      ),
-                    )
-                  }
-                >
-                  <ChevronRight />
-                </IconButton>
-              </Pagination.NextTrigger>
-            </ButtonGroup>
-          </Pagination.Root>
+                          const hasOverflow = volunteers.length > maxVisible;
+                          const visibleVolunteers = hasOverflow
+                            ? volunteers.slice(0, maxVisible - 1)
+                            : volunteers;
+
+                          const remainingCount =
+                            volunteers.length - (maxVisible - 1);
+
+                          return (
+                            <>
+                              {visibleVolunteers.map((volunteer, index) => (
+                                <Box
+                                  key={volunteer.userId}
+                                  borderRadius="full"
+                                  bg={
+                                    volunteer.active
+                                      ? USER_ICON_COLORS[
+                                          volunteer.userId %
+                                            USER_ICON_COLORS.length
+                                        ]
+                                      : 'neutral.300'
+                                  }
+                                  opacity={volunteer.active ? 1 : 0.6}
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="white"
+                                  fontSize="12px"
+                                  ml={index === 0 ? 0 : '-4px'}
+                                  zIndex={index}
+                                  border="1px solid white"
+                                >
+                                  {getInitials(
+                                    volunteer.firstName,
+                                    volunteer.lastName,
+                                  )}
+                                </Box>
+                              ))}
+
+                              {hasOverflow && (
+                                <Box
+                                  borderRadius="full"
+                                  bg="neutral.500"
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="neutral.50"
+                                  textStyle="p2"
+                                  ml="-4px"
+                                  zIndex={maxVisible}
+                                  border="1px solid white"
+                                >
+                                  +{remainingCount}
+                                </Box>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <Box color="neutral.600" textStyle="p2">
+                          No Volunteer
+                        </Box>
+                      )}
+                    </Box>
+                  </Table.Cell>
+                  <Table.Cell textAlign="right">
+                    <Badge
+                      py={1}
+                      px={2}
+                      color="neutral.800"
+                      textStyle="p2"
+                      fontWeight={500}
+                      fontSize="12px"
+                      bgColor={
+                        pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                          ? 'neutral.200'
+                          : 'neutral.100'
+                      }
+                    >
+                      {pantry.refrigeratedDonation === RefrigeratedDonation.NO
+                        ? 'Not Refrigerator-Friendly'
+                        : 'Refrigerator/Freezer-Friendly'}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell textAlign="right">
+                    <Link
+                      color="neutral.700"
+                      fontWeight={400}
+                      textStyle="p2"
+                      variant="underline"
+                      textDecorationColor="neutral.700"
+                      cursor="pointer"
+                      onClick={() =>
+                        navigate(
+                          `${ROUTES.ADMIN_ORDER_MANAGEMENT}?pantryId=${pantry.pantryId}`,
+                        )
+                      }
+                    >
+                      View Orders
+                    </Link>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+              {selectedPantryToAssignVolunteers && (
+                <AssignVolunteersModal
+                  pantry={selectedPantryToAssignVolunteers}
+                  onClose={() => setSelectedPantryToAssignVolunteers(null)}
+                  onSuccess={handleAssignVolunteersSuccess}
+                  isOpen={true}
+                />
+              )}
+            </Table.Body>
+          </Table.Root>
+        )}
+        <Flex justify="center" mt={12}>
+          <PaginationControl
+            count={filteredPantries.length}
+            pageSize={pageSize}
+            page={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </Flex>
       </Box>
     </Box>

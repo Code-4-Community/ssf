@@ -4,18 +4,17 @@ import {
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   VStack,
-  ButtonGroup,
   Checkbox,
+  Input,
   Link,
 } from '@chakra-ui/react';
-import { ArrowDownUp, ChevronRight, ChevronLeft, Funnel } from 'lucide-react';
+import { ArrowDownUp, Funnel, Search } from 'lucide-react';
 import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import PageEmptyState from '@components/pageEmptyState';
+import { PaginationControl } from '@components/pagination';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
 import VolunteerCloseRequestActionModal from '@components/forms/volunteerCloseRequestModal';
@@ -44,6 +43,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   const [selectedFilteredPantries, setSelectedFilteredPantries] = useState<
     string[]
   >([]);
+  const [pantrySearch, setPantrySearch] = useState('');
   const [selectedViewDetailsRequest, setSelectedViewDetailsRequest] =
     useState<FoodRequestSummaryDto | null>(null);
   const [deleteRequest, setDeleteRequest] =
@@ -131,7 +131,6 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
     );
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const paginatedRequests = filteredRequests.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -222,22 +221,55 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
                     overflowY="auto"
                     zIndex={20}
                   >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={pantrySearch ? 'neutral.800' : 'neutral.300'}
+                        value={pantrySearch}
+                        onChange={(e) => setPantrySearch(e.target.value)}
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
                     <VStack align="stretch" gap={2}>
-                      {pantryOptions.map((pantry) => (
-                        <Checkbox.Root
-                          key={pantry}
-                          checked={selectedFilteredPantries.includes(pantry)}
-                          onCheckedChange={(e: { checked: boolean }) =>
-                            handleFilterChange(pantry, e.checked)
-                          }
-                          color="black"
-                          size="sm"
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control borderRadius="sm" />
-                          <Checkbox.Label>{pantry}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
+                      {pantryOptions
+                        .filter((pantry) =>
+                          pantry
+                            .toLowerCase()
+                            .includes(pantrySearch.toLowerCase()),
+                        )
+                        .map((pantry) => (
+                          <Checkbox.Root
+                            key={pantry}
+                            checked={selectedFilteredPantries.includes(pantry)}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handleFilterChange(pantry, e.checked)
+                            }
+                            color="black"
+                            size="sm"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{pantry}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
                     </VStack>
                   </Box>
                 </>
@@ -469,59 +501,14 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         </>
       )}
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={filteredRequests.length}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft size={16} />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  borderColor={{
-                    base: 'neutral.100',
-                    _selected: 'neutral.600',
-                  }}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                <ChevronRight size={16} />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

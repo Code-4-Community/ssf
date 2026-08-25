@@ -49,6 +49,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   const [feedbackOnPriorDonation, setFeedbackOnPriorDonation] =
     useState<string>('');
   const [alertState, setAlertMessage] = useAlert();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFormValid =
     requestedSize !== '' &&
@@ -88,6 +89,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
   }, [isOpen, previousRequest, setAlertMessage]);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     const foodRequestData: CreateFoodRequestBody = {
       pantryId,
       requestedSize: requestedSize as RequestSize,
@@ -97,6 +99,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       requestedFoodTypes: selectedFoodTypes,
     };
 
+    setIsSubmitting(true);
     try {
       await apiClient.createFoodRequest(foodRequestData);
       setAlertMessage('Request submitted', AlertStatus.INFO);
@@ -104,6 +107,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
       onSuccess();
     } catch {
       setAlertMessage('Request could not be submitted.', AlertStatus.ERROR);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -408,7 +413,7 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
                   onClick={handleSubmit}
                   bg={isFormValid ? 'blue.hover' : 'neutral.400'}
                   color={'white'}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isSubmitting}
                 >
                   Continue
                 </Button>

@@ -40,8 +40,7 @@ export class PantryApplicationDto {
   @IsString()
   @IsNotEmpty()
   @IsPhoneNumber('US', {
-    message:
-      'contactPhone must be a valid phone number (make sure all the digits are correct)',
+    message: 'Phone must be a valid US phone number.',
   })
   contactPhone!: string;
 
@@ -74,8 +73,7 @@ export class PantryApplicationDto {
   @IsOptional()
   @IsString()
   @IsPhoneNumber('US', {
-    message:
-      'secondaryContactPhone must be a valid phone number (make sure all the digits are correct)',
+    message: 'Secondary phone must be a valid US phone number.',
   })
   @IsNotEmpty()
   secondaryContactPhone?: string;

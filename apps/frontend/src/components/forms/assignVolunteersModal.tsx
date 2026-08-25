@@ -52,6 +52,8 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
 
   const [searchName, setSearchName] = useState<string>('');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSearchNameChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -99,6 +101,8 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
   };
 
   const handleSave = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const originalIds = new Set(pantry.volunteers.map((v) => v.userId));
 
@@ -120,6 +124,8 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
       onClose();
     } catch {
       setAlertMessage('Error saving volunteer assignments', AlertStatus.ERROR);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -273,6 +279,7 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
                     fontWeight={600}
                     onClick={handleSave}
                     px={10}
+                    disabled={isSubmitting}
                   >
                     Save Changes
                   </Button>

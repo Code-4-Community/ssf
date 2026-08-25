@@ -1,27 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import {
-  ChevronRight,
-  ChevronLeft,
-  ChevronDown,
-  Funnel,
-  Search,
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, Funnel, Search } from 'lucide-react';
 import {
   Box,
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   Checkbox,
   VStack,
-  ButtonGroup,
   Input,
 } from '@chakra-ui/react';
 import { AlertStatus, PantryStats, TotalStats } from '../types/types';
 import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
+import { PaginationControl } from '@components/pagination';
 
 const AdminDonationStats: React.FC = () => {
   // Individual and combined pantry stats to be displayed
@@ -39,6 +31,9 @@ const AdminDonationStats: React.FC = () => {
   const [isYearFilterOpen, setIsYearFilterOpen] = useState(false);
 
   const [alertState, setAlertMessage] = useAlert();
+
+  const totalStatsRequestIdRef = useRef(0);
+  const pantryStatsRequestIdRef = useRef(0);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -60,23 +55,26 @@ const AdminDonationStats: React.FC = () => {
   }, [setAlertMessage]);
 
   useEffect(() => {
-    // Total stats only displayed on first page, so no need to do anything on page change
-    if (currentPage !== 1) return;
-
+    const requestId = ++totalStatsRequestIdRef.current;
     const fetchTotalStats = async () => {
       try {
         const stats = await ApiClient.getTotalStats(
           selectedYears.length ? selectedYears : undefined,
         );
-        setTotalStats(stats);
+        if (requestId === totalStatsRequestIdRef.current) {
+          setTotalStats(stats);
+        }
       } catch {
-        setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
+        if (requestId === totalStatsRequestIdRef.current) {
+          setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
+        }
       }
     };
     fetchTotalStats();
-  }, [setAlertMessage, selectedYears, currentPage]);
+  }, [setAlertMessage, selectedYears]);
 
   useEffect(() => {
+    const requestId = ++pantryStatsRequestIdRef.current;
     const fetchStats = async () => {
       try {
         const stats = await ApiClient.getPantryStats({
@@ -84,9 +82,13 @@ const AdminDonationStats: React.FC = () => {
           years: selectedYears.length ? selectedYears : undefined,
           page: currentPage,
         });
-        setPantryStats(stats);
+        if (requestId === pantryStatsRequestIdRef.current) {
+          setPantryStats(stats);
+        }
       } catch {
-        setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
+        if (requestId === pantryStatsRequestIdRef.current) {
+          setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
+        }
       }
     };
     fetchStats();
@@ -121,7 +123,6 @@ const AdminDonationStats: React.FC = () => {
   const pantryList =
     selectedPantries.length > 0 ? selectedPantries : pantryNameOptions;
   const totalCount = pantryList.length;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const tableHeaderStyles = {
     borderBottom: '1px solid',
@@ -409,85 +410,83 @@ const AdminDonationStats: React.FC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {currentPage === 1 && (
-            <Table.Row fontWeight="semibold">
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
-              >
-                All Pantries
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {totalStats?.totalItems ?? 0}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.totalOz ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.totalLbs ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                ${(totalStats?.totalValue ?? 0).toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                bg="yellow.100"
-              >
-                {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
-              </Table.Cell>
-              <Table.Cell textStyle="p2" bg="yellow.100">
-                {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
-              </Table.Cell>
-            </Table.Row>
-          )}
+          <Table.Row fontWeight="semibold">
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              py={0}
+            >
+              All Pantries
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {totalStats?.totalItems ?? 0}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.totalOz ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.totalLbs ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              ${(totalStats?.totalValue ?? 0).toFixed(2)}
+            </Table.Cell>
+            <Table.Cell
+              textStyle="p2"
+              borderRight="1px solid"
+              borderRightColor="neutral.100"
+              bg="yellow.100"
+            >
+              {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
+            </Table.Cell>
+            <Table.Cell textStyle="p2" bg="yellow.100">
+              {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
+            </Table.Cell>
+          </Table.Row>
           {pantryStats.map((stat) => (
             <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
               <Table.Cell
@@ -562,57 +561,14 @@ const AdminDonationStats: React.FC = () => {
         </Table.Body>
       </Table.Root>
 
-      {totalPages > 1 && (
-        <Pagination.Root
+      <Box mt={12}>
+        <PaginationControl
           count={totalCount}
           pageSize={itemsPerPage}
           page={currentPage}
-          onPageChange={(e: { page: number }) => setCurrentPage(e.page)}
-        >
-          <ButtonGroup
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            mt={12}
-            variant="outline"
-            size="sm"
-            gap={4}
-          >
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  variant={{ base: 'outline', _selected: 'outline' }}
-                  onClick={() => setCurrentPage(page.value)}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                <ChevronRight />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
-      )}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Box>
   );
 };

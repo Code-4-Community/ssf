@@ -8,12 +8,8 @@ import {
   useDisclosure,
   Link,
   Badge,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Flex,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
 import FoodRequestFormModal from '@components/forms/requestFormModal';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
@@ -25,6 +21,7 @@ import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { AlertStatus } from '../types/types';
+import { PaginationControl } from '@components/pagination';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -262,50 +259,12 @@ const FormRequests: React.FC = () => {
         />
       )}
       <Flex justify="center" mt={12}>
-        <Pagination.Root
-          count={Math.ceil(requests.length / pageSize)}
-          pageSize={1}
+        <PaginationControl
+          count={requests.length}
+          pageSize={pageSize}
           page={currentPage}
-          onChange={(page: number) => setCurrentPage(page)}
-        >
-          <ButtonGroup variant="outline" size="sm" gap={4}>
-            <Pagination.PrevTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft />
-              </IconButton>
-            </Pagination.PrevTrigger>
-
-            <Pagination.Items
-              render={(page) => (
-                <IconButton
-                  variant="outline"
-                  _selected={{ borderColor: 'neutral.800' }}
-                  onClick={() => setCurrentPage(page.value)}
-                >
-                  {page.value}
-                </IconButton>
-              )}
-            />
-
-            <Pagination.NextTrigger asChild>
-              <IconButton
-                variant="ghost"
-                disabled={currentPage === Math.ceil(requests.length / pageSize)}
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, Math.ceil(requests.length / pageSize)),
-                  )
-                }
-              >
-                <ChevronRight />
-              </IconButton>
-            </Pagination.NextTrigger>
-          </ButtonGroup>
-        </Pagination.Root>
+          onPageChange={setCurrentPage}
+        />
       </Flex>
     </Box>
   );

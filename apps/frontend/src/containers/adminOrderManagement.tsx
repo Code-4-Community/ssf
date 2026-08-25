@@ -1,26 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
   Table,
   Heading,
-  Pagination,
-  IconButton,
   VStack,
-  ButtonGroup,
   Checkbox,
   Input,
   Link,
 } from '@chakra-ui/react';
-import {
-  ArrowDownUp,
-  ChevronRight,
-  ChevronLeft,
-  Funnel,
-  Mail,
-  CircleCheck,
-  Search,
-} from 'lucide-react';
+import { ArrowDownUp, Funnel, Mail, CircleCheck, Search } from 'lucide-react';
 import {
   formatDate,
   getInitials,
@@ -35,6 +24,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
+import { PaginationControl } from '@components/pagination';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -106,48 +96,53 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
-  useEffect(() => {
-    // Fetch all orders on component mount and sorts them into their appropriate status lists
-    const fetchOrders = async () => {
-      try {
-        const data = await ApiClient.getAllOrders();
+  // Fetches all orders and sorts them into their appropriate status lists
+  const fetchOrders = useCallback(async () => {
+    try {
+      const data = await ApiClient.getAllOrders();
 
-        const grouped: Record<OrderStatus, OrderWithColor[]> = {
-          [OrderStatus.SHIPPED]: [],
-          [OrderStatus.PENDING]: [],
-          [OrderStatus.DELIVERED]: [],
-          [OrderStatus.CLOSED]: [],
-        };
+      const grouped: Record<OrderStatus, OrderWithColor[]> = {
+        [OrderStatus.SHIPPED]: [],
+        [OrderStatus.PENDING]: [],
+        [OrderStatus.DELIVERED]: [],
+        [OrderStatus.CLOSED]: [],
+      };
 
-        for (const order of data) {
-          const status = order.status;
-          const orderWithColor: OrderWithColor = { ...order };
+      for (const order of data) {
+        const status = order.status;
+        const orderWithColor: OrderWithColor = { ...order };
 
-          if (order.assignee) {
-            orderWithColor.assigneeColor =
-              USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
-          }
-
-          grouped[status].push(orderWithColor);
+        if (order.assignee) {
+          orderWithColor.assigneeColor =
+            USER_ICON_COLORS[order.assignee.id % USER_ICON_COLORS.length];
         }
 
-        setStatusOrders(grouped);
-
-        // Initialize current page for each status
-        const initialPages: Record<OrderStatus, number> = {
-          [OrderStatus.SHIPPED]: 1,
-          [OrderStatus.PENDING]: 1,
-          [OrderStatus.DELIVERED]: 1,
-          [OrderStatus.CLOSED]: 1,
-        };
-        setCurrentPages(initialPages);
-      } catch {
-        setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+        grouped[status].push(orderWithColor);
       }
-    };
 
-    fetchOrders();
+      setStatusOrders(grouped);
+
+      // Preserve current page per status, clamping if the list shrank
+      // instead of always resetting back to page 1 on refetch.
+      setCurrentPages((prev) => {
+        const next: Record<OrderStatus, number> = { ...prev };
+        for (const status of Object.values(OrderStatus)) {
+          const totalPages = Math.max(
+            1,
+            Math.ceil(grouped[status].length / MAX_PER_STATUS),
+          );
+          next[status] = Math.min(prev[status], totalPages);
+        }
+        return next;
+      });
+    } catch {
+      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+    }
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {
@@ -188,9 +183,10 @@ const AdminOrderManagement: React.FC = () => {
         }
       }
     } else {
+      setAlertMessage('Order not found.', AlertStatus.ERROR);
       navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   // Pre-fill pantry filter from url param and then clear the param.
   useEffect(() => {
@@ -314,6 +310,7 @@ const AdminOrderManagement: React.FC = () => {
           setSelectedOrderId(null);
           navigate(ROUTES.ADMIN_ORDER_MANAGEMENT, { replace: true });
         }}
+        onSuccess={fetchOrders}
       />
     </Box>
   );
@@ -356,7 +353,6 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const MAX_PER_STATUS = 5;
-  const totalPages = Math.ceil(totalOrders / MAX_PER_STATUS);
 
   const handleFilterChange = (pantry: string, checked: boolean) => {
     const newSelected = checked
@@ -650,251 +646,205 @@ const OrderStatusSection: React.FC<OrderStatusSectionProps> = ({
                 <CircleCheck size={24} color="#262626" />
               </Box>
               <Box fontWeight="600" fontSize="lg" color="neutral.800">
-                No Orders
+                {filterState.selectedPantries.length > 0
+                  ? 'No Matching Orders'
+                  : 'No Orders'}
               </Box>
               <Box color="neutral.700" fontWeight="400">
-                You have no {ORDER_STATUS_LABELS[status].toLowerCase()} orders
-                at this time.
+                {filterState.selectedPantries.length > 0
+                  ? 'No orders match the selected filter.'
+                  : `You have no ${ORDER_STATUS_LABELS[
+                      status
+                    ].toLowerCase()} orders at this time.`}
               </Box>
             </Box>
           ) : (
             <>
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="10%"
-                    >
-                      Order #
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="18%"
-                    >
-                      Status
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="7%"
-                      textAlign="center"
-                    >
-                      Assignee
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="30%"
-                    >
-                      Pantry
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      borderRight="1px solid"
-                      borderRightColor="neutral.100"
-                      width="15%"
-                    >
-                      Dates
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader
-                      {...tableHeaderStyles}
-                      textAlign="right"
-                      width="20%"
-                    >
-                      Action Required
-                    </Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {orders.map((order, index) => {
-                    const pantry = order.request.pantry;
-
-                    return (
-                      <Table.Row
-                        key={`${order.orderId}-${index}`}
-                        _hover={{ bg: 'neutral.50' }}
+              <Box overflowX="auto">
+                <Table.Root>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="10%"
                       >
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          <Link
-                            textDecorationColor="black"
-                            variant="underline"
-                            onClick={() => onOrderSelect(order.orderId)}
-                          >
-                            {order.orderId}
-                          </Link>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          <Box
-                            borderRadius="md"
-                            bg={colors[0]}
-                            color={colors[1]}
-                            display="inline-block"
-                            fontWeight="500"
-                            fontSize="12px"
-                            my={3}
-                            py={0.5}
-                            px={3}
-                          >
-                            {ORDER_STATUS_LABELS[order.status]}
-                          </Box>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          <Box
-                            direction="row"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                          >
-                            {order.assignee ? (
-                              <Box
-                                key={index}
-                                borderRadius="full"
-                                bg={
-                                  order.assignee.active
-                                    ? order.assigneeColor || 'gray'
-                                    : 'neutral.300'
-                                }
-                                opacity={order.assignee.active ? 1 : 0.6}
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="white"
-                                p={2}
-                              >
-                                {getInitials(
-                                  order.assignee.firstName,
-                                  order.assignee.lastName,
-                                )}
-                              </Box>
-                            ) : (
-                              <Box
-                                key={index}
-                                borderRadius="full"
-                                bg="neutral.100"
-                                width="33px"
-                                height="33px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="neutral.500"
-                                p={2}
-                                title="Unassigned"
-                              >
-                                —
-                              </Box>
-                            )}
-                          </Box>
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          {pantry.pantryName}
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          textAlign="left"
-                          color="neutral.700"
-                          borderRight="1px solid"
-                          borderRightColor="neutral.100"
-                        >
-                          {formatDate(order.createdAt)}-
-                          {order.deliveredAt && formatDate(order.deliveredAt)}
-                        </Table.Cell>
-                        <Table.Cell
-                          {...tableCellStyles}
-                          textAlign="left"
-                          bg="neutral.50"
-                        ></Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
-                </Table.Body>
-              </Table.Root>
-
-              {totalPages > 1 && (
-                <Box mt={4}>
-                  <Pagination.Root
-                    count={totalOrders}
-                    pageSize={MAX_PER_STATUS}
-                    page={currentPage}
-                    onPageChange={(e: { page: number }) => onPageChange(e.page)}
-                  >
-                    <ButtonGroup
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                      variant="outline"
-                      size="sm"
-                      gap={4}
-                    >
-                      <Pagination.PrevTrigger
-                        color="neutral.800"
-                        _hover={{ color: 'black' }}
-                        disabled={currentPage === 1}
+                        Order #
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="18%"
                       >
-                        <ChevronLeft
-                          size={16}
-                          style={{
-                            cursor: currentPage !== 1 ? 'pointer' : 'default',
-                          }}
-                        />
-                      </Pagination.PrevTrigger>
-
-                      <Pagination.Items
-                        render={(page) => (
-                          <IconButton
-                            borderColor={{
-                              base: 'neutral.100',
-                              _selected: 'neutral.600',
-                            }}
-                          >
-                            {page.value}
-                          </IconButton>
-                        )}
-                      />
-
-                      <Pagination.NextTrigger
-                        color="neutral.800"
-                        _hover={{ color: 'black' }}
-                        disabled={currentPage === totalPages}
+                        Status
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="7%"
+                        textAlign="center"
                       >
-                        <ChevronRight
-                          size={16}
-                          style={{
-                            cursor:
-                              currentPage !== totalPages
-                                ? 'pointer'
-                                : 'default',
-                          }}
-                        />
-                      </Pagination.NextTrigger>
-                    </ButtonGroup>
-                  </Pagination.Root>
-                </Box>
-              )}
+                        Assignee
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="30%"
+                      >
+                        Pantry
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        borderRight="1px solid"
+                        borderRightColor="neutral.100"
+                        width="15%"
+                      >
+                        Dates
+                      </Table.ColumnHeader>
+                      <Table.ColumnHeader
+                        {...tableHeaderStyles}
+                        textAlign="right"
+                        width="20%"
+                      >
+                        Action Required
+                      </Table.ColumnHeader>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {orders.map((order, index) => {
+                      const pantry = order.request.pantry;
+
+                      return (
+                        <Table.Row
+                          key={`${order.orderId}-${index}`}
+                          _hover={{ bg: 'neutral.50' }}
+                        >
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            <Link
+                              textDecorationColor="black"
+                              variant="underline"
+                              onClick={() => onOrderSelect(order.orderId)}
+                            >
+                              {order.orderId}
+                            </Link>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            <Box
+                              borderRadius="md"
+                              bg={colors[0]}
+                              color={colors[1]}
+                              display="inline-block"
+                              fontWeight="500"
+                              fontSize="12px"
+                              my={3}
+                              py={0.5}
+                              px={3}
+                            >
+                              {ORDER_STATUS_LABELS[order.status]}
+                            </Box>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            <Box
+                              direction="row"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              {order.assignee ? (
+                                <Box
+                                  key={index}
+                                  borderRadius="full"
+                                  bg={
+                                    order.assignee.active
+                                      ? order.assigneeColor || 'gray'
+                                      : 'neutral.300'
+                                  }
+                                  opacity={order.assignee.active ? 1 : 0.6}
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="white"
+                                  p={2}
+                                >
+                                  {getInitials(
+                                    order.assignee.firstName,
+                                    order.assignee.lastName,
+                                  )}
+                                </Box>
+                              ) : (
+                                <Box
+                                  key={index}
+                                  borderRadius="full"
+                                  bg="neutral.100"
+                                  width="33px"
+                                  height="33px"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="neutral.500"
+                                  p={2}
+                                  title="Unassigned"
+                                >
+                                  —
+                                </Box>
+                              )}
+                            </Box>
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            {pantry.pantryName}
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            textAlign="left"
+                            color="neutral.700"
+                            borderRight="1px solid"
+                            borderRightColor="neutral.100"
+                          >
+                            {formatDate(order.createdAt)}-
+                            {order.deliveredAt && formatDate(order.deliveredAt)}
+                          </Table.Cell>
+                          <Table.Cell
+                            {...tableCellStyles}
+                            textAlign="left"
+                            bg="neutral.50"
+                          ></Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
+                  </Table.Body>
+                </Table.Root>
+              </Box>
+
+              <Box mt={4}>
+                <PaginationControl
+                  count={totalOrders}
+                  pageSize={MAX_PER_STATUS}
+                  page={currentPage}
+                  onPageChange={onPageChange}
+                />
+              </Box>
             </>
           )}
         </>

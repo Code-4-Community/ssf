@@ -25,20 +25,18 @@ import {
   CloseButton,
   Tabs,
   Badge,
-  Pagination,
-  ButtonGroup,
-  IconButton,
   Button,
   Textarea,
   Input,
 } from '@chakra-ui/react';
-import { ChevronRight, ChevronLeft, ChevronDownIcon } from 'lucide-react';
+import { ChevronDownIcon } from 'lucide-react';
 import { TagGroup } from './tagGroup';
 import { useGroupedItemsByFoodType } from '../../hooks/groupedItemsByFoodType';
 import { useModalBodyCleanup } from '../../hooks/modalBodyCleanup';
 import { useAlert } from '../../hooks/alert';
 import { FloatingAlert } from '../floatingAlert';
 import { EditButton, DeleteButton } from '@components/editDeleteButtons';
+import { PaginationControl } from '@components/pagination';
 
 interface RequestDetailsModalProps {
   request: FoodRequestSummaryDto;
@@ -664,56 +662,12 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
                     {orderDetailsList.length > 0 && (
                       <Flex justify="center" mt={7}>
-                        <Pagination.Root
+                        <PaginationControl
                           count={orderDetailsList.length}
                           pageSize={1}
                           page={currentPage}
-                          onChange={(page: number) => setCurrentPage(page)}
-                        >
-                          <ButtonGroup variant="outline" size="sm" gap={4}>
-                            <Pagination.PrevTrigger asChild>
-                              <IconButton
-                                variant="ghost"
-                                disabled={currentPage === 1}
-                                onClick={() =>
-                                  setCurrentPage((prev) =>
-                                    Math.max(prev - 1, 1),
-                                  )
-                                }
-                              >
-                                <ChevronLeft />
-                              </IconButton>
-                            </Pagination.PrevTrigger>
-
-                            <Pagination.Items
-                              render={(page) => (
-                                <IconButton
-                                  variant="outline"
-                                  _selected={{ borderColor: 'neutral.800' }}
-                                  onClick={() => setCurrentPage(page.value)}
-                                >
-                                  {page.value}
-                                </IconButton>
-                              )}
-                            />
-
-                            <Pagination.NextTrigger asChild>
-                              <IconButton
-                                variant="ghost"
-                                disabled={
-                                  currentPage === orderDetailsList.length
-                                }
-                                onClick={() =>
-                                  setCurrentPage((prev) =>
-                                    Math.min(prev + 1, orderDetailsList.length),
-                                  )
-                                }
-                              >
-                                <ChevronRight />
-                              </IconButton>
-                            </Pagination.NextTrigger>
-                          </ButtonGroup>
-                        </Pagination.Root>
+                          onPageChange={setCurrentPage}
+                        />
                       </Flex>
                     )}
                   </Tabs.Content>

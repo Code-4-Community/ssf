@@ -49,6 +49,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   const [dateReceived, setDateReceived] = useState<string>('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [invalidPhotoExists, setInvalidPhotoExists] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const isFormValid = dateReceived !== '' && !invalidPhotoExists;
 
@@ -64,6 +65,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       // TODO: fix date/time storage/handling
       const dto: ConfirmDeliveryDto = {
@@ -80,6 +83,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
       resetForm();
       onError();
       onClose();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -309,7 +314,7 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
                   onClick={handleSubmit}
                   bg={isFormValid ? 'blue.hover' : 'neutral.400'}
                   color={'white'}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isSubmitting}
                 >
                   Continue
                 </Button>

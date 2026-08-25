@@ -27,8 +27,7 @@ export class userSchemaDto {
   @IsString()
   @IsNotEmpty()
   @IsPhoneNumber('US', {
-    message:
-      'phone must be a valid phone number (make sure all the digits are correct)',
+    message: 'Phone must be a valid US phone number.',
   })
   phone!: string;
 

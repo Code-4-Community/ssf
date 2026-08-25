@@ -35,6 +35,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
   const [alertState, setAlertMessage] = useAlert();
   const [manufacturers, setManufacturers] = useState<ManufacturerSummary[]>([]);
   const [selectedFmId, setSelectedFmId] = useState<number>(foodManufacturerId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load the manufacturers this representative can donate for so they can
   // choose which one the donation is for.
@@ -84,12 +85,15 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
       })),
     };
 
+    setIsSubmitting(true);
     try {
       await ApiClient.postDonation(donationBody);
       onDonationSuccess();
       onClose();
     } catch {
       setAlertMessage('Error submitting new donation', AlertStatus.ERROR);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -191,6 +195,7 @@ const NewDonationFormModal: React.FC<NewDonationFormModalProps> = ({
               onCancel={onClose}
               onSubmit={handleLogDonation}
               submitButtonLabel="Submit Donation"
+              isSubmitting={isSubmitting}
             ></EditableDonationItemsTable>
           </Dialog.Body>
         </Dialog.Content>

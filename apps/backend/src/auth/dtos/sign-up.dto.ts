@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString, IsPhoneNumber } from 'class-validator';
+import { IsEmail, IsEnum, IsString } from 'class-validator';
+import { Role } from '../../users/types';
 
 export class SignUpDto {
   @IsString()
@@ -10,14 +11,6 @@ export class SignUpDto {
   @IsEmail()
   email!: string;
 
-  @IsString()
-  password!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsPhoneNumber('US', {
-    message:
-      'phone must be a valid phone number (make sure all the digits are correct)',
-  })
-  phone!: string;
+  @IsEnum(Role)
+  role!: Role;
 }
