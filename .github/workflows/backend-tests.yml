@@ -43,3 +43,31 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn list strip-ansi string-width string-length
       - run: yarn test
+
+  deploy-backend:
+    needs: [prettier-check, backend-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      NX_DAEMON: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: yarn install --frozen-lockfile
+      - run: npx nx build backend --configuration=production
+      - run: cp Procfile dist/apps/backend/Procfile
+      - name: Zip deployment bundle
+        run: |
+          cd dist/apps/backend
+          zip -r ../../../deploy.zip .
+      - uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ssf-backend
+          environment_name: Ssf-backend-env
+          version_label: ${{ github.sha }}
+          region: us-east-1
+          deployment_package: deploy.zip
