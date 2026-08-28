@@ -69,5 +69,5 @@ jobs:
           application_name: ssf-backend
           environment_name: Ssf-backend-env
           version_label: ${{ github.sha }}
-          region: us-east-1
+          region: us-east-2
           deployment_package: deploy.zip
