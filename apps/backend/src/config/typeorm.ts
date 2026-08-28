@@ -2,6 +2,7 @@ import { registerAs } from '@nestjs/config';
 import { PluralNamingStrategy } from '../strategies/plural-naming.strategy';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import schemaMigrations from './migrations';
+import 'pg';
 
 const config = {
   type: 'postgres',
