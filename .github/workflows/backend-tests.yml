@@ -1,5 +1,4 @@
 on: [push, pull_request]
-
 jobs:
   prettier-check:
     runs-on: ubuntu-latest
@@ -10,7 +9,6 @@ jobs:
           node-version: 20
       - run: yarn install --frozen-lockfile
       - run: yarn prettier:check
-
   backend-tests:
     runs-on: ubuntu-latest
     services:
@@ -43,7 +41,6 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn list strip-ansi string-width string-length
       - run: yarn test
-
   deploy-backend:
     needs: [prettier-check, backend-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -58,6 +55,10 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: npx nx build backend --configuration=production
       - run: cp Procfile dist/apps/backend/Procfile
+      - name: Install production dependencies in build output
+        run: |
+          cd dist/apps/backend
+          yarn install --production --frozen-lockfile
       - name: Zip deployment bundle
         run: |
           cd dist/apps/backend
