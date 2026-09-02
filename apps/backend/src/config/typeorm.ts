@@ -15,6 +15,10 @@ const config = {
   synchronize: false,
   namingStrategy: new PluralNamingStrategy(),
   migrations: [...schemaMigrations],
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : false,
 };
 
 export default registerAs('typeorm', () => config);
