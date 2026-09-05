@@ -569,6 +569,7 @@ const PantryApplicationForm: React.FC = () => {
             </Field.HelperText>
             <NativeSelect.Root>
               <NativeSelect.Field
+                required
                 value={allergenClients}
                 onChange={(e) => setAllergenClients(e.target.value)}
                 placeholder="Select an option"

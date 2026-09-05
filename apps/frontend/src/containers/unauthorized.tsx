@@ -1,17 +1,17 @@
+import { Center } from '@chakra-ui/react';
+import PageEmptyState from '@components/pageEmptyState';
 import { ROUTES } from '../routes';
 
 export const Unauthorized: React.FC = () => {
   return (
-    <div id="error-page">
-      <h1>Oops!</h1>
-      <p>You are not an authorized user for this page!</p>
-      <p>
-        Return to{' '}
-        <span style={{ color: 'blue' }}>
-          <a href={ROUTES.HOME}>home page</a>
-        </span>
-      </p>
-    </div>
+    <Center h="100vh">
+      <PageEmptyState
+        entity="access"
+        subtitle="You are not an authorized user for this page."
+        primaryButtonText="Return to home page"
+        primaryButtonLink={ROUTES.HOME}
+      />
+    </Center>
   );
 };
 
