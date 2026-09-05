@@ -47,7 +47,13 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
-    const pantryId = await ApiClient.getCurrentUserPantryId();
+    let pantryId: number | undefined;
+    try {
+      pantryId = await ApiClient.getCurrentUserPantryId();
+    } catch {
+      setAlertMessage('Error fetching pantry', AlertStatus.ERROR);
+      return;
+    }
     setPantryId(pantryId);
     if (pantryId) {
       try {
