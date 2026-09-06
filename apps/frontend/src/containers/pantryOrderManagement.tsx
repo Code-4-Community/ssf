@@ -148,9 +148,10 @@ const PantryOrderManagement: React.FC = () => {
         setSelectedOrderId(match.orderId);
       }
     } else {
+      setAlertMessage('Order not found.', AlertStatus.ERROR);
       navigate(ROUTES.PANTRY_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   // Helper to reset page for a specific status
   const resetPageForStatus = (status: OrderStatus) => {

@@ -411,7 +411,17 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                         additionalNotes !== '' ? 'neutral.800' : 'neutral.300'
                       }
                       value={additionalNotes}
-                      onChange={(e) => setAdditionalNotes(e.target.value)}
+                      onChange={(e) => {
+                        const words = e.target.value.trim().split(/\s+/);
+                        if (words.length <= 250) {
+                          setAdditionalNotes(e.target.value);
+                        } else {
+                          setAlertMessage(
+                            'Exceeded word limit',
+                            AlertStatus.ERROR,
+                          );
+                        }
+                      }}
                     />
                     <Field.HelperText color="neutral.600">
                       Max 250 words
