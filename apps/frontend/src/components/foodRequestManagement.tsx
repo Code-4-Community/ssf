@@ -78,7 +78,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   }, [selectedFilteredPantries]);
 
   useEffect(() => {
-    if (!initialRequestId || requests.length === 0) return;
+    if (initialRequestId === undefined || requests.length === 0) return;
     const match = requests.find((r) => r.requestId === initialRequestId);
 
     if (match) {
