@@ -22,6 +22,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { AlertStatus } from '../types/types';
 import { PaginationControl } from '@components/pagination';
+import PageEmptyState from '@components/pageEmptyState';
 
 const FormRequests: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -46,7 +47,13 @@ const FormRequests: React.FC = () => {
   const pageSize = 10;
 
   const fetchRequests = useCallback(async () => {
-    const pantryId = await ApiClient.getCurrentUserPantryId();
+    let pantryId: number | undefined;
+    try {
+      pantryId = await ApiClient.getCurrentUserPantryId();
+    } catch {
+      setAlertMessage('Error fetching pantry', AlertStatus.ERROR);
+      return;
+    }
     setPantryId(pantryId);
     if (pantryId) {
       try {
@@ -87,9 +94,10 @@ const FormRequests: React.FC = () => {
         setCurrentPage(Math.floor(idx / pageSize) + 1);
       }
     } else {
+      setAlertMessage('Request not found.', AlertStatus.ERROR);
       navigate(ROUTES.REQUEST_FORM, { replace: true });
     }
-  }, [searchParams, requests, navigate]);
+  }, [searchParams, requests, navigate, setAlertMessage]);
 
   const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
@@ -156,79 +164,87 @@ const FormRequests: React.FC = () => {
           </>
         )}
       </HStack>
-      <Table.Root mt={6} variant="line" showColumnBorder>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-            >
-              Request #
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-            >
-              Status
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              color="neutral.800"
-              textStyle="p2"
-              fontWeight={600}
-              textAlign="right"
-            >
-              Date Requested
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {paginatedRequests.map((request) => (
-            <Table.Row key={request.requestId}>
-              <Table.Cell color="gray.dark" textStyle="p2">
-                <Link
-                  textDecorationColor="gray.dark"
-                  variant="underline"
-                  onClick={() => setOpenReadOnlyRequest(request)}
-                >
-                  {request.requestId}
-                </Link>
-              </Table.Cell>
-              <Table.Cell>
-                {request.status === FoodRequestStatus.ACTIVE ? (
-                  <Badge
-                    bgColor="teal.200"
-                    color="teal.hover"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                    py={1}
-                    px={2}
-                  >
-                    Active
-                  </Badge>
-                ) : (
-                  <Badge
-                    bgColor="neutral.300"
-                    color="gray.dark"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize={12}
-                    py={1}
-                    px={2}
-                  >
-                    Closed
-                  </Badge>
-                )}
-              </Table.Cell>
-              <Table.Cell color="neutral.700" textStyle="p2" textAlign="right">
-                {formatDate(request.requestedAt)}
-              </Table.Cell>
+      {requests.length === 0 ? (
+        <PageEmptyState entity="food requests" />
+      ) : (
+        <Table.Root mt={6} variant="line" showColumnBorder>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+              >
+                Request #
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+              >
+                Status
+              </Table.ColumnHeader>
+              <Table.ColumnHeader
+                color="neutral.800"
+                textStyle="p2"
+                fontWeight={600}
+                textAlign="right"
+              >
+                Date Requested
+              </Table.ColumnHeader>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+          </Table.Header>
+          <Table.Body>
+            {paginatedRequests.map((request) => (
+              <Table.Row key={request.requestId}>
+                <Table.Cell color="gray.dark" textStyle="p2">
+                  <Link
+                    textDecorationColor="gray.dark"
+                    variant="underline"
+                    onClick={() => setOpenReadOnlyRequest(request)}
+                  >
+                    {request.requestId}
+                  </Link>
+                </Table.Cell>
+                <Table.Cell>
+                  {request.status === FoodRequestStatus.ACTIVE ? (
+                    <Badge
+                      bgColor="teal.200"
+                      color="teal.hover"
+                      textStyle="p2"
+                      fontWeight={500}
+                      fontSize={12}
+                      py={1}
+                      px={2}
+                    >
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge
+                      bgColor="neutral.300"
+                      color="gray.dark"
+                      textStyle="p2"
+                      fontWeight={500}
+                      fontSize={12}
+                      py={1}
+                      px={2}
+                    >
+                      Closed
+                    </Badge>
+                  )}
+                </Table.Cell>
+                <Table.Cell
+                  color="neutral.700"
+                  textStyle="p2"
+                  textAlign="right"
+                >
+                  {formatDate(request.requestedAt)}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      )}
       {openReadOnlyRequest && !deleteRequest && (
         <RequestDetailsModal
           request={openReadOnlyRequest}
