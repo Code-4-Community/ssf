@@ -95,9 +95,10 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
       }
     } else {
+      setAlertMessage('Request not found.', AlertStatus.ERROR);
       navigate(location.pathname, { replace: true });
     }
-  }, [initialRequestId, requests, navigate, location]);
+  }, [initialRequestId, requests, navigate, location, setAlertMessage]);
 
   const pantryOptions = [
     ...new Set(
