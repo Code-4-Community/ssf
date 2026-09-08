@@ -198,9 +198,10 @@ const VolunteerOrderManagement: React.FC = () => {
         }
       }
     } else {
+      setAlertMessage('Order not found.', AlertStatus.ERROR);
       navigate(ROUTES.VOLUNTEER_ORDER_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusOrders, navigate]);
+  }, [searchParams, statusOrders, navigate, setAlertMessage]);
 
   // Pre-fill pantry filter from url param, url is kept for back/forward navigation
   useEffect(() => {

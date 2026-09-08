@@ -4,9 +4,9 @@ import { Box, Flex, Text, VStack } from '@chakra-ui/react';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { signOut } from 'aws-amplify/auth';
 import { ChevronDown, ChevronRight, LogOut } from 'lucide-react';
-import ApiClient from '@api/apiClient';
-import { Role, User } from '../types/types';
+import { Role } from '../types/types';
 import { ROUTES } from '../routes';
+import { useCurrentUser } from './userContext';
 
 const ROLE_MAP: Record<Role, { label: string }> = {
   [Role.ADMIN]: { label: 'Admin' },
@@ -218,20 +218,10 @@ const NavGroup: React.FC<NavGroupProps> = ({
 
 const Navbar: React.FC = () => {
   const { authStatus } = useAuthenticator((context) => [context.authStatus]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user: currentUser } = useCurrentUser();
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (authStatus === 'authenticated') {
-      ApiClient.getMe()
-        .then(setCurrentUser)
-        .catch(() => setCurrentUser(null));
-    } else if (authStatus === 'unauthenticated') {
-      setCurrentUser(null);
-    }
-  }, [authStatus]);
 
   // On reload or navigation, make sure the currently opened groups stays open
   useEffect(() => {

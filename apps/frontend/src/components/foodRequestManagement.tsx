@@ -78,7 +78,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
   }, [selectedFilteredPantries]);
 
   useEffect(() => {
-    if (!initialRequestId || requests.length === 0) return;
+    if (initialRequestId === undefined || requests.length === 0) return;
     const match = requests.find((r) => r.requestId === initialRequestId);
 
     if (match) {
@@ -95,9 +95,10 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
         setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
       }
     } else {
+      setAlertMessage('Request not found.', AlertStatus.ERROR);
       navigate(location.pathname, { replace: true });
     }
-  }, [initialRequestId, requests, navigate, location]);
+  }, [initialRequestId, requests, navigate, location, setAlertMessage]);
 
   const pantryOptions = [
     ...new Set(

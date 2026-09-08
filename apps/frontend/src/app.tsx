@@ -41,8 +41,15 @@ import PantryDashboard from '@containers/pantryDashboard';
 import VolunteerDashboard from '@containers/volunteerDashboard';
 import AdminDashboard from '@containers/adminDashboard';
 import FoodManufacturerDashboard from '@containers/foodManufacturerDashboard';
+import { Role } from './types/types';
 
 Amplify.configure(CognitoAuthConfig);
+
+const PANTRY_ONLY = [Role.PANTRY];
+const VOLUNTEER_ONLY = [Role.VOLUNTEER];
+const FOOD_MANUFACTURER_ONLY = [Role.FOODMANUFACTURER];
+const ADMIN_ONLY = [Role.ADMIN];
+const ADMIN_OR_VOLUNTEER = [Role.ADMIN, Role.VOLUNTEER];
 
 const router = createBrowserRouter([
   {
@@ -89,7 +96,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.REQUEST_FORM,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={PANTRY_ONLY}>
             <FormRequests />
           </ProtectedRoute>
         ),
@@ -97,7 +104,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PANTRY_DASHBOARD,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={PANTRY_ONLY}>
             <PantryDashboard />
           </ProtectedRoute>
         ),
@@ -105,7 +112,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.VOLUNTEER_DASHBOARD,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={VOLUNTEER_ONLY}>
             <VolunteerDashboard />
           </ProtectedRoute>
         ),
@@ -113,7 +120,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FM_DONATION_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={FOOD_MANUFACTURER_ONLY}>
             <FoodManufacturerDonationManagement />
           </ProtectedRoute>
         ),
@@ -121,7 +128,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FM_DASHBOARD,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={FOOD_MANUFACTURER_ONLY}>
             <FoodManufacturerDashboard />
           </ProtectedRoute>
         ),
@@ -129,7 +136,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.APPROVE_PANTRIES,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <ApprovePantries />
           </ProtectedRoute>
         ),
@@ -137,7 +144,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.APPROVE_FOOD_MANUFACTURERS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <ApproveFoodManufacturers />
           </ProtectedRoute>
         ),
@@ -145,7 +152,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PANTRY_APPLICATION_DETAILS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <PantryApplicationDetails />
           </ProtectedRoute>
         ),
@@ -153,7 +160,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PANTRY_MANAGEMENT_DETAILS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_OR_VOLUNTEER}>
             <PantryApplicationDetails />
           </ProtectedRoute>
         ),
@@ -161,7 +168,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FOOD_MANUFACTURER_APPLICATION_DETAILS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <FoodManufacturerApplicationDetails />
           </ProtectedRoute>
         ),
@@ -169,7 +176,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FOOD_MANUFACTURER_MANAGEMENT_DETAILS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <FoodManufacturerApplicationDetails />
           </ProtectedRoute>
         ),
@@ -177,7 +184,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN_DONATION,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminDonation />
           </ProtectedRoute>
         ),
@@ -185,7 +192,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN_DONATION_STATS,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminDonationStats />
           </ProtectedRoute>
         ),
@@ -193,7 +200,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.VOLUNTEER_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <VolunteerManagement />
           </ProtectedRoute>
         ),
@@ -201,7 +208,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN_DASHBOARD,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminDashboard />
           </ProtectedRoute>
         ),
@@ -209,7 +216,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN_REQUEST_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminRequestManagement />
           </ProtectedRoute>
         ),
@@ -217,7 +224,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.ADMIN_ORDER_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminOrderManagement />
           </ProtectedRoute>
         ),
@@ -225,7 +232,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PANTRY_ORDER_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={PANTRY_ONLY}>
             <PantryOrderManagement />
           </ProtectedRoute>
         ),
@@ -241,7 +248,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.VOLUNTEER_ASSIGNED_PANTRIES,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={VOLUNTEER_ONLY}>
             <AssignedPantries />
           </ProtectedRoute>
         ),
@@ -249,7 +256,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.VOLUNTEER_REQUEST_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={VOLUNTEER_ONLY}>
             <VolunteerRequestManagement />
           </ProtectedRoute>
         ),
@@ -257,7 +264,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.VOLUNTEER_ORDER_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={VOLUNTEER_ONLY}>
             <VolunteerOrderManagement />
           </ProtectedRoute>
         ),
@@ -265,7 +272,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.PANTRY_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminPantryManagement />
           </ProtectedRoute>
         ),
@@ -273,7 +280,7 @@ const router = createBrowserRouter([
       {
         path: ROUTES.FOOD_MANUFACTURER_MANAGEMENT,
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={ADMIN_ONLY}>
             <AdminFoodManufacturerManagement />
           </ProtectedRoute>
         ),
