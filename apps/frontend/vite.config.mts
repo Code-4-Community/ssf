@@ -35,9 +35,4 @@ export default defineConfig({
       '@loaders': path.resolve(__dirname, './src/loaders'),
     },
   },
-
-  test: {
-    environment: 'jsdom',
-    globals: true,
-  },
 });
