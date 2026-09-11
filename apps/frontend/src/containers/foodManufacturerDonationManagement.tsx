@@ -59,7 +59,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async () => {
+  const fetchDonations = async (resetPages = false) => {
     try {
       const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
@@ -83,28 +83,30 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setStatusDonations(grouped);
 
-      const initialPages: Record<DonationStatus, number> = {
-        [DonationStatus.AVAILABLE]: 1,
-        [DonationStatus.FULFILLED]: 1,
-        [DonationStatus.MATCHED]: 1,
-      };
+      if (resetPages) {
+        const initialPages: Record<DonationStatus, number> = {
+          [DonationStatus.AVAILABLE]: 1,
+          [DonationStatus.FULFILLED]: 1,
+          [DonationStatus.MATCHED]: 1,
+        };
 
-      // Paginate the containing status to the page that holds this donation.
-      const donationIdParam = searchParams.get('donationId');
-      if (donationIdParam) {
-        const id = Number(donationIdParam);
-        for (const status of Object.values(DonationStatus)) {
-          const idx = grouped[status].findIndex(
-            (d) => d.donation.donationId === id,
-          );
-          if (idx >= 0) {
-            initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
-            break;
+        // Paginate the containing status to the page that holds this donation.
+        const donationIdParam = searchParams.get('donationId');
+        if (donationIdParam) {
+          const id = Number(donationIdParam);
+          for (const status of Object.values(DonationStatus)) {
+            const idx = grouped[status].findIndex(
+              (d) => d.donation.donationId === id,
+            );
+            if (idx >= 0) {
+              initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+              break;
+            }
           }
         }
-      }
 
-      setCurrentPages(initialPages);
+        setCurrentPages(initialPages);
+      }
 
       return grouped;
     } catch (error) {
@@ -134,7 +136,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       try {
         const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
         setManufacturerId(fmId);
-        const grouped = await fetchDonations();
+        const grouped = await fetchDonations(true);
         if (grouped) openResubmitFromQueryParam(grouped);
       } catch {
         setAlertMessage(
@@ -161,8 +163,11 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       .find((d) => d.donation.donationId === id);
     if (match) {
       setSelectedViewDetailsDonation(match.donation);
-    } else navigate(ROUTES.FM_DONATION_MANAGEMENT);
-  }, [searchParams, statusDonations, loading]);
+    } else {
+      setAlertMessage('Donation not found.', AlertStatus.ERROR);
+      navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+    }
+  }, [searchParams, statusDonations, loading, navigate, setAlertMessage]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -267,7 +272,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           foodManufacturerId={manufacturerId}
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => fetchDonations()}
+          onSuccess={() => {
+            fetchDonations();
+            setAlertMessage(
+              'Donation resubmitted successfully.',
+              AlertStatus.INFO,
+            );
+          }}
           donations={Object.values(statusDonations).flat()}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
@@ -283,11 +294,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           donation={selectedActionDonation}
           isOpen={true}
           onClose={() => setSelectedActionDonation(null)}
-          onSuccess={() => {
+          onSuccess={(allOrdersComplete) => {
             setSelectedActionDonation(null);
             if (manufacturerId !== null) fetchDonations();
             setAlertMessage(
-              'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              allOrdersComplete
+                ? 'Your details have been saved and all required actions are complete.'
+                : 'Your details have been saved, but shipping cost and/or tracking link are still missing for one or more orders. Please complete them soon.',
               AlertStatus.INFO,
             );
           }}

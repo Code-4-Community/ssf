@@ -17,7 +17,20 @@ export function useAlert(): [
 
   const setAlertMessage = useCallback(
     (message: string, status: AlertStatus) => {
-      setAlertState({ message, status, id: idRef.current++ });
+      setAlertState((prev) => {
+        if (prev && prev.status === status) {
+          const lines = prev.message.split('\n');
+          if (lines.includes(message)) {
+            return prev;
+          }
+          return {
+            message: `${prev.message}\n${message}`,
+            status,
+            id: idRef.current++,
+          };
+        }
+        return { message, status, id: idRef.current++ };
+      });
     },
     [],
   );

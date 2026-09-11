@@ -139,6 +139,8 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="md"
       onOpenChange={(e: { open: boolean }) => {

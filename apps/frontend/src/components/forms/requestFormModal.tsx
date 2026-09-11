@@ -114,6 +114,8 @@ const FoodRequestFormModal: React.FC<FoodRequestFormModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="xl"
       onOpenChange={(e: { open: boolean }) => {

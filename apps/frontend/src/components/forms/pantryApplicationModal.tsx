@@ -19,6 +19,8 @@ const PantryApplicationModal: React.FC<PantryApplicationModalProps> = ({
   const pantryUser = pantry.pantryUser;
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) onClose();

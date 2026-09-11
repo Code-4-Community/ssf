@@ -24,6 +24,8 @@ const ConfirmFoodManufacturerDecisionModal: React.FC<
   useModalBodyCleanup();
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => !e.open && onClose()}
     >

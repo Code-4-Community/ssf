@@ -1,5 +1,5 @@
 import ApiClient from '@api/apiClient';
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Button, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, {
   DashboardCardType,
   ORDER_STATUS_BADGE,
@@ -31,52 +31,76 @@ const VolunteerDashboard: React.FC = () => {
   >([]);
   const [recentOrders, setRecentOrders] = useState<VolunteerOrder[]>([]);
   const [stats, setStats] = useState<Record<string, string> | null>(null);
+  const [recentFoodRequestsFailed, setRecentFoodRequestsFailed] =
+    useState(false);
+  const [recentOrdersFailed, setRecentOrdersFailed] = useState(false);
+
+  const fetchFoodRequests = React.useCallback(async () => {
+    setRecentFoodRequestsFailed(false);
+    try {
+      const requests = await ApiClient.getVolunteerAssignedRequests();
+      const sorted = requests
+        .filter(
+          (r: FoodRequestSummaryDto) => r.status === FoodRequestStatus.ACTIVE,
+        )
+        .sort(
+          (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
+            new Date(b.requestedAt).getTime() -
+            new Date(a.requestedAt).getTime(),
+        );
+      setRecentFoodRequests(sorted.slice(0, 2));
+    } catch {
+      setRecentFoodRequestsFailed(true);
+      setAlertMessage('Error fetching food requests', AlertStatus.ERROR);
+    }
+  }, [setAlertMessage]);
+
+  const fetchOrders = React.useCallback(async () => {
+    setRecentOrdersFailed(false);
+    try {
+      const orders = await ApiClient.getVolunteerRecentOrders();
+      setRecentOrders(orders);
+    } catch {
+      setRecentOrdersFailed(true);
+      setAlertMessage('Error fetching orders', AlertStatus.ERROR);
+    }
+  }, [setAlertMessage]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      let currentUser: User;
       try {
-        const currentUser = await ApiClient.getMe();
+        currentUser = await ApiClient.getMe();
         setUser(currentUser);
-
-        try {
-          const userStats = await ApiClient.getUserStats(currentUser.id);
-          setStats(userStats);
-        } catch {
-          setAlertMessage(
-            'Error fetching dashboard statistics',
-            AlertStatus.ERROR,
-          );
-        }
-
-        const [requests, orders] = await Promise.all([
-          ApiClient.getVolunteerAssignedRequests(),
-          ApiClient.getVolunteerRecentOrders(),
-        ]);
-
-        const sorted = requests
-          .filter(
-            (r: FoodRequestSummaryDto) => r.status === FoodRequestStatus.ACTIVE,
-          )
-          .sort(
-            (a: FoodRequestSummaryDto, b: FoodRequestSummaryDto) =>
-              new Date(b.requestedAt).getTime() -
-              new Date(a.requestedAt).getTime(),
-          );
-        setRecentFoodRequests(sorted.slice(0, 2));
-        setRecentOrders(orders);
       } catch {
         setAlertMessage('Error fetching dashboard data', AlertStatus.ERROR);
-      } finally {
         setLoading(false);
+        return;
       }
+
+      try {
+        const userStats = await ApiClient.getUserStats(currentUser.id);
+        setStats(userStats);
+      } catch {
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+
+      await Promise.all([fetchFoodRequests(), fetchOrders()]);
+      setLoading(false);
     };
     fetchDashboardData();
-  }, [setAlertMessage]);
+  }, [setAlertMessage, fetchFoodRequests, fetchOrders]);
 
   if (loading || !user) return null;
 
   const isPageEmpty =
-    recentFoodRequests.length === 0 && recentOrders.length === 0;
+    recentFoodRequests.length === 0 &&
+    !recentFoodRequestsFailed &&
+    recentOrders.length === 0 &&
+    !recentOrdersFailed;
 
   return (
     <Box p={12}>
@@ -107,7 +131,19 @@ const VolunteerDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             Recent Food Requests
           </Text>
-          {recentFoodRequests.length === 0 ? (
+          {recentFoodRequestsFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="recent food requests"
+                subtitle="We couldn't load recent food requests. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchFoodRequests} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : recentFoodRequests.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="recent food requests" />
             </Box>
@@ -139,7 +175,19 @@ const VolunteerDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             My Orders
           </Text>
-          {recentOrders.length === 0 ? (
+          {recentOrdersFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="orders"
+                subtitle="We couldn't load orders. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchOrders} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : recentOrders.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="orders" />
             </Box>

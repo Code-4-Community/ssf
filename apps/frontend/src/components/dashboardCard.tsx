@@ -30,7 +30,7 @@ export const CARD_TYPE_ICON: Record<DashboardCardType, React.ReactNode> = {
 const CARD_TYPE_DATE_LABEL: Record<DashboardCardType, string> = {
   [DashboardCardType.ACTION]: 'Applied',
   [DashboardCardType.ORDER]: 'Requested',
-  [DashboardCardType.UPCOMING_DONATION]: 'Scheduled',
+  [DashboardCardType.UPCOMING_DONATION]: 'Scheduled to send',
   [DashboardCardType.RECENT_DONATION]: 'Donated',
   [DashboardCardType.FOOD_REQUEST]: 'Requested',
 };
