@@ -191,6 +191,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="xl"
       onOpenChange={(e: { open: boolean }) => {

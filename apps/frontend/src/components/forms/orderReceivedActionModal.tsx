@@ -90,6 +90,8 @@ const OrderReceivedActionModal: React.FC<OrderReceivedActionModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="xl"
       onOpenChange={(e: { open: boolean }) => {

@@ -131,6 +131,8 @@ const AssignVolunteersModal: React.FC<AssignVolunteersModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       size="md"
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {

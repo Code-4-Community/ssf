@@ -64,6 +64,8 @@ const CompleteRequiredActionsModal: React.FC<
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="md"
       onOpenChange={(e: { open: boolean }) => {

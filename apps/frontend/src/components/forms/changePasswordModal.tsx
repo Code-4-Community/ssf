@@ -103,6 +103,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={open}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) {

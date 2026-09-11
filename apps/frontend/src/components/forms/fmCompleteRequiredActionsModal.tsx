@@ -37,7 +37,7 @@ interface FmCompleteRequiredActionsModalProps {
   donation: DonationDetails;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (allOrdersComplete: boolean) => void;
 }
 
 interface OrderFormData {
@@ -160,14 +160,14 @@ const FmCompleteRequiredActionsModal: React.FC<
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
 
-  // True once every relevant item has both ozPerItem and estimatedValue filled in
+  // True once every relevant item has both ozPerItem and estimatedValue set to at least 0.01
   const isSubmitEnabled = useMemo(
     () =>
       donation.relevantDonationItems.length > 0 &&
       donation.relevantDonationItems.every(
         (item) =>
-          itemFormData[item.itemId].ozPerItem !== '' &&
-          itemFormData[item.itemId].estimatedValue !== '',
+          parseFloat(itemFormData[item.itemId].ozPerItem) >= 0.01 &&
+          parseFloat(itemFormData[item.itemId].estimatedValue) >= 0.01,
       ),
     [itemFormData],
   );
@@ -284,7 +284,13 @@ const FmCompleteRequiredActionsModal: React.FC<
         });
       }
 
-      onSuccess();
+      // Whether every pending order now has both a shipping cost and a tracking
+      // link set, i.e. will flip to SHIPPED once this save lands on the backend
+      const allOrdersComplete = orders.every((order) => {
+        const { trackingLink, shippingCost } = orderFormData[order.orderId];
+        return trackingLink.trim() !== '' && shippingCost !== '';
+      });
+      onSuccess(allOrdersComplete);
     } catch (error) {
       const rawMsg = axios.isAxiosError(error) && error.response?.data?.message;
       const msg = Array.isArray(rawMsg) ? rawMsg[0] : rawMsg;
@@ -312,6 +318,8 @@ const FmCompleteRequiredActionsModal: React.FC<
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="lg"
       onOpenChange={(e: { open: boolean }) => {

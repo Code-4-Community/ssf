@@ -272,7 +272,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           foodManufacturerId={manufacturerId}
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => fetchDonations()}
+          onSuccess={() => {
+            fetchDonations();
+            setAlertMessage(
+              'Donation resubmitted successfully.',
+              AlertStatus.INFO,
+            );
+          }}
           donations={Object.values(statusDonations).flat()}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
@@ -288,11 +294,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           donation={selectedActionDonation}
           isOpen={true}
           onClose={() => setSelectedActionDonation(null)}
-          onSuccess={() => {
+          onSuccess={(allOrdersComplete) => {
             setSelectedActionDonation(null);
             if (manufacturerId !== null) fetchDonations();
             setAlertMessage(
-              'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              allOrdersComplete
+                ? 'Your details have been saved and all required actions are complete.'
+                : 'Your details have been saved, but shipping cost and/or tracking link are still missing for one or more orders. Please complete them soon.',
               AlertStatus.INFO,
             );
           }}

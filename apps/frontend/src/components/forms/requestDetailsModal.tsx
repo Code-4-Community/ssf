@@ -188,6 +188,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         />
       )}
       <Dialog.Root
+        lazyMount
+        unmountOnExit
         open={isOpen}
         size="xl"
         onOpenChange={(e: { open: boolean }) => {
