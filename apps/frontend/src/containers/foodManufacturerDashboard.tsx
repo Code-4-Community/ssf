@@ -128,7 +128,7 @@ const FoodManufacturerDashboard: React.FC = () => {
       ) : (
         <>
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
-            Upcoming Donations
+            Upcoming Email Reminders for Donations
           </Text>
           {upcomingReminders.length === 0 ? (
             <Box mb={16}>
@@ -150,10 +150,10 @@ const FoodManufacturerDashboard: React.FC = () => {
                   subtitle={
                     reminder.donation.foodManufacturer?.foodManufacturerName
                   }
-                  linkText="View Donation Requirements"
+                  linkText="Submit Donation"
                   onLinkClick={() =>
                     navigate(
-                      `${ROUTES.FM_DONATION_MANAGEMENT}?donationId=${reminder.donation.donationId}`,
+                      `${ROUTES.FM_DONATION_MANAGEMENT}?resubmitDonationId=${reminder.donation.donationId}`,
                     )
                   }
                 />
