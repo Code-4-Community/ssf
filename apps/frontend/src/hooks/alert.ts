@@ -21,7 +21,7 @@ export function useAlert(): [
         if (prev && prev.status === status) {
           const lines = prev.message.split('\n');
           if (lines.includes(message)) {
-            return prev;
+            return { ...prev, id: idRef.current++ };
           }
           return {
             message: `${prev.message}\n${message}`,
