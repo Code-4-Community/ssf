@@ -34,6 +34,24 @@ const VolunteerDashboard: React.FC = () => {
   const [recentFoodRequestsFailed, setRecentFoodRequestsFailed] =
     useState(false);
   const [recentOrdersFailed, setRecentOrdersFailed] = useState(false);
+  const [statsFetchFailed, setStatsFetchFailed] = useState(false);
+
+  const fetchStats = React.useCallback(
+    async (userId: number) => {
+      setStatsFetchFailed(false);
+      try {
+        const userStats = await ApiClient.getUserStats(userId);
+        setStats(userStats);
+      } catch {
+        setStatsFetchFailed(true);
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    },
+    [setAlertMessage],
+  );
 
   const fetchFoodRequests = React.useCallback(async () => {
     setRecentFoodRequestsFailed(false);
@@ -78,21 +96,13 @@ const VolunteerDashboard: React.FC = () => {
         return;
       }
 
-      try {
-        const userStats = await ApiClient.getUserStats(currentUser.id);
-        setStats(userStats);
-      } catch {
-        setAlertMessage(
-          'Error fetching dashboard statistics',
-          AlertStatus.ERROR,
-        );
-      }
+      await fetchStats(currentUser.id);
 
       await Promise.all([fetchFoodRequests(), fetchOrders()]);
       setLoading(false);
     };
     fetchDashboardData();
-  }, [setAlertMessage, fetchFoodRequests, fetchOrders]);
+  }, [setAlertMessage, fetchStats, fetchFoodRequests, fetchOrders]);
 
   if (loading || !user) return null;
 
@@ -116,7 +126,24 @@ const VolunteerDashboard: React.FC = () => {
         Welcome, {user.firstName} {user.lastName}
       </Heading>
 
-      {stats && <DashboardStats stats={stats} />}
+      {statsFetchFailed ? (
+        <Box mb={16}>
+          <SectionEmptyState
+            entity="dashboard statistics"
+            subtitle="We couldn't load your dashboard statistics. Please try again."
+          />
+          <Box display="flex" justifyContent="center">
+            <Button
+              onClick={() => user && fetchStats(user.id)}
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        stats && <DashboardStats stats={stats} />
+      )}
 
       {isPageEmpty ? (
         <PageEmptyState

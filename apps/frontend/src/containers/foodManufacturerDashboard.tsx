@@ -37,42 +37,58 @@ const FoodManufacturerDashboard: React.FC = () => {
   >([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [donationsFetchFailed, setDonationsFetchFailed] = useState(false);
+  const [remindersFetchFailed, setRemindersFetchFailed] = useState(false);
   const [stats, setStats] = useState<Record<string, string> | null>(null);
+  const [statsFetchFailed, setStatsFetchFailed] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const fetchFmData = React.useCallback(async () => {
-    setDonationsFetchFailed(false);
-    let currentUser: User;
+  const fetchUserAndManufacturers =
+    React.useCallback(async (): Promise<User | null> => {
+      try {
+        const user = await ApiClient.getMe();
+        setCurrentUser(user);
+        const fms = await ApiClient.getMyFoodManufacturers();
+        setFoodManufacturers(fms);
+        return user;
+      } catch {
+        setErrorMessage('Error fetching dashboard data', AlertStatus.ERROR);
+        return null;
+      }
+    }, [setErrorMessage]);
+
+  const fetchStats = React.useCallback(
+    async (userId: number) => {
+      setStatsFetchFailed(false);
+      try {
+        const userStats = await ApiClient.getUserStats(userId);
+        setStats(userStats);
+      } catch {
+        setStatsFetchFailed(true);
+        setErrorMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    },
+    [setErrorMessage],
+  );
+
+  const fetchReminders = React.useCallback(async () => {
+    setRemindersFetchFailed(false);
     try {
-      currentUser = await ApiClient.getMe();
-      const fms = await ApiClient.getMyFoodManufacturers();
-      setFoodManufacturers(fms);
+      const reminders = await ApiClient.getNextTwoDonationReminders();
+      setUpcomingReminders(reminders);
     } catch {
-      setErrorMessage('Error fetching dashboard data', AlertStatus.ERROR);
-      return;
-    } finally {
-      setLoading(false);
-    }
-
-    try {
-      const userStats = await ApiClient.getUserStats(currentUser.id);
-      setStats(userStats);
-    } catch {
-      setErrorMessage('Error fetching dashboard statistics', AlertStatus.ERROR);
-    }
-
-    const [reminders, donations] = await Promise.allSettled([
-      ApiClient.getNextTwoDonationReminders(),
-      ApiClient.getAllDonationsByFoodManufacturer(),
-    ]);
-
-    if (reminders.status === 'fulfilled') {
-      setUpcomingReminders(reminders.value);
-    } else {
+      setRemindersFetchFailed(true);
       setErrorMessage('Error fetching upcoming donations.', AlertStatus.ERROR);
     }
+  }, [setErrorMessage]);
 
-    if (donations.status === 'fulfilled') {
-      const sorted = donations.value
+  const fetchRecentDonations = React.useCallback(async () => {
+    setDonationsFetchFailed(false);
+    try {
+      const data = await ApiClient.getAllDonationsByFoodManufacturer();
+      const sorted = data
         .map((d: DonationDetails) => d.donation)
         .sort(
           (a: Donation, b: Donation) =>
@@ -81,20 +97,36 @@ const FoodManufacturerDashboard: React.FC = () => {
         )
         .slice(0, 2);
       setRecentDonations(sorted);
-    } else {
+    } catch {
       setDonationsFetchFailed(true);
       setErrorMessage('Error fetching recent donations.', AlertStatus.ERROR);
     }
   }, [setErrorMessage]);
 
   useEffect(() => {
-    fetchFmData();
-  }, [fetchFmData]);
+    const load = async () => {
+      const user = await fetchUserAndManufacturers();
+      setLoading(false);
+      if (!user) return;
+      await Promise.allSettled([
+        fetchStats(user.id),
+        fetchReminders(),
+        fetchRecentDonations(),
+      ]);
+    };
+    load();
+  }, [
+    fetchUserAndManufacturers,
+    fetchStats,
+    fetchReminders,
+    fetchRecentDonations,
+  ]);
 
   if (loading) return null;
 
   const isPageEmpty =
     upcomingReminders.length === 0 &&
+    !remindersFetchFailed &&
     recentDonations.length === 0 &&
     !donationsFetchFailed;
 
@@ -115,7 +147,24 @@ const FoodManufacturerDashboard: React.FC = () => {
         )}
       </Heading>
 
-      {stats && <DashboardStats stats={stats} />}
+      {statsFetchFailed ? (
+        <Box mb={16}>
+          <SectionEmptyState
+            entity="dashboard statistics"
+            subtitle="We couldn't load your dashboard statistics. Please try again."
+          />
+          <Box display="flex" justifyContent="center">
+            <Button
+              onClick={() => currentUser && fetchStats(currentUser.id)}
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        stats && <DashboardStats stats={stats} />
+      )}
 
       {isPageEmpty ? (
         <PageEmptyState
@@ -130,7 +179,19 @@ const FoodManufacturerDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             Upcoming Email Reminders for Donations
           </Text>
-          {upcomingReminders.length === 0 ? (
+          {remindersFetchFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="upcoming donations"
+                subtitle="We couldn't load your upcoming reminders. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchReminders} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : upcomingReminders.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="upcoming donations" />
             </Box>
@@ -171,7 +232,7 @@ const FoodManufacturerDashboard: React.FC = () => {
                 subtitle="We couldn't load your recent donations. Please try again."
               />
               <Box display="flex" justifyContent="center">
-                <Button onClick={fetchFmData} variant="outline">
+                <Button onClick={fetchRecentDonations} variant="outline">
                   Retry
                 </Button>
               </Box>

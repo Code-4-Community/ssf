@@ -37,6 +37,24 @@ const AdminDashboard: React.FC = () => {
     useState(false);
   const [recentOrdersFailed, setRecentOrdersFailed] = useState(false);
   const [recentDonationsFailed, setRecentDonationsFailed] = useState(false);
+  const [statsFetchFailed, setStatsFetchFailed] = useState(false);
+
+  const fetchStats = React.useCallback(
+    async (userId: number) => {
+      setStatsFetchFailed(false);
+      try {
+        const userStats = await ApiClient.getUserStats(userId);
+        setStats(userStats);
+      } catch {
+        setStatsFetchFailed(true);
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    },
+    [setAlertMessage],
+  );
 
   const fetchPendingApplications = React.useCallback(async () => {
     setPendingApplicationsFailed(false);
@@ -90,15 +108,7 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      try {
-        const userStats = await ApiClient.getUserStats(user.id);
-        setStats(userStats);
-      } catch {
-        setAlertMessage(
-          'Error fetching dashboard statistics',
-          AlertStatus.ERROR,
-        );
-      }
+      await fetchStats(user.id);
     };
 
     const load = async () => {
@@ -117,6 +127,7 @@ const AdminDashboard: React.FC = () => {
     load();
   }, [
     setAlertMessage,
+    fetchStats,
     fetchPendingApplications,
     fetchRecentOrders,
     fetchRecentDonations,
@@ -146,7 +157,24 @@ const AdminDashboard: React.FC = () => {
         Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
 
-      {stats && <DashboardStats stats={stats} />}
+      {statsFetchFailed ? (
+        <Box mb={16}>
+          <SectionEmptyState
+            entity="dashboard statistics"
+            subtitle="We couldn't load your dashboard statistics. Please try again."
+          />
+          <Box display="flex" justifyContent="center">
+            <Button
+              onClick={() => currentUser && fetchStats(currentUser.id)}
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        stats && <DashboardStats stats={stats} />
+      )}
 
       {isPageEmpty ? (
         <PageEmptyState

@@ -18,6 +18,7 @@ import {
   FoodRequestSummaryDto,
   OrderSummary,
   PantryWithUser,
+  User,
 } from '../types/types';
 
 const PantryDashboard: React.FC = () => {
@@ -34,6 +35,25 @@ const PantryDashboard: React.FC = () => {
   const [recentFoodRequestsFailed, setRecentFoodRequestsFailed] =
     useState(false);
   const [recentOrdersFailed, setRecentOrdersFailed] = useState(false);
+  const [statsFetchFailed, setStatsFetchFailed] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const fetchStats = React.useCallback(
+    async (userId: number) => {
+      setStatsFetchFailed(false);
+      try {
+        const userStats = await ApiClient.getUserStats(userId);
+        setStats(userStats);
+      } catch {
+        setStatsFetchFailed(true);
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    },
+    [setAlertMessage],
+  );
 
   const fetchFoodRequests = React.useCallback(async () => {
     setRecentFoodRequestsFailed(false);
@@ -88,8 +108,8 @@ const PantryDashboard: React.FC = () => {
 
         try {
           const user = await ApiClient.getMe();
-          const userStats = await ApiClient.getUserStats(user.id);
-          setStats(userStats);
+          setCurrentUser(user);
+          await fetchStats(user.id);
         } catch {
           setAlertMessage(
             'Error fetching dashboard statistics',
@@ -103,7 +123,7 @@ const PantryDashboard: React.FC = () => {
       }
     };
     fetchDashboardData();
-  }, [setAlertMessage, fetchFoodRequests, fetchOrders]);
+  }, [setAlertMessage, fetchStats, fetchFoodRequests, fetchOrders]);
 
   if (loading) return null;
 
@@ -127,7 +147,24 @@ const PantryDashboard: React.FC = () => {
         Welcome, {pantry?.pantryName}
       </Heading>
 
-      {stats && <DashboardStats stats={stats} />}
+      {statsFetchFailed ? (
+        <Box mb={16}>
+          <SectionEmptyState
+            entity="dashboard statistics"
+            subtitle="We couldn't load your dashboard statistics. Please try again."
+          />
+          <Box display="flex" justifyContent="center">
+            <Button
+              onClick={() => currentUser && fetchStats(currentUser.id)}
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        stats && <DashboardStats stats={stats} />
+      )}
 
       {isPageEmpty ? (
         <PageEmptyState
