@@ -83,6 +83,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
       setStatusDonations(grouped);
 
+      setCurrentPages((prev) => {
+        const clamped = { ...prev };
+        (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+          const totalPages = Math.max(
+            1,
+            Math.ceil(grouped[status].length / MAX_PER_STATUS),
+          );
+          clamped[status] = Math.min(clamped[status], totalPages);
+        });
+        return clamped;
+      });
+
       if (resetPages) {
         const initialPages: Record<DonationStatus, number> = {
           [DonationStatus.AVAILABLE]: 1,
