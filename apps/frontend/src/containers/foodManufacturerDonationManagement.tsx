@@ -14,7 +14,7 @@ import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequired
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
 import SectionEmptyState from '@components/sectionEmptyState';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
@@ -59,87 +59,91 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async (resetPages = false) => {
-    try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer();
+  const fetchDonations = useCallback(
+    async (resetPages = false) => {
+      try {
+        const data = await ApiClient.getAllDonationsByFoodManufacturer();
 
-      const grouped: Record<DonationStatus, DonationDetails[]> = {
-        [DonationStatus.AVAILABLE]: [],
-        [DonationStatus.FULFILLED]: [],
-        [DonationStatus.MATCHED]: [],
-      };
-
-      data.forEach((donationDetail: DonationDetails) => {
-        grouped[donationDetail.donation.status].push(donationDetail);
-      });
-
-      (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
-        grouped[status].sort(
-          (a, b) =>
-            new Date(a.donation.dateDonated).getTime() -
-            new Date(b.donation.dateDonated).getTime(),
-        );
-      });
-
-      setStatusDonations(grouped);
-
-      setCurrentPages((prev) => {
-        const clamped = { ...prev };
-        (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
-          const totalPages = Math.max(
-            1,
-            Math.ceil(grouped[status].length / MAX_PER_STATUS),
-          );
-          clamped[status] = Math.min(clamped[status], totalPages);
-        });
-        return clamped;
-      });
-
-      if (resetPages) {
-        const initialPages: Record<DonationStatus, number> = {
-          [DonationStatus.AVAILABLE]: 1,
-          [DonationStatus.FULFILLED]: 1,
-          [DonationStatus.MATCHED]: 1,
+        const grouped: Record<DonationStatus, DonationDetails[]> = {
+          [DonationStatus.AVAILABLE]: [],
+          [DonationStatus.FULFILLED]: [],
+          [DonationStatus.MATCHED]: [],
         };
 
-        // Paginate the containing status to the page that holds this donation.
-        const donationIdParam = searchParams.get('donationId');
-        if (donationIdParam) {
-          const id = Number(donationIdParam);
-          for (const status of Object.values(DonationStatus)) {
-            const idx = grouped[status].findIndex(
-              (d) => d.donation.donationId === id,
+        data.forEach((donationDetail: DonationDetails) => {
+          grouped[donationDetail.donation.status].push(donationDetail);
+        });
+
+        (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+          grouped[status].sort(
+            (a, b) =>
+              new Date(a.donation.dateDonated).getTime() -
+              new Date(b.donation.dateDonated).getTime(),
+          );
+        });
+
+        setStatusDonations(grouped);
+
+        setCurrentPages((prev) => {
+          const clamped = { ...prev };
+          (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+            const totalPages = Math.max(
+              1,
+              Math.ceil(grouped[status].length / MAX_PER_STATUS),
             );
-            if (idx >= 0) {
-              initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
-              break;
+            clamped[status] = Math.min(clamped[status], totalPages);
+          });
+          return clamped;
+        });
+
+        if (resetPages) {
+          const initialPages: Record<DonationStatus, number> = {
+            [DonationStatus.AVAILABLE]: 1,
+            [DonationStatus.FULFILLED]: 1,
+            [DonationStatus.MATCHED]: 1,
+          };
+
+          // Paginate the containing status to the page that holds this donation.
+          const donationIdParam = searchParams.get('donationId');
+          if (donationIdParam) {
+            const id = Number(donationIdParam);
+            for (const status of Object.values(DonationStatus)) {
+              const idx = grouped[status].findIndex(
+                (d) => d.donation.donationId === id,
+              );
+              if (idx >= 0) {
+                initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+                break;
+              }
             }
           }
+
+          setCurrentPages(initialPages);
         }
 
-        setCurrentPages(initialPages);
+        return grouped;
+      } catch {
+        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
+        return;
       }
+    },
+    [searchParams, setAlertMessage],
+  );
 
-      return grouped;
-    } catch (error) {
-      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
-      return;
-    }
-  };
-
-  const openResubmitFromQueryParam = (
-    grouped: Record<DonationStatus, DonationDetails[]>,
-  ) => {
-    if (!resubmitDonationId) return;
-    const id = parseInt(resubmitDonationId, 10);
-    const allDonations: DonationDetails[] = Object.values(grouped).flat();
-    const exists = allDonations.some((d) => d.donation.donationId === id);
-    if (exists) {
-      setIsResubmitOpen(true);
-    } else {
-      navigate(ROUTES.FM_DONATION_MANAGEMENT);
-    }
-  };
+  const openResubmitFromQueryParam = useCallback(
+    (grouped: Record<DonationStatus, DonationDetails[]>) => {
+      if (!resubmitDonationId) return;
+      const id = parseInt(resubmitDonationId, 10);
+      const allDonations: DonationDetails[] = Object.values(grouped).flat();
+      const exists = allDonations.some((d) => d.donation.donationId === id);
+      if (exists) {
+        setIsResubmitOpen(true);
+      } else {
+        navigate(ROUTES.FM_DONATION_MANAGEMENT);
+      }
+    },
+    [resubmitDonationId, navigate],
+  );
 
   // On page load, get the food manufacturer id, fetch its donations,
   // and open the resubmit modal if the URL specifies one.
@@ -160,7 +164,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       }
     };
     init();
-  }, []);
+  }, [fetchDonations, openResubmitFromQueryParam, setAlertMessage]);
 
   useEffect(() => {
     if (loading) return;

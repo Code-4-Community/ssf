@@ -291,7 +291,7 @@ const EditablePantryApplication: React.FC<EditablePantryApplicationProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setAlertMessage]);
 
   useEffect(() => {
     if (!initialApplication) {

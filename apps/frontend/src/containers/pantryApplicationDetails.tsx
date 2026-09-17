@@ -156,7 +156,7 @@ const PantryApplicationDetails: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, setAlertMessage]);
 
   useEffect(() => {
     fetchApplicationDetails();

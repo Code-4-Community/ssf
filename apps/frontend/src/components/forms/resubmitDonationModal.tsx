@@ -85,6 +85,15 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     [setAlertMessage],
   );
 
+  const handleSelect = useCallback(
+    (donationId: number) => {
+      setSelectedDonationId(donationId);
+      fetchItemsForDonation(donationId);
+      onSelect(donationId);
+    },
+    [fetchItemsForDonation, onSelect],
+  );
+
   useEffect(() => {
     if (
       isOpen &&
@@ -93,13 +102,7 @@ const ResubmitDonationModal: React.FC<ResubmitDonationModalProps> = ({
     ) {
       handleSelect(initialDonationId);
     }
-  }, [isOpen, initialDonationId, selectedDonationId, fetchItemsForDonation]);
-
-  const handleSelect = (donationId: number) => {
-    setSelectedDonationId(donationId);
-    fetchItemsForDonation(donationId);
-    onSelect(donationId);
-  };
+  }, [isOpen, initialDonationId, selectedDonationId, handleSelect]);
 
   const handleClose = () => {
     setSelectedDonationId(null);

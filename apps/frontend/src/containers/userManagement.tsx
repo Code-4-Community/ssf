@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
@@ -39,18 +39,18 @@ const VolunteerManagement: React.FC = () => {
 
   const pageSize = 8;
 
-  const fetchVolunteers = async () => {
+  const fetchVolunteers = useCallback(async () => {
     try {
       const allVolunteers = await ApiClient.getVolunteers();
       setVolunteers(allVolunteers);
     } catch {
       setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
     }
-  };
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchVolunteers();
-  }, [setAlertMessage]);
+  }, [fetchVolunteers]);
 
   useEffect(() => {
     setCurrentPage(1);

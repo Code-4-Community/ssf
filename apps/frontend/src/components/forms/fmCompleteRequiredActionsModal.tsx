@@ -169,7 +169,7 @@ const FmCompleteRequiredActionsModal: React.FC<
           parseFloat(itemFormData[item.itemId].ozPerItem) >= 0.01 &&
           parseFloat(itemFormData[item.itemId].estimatedValue) >= 0.01,
       ),
-    [itemFormData],
+    [itemFormData, donation.relevantDonationItems],
   );
 
   // The order currently shown in the shipping stage based on the current page
