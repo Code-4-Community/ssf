@@ -117,6 +117,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   >({});
   // The item whose allocation box is currently being edited (focused).
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const groupedManufacturerItems = useGroupedItemsByFoodType(manufacturerItems);
 
@@ -161,6 +162,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const handleSave = async () => {
     if (orderId === null) return;
+    setIsSaving(true);
     try {
       await ApiClient.editAllocations(orderId, {
         allocations: allocationsBody,
@@ -172,6 +174,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       setAlertMessage('Successfully updated order.', AlertStatus.INFO);
     } catch {
       setAlertMessage('Order could not be updated.', AlertStatus.ERROR);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -459,6 +463,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           background="bg"
                           color="neutral.800"
                           borderColor="neutral.200"
+                          disabled={isSaving}
                         >
                           Cancel
                         </Button>
@@ -466,6 +471,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           onClick={handleSave}
                           bg="blue.hover"
                           color="white"
+                          loading={isSaving}
+                          disabled={isSaving}
                         >
                           Update Order
                         </Button>

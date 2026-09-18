@@ -37,6 +37,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [alertState, setAlertMessage] = useAlert();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChangePassword = async () => {
     if (password.length < 8) {
@@ -52,6 +53,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       return;
     }
 
+    setIsSaving(true);
     try {
       await updatePassword({
         oldPassword,
@@ -77,6 +79,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           AlertStatus.ERROR,
         );
       }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -223,7 +227,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   textStyle="p2"
                   fontWeight={600}
                   mt={8}
-                  disabled={!confirmPassword || !password || !oldPassword}
+                  loading={isSaving}
+                  disabled={
+                    !confirmPassword || !password || !oldPassword || isSaving
+                  }
                 >
                   Change Password
                 </Button>
