@@ -17,6 +17,7 @@ import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
 const MAX_PER_STATUS = 5;
@@ -77,7 +78,10 @@ const PantryOrderManagement: React.FC = () => {
     },
   });
 
+  const [fetchFailed, setFetchFailed] = useState(false);
+
   const fetchOrders = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const data = await ApiClient.getPantryOrders();
 
@@ -107,6 +111,7 @@ const PantryOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Failed to fetch orders', AlertStatus.ERROR);
     }
   }, [setAlertMessage]);
@@ -180,48 +185,60 @@ const PantryOrderManagement: React.FC = () => {
         />
       )}
 
-      {Object.values(OrderStatus).map((status) => {
-        const allOrders = statusOrders[status] || [];
-        const filterState = filterStates[status];
-
-        // Apply filters and sorting to all orders
-        const filteredOrders = allOrders.sort((a, b) =>
-          filterState.sortAsc
-            ? a.createdAt.localeCompare(b.createdAt)
-            : b.createdAt.localeCompare(a.createdAt),
-        );
-
-        const totalFiltered = filteredOrders.length;
-        const currentPage = currentPages[status] || 1;
-        const displayedOrders = filteredOrders.slice(
-          (currentPage - 1) * MAX_PER_STATUS,
-          currentPage * MAX_PER_STATUS,
-        );
-
-        return (
-          <Box key={status} mb={12}>
-            <OrderStatusSection
-              orders={displayedOrders}
-              status={status}
-              colors={ORDER_STATUS_COLORS[status]}
-              onOrderSelect={setSelectedOrderId}
-              onOrderSelectForAction={setSelectedActionOrder}
-              totalOrders={totalFiltered}
-              currentPage={currentPage}
-              onPageChange={(page) => handlePageChange(status, page)}
-              filterState={filterState}
-              onFilterChange={(newState: FilterState) =>
-                // Update filter state for the specific status
-                setFilterStates((prev) => {
-                  const prevSort = prev[status]?.sortAsc;
-                  if (prevSort !== newState.sortAsc) resetPageForStatus(status);
-                  return { ...prev, [status]: newState };
-                })
-              }
-            />
+      {fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your orders. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={fetchOrders} variant="outline">
+              Retry
+            </Button>
           </Box>
-        );
-      })}
+        </>
+      ) : (
+        Object.values(OrderStatus).map((status) => {
+          const allOrders = statusOrders[status] || [];
+          const filterState = filterStates[status];
+
+          // Apply filters and sorting to all orders
+          const filteredOrders = allOrders.sort((a, b) =>
+            filterState.sortAsc
+              ? a.createdAt.localeCompare(b.createdAt)
+              : b.createdAt.localeCompare(a.createdAt),
+          );
+
+          const totalFiltered = filteredOrders.length;
+          const currentPage = currentPages[status] || 1;
+          const displayedOrders = filteredOrders.slice(
+            (currentPage - 1) * MAX_PER_STATUS,
+            currentPage * MAX_PER_STATUS,
+          );
+
+          return (
+            <Box key={status} mb={12}>
+              <OrderStatusSection
+                orders={displayedOrders}
+                status={status}
+                colors={ORDER_STATUS_COLORS[status]}
+                onOrderSelect={setSelectedOrderId}
+                onOrderSelectForAction={setSelectedActionOrder}
+                totalOrders={totalFiltered}
+                currentPage={currentPage}
+                onPageChange={(page) => handlePageChange(status, page)}
+                filterState={filterState}
+                onFilterChange={(newState: FilterState) =>
+                  // Update filter state for the specific status
+                  setFilterStates((prev) => {
+                    const prevSort = prev[status]?.sortAsc;
+                    if (prevSort !== newState.sortAsc)
+                      resetPageForStatus(status);
+                    return { ...prev, [status]: newState };
+                  })
+                }
+              />
+            </Box>
+          );
+        })
+      )}
 
       {selectedOrderId && (
         <OrderDetailsModal

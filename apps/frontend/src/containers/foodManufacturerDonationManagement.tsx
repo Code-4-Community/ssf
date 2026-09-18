@@ -57,12 +57,15 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [selectedViewDetailsDonation, setSelectedViewDetailsDonation] =
     useState<Donation | null>(null);
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
+  const [initFailed, setInitFailed] = useState(false);
+  const [donationsFetchFailed, setDonationsFetchFailed] = useState(false);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
   const fetchDonations = useCallback(
     async (resetPages = false) => {
       try {
         const data = await ApiClient.getAllDonationsByFoodManufacturer();
+        setDonationsFetchFailed(false);
 
         const grouped: Record<DonationStatus, DonationDetails[]> = {
           [DonationStatus.AVAILABLE]: [],
@@ -123,6 +126,7 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
         return grouped;
       } catch {
+        setDonationsFetchFailed(true);
         setAlertMessage('Error fetching donations', AlertStatus.ERROR);
         return;
       }
@@ -147,27 +151,31 @@ const FoodManufacturerDonationManagement: React.FC = () => {
 
   // On page load, get the food manufacturer id, fetch its donations,
   // and open the resubmit modal if the URL specifies one.
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
-        setManufacturerId(fmId);
-        const grouped = await fetchDonations(true);
-        if (grouped) openResubmitFromQueryParam(grouped);
-      } catch {
-        setAlertMessage(
-          'Error initializing donation management',
-          AlertStatus.ERROR,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
+  const init = useCallback(async () => {
+    setLoading(true);
+    setInitFailed(false);
+    try {
+      const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+      setManufacturerId(fmId);
+      const grouped = await fetchDonations(true);
+      if (grouped) openResubmitFromQueryParam(grouped);
+    } catch {
+      setInitFailed(true);
+      setAlertMessage(
+        'Error initializing donation management',
+        AlertStatus.ERROR,
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [fetchDonations, openResubmitFromQueryParam, setAlertMessage]);
 
   useEffect(() => {
-    if (loading) return;
+    init();
+  }, [init]);
+
+  useEffect(() => {
+    if (loading || donationsFetchFailed) return;
     const donationIdParam = searchParams.get('donationId');
     if (!donationIdParam) return;
 
@@ -183,7 +191,14 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       setAlertMessage('Donation not found.', AlertStatus.ERROR);
       navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
     }
-  }, [searchParams, statusDonations, loading, navigate, setAlertMessage]);
+  }, [
+    searchParams,
+    statusDonations,
+    loading,
+    donationsFetchFailed,
+    navigate,
+    setAlertMessage,
+  ]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -200,6 +215,30 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   };
 
   if (loading) return null;
+
+  if (initFailed) {
+    return (
+      <Box p={12}>
+        {alertState && (
+          <FloatingAlert
+            key={alertState.id}
+            message={alertState.message}
+            status={alertState.status}
+            timeout={6000}
+          />
+        )}
+        <Heading textStyle="h1" color="gray.600" mb={8}>
+          Donation Management
+        </Heading>
+        <SectionEmptyState subtitle="We couldn't load your donations. Please try again." />
+        <Flex justify="center">
+          <Button onClick={init} variant="outline">
+            Retry
+          </Button>
+        </Flex>
+      </Box>
+    );
+  }
 
   const allDonations = Object.values(statusDonations).flat();
 

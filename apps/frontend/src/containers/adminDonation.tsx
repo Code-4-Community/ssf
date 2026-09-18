@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowDownUp, Funnel, Search } from 'lucide-react';
 import {
   Box,
@@ -20,6 +20,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
 import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
 import { PaginationControl } from '@components/pagination';
 
 const AdminDonation: React.FC = () => {
@@ -40,19 +41,22 @@ const AdminDonation: React.FC = () => {
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
+  const [fetchFailed, setFetchFailed] = useState(false);
 
-  const fetchDonations = async () => {
+  const fetchDonations = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const data = await ApiClient.getAllDonations();
       setDonations(data);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching donations', AlertStatus.ERROR);
     }
-  };
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchDonations();
-  }, []);
+  }, [fetchDonations]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -187,7 +191,16 @@ const AdminDonation: React.FC = () => {
           timeout={6000}
         />
       )}
-      {donations.length === 0 ? (
+      {fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your donations. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={fetchDonations} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
+      ) : donations.length === 0 ? (
         <PageEmptyState entity="donations" />
       ) : (
         <>

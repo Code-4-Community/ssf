@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, Funnel, Search } from 'lucide-react';
 import {
   Box,
@@ -14,6 +14,7 @@ import ApiClient from '@api/apiClient';
 import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const AdminDonationStats: React.FC = () => {
   // Individual and combined pantry stats to be displayed
@@ -35,64 +36,87 @@ const AdminDonationStats: React.FC = () => {
   const totalStatsRequestIdRef = useRef(0);
   const pantryStatsRequestIdRef = useRef(0);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const names = await ApiClient.getApprovedPantryNames();
-        setPantryNameOptions(names);
-      } catch {
-        setAlertMessage('Error fetching pantry names', AlertStatus.ERROR);
-      }
+  const [initialDataFailed, setInitialDataFailed] = useState(false);
+  const [totalStatsFailed, setTotalStatsFailed] = useState(false);
+  const [pantryStatsFailed, setPantryStatsFailed] = useState(false);
 
-      try {
-        const years = await ApiClient.getPantryOrderYears();
-        setAvailableYears(years);
-      } catch {
-        setAlertMessage('Error fetching available years', AlertStatus.ERROR);
-      }
-    };
-    fetchInitialData();
+  const fetchInitialData = useCallback(async () => {
+    setInitialDataFailed(false);
+    try {
+      const names = await ApiClient.getApprovedPantryNames();
+      setPantryNameOptions(names);
+    } catch {
+      setInitialDataFailed(true);
+      setAlertMessage('Error fetching pantry names', AlertStatus.ERROR);
+    }
+
+    try {
+      const years = await ApiClient.getPantryOrderYears();
+      setAvailableYears(years);
+    } catch {
+      setInitialDataFailed(true);
+      setAlertMessage('Error fetching available years', AlertStatus.ERROR);
+    }
   }, [setAlertMessage]);
 
   useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  const fetchTotalStats = useCallback(async () => {
     const requestId = ++totalStatsRequestIdRef.current;
-    const fetchTotalStats = async () => {
-      try {
-        const stats = await ApiClient.getTotalStats(
-          selectedYears.length ? selectedYears : undefined,
-        );
-        if (requestId === totalStatsRequestIdRef.current) {
-          setTotalStats(stats);
-        }
-      } catch {
-        if (requestId === totalStatsRequestIdRef.current) {
-          setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
-        }
+    setTotalStatsFailed(false);
+    try {
+      const stats = await ApiClient.getTotalStats(
+        selectedYears.length ? selectedYears : undefined,
+      );
+      if (requestId === totalStatsRequestIdRef.current) {
+        setTotalStats(stats);
       }
-    };
-    fetchTotalStats();
+    } catch {
+      if (requestId === totalStatsRequestIdRef.current) {
+        setTotalStatsFailed(true);
+        setAlertMessage('Error fetching total stats', AlertStatus.ERROR);
+      }
+    }
   }, [setAlertMessage, selectedYears]);
 
   useEffect(() => {
+    fetchTotalStats();
+  }, [fetchTotalStats]);
+
+  const fetchPantryStats = useCallback(async () => {
     const requestId = ++pantryStatsRequestIdRef.current;
-    const fetchStats = async () => {
-      try {
-        const stats = await ApiClient.getPantryStats({
-          pantryNames: selectedPantries.length ? selectedPantries : undefined,
-          years: selectedYears.length ? selectedYears : undefined,
-          page: currentPage,
-        });
-        if (requestId === pantryStatsRequestIdRef.current) {
-          setPantryStats(stats);
-        }
-      } catch {
-        if (requestId === pantryStatsRequestIdRef.current) {
-          setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
-        }
+    setPantryStatsFailed(false);
+    try {
+      const stats = await ApiClient.getPantryStats({
+        pantryNames: selectedPantries.length ? selectedPantries : undefined,
+        years: selectedYears.length ? selectedYears : undefined,
+        page: currentPage,
+      });
+      if (requestId === pantryStatsRequestIdRef.current) {
+        setPantryStats(stats);
       }
-    };
-    fetchStats();
+    } catch {
+      if (requestId === pantryStatsRequestIdRef.current) {
+        setPantryStatsFailed(true);
+        setAlertMessage('Error fetching pantry stats', AlertStatus.ERROR);
+      }
+    }
   }, [setAlertMessage, selectedPantries, selectedYears, currentPage]);
+
+  useEffect(() => {
+    fetchPantryStats();
+  }, [fetchPantryStats]);
+
+  const dataFetchFailed =
+    initialDataFailed || totalStatsFailed || pantryStatsFailed;
+
+  const handleRetry = () => {
+    if (initialDataFailed) fetchInitialData();
+    if (totalStatsFailed) fetchTotalStats();
+    if (pantryStatsFailed) fetchPantryStats();
+  };
 
   const handlePantryNameFilterChange = (name: string, checked: boolean) => {
     // For simplicity, reset the page
@@ -146,429 +170,444 @@ const AdminDonationStats: React.FC = () => {
           timeout={6000}
         />
       )}
-      <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
-        <Box position="relative" color="neutral.800">
-          <Button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            variant="outline"
-            color="neutral.800"
-            border="1px solid"
-            borderColor="neutral.200"
-            size="sm"
-            p={3}
-            fontFamily="ibm"
-            fontWeight="semibold"
-          >
-            <Funnel />
-            Filter
-          </Button>
-
-          {isFilterOpen && (
-            <>
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                onClick={() => setIsFilterOpen(false)}
-                zIndex={10}
-              />
-              <Box
-                position="absolute"
-                top="100%"
-                left={0}
-                mt={2}
-                bg="white"
+      {dataFetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your donation statistics. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={handleRetry} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box display="flex" gap={2} mb={6} fontFamily="'Inter', sans-serif">
+            <Box position="relative" color="neutral.800">
+              <Button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                variant="outline"
+                color="neutral.800"
                 border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-                boxShadow="lg"
-                p={4}
-                minW="275px"
-                maxH="200px"
-                overflowY="auto"
-                zIndex={20}
+                borderColor="neutral.200"
+                size="sm"
+                p={3}
+                fontFamily="ibm"
+                fontWeight="semibold"
               >
-                <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
-                  <Search
-                    size={18}
-                    color="var(--chakra-colors-neutral-300)"
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: 8,
-                      transform: 'translateY(-50%)',
-                    }}
-                  />
-                  <Input
-                    placeholder="Search"
-                    color={searchPantry ? 'neutral.800' : 'neutral.300'}
-                    value={searchPantry}
-                    onChange={(e) => setSearchPantry(e.target.value)}
-                    fontSize="sm"
-                    pl="30px"
-                    border="none"
-                    bg="transparent"
-                    _focus={{
-                      boxShadow: 'none',
-                      border: 'none',
-                      outline: 'none',
-                    }}
-                  />
-                </Box>
-                <VStack
-                  align="stretch"
-                  fontSize="12px"
-                  fontFamily="Inter"
-                  color="neutral.800"
-                  fontWeight="500"
-                  gap={2}
-                >
-                  {pantryNameOptions
-                    .filter((name) =>
-                      name.toLowerCase().includes(searchPantry.toLowerCase()),
-                    )
-                    .map((name) => (
-                      <Checkbox.Root
-                        key={name}
-                        checked={selectedPantries.includes(name)}
-                        onCheckedChange={(e: { checked: boolean }) =>
-                          handlePantryNameFilterChange(name, !!e.checked)
-                        }
-                        size="md"
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control borderRadius="sm" />
-                        <Checkbox.Label>{name}</Checkbox.Label>
-                      </Checkbox.Root>
-                    ))}
-                </VStack>
-              </Box>
-            </>
-          )}
-        </Box>
-        <Box position="relative">
-          <Button
-            onClick={() => setIsYearFilterOpen(!isYearFilterOpen)}
-            variant="outline"
-            color="neutral.800"
-            border="1px solid"
-            borderColor="neutral.200"
-            size="sm"
-            p={3}
-            fontFamily="ibm"
-            fontWeight="semibold"
-            maxW="220px"
-          >
-            <Box
-              as="span"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              whiteSpace="nowrap"
-            >
-              {yearButtonLabel}
-            </Box>
-            <ChevronDown size={14} />
-          </Button>
+                <Funnel />
+                Filter
+              </Button>
 
-          {isYearFilterOpen && (
-            <>
-              <Box
-                position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                onClick={() => setIsYearFilterOpen(false)}
-                zIndex={10}
-              />
-              <Box
-                position="absolute"
-                top="100%"
-                left={0}
-                mt={2}
-                bg="white"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-                boxShadow="lg"
-                p={4}
-                minW="275px"
-                maxH="200px"
-                overflowY="auto"
-                zIndex={20}
-              >
-                <VStack
-                  align="stretch"
-                  fontSize="12px"
-                  fontFamily="Inter"
-                  color="neutral.800"
-                  fontWeight="500"
-                  gap={2}
-                >
-                  {[...availableYears].map((year) => (
-                    <Checkbox.Root
-                      key={year}
-                      checked={selectedYears.includes(year)}
-                      onCheckedChange={(e: { checked: boolean }) =>
-                        handleYearFilterChange(year, !!e.checked)
-                      }
-                      size="md"
+              {isFilterOpen && (
+                <>
+                  <Box
+                    position="fixed"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    onClick={() => setIsFilterOpen(false)}
+                    zIndex={10}
+                  />
+                  <Box
+                    position="absolute"
+                    top="100%"
+                    left={0}
+                    mt={2}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p={4}
+                    minW="275px"
+                    maxH="200px"
+                    overflowY="auto"
+                    zIndex={20}
+                  >
+                    <Box position="relative" mb={1} pl={0} ml={-2} mt={-2}>
+                      <Search
+                        size={18}
+                        color="var(--chakra-colors-neutral-300)"
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 8,
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Input
+                        placeholder="Search"
+                        color={searchPantry ? 'neutral.800' : 'neutral.300'}
+                        value={searchPantry}
+                        onChange={(e) => setSearchPantry(e.target.value)}
+                        fontSize="sm"
+                        pl="30px"
+                        border="none"
+                        bg="transparent"
+                        _focus={{
+                          boxShadow: 'none',
+                          border: 'none',
+                          outline: 'none',
+                        }}
+                      />
+                    </Box>
+                    <VStack
+                      align="stretch"
+                      fontSize="12px"
+                      fontFamily="Inter"
+                      color="neutral.800"
+                      fontWeight="500"
+                      gap={2}
                     >
-                      <Checkbox.HiddenInput />
-                      <Checkbox.Control borderRadius="sm" />
-                      <Checkbox.Label>{year}</Checkbox.Label>
-                    </Checkbox.Root>
-                  ))}
-                </VStack>
-              </Box>
-            </>
-          )}
-        </Box>
-      </Box>
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="20%"
-            >
-              Pantry
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="8%"
-            >
-              Total Items
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="10%"
-            >
-              Total Weight (oz)
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="10%"
-            >
-              Total Weight (lbs)
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="15%"
-            >
-              Fair Market Value of Food Donation
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="13%"
-            >
-              Shipping/
-              <br />
-              Delivery Expenses
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="13%"
-            >
-              Shipping Paid by SSF
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="8%"
-            >
-              Total Value
-            </Table.ColumnHeader>
-            <Table.ColumnHeader
-              {...tableHeaderStyles}
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              width="10%"
-            >
-              % Food Rescue
-            </Table.ColumnHeader>
-            <Table.ColumnHeader {...tableHeaderStyles} width="10%">
-              Lbs Food Rescue
-            </Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          <Table.Row fontWeight="semibold">
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              py={0}
-            >
-              All Pantries
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              {totalStats?.totalItems ?? 0}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              {(totalStats?.totalOz ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              {(totalStats?.totalLbs ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              ${(totalStats?.totalValue ?? 0).toFixed(2)}
-            </Table.Cell>
-            <Table.Cell
-              textStyle="p2"
-              borderRight="1px solid"
-              borderRightColor="neutral.100"
-              bg="yellow.100"
-            >
-              {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
-            </Table.Cell>
-            <Table.Cell textStyle="p2" bg="yellow.100">
-              {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
-            </Table.Cell>
-          </Table.Row>
-          {pantryStats.map((stat) => (
-            <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-                py={0}
+                      {pantryNameOptions
+                        .filter((name) =>
+                          name
+                            .toLowerCase()
+                            .includes(searchPantry.toLowerCase()),
+                        )
+                        .map((name) => (
+                          <Checkbox.Root
+                            key={name}
+                            checked={selectedPantries.includes(name)}
+                            onCheckedChange={(e: { checked: boolean }) =>
+                              handlePantryNameFilterChange(name, !!e.checked)
+                            }
+                            size="md"
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control borderRadius="sm" />
+                            <Checkbox.Label>{name}</Checkbox.Label>
+                          </Checkbox.Root>
+                        ))}
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </Box>
+            <Box position="relative">
+              <Button
+                onClick={() => setIsYearFilterOpen(!isYearFilterOpen)}
+                variant="outline"
+                color="neutral.800"
+                border="1px solid"
+                borderColor="neutral.200"
+                size="sm"
+                p={3}
+                fontFamily="ibm"
+                fontWeight="semibold"
+                maxW="220px"
               >
-                {stat.pantryName}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalItems}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalOz.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.totalLbs.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalDonatedFoodValue.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalShippingCost.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalShippingCostPaidBySsf.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                ${stat.totalValue.toFixed(2)}
-              </Table.Cell>
-              <Table.Cell
-                textStyle="p2"
-                borderRight="1px solid"
-                borderRightColor="neutral.100"
-              >
-                {stat.percentageFoodRescueItems.toFixed(2)}%
-              </Table.Cell>
-              <Table.Cell textStyle="p2">
-                {stat.foodRescueLbs.toFixed(2)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+                <Box
+                  as="span"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {yearButtonLabel}
+                </Box>
+                <ChevronDown size={14} />
+              </Button>
 
-      <Box mt={12}>
-        <PaginationControl
-          count={totalCount}
-          pageSize={itemsPerPage}
-          page={currentPage}
-          onPageChange={setCurrentPage}
-        />
-      </Box>
+              {isYearFilterOpen && (
+                <>
+                  <Box
+                    position="fixed"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    onClick={() => setIsYearFilterOpen(false)}
+                    zIndex={10}
+                  />
+                  <Box
+                    position="absolute"
+                    top="100%"
+                    left={0}
+                    mt={2}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p={4}
+                    minW="275px"
+                    maxH="200px"
+                    overflowY="auto"
+                    zIndex={20}
+                  >
+                    <VStack
+                      align="stretch"
+                      fontSize="12px"
+                      fontFamily="Inter"
+                      color="neutral.800"
+                      fontWeight="500"
+                      gap={2}
+                    >
+                      {[...availableYears].map((year) => (
+                        <Checkbox.Root
+                          key={year}
+                          checked={selectedYears.includes(year)}
+                          onCheckedChange={(e: { checked: boolean }) =>
+                            handleYearFilterChange(year, !!e.checked)
+                          }
+                          size="md"
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control borderRadius="sm" />
+                          <Checkbox.Label>{year}</Checkbox.Label>
+                        </Checkbox.Root>
+                      ))}
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </Box>
+          </Box>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="20%"
+                >
+                  Pantry
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="8%"
+                >
+                  Total Items
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="10%"
+                >
+                  Total Weight (oz)
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="10%"
+                >
+                  Total Weight (lbs)
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="15%"
+                >
+                  Fair Market Value of Food Donation
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="13%"
+                >
+                  Shipping/
+                  <br />
+                  Delivery Expenses
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="13%"
+                >
+                  Shipping Paid by SSF
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="8%"
+                >
+                  Total Value
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
+                  {...tableHeaderStyles}
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  width="10%"
+                >
+                  % Food Rescue
+                </Table.ColumnHeader>
+                <Table.ColumnHeader {...tableHeaderStyles} width="10%">
+                  Lbs Food Rescue
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              <Table.Row fontWeight="semibold">
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  py={0}
+                >
+                  All Pantries
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  {totalStats?.totalItems ?? 0}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  {(totalStats?.totalOz ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  {(totalStats?.totalLbs ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  ${(totalStats?.totalDonatedFoodValue ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  ${(totalStats?.totalShippingCost ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  ${(totalStats?.totalShippingCostPaidBySsf ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  ${(totalStats?.totalValue ?? 0).toFixed(2)}
+                </Table.Cell>
+                <Table.Cell
+                  textStyle="p2"
+                  borderRight="1px solid"
+                  borderRightColor="neutral.100"
+                  bg="yellow.100"
+                >
+                  {(totalStats?.percentageFoodRescueItems ?? 0).toFixed(2)}%
+                </Table.Cell>
+                <Table.Cell textStyle="p2" bg="yellow.100">
+                  {(totalStats?.foodRescueLbs ?? 0).toFixed(2)}
+                </Table.Cell>
+              </Table.Row>
+              {pantryStats.map((stat) => (
+                <Table.Row key={stat.pantryId} _hover={{ bg: 'neutral.50' }}>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                    py={0}
+                  >
+                    {stat.pantryName}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalItems}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalOz.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.totalLbs.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalDonatedFoodValue.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalShippingCost.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalShippingCostPaidBySsf.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    ${stat.totalValue.toFixed(2)}
+                  </Table.Cell>
+                  <Table.Cell
+                    textStyle="p2"
+                    borderRight="1px solid"
+                    borderRightColor="neutral.100"
+                  >
+                    {stat.percentageFoodRescueItems.toFixed(2)}%
+                  </Table.Cell>
+                  <Table.Cell textStyle="p2">
+                    {stat.foodRescueLbs.toFixed(2)}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+
+          <Box mt={12}>
+            <PaginationControl
+              count={totalCount}
+              pageSize={itemsPerPage}
+              page={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

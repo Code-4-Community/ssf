@@ -14,6 +14,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import { FloatingAlert } from '@components/floatingAlert';
 import { FoodRequestStatus, FoodRequestSummaryDto } from '../types/types';
 import PageEmptyState from '@components/pageEmptyState';
+import SectionEmptyState from '@components/sectionEmptyState';
 import { PaginationControl } from '@components/pagination';
 import RequestDetailsModal from '@components/forms/requestDetailsModal';
 import PantryDeleteRequestActionModal from '@components/forms/pantryDeleteRequestModal';
@@ -56,15 +57,18 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
     useState<FoodRequestSummaryDto | null>(null);
 
   const [alertState, setAlertMessage] = useAlert();
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const loadRequests = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const data = await fetchData();
       setRequests(data);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching requests', AlertStatus.ERROR);
     }
   }, [fetchData, setAlertMessage]);
@@ -172,7 +176,16 @@ const RequestManagement: React.FC<RequestManagementProps> = ({
           timeout={6000}
         />
       )}
-      {requests.length === 0 ? (
+      {fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your food requests. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={loadRequests} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
+      ) : requests.length === 0 ? (
         <PageEmptyState entity="food requests" />
       ) : (
         <>

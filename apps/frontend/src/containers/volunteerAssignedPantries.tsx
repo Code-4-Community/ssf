@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Funnel, CircleCheck, Search } from 'lucide-react';
 import {
   Box,
@@ -18,6 +18,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import { ROUTES } from '../routes';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const AssignedPantries: React.FC = () => {
   const navigate = useNavigate();
@@ -29,35 +30,39 @@ const AssignedPantries: React.FC = () => {
   );
   const [pantrySearch, setPantrySearch] = useState('');
   const [alertState, setAlertMessage] = useAlert();
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  const fetchAssignedPantries = useCallback(async () => {
+    setFetchFailed(false);
+    let user: User;
+    let userId: number;
+    try {
+      user = await ApiClient.getMe();
+      userId = user.id;
+    } catch {
+      setFetchFailed(true);
+      setAlertMessage(
+        'Authentication error. Please log in and try again.',
+        AlertStatus.ERROR,
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const data = await ApiClient.getVolunteerPantries(userId);
+      setPantries(data);
+    } catch {
+      setFetchFailed(true);
+      setAlertMessage('Error fetching assigned pantries', AlertStatus.ERROR);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setAlertMessage]);
 
   useEffect(() => {
-    const fetchAssignedPantries = async () => {
-      let user: User;
-      let userId: number;
-      try {
-        user = await ApiClient.getMe();
-        userId = user.id;
-      } catch {
-        setAlertMessage(
-          'Authentication error. Please log in and try again.',
-          AlertStatus.ERROR,
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const data = await ApiClient.getVolunteerPantries(userId);
-        setPantries(data);
-      } catch {
-        setAlertMessage('Error fetching assigned pantries', AlertStatus.ERROR);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchAssignedPantries();
-  }, [setAlertMessage]);
+  }, [fetchAssignedPantries]);
 
   const isRefrigeratorFriendly = (pantry: Pantry): boolean => {
     return (
@@ -121,6 +126,15 @@ const AssignedPantries: React.FC = () => {
         <Box display="flex" justifyContent="center" mt={16}>
           <Spinner size="lg" color="gray.400" />
         </Box>
+      ) : fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your assigned pantries. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={fetchAssignedPantries} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
       ) : (
         <>
           {!hasNoAssignedPantries && (
