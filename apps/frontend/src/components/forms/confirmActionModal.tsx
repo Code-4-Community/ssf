@@ -20,6 +20,8 @@ const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => !e.open && onClose()}
     >

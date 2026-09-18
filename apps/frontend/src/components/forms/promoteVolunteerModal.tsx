@@ -18,6 +18,8 @@ const PromoteVolunteerModal: React.FC<PromoteVolunteerModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => !e.open && onClose()}
     >

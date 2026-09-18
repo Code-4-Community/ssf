@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -27,19 +27,26 @@ const PantryDeleteRequestActionModal: React.FC<
 > = ({ request, isOpen, onClose, onSuccess }) => {
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const onCloseRequest = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
       await apiClient.deleteFoodRequest(request.requestId);
       onClose();
       onSuccess();
     } catch {
       setAlertMessage('Food request could not be deleted.', AlertStatus.ERROR);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="md"
       onOpenChange={(e: { open: boolean }) => {
@@ -98,6 +105,7 @@ const PantryDeleteRequestActionModal: React.FC<
                   textAlign="center"
                   lineHeight="28px"
                   onClick={onClose}
+                  disabled={isDeleting}
                 >
                   Cancel
                 </Button>
@@ -112,6 +120,8 @@ const PantryDeleteRequestActionModal: React.FC<
                   flexShrink={0}
                   textAlign="center"
                   onClick={onCloseRequest}
+                  loading={isDeleting}
+                  disabled={isDeleting}
                 >
                   Delete
                 </Button>

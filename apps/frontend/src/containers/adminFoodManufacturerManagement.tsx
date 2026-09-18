@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Table,
   Text,
@@ -20,6 +20,7 @@ import { useAlert } from '../hooks/alert';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const AdminFoodManufacturerManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -37,18 +38,22 @@ const AdminFoodManufacturerManagement: React.FC = () => {
 
   const pageSize = 10;
 
-  const fetchFoodManufacturers = async () => {
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  const fetchFoodManufacturers = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const approved = await ApiClient.getApprovedFoodManufacturers();
       setFoodManufacturers(approved);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
     }
-  };
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchFoodManufacturers();
-  }, [setAlertMessage]);
+  }, [fetchFoodManufacturers]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -207,96 +212,109 @@ const AdminFoodManufacturerManagement: React.FC = () => {
             )}
           </Flex>
         </VStack>
-        <Table.Root variant="line" showColumnBorder>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader {...textHeaderStyles}>
-                Food Manufacturer
-              </Table.ColumnHeader>
-              <Table.ColumnHeader {...textHeaderStyles}>
-                Food Rescue
-              </Table.ColumnHeader>
-              <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
-                Action
-              </Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body
-            color="neutral.700"
-            fontWeight={400}
-            textStyle="p2"
-            css={{ '& td': { paddingTop: '8px', paddingBottom: '8px' } }}
-          >
-            {paginatedFMs?.map((fm) => (
-              <Table.Row key={fm.foodManufacturerId}>
-                <Table.Cell>
-                  <Link
-                    textStyle="p2"
-                    color="gray.dark"
-                    variant="underline"
-                    textDecorationColor="gray.dark"
-                    onClick={() =>
-                      navigate(
-                        ROUTES.FOOD_MANUFACTURER_MANAGEMENT_DETAILS.replace(
-                          ':foodManufacturerId',
-                          fm.foodManufacturerId.toString(),
-                        ),
-                      )
-                    }
-                  >
-                    {fm.foodManufacturerName}
-                  </Link>
-                </Table.Cell>
-                <Table.Cell>
-                  <Badge
-                    py={1}
-                    px={2}
-                    color="neutral.800"
-                    textStyle="p2"
-                    fontWeight={500}
-                    fontSize="12px"
-                    bgColor={
-                      fm.donateWastedFood === DonateWastedFood.NEVER
-                        ? 'neutral.200'
-                        : 'neutral.100'
-                    }
-                  >
-                    {fm.donateWastedFood === DonateWastedFood.ALWAYS
-                      ? 'Yes'
-                      : fm.donateWastedFood === DonateWastedFood.SOMETIMES
-                      ? 'Sometimes'
-                      : 'No'}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell textAlign="right">
-                  <Link
-                    color="neutral.700"
-                    fontWeight={400}
-                    textStyle="p2"
-                    variant="underline"
-                    textDecorationColor="neutral.700"
-                    cursor="pointer"
-                    onClick={() =>
-                      navigate(
-                        `${ROUTES.ADMIN_DONATION}?foodManufacturerId=${fm.foodManufacturerId}`,
-                      )
-                    }
-                  >
-                    View Donations
-                  </Link>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-        <Flex justify="center" mt={12}>
-          <PaginationControl
-            count={filteredFMs.length}
-            pageSize={pageSize}
-            page={currentPage}
-            onPageChange={setCurrentPage}
-          />
-        </Flex>
+        {fetchFailed ? (
+          <>
+            <SectionEmptyState subtitle="We couldn't load your food manufacturers. Please try again." />
+            <Flex justify="center">
+              <Button onClick={fetchFoodManufacturers} variant="outline">
+                Retry
+              </Button>
+            </Flex>
+          </>
+        ) : (
+          <>
+            <Table.Root variant="line" showColumnBorder>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader {...textHeaderStyles}>
+                    Food Manufacturer
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader {...textHeaderStyles}>
+                    Food Rescue
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader {...textHeaderStyles} textAlign="right">
+                    Action
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body
+                color="neutral.700"
+                fontWeight={400}
+                textStyle="p2"
+                css={{ '& td': { paddingTop: '8px', paddingBottom: '8px' } }}
+              >
+                {paginatedFMs?.map((fm) => (
+                  <Table.Row key={fm.foodManufacturerId}>
+                    <Table.Cell>
+                      <Link
+                        textStyle="p2"
+                        color="gray.dark"
+                        variant="underline"
+                        textDecorationColor="gray.dark"
+                        onClick={() =>
+                          navigate(
+                            ROUTES.FOOD_MANUFACTURER_MANAGEMENT_DETAILS.replace(
+                              ':foodManufacturerId',
+                              fm.foodManufacturerId.toString(),
+                            ),
+                          )
+                        }
+                      >
+                        {fm.foodManufacturerName}
+                      </Link>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge
+                        py={1}
+                        px={2}
+                        color="neutral.800"
+                        textStyle="p2"
+                        fontWeight={500}
+                        fontSize="12px"
+                        bgColor={
+                          fm.donateWastedFood === DonateWastedFood.NEVER
+                            ? 'neutral.200'
+                            : 'neutral.100'
+                        }
+                      >
+                        {fm.donateWastedFood === DonateWastedFood.ALWAYS
+                          ? 'Yes'
+                          : fm.donateWastedFood === DonateWastedFood.SOMETIMES
+                          ? 'Sometimes'
+                          : 'No'}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell textAlign="right">
+                      <Link
+                        color="neutral.700"
+                        fontWeight={400}
+                        textStyle="p2"
+                        variant="underline"
+                        textDecorationColor="neutral.700"
+                        cursor="pointer"
+                        onClick={() =>
+                          navigate(
+                            `${ROUTES.ADMIN_DONATION}?foodManufacturerId=${fm.foodManufacturerId}`,
+                          )
+                        }
+                      >
+                        View Donations
+                      </Link>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+            <Flex justify="center" mt={12}>
+              <PaginationControl
+                count={filteredFMs.length}
+                pageSize={pageSize}
+                page={currentPage}
+                onPageChange={setCurrentPage}
+              />
+            </Flex>
+          </>
+        )}
       </Box>
     </Box>
   );

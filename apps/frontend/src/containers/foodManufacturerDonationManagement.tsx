@@ -14,7 +14,7 @@ import FmCompleteRequiredActionsModal from '@components/forms/fmCompleteRequired
 import NewDonationFormModal from '@components/forms/newDonationFormModal';
 import ResubmitDonationModal from '@components/forms/resubmitDonationModal';
 import SectionEmptyState from '@components/sectionEmptyState';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAlert } from '../hooks/alert';
 import FMDeleteDonationActionModal from '@components/forms/fmDeleteDonationModal';
@@ -57,99 +57,125 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   const [selectedViewDetailsDonation, setSelectedViewDetailsDonation] =
     useState<Donation | null>(null);
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
+  const [initFailed, setInitFailed] = useState(false);
+  const [donationsFetchFailed, setDonationsFetchFailed] = useState(false);
 
   // Fetch all donations on component mount and sorts them into their appropriate status lists
-  const fetchDonations = async () => {
-    try {
-      const data = await ApiClient.getAllDonationsByFoodManufacturer();
+  const fetchDonations = useCallback(
+    async (resetPages = false) => {
+      try {
+        const data = await ApiClient.getAllDonationsByFoodManufacturer();
+        setDonationsFetchFailed(false);
 
-      const grouped: Record<DonationStatus, DonationDetails[]> = {
-        [DonationStatus.AVAILABLE]: [],
-        [DonationStatus.FULFILLED]: [],
-        [DonationStatus.MATCHED]: [],
-      };
+        const grouped: Record<DonationStatus, DonationDetails[]> = {
+          [DonationStatus.AVAILABLE]: [],
+          [DonationStatus.FULFILLED]: [],
+          [DonationStatus.MATCHED]: [],
+        };
 
-      data.forEach((donationDetail: DonationDetails) => {
-        grouped[donationDetail.donation.status].push(donationDetail);
-      });
+        data.forEach((donationDetail: DonationDetails) => {
+          grouped[donationDetail.donation.status].push(donationDetail);
+        });
 
-      (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
-        grouped[status].sort(
-          (a, b) =>
-            new Date(a.donation.dateDonated).getTime() -
-            new Date(b.donation.dateDonated).getTime(),
-        );
-      });
-
-      setStatusDonations(grouped);
-
-      const initialPages: Record<DonationStatus, number> = {
-        [DonationStatus.AVAILABLE]: 1,
-        [DonationStatus.FULFILLED]: 1,
-        [DonationStatus.MATCHED]: 1,
-      };
-
-      // Paginate the containing status to the page that holds this donation.
-      const donationIdParam = searchParams.get('donationId');
-      if (donationIdParam) {
-        const id = Number(donationIdParam);
-        for (const status of Object.values(DonationStatus)) {
-          const idx = grouped[status].findIndex(
-            (d) => d.donation.donationId === id,
+        (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+          grouped[status].sort(
+            (a, b) =>
+              new Date(a.donation.dateDonated).getTime() -
+              new Date(b.donation.dateDonated).getTime(),
           );
-          if (idx >= 0) {
-            initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
-            break;
+        });
+
+        setStatusDonations(grouped);
+
+        setCurrentPages((prev) => {
+          const clamped = { ...prev };
+          (Object.keys(grouped) as DonationStatus[]).forEach((status) => {
+            const totalPages = Math.max(
+              1,
+              Math.ceil(grouped[status].length / MAX_PER_STATUS),
+            );
+            clamped[status] = Math.min(clamped[status], totalPages);
+          });
+          return clamped;
+        });
+
+        if (resetPages) {
+          const initialPages: Record<DonationStatus, number> = {
+            [DonationStatus.AVAILABLE]: 1,
+            [DonationStatus.FULFILLED]: 1,
+            [DonationStatus.MATCHED]: 1,
+          };
+
+          // Paginate the containing status to the page that holds this donation.
+          const donationIdParam = searchParams.get('donationId');
+          if (donationIdParam) {
+            const id = Number(donationIdParam);
+            for (const status of Object.values(DonationStatus)) {
+              const idx = grouped[status].findIndex(
+                (d) => d.donation.donationId === id,
+              );
+              if (idx >= 0) {
+                initialPages[status] = Math.floor(idx / MAX_PER_STATUS) + 1;
+                break;
+              }
+            }
           }
+
+          setCurrentPages(initialPages);
         }
+
+        return grouped;
+      } catch {
+        setDonationsFetchFailed(true);
+        setAlertMessage('Error fetching donations', AlertStatus.ERROR);
+        return;
       }
+    },
+    [searchParams, setAlertMessage],
+  );
 
-      setCurrentPages(initialPages);
-
-      return grouped;
-    } catch (error) {
-      setAlertMessage('Error fetching donations', AlertStatus.ERROR);
-      return;
-    }
-  };
-
-  const openResubmitFromQueryParam = (
-    grouped: Record<DonationStatus, DonationDetails[]>,
-  ) => {
-    if (!resubmitDonationId) return;
-    const id = parseInt(resubmitDonationId, 10);
-    const allDonations: DonationDetails[] = Object.values(grouped).flat();
-    const exists = allDonations.some((d) => d.donation.donationId === id);
-    if (exists) {
-      setIsResubmitOpen(true);
-    } else {
-      navigate(ROUTES.FM_DONATION_MANAGEMENT);
-    }
-  };
+  const openResubmitFromQueryParam = useCallback(
+    (grouped: Record<DonationStatus, DonationDetails[]>) => {
+      if (!resubmitDonationId) return;
+      const id = parseInt(resubmitDonationId, 10);
+      const allDonations: DonationDetails[] = Object.values(grouped).flat();
+      const exists = allDonations.some((d) => d.donation.donationId === id);
+      if (exists) {
+        setIsResubmitOpen(true);
+      } else {
+        navigate(ROUTES.FM_DONATION_MANAGEMENT);
+      }
+    },
+    [resubmitDonationId, navigate],
+  );
 
   // On page load, get the food manufacturer id, fetch its donations,
   // and open the resubmit modal if the URL specifies one.
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
-        setManufacturerId(fmId);
-        const grouped = await fetchDonations();
-        if (grouped) openResubmitFromQueryParam(grouped);
-      } catch {
-        setAlertMessage(
-          'Error initializing donation management',
-          AlertStatus.ERROR,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
+  const init = useCallback(async () => {
+    setLoading(true);
+    setInitFailed(false);
+    try {
+      const fmId = await ApiClient.getCurrentUserFoodManufacturerId();
+      setManufacturerId(fmId);
+      const grouped = await fetchDonations(true);
+      if (grouped) openResubmitFromQueryParam(grouped);
+    } catch {
+      setInitFailed(true);
+      setAlertMessage(
+        'Error initializing donation management',
+        AlertStatus.ERROR,
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchDonations, openResubmitFromQueryParam, setAlertMessage]);
 
   useEffect(() => {
-    if (loading) return;
+    init();
+  }, [init]);
+
+  useEffect(() => {
+    if (loading || donationsFetchFailed) return;
     const donationIdParam = searchParams.get('donationId');
     if (!donationIdParam) return;
 
@@ -161,8 +187,18 @@ const FoodManufacturerDonationManagement: React.FC = () => {
       .find((d) => d.donation.donationId === id);
     if (match) {
       setSelectedViewDetailsDonation(match.donation);
-    } else navigate(ROUTES.FM_DONATION_MANAGEMENT);
-  }, [searchParams, statusDonations, loading]);
+    } else {
+      setAlertMessage('Donation not found.', AlertStatus.ERROR);
+      navigate(ROUTES.FM_DONATION_MANAGEMENT, { replace: true });
+    }
+  }, [
+    searchParams,
+    statusDonations,
+    loading,
+    donationsFetchFailed,
+    navigate,
+    setAlertMessage,
+  ]);
 
   const handleResubmitClose = () => {
     setIsResubmitOpen(false);
@@ -179,6 +215,30 @@ const FoodManufacturerDonationManagement: React.FC = () => {
   };
 
   if (loading) return null;
+
+  if (initFailed) {
+    return (
+      <Box p={12}>
+        {alertState && (
+          <FloatingAlert
+            key={alertState.id}
+            message={alertState.message}
+            status={alertState.status}
+            timeout={6000}
+          />
+        )}
+        <Heading textStyle="h1" color="gray.600" mb={8}>
+          Donation Management
+        </Heading>
+        <SectionEmptyState subtitle="We couldn't load your donations. Please try again." />
+        <Flex justify="center">
+          <Button onClick={init} variant="outline">
+            Retry
+          </Button>
+        </Flex>
+      </Box>
+    );
+  }
 
   const allDonations = Object.values(statusDonations).flat();
 
@@ -267,7 +327,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           foodManufacturerId={manufacturerId}
           isOpen={isResubmitOpen}
           onClose={handleResubmitClose}
-          onSuccess={() => fetchDonations()}
+          onSuccess={() => {
+            fetchDonations();
+            setAlertMessage(
+              'Donation resubmitted successfully.',
+              AlertStatus.INFO,
+            );
+          }}
           donations={Object.values(statusDonations).flat()}
           initialDonationId={
             resubmitDonationId ? parseInt(resubmitDonationId, 10) : null
@@ -283,11 +349,13 @@ const FoodManufacturerDonationManagement: React.FC = () => {
           donation={selectedActionDonation}
           isOpen={true}
           onClose={() => setSelectedActionDonation(null)}
-          onSuccess={() => {
+          onSuccess={(allOrdersComplete) => {
             setSelectedActionDonation(null);
             if (manufacturerId !== null) fetchDonations();
             setAlertMessage(
-              'Your details have been saved. Actions are complete once all shipment and item details are confirmed.',
+              allOrdersComplete
+                ? 'Your details have been saved and all required actions are complete.'
+                : 'Your details have been saved, but shipping cost and/or tracking link are still missing for one or more orders. Please complete them soon.',
               AlertStatus.INFO,
             );
           }}

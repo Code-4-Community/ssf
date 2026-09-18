@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Table,
@@ -36,20 +36,20 @@ const ApprovePantries: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [alertState, setAlertMessage] = useAlert();
 
-  useEffect(() => {
-    const fetchPantries = async () => {
-      try {
-        const data = await ApiClient.getAllPendingPantries();
-        setPantries(data);
-        setHasError(false);
-      } catch {
-        setHasError(true);
-        setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
-      }
-    };
-
-    fetchPantries();
+  const fetchPantries = useCallback(async () => {
+    try {
+      const data = await ApiClient.getAllPendingPantries();
+      setPantries(data);
+      setHasError(false);
+    } catch {
+      setHasError(true);
+      setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
+    }
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    fetchPantries();
+  }, [fetchPantries]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -175,6 +175,9 @@ const ApprovePantries: React.FC = () => {
             Something went wrong while loading applications. Please try again
             later.
           </Box>
+          <Button onClick={fetchPantries} variant="outline" mt={2}>
+            Retry
+          </Button>
         </Box>
       ) : (
         <Box>

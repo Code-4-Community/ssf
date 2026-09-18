@@ -148,6 +148,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   };
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleCancel = () => {
     setRequestedSize(request.requestedSize);
@@ -160,6 +161,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
   };
 
   const handleUpdate = async () => {
+    setIsSaving(true);
     try {
       await apiClient.updateFoodRequest(request.requestId, {
         requestedSize,
@@ -174,6 +176,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
       setIsEditing(false);
     } catch {
       setAlertMessage('Food request could not be updated.', AlertStatus.ERROR);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -188,6 +192,8 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
         />
       )}
       <Dialog.Root
+        lazyMount
+        unmountOnExit
         open={isOpen}
         size="xl"
         onOpenChange={(e: { open: boolean }) => {
@@ -473,6 +479,7 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       background="bg"
                       color="neutral.800"
                       borderColor="neutral.200"
+                      disabled={isSaving}
                     >
                       Cancel
                     </Button>
@@ -481,8 +488,10 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
                       disabled={
                         selectedFoodTypes.length === 0 ||
                         locationCity.trim() === '' ||
-                        locationState.trim() === ''
+                        locationState.trim() === '' ||
+                        isSaving
                       }
+                      loading={isSaving}
                       bg="blue.hover"
                       color="white"
                     >

@@ -115,6 +115,8 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => {
         if (!e.open) {

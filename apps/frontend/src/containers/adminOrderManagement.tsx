@@ -25,6 +25,7 @@ import { useAlert } from '../hooks/alert';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 // Extending the OrderSummary type to include assignee color for display
 type OrderWithColor = OrderSummary & { assigneeColor?: string };
@@ -96,8 +97,11 @@ const AdminOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
+  const [fetchFailed, setFetchFailed] = useState(false);
+
   // Fetches all orders and sorts them into their appropriate status lists
   const fetchOrders = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const data = await ApiClient.getAllOrders();
 
@@ -136,6 +140,7 @@ const AdminOrderManagement: React.FC = () => {
         return next;
       });
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching orders', AlertStatus.ERROR);
     }
   }, [setAlertMessage]);
@@ -240,68 +245,79 @@ const AdminOrderManagement: React.FC = () => {
         />
       )}
 
-      {Object.values(OrderStatus).map((status) => {
-        const allOrders = statusOrders[status] || [];
-        const filterState = filterStates[status];
+      {fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your orders. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={fetchOrders} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
+      ) : (
+        Object.values(OrderStatus).map((status) => {
+          const allOrders = statusOrders[status] || [];
+          const filterState = filterStates[status];
 
-        // Get pantry options through all orders in the status
-        const pantryOptions = [
-          ...new Set(allOrders.map((o) => o.request.pantry.pantryName)),
-        ].sort((a, b) => a.localeCompare(b));
+          // Get pantry options through all orders in the status
+          const pantryOptions = [
+            ...new Set(allOrders.map((o) => o.request.pantry.pantryName)),
+          ].sort((a, b) => a.localeCompare(b));
 
-        // Apply filters and sorting to all orders
-        const filteredOrders = allOrders
-          .filter(
-            (o) =>
-              filterState.selectedPantries.length === 0 ||
-              filterState.selectedPantries.includes(
-                o.request.pantry.pantryName,
-              ),
-          )
-          .sort((a, b) =>
-            filterState.sortAsc
-              ? a.createdAt.localeCompare(b.createdAt)
-              : b.createdAt.localeCompare(a.createdAt),
+          // Apply filters and sorting to all orders
+          const filteredOrders = allOrders
+            .filter(
+              (o) =>
+                filterState.selectedPantries.length === 0 ||
+                filterState.selectedPantries.includes(
+                  o.request.pantry.pantryName,
+                ),
+            )
+            .sort((a, b) =>
+              filterState.sortAsc
+                ? a.createdAt.localeCompare(b.createdAt)
+                : b.createdAt.localeCompare(a.createdAt),
+            );
+
+          const totalFiltered = filteredOrders.length;
+          const currentPage = currentPages[status] || 1;
+          const displayedOrders = filteredOrders.slice(
+            (currentPage - 1) * MAX_PER_STATUS,
+            currentPage * MAX_PER_STATUS,
           );
 
-        const totalFiltered = filteredOrders.length;
-        const currentPage = currentPages[status] || 1;
-        const displayedOrders = filteredOrders.slice(
-          (currentPage - 1) * MAX_PER_STATUS,
-          currentPage * MAX_PER_STATUS,
-        );
-
-        return (
-          <Box key={status} mb={12}>
-            <OrderStatusSection
-              orders={displayedOrders}
-              status={status}
-              colors={ORDER_STATUS_COLORS[status]}
-              onOrderSelect={setSelectedOrderId}
-              totalOrders={totalFiltered}
-              currentPage={currentPage}
-              onPageChange={(page) => handlePageChange(status, page)}
-              pantryOptions={pantryOptions}
-              filterState={filterState}
-              onFilterChange={(newState: FilterState) =>
-                // Update filter state for the specific status
-                setFilterStates((prev) => {
-                  const prevSelected = prev[status]?.selectedPantries || [];
-                  const prevKey = [...prevSelected].sort().join(',');
-                  const newKey = [...newState.selectedPantries]
-                    .sort()
-                    .join(',');
-                  // Reset page if selected pantries changed
-                  if (prevKey !== newKey) {
-                    resetPageForStatus(status);
-                  }
-                  return { ...prev, [status]: newState };
-                })
-              }
-            />
-          </Box>
-        );
-      })}
+          return (
+            <Box key={status} mb={12}>
+              <OrderStatusSection
+                orders={displayedOrders}
+                status={status}
+                colors={ORDER_STATUS_COLORS[status]}
+                onOrderSelect={setSelectedOrderId}
+                totalOrders={totalFiltered}
+                currentPage={currentPage}
+                onPageChange={(page) => handlePageChange(status, page)}
+                pantryOptions={pantryOptions}
+                filterState={filterState}
+                onFilterChange={(newState: FilterState) =>
+                  // Update filter state for the specific status
+                  setFilterStates((prev) => {
+                    const prevSelected = prev[status]?.selectedPantries || [];
+                    const prevKey = [...prevSelected].sort().join(',');
+                    const newKey = [...newState.selectedPantries]
+                      .sort()
+                      .join(',');
+                    // Reset page if selected pantries changed
+                    if (prevKey !== newKey) {
+                      resetPageForStatus(status);
+                    }
+                    return { ...prev, [status]: newState };
+                  })
+                }
+              />
+            </Box>
+          );
+        })
+      )}
 
       <OrderDetailsModal
         orderId={selectedOrderId}

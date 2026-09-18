@@ -116,7 +116,7 @@ const EditableFMApplication: React.FC<EditableFMApplicationProps> = ({
         AlertStatus.ERROR,
       );
     }
-  }, [foodManufacturerId]);
+  }, [foodManufacturerId, setAlertMessage]);
 
   useEffect(() => {
     // Fetch the application when we don't have one loaded already

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Table,
@@ -40,20 +40,20 @@ const ApproveFoodManufacturers: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [alertState, setAlertMessage] = useAlert();
 
-  useEffect(() => {
-    const fetchFoodManufacturers = async () => {
-      try {
-        const data = await ApiClient.getAllPendingFoodManufacturers();
-        setFoodManufacturers(data);
-        setHasError(false);
-      } catch {
-        setHasError(true);
-        setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
-      }
-    };
-
-    fetchFoodManufacturers();
+  const fetchFoodManufacturers = useCallback(async () => {
+    try {
+      const data = await ApiClient.getAllPendingFoodManufacturers();
+      setFoodManufacturers(data);
+      setHasError(false);
+    } catch {
+      setHasError(true);
+      setAlertMessage('Error fetching food manufacturers', AlertStatus.ERROR);
+    }
   }, [setAlertMessage]);
+
+  useEffect(() => {
+    fetchFoodManufacturers();
+  }, [fetchFoodManufacturers]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -184,6 +184,9 @@ const ApproveFoodManufacturers: React.FC = () => {
             Something went wrong while loading applications. Please try again
             later.
           </Box>
+          <Button onClick={fetchFoodManufacturers} variant="outline" mt={2}>
+            Retry
+          </Button>
         </Box>
       ) : (
         <Box>

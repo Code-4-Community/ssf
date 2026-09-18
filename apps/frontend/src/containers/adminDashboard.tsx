@@ -1,5 +1,5 @@
 import ApiClient from '@api/apiClient';
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Button, Heading, Text } from '@chakra-ui/react';
 import DashboardCard, {
   DashboardCardType,
   DONATION_STATUS_BADGE,
@@ -33,6 +33,69 @@ const AdminDashboard: React.FC = () => {
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [stats, setStats] = useState<Record<string, string> | null>(null);
+  const [pendingApplicationsFailed, setPendingApplicationsFailed] =
+    useState(false);
+  const [recentOrdersFailed, setRecentOrdersFailed] = useState(false);
+  const [recentDonationsFailed, setRecentDonationsFailed] = useState(false);
+  const [statsFetchFailed, setStatsFetchFailed] = useState(false);
+
+  const fetchStats = React.useCallback(
+    async (userId: number) => {
+      setStatsFetchFailed(false);
+      try {
+        const userStats = await ApiClient.getUserStats(userId);
+        setStats(userStats);
+      } catch {
+        setStatsFetchFailed(true);
+        setAlertMessage(
+          'Error fetching dashboard statistics',
+          AlertStatus.ERROR,
+        );
+      }
+    },
+    [setAlertMessage],
+  );
+
+  const fetchPendingApplications = React.useCallback(async () => {
+    setPendingApplicationsFailed(false);
+    try {
+      const applications = await ApiClient.getRecentPendingApplications();
+      setPendingApplications(applications);
+    } catch {
+      setPendingApplicationsFailed(true);
+      setAlertMessage('Error fetching pending applications', AlertStatus.ERROR);
+    }
+  }, [setAlertMessage]);
+
+  const fetchRecentOrders = React.useCallback(async () => {
+    setRecentOrdersFailed(false);
+    try {
+      const allOrders = await ApiClient.getAllOrders();
+      const sortedOrders = allOrders.sort(
+        (a: OrderSummary, b: OrderSummary) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setRecentOrders(sortedOrders.slice(0, 2));
+    } catch {
+      setRecentOrdersFailed(true);
+      setAlertMessage('Error fetching recent orders', AlertStatus.ERROR);
+    }
+  }, [setAlertMessage]);
+
+  const fetchRecentDonations = React.useCallback(async () => {
+    setRecentDonationsFailed(false);
+    try {
+      const allDonations = await ApiClient.getAllDonations();
+      const sortedDonations = allDonations.sort(
+        (a: Donation, b: Donation) =>
+          new Date(b.dateDonated).getTime() - new Date(a.dateDonated).getTime(),
+      );
+      setRecentDonations(sortedDonations.slice(0, 2));
+    } catch {
+      setRecentDonationsFailed(true);
+      setAlertMessage('Error fetching recent donations', AlertStatus.ERROR);
+    }
+  }, [setAlertMessage]);
 
   useEffect(() => {
     const fetchMe = async () => {
@@ -45,54 +108,7 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      try {
-        const userStats = await ApiClient.getUserStats(user.id);
-        setStats(userStats);
-      } catch {
-        setAlertMessage(
-          'Error fetching dashboard statistics',
-          AlertStatus.ERROR,
-        );
-      }
-    };
-
-    const fetchPendingApplications = async () => {
-      try {
-        const applications = await ApiClient.getRecentPendingApplications();
-        setPendingApplications(applications);
-      } catch {
-        setAlertMessage(
-          'Error fetching pending applications',
-          AlertStatus.ERROR,
-        );
-      }
-    };
-
-    const fetchRecentOrders = async () => {
-      try {
-        const allOrders = await ApiClient.getAllOrders();
-        const sortedOrders = allOrders.sort(
-          (a: OrderSummary, b: OrderSummary) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-        setRecentOrders(sortedOrders.slice(0, 2));
-      } catch {
-        setAlertMessage('Error fetching recent orders', AlertStatus.ERROR);
-      }
-    };
-
-    const fetchRecentDonations = async () => {
-      try {
-        const allDonations = await ApiClient.getAllDonations();
-        const sortedDonations = allDonations.sort(
-          (a: Donation, b: Donation) =>
-            new Date(b.dateDonated).getTime() -
-            new Date(a.dateDonated).getTime(),
-        );
-        setRecentDonations(sortedDonations.slice(0, 2));
-      } catch {
-        setAlertMessage('Error fetching recent donations', AlertStatus.ERROR);
-      }
+      await fetchStats(user.id);
     };
 
     const load = async () => {
@@ -109,14 +125,23 @@ const AdminDashboard: React.FC = () => {
     };
 
     load();
-  }, [setAlertMessage]);
+  }, [
+    setAlertMessage,
+    fetchStats,
+    fetchPendingApplications,
+    fetchRecentOrders,
+    fetchRecentDonations,
+  ]);
 
   if (loading) return null;
 
   const isPageEmpty =
     pendingApplications.length === 0 &&
+    !pendingApplicationsFailed &&
     recentOrders.length === 0 &&
-    recentDonations.length === 0;
+    !recentOrdersFailed &&
+    recentDonations.length === 0 &&
+    !recentDonationsFailed;
 
   return (
     <Box p={12}>
@@ -132,7 +157,24 @@ const AdminDashboard: React.FC = () => {
         Welcome, {currentUser?.firstName} {currentUser?.lastName}
       </Heading>
 
-      {stats && <DashboardStats stats={stats} />}
+      {statsFetchFailed ? (
+        <Box mb={16}>
+          <SectionEmptyState
+            entity="dashboard statistics"
+            subtitle="We couldn't load your dashboard statistics. Please try again."
+          />
+          <Box display="flex" justifyContent="center">
+            <Button
+              onClick={() => currentUser && fetchStats(currentUser.id)}
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        stats && <DashboardStats stats={stats} />
+      )}
 
       {isPageEmpty ? (
         <PageEmptyState
@@ -147,7 +189,19 @@ const AdminDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             Pending Actions
           </Text>
-          {pendingApplications.length === 0 ? (
+          {pendingApplicationsFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="pending applications"
+                subtitle="We couldn't load pending applications. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchPendingApplications} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : pendingApplications.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="pending applications" />
             </Box>
@@ -194,7 +248,19 @@ const AdminDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             Recent Orders
           </Text>
-          {recentOrders.length === 0 ? (
+          {recentOrdersFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="recent orders"
+                subtitle="We couldn't load recent orders. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchRecentOrders} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : recentOrders.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="recent orders" />
             </Box>
@@ -235,7 +301,19 @@ const AdminDashboard: React.FC = () => {
           <Text textStyle="p" color="gray.light" fontWeight={600} mb={4}>
             Recent Donations
           </Text>
-          {recentDonations.length === 0 ? (
+          {recentDonationsFailed ? (
+            <Box mb={16}>
+              <SectionEmptyState
+                entity="recent donations"
+                subtitle="We couldn't load recent donations. Please try again."
+              />
+              <Box display="flex" justifyContent="center">
+                <Button onClick={fetchRecentDonations} variant="outline">
+                  Retry
+                </Button>
+              </Box>
+            </Box>
+          ) : recentDonations.length === 0 ? (
             <Box mb={16}>
               <SectionEmptyState entity="recent donations" />
             </Box>

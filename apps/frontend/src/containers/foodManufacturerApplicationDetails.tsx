@@ -32,6 +32,7 @@ interface EmptyStateProps {
   title: string;
   subtitle?: string;
   isLoading?: boolean;
+  onRetry?: () => void;
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -39,6 +40,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   subtitle,
   isLoading = false,
+  onRetry,
 }) => {
   return (
     <Box minH="100vh" p={8} mb={8}>
@@ -71,18 +73,33 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             </Text>
           )}
           {!isLoading && (
-            <Button
-              bg="blue.hover"
-              color="white"
-              px={6}
-              _hover={{ bg: 'neutral.800' }}
-              textStyle="p2"
-              fontWeight={600}
-            >
-              <Link to={ROUTES.APPROVE_FOOD_MANUFACTURERS}>
-                Return to applications
-              </Link>
-            </Button>
+            <HStack gap={3}>
+              {onRetry && (
+                <Button
+                  variant="outline"
+                  borderColor="neutral.200"
+                  color="neutral.800"
+                  px={6}
+                  textStyle="p2"
+                  fontWeight={600}
+                  onClick={onRetry}
+                >
+                  Retry
+                </Button>
+              )}
+              <Button
+                bg="blue.hover"
+                color="white"
+                px={6}
+                _hover={{ bg: 'neutral.800' }}
+                textStyle="p2"
+                fontWeight={600}
+              >
+                <Link to={ROUTES.APPROVE_FOOD_MANUFACTURERS}>
+                  Return to applications
+                </Link>
+              </Button>
+            </HStack>
           )}
         </Box>
       </Box>
@@ -106,6 +123,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
   const [showDenyModal, setShowDenyModal] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   const fieldContentStyles = {
     textStyle: 'p2',
@@ -132,6 +150,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
   const fetchApplicationDetails = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchFailed(false);
       if (!id) {
         setAlertMessage('Application ID not provided.', AlertStatus.ERROR);
         return;
@@ -146,6 +165,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status !== 404 && err.response?.status !== 400) {
+          setFetchFailed(true);
           setAlertMessage(
             'Could not load application details.',
             AlertStatus.ERROR,
@@ -155,7 +175,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, setAlertMessage]);
 
   useEffect(() => {
     fetchApplicationDetails();
@@ -216,6 +236,7 @@ const FoodManufacturerApplicationDetails: React.FC = () => {
       <EmptyState
         icon={<TriangleAlert />}
         title={alertState?.message ?? 'Application not found.'}
+        onRetry={fetchFailed ? fetchApplicationDetails : undefined}
       />
     );
   }

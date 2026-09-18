@@ -35,6 +35,7 @@ import { useAlert } from '../hooks/alert';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 type VolunteerOrderWithColor = VolunteerOrder & { assigneeColor?: string };
 
@@ -111,7 +112,10 @@ const VolunteerOrderManagement: React.FC = () => {
 
   const MAX_PER_STATUS = 5;
 
+  const [fetchFailed, setFetchFailed] = useState(false);
+
   const fetchOrders = useCallback(async () => {
+    setFetchFailed(false);
     let user: User;
     let userId: number;
     try {
@@ -119,6 +123,7 @@ const VolunteerOrderManagement: React.FC = () => {
       userId = user.id;
       setCurrentUser(user);
     } catch {
+      setFetchFailed(true);
       setAlertMessage(
         'Authentication error. Please log in and try again.',
         AlertStatus.ERROR,
@@ -161,6 +166,7 @@ const VolunteerOrderManagement: React.FC = () => {
       };
       setCurrentPages(initialPages);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching assigned orders', AlertStatus.ERROR);
     } finally {
       setIsLoading(false);
@@ -302,66 +308,77 @@ const VolunteerOrderManagement: React.FC = () => {
         />
       )}
 
-      {Object.values(OrderStatus).map((status) => {
-        const allOrders = statusOrders[status] || [];
-        const filterState = filterStates[status];
+      {fetchFailed ? (
+        <>
+          <SectionEmptyState subtitle="We couldn't load your orders. Please try again." />
+          <Box display="flex" justifyContent="center">
+            <Button onClick={fetchOrders} variant="outline">
+              Retry
+            </Button>
+          </Box>
+        </>
+      ) : (
+        Object.values(OrderStatus).map((status) => {
+          const allOrders = statusOrders[status] || [];
+          const filterState = filterStates[status];
 
-        const pantryOptions = [
-          ...new Set(allOrders.map((o) => o.pantryName)),
-        ].sort((a, b) => a.localeCompare(b));
+          const pantryOptions = [
+            ...new Set(allOrders.map((o) => o.pantryName)),
+          ].sort((a, b) => a.localeCompare(b));
 
-        const filteredOrders = allOrders
-          .filter(
-            (o) =>
-              filterState.selectedPantries.length === 0 ||
-              filterState.selectedPantries.includes(o.pantryName),
-          )
-          .sort((a, b) =>
-            filterState.sortAsc
-              ? new Date(a.createdAt).getTime() -
-                new Date(b.createdAt).getTime()
-              : new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime(),
+          const filteredOrders = allOrders
+            .filter(
+              (o) =>
+                filterState.selectedPantries.length === 0 ||
+                filterState.selectedPantries.includes(o.pantryName),
+            )
+            .sort((a, b) =>
+              filterState.sortAsc
+                ? new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+                : new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime(),
+            );
+
+          const totalFiltered = filteredOrders.length;
+          const currentPage = currentPages[status] || 1;
+          const displayedOrders = filteredOrders.slice(
+            (currentPage - 1) * MAX_PER_STATUS,
+            currentPage * MAX_PER_STATUS,
           );
 
-        const totalFiltered = filteredOrders.length;
-        const currentPage = currentPages[status] || 1;
-        const displayedOrders = filteredOrders.slice(
-          (currentPage - 1) * MAX_PER_STATUS,
-          currentPage * MAX_PER_STATUS,
-        );
-
-        return (
-          <Box key={status} mb={12}>
-            <OrderStatusSection
-              orders={displayedOrders}
-              status={status}
-              colors={ORDER_STATUS_COLORS[status]}
-              onOrderSelect={setSelectedOrderId}
-              totalOrders={totalFiltered}
-              currentPage={currentPage}
-              onPageChange={(page) => handlePageChange(status, page)}
-              pantryOptions={pantryOptions}
-              filterState={filterState}
-              onFilterChange={(newState: FilterState) =>
-                setFilterStates((prev) => {
-                  const prevSelected = prev[status]?.selectedPantries || [];
-                  const prevKey = [...prevSelected].sort().join(',');
-                  const newKey = [...newState.selectedPantries]
-                    .sort()
-                    .join(',');
-                  if (prevKey !== newKey) {
-                    resetPageForStatus(status);
-                  }
-                  return { ...prev, [status]: newState };
-                })
-              }
-              onOpenActionModal={setActionModalOrder}
-              currentUser={currentUser}
-            />
-          </Box>
-        );
-      })}
+          return (
+            <Box key={status} mb={12}>
+              <OrderStatusSection
+                orders={displayedOrders}
+                status={status}
+                colors={ORDER_STATUS_COLORS[status]}
+                onOrderSelect={setSelectedOrderId}
+                totalOrders={totalFiltered}
+                currentPage={currentPage}
+                onPageChange={(page) => handlePageChange(status, page)}
+                pantryOptions={pantryOptions}
+                filterState={filterState}
+                onFilterChange={(newState: FilterState) =>
+                  setFilterStates((prev) => {
+                    const prevSelected = prev[status]?.selectedPantries || [];
+                    const prevKey = [...prevSelected].sort().join(',');
+                    const newKey = [...newState.selectedPantries]
+                      .sort()
+                      .join(',');
+                    if (prevKey !== newKey) {
+                      resetPageForStatus(status);
+                    }
+                    return { ...prev, [status]: newState };
+                  })
+                }
+                onOpenActionModal={setActionModalOrder}
+                currentUser={currentUser}
+              />
+            </Box>
+          );
+        })
+      )}
 
       {actionModalOrder && (
         <CompleteRequiredActionsModal

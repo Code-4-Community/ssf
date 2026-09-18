@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -29,20 +29,26 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
 }) => {
   useModalBodyCleanup();
   const [alertState, setAlertMessage] = useAlert();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const onCloseOrder = async () => {
-    if (order === null) return;
+    if (order === null || isDeleting) return;
+    setIsDeleting(true);
     try {
       await apiClient.closeOrder(order.orderId);
       onClose();
       onSuccess();
     } catch {
       setAlertMessage('Order could not be closed.', AlertStatus.ERROR);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       size="md"
       onOpenChange={(e: { open: boolean }) => {
@@ -102,6 +108,7 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
                     textAlign="center"
                     lineHeight="28px"
                     onClick={onClose}
+                    disabled={isDeleting}
                   >
                     Cancel
                   </Button>
@@ -116,6 +123,8 @@ const VolunteerCloseOrderModal: React.FC<VolunteerCloseOrderModalProps> = ({
                     flexShrink={0}
                     textAlign="center"
                     onClick={onCloseOrder}
+                    loading={isDeleting}
+                    disabled={isDeleting}
                   >
                     Close
                   </Button>

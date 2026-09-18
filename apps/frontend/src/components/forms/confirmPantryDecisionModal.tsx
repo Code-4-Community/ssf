@@ -22,6 +22,8 @@ const ConfirmPantryDecisionModal: React.FC<ConfirmPantryDecisionModalProps> = ({
   useModalBodyCleanup();
   return (
     <Dialog.Root
+      lazyMount
+      unmountOnExit
       open={isOpen}
       onOpenChange={(e: { open: boolean }) => !e.open && onClose()}
     >

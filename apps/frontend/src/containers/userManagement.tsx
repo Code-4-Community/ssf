@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import {
@@ -9,6 +9,7 @@ import {
   VStack,
   Box,
   Badge,
+  Button,
   InputGroup,
   IconButton,
   Link,
@@ -25,6 +26,7 @@ import { FloatingAlert } from '@components/floatingAlert';
 import { useAlert } from '../hooks/alert';
 import { getInitials, USER_ICON_COLORS } from '@utils/utils';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const VolunteerManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -39,18 +41,22 @@ const VolunteerManagement: React.FC = () => {
 
   const pageSize = 8;
 
-  const fetchVolunteers = async () => {
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  const fetchVolunteers = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const allVolunteers = await ApiClient.getVolunteers();
       setVolunteers(allVolunteers);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching volunteers', AlertStatus.ERROR);
     }
-  };
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchVolunteers();
-  }, [setAlertMessage]);
+  }, [fetchVolunteers]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -174,172 +180,190 @@ const VolunteerManagement: React.FC = () => {
             />
           </Flex>
         </VStack>
-        <Table.Root variant="line" showColumnBorder>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Users
-              </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Status
-              </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-              >
-                Email
-              </Table.ColumnHeader>
-              <Table.ColumnHeader
-                color="neutral.800"
-                textStyle="p2"
-                fontWeight={600}
-                textAlign="right"
-              >
-                Actions
-              </Table.ColumnHeader>
-              <Table.ColumnHeader width="50px" />
-            </Table.Row>
-          </Table.Header>
-          <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
-            {paginatedVolunteers?.map((volunteer) => (
-              <Table.Row key={volunteer.id}>
-                <Table.Cell>
-                  <Box display="flex" alignItems="center" gap={5} width="100%">
-                    <Box
-                      borderRadius="full"
-                      bg={
-                        volunteer.active
-                          ? USER_ICON_COLORS[
-                              volunteer.id % USER_ICON_COLORS.length
-                            ]
-                          : 'neutral.300'
-                      }
-                      opacity={volunteer.active ? 1 : 0.6}
-                      width="33px"
-                      height="33px"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      color="white"
-                      p={2}
-                    >
-                      {getInitials(volunteer.firstName, volunteer.lastName)}
-                    </Box>
-                    {volunteer.firstName} {volunteer.lastName}
-                    {volunteer.role === Role.ADMIN && (
-                      <Badge
-                        ml="auto"
-                        py={0.5}
-                        px={1.5}
-                        borderRadius="md"
-                        textStyle="p3"
-                        fontWeight={400}
-                        fontSize="10px"
-                        bg="transparent"
-                        color="neutral.700"
-                        border="1px solid"
-                        borderColor="neutral.300"
-                      >
-                        Admin
-                      </Badge>
-                    )}
-                  </Box>
-                </Table.Cell>
-                <Table.Cell>
-                  <Badge
-                    py={1}
-                    px={2}
-                    borderRadius="md"
+        {fetchFailed ? (
+          <>
+            <SectionEmptyState subtitle="We couldn't load your users. Please try again." />
+            <Flex justify="center">
+              <Button onClick={fetchVolunteers} variant="outline">
+                Retry
+              </Button>
+            </Flex>
+          </>
+        ) : (
+          <>
+            <Table.Root variant="line" showColumnBorder>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader
+                    color="neutral.800"
                     textStyle="p2"
-                    fontWeight={500}
-                    fontSize="12px"
-                    bg={volunteer.active ? 'teal.200' : 'neutral.300'}
-                    color={volunteer.active ? 'teal.hover' : 'black'}
+                    fontWeight={600}
                   >
-                    {volunteer.active ? 'Active' : 'Deactivated'}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell>{volunteer.email}</Table.Cell>
-                <Table.Cell textAlign="right">
-                  {volunteer.role === Role.VOLUNTEER && (
-                    <Link
-                      color="neutral.700"
-                      fontWeight={400}
-                      textStyle="p2"
-                      variant="underline"
-                      textDecorationColor="neutral.700"
-                      cursor="pointer"
-                      onClick={() =>
-                        navigate(
-                          `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
-                        )
-                      }
-                    >
-                      View Assigned Pantries
-                    </Link>
-                  )}
-                </Table.Cell>
-                <Table.Cell>
-                  <Menu.Root>
-                    <Menu.Trigger asChild>
-                      <IconButton
-                        variant="ghost"
-                        size="sm"
-                        aria-label="More actions"
+                    Users
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="neutral.800"
+                    textStyle="p2"
+                    fontWeight={600}
+                  >
+                    Status
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="neutral.800"
+                    textStyle="p2"
+                    fontWeight={600}
+                  >
+                    Email
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="neutral.800"
+                    textStyle="p2"
+                    fontWeight={600}
+                    textAlign="right"
+                  >
+                    Actions
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader width="50px" />
+                </Table.Row>
+              </Table.Header>
+              <Table.Body color="neutral.700" fontWeight={400} textStyle="p2">
+                {paginatedVolunteers?.map((volunteer) => (
+                  <Table.Row key={volunteer.id}>
+                    <Table.Cell>
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={5}
+                        width="100%"
                       >
-                        <EllipsisVertical size={18} />
-                      </IconButton>
-                    </Menu.Trigger>
-                    <Portal>
-                      <Menu.Positioner>
-                        <Menu.Content>
-                          {volunteer.role === Role.VOLUNTEER &&
-                            volunteer.active && (
+                        <Box
+                          borderRadius="full"
+                          bg={
+                            volunteer.active
+                              ? USER_ICON_COLORS[
+                                  volunteer.id % USER_ICON_COLORS.length
+                                ]
+                              : 'neutral.300'
+                          }
+                          opacity={volunteer.active ? 1 : 0.6}
+                          width="33px"
+                          height="33px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          p={2}
+                        >
+                          {getInitials(volunteer.firstName, volunteer.lastName)}
+                        </Box>
+                        {volunteer.firstName} {volunteer.lastName}
+                        {volunteer.role === Role.ADMIN && (
+                          <Badge
+                            ml="auto"
+                            py={0.5}
+                            px={1.5}
+                            borderRadius="md"
+                            textStyle="p3"
+                            fontWeight={400}
+                            fontSize="10px"
+                            bg="transparent"
+                            color="neutral.700"
+                            border="1px solid"
+                            borderColor="neutral.300"
+                          >
+                            Admin
+                          </Badge>
+                        )}
+                      </Box>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge
+                        py={1}
+                        px={2}
+                        borderRadius="md"
+                        textStyle="p2"
+                        fontWeight={500}
+                        fontSize="12px"
+                        bg={volunteer.active ? 'teal.200' : 'neutral.300'}
+                        color={volunteer.active ? 'teal.hover' : 'black'}
+                      >
+                        {volunteer.active ? 'Active' : 'Deactivated'}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell>{volunteer.email}</Table.Cell>
+                    <Table.Cell textAlign="right">
+                      {volunteer.role === Role.VOLUNTEER && (
+                        <Link
+                          color="neutral.700"
+                          fontWeight={400}
+                          textStyle="p2"
+                          variant="underline"
+                          textDecorationColor="neutral.700"
+                          cursor="pointer"
+                          onClick={() =>
+                            navigate(
+                              `${ROUTES.PANTRY_MANAGEMENT}?volunteerId=${volunteer.id}`,
+                            )
+                          }
+                        >
+                          View Assigned Pantries
+                        </Link>
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Menu.Root>
+                        <Menu.Trigger asChild>
+                          <IconButton
+                            variant="ghost"
+                            size="sm"
+                            aria-label="More actions"
+                          >
+                            <EllipsisVertical size={18} />
+                          </IconButton>
+                        </Menu.Trigger>
+                        <Portal>
+                          <Menu.Positioner>
+                            <Menu.Content>
+                              {volunteer.role === Role.VOLUNTEER &&
+                                volunteer.active && (
+                                  <Menu.Item
+                                    value="promote"
+                                    onClick={() => {
+                                      setSelectedVolunteer(volunteer);
+                                      setIsPromoteModalOpen(true);
+                                    }}
+                                  >
+                                    Promote to Admin
+                                  </Menu.Item>
+                                )}
                               <Menu.Item
-                                value="promote"
+                                value="toggle-active"
                                 onClick={() => {
                                   setSelectedVolunteer(volunteer);
-                                  setIsPromoteModalOpen(true);
+                                  setIsConfirmModalOpen(true);
                                 }}
                               >
-                                Promote to Admin
+                                {volunteer.active ? 'Deactivate' : 'Activate'}
                               </Menu.Item>
-                            )}
-                          <Menu.Item
-                            value="toggle-active"
-                            onClick={() => {
-                              setSelectedVolunteer(volunteer);
-                              setIsConfirmModalOpen(true);
-                            }}
-                          >
-                            {volunteer.active ? 'Deactivate' : 'Activate'}
-                          </Menu.Item>
-                        </Menu.Content>
-                      </Menu.Positioner>
-                    </Portal>
-                  </Menu.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-        <Flex justify="center" mt={12}>
-          <PaginationControl
-            count={filteredVolunteers.length}
-            pageSize={pageSize}
-            page={currentPage}
-            onPageChange={setCurrentPage}
-          />
-        </Flex>
+                            </Menu.Content>
+                          </Menu.Positioner>
+                        </Portal>
+                      </Menu.Root>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+            <Flex justify="center" mt={12}>
+              <PaginationControl
+                count={filteredVolunteers.length}
+                pageSize={pageSize}
+                page={currentPage}
+                onPageChange={setCurrentPage}
+              />
+            </Flex>
+          </>
+        )}
       </Box>
 
       {selectedVolunteer && (

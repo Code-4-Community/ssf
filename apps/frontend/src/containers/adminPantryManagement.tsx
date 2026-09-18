@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Table,
   Text,
@@ -22,6 +22,7 @@ import AssignVolunteersModal from '@components/forms/assignVolunteersModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { PaginationControl } from '@components/pagination';
+import SectionEmptyState from '@components/sectionEmptyState';
 
 const AdminPantryManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -45,18 +46,22 @@ const AdminPantryManagement: React.FC = () => {
 
   const pageSize = 10;
 
-  const fetchPantries = async () => {
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  const fetchPantries = useCallback(async () => {
+    setFetchFailed(false);
     try {
       const allApprovedPantries = await ApiClient.getApprovedPantries();
       setPantries(allApprovedPantries);
     } catch {
+      setFetchFailed(true);
       setAlertMessage('Error fetching pantries', AlertStatus.ERROR);
     }
-  };
+  }, [setAlertMessage]);
 
   useEffect(() => {
     fetchPantries();
-  }, [setAlertMessage]);
+  }, [fetchPantries]);
 
   // Pre-fill pantry filter from the volunteerId url param. The param is kept on
   // success so the filter is reapplied on reload/back/refresh, and only cleared
@@ -257,7 +262,16 @@ const AdminPantryManagement: React.FC = () => {
             )}
           </Flex>
         </VStack>
-        {filteredPantries.length === 0 ? (
+        {fetchFailed ? (
+          <>
+            <SectionEmptyState subtitle="We couldn't load your pantries. Please try again." />
+            <Flex justify="center">
+              <Button onClick={fetchPantries} variant="outline">
+                Retry
+              </Button>
+            </Flex>
+          </>
+        ) : filteredPantries.length === 0 ? (
           <Box
             display="flex"
             flexDirection="column"
